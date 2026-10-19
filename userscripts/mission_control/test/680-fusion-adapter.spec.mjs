@@ -45,23 +45,37 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   await row.locator('td.ttl').click();   // the title cell: the row's middle can be a pick cell
   check(await page.locator('#mc-root .mc-insp a[href^="/recording/"]').count() >= 2, 'inspector lists the matching recordings');
 
-  // the count opens Fusion's comparison under the row: this track's recording and each match
+  // the count opens Fusion's own group card under the row (#790): this track's recording and each match
   await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-fxo').first().click();
   const det = page.locator('#mc-root .mc-tbl tr.mc-fxd:not([hidden])');
   await det.waitFor();
-  check(await det.locator('.mc-fxtbl tbody tr').count() >= 2, 'the comparison lists this recording and its match');
-  check(await det.locator('.mc-fxtbl .who').first().textContent() === 'this', 'this release\'s recording comes first');
-  check(await det.locator('.mc-fxc').count() === 5, 'with the five signal chips');
-  check(await det.locator('.mc-fxc.on').count() > 0, 'and at least one lit');
+  const card = det.locator('[data-mc-slot="fusion"] .fs-embed .fs-gcard');
+  await card.waitFor();
+  check(await card.locator('.fs-grow').count() >= 2, 'Fusion\'s card lists this recording and its match');
+  check(await card.locator('.fs-sig span').count() === 5, 'with the five signal chips');
+  check(await card.locator('.fs-sig span.hit').count() > 0, 'and at least one lit');
+  check(await card.locator('.fs-star-on').count() === 1, 'the merge target is starred');
+  check(await card.locator('[data-act="merge-group"], [data-act="delete-group"], [data-act="return"], [data-act="toggle-card"]').count() === 0, 'none of the board\'s own actions: MC\'s Execute merges');
   check(await page.locator('#mc-root .mc-pick.on').count() === hits, 'opening it leaves the ticks alone');
 
-  // the ISRCs and AcoustIDs are looked up by themselves, group after group: no button, and no chip stays unknown
+  // the ISRCs and AcoustIDs are looked up by themselves, group after group: no button, and none stays unknown
   check(await page.locator('#mc-root [data-act="fx-check"]').count() === 0, 'no Check button');
   await page.waitForFunction(() => window.__mcTest.fxChecking() === 0, null, { timeout: 120_000 });
-  check(await det.locator('.mc-fxc.unk').count() === 0, 'once checked, no chip is unknown');
+  check(await card.locator('.fs-idunk').count() === 0, 'once checked, no ISRC or AcoustID is unknown on the card');
   check(/AcoustIDs/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'the inspector lists the match\'s AcoustIDs');
   check(!/not checked/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'and they are checked');
-  check(await det.locator('[data-act="fx-fusion"] img').count() === 1 && await det.locator('[data-act="fx-fusion"]').getAttribute('title') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
+  check(await card.locator('[data-act="mc-open"] img').count() === 1 && await card.locator('[data-act="mc-open"]').getAttribute('title') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
+
+  // the card is Fusion's: a new merge target is the one Execute merges into, and the card survives MC's repaints
+  const other = card.locator('.fs-grow:not(.fs-target-row)').first(), gid = await other.getAttribute('data-gid');
+  await other.locator('.fs-star').click();
+  check(await card.locator('.fs-target-row').getAttribute('data-gid') === gid, 'a click on a star makes that recording the merge target');
+  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick.on').first().click();
+  await page.locator('#mc-root .mc-tbl td[data-col="fusion"] .mc-pick:not(.on)').first().click();
+  check(await card.locator('.fs-target-row').getAttribute('data-gid') === gid, 'and stays so across MC\'s repaints');
+  await card.locator('[data-act="toggle-releases"]').first().click();
+  await card.locator('.fs-reltbl:not(.fs-relload)').first().waitFor({ timeout: 30_000 });
+  check(await card.locator('.fs-reltbl').count() === 1, 'a recording\'s releases open in the card, as on Fusion\'s board');
 
   // every track with a change taken in has the left bar, and the header counts the changes
   const pend = async () => +((await page.locator('#mc-root .mc-tpend').textContent()).match(/^(\d+) pending/) || [0, 0])[1];
@@ -87,8 +101,8 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   await page.screenshot({ path: 'test-results/mc-680-fusion-detail.png' });
 
   // Open in Fusion puts the group on Fusion's board
-  const members = await det.locator('.mc-fxtbl tbody tr').count();
-  await det.locator('[data-act="fx-fusion"]').click();
+  const members = await card.locator('.fs-grow').count();
+  await card.locator('[data-act="mc-open"]').click();
   await page.waitForSelector('#fs-overlay .fs-gcard', { timeout: 60_000 });
   check(await page.locator('#fs-overlay .fs-gcard').first().locator('.fs-grow').count() === members, 'Fusion shows the group with its ' + members + ' recordings');
   await page.screenshot({ path: 'test-results/mc-680-fusion-open.png' });

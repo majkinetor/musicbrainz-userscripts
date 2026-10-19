@@ -65,7 +65,7 @@ To take in or leave out many at once, hold a key while you click: the others fol
 
 Found links take the same keys with a right-click. Press on an ISRC or a duplicate and drag up or down the column to do the same to every one you pass.
 
-Fusion's count opens what Fusion compared under the row: each recording's artist, release, length, ISRCs, AcoustIDs and open edits, with what differs marked. The comparisons fill in as their ISRCs and AcoustIDs come. Fusion's icon beside it (*Open in Fusion*) shows the group on Fusion's board. **Expand all** in the Tracks header opens every track's comparison (and the platforms' titles, [below](#compare-with-the-platforms)), and **Collapse all** folds them.
+Fusion's count opens Fusion's own group card under the row, the one its board shows: each recording with its disambiguation, artist, release, length, ISRCs and AcoustIDs, and what they share. The cards fill in as their ISRCs and AcoustIDs come. On the card, the star picks the recording the others merge into, ✎ writes the merge's edit note, and Fusion's icon (*Open in Fusion*) shows the group on Fusion's board. **Execute** merges the groups taken in. **Expand all** in the Tracks header opens every track's comparison (and the platforms' titles, [below](#compare-with-the-platforms)), and **Collapse all** folds them.
 
 ## Release and entity links
 
