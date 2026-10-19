@@ -4728,7 +4728,7 @@
     };
     img.src = src;
     if (img.complete && img.naturalWidth) img.classList.remove('loading');
-    const dims = [it.bytes ? fmtSize(it.bytes) : '', it.w && it.h ? `${it.w} × ${it.h}` : ''].filter(Boolean).join(' · ');   // #380-followup show file size in full screen too, like the card
+    const dims = [[it.bytes ? fmtSize(it.bytes) : '', it.fmt || ''].filter(Boolean).join(' '), it.w && it.h ? `${it.w} × ${it.h}` : ''].filter(Boolean).join(' · ');   // #380-followup show file size in full screen too, like the card; its file type always, whatever the card's option
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
     // the store it came from, as on the card (#249)
