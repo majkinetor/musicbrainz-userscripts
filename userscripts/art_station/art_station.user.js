@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19.020150
+// @version      2026.10.19.022614
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1323,13 +1323,13 @@
     const sz = x => (x.w || 0) * (x.h || 0);
     // the stores that give one image each (a digital release: each store's front) share one row, the largest first
     const ones = stores.filter(g => g.xs.length === 1);
-    if (ones.length > 1) { stores.splice(0, stores.length, ...stores.filter(g => g.xs.length > 1), { p: ones.map(g => g.p).join('|'), one: true, xs: ones.map(g => g.xs[0]).sort((a, b) => sz(b) - sz(a)) }); }
+    if (ones.length > 1) { stores.splice(0, stores.length, ...stores.filter(g => g.xs.length > 1), { p: '', one: true, xs: ones.map(g => g.xs[0]).sort((a, b) => sz(b) - sz(a)) }); }
     stores.sort((a, b) => area(b) - area(a));
     return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
-      + stores.map(g => { const k = g.xs.filter(x => !x._mcDup).length, who = g.one ? 'one from each store' : esc(g.p), tip = g.one ? "each store's image" : 'every ' + esc(g.p) + ' image';
-        return sec(g.xs, `More images · ${who}: take in, then drag into place`, 'as-sec-del as-sec-more',
+      + stores.map(g => { const k = g.one ? 0 : g.xs.filter(x => !x._mcDup).length;   // the shared row has no take all in: one of them is taken in
+        return sec(g.xs, `More images · ${g.one ? 'one from each store' : esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
         !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled title="checking for duplicates…">＋ take all in</button>`
-          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in ${tip} that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
+          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1614,10 +1614,9 @@
     });
     root.querySelectorAll('.as-more-all').forEach(b => b.onclick = e => {
       e.stopPropagation();
-      const ps = b.dataset.prov.split('|');   // the shared row's stores
-      const xs = MODEL.filter(it => it._del && it._mcOffer && !it._mcDup && ps.includes(it._provider || 'Other')).sort((a, c) => a.order - c.order);
+      const xs = MODEL.filter(it => it._del && it._mcOffer && !it._mcDup && (it._provider || 'Other') === b.dataset.prov).sort((a, c) => a.order - c.order);
       takeIn(xs);
-      asLog.info(`Mission Control: took in every ${ps.join(', ')} image (${xs.length})`);
+      asLog.info(`Mission Control: took in every ${b.dataset.prov} image (${xs.length})`);
       render();
     });
     // #787: the hover ✕ marks one cover for removal; it goes under the gallery, where ↺ keep brings it back
@@ -4567,6 +4566,12 @@
     applyZoom(img);
   }
   const visible = () => grouped().flatMap(g => g.items);   // flat, in displayed order
+  // what full screen goes through: the gallery, or the row of the left-out image it shows (one store's More images)
+  function lbSeq() {
+    const it = byId(_lb), c = it && it._del && root && root.querySelector(`.as-card[data-id="${it.id}"], .as-drow[data-id="${it.id}"]`), row = c && c.parentElement;
+    const seq = row ? [...row.children].map(x => byId(x.dataset.id)).filter(Boolean) : visible();
+    return seq.filter(x => !x._pdf);   // PDFs open in a tab, not the lightbox
+  }
   let _lbScroll = null;
   function openLightbox(id) {
     const it0 = byId(id);
@@ -4695,7 +4700,7 @@
   // prefetch the adjacent covers' 1200px so arrow-nav is instant
   const _preloaded = new Set();
   function preloadNeighbors() {
-    const seq = visible().filter(it => !it._pdf);
+    const seq = lbSeq();
     const i = seq.findIndex(it => String(it.id) === String(_lb));
     if (i < 0 || !seq.length) return;
     [1, 2, -1, -2].forEach(d => {        // prefetch 2 covers each way so nav stays instant
@@ -4776,7 +4781,7 @@
   function togglePlay() { if (_play) stopPlay(); else { _play = setInterval(() => lbNav(1), 3000); updatePlayBtn(); } }
   function lbNav(d, keepEdit) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());   // a dangling type pop must not survive a cover change (incl. slideshow)
-    const seq = visible().filter(it => !it._pdf);   // PDFs open in a tab, not the lightbox
+    const seq = lbSeq();
     if (!seq.length) return;
     let i = seq.findIndex(it => String(it.id) === String(_lb));
     if (i < 0) i = 0;
@@ -6388,7 +6393,8 @@
   html.as-embed #as-root{margin:0!important;padding:6px 10px 8px}
   html.as-embed .as-bar{position:static}
   .as-sec-more+.as-grid .as-card.del,.as-sec-more+.as-dlist .as-drow.del{opacity:1}
-  .as-sec-more+.as-grid .as-card.del .as-thumb img{filter:none;opacity:.6}
+  .as-sec-more+.as-grid .as-card.del .as-thumb img{filter:none}
+  .as-sec-more+.as-grid .as-card .as-undo{opacity:0}.as-sec-more+.as-grid .as-card:hover .as-undo,.as-sec-more+.as-grid .as-undo:focus-visible{opacity:1}
   .as-mcdup{position:absolute;left:34px;bottom:6px;max-width:calc(100% - 68px);font:600 10px var(--mbu-font);color:var(--mbu-warn);background:var(--mbu-bg);border:1px solid var(--mbu-warn-border);border-radius:4px;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:4}
   /* #695: a round icon like every other corner launcher (Falcon, Fusion); in colour while Art Station shows, monochrome while off */
   #as-switch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}

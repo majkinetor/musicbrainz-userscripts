@@ -1,6 +1,7 @@
 // #784: in Mission Control's frame, the stores that give one image each (a digital release: every store has its
-// front) share one row of the stores' other images, the largest first, with one take all in for them; a store with
-// more images keeps a row of its own. Setup as in 772-mc-extras: drawn stripe patterns, given a store by the test
+// front) share one row of the stores' other images, the largest first, without take all in (one of them is taken
+// in); a store with more images keeps a row of its own. The images aren't faded, so they compare, take in shows on
+// hover, and full screen goes through the row of the image it shows. Setup as in 772-mc-extras: drawn stripe patterns, given a store by the test
 // hook; every POST is aborted at the network.
 import { test, check, until, requireLogin, idle, SANDBOX } from '../../../dev/test/harness.mjs';
 import { RELEASE, blockPosts } from './as.mjs';
@@ -15,7 +16,9 @@ test('#784: the stores with one image each share a row of the other images', { t
   await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await page.evaluate(t => {
+    // the frame never scrolls: it takes the height the gallery asks for, as Mission Control's card does
     const f = document.createElement('iframe'); f.id = 'mcf'; f.style.cssText = 'width:1200px;height:900px';
+    window.addEventListener('message', e => { if (e.data && e.data.mcAs === 1 && e.data.token === t && e.data.type === 'size') f.style.height = e.data.h + 'px'; });
     f.src = `/release/${location.pathname.split('/')[2]}/cover-art?mc_frame=${t}&mc_embed=1`;
     document.body.appendChild(f);
   }, TOKEN);
@@ -58,10 +61,28 @@ test('#784: the stores with one image each share a row of the other images', { t
   check(/one from each store/.test(rows[0].t) && rows[0].cards === 'q1,t1', `the one-image stores share the first row, the largest first (${JSON.stringify(rows[0])})`);
   check(/Discogs/.test(rows[1].t) && rows[1].cards === 'd1,d2', `Discogs keeps its own row (${JSON.stringify(rows[1])})`);
   await until(() => frame.evaluate(() => !!document.querySelector('.as-sec-more .as-more-all:not([disabled])')));
+  const alls = await frame.evaluate(() => [...document.querySelectorAll('.as-sec-more')].map(h => !!h.querySelector('.as-more-all')).join());
+  check(alls === 'false,true', `take all in only on Discogs' row (${alls})`);
+  const card = frame.locator('.as-sec-more + .as-grid .as-card').first();
+  const look = () => card.evaluate(c => ({ img: getComputedStyle(c.querySelector('.as-thumb img')).opacity, take: getComputedStyle(c.querySelector('.as-undo')).opacity }));
+  await page.mouse.move(5, 5);
+  const off = await until(look, v => v.take === '0');
+  check(off.img === '1' && off.take === '0', `the image unfaded, take in hidden (${JSON.stringify(off)})`);
+  await card.hover();
+  const on = await until(look, v => v.take === '1');
+  check(on.take === '1', `take in shows on hover (${JSON.stringify(on)})`);
+  // full screen from q1: → goes to t1 and back to q1, not on into the gallery's covers
+  await card.locator('.as-thumb img').click();
+  await frame.locator('#as-lb .as-lb-img').waitFor();
+  const shown = () => frame.evaluate(() => document.querySelector('#as-lb .as-lb-img').src);
+  const seen = [await shown()];
+  for (let n = 0; n < 2; n++) { const was = seen[seen.length - 1]; await frame.locator('body').press('ArrowRight'); seen.push(await until(shown, v => v !== was)); }
+  check(seen[1] !== seen[0] && seen[2] === seen[0], `full screen goes through the row's two only (${seen.map(x => x.slice(-12))})`);
+  await frame.locator('body').press('Escape');
   const took = await frame.evaluate(async () => {
-    document.querySelector('.as-sec-more .as-more-all').click();
+    document.querySelector('.as-sec-more + .as-grid .as-card .as-undo').click();
     await new Promise(r => setTimeout(r, 300));
     return window.__asTest.mc.model().filter(x => x._tag && x._mcOffer && !x._del).map(x => x._tag).sort().join();
   });
-  check(took === 'q1,t1', `the shared row's take all in takes in both its images (${took})`);
+  check(took === 'q1', `take in takes in that one (${took})`);
 });
