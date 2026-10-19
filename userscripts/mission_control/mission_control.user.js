@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19.145636
+// @version      2026.10.19.150158
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -9,6 +9,7 @@
 // @match        https://*.musicbrainz.org/release/*
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        unsafeWindow
 // ==/UserScript==
 
 (function () {
@@ -4090,6 +4091,7 @@ function ccSettings() {
 function ccClose() {
     if (!CC.ui) return;
     CC.ui.remove(); CC.ui = null;
+    ccLeaveQuiet(false);
     document.documentElement.style.overflow = '';
     ccLauncher();
     Log.info('consolidation closed (the launcher opens it again)');
@@ -4105,8 +4107,23 @@ function ccLauncher() {
     mbRestackCorner('br');
 }
 let ccClock = 0;
+// majkinetor: the browser asked "leave page?" with nothing changed. MB's release editor under the review warns on
+// beforeunload once the page has had a click, unless rootField.redirecting (its own flag for leaving on purpose).
+// Nothing is typed into the editor while the review covers it, so the flag stays on until the review is closed
+// (the editor is then the user's). The editor binds late: tried again for a while if it isn't there yet.
+function ccLeaveQuiet(on, tries) {
+    try {
+        const w = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+        const rf = w.MB && w.MB.releaseEditor && w.MB.releaseEditor.rootField;
+        if (rf) { rf.redirecting = on; Log.debug('release editor: leave-page warning ' + (on ? 'off while the review covers it' : 'on again')); return; }
+        if (!on) return;
+        if ((tries || 0) < 20) { setTimeout(() => { if (CC.ui) ccLeaveQuiet(true, (tries || 0) + 1); }, 500); return; }
+        Log.warn('no MB.releaseEditor.rootField here: the browser may ask before leaving');
+    } catch (e) { Log.warn('could not turn the release editor\'s leave-page warning ' + (on ? 'off' : 'on') + ': ' + e.message); }
+}
 function ccOpen() {
     if (CC.ui) return;
+    ccLeaveQuiet(true);
     mcStyle(); ccStyle();
     const ui = el('div', 'mbu-ui'); ui.id = 'mcc-root';
     ui.innerHTML = mbuHtml('<header class="mcc-hdr"><span class="mcc-fmt-slot"></span><div class="mcc-rel"><div class="mcc-ttl"></div><div class="mcc-sub"></div></div><div class="mcc-steps"></div>'
