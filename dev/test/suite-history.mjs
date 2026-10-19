@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-// Every nightly suite run, kept (#647): what passed, what failed and why.
+// Every nightly suite run, kept (#647): what passed, what failed and why. The suite skill's local
+// full runs too (dev/test/suite-record.mjs), with "source": "local".
 //
-//   node dev/test/suite-history.mjs <results.json> <history.json> [--badge suite.json] [--commit sha] [--run url]
+//   node dev/test/suite-history.mjs <results.json | folder> <history.json> [--badge suite.json] [--commit sha] [--run url] [--source nightly|local]
 //
 // <results.json> is Playwright's JSON report of the run (PW_JSON=<file> turns it on in
-// playwright.config.mjs); a missing or unreadable one is recorded as a run that produced no
-// report. <history.json> gains the run, newest first, keyed by its UTC start time:
+// playwright.config.mjs); a folder holds one report per script (suite-by-script.mjs's
+// test-results/suite/), added up into one run. A missing or unreadable one is recorded as a run
+// that produced no report. <history.json> gains the run, newest first, keyed by its UTC start time:
 //
 //   "2026-09-30 02:00:14": {
-//     "passed": 320, "failed": 2, "skipped": 4, "color": "orange",
+//     "source": "nightly", "passed": 320, "failed": 2, "skipped": 4, "color": "orange",
 //     "duration": "2:04:31", "commit": "8136e0f", "run": "https://github.com/…/actions/runs/…",
 //     "failures": [{ "name": "[isrc_scout] 640-ytmusic.spec.mjs › #640: …", "error": "Error: …" }]
 //   }
@@ -16,7 +18,8 @@
 // --badge also writes the shields.io badge the README shows (the numbers of this run).
 // dev/test/flaky-report.mjs reads the history back: which specs keep failing. The suite runs
 // without retries, so a spec that fails now and then shows there, across runs.
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const [resultsFile, historyFile] = process.argv.slice(2).filter((a, i, all) => !a.startsWith('--') && !(all[i - 1] || '').startsWith('--'));
 const opt = name => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : null; };
@@ -57,13 +60,25 @@ function summarise(report) {
   };
 }
 
+// one report, or a folder of them (one per script): their counts and durations added up, the earliest start
+const reports = () => statSync(resultsFile).isDirectory()
+  ? readdirSync(resultsFile).filter(f => f.endsWith('.json')).sort().map(f => JSON.parse(readFileSync(join(resultsFile, f), 'utf8')))
+  : [JSON.parse(readFileSync(resultsFile, 'utf8'))];
 let run;
-try { run = summarise(JSON.parse(readFileSync(resultsFile, 'utf8'))); }
+try {
+  const all = reports().map(summarise);
+  if (!all.length) throw new Error('the folder has no report');
+  run = all.reduce((a, r) => ({
+    start: r.start < a.start ? r.start : a.start, passed: a.passed + r.passed, failed: a.failed + r.failed, skipped: a.skipped + r.skipped,
+    ms: a.ms == null || r.ms == null ? null : a.ms + r.ms, failures: a.failures.concat(r.failures),
+  }));
+}
 catch (e) { run = { start: new Date(), passed: 0, failed: 0, skipped: 0, ms: null, failures: [], error: `no report: ${String(e.message).split('\n')[0]}` }; }
 
 const color = run.error ? 'red' : run.failed > 5 ? 'red' : run.failed ? 'orange' : 'brightgreen';
 const key = run.start.toISOString().replace('T', ' ').slice(0, 19);
 const entry = {
+  ...(opt('--source') ? { source: opt('--source') } : {}),
   passed: run.passed, failed: run.failed, skipped: run.skipped, color,
   ...(run.ms != null ? { duration: hms(run.ms) } : {}),   // how long the specs took, the run's setup aside
   ...(opt('--commit') ? { commit: opt('--commit').slice(0, 7) } : {}),

@@ -11,7 +11,7 @@ Finds remote branches whose work is already in a target branch and deletes them.
 ## Never delete
 
 - `main` and `stable` ([DEVELOP → Branches](../../../DEVELOP.md#branches-and-channels)).
-- `badges`: `suite.yml` force-pushes the test badge numbers there; it never merges.
+- `test-history`: `suite.yml` force-pushes the nightly runs and the README badge's numbers there; it never merges.
 - A branch someone is still working on, even if one target already holds it, unless the user names it.
 
 ## 1. Get full history

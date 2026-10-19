@@ -4,7 +4,7 @@
 # (run dev/test/copy-to-sandbox.mjs) or runs a newer MusicBrainz.
 name: suite
 permissions:
-  contents: write    # the badge's numbers go to the `badges` branch (#637)
+  contents: write    # the badge's numbers go to the `test-history` branch (#637)
 on:
   schedule:
     - cron: '0 2 * * *'
@@ -40,7 +40,7 @@ jobs:
           retention-days: 14
       # The README badge says how many passed and failed, not only "failing": a suite this
       # size on a shared sandbox has a spec or two red on most nights (#637). Shields reads
-      # the numbers from suite.json on the `badges` branch. history.json beside it keeps every
+      # the numbers from suite.json on the `test-history` branch. history.json beside it keeps every
       # run, newest first: counts, how long it took, each failure with its error (#647);
       # node dev/test/flaky-report.mjs lists what keeps failing.
       - name: Badge and history
@@ -49,9 +49,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir badge
-          git fetch -q --depth=1 origin badges && git show FETCH_HEAD:history.json > badge/history.json 2>/dev/null || echo '{}' > badge/history.json
-          node dev/test/suite-history.mjs "$RUNNER_TEMP/results.json" badge/history.json --badge badge/suite.json --commit "$GITHUB_SHA" --run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          cd badge && git init -q -b badges
+          git fetch -q --depth=1 origin test-history && git show FETCH_HEAD:history.json > badge/history.json 2>/dev/null || echo '{}' > badge/history.json
+          node dev/test/suite-history.mjs "$RUNNER_TEMP/results.json" badge/history.json --badge badge/suite.json --commit "$GITHUB_SHA" --run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --source nightly
+          cd badge && git init -q -b test-history
           git add suite.json history.json
           git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -qm "suite: $(node -p "require('./suite.json').message")"
-          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" badges
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" test-history
