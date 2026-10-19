@@ -77,8 +77,8 @@
 
     { "id": "mission_control", "name": "Mission Control", "owner": "majkinetor",
       "patterns": ["userscripts/mission_control", "Via Mission Control"],
-      "version_regex": "Mission Control v([0-9][^\\s:]*)",
-      "note": "orchestrator: the edits are made by the member scripts, which add a 'Via Mission Control v<version>: <release>' line, so each one also counts for that member. The version regex skips the member's own version and the line's trailing colon." },
+      "version_regex": "Mission Control\\*? v([0-9][^\\s:]*)",
+      "note": "orchestrator: the edits are made by the member scripts, which add a 'Via Mission Control v<version>: <release>' line, so each one also counts for that member. The version regex skips the member's own version and the line's trailing colon, and takes the * a String Theory run puts after the name." },
 
     { "id": "bandcamp_player_enhanced", "name": "Bandcamp Player Enhanced", "owner": "majkinetor",
       "patterns": ["userscripts/bandcamp_player_enhanced"],
