@@ -22,5 +22,5 @@ test("a recording's disambiguation shows after its title", { tag: ['@sandbox'] }
   }, REC), Boolean, { timeout: 45000 });
   console.log('shown: ' + JSON.stringify(got));
   check(got && got.text === '(' + want + ')', `the title is followed by "(${want})" (shown ${got && got.text})`);
-  check(got && got.tip.endsWith('(' + want + ')'), 'the tooltip carries it too');
+  check(got && got.tip.includes('(' + want + ')'), 'the tooltip carries it too');   // #789: then live and the place
 });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.17.231850
+// @version      2026.10.19
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -407,6 +407,35 @@ function isrcConflict(a, b) {
     for (const x of ia) for (const y of ib) if (isrcStem(x) === isrcStem(y)) return x + ' / ' + y;
     return null;
 }
+/* #789 (phw): a studio recording and a live one of the same song were grouped, on a shared
+   AcoustID, and nothing on the card said which was live. A recording's relationships say it:
+   a performance of a work marked live, and where it was recorded ("recorded at" a place,
+   "recorded in" an area, with the date). live is null when unknown: relationships not fetched,
+   or no performance relationship to read. places is null when not fetched, [] when none. */
+function recordingSetting(rels) {
+    if (!Array.isArray(rels)) return { live: null, places: null };
+    const perf = rels.filter(r => r['target-type'] === 'work' && r.type === 'performance');
+    const places = rels.filter(r => (r['target-type'] === 'place' && r.type === 'recorded at') || (r['target-type'] === 'area' && r.type === 'recorded in'))
+        .map(r => { const e = r.place || r.area || {}; return { gid: e.id, name: e.name || '', kind: r['target-type'], date: r.begin || null }; })
+        .filter(p => p.gid);
+    return { live: perf.length ? perf.some(r => (r.attributes || []).includes('live')) : null, places };
+}
+const REL_INC = 'work-rels+place-rels+area-rels';
+const placeText = p => p.name + (p.date ? ' ' + p.date : '');
+/* Two recordings made at different places, or at one place on different dates, are different
+   recordings. Places are compared with places and areas with areas: "recorded in London" and
+   "recorded at KOKO" don't contradict. An unknown date doesn't either. Returns the two sides'
+   locations, or null when there is no such difference. */
+function placeConflict(a, b) {
+    if (!a.places || !b.places) return null;
+    for (const kind of ['place', 'area']) {
+        const pa = a.places.filter(p => p.kind === kind), pb = b.places.filter(p => p.kind === kind);
+        if (!pa.length || !pb.length) continue;
+        const same = pa.some(x => pb.some(y => x.gid === y.gid && (!x.date || !y.date || x.date === y.date)));
+        if (!same) return pa.map(placeText).join(', ') + ' / ' + pb.map(placeText).join(', ');
+    }
+    return null;
+}
 const artistTokenCount = s => normName(s).split(' ').filter(t => t.length >= 2).length;
 const artistSimilar = (a, b) => tokenMatch(a, b, artistTokenCount(b) <= artistTokenCount(a) ? 'min' : 'max', 0.8);
 function lengthClose(a, b, tolMs) { if (a == null || b == null) return false; return Math.abs(a - b) <= tolMs; }
@@ -429,6 +458,9 @@ function shouldUnion(sig, cutoff) {
     // take, and four minutes apart is never the same recording. Manual grouping
     // is still allowed — that's a deliberate human decision, not a guess.
     if (sig.lengthConflict) return false;
+    // #789: live and studio, or two places or dates, are never the same recording; ahead of
+    // ISRC and AcoustID, which a live take can wrongly carry from its studio original
+    if (sig.liveMismatch || sig.placeConflict) return false;
     // #760: different tracks of one ISRC batch. Ahead of AcoustID, which can
     // collide on short or quiet tracks; a shared ISRC never sets this.
     if (sig.isrcConflict) return false;
@@ -482,11 +514,11 @@ function mkRecording(gid, opts) {
     // enrichAllReleases); true/false once known. #529: "Video recordings should
     // never be added to groups with audio recordings" — null is deliberately
     // treated as "don't block" everywhere, only a known true/false mismatch does.
-    return Object.assign({ gid, title: '', disambiguation: '', length: null, isrcs: [], artistCredit: '', artistGid: null, artistGids: [], releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null }, opts || {});
+    return Object.assign({ gid, title: '', disambiguation: '', length: null, isrcs: [], artistCredit: '', artistGid: null, artistGids: [], releases: [], allReleases: null, acoustids: null, video: null, editsPending: null, isrcsKnown: false, isrcSource: null, live: null, places: null }, opts || {});
 }
 
 async function fetchReleaseRecordings(releaseMbid) {
-    const j = await wsGet('/ws/2/release/' + releaseMbid + '?inc=recordings+isrcs+artist-credits&fmt=json');
+    const j = await wsGet('/ws/2/release/' + releaseMbid + '?inc=recordings+isrcs+artist-credits+release-groups+recording-level-rels+' + REL_INC + '&fmt=json');
     if (!j) return { release: null, recordings: [] };
     const recs = [];
     for (const m of j.media || []) {
@@ -496,9 +528,9 @@ async function fetchReleaseRecordings(releaseMbid) {
             recs.push(mkRecording(r.id, {
                 title: r.title || t.title, disambiguation: r.disambiguation || '',
                 length: r.length != null ? r.length : t.length,
-                isrcs: r.isrcs || [],
+                isrcs: r.isrcs || [], ...recordingSetting(r.relations),
                 artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video, isrcsKnown: true, isrcSource: 'index',
-                releases: [{ gid: j.id, title: j.title, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
+                releases: [{ gid: j.id, title: j.title, disambiguation: j.disambiguation || '', rgGid: (j['release-group'] || {}).id || null, trackNumber: t.number || null, trackCount: m['track-count'] || null }],
             }));
         }
     }
@@ -525,7 +557,7 @@ async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
     let offset = 0, total = Infinity, pages = 0, truncatedBy = null;
     while (offset < total && pages < SEARCH_MAX_PAGES) {
         if (onPage) onPage(pages + 1, Number.isFinite(total) ? Math.ceil(total / SEARCH_PAGE_LIMIT) : null, recordings.length, Number.isFinite(total) ? total : null);
-        const j = await wsGet('/ws/2/recording?' + browseQuery + '&inc=isrcs+artist-credits&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
+        const j = await wsGet('/ws/2/recording?' + browseQuery + '&inc=isrcs+artist-credits+' + REL_INC + '&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
         if (!j) { truncatedBy = 'a failed request'; break; }
         total = j['recording-count'] != null ? j['recording-count'] : 0;
         for (const r of j.recordings || []) {
@@ -534,7 +566,7 @@ async function fetchRecordingsByBrowse(browseQuery, label, onPage) {
             // not a valid inc parameter"). They are filled in afterwards, best
             // effort, and stay unknown rather than empty when they cannot be.
             recordings.push(mkRecording(r.id, {
-                title: r.title, disambiguation: r.disambiguation || '', length: r.length, isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
+                title: r.title, disambiguation: r.disambiguation || '', length: r.length, isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity', ...recordingSetting(r.relations),
                 artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video,
                 releases: [], allReleases: null,
             }));
@@ -584,7 +616,7 @@ async function enrichReleasesFromSearch(luceneQuery, recordings) {
             const releases = (r.releases || []).map(rel => {
                 let trackNumber = null;
                 for (const med of rel.media || []) { if (med.track && med.track[0]) { trackNumber = med.track[0].number || null; break; } }
-                return { gid: rel.id, title: rel.title, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
+                return { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
             });
             rec.releases = releases; rec.allReleases = releases;
             matched++;
@@ -617,7 +649,7 @@ async function fetchRecordingsBySearch(luceneQuery, label, onPage) {
             const releases = (r.releases || []).map(rel => {
                 let trackNumber = null;
                 for (const med of rel.media || []) { if (med.track && med.track[0]) { trackNumber = med.track[0].number || null; break; } }
-                return { gid: rel.id, title: rel.title, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
+                return { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber, trackCount: rel['track-count'] || null, date: rel.date || null };
             });
             const ac = r['artist-credit'];
             // the search already returns every release a recording appears on,
@@ -652,7 +684,7 @@ async function fetchRGRecordings(rgMbid, onPage) {
     let offset = 0, total = Infinity, pages = 0;
     while (offset < total && pages < SEARCH_MAX_PAGES) {
         if (onPage) onPage(pages + 1, Number.isFinite(total) ? Math.ceil(total / SEARCH_PAGE_LIMIT) : null, byGid.size, null);
-        const j = await wsGet('/ws/2/release?release-group=' + rgMbid + '&inc=recordings+artist-credits+isrcs&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
+        const j = await wsGet('/ws/2/release?release-group=' + rgMbid + '&inc=recordings+artist-credits+isrcs+recording-level-rels+' + REL_INC + '&fmt=json&limit=' + SEARCH_PAGE_LIMIT + '&offset=' + offset);
         if (!j) { Log.warn('RG seed: a request failed — the list may be incomplete'); break; }
         total = j['release-count'] != null ? j['release-count'] : 0;
         for (const rel of j.releases || []) {
@@ -660,7 +692,7 @@ async function fetchRGRecordings(rgMbid, onPage) {
             for (const med of media) {
                 for (const t of med.tracks || []) {
                     const r = t.recording; if (!r || !r.id) continue;
-                    const relRef = { gid: rel.id, title: rel.title, trackNumber: t.number || null, trackCount: med['track-count'] || null, date: rel.date || null };
+                    const relRef = { gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: rgMbid, trackNumber: t.number || null, trackCount: med['track-count'] || null, date: rel.date || null };
                     const existing = byGid.get(r.id);
                     if (existing) {
                         if (!existing.releases.some(x => x.gid === rel.id)) existing.releases.push(relRef);
@@ -669,7 +701,7 @@ async function fetchRGRecordings(rgMbid, onPage) {
                     const ac = r['artist-credit'] || t['artist-credit'];
                     byGid.set(r.id, mkRecording(r.id, {
                         title: r.title, disambiguation: r.disambiguation || '', length: r.length != null ? r.length : t.length,
-                        isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity',
+                        isrcs: r.isrcs || [], isrcsKnown: true, isrcSource: 'entity', ...recordingSetting(r.relations),
                         artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!r.video,
                         releases: [relRef], allReleases: null,
                     }));
@@ -714,11 +746,11 @@ function harvestInternalIdsFromPage() {
 }
 
 async function fetchRecordingByGid(gid) {
-    const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases+isrcs+artist-credits&fmt=json');
+    const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases+release-groups+isrcs+artist-credits+' + REL_INC + '&fmt=json');
     if (!j) return null;
-    const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null }));
+    const releases = (j.releases || []).map(rel => ({ gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber: null, trackCount: null, date: rel.date || null }));
     const ac = j['artist-credit'];
-    return mkRecording(j.id, { title: j.title, disambiguation: j.disambiguation || '', length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', releases, allReleases: releases });
+    return mkRecording(j.id, { title: j.title, disambiguation: j.disambiguation || '', length: j.length, isrcs: j.isrcs || [], artistCredit: acName(ac), artistGid: acPrimaryGid(ac), artistGids: acGids(ac), video: !!j.video, isrcsKnown: true, isrcSource: 'entity', ...recordingSetting(j.relations), releases, allReleases: releases });
 }
 // #529 follow-up (majkinetor, with a screenshot of jesus2099's reference
 // script): "We should have a list of recording releases too (deduped)" — the
@@ -726,7 +758,7 @@ async function fetchRecordingByGid(gid) {
 // from. Release/recording-page seeding only knows about ONE release per
 // recording at fetch time, so this backfills the rest lazily.
 async function fetchAllReleases(gid) {
-    const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases&fmt=json');
+    const j = await wsGet('/ws/2/recording/' + gid + '?inc=releases+release-groups+' + REL_INC + '&fmt=json');
     // null, not an empty list: a failed lookup is not "this recording is on no
     // release". Returning [] here made enrichAllReleases record the absence as
     // fact — the same overclaim the AcoustID and ISRC paths already had to lose.
@@ -735,9 +767,9 @@ async function fetchAllReleases(gid) {
     for (const rel of j.releases || []) {
         if (seen.has(rel.id)) continue;
         seen.add(rel.id);
-        out.push({ gid: rel.id, title: rel.title, trackNumber: null, trackCount: null, date: rel.date || null });
+        out.push({ gid: rel.id, title: rel.title, disambiguation: rel.disambiguation || '', rgGid: (rel['release-group'] || {}).id || null, trackNumber: null, trackCount: null, date: rel.date || null });
     }
-    return { releases: out, video: !!j.video };
+    return { releases: out, video: !!j.video, ...recordingSetting(j.relations) };
 }
 // #529 (majkinetor, with a screenshot of MB's own merge-page release table):
 // "We need all details when merging. Lets have all releases expandable for a
@@ -770,6 +802,8 @@ async function fetchReleaseDetails(gid) {
             gid: rel.id,
             status: rel.status || null,
             title: rel.title || '',
+            disambiguation: rel.disambiguation || '',
+            rgGid: rg.id || null,
             artist: acName(rel['artist-credit']),
             rgType: [rg['primary-type'] || '', secondary].filter(Boolean).join(' + ') || null,
             country: rel.country || (area['iso-3166-1-codes'] || [])[0] || null,
@@ -816,6 +850,7 @@ async function enrichAllReleases(recs, concurrency, onProgress) {
                        must keep it. */
                     if (!rec.releases || !rec.releases.length) rec.releases = r.releases;
                     if (rec.video == null) rec.video = r.video;
+                    if (rec.places == null) { rec.live = r.live; rec.places = r.places; }   // #789
                 }
             }
             done++; if (onProgress) onProgress(done, recs.length);
@@ -880,9 +915,9 @@ async function resolveInternalId(gid) {
 // a recording that demonstrably had an ISRC showed isrc=none after RG seeding,
 // so anything derived from search results gets reconciled against this.
 async function fetchRecordingDetail(gid) {
-    const j = await wsGet('/ws/2/recording/' + gid + '?inc=isrcs&fmt=json');
+    const j = await wsGet('/ws/2/recording/' + gid + '?inc=isrcs+' + REL_INC + '&fmt=json');
     if (!j) return null;
-    return { isrcs: j.isrcs || [], video: !!j.video };
+    return { isrcs: j.isrcs || [], video: !!j.video, ...recordingSetting(j.relations) };
 }
 // #529 (majkinetor): "I didn't see a single AcoustID, although all should have
 // it basically" — correct, and the original approach was simply wrong: MB does
@@ -964,16 +999,20 @@ function gatedUnionFind(recs) {
     for (const r of recs) {
         parent.set(r.gid, r.gid);
         const known = r.length != null;
-        info.set(r.gid, { video: r.video === true, audio: r.video === false, min: known ? r.length : Infinity, max: known ? r.length : -Infinity, withIsrcs: r.isrcs && r.isrcs.length ? [r] : [] });
+        info.set(r.gid, { video: r.video === true, audio: r.video === false, min: known ? r.length : Infinity, max: known ? r.length : -Infinity, withIsrcs: r.isrcs && r.isrcs.length ? [r] : [],
+            live: r.live === true, studio: r.live === false, withPlaces: r.places && r.places.length ? [r] : [] });
     }
+    // #789: nor a recording of unknown setting bridge a live and a studio one, or two places
+    const placeClash = (a, b) => { for (const x of a.withPlaces) for (const y of b.withPlaces) { const c = placeConflict(x, y); if (c) return c; } return null; };
     // #760: an ISRC-less recording must not bridge two tracks of one ISRC batch
     const isrcClash = (a, b) => { for (const x of a.withIsrcs) for (const y of b.withIsrcs) { const c = isrcConflict(x, y); if (c) return c; } return null; };
     const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
     const gross = SETTINGS.grossLengthMs || 30000;
     // why sets A and B may not join ('' when they may)
     const conflict = (a, b) => ((a.video && b.audio) || (a.audio && b.video)) ? 'video and audio'
+        : ((a.live && b.studio) || (a.studio && b.live)) ? 'live and studio'
         : (Math.max(a.max, b.max) - Math.min(a.min, b.min) > gross) ? 'lengths ' + Math.round((Math.max(a.max, b.max) - Math.min(a.min, b.min)) / 1000) + 's apart'
-        : (() => { const c = isrcClash(a, b); return c ? 'ISRCs ' + c + ' from one batch' : ''; })();
+        : (() => { const c = isrcClash(a, b); if (c) return 'ISRCs ' + c + ' from one batch'; const p = placeClash(a, b); return p ? 'recorded at ' + p : ''; })();
     // true when joined (or already one set); a string saying why when refused
     const union = (x, y) => {
         const ra = find(x), rb = find(y);
@@ -981,7 +1020,8 @@ function gatedUnionFind(recs) {
         const a = info.get(ra), b = info.get(rb), why = conflict(a, b);
         if (why) return why;
         parent.set(ra, rb);
-        info.set(rb, { video: a.video || b.video, audio: a.audio || b.audio, min: Math.min(a.min, b.min), max: Math.max(a.max, b.max), withIsrcs: a.withIsrcs.concat(b.withIsrcs) });
+        info.set(rb, { video: a.video || b.video, audio: a.audio || b.audio, min: Math.min(a.min, b.min), max: Math.max(a.max, b.max), withIsrcs: a.withIsrcs.concat(b.withIsrcs),
+            live: a.live || b.live, studio: a.studio || b.studio, withPlaces: a.withPlaces.concat(b.withPlaces) });
         return true;
     };
     return { find, union };
@@ -1141,7 +1181,7 @@ function clearBoard() {
 }
 
 function pairSignals(a, b, tolMs) {
-    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false, isrcConflict: null, titleDistinct: null, titleDiffers: null };
+    const sig = { isrc: false, acoustid: false, length: false, title: false, artist: false, artistByMbid: false, videoMismatch: false, pendingEdit: false, lengthConflict: false, lengthUnknown: false, isrcConflict: null, titleDistinct: null, titleDiffers: null, liveMismatch: false, placeConflict: null };
     // #565: three states, not two. `length` false meant BOTH "the lengths differ"
     // and "we have no length to compare", and the normal cutoff required it — so a
     // release whose recordings carry no length at all could never form a group,
@@ -1153,6 +1193,9 @@ function pairSignals(a, b, tolMs) {
     if (a.length != null && b.length != null && Math.abs(a.length - b.length) > (SETTINGS.grossLengthMs || 30000)) sig.lengthConflict = true;
     // null (unknown) video status never blocks — only a KNOWN true vs. false mismatch does.
     if (a.video != null && b.video != null && a.video !== b.video) sig.videoMismatch = true;
+    // #789: unknown never blocks here either
+    if (a.live != null && b.live != null && a.live !== b.live) sig.liveMismatch = true;
+    sig.placeConflict = placeConflict(a, b);
     if (a.isrcs.length && b.isrcs.length && a.isrcs.some(x => b.isrcs.includes(x))) sig.isrc = true;
     if (a.acoustids && b.acoustids && a.acoustids.length && b.acoustids.length && a.acoustids.some(x => b.acoustids.includes(x))) sig.acoustid = true;
     if (lengthClose(a.length, b.length, tolMs)) sig.length = true;
@@ -1189,7 +1232,7 @@ function autoMatch(pool, tolMs, cutoff) {
     cutoff = cutoff || 'normal';
     if (pool.length < 2) return [];
     const uf = gatedUnionFind(pool), find = uf.find;   // #623 U3: the gates hold for the whole group
-    let lengthBlocked = 0, bridgeBlocked = 0, guardBlocked = 0;
+    let lengthBlocked = 0, bridgeBlocked = 0, guardBlocked = 0, settingBlocked = 0;
     for (let i = 0; i < pool.length; i++) {
         for (let j = i + 1; j < pool.length; j++) {
             const sig = pairSignals(pool[i], pool[j], tolMs);
@@ -1207,6 +1250,12 @@ function autoMatch(pool, tolMs, cutoff) {
                 lengthBlocked++;
                 Log.info('  not grouped (length differs by ' + Math.round(Math.abs(pool[i].length - pool[j].length) / 1000) + 's): "'
                     + pool[i].title + '" ' + dur(pool[i].length) + ' vs "' + pool[j].title + '" ' + dur(pool[j].length));
+            }
+            // #789: a pair that would have grouped but for live/studio or the place
+            if ((sig.liveMismatch || sig.placeConflict) && shouldUnion(Object.assign({}, sig, { liveMismatch: false, placeConflict: null }), cutoff)) {
+                settingBlocked++;
+                Log.info('  not grouped (' + (sig.liveMismatch ? 'live and studio' : 'recorded at ' + sig.placeConflict) + '): "'
+                    + pool[i].title + '"' + (pool[i].live ? ' (live)' : '') + ' vs "' + pool[j].title + '"' + (pool[j].live ? ' (live)' : ''));
             }
             // #760: a pair that would have grouped but for the title or ISRC-batch guard
             if ((sig.titleDiffers || sig.isrcConflict) && !shouldUnion(sig, cutoff)
@@ -1227,8 +1276,9 @@ function autoMatch(pool, tolMs, cutoff) {
             }
         }
     }
-    if (bridgeBlocked) Log.warn(bridgeBlocked + ' matching pair(s) kept apart: joining them would have grouped a video with an audio recording, lengths more than ' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart, or two ISRCs of one batch, through a recording whose value is unknown');
+    if (bridgeBlocked) Log.warn(bridgeBlocked + ' matching pair(s) kept apart: joining them would have grouped a video with an audio recording, a live with a studio one, different places, lengths more than ' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart, or two ISRCs of one batch, through a recording whose value is unknown');
     if (guardBlocked) Log.warn(guardBlocked + ' pair(s) held back as different tracks (titles that differ in a word on each side, even with a shared AcoustID, or ISRCs of one batch) — group them by hand if they really are the same');
+    if (settingBlocked) Log.warn(settingBlocked + ' pair(s) held back as different recordings (a live and a studio one, or recorded at different places or dates) — group them by hand if they really are the same');
     if (lengthBlocked) Log.warn(lengthBlocked + ' pair(s) held back by the gross-length guard (>' + Math.round((SETTINGS.grossLengthMs || 30000) / 1000) + 's apart) — group them by hand if they really are the same take');
     const byRoot = new Map();
     for (const r of pool) { const root = find(r.gid); if (!byRoot.has(root)) byRoot.set(root, []); byRoot.get(root).push(r); }
@@ -1365,6 +1415,7 @@ async function enrichIsrcs(recs, concurrency, onProgress) {
                     rec.isrcs = d.isrcs;
                 }
                 if (rec.video == null) rec.video = d.video;
+                if (rec.places == null) { rec.live = d.live; rec.places = d.places; }   // #789
                 rec.isrcsKnown = true;
                 rec.isrcSource = 'entity';   // now confirmed against the entity, not the index
             }
@@ -1511,6 +1562,8 @@ function describeRecordingForLog(rec) {
         + ' acoustid=' + ((rec.acoustids && rec.acoustids.join(',')) || (rec.acoustids == null ? 'not checked' : 'none'))
         + ' length=' + dur(rec.length)
         + ' video=' + (rec.video == null ? 'unknown' : rec.video)
+        + ' live=' + (rec.live == null ? 'unknown' : rec.live)
+        + ' recorded=' + (rec.places == null ? 'unknown' : rec.places.map(placeText).join('; ') || 'none')
         + ' releases=' + (rec.releases || []).map(r => r.title).join('; ') + ']';
 }
 async function mergeGroup(group) {
@@ -3030,6 +3083,11 @@ function fsStyle() {
         + '.fs-lenwarn{flex:0 0 auto;margin-left:6px;padding:0 6px;border:1px solid var(--mbu-warn);border-radius:9px;color:var(--mbu-warn);background:color-mix(in srgb, var(--mbu-warn) 14%, transparent);font-size:10.5px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:help}'
         // #619 follow-up: "it should be in len column" — placeLenBadges() lifts it out of
         // the title track and over the rows' length column (left edge = the amber cells').
+        + '.fs-setwarn{flex:0 0 auto;margin-left:6px;padding:0 6px;border:1px solid var(--mbu-warn);border-radius:9px;color:var(--mbu-warn);background:color-mix(in srgb, var(--mbu-warn) 14%, transparent);font-size:10.5px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:help}'
+        + '.fs-live{background:color-mix(in srgb, var(--fs-red) 12%, transparent);color:var(--fs-red);border:1px solid color-mix(in srgb, var(--fs-red) 40%, transparent);border-radius:3px;padding:0 4px;font-size:9.5px;font-weight:700;text-transform:uppercase;white-space:nowrap}'
+        + '.fs-reldis{font-weight:400;color:var(--fs-muted);font-style:italic}'
+        + '.fs-reltag{font-style:normal;font-size:8.5px;font-weight:700;text-transform:uppercase;border:1px solid var(--fs-border);border-radius:3px;padding:0 3px;margin-right:3px;vertical-align:1px}'
+        + '.fs-place{font-weight:400;color:var(--fs-muted);font-size:11.5px;white-space:nowrap}'
         + '.fs-lenwarn.fs-lenwarn-col{position:absolute;top:50%;transform:translateY(-50%);margin-left:0}'
         + '.fs-sig span.hit{background:color-mix(in srgb, var(--mbu-ok) 42%, transparent);border-color:var(--mbu-ok);color:color-mix(in srgb, var(--mbu-ok) 18%, var(--mbu-text));font-weight:700}'
         + '.fs-sig span.partial{background:color-mix(in srgb, var(--mbu-ok) 16%, transparent);border-style:dashed;border-color:color-mix(in srgb, var(--mbu-ok) 60%, transparent);color:color-mix(in srgb, var(--mbu-ok) 45%, var(--mbu-text))}'
@@ -3148,7 +3206,42 @@ function recLink(gid, text) {
 function recDis(rec) {
     return rec.disambiguation ? ' <span class="fs-dis">(' + escapeHtml(rec.disambiguation) + ')</span>' : '';
 }
-const recTip = rec => escapeHtml(rec.title + (rec.disambiguation ? ' (' + rec.disambiguation + ')' : ''));
+// #789 (phw): a live recording and where it was recorded, read from its relationships
+const recordedAt = rec => rec.places && rec.places.length ? 'recorded ' + rec.places.map(p => (p.kind === 'area' ? 'in ' : 'at ') + placeText(p)).join(', ') : '';
+function liveBadge(rec) { return rec.live ? '<span class="fs-live" title="Live recording: its performance of the work is marked live">live</span> ' : ''; }
+function recPlace(rec) {
+    return rec.places && rec.places.length ? ' <span class="fs-place" title="' + escapeHtml(recordedAt(rec)) + '">@ ' + escapeHtml(rec.places.map(p => p.name).join(', ')) + '</span>' : '';
+}
+const recTip = rec => escapeHtml(rec.title + (rec.disambiguation ? ' (' + rec.disambiguation + ')' : '') + (rec.live ? ' — live' : '') + (recordedAt(rec) ? ' — ' + recordedAt(rec) : ''));
+/* #789 (majkinetor): "I remove disamb. on tracks sometimes and put it on album" — so a recording
+   without one goes by its release's, but only against a recording whose release is in the same
+   release group: albums of different groups are disambiguated for unrelated reasons. */
+function memberDis(m, members) {
+    if (m.disambiguation) return { text: m.disambiguation, from: 'recording' };
+    const rel = m.releases && m.releases[0];
+    if (rel && rel.disambiguation && rel.rgGid && members.some(o => o !== m && o.releases && o.releases[0] && o.releases[0].rgGid === rel.rgGid)) return { text: rel.disambiguation, from: 'album', release: rel };
+    return { text: '', from: '' };
+}
+function albumDisHtml(m, members) {
+    const d = memberDis(m, members);
+    if (d.from !== 'album') return '';
+    const tip = "No disambiguation on the recording; this is its release's: " + relTitle(d.release) + ', in the same release group as another recording here';
+    return ' <span class="fs-reldis" title="' + escapeHtml(tip) + '">(<span class="fs-reltag">album</span>' + escapeHtml(d.text) + ')</span>';
+}
+// #789: what a group's members disagree on that says they may be different recordings, strongest first
+function settingWarning(members) {
+    const live = members.filter(m => m.live === true), studio = members.filter(m => m.live === false);
+    if (live.length && studio.length) return { label: 'live + studio', title: 'Live and studio recordings in one group: never the same recording.\nLive: '
+        + live.map(m => m.title + (recordedAt(m) ? ' (' + recordedAt(m) + ')' : '')).join('; ') };
+    for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
+        const c = placeConflict(members[i], members[j]);
+        if (c) return { label: uniq(members.flatMap(m => (m.places || []).map(placeText))).length + ' places', title: 'Recorded at different places or on different dates: ' + c + '.\nCheck they are the same recording before merging.' };
+    }
+    const dis = members.map(m => memberDis(m, members));
+    if (uniq(dis.map(d => d.text)).length > 1) return { label: 'disamb.', title: 'Disambiguations differ:\n'
+        + members.map((m, i) => '  ' + m.title + ' — ' + (dis[i].from ? dis[i].from + ': ' + dis[i].text : 'none')).join('\n') + '\nCheck they are the same recording before merging.' };
+    return null;
+}
 function artistLink(rec) {
     if (!rec.artistCredit) return '';
     return rec.artistGid ? '<a href="' + location.origin + '/artist/' + rec.artistGid + '" target="_blank" rel="noopener">' + escapeHtml(rec.artistCredit) + '</a>' : escapeHtml(rec.artistCredit);
@@ -3158,6 +3251,8 @@ function artistLink(rec) {
 // release a recording appears on, deduped by release id — not just the one
 // it happened to be seeded from. Full list is in the tooltip (one per line);
 // the visible text stays short so rows don't blow out.
+// #789 (majkinetor): a disambiguation is sometimes moved from the tracks to the release, so it shows there too
+const relTitle = r => r.title + (r.disambiguation ? ' (' + r.disambiguation + ')' : '');
 function releasesSummary(rec) {
     const primary = rec.releases[0];
     const full = rec.allReleases;
@@ -3169,10 +3264,10 @@ function releasesSummary(rec) {
     // latter states a fact we do not have — the same mistake the AcoustID and
     // ISRC displays used to make.
     if (!primary && full == null) return { text: '—', tooltip: 'Release list not loaded for this recording yet — expand it to fetch' };
-    const primaryText = primary ? (primary.title + (primary.trackNumber ? ' · track ' + primary.trackNumber : '')) : '(no release)';
+    const primaryText = primary ? (relTitle(primary) + (primary.trackNumber ? ' · track ' + primary.trackNumber : '')) : '(no release)';
     if (full == null) return { text: primaryText + ' …', tooltip: primaryText + '\n(more releases may exist — not loaded yet)' };
     const seen = new Set(); const lines = [];
-    for (const r of full) { const key = r.gid || r.title; if (key && !seen.has(key)) { seen.add(key); lines.push(r.title + (r.date ? ' (' + r.date + ')' : '')); } }
+    for (const r of full) { const key = r.gid || r.title; if (key && !seen.has(key)) { seen.add(key); lines.push(relTitle(r) + (r.date ? ' (' + r.date + ')' : '')); } }
     if (lines.length <= 1) return { text: primaryText, tooltip: lines[0] || primaryText };
     return { text: primaryText + ' +' + (lines.length - 1) + ' more', tooltip: lines.join('\n') };
 }
@@ -3226,7 +3321,7 @@ function poolCardHtml(rec) {
     const rs = releasesSummary(rec);
     return '<div class="fs-pcard" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
-        + '<div class="fs-info"><div class="fs-t" title="' + recTip(rec) + '">' + pendingBadge(rec) + videoBadge(rec) + recLink(rec.gid, rec.title) + recDis(rec) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
+        + '<div class="fs-info"><div class="fs-t" title="' + recTip(rec) + '">' + pendingBadge(rec) + videoBadge(rec) + liveBadge(rec) + recLink(rec.gid, rec.title) + recPlace(rec) + recDis(rec) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
         + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
         + presenceDots(rec)
         + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
@@ -3407,7 +3502,7 @@ function storeReleaseDetails(gid, rows) {
     for (const r of rows) {
         if (!r.gid || seen.has(r.gid)) continue;
         seen.add(r.gid);
-        list.push({ gid: r.gid, title: r.title, trackNumber: r.trackNumber, trackCount: null, date: r.date || null });
+        list.push({ gid: r.gid, title: r.title, disambiguation: r.disambiguation || '', rgGid: r.rgGid || null, trackNumber: r.trackNumber, trackCount: null, date: r.date || null });
     }
     rec.allReleases = list;
     if (!rec.releases || !rec.releases.length) rec.releases = list;
@@ -3458,7 +3553,7 @@ function releaseTableHtml(rec) {
             + td(r.trackTitle)
             + '<td>' + (r.trackLength ? dur(r.trackLength) : '—') + '</td>'
             + td(r.trackArtist)
-            + '<td title="' + escapeHtml(r.title || '') + '"><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a></td>'
+            + '<td title="' + escapeHtml(relTitle(r)) + '"><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a>' + (r.disambiguation ? ' <span class="fs-dis">(' + escapeHtml(r.disambiguation) + ')</span>' : '') + '</td>'
             + td(r.artist)
             + td([r.rgType, r.format].filter(Boolean).join(' · '))
             + '<td>' + escapeHtml(cd) + '</td>'
@@ -3487,6 +3582,7 @@ function groupCardHtml(group) {
     const lenRefRec = members.find(m => m.gid === group.target && typeof m.length === 'number' && m.length > 0) || null;
     const lenOffBy = m => (lenRefRec && m !== lenRefRec && typeof m.length === 'number' && m.length > 0 && Math.abs(m.length - lenRefRec.length) > lenTol) ? m.length - lenRefRec.length : null;
     const secs = ms => Math.round(Math.abs(ms) / 1000);
+    const setWarn = settingWarning(members);   // #789
     const lenWarnTitle = lenOff ? lengthDiffLabel(members) + ' ' + secs(lenSpread) + 's — more than the ' + secs(lenTol) + 's length tolerance. Check it is really the same take before merging.' : '';
     const sigNames = { isrc: 'ISRC', acoustid: 'AcoustID', length: 'Length', title: 'Title', artist: 'Artist' };
     const sigAll = group.signalsAll || [];
@@ -3575,7 +3671,7 @@ function groupCardHtml(group) {
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
             + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▼' : '▶') + '</span>'
             + star
-            + '<span class="fs-t" title="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + recDis(m) + '</span>'
+            + '<span class="fs-t" title="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
             + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
             + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
@@ -3622,7 +3718,8 @@ function groupCardHtml(group) {
     const tierWhy = (tier === 'manual'
         ? 'Grouped by hand — no cutoff level would have formed this group automatically'
         : 'Holds together at the "' + tier + '" cutoff' + (tier === 'loose' ? ' — it would not form at a stricter setting' : ''))
-        + (lenOff ? ' — but its lengths differ by up to ' + secs(lenSpread) + 's (tolerance ' + secs(lenTol) + 's)' : '');   // #619: auto or by hand
+        + (lenOff ? ' — but its lengths differ by up to ' + secs(lenSpread) + 's (tolerance ' + secs(lenTol) + 's)' : '')
+        + (setWarn ? '\n' + setWarn.title : '');   // #619: auto or by hand; #789
     return '<div class="fs-gcard fs-gcard-' + confClass + ' fs-tier-' + tier + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '" title="' + escapeHtml(tierWhy) + '">'
         // Three tracks — 1fr | auto | 1fr — so the chip matrix is centred on the
         // CARD, not merely at a fixed offset after the title (#529: "matrix is
@@ -3636,6 +3733,7 @@ function groupCardHtml(group) {
         + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>'
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
         + (lenOff ? '<span class="fs-lenwarn" title="' + escapeHtml(lenWarnTitle) + '">⚠ ' + secs(lenSpread) + 's</span>' : '')   // #619
+        + (setWarn ? '<span class="fs-setwarn" title="' + escapeHtml(setWarn.title) + '">⚠ ' + escapeHtml(setWarn.label) + '</span>' : '')   // #789
         + '</div>'
         + '<div class="fs-sig">' + sigChips + '</div>'
         + '<div class="fs-ghr">'
@@ -4623,6 +4721,7 @@ try {
     W.__fusion = {
         VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
+        recordingSetting, placeConflict, settingWarning, memberDis,
         normName, tokenMatch, titleSimilar, titleAlike, titleDistinctWords, isrcConflict, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
         mkRecording, fetchRecordingsByBrowse, enrichReleasesFromSearch, fetchReleaseRecordings, fetchRGRecordings, fetchRecordingByGid, fetchAllReleases, resolveInternalId, fetchAcoustIds, fetchAcoustIdsBatch, refreshGroupAcoustIds, enrichIsrcs, fetchRecordingDetail, fetchEntityMeta, enrichPendingEdits, fetchRecordingsBySearch, fetchArtistRecordings, harvestInternalIdsFromPage,
         pairSignals, poolMatches, computeGroupConfidence, groupTier, gatedUnionFind, TIER_COLORS, SIGNAL_KEYS, ACOUSTID_BATCH, shouldUnion, autoMatch, enrichAcoustIds, enrichAllReleases,

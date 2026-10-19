@@ -18,7 +18,7 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 
 ## Pool and groups
 
-Every candidate starts in the **Pool**. A recording's disambiguation follows its title in brackets, as on MusicBrainz, here and in the groups. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
+Every candidate starts in the **Pool**. A recording's disambiguation follows its title in brackets, as on MusicBrainz, here and in the groups; a release's follows the release's title. A live recording (its performance of the work is marked live) has a **live** tag, and a recording with a place it was recorded at shows it after an @ (before the disambiguation), with the date in its tooltip. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
 
 In a group:
 
@@ -28,7 +28,9 @@ In a group:
 - an ISRC or AcoustID that two or more members share is tinted, one colour per shared value, so you can see which rows agree;
 - an AcoustID opens its page on acoustid.org, where a wrongly linked recording can be fixed;
 - ↻ asks acoustid.org again for the group's AcoustIDs, once you've fixed a link there, and updates its chips and tints; the members stay where they are;
-- a length outside the tolerance is flagged amber, with the spread next to the title.
+- a length outside the tolerance is flagged amber, with the spread next to the title;
+- a warning next to the title says when the members can't be one recording, or may not be: *live + studio*, *N places* (recorded at different places, or at one place on different dates), or *disamb.* (their disambiguations differ);
+- a recording without a disambiguation shows its release's, tagged *album*, when another member's release is in the same release group; the *disamb.* warning compares it too.
 
 ## Seeding
 
@@ -59,6 +61,7 @@ Match never groups:
 
 - a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
 - a recording that has an open edit;
+- a live recording with a studio one, or two recordings made at different places, or at one place on different dates (not even with a shared ISRC or AcoustID);
 - lengths more than 30 s apart;
 - two recordings with ISRCs from one batch (the same registrant and year) but none in common, such as *QZTRX2699407* and *QZTRX2699409*: those are different tracks.
 - two recordings that share only an AcoustID when their titles differ, such as *Feel What You Feel* and *Suspended Space*: AcoustIDs are submitted by users and sometimes land on the wrong recording.
