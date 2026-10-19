@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19.164228
+// @version      2026.10.19.195440
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -125,7 +125,7 @@ let fxCheckGen = 0;   // a newer Fusion answer stops the check queue of the one 
 let run = null;
 // #782: the comparison with the platforms (the Platforms step): waiting for Platform Check's platforms, what it
 // brings for Platform Check (cons) and ISRC Scout (isrcs, by track), the release's title on the platforms when it differs
-const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {} };   // picks: track index → { title?, ms?, recording?, from }
+const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {}, own: '' };   // picks: track index → { title?, ms?, recording?, from }
 function busEvent(e, kind) {
     let d;
     try { d = JSON.parse(e.detail); } catch (x) { Log.warn(kind + ' with unreadable detail: ' + x.message); return null; }
@@ -173,6 +173,7 @@ document.addEventListener('mc:findings', e => {
     noteProbeDone();
     if (d.id === 'fusion') fxAutoCheck();
     if (d.id === 'pc' && CMP.waiting) cmpStart();   // #782: the comparison waited for Platform Check's platforms
+    else if (d.id === 'pc' && !CONS) pcDropOther();   // #792
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncLinks();
@@ -1135,7 +1136,7 @@ function linksCell(t) {
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
 // what a lane's "take all in" takes: not a link whose track count or format says it is another release (#709)
-const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);   // #740: never a catalog number or a label
+const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !x.other && !['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);   // #740: never a catalog number or a label
 function cellHtml(c, t) {
     const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
     if (r && r.state === 'busy') return '<span class="pend">…</span>';
@@ -3498,7 +3499,7 @@ function ccBuildSources() {
     for (const f of CC.pc.findings) {
         if (!f.url || out.some(s => s.key === f.key)) continue;   // the source's own platform: the album read stands
         const old = was.get(f.key);
-        out.push({ key: f.key, url: f.url, barcode: f.barcode || null, tracks: f.tracks == null ? null : f.tracks, format: f.format || null, links: f.links || null, mismatch: f.mismatch || null, why: f.why || null, state: f.state, role: 'found', take: old ? old.take : null, read: old && old.url === f.url ? old.read : { state: 'none' } });
+        out.push({ key: f.key, url: f.url, barcode: f.barcode || null, tracks: f.tracks == null ? null : f.tracks, format: f.format || null, links: f.links || null, mismatch: f.mismatch || null, why: f.why || null, state: f.state, role: 'found', take: old ? old.take : null, hand: !!(old && old.hand), read: old && old.url === f.url ? old.read : { state: 'none' } });
     }
     CC.sources = out;
     // the source's lane is taken; a platform with no barcode joins it when it has as many tracks
@@ -3558,6 +3559,7 @@ document.addEventListener('mc:read-result', e => {
     if (d.ok && d.rel) {
         s.read = { state: 'done', rel: d.rel, provider: d.provider, ms: d.ms };
         Log.ok('read ' + ccName(s.key) + ' in ' + d.ms + ' ms: "' + d.rel.title + '" · ' + ccCount(d.rel) + ' track(s) · barcode ' + (d.rel.barcode || ('—' + (s.barcode ? ', Platform Check found ' + s.barcode : ''))));
+        ccTracklistCheck(s);
     } else {
         s.read = { state: 'failed', error: d.error || 'failed' };
         Log.warn('read ' + ccName(s.key) + ' failed: ' + s.read.error);
@@ -3688,6 +3690,59 @@ function ccDiff(v, w) {
     if (v.len && w.len && Math.abs(v.len - w.len) > 1000) out.push((v.len > w.len ? '+' : '−') + Math.round(Math.abs(v.len - w.len) / 1000) + ' s');
     if (v.isrc && w.isrc && v.isrc !== w.isrc) out.push('the ISRC');
     return out;
+}
+// #792: a platform taken on its track count alone (no barcode) may be another album with as many
+// tracks. Once read, its tracks are lined up by position with the release's (on a probe) or the
+// source's (a consolidation): it is another release when fewer than half the titles match and
+// fewer than half the lengths, both; a translated or transliterated tracklist keeps its lengths.
+// Without lengths to compare, only when no title matches. A barcode that matches outweighs it.
+const ccTitleKey = t => ccNorm(String(t || '').replace(/\s*[([][^)\]]*[)\]]/g, ' '));
+const CC_LEN_SLACK = 3000;
+function ccTracklistRef() {
+    if (CONS) { const s = CC.sources[0]; return s && s.read.state === 'done' ? s.read.rel.mediums.flatMap(m => m.tracks).map(t => ({ title: t.title, ms: t.lengthMs || null })) : null; }
+    return rel && rel.tracks ? rel.tracks.map(t => ({ title: t.title, ms: pfMs(t.len) })) : null;
+}
+function ccTracklistCheck(s) {
+    if (s.role === 'source' || s.read.state !== 'done') return;
+    const ref = ccTracklistRef(), list = s.read.rel.mediums.flatMap(m => m.tracks);
+    if (!ref || !ref.length || list.length !== ref.length) { Log.debug('tracklist ' + ccName(s.key) + ': not compared (' + list.length + ' tracks, ' + (ref ? ref.length : 'no') + ' to compare with)'); return; }
+    let titles = 0, lens = 0, lensOk = 0;
+    const off = [];
+    list.forEach((t, i) => {
+        const a = ccTitleKey(t.title), b = ccTitleKey(ref[i].title);
+        const same = !!a && !!b && (a === b || a.startsWith(b) || b.startsWith(a));
+        if (same) titles++;
+        const ms = t.lengthMs || null, rms = ref[i].ms;
+        if (ms && rms) { lens++; if (Math.abs(ms - rms) <= CC_LEN_SLACK) lensOk++; }
+        if (!same) off.push((i + 1) + ' "' + t.title + '" for "' + ref[i].title + '"' + (ms && rms ? ' (' + ccLen(ms) + ' for ' + ccLen(rms) + ')' : ''));
+    });
+    const n = list.length;
+    const other = lens * 2 >= n ? titles * 2 < n && lensOk * 2 < lens : titles === 0;
+    const why = 'another tracklist: ' + titles + ' of ' + n + ' titles' + (lens ? ', ' + lensOk + ' of ' + lens + ' lengths' : '') + ' match';
+    Log.debug('tracklist ' + ccName(s.key) + ': ' + titles + '/' + n + ' titles, ' + lensOk + '/' + lens + ' lengths match the ' + (CONS ? 'source\'s' : 'release\'s') + ' → ' + (other ? 'another release' : 'this release') + (off.length ? ' · differ: ' + off.slice(0, 5).join('; ') + (off.length > 5 ? '; …' : '') : ''));
+    if (!other) return;
+    const bc = ccBc(s.read.rel.barcode || s.barcode), own = CONS ? ccBc(CC.sources[0].barcode) : CMP.own;
+    if (bc && own && bc === own) { Log.warn(ccName(s.key) + ': ' + why + ', but its barcode is the release\'s, so it stays'); return; }
+    s.read.other = why;
+    if (s.hand) { Log.warn(ccName(s.key) + ': ' + why + ', but it was taken by hand, so it stays'); return; }
+    s.take = false;
+    Log.warn(ccName(s.key) + ' left out: ' + why + ' (' + s.url + ')');
+    if (!CONS) pcDropOther();
+}
+// on a probe, a platform left out for its tracklist is no selected album link of Platform Check's either:
+// Art Station and ISRC Scout aren't asked with it, and Execute doesn't add it
+function pcDropOther() {
+    const r = results.pc, set = picked.pc;
+    if (!r || r.state !== 'done' || !set) return;
+    CC.sources.filter(s => s.read.other && !s.take).forEach(s => {
+        const x = (r.findings || []).find(f => !f.entity && f.key === s.key && f.url === s.url);
+        if (!x) return;
+        x.other = true;   // a lane's "select all" passes it by
+        if (!String(x.why || '').includes(s.read.other)) x.why = [x.why, s.read.other].filter(Boolean).join(' · ');
+        if (set.delete(x.key)) Log.info('Platform Check: ' + ccName(x.key) + ' unselected (' + s.read.other + ')');
+    });
+    paintAll();
+    syncLinks();
 }
 function ccModel() {
     const reads = ccRead();
@@ -3869,7 +3924,7 @@ function ccSideHtml() {
         l.list.forEach(s => {
             const r = s.read;
             const meta = s.role === 'source' ? ['', 'source · ' + s.tracks + ' tracks']
-                : !s.take ? ['', s.mismatch && s.mismatch.length ? ccMismatch(s.mismatch) : s.tracks != null ? s.tracks + ' tracks' : '']
+                : !s.take ? [r.other ? 'warn' : '', r.other || (s.mismatch && s.mismatch.length ? ccMismatch(s.mismatch) : s.tracks != null ? s.tracks + ' tracks' : '')]
                 : !ccReadable(s.key) ? ['warn', 'link only']
                 : r.state === 'reading' ? ['busy', 'reading' + (r.total ? ' ' + r.n + '/' + r.total : '…')]
                 : r.state === 'queued' ? ['busy', 'waiting']
@@ -4016,8 +4071,8 @@ function ccOnClick(e) {
         case 'take': {
             const s = CC.sources.find(x => x.key === a.dataset.k);
             if (!s || s.role === 'source') return;
-            s.take = a.checked;
-            Log.info(ccName(s.key) + (s.take ? ' taken in' : ' left out'));
+            s.take = a.checked; s.hand = true;
+            Log.info(ccName(s.key) + (s.take ? ' taken in' : ' left out') + ' by hand');
             if (s.take) ccReadTaken(); else ccPaint();
             return;
         }
@@ -4274,7 +4329,7 @@ if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRe
 // ISRC Scout (the ISRCs, by track); a title that differs is shown, never applied.
 function cmpReset() {
     clearInterval(CMP.timer);
-    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {} });
+    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {}, own: '' });
     CC.sources = []; CC.pc = { state: 'wait', note: '', findings: [], at: 0 }; CC.pick = {}; CC.rowPick = {};
     CC.run = 'c' + Date.now().toString(36);   // a read of the comparison before is dropped
 }
@@ -4302,6 +4357,7 @@ function cmpStart() {
     // the release's own lane: its barcode, else the one a linked platform gives; a platform without a barcode
     // joins it when it has as many tracks; one Platform Check marks as another release (mismatch) never
     const own = ccBc(pc.barcode) || ccBc((pc.findings.find(x => !x.entity && !x.kind && x.state === 'linked' && x.barcode) || {}).barcode);
+    CMP.own = own || '';
     const n = rel.tracks.length;
     const links = pc.findings.filter(x => !x.entity && !x.kind && x.url && x.state !== 'none');
     CC.pc = { state: 'done', note: '', findings: links, at: 0 };
