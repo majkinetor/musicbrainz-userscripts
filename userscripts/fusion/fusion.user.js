@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.17.231850
+// @version      2026.10.19.114302
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2863,8 +2863,13 @@ function fsStyle() {
         // var(--fs-*) call sites don't have to churn. The values shift slightly
         // (its purple was #6d3ff0, the shared accent is #5f3ec0, and the greys
         // move a shade) — that is the consolidation #562 asks for, not a bug.
-        + '.fs-cons{--fs-bg:var(--mbu-bg-sunken);--fs-panel:var(--mbu-bg);--fs-panel2:var(--mbu-bg-raised);--fs-border:var(--mbu-border-soft);--fs-text:var(--mbu-text);--fs-muted:var(--mbu-text-dim);--fs-purple:var(--mbu-accent);--fs-purple-d:var(--mbu-accent-hover);--fs-green:var(--mbu-ok);--fs-amber:var(--mbu-warn);--fs-red:var(--mbu-error);--fs-blue:var(--mbu-info);'
-        + 'width:min(1560px,calc(100% - 24px));height:min(760px,92vh);max-width:calc(100% - 16px);max-height:96vh;min-width:640px;min-height:400px;resize:both;'
+        + '.fs-cons,.fs-embed{--fs-bg:var(--mbu-bg-sunken);--fs-panel:var(--mbu-bg);--fs-panel2:var(--mbu-bg-raised);--fs-border:var(--mbu-border-soft);--fs-text:var(--mbu-text);--fs-muted:var(--mbu-text-dim);--fs-purple:var(--mbu-accent);--fs-purple-d:var(--mbu-accent-hover);--fs-green:var(--mbu-ok);--fs-amber:var(--mbu-warn);--fs-red:var(--mbu-error);--fs-blue:var(--mbu-info)}'
+        // #790: the group card in Mission Control's slot, outside Fusion's window
+        + '.fs-embed{font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:var(--fs-text);text-align:left}'
+        + '.fs-embed .fs-ghdr{cursor:default}.fs-embed .fs-grow{cursor:default}'
+        + '.fs-mcopen{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border-radius:5px;cursor:pointer;background:transparent;border:1px solid transparent;flex-shrink:0}.fs-mcopen:hover,.fs-mcopen:focus-visible{background:var(--fs-panel2);border-color:var(--fs-purple)}.fs-mcopen img{width:16px;height:16px;display:block}'
+        + '.fs-mstate{font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--fs-border);color:var(--fs-muted);white-space:nowrap}.fs-mstate.fs-done{color:var(--fs-green);border-color:var(--fs-green)}.fs-mstate.fs-err{color:var(--fs-red);border-color:var(--fs-red)}'
+        + '.fs-cons{width:min(1560px,calc(100% - 24px));height:min(760px,92vh);max-width:calc(100% - 16px);max-height:96vh;min-width:640px;min-height:400px;resize:both;'
         + 'background:var(--fs-panel);color:var(--fs-text);border:1px solid var(--fs-border);border-radius:var(--mbu-radius-lg);box-shadow:0 8px 30px rgba(0,0,0,.5);'
         + 'font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}'
         + '.fs-cons.fs-maximized{position:fixed !important;left:8px !important;top:8px !important;right:8px !important;bottom:8px !important;width:auto !important;height:auto !important;max-width:none !important;max-height:none !important;margin:0 !important}'
@@ -3468,7 +3473,9 @@ function releaseTableHtml(rec) {
     }
     return out + '</tbody></table></div>';
 }
-function groupCardHtml(group) {
+// embed (#790): the card in Mission Control's slot. MC's Execute merges and its tick takes the group in or
+// out, so the board's own actions go (Merge, delete, collapse, return to pool, drag); Open in Fusion comes in.
+function groupCardHtml(group, embed) {
     const members = group.memberGids.map(g => STATE.recordings.get(g)).filter(Boolean);
     // #529 follow-up: "remove radios, make hover action that one is merge
     // target. It should also go to the top of the card" — the target member
@@ -3572,7 +3579,7 @@ function groupCardHtml(group) {
             : '<span class="fs-star' + (canPick ? '' : ' fs-star-disabled') + '" data-act="' + (canPick ? 'set-target' : '') + '" title="' + (canPick ? 'make this the merge target' : '') + '">☆</span>';
         const expanded = STATE.expandedReleases.has(m.gid);
         return '<div class="fs-growwrap">'
-            + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '" draggable="true" data-gid="' + m.gid + '">'
+            + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '"' + (embed ? '' : ' draggable="true"') + ' data-gid="' + m.gid + '">'
             + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▼' : '▶') + '</span>'
             + star
             + '<span class="fs-t" title="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + recLink(m.gid, m.title) + recDis(m) + '</span>'
@@ -3582,12 +3589,12 @@ function groupCardHtml(group) {
                 : '<span class="fs-len fs-len-off" title="' + (d > 0 ? '+' : '−') + secs(d) + 's against the merge target (' + dur(lenRefRec.length) + ') — tolerance ' + secs(lenTol) + 's">' + dur(m.length) + '</span>'; })()   // #619
             + idCell(m, 'isrc')
             + idCell(m, 'acoustid')
-            + '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span></div>'
+            + (embed ? '' : '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span>') + '</div>'
             + (expanded ? releaseTableHtml(m) : '')
             + '</div>';
     }).join('');
     const errMsg = group.state === 'error' ? '<div class="fs-gerr">' + escapeHtml(group.error || 'merge failed') + '</div>' : '';
-    const activeCls = (STATE.activeGroupId === group.id ? ' fs-active' : '') + (members.some(m => m.editsPending) ? ' fs-has-pending' : '');
+    const activeCls = (!embed && STATE.activeGroupId === group.id ? ' fs-active' : '') + (members.some(m => m.editsPending) ? ' fs-has-pending' : '');
     const head = ordered[0];
     const hasNote = !!(group.editNote && group.editNote.trim());
     // #529 (majkinetor): "add in each card edit button in the title - clicking it
@@ -3609,7 +3616,7 @@ function groupCardHtml(group) {
     // #529: "We should also be able to collapse entire card." Collapsed keeps the
     // header — confidence, chips and Merge stay usable — and hides only the rows,
     // so a long board can be skimmed without losing the ability to act on it.
-    const collapsed = STATE.collapsedGroups.has(group.id);
+    const collapsed = !embed && STATE.collapsedGroups.has(group.id);
     // #529 (majkinetor): "Keep matrix at the middle (A), remove '2 recordings' as
     // it is redundant … remove STRICT/NORMAL etc. and use colors (C), with non
     // intrusive background row color for each variant."
@@ -3633,7 +3640,7 @@ function groupCardHtml(group) {
         + '<div class="fs-ghdr fs-ghdr-grid">'
         + '<div class="fs-ghl">'
         + '<span class="fs-gnum" title="' + members.length + ' recording' + (members.length === 1 ? '' : 's') + ' in this group">' + members.length + '</span>'
-        + '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>'
+        + (embed ? '' : '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>')
         + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
         + (lenOff ? '<span class="fs-lenwarn" title="' + escapeHtml(lenWarnTitle) + '">⚠ ' + secs(lenSpread) + 's</span>' : '')   // #619
         + '</div>'
@@ -3643,11 +3650,13 @@ function groupCardHtml(group) {
             + (groupAllExpanded(group) ? 'hide the release tables for every recording in this group' : 'show the release tables for every recording in this group') + '">'
             + '▤' + '</span>')
         // #762: ask acoustid.org again, after fixing a wrong link there
-        + '<span class="fs-acref' + (group.acRefreshing ? ' fs-acref-busy' : '') + '" data-act="refresh-acoustid" title="'
-            + (group.acRefreshing ? 'checking AcoustIDs…' : 'check the AcoustIDs of this group again on acoustid.org, after fixing a wrong link there') + '">↻</span>'
+        + '<span class="fs-acref' + (group.acRefreshing || group.mcChecking ? ' fs-acref-busy' : '') + '" data-act="refresh-acoustid" title="'
+            + (group.mcChecking ? 'checking ISRCs and AcoustIDs…' : group.acRefreshing ? 'checking AcoustIDs…' : 'check the AcoustIDs of this group again on acoustid.org, after fixing a wrong link there') + '">↻</span>'
         + noteBtn
-        + '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
-        + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span>'
+        + (embed ? (busy || done || group.state === 'error' ? '<span class="fs-mstate ' + stateCls + '">' + stateLabel + '</span>' : '')
+            + '<button class="fs-mcopen" type="button" data-act="mc-open" title="Open in Fusion: Fusion\'s window with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + ICON_URL + '"></button>'
+            : '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
+            + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span>')
         + '</div></div>'
         + (collapsed ? '' : '<div class="fs-grows">' + rows + '</div>' + errMsg) + '</div>';
 }
@@ -3675,7 +3684,9 @@ function renderPool() {
     if (STATE.selected) { const c = body.querySelector('[data-gid="' + STATE.selected + '"]'); if (c) c.classList.add('fs-selected'); }
     renderPoolCount();
 }
+let renderEmbeds = () => {};   // #790: Mission Control's adapter sets it
 function renderGroups() {
+    renderEmbeds();
     const body = document.getElementById('fs-groups-body'); if (!body) return;
     document.getElementById('fs-groups-cnt').textContent = String(STATE.groups.length);
     // #529 (majkinetor): "add number of recordings in the groups too … It shows
@@ -4488,13 +4499,15 @@ boot();
    board. */
 if (SCOPE.type === 'release') {
     const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
-    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open'] });
+    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open', 'embed'] });
     let mcGroups = new Map();   // recording gid of this release's track -> { g, byGid }
     let mcOwn = [];             // this release's recordings, from the last probe
     let mcByGid = new Map();    // the release group's recordings, from the last probe
     const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
     const parse = (e, what) => { try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
-    const membersOf = hit => hit.g.memberGids.map(x => hit.byGid.get(x)).filter(Boolean);
+    // the recordings the window knows are the ones its card, merge and AcoustID refresh read (STATE.recordings)
+    const membersOf = hit => hit.g.memberGids.map(x => STATE.recordings.get(x) || hit.byGid.get(x)).filter(Boolean);
+    const mcKnow = hit => hit.g.memberGids.forEach(gid => { if (!STATE.recordings.has(gid) && hit.byGid.has(gid)) STATE.recordings.set(gid, hit.byGid.get(gid)); });
     // one recording as MC's comparison shows it; rel is the release to name (this one, for our own track)
     const recInfo = (o, rel) => {
         rel = rel || o.releases[0] || {};
@@ -4547,6 +4560,7 @@ if (SCOPE.type === 'release') {
             }
             mcOwn = own.recordings;
             mcByGid = byGid;
+            mcCards.clear();
             const findings = mcOwn.map(mcFinding);
             Log.info('Mission Control probe answered: ' + (groups.length - dropped) + ' group(s), ' + findings.filter(f => f.state === 'new').length + ' track(s) with duplicates' + (dropped ? ', ' + dropped + ' group(s) dropped for a pending edit' : ''));
             done(findings);
@@ -4562,7 +4576,9 @@ if (SCOPE.type === 'release') {
         const hit = mcGroups.get(d.key);
         const update = o => mcSend('mc:update', Object.assign({ id: 'fusion', run: d.run, release: SCOPE.mbid, keys: [d.key] }, o));
         if (!hit) { update({ findings: [], error: 'that group is gone: fetch the release group again' }); return; }
+        mcKnow(hit);
         const members = membersOf(hit);
+        hit.g.mcChecking = true; renderEmbeds();
         try {
             Log.info('Mission Control: checking ISRCs and AcoustIDs of ' + members.length + ' recording(s) in the group of ' + d.key);
             await enrichIsrcs(members, 2);
@@ -4573,14 +4589,12 @@ if (SCOPE.type === 'release') {
         } catch (x) {
             Log.error('Mission Control check failed: ' + (x && x.message));
             update({ findings: [], error: 'the check failed: ' + (x && x.message) });
-        }
+        } finally { hit.g.mcChecking = false; renderEmbeds(); }
     });
     // open Fusion's window with this group on the board
-    document.addEventListener('mc:open', async e => {
-        const d = parse(e, 'open'); if (!d) return;
-        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
-        const hit = mcGroups.get(d.key);
-        if (!hit) { Log.warn('Mission Control open: no group for ' + d.key); return; }
+    async function mcOpen(key) {
+        const hit = mcGroups.get(key);
+        if (!hit) { Log.warn('Mission Control open: no group for ' + key); return; }
         await openFusion();
         const members = membersOf(hit);
         // each member into the pool first: out of any group it sits in, or added if the window never loaded it
@@ -4596,8 +4610,62 @@ if (SCOPE.type === 'release') {
         members.forEach(m => { if (m.gid !== target) addToGroup(m.gid, g.id); });
         g.target = target;
         STATE.activeGroupId = g.id;
-        Log.info('Mission Control opened the group of ' + d.key + ' in Fusion (' + g.memberGids.length + ' recordings)');
+        Log.info('Mission Control opened the group of ' + key + ' in Fusion (' + g.memberGids.length + ' recordings)');
         renderAll();
+    }
+    document.addEventListener('mc:open', e => {
+        const d = parse(e, 'open'); if (!d) return;
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        mcOpen(d.key);
+    });
+    // #790: Fusion's own group card in the slot Mission Control leaves under a track ([data-mc-slot="fusion"],
+    // data-key the track's recording). MC asks with mc:mount after each paint; a card is kept per track and
+    // moved into the slot again (a node keeps its state and listeners), and repainted whenever the board is.
+    const mcCards = new Map();   // track recording gid -> the card's element
+    const paintCard = (wrap, hit) => { wrap.innerHTML = groupCardHtml(hit.g, true); placeLenBadges(wrap); };
+    function mcCard(key, hit) {
+        const wrap = el('div', 'fs-embed'); wrap.dataset.key = key;
+        wrap.addEventListener('keydown', e => e.stopPropagation());   // the edit note is typed here, not into MC's keys
+        wrap.addEventListener('click', e => {
+            const t = e.target.closest('[data-act]'), act = t && t.dataset.act;
+            const h = mcGroups.get(key), g = h && h.g;
+            if (!act || !g) return;
+            const row = t.closest('.fs-grow');
+            if (act === 'mc-open') { mcOpen(key); return; }
+            if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+            if (act === 'toggle-all-details') {   // the group isn't on the board (toggleAllDetails finds it there): one recording at a time
+                const all = groupAllExpanded(g);
+                g.memberGids.filter(gid => all || !STATE.expandedReleases.has(gid)).forEach(gid => toggleReleaseDetails(gid));
+                return;
+            }
+            if (act === 'refresh-acoustid') { mcKnow(h); refreshGroupAcoustIds(g); return; }
+            if (act === 'set-target' && row) { g.target = row.dataset.gid; Log.info('Mission Control: merge target of the group of ' + key + ' is ' + g.target); renderEmbeds(); return; }
+            if (act === 'edit-note') { mcKnow(h); g.editing = true; renderEmbeds(); const ta = wrap.querySelector('.fs-note-ta'); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } return; }
+            if (act === 'note-save') {
+                const ta = wrap.querySelector('.fs-note-ta'), val = ta ? ta.value.trim() : '';
+                g.editNote = (!val || val === autoEditNote(g)) ? null : val;
+                g.editing = false;
+                Log.info('Edit note for the group of ' + key + (g.editNote ? ' set: ' + g.editNote.replace(/\n/g, ' ¶ ') : ' reset to auto'));
+                renderEmbeds(); return;
+            }
+            if (act === 'note-cancel') { g.editing = false; renderEmbeds(); return; }
+            if (act === 'note-clear') { g.editNote = null; g.editing = false; renderEmbeds(); return; }
+        });
+        mcKnow(hit);
+        paintCard(wrap, hit);
+        mcCards.set(key, wrap);
+        return wrap;
+    }
+    renderEmbeds = () => mcCards.forEach((wrap, key) => { const hit = mcGroups.get(key); if (hit && wrap.isConnected && !(hit.g.editing && wrap.contains(document.activeElement) && document.activeElement.classList.contains('fs-note-ta'))) paintCard(wrap, hit); });
+    document.addEventListener('mc:mount', e => {
+        const d = parse(e, 'mount'); if (!d) return;
+        if (d.id !== 'fusion' || (d.release && d.release !== SCOPE.mbid)) return;
+        document.querySelectorAll('[data-mc-slot="fusion"]').forEach(slot => {
+            const key = slot.dataset.key, hit = mcGroups.get(key);
+            if (!hit) { slot.textContent = 'Fusion has no group for this track: fetch the release group again'; return; }
+            const wrap = mcCards.get(key) || mcCard(key, hit);
+            if (wrap.parentNode !== slot) { slot.replaceChildren(wrap); placeLenBadges(wrap); }
+        });
     });
     document.addEventListener('mc:apply', async e => {
         const d = parse(e, 'apply'); if (!d) return;

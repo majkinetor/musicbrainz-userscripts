@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19.014504
+// @version      2026.10.19.114302
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -806,17 +806,10 @@ function mcStyle() {
         + '.mc-fxo:hover{border-color:var(--mbu-warn)}.mc-fxp{font-size:11px;font-weight:700;color:var(--mbu-warn);text-decoration:none}.mc-fxp:hover{text-decoration:underline}'
         + '.mc-fxo .car{display:inline-block;transition:transform .15s}.mc-fxo[aria-expanded="true"] .car{transform:rotate(90deg)}'
         + '.mc-tbl tr.mc-fxd{cursor:default}.mc-tbl tr.mc-fxd>td,.mc-tbl tr.mc-fxd:hover>td{background:var(--mbu-bg-sunken);white-space:normal;padding:10px 12px 12px 40px}'
-        + '.mc-fxh{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:8px;font-size:11.5px}.mc-fxh .sp{flex:1}'
-        + '.mc-fxc{font-size:11px;border-radius:5px;padding:1px 7px;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);background:var(--mbu-bg)}'
-        + '.mc-fxc.on{background:var(--mbu-ok-bg);color:var(--mbu-ok);border-color:var(--mbu-ok-border);font-weight:700}.mc-fxc.some{color:var(--mbu-ok);border-color:var(--mbu-ok-border)}.mc-fxc.unk{border-style:dashed}'
         + '.mc-fxt{font-size:11px;font-weight:700;border-radius:5px;padding:0 7px;border:1px solid var(--mbu-border);color:var(--mbu-text-weak);font-family:var(--mbu-font)}'
         + '.mc-fxt.strict{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}.mc-fxt.normal{color:var(--mbu-info);background:var(--mbu-info-bg);border-color:var(--mbu-info-border)}.mc-fxt.loose{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}'
-        + '.mc-fxwrap{overflow-x:auto}.mc-fxtbl{border-collapse:collapse;background:var(--mbu-bg);border:1px solid var(--mbu-border);font-size:12px}'
-        + '.mc-tbl .mc-fxtbl th{position:static;background:var(--mbu-bg-raised)}.mc-tbl .mc-fxtbl tr,.mc-tbl .mc-fxtbl tr:hover td{cursor:default;background:var(--mbu-bg)}'
-        + '.mc-tbl .mc-fxtbl td{padding:5px 8px;vertical-align:top;background:var(--mbu-bg)}.mc-tbl .mc-fxtbl tr:last-child td{border-bottom:0}'
-        + '.mc-fxtbl .who{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mbu-text-weak)}'
         + '.mc-fxdiff{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:4px;padding:0 4px}.mc-fxs::after{content:" ✓";color:var(--mbu-ok)}'
-        + '.mc-fxn{margin-top:6px;font-size:11.5px;color:var(--mbu-text-weak)}.mc-isrcf>span:not(:last-child)::after{content:"-";opacity:.45}'
+        + '.mc-fxslot-old{font-size:11.5px;color:var(--mbu-text-weak)}.mc-isrcf>span:not(:last-child)::after{content:"-";opacity:.45}'
         + '.mc-fxm{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px 6px;margin:6px 0;background:var(--mbu-bg-raised)}'
         + '.mc-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;font-size:11.5px}.mc-kv>span:nth-child(odd){color:var(--mbu-text-weak)}'
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
@@ -1152,14 +1145,11 @@ function cellHtml(c, t) {
         + '\nCtrl-click: the whole track · Alt-click: the whole column · Ctrl+Alt-click: everything · drag: down the column">' + c.cell(x) + '</span>';
 }
 
-// Fusion's comparison (#680), the way a Fusion group shows it: the track's recording and each
-// match, with artist, release and track, length, ISRCs, AcoustIDs and open edits, what differs
-// marked, and the signal chips. A chip is lit when every pair agrees (Fusion's signalsAll), half
-// lit when some do, dashed when it wasn't looked up. Fusion looks those up by itself once it answers
-// (fxAutoCheck): ISRCs and AcoustIDs are what a merge stands on, so no button per group.
+// Fusion's comparison (#680) under the track is Fusion's own group card (#790): MC leaves a slot
+// ([data-mc-slot="fusion"]) and asks Fusion to fill it (mc:mount), as Art Station fills the cover-art
+// card's (#784), so the card never differs from the one on Fusion's board. Fusion looks the ISRCs and
+// AcoustIDs up by itself once it answers (fxAutoCheck): they are what a merge stands on.
 const FX_SHOWN = { new: 1 };
-const FX_SIGNALS = [['isrc', 'ISRC'], ['acoustid', 'AcoustID'], ['length', 'Length'], ['title', 'Title'], ['artist', 'Artist']];
-const FX_TIER = { strict: 'holds at the strict cutoff: ISRC or AcoustID', normal: 'holds at the normal cutoff: title and artist, with the length', loose: 'holds only at the loose cutoff: title with the artist or the length', manual: 'no cutoff forms it' };
 const fxReleases = x => (x.matches || []).map(m => m.release || '').filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 2).join(', ');
 const fxRel = m => (m.release || '?') + (m.pos ? ' · ' + m.pos + (m.of ? '/' + m.of : '') : '') + (m.more ? ' +' + m.more : '');
 const fxLenDiff = (me, m) => {
@@ -1257,36 +1247,6 @@ function pfRows(x, t, heads) {
             plat: ccIcons(v.keys),
         }, n === vs.length - 1 ? 'last' : '');
     }).join('');
-}
-function fxDetail(x) {
-    const me = x.self || null, ck = x.checked || {}, all = x.signals || [], any = x.any || [];
-    const need = [!ck.isrc && 'ISRC', !ck.acoustid && 'AcoustID'].filter(Boolean);
-    const chips = FX_SIGNALS.map(([k, label]) => {
-        const lit = all.includes(k), some = !lit && any.includes(k), unk = !lit && !some && ((k === 'isrc' && !ck.isrc) || (k === 'acoustid' && !ck.acoustid));
-        const tip = lit ? 'Every pair in the group agrees' : some ? 'Some pairs agree, not every one' : unk ? (fxBusy.has(x.key) ? 'Being looked up' : 'Not looked up') : 'No pair agrees';
-        return '<span class="mc-fxc' + (lit ? ' on' : some ? ' some' : unk ? ' unk' : '') + '" title="' + tip + '">' + label + (unk ? ' ?' : '') + '</span>';
-    }).join('');
-    const ids = (list, mine, known, short) => list == null || (!known && !list.length) ? '<span class="weak">not checked</span>'
-        : list.map(v => '<span' + (mine && mine.includes(v) ? ' class="mc-fxs"' : '') + ' title="' + esc(v) + '">' + (short ? esc(v.slice(0, 8) + '…') : isrcHtml(v)) + '</span>').join('<br>') || '<span class="weak">none</span>';
-    const row = (who, m, other) => {
-        const diff = (a, b, v) => other && a !== b ? '<span class="mc-fxdiff">' + v + '</span>' : v;
-        return '<tr><td class="who">' + who + '</td>'
-            + '<td><a target="_blank" href="/recording/' + esc(m.gid) + '">' + diff(m.title, me && me.title, esc(m.title || '?')) + '</a> <span class="mono weak">' + esc((m.gid || '').slice(0, 8)) + '</span></td>'
-            + '<td>' + diff(m.artist, me && me.artist, esc(m.artist || '?')) + '</td>'
-            + '<td>' + esc(fxRel(m)) + '</td>'
-            + '<td class="mono">' + esc(m.len || '?') + (other ? fxLenDiff(me, m) : '') + '</td>'
-            + '<td class="mono">' + ids(m.isrcs, other && me && me.isrcs, ck.isrc) + '</td>'
-            + '<td class="mono">' + ids(m.acoustids, other && me && me.acoustids, ck.acoustid, true) + '</td>'
-            + '<td>' + (m.pending ? '<a class="mc-err" target="_blank" href="/recording/' + esc(m.gid) + '/open_edits">open edit</a>' : '<span class="weak">none</span>') + '</td></tr>';
-    };
-    const busy = fxBusy.has(x.key);
-    return '<div class="mc-fxh">' + (x.tier ? '<span class="mc-fxt ' + esc(x.tier) + '" title="' + esc('Fusion\'s tier: the group ' + (FX_TIER[x.tier] || '')) + '">' + esc(x.tier) + '</span>' : '')
-        + '<span class="weak">matched on</span>' + chips + '<span class="sp"></span>'
-        + (need.length && busy ? '<span class="weak">checking ' + need.join(' & ') + '…</span>' : '')
-        + fxOpenBtn(x) + '</div>'
-        + '<div class="mc-fxwrap"><table class="mc-fxtbl"><thead><tr><th></th><th>Recording</th><th>Artist</th><th>Release · track</th><th>Length</th><th>ISRCs</th><th>AcoustID</th><th>Edits</th></tr></thead><tbody>'
-        + (me ? row('this', me, false) : '') + (x.matches || []).map(m => row('match', m, !!me)).join('') + '</tbody></table></div>'
-        + (x.cutoff ? '<div class="mc-fxn">Matched at Fusion\'s <b>' + esc(x.cutoff) + '</b> cutoff, the one set in Fusion\'s window.</div>' : '');
 }
 // Once Fusion answers, each group missing ISRCs or AcoustIDs is checked, one group at a time (a few
 // requests each), so the comparisons fill in as they come. A track in a group already asked for is
@@ -1414,12 +1374,19 @@ function paintMatrix() {
         old.forEach(r => r.remove());
         if (show) tr.insertAdjacentHTML('afterend', mbuHtml(pfRows(x, t, heads)));
     });
+    // #790: a slot stays while its track's comparison is open, so Fusion's card in it isn't rebuilt on every paint
+    let mount = false;
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-fx]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.fx], x = S.fusion !== 'off' && t ? trackFinding('fusion', t.rec) : null;
-        const show = !!(x && FX_SHOWN[x.state] && fxOpen.has(x.key));
+        const show = !!(x && FX_SHOWN[x.state] && fxOpen.has(x.key)), td = tr.firstElementChild, slot = td.firstElementChild;
         tr.hidden = !show;
-        tr.firstElementChild.innerHTML = mbuHtml(show ? fxDetail(x) : '');
+        if (!show) { if (slot) td.textContent = ''; return; }
+        mount = true;
+        if (slot && slot.dataset.key === x.key) return;
+        td.innerHTML = mbuHtml(fxCan('embed') ? '<div class="mc-fxslot" data-mc-slot="fusion" data-key="' + esc(x.key) + '"></div>'
+            : '<div class="mc-fxslot-old">This Fusion is too old to show its group here: update it, or ' + (fxCan('open') ? 'open the group in Fusion ' + fxOpenBtn(x) : 'open Fusion') + '</div>');
     });
+    if (mount && fxCan('embed')) document.dispatchEvent(new CustomEvent('mc:mount', { detail: JSON.stringify({ id: 'fusion', release: RELEASE }) }));
 }
 function matrix() {
     const sec = el('section', 'mc-sect');
