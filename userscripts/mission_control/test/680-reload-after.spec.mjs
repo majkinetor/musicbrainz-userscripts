@@ -24,6 +24,9 @@ test('#680: reload the release page after an Execute without errors', { tag: ['@
       setTimeout(() => send('mc:applied', window.__fail ? { id: d.id, run: d.run, ok: false, note: 'stand-in failure' } : { id: d.id, run: d.run, ok: true, sent: 1, note: 'stand-in' }), 20);
     });
     send('mc:provider', { id: 'pc', name: 'pc', version: 1, capabilities: ['probe', 'apply'] });
+    // #792: First Contact reads the link without a barcode (an album it can't compare), so it is selected
+    document.addEventListener('mc:read', e => { const d = JSON.parse(e.detail); setTimeout(() => send('mc:read-result', { url: d.url, run: d.run, ok: true, provider: { id: 'deezer' }, rel: { title: 'x', mediums: [] }, ms: 1 }), 10); });
+    send('mc:provider', { id: 'fc', name: 'fc', version: 1, capabilities: ['read'] });
   });
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19.164228
+// @version      2026.10.19.202122
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -109,6 +109,7 @@ document.addEventListener('mc:provider', e => {
     try { d = JSON.parse(e.detail); } catch (x) { Log.warn('mc:provider with unreadable detail: ' + x.message); return; }
     if (!d || !d.id) { Log.warn('mc:provider without an id'); return; }
     found[d.id] = d;
+    if (d.id === 'fc' && !CONS && results.pc) setTimeout(pcVet, 0);   // #792: the links held for want of it
     Log.info('provider ' + d.id + ' answered: ' + (d.name || '?') + ' v' + (d.version || '?') + ' · ' + JSON.stringify(d.capabilities || []));
     if (ui) { paintBadges(); paintReleaseCredits(); fitCards(); }
 });
@@ -173,6 +174,7 @@ document.addEventListener('mc:findings', e => {
     noteProbeDone();
     if (d.id === 'fusion') fxAutoCheck();
     if (d.id === 'pc' && CMP.waiting) cmpStart();   // #782: the comparison waited for Platform Check's platforms
+    if (d.id === 'pc' && !CONS) pcVet();   // #792
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncLinks();
@@ -1135,7 +1137,7 @@ function linksCell(t) {
 }
 const PICKABLE = { new: 1, withheld: 1, unsure: 1 };
 // what a lane's "take all in" takes: not a link whose track count or format says it is another release (#709)
-const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);   // #740: never a catalog number or a label
+const laneTakes = x => PICKABLE[x.state] && !x.mismatch && !x.other && !['barcode', 'catno', 'label', 'event', 'lengths'].includes(x.kind);   // #740: never a catalog number or a label
 function cellHtml(c, t) {
     const p = PROVIDERS.find(x => x.id === c.p), r = results[c.p];
     if (r && r.state === 'busy') return '<span class="pend">…</span>';
@@ -3498,7 +3500,7 @@ function ccBuildSources() {
     for (const f of CC.pc.findings) {
         if (!f.url || out.some(s => s.key === f.key)) continue;   // the source's own platform: the album read stands
         const old = was.get(f.key);
-        out.push({ key: f.key, url: f.url, barcode: f.barcode || null, tracks: f.tracks == null ? null : f.tracks, format: f.format || null, links: f.links || null, mismatch: f.mismatch || null, why: f.why || null, state: f.state, role: 'found', take: old ? old.take : null, read: old && old.url === f.url ? old.read : { state: 'none' } });
+        out.push({ key: f.key, url: f.url, barcode: f.barcode || null, tracks: f.tracks == null ? null : f.tracks, format: f.format || null, links: f.links || null, mismatch: f.mismatch || null, why: f.why || null, state: f.state, role: 'found', take: old ? old.take : null, hand: !!(old && old.hand), read: old && old.url === f.url ? old.read : { state: 'none' } });
     }
     CC.sources = out;
     // the source's lane is taken; a platform with no barcode joins it when it has as many tracks
@@ -3558,9 +3560,11 @@ document.addEventListener('mc:read-result', e => {
     if (d.ok && d.rel) {
         s.read = { state: 'done', rel: d.rel, provider: d.provider, ms: d.ms };
         Log.ok('read ' + ccName(s.key) + ' in ' + d.ms + ' ms: "' + d.rel.title + '" · ' + ccCount(d.rel) + ' track(s) · barcode ' + (d.rel.barcode || ('—' + (s.barcode ? ', Platform Check found ' + s.barcode : ''))));
+        ccTracklistCheck(s);
     } else {
         s.read = { state: 'failed', error: d.error || 'failed' };
         Log.warn('read ' + ccName(s.key) + ' failed: ' + s.read.error);
+        pcVetFailed(s);
     }
     ccPump();
 });
@@ -3689,6 +3693,126 @@ function ccDiff(v, w) {
     if (v.isrc && w.isrc && v.isrc !== w.isrc) out.push('the ISRC');
     return out;
 }
+// #792: a platform taken on its track count alone (no barcode) may be another album with as many
+// tracks. Once read, its tracks are lined up by position with the release's (on a probe) or the
+// source's (a consolidation): it is another release when fewer than half the titles match and
+// fewer than half the lengths, both; a translated or transliterated tracklist keeps its lengths.
+// Without lengths to compare, only when no title matches. A barcode that matches outweighs it.
+const ccTitleKey = t => ccNorm(String(t || '').replace(/\s*[([][^)\]]*[)\]]/g, ' '));
+const CC_LEN_SLACK = 3000;
+function ccTracklistRef() {
+    if (CONS) { const s = CC.sources[0]; return s && s.read.state === 'done' ? s.read.rel.mediums.flatMap(m => m.tracks).map(t => ({ title: t.title, ms: t.lengthMs || null })) : null; }
+    return rel && rel.tracks ? rel.tracks.map(t => ({ title: t.title, ms: pfMs(t.len) })) : null;
+}
+// what a read platform's tracklist says: null when it can't be compared (another track count, nothing to
+// compare with), else whether it is another release's and why
+function ccTracklistVerdict(s) {
+    const ref = ccTracklistRef(), list = s.read.rel.mediums.flatMap(m => m.tracks);
+    if (!ref || !ref.length || list.length !== ref.length) { Log.debug('tracklist ' + ccName(s.key) + ': not compared (' + list.length + ' tracks, ' + (ref ? ref.length : 'no') + ' to compare with)'); return null; }
+    let titles = 0, lens = 0, lensOk = 0;
+    const off = [];
+    list.forEach((t, i) => {
+        const a = ccTitleKey(t.title), b = ccTitleKey(ref[i].title);
+        const same = !!a && !!b && (a === b || a.startsWith(b) || b.startsWith(a));
+        if (same) titles++;
+        const ms = t.lengthMs || null, rms = ref[i].ms;
+        if (ms && rms) { lens++; if (Math.abs(ms - rms) <= CC_LEN_SLACK) lensOk++; }
+        if (!same) off.push((i + 1) + ' "' + t.title + '" for "' + ref[i].title + '"' + (ms && rms ? ' (' + ccLen(ms) + ' for ' + ccLen(rms) + ')' : ''));
+    });
+    const n = list.length;
+    let other = lens * 2 >= n ? titles * 2 < n && lensOk * 2 < lens : titles === 0;
+    const why = 'another tracklist: ' + titles + ' of ' + n + ' titles' + (lens ? ', ' + lensOk + ' of ' + lens + ' lengths' : '') + ' match';
+    Log.debug('tracklist ' + ccName(s.key) + ': ' + titles + '/' + n + ' titles, ' + lensOk + '/' + lens + ' lengths match the ' + (CONS ? 'source\'s' : 'release\'s') + ' → ' + (other ? 'another release' : 'this release') + (off.length ? ' · differ: ' + off.slice(0, 5).join('; ') + (off.length > 5 ? '; …' : '') : ''));
+    const bc = ccBc(s.read.rel.barcode || s.barcode), own = CONS ? ccBc(CC.sources[0].barcode) : pcOwnBc();
+    if (other && bc && own && bc === own) { Log.warn(ccName(s.key) + ': ' + why + ', but its barcode is the release\'s, so it stays'); other = false; }
+    return { other, why };
+}
+function ccTracklistCheck(s) {
+    if (s.role === 'source' || s.read.state !== 'done') return;
+    const v = ccTracklistVerdict(s);
+    if (!CONS) { pcVetSet(s.url, v ? (v.other ? { state: 'other', why: v.why } : { state: 'ok' }) : { state: 'ok' }, s.read.rel); }
+    if (!v || !v.other) return;
+    s.read.other = v.why;
+    if (s.hand) { Log.warn(ccName(s.key) + ': ' + v.why + ', but it was taken by hand, so it stays'); return; }
+    s.take = false;
+    Log.warn(ccName(s.key) + ' left out: ' + v.why + ' (' + s.url + ')');
+}
+
+// #792: on a probe, a platform Platform Check would take on its track count alone is no selected album link
+// until First Contact has read it and its tracklist is the release's: Art Station and ISRC Scout aren't asked
+// with it, and Execute doesn't add it. Those platforms are read on every probe, whatever the Platforms step's
+// mode (the full comparison reads them all); without First Contact they stay unselected. A tracklist checked
+// is kept for the page, so a probe or a comparison after doesn't read the platform again.
+const VET = new Map();   // album url → { state: 'reading' | 'ok' | 'other' | 'failed' | 'unread', why, rel, at }
+const VET_RUN = 'v' + Date.now().toString(36);
+function pcOwnBc() {
+    const pc = results.pc;
+    if (!pc || pc.state !== 'done') return '';
+    return ccBc(pc.barcode) || ccBc((pc.findings.find(x => !x.entity && !x.kind && x.state === 'linked' && x.barcode) || {}).barcode);
+}
+// a link Platform Check is sure of on its track count alone: no barcode, or the release has none to match
+function pcDoubtful(x, own) {
+    if (x.entity || x.kind || !x.url || x.state !== 'new' || x.mismatch || x.cons) return false;   // a consolidation checked its own
+    if (x.tracks != null && rel && x.tracks !== rel.tracks.length) return false;
+    return !own || !ccBc(x.barcode);
+}
+const fcCanRead = () => !!found.fc && !providerOff('fc');
+function pcVetSet(url, v, rd) {
+    const was = VET.get(url);
+    VET.set(url, Object.assign({}, v, { rel: rd || (was && was.rel) || null }));
+    pcVet();
+}
+function pcVet() {
+    const r = results.pc, set = picked.pc;
+    if (CONS || !r || r.state !== 'done' || !set) return;
+    const own = pcOwnBc(), held = [];
+    const afterOff = AFTER && ('pc' in AFTER.ticks) && !AFTER.ticks.pc;
+    (r.findings || []).forEach(x => {
+        if (!pcDoubtful(x, own)) return;
+        if (x.whyPc === undefined) x.whyPc = x.why || '';
+        let v = VET.get(x.url);
+        if (!v) {
+            v = !ccReadable(x.key) ? { state: 'unread', why: ccName(x.key) + ' can\'t be read, so its tracklist isn\'t checked' }
+                : !fcCanRead() ? { state: 'unread', why: 'First Contact isn\'t ' + (found.fc ? 'on' : 'installed') + ', so its tracklist isn\'t checked' }
+                : { state: 'reading', why: 'unselected until First Contact has read its tracklist', at: Date.now() };
+            if (v.state === 'reading') {
+                VET.set(x.url, v);
+                // the comparison reads it already: its check gives the answer
+                const cs = CC.sources.find(c => c.url === x.url && c.take && ['queued', 'reading', 'done'].includes(c.read.state));
+                if (cs) Log.debug('tracklist ' + ccName(x.key) + ': the comparison reads it'); else pcVetRead(x);
+            }
+        } else if (v.state === 'unread' && ccReadable(x.key) && fcCanRead()) {
+            VET.delete(x.url); return pcVet();
+        }
+        const note = v.state === 'ok' ? '' : v.state === 'other' ? v.why : v.state === 'failed' ? 'its tracklist couldn\'t be read (' + v.why + ')' : v.why;
+        x.other = v.state === 'other';   // a lane's "take all in" passes it by
+        x.held = v.state !== 'ok';
+        x.why = [x.whyPc, note].filter(Boolean).join(' · ');
+        if (v.state === 'ok') { if (!x.vetted && !afterOff) { x.vetted = true; if (!set.has(x.key)) { set.add(x.key); Log.info('Platform Check: ' + ccName(x.key) + ' selected, its tracklist is the release\'s'); } } }
+        else if (!x.unpicked) { x.unpicked = true; if (set.delete(x.key)) held.push(ccName(x.key) + ' (' + note + ')'); }
+    });
+    if (held.length) Log.info('Platform Check: unselected ' + held.join(', '));
+    if (ui) paintAll();
+    syncLinks();
+}
+function pcVetFailed(s) { const v = !CONS && VET.get(s.url); if (v && v.state === 'reading') pcVetSet(s.url, { state: 'failed', why: s.read.error }); }
+function pcVetRead(x) {
+    Log.info('reading ' + ccName(x.key) + ' to check its tracklist: ' + x.url);
+    document.dispatchEvent(new CustomEvent('mc:read', { detail: JSON.stringify({ url: x.url, run: VET_RUN }) }));
+    setTimeout(() => { const v = VET.get(x.url); if (v && v.state === 'reading') { Log.warn('read ' + ccName(x.key) + ': no answer'); pcVetSet(x.url, { state: 'failed', why: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }); } }, CC_READ_WAIT);
+}
+document.addEventListener('mc:read-result', e => {
+    let d; try { d = JSON.parse(e.detail); } catch (x) { return; }
+    if (!d || d.run !== VET_RUN) return;
+    const v = VET.get(d.url), x = results.pc && (results.pc.findings || []).find(f => f.url === d.url);
+    if (!v || v.state !== 'reading') return;
+    const key = x ? x.key : (d.provider && d.provider.id) || '?';
+    if (!d.ok || !d.rel) { Log.warn('read ' + ccName(key) + ' failed: ' + (d.error || 'failed')); pcVetSet(d.url, { state: 'failed', why: d.error || 'failed' }); return; }
+    Log.ok('read ' + ccName(key) + ' in ' + d.ms + ' ms: "' + d.rel.title + '" · ' + ccCount(d.rel) + ' track(s) · barcode ' + (d.rel.barcode || '—'));
+    const vd = ccTracklistVerdict({ key, url: d.url, barcode: x ? x.barcode : null, read: { state: 'done', rel: d.rel } });
+    if (vd && vd.other) Log.warn(ccName(key) + ' left out: ' + vd.why + ' (' + d.url + ')');
+    pcVetSet(d.url, vd && vd.other ? { state: 'other', why: vd.why } : { state: 'ok' }, d.rel);
+});
 function ccModel() {
     const reads = ccRead();
     return { reads, fields: reads.length ? ccFields(reads) : null, tracks: ccTracks(reads) };
@@ -3869,7 +3993,7 @@ function ccSideHtml() {
         l.list.forEach(s => {
             const r = s.read;
             const meta = s.role === 'source' ? ['', 'source · ' + s.tracks + ' tracks']
-                : !s.take ? ['', s.mismatch && s.mismatch.length ? ccMismatch(s.mismatch) : s.tracks != null ? s.tracks + ' tracks' : '']
+                : !s.take ? [r.other ? 'warn' : '', r.other || (s.mismatch && s.mismatch.length ? ccMismatch(s.mismatch) : s.tracks != null ? s.tracks + ' tracks' : '')]
                 : !ccReadable(s.key) ? ['warn', 'link only']
                 : r.state === 'reading' ? ['busy', 'reading' + (r.total ? ' ' + r.n + '/' + r.total : '…')]
                 : r.state === 'queued' ? ['busy', 'waiting']
@@ -4016,8 +4140,8 @@ function ccOnClick(e) {
         case 'take': {
             const s = CC.sources.find(x => x.key === a.dataset.k);
             if (!s || s.role === 'source') return;
-            s.take = a.checked;
-            Log.info(ccName(s.key) + (s.take ? ' taken in' : ' left out'));
+            s.take = a.checked; s.hand = true;
+            Log.info(ccName(s.key) + (s.take ? ' taken in' : ' left out') + ' by hand');
             if (s.take) ccReadTaken(); else ccPaint();
             return;
         }
@@ -4120,7 +4244,7 @@ function ccOpen() {
     ccClock = setInterval(() => {
         if (!CC.ui) return;
         // a read that hasn't been heard from in a while has failed (First Contact gone, or a request that hangs)
-        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); ccPump(); } });
+        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); pcVetFailed(s); ccPump(); } });
         if (CC.pc.state === 'busy') ccPaintSteps();
     }, 1000);
     ccPaint();
@@ -4308,15 +4432,16 @@ function cmpStart() {
     CC.sources = links.map(x => {
         const bc = ccBc(x.barcode), count = x.tracks == null || x.tracks === n;
         return { key: x.key, url: x.url, barcode: x.barcode || null, tracks: x.tracks == null ? null : x.tracks, format: x.format || null, mismatch: x.mismatch || null, state: x.state,
-            role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: { state: 'none' } };
+            role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: VET.get(x.url) && VET.get(x.url).rel ? { state: 'done', rel: VET.get(x.url).rel, provider: { id: x.key }, ms: 0 } : { state: 'none' } };
     });
+    CC.sources.forEach(s => { if (s.read.state === 'done') { Log.debug('platforms: ' + ccName(s.key) + ' read already, for its tracklist'); ccTracklistCheck(s); } });
     const want = CC.sources.filter(s => s.take && ccReadable(s.key));
     Log.info('platforms: ' + CC.sources.map(s => s.key + (s.take ? (ccReadable(s.key) ? '✓' : '·unread') : '·') + (s.barcode ? ' ' + s.barcode : '') + (s.tracks != null ? ' ' + s.tracks + 't' : '')).join(' | ') + ' · the release\'s barcode ' + (own || '—'));
     if (!want.length) { cmpDone(CC.sources.length ? 'no platform of this release to read' : 'Platform Check found no platform'); return; }
     results.fc.note = 'read 0 of ' + want.length;
     // a read not heard from in a while has failed (First Contact gone, or a request that hangs)
     CMP.timer = setInterval(() => {
-        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); ccPump(); } });
+        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); pcVetFailed(s); ccPump(); } });
     }, 1000);
     ccReadTaken();
 }
