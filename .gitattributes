@@ -1,0 +1,4 @@
+# Every text file is LF, in the repo and in the working tree, whatever core.autocrlf says (Git for
+# Windows sets it true): the builds compare file text, and a checkout with CRLF next to an LF file
+# built a bundle unlike CI's. Binaries are detected and left alone.
+* text=auto eol=lf
