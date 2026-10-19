@@ -9,7 +9,7 @@ test.use({ gm: { name: 'First Contact' } });
 
 const ALBUM = 'https://www.deezer.com/en/album/302127';
 
-test('Consolidate stores the album for Mission Control and opens its page', { tag: ['@web', '@critical', '@flaky'] }, async ({ page, inject }) => {
+test('Consolidate stores the album for Mission Control and opens its page', { tag: ['@web', '@critical'] }, async ({ page, inject }) => {
   await page.route(ALBUM, r => r.fulfill({ contentType: 'text/html', body: '<!doctype html><title>album</title><body><h1>album</h1></body>' }));
   await page.goto(ALBUM);
   await inject('first_contact', { waitFor: '__fcTest' });
