@@ -7,6 +7,8 @@ import { test, check, until } from '../../../dev/test/harness.mjs';
 test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 2, reloadAfter: false }) } }, pageErrors: ['MB is not defined'] });
 
 const RELEASE = '1c0d1707-e032-48a4-acd8-dbaac77be17f';   // Journey Inwards, linked to discogs.com/release/1118432 (front and back)
+// Only the back may be in this release's archive on test (772-mc-dup-unprocessed needs it): with the front there too,
+// both store images are "in archive" and there is nothing to take in (seen 2026-10-19; an Execute had entered it)
 
 test('#784: the gallery shows in the card, scrolls with it and goes full screen', { tag: ['@sandbox', '@web'] }, async ({ page, inject }) => {
   test.setTimeout(240_000);
