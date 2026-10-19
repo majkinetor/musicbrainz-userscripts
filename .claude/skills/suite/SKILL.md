@@ -20,6 +20,7 @@ The runner allows one worker: all specs share one logged-in profile, and MusicBr
 1. `git pull` on `main`, and note the starting commit. Leave the working tree clean.
 2. Make the recheck profile from the real one while no browser has it open: `rm -rf .pw-profile-recheck && cp -r .pw-profile .pw-profile-recheck`. The copy comes out signed out (seen 2026-10-16: every `@login` spec skipped), so sign it in too: `PW_PROFILE=.pw-profile-recheck node dev/test/login.mjs sandbox --auto`.
 3. Check the login of both profiles: run one `@login` spec on each. A signed-out profile skips specs instead of failing them, so the run looks green. When one is signed out, run `login.mjs sandbox --auto` for it (with its `PW_PROFILE`). A recheck that reports only skips is the same thing: sign in and rerun it.
+   Sign Firefox's profile in too, for Falcon's Firefox specs: `node dev/test/login.mjs sandbox --firefox --auto`. Signed out, they skip in the main run (seen 2026-10-19).
 4. Write down the `@flaky` specs (`grep -rn "@flaky" userscripts dev --include=*.spec.mjs`) and the nightly history (`git fetch origin test-history && node dev/test/flaky-report.mjs`), so a failure can be compared with its past.
 5. Start a ledger in the scratchpad (`suite-ledger.md`): one row per spec that fails, with its state, which gets updated as it changes.
 
