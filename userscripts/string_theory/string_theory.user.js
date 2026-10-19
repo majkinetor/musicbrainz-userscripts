@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.19.200035
+// @version      2026.10.19.202201
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -131,8 +131,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.19.200035 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.18.213751\n  · Art Station v2026.10.19.164228\n  · Credit Hoarder v2026.10.17.232714\n  · Falcon v2026.10.19.154206\n  · First Contact v2026.10.19\n  · Fusion v2026.10.19.164228\n  · Group Therapy v2026.10.17.231850\n  · ISRC Scout v2026.10.19\n  · Mammoth v2026.10.17.231850\n  · Mission Control v2026.10.19.195440\n  · Platform Check v2026.10.19");
+  console.log('%c String Theory %c v2026.10.19.202201 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.18.213751\n  · Art Station v2026.10.19.164228\n  · Credit Hoarder v2026.10.17.232714\n  · Falcon v2026.10.19.154206\n  · First Contact v2026.10.19\n  · Fusion v2026.10.19.164228\n  · Group Therapy v2026.10.17.231850\n  · ISRC Scout v2026.10.19\n  · Mammoth v2026.10.17.231850\n  · Mission Control v2026.10.19.202122\n  · Platform Check v2026.10.19");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -140,7 +140,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.18.213751"],["art_station","Art Station","2026.10.19.164228"],["credit_hoarder","Credit Hoarder","2026.10.17.232714"],["falcon","Falcon","2026.10.19.154206"],["first_contact","First Contact","2026.10.19"],["fusion","Fusion","2026.10.19.164228"],["group_therapy","Group Therapy","2026.10.17.231850"],["isrc_scout","ISRC Scout","2026.10.19"],["mammoth","Mammoth","2026.10.17.231850"],["mission_control","Mission Control","2026.10.19.195440"],["platform_check","Platform Check","2026.10.19"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.18.213751"],["art_station","Art Station","2026.10.19.164228"],["credit_hoarder","Credit Hoarder","2026.10.17.232714"],["falcon","Falcon","2026.10.19.154206"],["first_contact","First Contact","2026.10.19"],["fusion","Fusion","2026.10.19.164228"],["group_therapy","Group Therapy","2026.10.17.231850"],["isrc_scout","ISRC Scout","2026.10.19"],["mammoth","Mammoth","2026.10.17.231850"],["mission_control","Mission Control","2026.10.19.202122"],["platform_check","Platform Check","2026.10.19"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -59490,7 +59490,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
 
 // ===== mission_control (@run-at document-end) ===================================
 if (__stOff.indexOf("mission_control") < 0 && __stRuns("mission_control", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.19.195440","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.19.195440","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.19.202122","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.19.202122","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -59594,6 +59594,7 @@ document.addEventListener('mc:provider', e => {
     try { d = JSON.parse(e.detail); } catch (x) { Log.warn('mc:provider with unreadable detail: ' + x.message); return; }
     if (!d || !d.id) { Log.warn('mc:provider without an id'); return; }
     found[d.id] = d;
+    if (d.id === 'fc' && !CONS && results.pc) setTimeout(pcVet, 0);   // #792: the links held for want of it
     Log.info('provider ' + d.id + ' answered: ' + (d.name || '?') + ' v' + (d.version || '?') + ' · ' + JSON.stringify(d.capabilities || []));
     if (ui) { paintBadges(); paintReleaseCredits(); fitCards(); }
 });
@@ -59610,7 +59611,7 @@ let fxCheckGen = 0;   // a newer Fusion answer stops the check queue of the one 
 let run = null;
 // #782: the comparison with the platforms (the Platforms step): waiting for Platform Check's platforms, what it
 // brings for Platform Check (cons) and ISRC Scout (isrcs, by track), the release's title on the platforms when it differs
-const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {}, own: '' };   // picks: track index → { title?, ms?, recording?, from }
+const CMP = { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {} };   // picks: track index → { title?, ms?, recording?, from }
 function busEvent(e, kind) {
     let d;
     try { d = JSON.parse(e.detail); } catch (x) { Log.warn(kind + ' with unreadable detail: ' + x.message); return null; }
@@ -59658,7 +59659,7 @@ document.addEventListener('mc:findings', e => {
     noteProbeDone();
     if (d.id === 'fusion') fxAutoCheck();
     if (d.id === 'pc' && CMP.waiting) cmpStart();   // #782: the comparison waited for Platform Check's platforms
-    else if (d.id === 'pc' && !CONS) pcDropOther();   // #792
+    if (d.id === 'pc' && !CONS) pcVet();   // #792
     findings.forEach(x => Log.debug('  ' + d.id + ' ' + x.key + ' ' + x.state + (x.why ? ' (' + x.why + ')' : '') + (x.url ? ' ' + x.url : '')));
     paintAll();
     syncLinks();
@@ -61765,6 +61766,7 @@ document.addEventListener('mc:read-result', e => {
     } else {
         s.read = { state: 'failed', error: d.error || 'failed' };
         Log.warn('read ' + ccName(s.key) + ' failed: ' + s.read.error);
+        pcVetFailed(s);
     }
     ccPump();
 });
@@ -61904,10 +61906,11 @@ function ccTracklistRef() {
     if (CONS) { const s = CC.sources[0]; return s && s.read.state === 'done' ? s.read.rel.mediums.flatMap(m => m.tracks).map(t => ({ title: t.title, ms: t.lengthMs || null })) : null; }
     return rel && rel.tracks ? rel.tracks.map(t => ({ title: t.title, ms: pfMs(t.len) })) : null;
 }
-function ccTracklistCheck(s) {
-    if (s.role === 'source' || s.read.state !== 'done') return;
+// what a read platform's tracklist says: null when it can't be compared (another track count, nothing to
+// compare with), else whether it is another release's and why
+function ccTracklistVerdict(s) {
     const ref = ccTracklistRef(), list = s.read.rel.mediums.flatMap(m => m.tracks);
-    if (!ref || !ref.length || list.length !== ref.length) { Log.debug('tracklist ' + ccName(s.key) + ': not compared (' + list.length + ' tracks, ' + (ref ? ref.length : 'no') + ' to compare with)'); return; }
+    if (!ref || !ref.length || list.length !== ref.length) { Log.debug('tracklist ' + ccName(s.key) + ': not compared (' + list.length + ' tracks, ' + (ref ? ref.length : 'no') + ' to compare with)'); return null; }
     let titles = 0, lens = 0, lensOk = 0;
     const off = [];
     list.forEach((t, i) => {
@@ -61919,33 +61922,99 @@ function ccTracklistCheck(s) {
         if (!same) off.push((i + 1) + ' "' + t.title + '" for "' + ref[i].title + '"' + (ms && rms ? ' (' + ccLen(ms) + ' for ' + ccLen(rms) + ')' : ''));
     });
     const n = list.length;
-    const other = lens * 2 >= n ? titles * 2 < n && lensOk * 2 < lens : titles === 0;
+    let other = lens * 2 >= n ? titles * 2 < n && lensOk * 2 < lens : titles === 0;
     const why = 'another tracklist: ' + titles + ' of ' + n + ' titles' + (lens ? ', ' + lensOk + ' of ' + lens + ' lengths' : '') + ' match';
     Log.debug('tracklist ' + ccName(s.key) + ': ' + titles + '/' + n + ' titles, ' + lensOk + '/' + lens + ' lengths match the ' + (CONS ? 'source\'s' : 'release\'s') + ' → ' + (other ? 'another release' : 'this release') + (off.length ? ' · differ: ' + off.slice(0, 5).join('; ') + (off.length > 5 ? '; …' : '') : ''));
-    if (!other) return;
-    const bc = ccBc(s.read.rel.barcode || s.barcode), own = CONS ? ccBc(CC.sources[0].barcode) : CMP.own;
-    if (bc && own && bc === own) { Log.warn(ccName(s.key) + ': ' + why + ', but its barcode is the release\'s, so it stays'); return; }
-    s.read.other = why;
-    if (s.hand) { Log.warn(ccName(s.key) + ': ' + why + ', but it was taken by hand, so it stays'); return; }
-    s.take = false;
-    Log.warn(ccName(s.key) + ' left out: ' + why + ' (' + s.url + ')');
-    if (!CONS) pcDropOther();
+    const bc = ccBc(s.read.rel.barcode || s.barcode), own = CONS ? ccBc(CC.sources[0].barcode) : pcOwnBc();
+    if (other && bc && own && bc === own) { Log.warn(ccName(s.key) + ': ' + why + ', but its barcode is the release\'s, so it stays'); other = false; }
+    return { other, why };
 }
-// on a probe, a platform left out for its tracklist is no selected album link of Platform Check's either:
-// Art Station and ISRC Scout aren't asked with it, and Execute doesn't add it
-function pcDropOther() {
+function ccTracklistCheck(s) {
+    if (s.role === 'source' || s.read.state !== 'done') return;
+    const v = ccTracklistVerdict(s);
+    if (!CONS) { pcVetSet(s.url, v ? (v.other ? { state: 'other', why: v.why } : { state: 'ok' }) : { state: 'ok' }, s.read.rel); }
+    if (!v || !v.other) return;
+    s.read.other = v.why;
+    if (s.hand) { Log.warn(ccName(s.key) + ': ' + v.why + ', but it was taken by hand, so it stays'); return; }
+    s.take = false;
+    Log.warn(ccName(s.key) + ' left out: ' + v.why + ' (' + s.url + ')');
+}
+
+// #792: on a probe, a platform Platform Check would take on its track count alone is no selected album link
+// until First Contact has read it and its tracklist is the release's: Art Station and ISRC Scout aren't asked
+// with it, and Execute doesn't add it. Those platforms are read on every probe, whatever the Platforms step's
+// mode (the full comparison reads them all); without First Contact they stay unselected. A tracklist checked
+// is kept for the page, so a probe or a comparison after doesn't read the platform again.
+const VET = new Map();   // album url → { state: 'reading' | 'ok' | 'other' | 'failed' | 'unread', why, rel, at }
+const VET_RUN = 'v' + Date.now().toString(36);
+function pcOwnBc() {
+    const pc = results.pc;
+    if (!pc || pc.state !== 'done') return '';
+    return ccBc(pc.barcode) || ccBc((pc.findings.find(x => !x.entity && !x.kind && x.state === 'linked' && x.barcode) || {}).barcode);
+}
+// a link Platform Check is sure of on its track count alone: no barcode, or the release has none to match
+function pcDoubtful(x, own) {
+    if (x.entity || x.kind || !x.url || x.state !== 'new' || x.mismatch || x.cons) return false;   // a consolidation checked its own
+    if (x.tracks != null && rel && x.tracks !== rel.tracks.length) return false;
+    return !own || !ccBc(x.barcode);
+}
+const fcCanRead = () => !!found.fc && !providerOff('fc');
+function pcVetSet(url, v, rd) {
+    const was = VET.get(url);
+    VET.set(url, Object.assign({}, v, { rel: rd || (was && was.rel) || null }));
+    pcVet();
+}
+function pcVet() {
     const r = results.pc, set = picked.pc;
-    if (!r || r.state !== 'done' || !set) return;
-    CC.sources.filter(s => s.read.other && !s.take).forEach(s => {
-        const x = (r.findings || []).find(f => !f.entity && f.key === s.key && f.url === s.url);
-        if (!x) return;
-        x.other = true;   // a lane's "select all" passes it by
-        if (!String(x.why || '').includes(s.read.other)) x.why = [x.why, s.read.other].filter(Boolean).join(' · ');
-        if (set.delete(x.key)) Log.info('Platform Check: ' + ccName(x.key) + ' unselected (' + s.read.other + ')');
+    if (CONS || !r || r.state !== 'done' || !set) return;
+    const own = pcOwnBc(), held = [];
+    const afterOff = AFTER && ('pc' in AFTER.ticks) && !AFTER.ticks.pc;
+    (r.findings || []).forEach(x => {
+        if (!pcDoubtful(x, own)) return;
+        if (x.whyPc === undefined) x.whyPc = x.why || '';
+        let v = VET.get(x.url);
+        if (!v) {
+            v = !ccReadable(x.key) ? { state: 'unread', why: ccName(x.key) + ' can\'t be read, so its tracklist isn\'t checked' }
+                : !fcCanRead() ? { state: 'unread', why: 'First Contact isn\'t ' + (found.fc ? 'on' : 'installed') + ', so its tracklist isn\'t checked' }
+                : { state: 'reading', why: 'unselected until First Contact has read its tracklist', at: Date.now() };
+            if (v.state === 'reading') {
+                VET.set(x.url, v);
+                // the comparison reads it already: its check gives the answer
+                const cs = CC.sources.find(c => c.url === x.url && c.take && ['queued', 'reading', 'done'].includes(c.read.state));
+                if (cs) Log.debug('tracklist ' + ccName(x.key) + ': the comparison reads it'); else pcVetRead(x);
+            }
+        } else if (v.state === 'unread' && ccReadable(x.key) && fcCanRead()) {
+            VET.delete(x.url); return pcVet();
+        }
+        const note = v.state === 'ok' ? '' : v.state === 'other' ? v.why : v.state === 'failed' ? 'its tracklist couldn\'t be read (' + v.why + ')' : v.why;
+        x.other = v.state === 'other';   // a lane's "take all in" passes it by
+        x.held = v.state !== 'ok';
+        x.why = [x.whyPc, note].filter(Boolean).join(' · ');
+        if (v.state === 'ok') { if (!x.vetted && !afterOff) { x.vetted = true; if (!set.has(x.key)) { set.add(x.key); Log.info('Platform Check: ' + ccName(x.key) + ' selected, its tracklist is the release\'s'); } } }
+        else if (!x.unpicked) { x.unpicked = true; if (set.delete(x.key)) held.push(ccName(x.key) + ' (' + note + ')'); }
     });
-    paintAll();
+    if (held.length) Log.info('Platform Check: unselected ' + held.join(', '));
+    if (ui) paintAll();
     syncLinks();
 }
+function pcVetFailed(s) { const v = !CONS && VET.get(s.url); if (v && v.state === 'reading') pcVetSet(s.url, { state: 'failed', why: s.read.error }); }
+function pcVetRead(x) {
+    Log.info('reading ' + ccName(x.key) + ' to check its tracklist: ' + x.url);
+    document.dispatchEvent(new CustomEvent('mc:read', { detail: JSON.stringify({ url: x.url, run: VET_RUN }) }));
+    setTimeout(() => { const v = VET.get(x.url); if (v && v.state === 'reading') { Log.warn('read ' + ccName(x.key) + ': no answer'); pcVetSet(x.url, { state: 'failed', why: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }); } }, CC_READ_WAIT);
+}
+document.addEventListener('mc:read-result', e => {
+    let d; try { d = JSON.parse(e.detail); } catch (x) { return; }
+    if (!d || d.run !== VET_RUN) return;
+    const v = VET.get(d.url), x = results.pc && (results.pc.findings || []).find(f => f.url === d.url);
+    if (!v || v.state !== 'reading') return;
+    const key = x ? x.key : (d.provider && d.provider.id) || '?';
+    if (!d.ok || !d.rel) { Log.warn('read ' + ccName(key) + ' failed: ' + (d.error || 'failed')); pcVetSet(d.url, { state: 'failed', why: d.error || 'failed' }); return; }
+    Log.ok('read ' + ccName(key) + ' in ' + d.ms + ' ms: "' + d.rel.title + '" · ' + ccCount(d.rel) + ' track(s) · barcode ' + (d.rel.barcode || '—'));
+    const vd = ccTracklistVerdict({ key, url: d.url, barcode: x ? x.barcode : null, read: { state: 'done', rel: d.rel } });
+    if (vd && vd.other) Log.warn(ccName(key) + ' left out: ' + vd.why + ' (' + d.url + ')');
+    pcVetSet(d.url, vd && vd.other ? { state: 'other', why: vd.why } : { state: 'ok' }, d.rel);
+});
 function ccModel() {
     const reads = ccRead();
     return { reads, fields: reads.length ? ccFields(reads) : null, tracks: ccTracks(reads) };
@@ -62377,7 +62446,7 @@ function ccOpen() {
     ccClock = setInterval(() => {
         if (!CC.ui) return;
         // a read that hasn't been heard from in a while has failed (First Contact gone, or a request that hangs)
-        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); ccPump(); } });
+        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); pcVetFailed(s); ccPump(); } });
         if (CC.pc.state === 'busy') ccPaintSteps();
     }, 1000);
     ccPaint();
@@ -62531,7 +62600,7 @@ if (mbuTestHooks()) window.__mccTest = { state: () => CC, model: ccModel, seedRe
 // ISRC Scout (the ISRCs, by track); a title that differs is shown, never applied.
 function cmpReset() {
     clearInterval(CMP.timer);
-    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {}, own: '' });
+    Object.assign(CMP, { waiting: false, cons: null, isrcs: null, title: null, timer: 0, picks: {} });
     CC.sources = []; CC.pc = { state: 'wait', note: '', findings: [], at: 0 }; CC.pick = {}; CC.rowPick = {};
     CC.run = 'c' + Date.now().toString(36);   // a read of the comparison before is dropped
 }
@@ -62559,22 +62628,22 @@ function cmpStart() {
     // the release's own lane: its barcode, else the one a linked platform gives; a platform without a barcode
     // joins it when it has as many tracks; one Platform Check marks as another release (mismatch) never
     const own = ccBc(pc.barcode) || ccBc((pc.findings.find(x => !x.entity && !x.kind && x.state === 'linked' && x.barcode) || {}).barcode);
-    CMP.own = own || '';
     const n = rel.tracks.length;
     const links = pc.findings.filter(x => !x.entity && !x.kind && x.url && x.state !== 'none');
     CC.pc = { state: 'done', note: '', findings: links, at: 0 };
     CC.sources = links.map(x => {
         const bc = ccBc(x.barcode), count = x.tracks == null || x.tracks === n;
         return { key: x.key, url: x.url, barcode: x.barcode || null, tracks: x.tracks == null ? null : x.tracks, format: x.format || null, mismatch: x.mismatch || null, state: x.state,
-            role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: { state: 'none' } };
+            role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: VET.get(x.url) && VET.get(x.url).rel ? { state: 'done', rel: VET.get(x.url).rel, provider: { id: x.key }, ms: 0 } : { state: 'none' } };
     });
+    CC.sources.forEach(s => { if (s.read.state === 'done') { Log.debug('platforms: ' + ccName(s.key) + ' read already, for its tracklist'); ccTracklistCheck(s); } });
     const want = CC.sources.filter(s => s.take && ccReadable(s.key));
     Log.info('platforms: ' + CC.sources.map(s => s.key + (s.take ? (ccReadable(s.key) ? '✓' : '·unread') : '·') + (s.barcode ? ' ' + s.barcode : '') + (s.tracks != null ? ' ' + s.tracks + 't' : '')).join(' | ') + ' · the release\'s barcode ' + (own || '—'));
     if (!want.length) { cmpDone(CC.sources.length ? 'no platform of this release to read' : 'Platform Check found no platform'); return; }
     results.fc.note = 'read 0 of ' + want.length;
     // a read not heard from in a while has failed (First Contact gone, or a request that hangs)
     CMP.timer = setInterval(() => {
-        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); ccPump(); } });
+        CC.sources.forEach(s => { if (s.read.state === 'reading' && Date.now() - s.read.at > CC_READ_WAIT) { s.read = { state: 'failed', error: 'no answer in ' + CC_READ_WAIT / 1000 + ' s' }; Log.warn('read ' + ccName(s.key) + ': no answer'); pcVetFailed(s); ccPump(); } });
     }, 1000);
     ccReadTaken();
 }

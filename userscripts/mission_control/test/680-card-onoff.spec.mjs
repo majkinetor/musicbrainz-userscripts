@@ -18,7 +18,7 @@ test('#680: a card switched off is left out of Execute', { tag: ['@sandbox'] }, 
     document.addEventListener('mc:probe', e => {
       const d = JSON.parse(e.detail);
       setTimeout(() => {
-        send('mc:findings', { id: 'pc', run: d.run, findings: [{ key: 'deezer', name: 'Deezer', url: 'https://www.deezer.com/album/1', state: 'new' }] });
+        send('mc:findings', { id: 'pc', run: d.run, findings: [{ key: 'deezer', name: 'Deezer', url: 'https://www.deezer.com/album/1', barcode: '0000000000017', state: 'new' }], barcode: '0000000000017' });
         send('mc:findings', { id: 'as', run: d.run, findings: [{ key: 'discogs', name: 'Discogs', url: 'https://www.discogs.com/release/1', state: 'new' }] });
       }, 50);
     });

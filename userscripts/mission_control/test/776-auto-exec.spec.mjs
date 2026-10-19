@@ -20,7 +20,7 @@ async function standIns(page, { isDelay = 1200 } = {}) {
     document.addEventListener('mc:discover', hello);
     document.addEventListener('mc:probe', e => {
       const d = JSON.parse(e.detail);
-      if (d.only.includes('pc')) setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, findings: [{ key: 'deezer', name: 'Deezer', url: 'https://www.deezer.com/album/1', state: 'new' }] }), 50);
+      if (d.only.includes('pc')) setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, findings: [{ key: 'deezer', name: 'Deezer', url: 'https://www.deezer.com/album/1', barcode: '0000000000017', state: 'new' }], barcode: '0000000000017' }), 50);
       if (d.only.includes('is')) setTimeout(() => send('mc:findings', { id: 'is', run: d.run, findings: [] }), isDelay);
     });
     document.addEventListener('mc:apply', e => {
