@@ -61,7 +61,9 @@ const runAtOf = meta => metaVal(meta, 'run-at') || 'document-end';
 const verOf = meta => metaVal(meta, 'version') || '0';
 const cmpVer = (a, b) => { const pa = a.split('.').map(Number), pb = b.split('.').map(Number); for (let i = 0; i < Math.max(pa.length, pb.length); i++) { const d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; } return 0; };
 
-const parts = MEMBERS.map(n => ({ n, ...parse(readFileSync(distOf(n), 'utf8'), n) }));
+// line endings as committed (LF), as the icon above: a Windows checkout has CRLF, and a member left with LF
+// (an edit tool that writes LF) then carried shared blocks unlike the others', written a second time (#786)
+const parts = MEMBERS.map(n => ({ n, ...parse(readFileSync(distOf(n), 'utf8').replace(/\r\n/g, '\n'), n) }));
 // #786: each shared block once, at the top; every member calls it for its own instance (share.mjs)
 const sizeBefore = parts.reduce((s, p) => s + Buffer.byteLength(p.body), 0);
 const shared = shareBlocks(parts);
@@ -270,7 +272,7 @@ gslug('Table of contents');
 const sections = [];
 for (const n of MEMBERS) {
   let md;
-  try { md = readFileSync(resolve(ROOT, `userscripts/${n}/README.md`), 'utf8'); }
+  try { md = readFileSync(resolve(ROOT, `userscripts/${n}/README.md`), 'utf8').replace(/\r\n/g, '\n'); }
   catch (e) { console.warn(`  ⚠ no README for "${n}" — skipped in DOCS.md`); continue; }
   md = md.replace(/\r\n/g, '\n');
   const heads = [...md.matchAll(/^#{1,6}\s+(.+?)\s*$/gm)].map(m => m[1]);
