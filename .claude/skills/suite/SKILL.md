@@ -1,11 +1,24 @@
 ---
 name: suite
-description: Run this repo's whole Playwright suite locally, script by script, and handle every failure as it comes - diagnose it at once, recheck it in a background task while the next script runs, fix what is broken on main, tag what is flaky @flaky, and drop @flaky from specs that have held. Use when asked to run the full suite, all tests, every spec, or to triage test failures and flaky specs.
+description: Run this repo's whole Playwright suite locally, script by script, and handle every failure as it comes - diagnose it at once, recheck it in a background task while the next script runs, fix what is broken on main, tag what is flaky @flaky, and drop @flaky from specs that have held. With `failures`, only the last recorded run's failures are worked; with `flaky`, only the flaky specs. Use when asked to run the full suite, all tests, every spec, or to triage test failures and flaky specs.
+argument-hint: "[failures [N] | flaky]"
 ---
 
 # Suite
 
 Runs every spec, one script (Playwright project) at a time, and deals with each failure while the next script is still running. Full autonomy, as the maintainer said (2026-10-16): fix, commit and push to `main` without asking, tag and untag `@flaky` without asking. Read [`dev/test/README.md`](../../../dev/test/README.md) first.
+
+## Modes
+
+The argument picks one: $ARGUMENTS
+
+| Argument       | What runs                                                                                     | Steps                         |
+| -------------- | --------------------------------------------------------------------------------------------- | ----------------------------- |
+| (none)         | the whole suite                                                                               | all                           |
+| `failures [N]` | the specs that failed in the newest recorded run, or in the newest `N` runs                   | [Failures only](#failures-only) |
+| `flaky`        | the `@flaky` specs, and the ones the history shows failing now and then                       | [Flaky only](#flaky-only)     |
+
+Neither narrowed mode is a full run, so neither is recorded in the test history (§7 step 2).
 
 ## Why script by script
 
@@ -84,3 +97,27 @@ When `=== all done` shows and the rechecks are drained:
 2. Record the main run in the test history, beside the nightly runs: `node dev/test/suite-record.mjs --commit <starting commit>`. It reads `test-results/suite/`, so record it before anything else runs there. Only a full run counts: every script (a `--from` resume included), started on a clean `main`. Skip it after `--only`, or a run of a branch. The rerun of step 1 isn't recorded; the main run's failures stand, as the nightly's do.
 3. Delete the recheck profile.
 4. Report in chat with one table: spec · verdict (fixed / flaky-tagged / flaky-fixed / untagged / environment / once / still broken) · what was done · commit link. Above it, put the counts (`=== all done` line) and the start → end commits. A spec that stays broken gets its error and what was tried.
+
+## Failures only
+
+`failures [N]`: no main run. The work list is the newest recorded run's failures, the nightly's or a local one, or every spec that failed in the newest `N` runs.
+
+1. Preflight steps 1 to 3 and 5 (§1).
+2. Make the list: `git fetch origin test-history`, then read `history.json` from that branch (`git show origin/test-history:history.json`). Runs are keyed by time, newest first. Each failure's `name` is `[<project>] <file> › <title>`: that gives the project, the spec file and the test title. With `N`, merge the newest `N` runs' failures and note how many of them each spec failed in. Put each one in the ledger with its recorded error.
+3. Run each one once, as it is, before you diagnose it: `npx playwright test --project=<p> <file> -g "<title>" --reporter=list --output=test-results/recheck/<p>`. `-g` is a regex, so escape `( ) [ ] . * + ? | ^ $ \` in the title. A spec that passes goes straight to the §4 recheck. One that fails is diagnosed (§3) from this run's report and artifacts.
+4. Recheck (§4), fix (§5) and give verdicts as usual, with the history as the tiebreaker. Two runs at once are still allowed, for two different scripts, one on each profile.
+5. Finish with §7 steps 1, 3 and 4. The table covers every spec on the list.
+
+## Flaky only
+
+`flaky`: no main run. It settles each flaky spec: untag it, fix it, or keep it tagged.
+
+1. Preflight steps 1 to 5 (§1).
+2. Make the list: every `@flaky` spec, plus every spec with a `flaky` row in `flaky-report --runs 10` that isn't tagged yet.
+3. Run each one `--repeat-each 10` on its own (the recheck command of §4 with 10 repeats). Two at once, for two different scripts, one on each profile.
+4. Give the verdict:
+   - **Tagged, 10/10 green, and no failure in the last 10 history runs**: drop `@flaky` (§6).
+   - **Tagged, still fails now and then**: look for the cause (§4, flaky). If you find it, fix it and prove it with another `--repeat-each 10`, then drop the tag. If not, it keeps the tag.
+   - **Fails every repeat**: broken. Fix it (§5).
+   - **Untagged, red in the history**: one red repeat, or a cause that you find, settles it. Fix the cause, or tag it `@flaky`. 10/10 green with no cause found leaves it as it is, and the table says it was green.
+5. Finish with §7 steps 3 and 4.
