@@ -35,7 +35,7 @@ test.describe('release group auto-select', () => {
   test('a title that differs only in punctuation still takes the group', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
     await openApollo(page, inject, { seed: { ...seed, name: 'Plays, the Truth' } });
     check(await until(() => rgGid(page), g => g === PLAYS_THE_TRUTH, { timeout: 60000 }) === PLAYS_THE_TRUTH, 'Plays the Truth is the release group');
-    const tip = await until(() => page.locator('#information .tc-ri-rgb .tc-badge').getAttribute('title').catch(() => ''), t => !!t);
+    const tip = await until(() => page.locator('#information .tc-ri-rgb .tc-badge').getAttribute('data-tip').catch(() => ''), t => !!t);
     check(/ignoring punctuation/.test(tip || ''), `the badge says the title was compared loosely: ${tip}`);
   });
 

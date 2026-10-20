@@ -43,13 +43,13 @@ test('#680: a selected Bandcamp album gives ISRC Scout its track links', { tag: 
   await pcRow.first().click();
   const asked = await until(() => page.evaluate(() => window.__isAsked), a => a.length === 2, { timeout: 5000 });
   check(JSON.stringify(asked[1]) === JSON.stringify([ALBUM]), `ticking it asks IS again, with the album (${JSON.stringify(asked)})`);
-  const bc = await until(async () => (await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[title*="bandcamp.com/track/"]').count()), n => n >= 5, { timeout: 120_000 });
+  const bc = await until(async () => (await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[data-tip*="bandcamp.com/track/"]').count()), n => n >= 5, { timeout: 120_000 });
   const tracks = await page.locator('#mc-root .mc-tbl tbody tr[data-i]').count();
   check(bc === tracks, `every track gets its Bandcamp link (${bc} of ${tracks})`);
   check(!(await page.evaluate(() => window.__isTest680 && window.__isTest680.release && window.__isTest680.release().bandcampUrl)), "IS's own release load keeps no Bandcamp link it doesn't have");
 
   // a found link opens on click and is taken in or left out on right-click
-  const lnk = page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[title*="bandcamp.com/track/"]').first();
+  const lnk = page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[data-tip*="bandcamp.com/track/"]').first();
   const was = await lnk.evaluate(el => el.classList.contains('on'));
   const [popup] = await Promise.all([page.waitForEvent('popup'), lnk.click()]);
   check(/bandcamp\.com\/track\//.test(popup.url()), `left-click opens the track link (${popup.url()})`);
@@ -62,7 +62,7 @@ test('#680: a selected Bandcamp album gives ISRC Scout its track links', { tag: 
 
   // unticking takes them away again
   await pcRow.first().click();
-  const gone = await until(async () => (await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[title*="bandcamp.com/track/"]').count()), n => n === 0, { timeout: 120_000 });
+  const gone = await until(async () => (await page.locator('#mc-root .mc-tbl td[data-col="links"] .mc-lnk[data-tip*="bandcamp.com/track/"]').count()), n => n === 0, { timeout: 120_000 });
   check(gone === 0, `unticking the album drops its track links (${gone} left)`);
   await page.screenshot({ path: 'test-results/mc-680-is-pc-links.png' });
   await ws.done();

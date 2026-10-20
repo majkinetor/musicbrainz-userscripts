@@ -91,8 +91,8 @@ export const row = (page, p) => page.evaluate(p => {
   return {
     exists: !!r, cls: r ? r.className : '', icon: ico ? ico.textContent.trim() : null,
     url: document.getElementById('mb-online-' + p)?.href || null,
-    value: document.getElementById('val-' + p)?.textContent.trim() || '', valueTitle: document.getElementById('val-' + p)?.title || '',
-    master: document.getElementById('master-' + p)?.title || '',
+    value: document.getElementById('val-' + p)?.textContent.trim() || '', valueTitle: document.getElementById('val-' + p)?.dataset.tip || '',
+    master: document.getElementById('master-' + p)?.dataset.tip || '',
     blocked: !!r?.classList.contains('pc-blocked'), clickable: !!(ico && ico.onclick),
   };
 }, p);

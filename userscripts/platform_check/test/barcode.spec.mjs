@@ -26,9 +26,9 @@ test.describe('default settings', () => {
     const busy = await btn();
     await scansDone(page);
     const done = await btn();
-    check(busy.spinning && busy.pe !== 'none' && /Scanning platforms… · click to stop/.test(busy.title), `#422, #674: while scanning, ↻ spins and a click stops the scan (${JSON.stringify(busy)})`);
+    check(busy.spinning && busy.pe !== 'none' && /Scanning the platforms…\nClick: stop/.test(busy.title), `#422, #674: while scanning, ↻ spins and a click stops the scan (${JSON.stringify(busy)})`);
     check(!done.spinning && done.pe !== 'none', '#422: …and stops spinning once done');
-    check(/Refresh — clear cache and re-scan \(last scan: \d+(\.\d+)?s\)/.test(done.title), `#422: the tooltip gives the scan time ("${done.title}")`);
+    check(/Refresh\nClear the cache and scan again\nThe last scan took \d+(\.\d+)? s\./.test(done.title), `#422: the tooltip gives the scan time ("${done.title}")`);
     check(!(await page.evaluate(() => !!document.getElementById('mb-scan-status'))), '#422: no separate status line');
 
     const log = await logText(page);
@@ -129,8 +129,8 @@ test.describe('strict barcode confidence', () => {
     const plain = await page.evaluate(() => window.__opened.length);
     // with Compact low-confidence providers on, a withheld row is folded into the strip: its icon there is
     // what you see, so the middle click goes to it, as a real mouse click
-    const stripName = await page.evaluate(p => document.getElementById('plat-' + p)?.title.split(' ')[0] || p, target);
-    const inStrip = page.locator(`#pc-compact-strip .pc-compact-ico[title^="${stripName}"]`);
+    const stripName = await page.evaluate(p => (document.getElementById('plat-' + p)?.dataset.tip || '').split(' ')[0] || p, target);
+    const inStrip = page.locator(`#pc-compact-strip .pc-compact-ico[data-tip^="${stripName}"]`);
     check(await inStrip.count() === 1, `the withheld ${target} row sits in the compact strip (${await inStrip.count()})`);
     await inStrip.click({ button: 'middle' });
     const one = await page.evaluate(p => ({ opened: window.__opened.slice(), queued: Object.keys(JSON.parse(Object.entries(localStorage).find(([k]) => /^pc:pending:[0-9a-f-]{36}$/.test(k))?.[1] || '{}')), mine: p }), target);

@@ -51,7 +51,7 @@ test('a dropped zip stages its covers, typed as named', { tag: ['@sandbox'] }, a
     // until they are all there and measure() has decoded each thumbnail (its size shows)
     return until(() => page.evaluate(() => [...document.querySelectorAll('.as-card.new')].map(c => {
       const t = c.querySelector('.as-type:not(.as-type-add)');
-      return { types: t ? t.getAttribute('title') : '', comment: (c.querySelector('.as-cmt-text') || {}).textContent || '',
+      return { types: t ? t.getAttribute('data-tip') : '', comment: (c.querySelector('.as-cmt-text') || {}).textContent || '',
         dim: (c.querySelector('.as-dim') || {}).textContent || '', tip: (c.querySelector('.as-thumb') || {}).getAttribute?.('title') || '' };
     // a card shows its file size first and its resolution once decoded: wait for the resolution
     })), cards => cards.length >= want && cards.every(c => /\d+ × \d+/.test(c.dim)));

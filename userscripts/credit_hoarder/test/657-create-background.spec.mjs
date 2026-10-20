@@ -36,7 +36,7 @@ test('#657: right-click on the popup\'s Create creates in the background, with i
   };
 
   const create = await popup();
-  check(/right-click: create silently in a background tab/.test(await create.getAttribute('title') || ''), 'Create says what a right-click does');
+  check(/Right-click: create it silently in a background tab/.test(await create.getAttribute('data-tip') || ''), 'Create says what a right-click does');
   await create.click({ button: 'right' });
   const bg = await page.evaluate(() => ({ bg: window.__bg.slice(), fg: window.__fg.slice(), popup: [...document.querySelectorAll('div')].some(d => /^Create (artist|label|place|work) in MusicBrainz$/.test(d.textContent)) }));
   check(bg.bg.length === 1 && !bg.bg[0].active && !bg.fg.length, `right-click: one background tab, nothing in front (${JSON.stringify(bg)})`);

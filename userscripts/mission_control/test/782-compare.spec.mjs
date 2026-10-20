@@ -154,7 +154,7 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   await sub.locator('[data-pf-title="1"]').press('Enter');
   const aa = sub.locator('[data-act="fx-gc"][data-i="1"]');
   const want = 'Homes and Gardens of KoRn (official music video)';
-  const tip = await until(() => aa.getAttribute('title'), t => (t || '').includes(want));
+  const tip = await until(() => aa.getAttribute('data-tip'), t => (t || '').includes(want));
   check((tip || '').includes('Guess case (English) → ' + want), `Aa shows the guess (${tip})`);
   await aa.click();
   st = await page.evaluate(() => window.__mcTest.cmp());

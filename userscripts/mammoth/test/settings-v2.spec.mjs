@@ -11,6 +11,6 @@ test('settings v2: an old stored minimized: false gives way to the minimized pan
   await requireLogin(page);
   await idle(page);
   await inject('mammoth');
-  const title = await page.locator('.mmth-min-btn').first().getAttribute('title');
+  const title = await page.locator('.mmth-min-btn').first().getAttribute('data-tip');
   check(title === 'Restore the panel', `the panel starts minimized (min button: ${title})`);
 });

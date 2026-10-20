@@ -85,7 +85,7 @@ test("#547: queue summary", { tag: ['@sandbox', '@login'] }, async ({ context, p
       // the summary is the flexible cell between the entity link and the status
       const cells = [...row.firstElementChild.children];
       const cell = cells.find(c => c.tagName === 'SPAN' && getComputedStyle(c).flexGrow === '1');
-      return { text: cell ? cell.textContent.trim() : null, title: cell ? cell.getAttribute('title') || '' : null,
+      return { text: cell ? cell.textContent.trim() : null, title: cell ? cell.getAttribute('data-tip') || '' : null,
                italic: cell ? getComputedStyle(cell).fontStyle === 'italic' : false,
                link: cell ? !!cell.querySelector('a') : false };
     });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.17.231850
+// @version      2026.10.20.120000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -327,13 +327,13 @@
       if (it.input) {
         const wrap = el('div', 'gt-mi-input');
         const inp = el('input', 'gt-mi-in'); inp.type = 'text';
-        inp.placeholder = it.input.placeholder || ''; inp.title = it.input.title || ''; inp.value = it.input.value || '';
+        inp.placeholder = it.input.placeholder || ''; inp.dataset.tip = it.input.title || ''; inp.value = it.input.value || '';
         const info = el('div', 'gt-mi-ininfo', '');
         const upd = () => {
           const res = it.input.onInput(inp.value) || {};
           info.textContent = res.text || '';
           info.style.color = res.ok ? 'var(--mbu-ok)' : 'var(--mbu-warn)';
-          info.title = res.title || '';
+          info.dataset.tip = res.title || '';
         };
         inp.addEventListener('input', upd);
         // A menu whose CONTENT depends on the spec (the ⬇ checklist is built
@@ -356,7 +356,7 @@
           // this role to the current selection instead of replacing it (#377)
           lab.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); it.checklist.forEach(en => { if (!en.cb) return; if (ev.shiftKey) { if (en.role === entry.role) en.cb.checked = true; } else en.cb.checked = en.role === entry.role; }); if (it.onToggle) it.onToggle(); });
           lab.appendChild(cb); lab.appendChild(el('span', 'gt-ck-pos', `[${entry.pos}]`)); lab.appendChild(el('span', 'gt-ck-tx', entry.text));
-          if (it.rowBtns) { const acts = el('span', 'gt-ck-acts'); it.rowBtns.forEach(rb => { const b = el('button', 'gt-ck-act', rb.label); b.type = 'button'; b.title = rb.title || ''; b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); rb.run(entry); }); acts.appendChild(b); }); lab.appendChild(acts); }   // #377 [A]/[R] per-row select buttons
+          if (it.rowBtns) { const acts = el('span', 'gt-ck-acts'); it.rowBtns.forEach(rb => { const b = el('button', 'gt-ck-act', rb.label); b.type = 'button'; b.dataset.tip = rb.title || ''; b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); rb.run(entry); }); acts.appendChild(b); }); lab.appendChild(acts); }   // #377 [A]/[R] per-row select buttons
           box.appendChild(lab);
         });
         menuEl.appendChild(box);
@@ -512,7 +512,7 @@
     if (!target || !target.closest) return null;
     // only the actual relationship (track + release credits) UI — not GT's own overlays, and not
     // stray entity links elsewhere on the page (release title, sidebar, the work-match dialog, …)
-    if (target.closest('.gt-cons-ov, .gt-wm-pop, .gt-pop, .gt-menu, .gt-tip, #mbu-toast')) return null;
+    if (target.closest('.gt-cons-ov, .gt-wm-pop, .gt-pop, .gt-menu, #mbu-tip, #mbu-toast')) return null;
     const phraseTh = target.closest('th.link-phrase');
     if (phraseTh && !target.closest('button')) { const l = phraseTh.querySelector('label'); if (l) { let t = (l.textContent || '').trim().replace(/:\s*$/, ''); if (t) return t; } }
     const link = target.closest('a[href]');
@@ -572,37 +572,29 @@
     }
     return a.map(String).sort((x, y) => x.localeCompare(y, undefined, { numeric: true })).join(', ');
   }
-  let tipEl = null;
-  function showTip(x, y, info, name) {
+  // the count, in the shared tooltip (dev/ui/tooltip.mjs), under the credit hovered
+  function showTip(anchor, info, name) {
     if (!info || (!info.n && !name)) { hideTip(); return; }
-    if (!tipEl) { tipEl = el('div', 'gt-tip'); document.body.appendChild(tipEl); }
-    tipEl.innerHTML = '';
     // we hid MB's native title (the entity's real/sort name, shown when Credited As differs) —
     // so surface it here instead so that info isn't lost.
-    if (name) tipEl.appendChild(el('div', 'gt-tip-name', name));
     const parts = [];
     if (info.n) { parts.push(`${info.n}×`); if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`); if (info.release) parts.push('release'); }
-    if (parts.length) tipEl.appendChild(el('div', 'gt-tip-stat', parts.join(' · ')));
-    tipEl.style.display = '';
-    const r = tipEl.getBoundingClientRect();
-    tipEl.style.left = Math.min(x + 14, window.innerWidth - r.width - 8) + 'px';
-    tipEl.style.top = Math.min(y + 16, window.innerHeight - r.height - 8) + 'px';
+    mbuTipShowFor(anchor, mbuTipText([name, parts.join(' · ')].filter(Boolean).join('\n')), { place: 'above' });
   }
-  function hideTip() { if (tipEl) tipEl.style.display = 'none'; }
+  function hideTip() { mbuTipHide(true); }
   // MB puts the entity's sort name in the link's `title`, so the browser's native tooltip stacks on
   // top of ours. Temporarily strip it while our count tooltip is up, and restore it on the way out.
   let _hidTitle = null;
   function suppressTitle(target) { const te = target.closest && target.closest('[title]'); if (!te || (_hidTitle && te === _hidTitle.el)) return; restoreTitle(); const v = te.getAttribute('title'); if (v == null) return; _hidTitle = { el: te, val: v }; te.removeAttribute('title'); }
   function restoreTitle() { if (_hidTitle) { try { _hidTitle.el.setAttribute('title', _hidTitle.val); } catch (e) {} _hidTitle = null; } }
-  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info, nm); }
-  function onMove(ev) { if (tipEl && tipEl.style.display !== 'none' && needleFor(ev.target)) { tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth - tipEl.offsetWidth - 8) + 'px'; tipEl.style.top = Math.min(ev.clientY + 16, window.innerHeight - tipEl.offsetHeight - 8) + 'px'; } }
+  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); showTip((_hidTitle && _hidTitle.el) || (ev.target.closest && ev.target.closest('a')) || ev.target, info, nm); }
   function onOut(ev) { if (!needleFor(ev.target)) return; const rt = ev.relatedTarget; if (_hidTitle && rt && _hidTitle.el.contains && _hidTitle.el.contains(rt)) return; clearHighlight(); hideTip(); restoreTitle(); }
 
   // ── styles ────────────────────────────────────────────────────────────────
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui/ui-components.mjs
@@ -616,7 +608,7 @@
   }
   function mbuHelpHtml(name, label) {
       return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-          + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+          + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
   }
   function mbuHelpEl(name, label) {
       var a = document.createElement('a');
@@ -624,7 +616,7 @@
       a.href = mbuHelpHref(name);
       a.target = '_blank';
       a.rel = 'noopener';
-      a.title = 'open the README in a new tab';
+      a.dataset.tip = 'Open the README in a new tab';
       a.textContent = label || '? Help';
       return a;
   }
@@ -822,12 +814,12 @@
       var html = '<div class="mbu-cfg-h">';
       if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
       html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-      if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+      if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
       html += '<span class="mbu-cfg-sp"></span>';
       if (o.log) {
           html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
               + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-              + ' title="Open the activity log">Log</button>';
+              + ' data-tip="Open the activity log">Log</button>';
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
@@ -1179,18 +1171,18 @@
           root.classList.add('mbu-logpop');
           root.dataset.mbuLv = vid;
           root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-              + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-              + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+              + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+              + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
               + '<span class="mbu-logpop-sp"></span>'
-              + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-              + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-              + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-              + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                  + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                  + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+              + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+              + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+              + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+              + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+              + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                  + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                  + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
               + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
           if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
           var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
           var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -1343,14 +1335,14 @@
           win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
           var minBtn = pop.querySelector('.mbu-logpop-min');
           var setMin = function (m) {
-              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
               if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
               else Object.assign(pop.style, restore);
           };
           var fullBtn = pop.querySelector('.mbu-logpop-full');
           var setFull = function (f) {
               pop.classList.toggle('full', f);
-              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
           };
           minBtn.onclick = function () {
               var m = pop.classList.toggle('min');
@@ -1778,7 +1770,349 @@
       if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
       if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
       if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+      if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
   } catch (e) { /* a locked-down page must not stop the script loading */ }
+
+  // Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+  function mbuTipV() { return 1; }
+  function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-k{display:inline-block;padding:0 5px;border:1px solid var(--mbu-border,#cfc6e6);border-bottom-width:2px;border-radius:4px;background:var(--mbu-bg-raised,#faf9fe);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+  function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+  function mbuTipEsc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+  }
+  function mbuTipLabel(line) {
+      var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+      if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+      return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+  }
+  function mbuTipIsKey(label) {
+      return /click|drag|wheel|scroll|hover|double|press|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+  }
+  function mbuTipInline(s) {
+      return mbuTipEsc(s)
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+          .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, '<kbd class="mbu-tip-k">$1</kbd>')
+          .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+  }
+  function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function mbuTipText(src) {
+      var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+      if (!raw) return '';
+      var lines = [];
+      // the shapes the old title texts took, read as the rows they mean:
+      //   "… — click to open it"              → "…" + "Click: open it"
+      //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+      //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+      raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+          .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+          .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+          .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+      raw.split('\n').forEach(function (line) {
+          line = line.replace(/\s+$/, '');
+          // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+          var parts = line.split(/\s+·\s+/), out = [parts[0]];
+          for (var i = 1; i < parts.length; i++) {
+              if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+          }
+          out.forEach(function (seg) {
+              if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+              var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+              bits.forEach(function (b) { lines.push(b); });
+          });
+      });
+      // blocks: lead / paragraph / rows / bullets
+      var blocks = [], rowRun = [];
+      var flushRows = function () {
+          if (!rowRun.length) return;
+          var keyed = rowRun.filter(function (r) { return r.key; }).length;
+          if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+          else blocks.push({ t: 'p', s: rowRun[0].line });
+          rowRun = [];
+      };
+      lines.forEach(function (line, n) {
+          if (!line.trim()) { flushRows(); return; }
+          var b = /^\s*[-•]\s+(.*)$/.exec(line);
+          if (b) {
+              flushRows();
+              var last = blocks[blocks.length - 1];
+              if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+              return;
+          }
+          var l = mbuTipLabel(line);
+          // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+          if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+          flushRows();
+          blocks.push({ t: 'p', s: line });
+      });
+      flushRows();
+      // one long paragraph: its first sentence becomes the lead
+      if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+          var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+          if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+      }
+      var lead = blocks.length > 1 && blocks[0].t === 'p';
+      return blocks.map(function (bl, i) {
+          if (bl.t === 'ul') return '<ul class="mbu-tip-ul">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+          if (bl.t === 'rows') {
+              return '<div class="mbu-tip-rows">' + bl.rows.map(function (r) {
+                  return '<span class="' + (r.key ? 'mbu-tip-k' : 'mbu-tip-o') + '">' + mbuTipEsc(mbuTipCap(r.label)) + '</span><span>' + mbuTipInline(r.text) + '</span>';
+              }).join('') + '</div>';
+          }
+          var warn = /^⚠/.test(bl.s);
+          return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + '">' + mbuTipInline(bl.s) + '</div>';
+      }).join('');
+  }
+  function mbuTipCard(o) {
+      o = o || {};
+      var h = '';
+      if (o.head || o.title || o.aside) {
+          h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+              + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+      }
+      if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+      if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+      return h;
+  }
+  function mbuTipS() {
+      return mbuTipS.s || (mbuTipS.s = {
+          me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+          cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+      });
+  }
+  function mbuTip(el, content, opts) {
+      if (!el) return el;
+      var _mbuTip = mbuTipS();
+      mbuTipStart();
+      opts = opts || {};
+      if (typeof content === 'function') {
+          if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+          el.setAttribute('data-mbu-tip-own', '');
+          el.removeAttribute('title');
+          return el;
+      }
+      if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+      if (opts.place) el.setAttribute('data-tip-place', opts.place);
+      if (opts.wide) el.setAttribute('data-tip-wide', '');
+      el.removeAttribute('title');
+      if (_mbuTip.cur === el) mbuTipRender();
+      return el;
+  }
+  function mbuTipOn(selector, fn, opts) {
+      mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+      mbuTipStart();
+  }
+  function mbuTipShowFor(el, content, opts) {
+      if (!el || content == null || content === '') { mbuTipHide(true); return; }
+      mbuTipStart();
+      var o = opts || {};
+      var fn = typeof content === 'function' ? content : function () { return content; };
+      var S = mbuTipS();
+      if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+      mbuTipShow({ el: el, fn: fn, opts: o });
+  }
+  function mbuTipHtml(s) {
+      if (mbuTipHtml.tt === undefined) {
+          mbuTipHtml.tt = null;
+          try {
+              var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+              if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+          } catch (e) { /* the page allows no new policy: plain strings */ }
+      }
+      return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+  }
+  function mbuTipCss() {
+      var s = document.getElementById('mbu-tip-css');
+      if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+      if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+      s.setAttribute('data-v', String(mbuTipV()));
+      s.textContent = mbuTipCssText();
+  }
+  function mbuTipEl() {
+      var t = document.getElementById('mbu-tip');
+      if (!t) {
+          t = document.createElement('div');
+          t.id = 'mbu-tip';
+          t.setAttribute('role', 'tooltip');
+          (document.body || document.documentElement).appendChild(t);
+      }
+      return t;
+  }
+  function mbuTipFind(node) {
+      var _mbuTip = mbuTipS();
+      var tip = document.getElementById('mbu-tip');
+      for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+          if (el === tip) return null;
+          var reg = _mbuTip.els && _mbuTip.els.get(el);
+          if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+          for (var i = 0; i < _mbuTip.prov.length; i++) {
+              var p = _mbuTip.prov[i];
+              try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+          }
+          if (!_mbuTip.lead) continue;
+          if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+          if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+          // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+          if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+              var root = null;
+              try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+              if (root) {
+                  el.setAttribute('data-tip', el.getAttribute('title'));
+                  el.removeAttribute('title');
+                  return { el: el, opts: {} };
+              }
+          }
+      }
+      return null;
+  }
+  function mbuTipRender() {
+      var _mbuTip = mbuTipS();
+      var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+      if (!a) return false;
+      if (o.fn) {
+          try { c = o.fn(a); } catch (e) { c = null; }
+          if (c == null || c === '') return false;
+          if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+          else { t.textContent = ''; t.appendChild(c); }
+      } else {
+          var s = a.getAttribute('data-tip');
+          if (!s) return false;
+          var h = mbuTipText(s);
+          t.innerHTML = mbuTipHtml(h);
+          // an element with nothing to read of its own is named by its tip
+          if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+              a.setAttribute('aria-label', s.split('\n')[0]);
+          }
+      }
+      t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+      t.setAttribute('data-owner', _mbuTip.me);
+      mbuTipPlace(t, a, o.place);
+      return true;
+  }
+  function mbuTipPlace(t, a, place) {
+      var _mbuTip = mbuTipS();
+      var r = a.getBoundingClientRect();
+      if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+      t.style.left = '0px'; t.style.top = '0px';
+      var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+      var below = place !== 'above';
+      if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+      else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+      var top = below ? r.bottom + gap : r.top - gap - h;
+      // a wide element (a row, a long field): the arrow points where the pointer is
+      var cx = r.left + r.width / 2;
+      if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+      var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+      t.style.left = left + 'px';
+      t.style.top = Math.max(m, Math.round(top)) + 'px';
+      t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+      t.classList.toggle('mbu-tip-up', !below);
+  }
+  function mbuTipShow(found) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+      if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+      mbuTipCss();
+      _mbuTip.cur = found.el;
+      _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+      if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+      var t = mbuTipEl();
+      found.el.setAttribute('aria-describedby', 'mbu-tip');
+      // next frame, so the transition runs from the hidden state
+      requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+      // the element can go (a re-render) or change its text while the tip is up
+      clearInterval(_mbuTip.liveT);
+      _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+      try {
+          if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+          _mbuTip.obs.disconnect();
+          if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+      } catch (e) { /* no observer: the text is read again on the next hover */ }
+  }
+  function mbuTipHide(now) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+      _mbuTip.pend = null;
+      var hide = function () {
+          var a = _mbuTip.cur;
+          if (!a) return;
+          _mbuTip.cur = null;
+          clearInterval(_mbuTip.liveT);
+          try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+          if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+          var t = document.getElementById('mbu-tip');
+          if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+          _mbuTip.warm = Date.now();
+      };
+      if (now) hide();
+      else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+  }
+  function mbuTipStart() {
+      if (mbuTipStart.done || typeof document === 'undefined') return;
+      var _mbuTip = mbuTipS();
+      var root = document.documentElement;
+      if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+      mbuTipStart.done = true;
+      if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+      var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+      document.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+      document.addEventListener('mouseover', function (e) {
+          _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+          if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+          var f = mbuTipFind(e.target);
+          if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+          if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+          if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+          clearTimeout(_mbuTip.showT);
+          _mbuTip.pend = f;
+          var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+          _mbuTip.showT = setTimeout(function () {
+              _mbuTip.pend = null;
+              if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+          }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+      }, true);
+      document.addEventListener('mouseout', function (e) {
+          var to = e.relatedTarget;
+          var q = _mbuTip.quiet;
+          if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+          var p = _mbuTip.pend;
+          if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+          var a = _mbuTip.cur;
+          if (!a) return;
+          if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+          if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+      }, true);
+      document.addEventListener('mousedown', function (e) {
+          if (inTip(e.target)) return;
+          clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+          var f = mbuTipFind(e.target);
+          _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+          if (_mbuTip.cur) mbuTipHide(true);
+      }, true);
+      document.addEventListener('keydown', function (e) {
+          if (!_mbuTip.cur) return;
+          var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+          // typing closes a plain tip, as it does the browser's; modifiers alone don't
+          if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+          mbuTipHide(true);
+          if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+      }, true);
+      window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+      window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+      document.addEventListener('focusin', function (e) {
+          var el = e.target, vis = false;
+          try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+          if (!vis) return;
+          var f = mbuTipFind(el);
+          if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+      }, true);
+      document.addEventListener('focusout', function (e) {
+          if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+      }, true);
+  }
+  mbuTipStart();
   // </ST-UI>
 
   function injectStyle() {
@@ -1831,10 +2165,6 @@
          terms and neither background follows the page theme. */
       ::highlight(gt-hl-existing){background:#1f6feb;color:#fff}
       ::highlight(gt-hl-new){background:#b45309;color:#fff}
-      .gt-tip{position:fixed;z-index:2147483647;pointer-events:none;background:#1b2430;color:#eef2f7;
-        font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:4px 9px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
-      .gt-tip .gt-tip-name{font-weight:600}
-      .gt-tip .gt-tip-stat{color:#a9bed4;font-size:11px;margin-top:1px}   /* #564: the pill is always dark, so this is too — --mbu-info is mixed toward the page text and went near-black on it in the light theme */
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-info);background:var(--mbu-info-bg);
         border:1px solid var(--mbu-info);border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:var(--mbu-info-bg)}
@@ -2160,9 +2490,8 @@
         value: state.v,
         onChange: onCommit || null,
         placeholder: `tracks: 1,3,5-7 · 2:4 · all   (blank = ${blank})`,
-        title: 'A track number as shown (3, A1), a range (5-7), a medium-qualified number or range (2:4, 2:4-6), '
-          + 'a whole medium (2:*), or all.\nA plain number matching no displayed position means the Nth track, '
-          + `which is how a vinyl's "track 4" finds B1.\nLeave empty to use ${blank}.`,
+        title: 'Which tracks\n- a track number as shown: `3`, `A1`\n- a range: `5-7`\n- on a medium: `2:4`, `2:4-6`\n- a whole medium: `2:*`\n- `all`\n'
+          + `A number no track shows is the Nth track: a vinyl's “track 4” finds B1.\nEmpty: ${blank}`,
         onInput: (v) => {
           state.v = v;
           const rows = state.rowsFor();
@@ -2600,11 +2929,11 @@
         const tracks = (r.media || []).reduce((s, m) => s + (m['track-count'] || 0), 0);
         const meta = [r.date, r.country, fmt, tracks ? tracks + ' tracks' : ''].filter(Boolean).join(' · ');
         if (meta) info.appendChild(el('span', 'gt-pop-rel-m', meta));
-        info.title = 'Copy this release’s credits onto this one';
+        info.dataset.tip = 'Copy this release’s credits onto this one';
         info.onclick = () => doCopyFrom(r.id, r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''));
         const open = el('a', 'gt-pop-rel-open', '↗');   // ↗ open the release in a new tab to inspect first
         open.href = '/release/' + r.id; open.target = '_blank'; open.rel = 'noopener';
-        open.title = 'Open this release in a new tab';
+        open.dataset.tip = 'Open this release in a new tab';
         open.addEventListener('click', ev => ev.stopPropagation());
         b.appendChild(info); b.appendChild(open);
         list.appendChild(b);
@@ -2649,7 +2978,7 @@
     if (hdIc) hdIc.onerror = () => hdIc.remove();
     popEl.appendChild(hd.firstElementChild);
     const body = el('div', 'gt-cfg-body');
-    const opt = (label, hint, get, set) => { const l = el('label', 'gt-cfg-opt'); l.title = hint; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = get(); cb.onchange = () => set(cb.checked); l.append(cb, el('span', null, label)); return l; };
+    const opt = (label, hint, get, set) => { const l = el('label', 'gt-cfg-opt'); l.dataset.tip = hint; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = get(); cb.onchange = () => set(cb.checked); l.append(cb, el('span', null, label)); return l; };
     body.appendChild(opt('Hide help text', 'Hide the two MusicBrainz help paragraphs at the top of the edit-relationships page', () => gtHideHelp, v => { gtHideHelp = v; try { GM_setValue('gt-hide-help', v); } catch (e) {} gtApplyHelp(); }));
     body.appendChild(opt('Hide native batch tools', "Hide MusicBrainz's own batch-tools table (#batch-tools) on the edit-relationships page", () => gtHideBatch, v => { gtHideBatch = v; try { GM_setValue('gt-hide-batch', v); } catch (e) {} gtApplyBatch(); }));
     body.appendChild(opt('Auto-match on start', 'Open the work matcher and run matching automatically when the page loads', () => gtAutoMatch, v => { gtAutoMatch = v; try { GM_setValue('gt-auto-match', v); } catch (e) {} }));
@@ -2670,29 +2999,29 @@
     if (!document.getElementById('release-rels')) return false;
     const bar = el('div', 'gt-toolbar');
     const b = el('button', 'gt-clone-btn', '⧉ Copy from release…');
-    b.title = 'Copy release-level credits (artists, labels) from another release onto this one';
+    b.dataset.tip = 'Copy release credits from another release\nArtists and labels, onto this one';
     b.type = 'button'; b.onclick = () => openCopyFromPopover(b); bar.appendChild(b); cloneBtnRef = b;
     const cons = el('button', 'gt-clone-btn', '▦ Consolidate RG…');
-    cons.title = 'Spread release-level credits across every release in this group (union minus format-specific)';
+    cons.dataset.tip = 'Spread release credits across every release in this group\nAll of them together, without the format-specific ones';
     cons.type = 'button'; cons.onclick = () => openConsolidate(); bar.appendChild(cons);
     const wm = el('button', 'gt-clone-btn', '◎ Match works…');
-    wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
+    wm.dataset.tip = 'Match each recording to an existing work\nBy ISRC, and by recordings of the same title and artist; stages the recording → work “performance” relationships.';
     wm.type = 'button'; wm.onclick = () => openWorkMatch(); bar.appendChild(wm);
     const tp = el('button', 'gt-clone-btn', '✎ Text parser…');
-    tp.title = 'Parse pasted or annotation credit text (e.g. "Role: Artist") into release relationships';
+    tp.dataset.tip = 'Read credits from text\nPasted, or the annotation’s, like `Role: Artist`, into release relationships';
     tp.type = 'button'; tp.onclick = () => openTextParser(); bar.appendChild(tp);
     // #365 one "Vertical:" section — ⬆ pushes the release's credits DOWN to its recordings, ⬇ pulls the
     // recordings' credits UP to the release (icons per majkinetor: up = release→recordings, down = →release)
     const vwrap = el('span', 'gt-vert');
     vwrap.appendChild(el('span', 'gt-vert-lbl', 'Vertical:'));
     const r2r = el('button', 'gt-clone-btn gt-vert-btn', '⬆');
-    r2r.title = 'Release → recordings: copy (or move) the release-level credits onto its recordings — the ticked ones, or all if none ticked';
+    r2r.dataset.tip = 'Release → recordings\nCopy (or move) the release credits onto its recordings: the ticked ones, or all when none is ticked.';
     r2r.type = 'button'; r2r.onclick = () => openRelToRec(r2r);
     const c2r = el('button', 'gt-clone-btn gt-vert-btn', '⬇');
-    c2r.title = 'Recordings → release: collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
+    c2r.dataset.tip = 'Recordings → release\nCollect the recordings’ credits onto the release, all of them together, each with the tracks it covers.';
     c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
     vwrap.append(r2r, c2r); bar.appendChild(vwrap);
-    const cfg = el('button', 'gt-cfg-btn', MBU_CFG_ICON); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
+    const cfg = el('button', 'gt-cfg-btn', MBU_CFG_ICON); cfg.type = 'button'; cfg.dataset.tip = 'Group Therapy\nOptions, about, help';
     cfg.onclick = () => openAboutPopover(cfg); bar.appendChild(cfg);
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');
@@ -2792,7 +3121,7 @@
       const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label);
       b.style.background = FMT_FAMILY[fam].color;
       b.style.color = badgeInk(FMT_FAMILY[fam].color);
-      b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : '');
+      b.dataset.tip = fam + (fmt && fmt !== fam ? ` (${fmt})` : '');
       wrap.appendChild(b);
     }
     return wrap;
@@ -2976,7 +3305,7 @@
       rolesLine.appendChild(el('span', 'gt-dp-lbl', 'Roles'));
       if (!gtDateRoles.length) rolesLine.appendChild(el('span', 'gt-dp-hint', 'none — right-click a role below to add'));
       gtDateRoles.forEach(r => {
-        const chip = el('span', 'gt-dp-chip', r); chip.title = 'click to remove'; chip.appendChild(el('span', 'gt-dp-chipx', '×'));
+        const chip = el('span', 'gt-dp-chip', r); chip.dataset.tip = 'Click: remove'; chip.appendChild(el('span', 'gt-dp-chipx', '×'));
         chip.onclick = () => { gtDateRoles = gtDateRoles.filter(v => v !== r); saveDateRoles(); renderRoles(); renderBody(); };
         rolesLine.appendChild(chip);
       });
@@ -2996,7 +3325,7 @@
           const row = el('label', 'gt-dp-crow' + (c.dated ? ' gt-dp-dated' : '')), cb = el('input'); cb.type = 'checkbox'; cb.checked = isChecked(c);
           cb.onchange = () => { manual.set(c.id, cb.checked); setTrackState(t, tcb); refreshCounts(); };
           const role = el('span', 'gt-dp-role', roleLabelOf(c.rel) || ltName(c.rel.linkTypeID));
-          role.title = 'right-click: remember this role for the default selection';
+          role.dataset.tip = 'Right-click: pick this role by default from now on';
           role.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); addRole(ltName(c.rel.linkTypeID)); });
           row.append(cb, role, el('span', 'gt-dp-cname', c.name + (c.credit ? ` (${c.credit})` : '')));
           if (c.dated) row.append(el('span', 'gt-dp-has', fmtRoDate(c.rel)));
@@ -3068,9 +3397,9 @@
     releases.forEach(r => {
       const s = el('span', 'gt-cons-legi gt-cons-selitem' + (r.selected ? ' gt-on' : '') + (r.current ? ' gt-cur' : ''));
       s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title)); if (r.year) s.appendChild(el('span', 'gt-cons-legyr', ' · ' + r.year));
-      const open = el('a', 'gt-cons-legopen', '↗'); open.href = '/release/' + r.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'Open this release in a new tab'; open.onclick = ev => ev.stopPropagation();
+      const open = el('a', 'gt-cons-legopen', '↗'); open.href = '/release/' + r.gid; open.target = '_blank'; open.rel = 'noopener'; open.dataset.tip = 'Open this release in a new tab'; open.onclick = ev => ev.stopPropagation();
       s.appendChild(open);
-      s.title = (r.selected ? 'In the matrix — click to remove its column' : 'Click to add its column') + (r.current ? ' · the release you’re editing' : '');
+      s.dataset.tip = (r.current ? 'The release you’re editing\n' : '') + (r.selected ? 'In the matrix\nClick: remove its column' : 'Click: add its column');
       s.onclick = () => { r.selected = !r.selected; recompute(); };
       leg.appendChild(s);
     });
@@ -3115,14 +3444,14 @@
         const ent = el('td', 'gt-cons-ent'); ent.appendChild(document.createTextNode(row.label.ent)); if (row.label.credit) ent.appendChild(el('span', 'gt-cons-cr', ' “' + row.label.credit + '”')); tr.appendChild(ent);
         for (const rel of cols) {
           if (rel._relsErr) {   // #624 unread → unknown, not "missing"
-            const tf = el('td', 'gt-cons-cell gt-fail', '?'); tf.title = `Couldn’t read this release’s credits (${rel._relsErr}) — left out; use Retry above`;
+            const tf = el('td', 'gt-cons-cell gt-fail', '?'); tf.dataset.tip = `⚠ Couldn’t read this release’s credits: ${rel._relsErr}\nLeft out: Retry above tries again.`;
             tr.appendChild(tf); continue;
           }
           const td = el('td', 'gt-cons-cell'), has = row.present.has(rel.gid), prop = row.propose.has(rel.gid);
           td.classList.add(has ? 'gt-has' : prop ? 'gt-prop' : 'gt-none');
           td.textContent = has || prop ? rel.letter : '·';
-          if (has) td.title = 'already present';
-          else { td.style.cursor = 'pointer'; td.title = prop ? 'will be added — click to skip' : `skipped (format-specific for ${rel.fmt || '?'}) — click to add`; td.onclick = () => { row.propose.has(rel.gid) ? row.propose.delete(rel.gid) : row.propose.add(rel.gid); draw(); updatePlan(); }; }
+          if (has) td.dataset.tip = 'Already there';
+          else { td.style.cursor = 'pointer'; td.dataset.tip = prop ? 'To be added\nClick: skip it' : `Skipped: only for the ${rel.fmt || '?'} format\nClick: add it`; td.onclick = () => { row.propose.has(rel.gid) ? row.propose.delete(rel.gid) : row.propose.add(rel.gid); draw(); updatePlan(); }; }
           tr.appendChild(td);
         }
         tbl.appendChild(tr);
@@ -3130,14 +3459,14 @@
     };
     cols.forEach(r => {
       const th = el('th', 'gt-cons-col gt-cons-colsel' + (r._relsErr ? ' gt-fail' : '')); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
-      th.title = r._relsErr ? `${r.title} — couldn’t read its credits (${r._relsErr}); use Retry above`
-        : `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
+      th.dataset.tip = r._relsErr ? `${r.title}\n⚠ Couldn’t read its credits: ${r._relsErr}. Retry above tries again.`
+        : `${r.title}\nClick: pick or clear every credit that can be added to it, but the format-specific ones`;
       th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
       head.appendChild(th);
     });
     tbl.appendChild(head); body.appendChild(tbl);
-    const autoBtn = el('button', 'gt-cons-btn', 'Auto select'); autoBtn.type = 'button'; autoBtn.title = 'Select every addable credit across the selected releases, except format-specific roles';
-    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Deselect every proposed credit';
+    const autoBtn = el('button', 'gt-cons-btn', 'Auto select'); autoBtn.type = 'button'; autoBtn.dataset.tip = 'Pick every credit that can be added to the selected releases\nBut the format-specific roles';
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.dataset.tip = 'Clear every proposed credit';
     autoBtn.onclick = () => { cols.forEach(rel => addableFor(rel).forEach(row => row.propose.add(rel.gid))); draw(); updatePlan(); };
     clearBtn.onclick = () => { rows.forEach(row => row.propose.clear()); draw(); updatePlan(); };
     applyBtn.onclick = async () => { const n = await applyConsolidation(cols, rows, () => renderConsMatrix(ctx)); if (n) closeConsolidate(); };   // close on success (no auto-scroll — leave the page where it was)
@@ -3347,12 +3676,12 @@
   function wmNewParamsUi() {
     wmDefaultType();   // #363 default to "Song" (once the catalogue exists)
     const wrap = el('div', 'gt-wm-nwp');
-    const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.title = 'Work type applied to every new work';
+    const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.dataset.tip = 'The type of every new work';
     typeSel.appendChild(new Option('— type —', ''));
     wmWorkTypes().forEach(t => { const o = new Option(t.name, String(t.id)); if (t.id === wmNewType) o.selected = true; typeSel.appendChild(o); });
     typeSel.onchange = () => { wmNewType = typeSel.value ? +typeSel.value : null; wmApplyNewParams(); };
     wrap.appendChild(typeSel);
-    const lc = el('div', 'gt-wm-nwp-lang'); lc.title = 'Lyrics language(s) applied to every new work';
+    const lc = el('div', 'gt-wm-nwp-lang'); lc.dataset.tip = 'The lyrics languages of every new work';
     const chips = el('span', 'gt-wm-nwp-chips'), inp = el('input', 'gt-wm-nwp-inp');
     inp.placeholder = 'lyrics language…'; inp.spellcheck = false;
     let drop = null;
@@ -3360,7 +3689,7 @@
     function closeDrop() { if (drop) { drop.remove(); drop = null; document.removeEventListener('mousedown', onDown, true); } }
     function renderChips() {
       chips.textContent = '';
-      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
+      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.dataset.tip = 'Remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
     }
     function showDrop() {
       closeDrop();
@@ -3374,7 +3703,7 @@
     inp.oninput = showDrop; inp.onfocus = showDrop;
     inp.onkeydown = e => { if (e.key === 'Escape' && drop) { closeDrop(); e.stopPropagation(); } };
     lc.append(chips, inp); wrap.appendChild(lc); renderChips();
-    const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.title = 'recording-of relationship options — attributes (live, cover…) + dates';
+    const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.dataset.tip = 'The recording-of relationship\nIts attributes (live, cover, …) and dates';
     more.onclick = () => wmRelOptsPopover(more); wrap.appendChild(more);
     // #432 (vzell): the ⋯ popover selections were invisible once it closed — surface them
     // as live chips right next to the button (attributes and "ended" removable via ×, the
@@ -3387,20 +3716,20 @@
       const names = new Map(wmPerfAttrs().map(a => [a.typeID, a.name]));
       wmRelAttrs.forEach(id => {
         const c = el('span', 'gt-wm-nwp-chip', names.get(id) || ('#' + id));
-        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove attribute';
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.dataset.tip = 'Remove the attribute';
         x.onclick = () => { wmRelAttrs.delete(id); closeRoPop(); wmRoRefresh(); };
         c.appendChild(x); roSum.appendChild(c);
       });
       const b = fmtD(wmBegin), e2 = fmtD(wmEnd);
       if (b || e2) {
         const c = el('span', 'gt-wm-nwp-chip', (b || '…') + ' → ' + (e2 || '…'));
-        c.title = 'recording-of dates — click to edit'; c.style.cursor = 'pointer';
+        c.dataset.tip = 'The recording-of dates\nClick: edit them'; c.style.cursor = 'pointer';
         c.onclick = () => { if (!wmRoPop) wmRelOptsPopover(more); };
         roSum.appendChild(c);
       }
       if (wmEnded) {
         const c = el('span', 'gt-wm-nwp-chip', 'ended');
-        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove';
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.dataset.tip = 'Remove';
         x.onclick = () => { wmEnded = false; closeRoPop(); wmRoRefresh(); };
         c.appendChild(x); roSum.appendChild(c);
       }
@@ -3672,10 +4001,10 @@
     hdr.appendChild(el('span', 'gt-cons-title', 'Match recordings to works'));
     // #381 maximize/restore — toggles a near-fullscreen class. Clears any drag-resized inline size on the way
     // in (inline would beat the class) and restores it on the way out.
-    const max = el('button', 'gt-cons-x', '⛶'); max.type = 'button'; max.title = 'Maximize / restore';
+    const max = el('button', 'gt-cons-x', '⛶'); max.type = 'button'; max.dataset.tip = 'Maximize or restore';
     max.onclick = () => {
-      if (panel.classList.toggle('gt-wm-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; max.textContent = '❐'; max.title = 'Restore'; }
-      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; max.textContent = '⛶'; max.title = 'Maximize'; }
+      if (panel.classList.toggle('gt-wm-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; max.textContent = '❐'; max.dataset.tip = 'Restore'; }
+      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; max.textContent = '⛶'; max.dataset.tip = 'Maximize'; }
     };
     hdr.appendChild(max);
     const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeWorkMatch; hdr.appendChild(x);
@@ -3709,28 +4038,28 @@
   // Apply stages every resolved row; the toolbar carries the cutoff chip, an unresolved count, and ⚡ Match.
   function renderWorkMatch(body, foot, rows) {
     body.textContent = ''; foot.textContent = '';
-    const mkAct = (glyph, title, run) => { const b = el('button', 'gt-wm-act', glyph); b.type = 'button'; b.title = title; b.onclick = e => { e.stopPropagation(); run(); }; return b; };
+    const mkAct = (glyph, title, run) => { const b = el('button', 'gt-wm-act', glyph); b.type = 'button'; b.dataset.tip = title; b.onclick = e => { e.stopPropagation(); run(); }; return b; };
     // ── toolbar ──
     const tb = el('div', 'gt-wm-tb');
     const amstatus = el('span', 'gt-wm-amstatus');
     const cutWrap = el('label', 'gt-wm-tbl2'); cutWrap.appendChild(el('b', null, 'Cutoff'));
-    const chip = el('span', 'gt-wm-cutoff'); chip.tabIndex = 0; chip.title = 'lowest confidence that ⚡ Match still resolves';
+    const chip = el('span', 'gt-wm-cutoff'); chip.tabIndex = 0; chip.dataset.tip = 'The lowest confidence ⚡ Match still resolves';
     const chipDot = el('span', 'gt-wm-cutoff-dot'), chipLbl = el('span', 'gt-wm-cutoff-lbl');
     chip.append(chipDot, chipLbl, el('span', 'gt-wm-cutoff-caret', '▾')); cutWrap.appendChild(chip);
     const paintChip = () => { const lvl = WM_LVL_BY_RANK[wmCutoff] || 'near'; chipDot.style.background = WM_LEVEL[lvl].c; chipLbl.textContent = lvl; };
     paintChip();
     const warn = el('span', 'gt-wm-warn');
     let cancelled = false;   // #372 cancel an ongoing match without closing the matcher
-    const cancelBtn = el('button', 'gt-wm-cancel', '✕ cancel'); cancelBtn.type = 'button'; cancelBtn.title = 'stop matching (keeps what has matched so far)'; cancelBtn.style.display = 'none';
+    const cancelBtn = el('button', 'gt-wm-cancel', '✕ cancel'); cancelBtn.type = 'button'; cancelBtn.dataset.tip = 'Stop matching\nWhat has matched so far stays.'; cancelBtn.style.display = 'none';
     cancelBtn.onclick = () => { cancelled = true; if (wmAbort) { try { wmAbort.abort(); } catch (e) {} } cancelBtn.style.display = 'none'; };   // abort in-flight fetches so it stops immediately
-    const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
-    const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
+    const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.dataset.tip = 'Resolve every open track whose best match reaches the cutoff';
+    const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.dataset.tip = 'More';
     matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
     // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
     tb.append(wmNewParamsUi());
     // #718 shown only when a track title has " / "; toggling rebuilds the rows (and re-matches if a match ran)
     if (rows.some(r => r.parts || wmMedleyParts(r.title))) {
-      const split = el('label', 'gt-wm-split'); split.title = 'Split track titles on “ / ” (a medley) and match each part to its own work';
+      const split = el('label', 'gt-wm-split'); split.dataset.tip = 'Split medleys\nTrack titles split on “ / ”, each part matched to its own work';
       const scb = document.createElement('input'); scb.type = 'checkbox'; scb.checked = wmSplitMedley;
       scb.onchange = () => { wmSplitMedley = scb.checked; try { GM_setValue('gt-wm-split', wmSplitMedley); } catch (e) {} openWorkMatch(rows.some(r => r._matched)); };
       split.append(scb, document.createTextNode('Split on '), el('code', null, '/')); tb.appendChild(split);
@@ -3773,19 +4102,19 @@
       const w = row.chosen;
       if (!w) {
         if (dot) dot.style.visibility = 'hidden';
-        const none = el('span', 'gt-wm-none', '— none —'); none.title = 'pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
+        const none = el('span', 'gt-wm-none', '— none —'); none.dataset.tip = 'Pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
         const acts = el('span', 'gt-wm-acts'); acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); })); wkd.appendChild(acts);
         return;
       }
-      if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.title = 'new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.title = L.t; } }
-      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || '')); nw.title = 'change / pick a work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
-      else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'change / pick a work (middle-click to open the work)'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
+      if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.dataset.tip = 'A new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.dataset.tip = L.t; } }
+      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || '')); nw.dataset.tip = 'Change or pick the work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
+      else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Change or pick the work\nMiddle-click: open the work'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
       if (wad && !w._gtNew) {   // #363 a NEW work has no writers yet — don't leave the auto-match candidate's writers showing
         wad.textContent = '';
         if (row.writers && row.writers.length) wad.appendChild(el('span', 'gt-wm-wwr', row.writers.slice(0, 4).join(', ')));
         // when the performer is one of the work's recording artists (why it matched), show them too — the
         // native work dropdown's "Artists:" line, e.g. Phil Collins on "You Can't Hurry Love"
-        if (row.artistMatched && row.workArtists && row.workArtists.length) { const ar = el('span', 'gt-wm-wart', '♫ ' + row.workArtists.slice(0, 3).join(', ')); ar.title = 'recording artists of this work — the performer is among them'; wad.appendChild(ar); }
+        if (row.artistMatched && row.workArtists && row.workArtists.length) { const ar = el('span', 'gt-wm-wart', '♫ ' + row.workArtists.slice(0, 3).join(', ')); ar.dataset.tip = 'Recording artists of this work\nThe performer is among them.'; wad.appendChild(ar); }
       }
       const acts = el('span', 'gt-wm-acts');
       acts.appendChild(mkAct('↺', 'clear this match', () => { row.chosen = null; draw(); updatePlan(); }));
@@ -3842,7 +4171,7 @@
     };
     matchBtn.onclick = runMatch;
     chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
-    const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
+    const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.dataset.tip = 'A new work for every recording still open\nNamed after the track; tracks of the same title share one.';
     newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && (r._matched || !wmRunning) && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };   // #363 include cancelled rows once matching has stopped
     applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
     foot.append(newAllBtn, plan, applyBtn);   // #363 Clear moved to the Match caret menu; new-work options moved to the toolbar
@@ -3855,7 +4184,7 @@
     if (work.type && work.type !== 'Song') r.appendChild(el('span', 'gt-wm-rw', ' · ' + work.type));
     if (work.authors && work.authors.length) r.appendChild(el('span', 'gt-wm-rw', ' — ' + work.authors.slice(0, 4).join(', ')));
     if (work.artists && work.artists.length) r.appendChild(el('span', 'gt-wm-rw', ' · ♫ ' + work.artists.slice(0, 3).join(', ')));
-    if (work.gid) { const open = el('a', 'gt-wm-open', '↗'); open.href = '/work/' + work.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'open this work in a new tab'; open.onclick = e => e.stopPropagation(); r.appendChild(open); }
+    if (work.gid) { const open = el('a', 'gt-wm-open', '↗'); open.href = '/work/' + work.gid; open.target = '_blank'; open.rel = 'noopener'; open.dataset.tip = 'Open this work in a new tab'; open.onclick = e => e.stopPropagation(); r.appendChild(open); }
     r.onclick = () => { row.chosen = work; row.best = work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = work.authors || []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     return r;
   }
@@ -3873,15 +4202,15 @@
       const w = row.chosen;
       if (!w) { cur.appendChild(el('span', 'gt-wm-none', '— none —')); return; }
       if (w._gtNew) { cur.appendChild(el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || ''))); return; }
-      const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'open this work in a new tab'; cur.appendChild(a);
+      const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Open this work in a new tab'; cur.appendChild(a);
       if (row.writers && row.writers.length) cur.appendChild(el('span', 'gt-wm-rw', ' — ' + row.writers.slice(0, 4).join(', ')));
-      const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.title = 'clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
+      const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.dataset.tip = 'Clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
     };
     paintCur(); popEl.appendChild(cur);
     const qrow = el('div', 'gt-wm-qrow');
     const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; qrow.appendChild(q);
     // #363 create-new-work as a + button right of the search (like Apollo's recordings picker), not a footer button
-    const newBtn = el('button', 'gt-wm-newplus', '＋'); newBtn.type = 'button'; newBtn.title = 'Create a new work “' + trunc(row.title, 40) + '”';
+    const newBtn = el('button', 'gt-wm-newplus', '＋'); newBtn.type = 'button'; newBtn.dataset.tip = 'Create a new work “' + trunc(row.title, 40) + '”';
     newBtn.onclick = () => { const w = wmMakeNewWork(row.title); row.chosen = w; row.best = w; row.level = (!row.level || row.level === 'none') ? 'near' : row.level; row.writers = []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     qrow.appendChild(newBtn); popEl.appendChild(qrow);
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
@@ -3973,8 +4302,8 @@
       items.push(hdr,
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); },
           rowBtns: [
-            { label: 'A', title: 'select every track crediting this artist — any role', run: e => { const n = selectByCredit(e.rel.other.gid, null); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this artist` : 'No other tracks with this artist'); } },
-            { label: 'R', title: 'select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
+            { label: 'A', title: 'Select every track crediting this artist, in any role', run: e => { const n = selectByCredit(e.rel.other.gid, null); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this artist` : 'No other tracks with this artist'); } },
+            { label: 'R', title: 'Select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
           ] },
         copyItem, moveItem);
       // #398 "Set dates…" — only when the clicked rel carries a date to seed with. Opens the date picker
@@ -5138,10 +5467,10 @@
     hdr.appendChild(annoBtn);
     // #522 follow-up (majkinetor): "Add resizable columns and maximize
     // button" — same maximize/restore toggle Match Works already has.
-    const maxBtn = el('button', 'gt-cons-x', '⛶'); maxBtn.type = 'button'; maxBtn.title = 'Maximize / restore';
+    const maxBtn = el('button', 'gt-cons-x', '⛶'); maxBtn.type = 'button'; maxBtn.dataset.tip = 'Maximize or restore';
     maxBtn.onclick = () => {
-      if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.title = 'Restore'; }
-      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.title = 'Maximize'; }
+      if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.dataset.tip = 'Restore'; }
+      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.dataset.tip = 'Maximize'; }
       saveState();   // #544 follow-up: maximizing changed the window and saved nothing
     };
     hdr.appendChild(maxBtn);
@@ -5149,7 +5478,7 @@
 
     const ctrl = el('div', 'gt-tp-ctrl');
     const patIn = el('input', 'gt-tp-pat'); patIn.type = 'text'; patIn.value = pattern;
-    const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.title = 'Clear pattern';
+    const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
     // #525 (majkinetor): "lets move the Resolve all to the top, to match the
@@ -5158,7 +5487,7 @@
     // "⚡ Match" button lives at the right of the TOP bar, not the footer
     // (renderWorkMatch's `tb`), styled the same bold-purple "primary" way.
     const resolveBtn = el('button', 'gt-tp-resolve', '⚡ Match'); resolveBtn.type = 'button';
-    resolveBtn.title = 'Resolve every role and entity that can auto-resolve';
+    resolveBtn.dataset.tip = 'Resolve every role and entity that can auto-resolve';
     // #539: scope picker. Release is still the default — the recording scope is
     // opt-in and inert until a track selector is typed.
     const scopeWrap = el('span', 'gt-tp-scope');
@@ -5167,9 +5496,9 @@
     scopeSel.value = scope.kind;
     const tracksIn = el('input', 'gt-tp-tracks'); tracksIn.type = 'text'; tracksIn.value = scope.spec;
     tracksIn.placeholder = 'tracks: 1,3,5-7 · 2:4 · all';
-    tracksIn.title = 'Which recordings the credits go on: a track number as shown (3, A1), a range (5-7), '
-      + 'a medium-qualified number or range (2:4, 2:4-6), a whole medium (2:*), or all. '
-      + 'Leave empty to use the tracks ticked in the editor.';
+    tracksIn.dataset.tip = 'Which recordings the credits go on\n'
+      + '- a track number as shown: `3`, `A1`\n- a range: `5-7`\n- on a medium: `2:4`, `2:4-6`\n- a whole medium: `2:*`\n- `all`\n'
+      + 'Empty: the tracks ticked in the editor';
     const tracksInfo = el('span', 'gt-tp-tracks-info', '');
     // #597: per-row track detection. Separate from Scope on purpose — Scope
     // says where rows that name NO tracks go, this says whether a row may name
@@ -5179,17 +5508,18 @@
     const detSel = el('select', 'gt-tp-det-sel');
     [['auto', 'Tracks: auto'], ['off', 'Tracks: off']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; detSel.appendChild(o); });
     detSel.value = scope.tracks;
-    detSel.title = 'auto: a credit that names its own tracks — "Lead vocals (tracks 2,6,9)", "Djembe (track 4)" — goes on those recordings, '
-      + 'whatever Scope says; everything else follows Scope. A clause only counts when every number in it is a real track on this release, '
-      + 'so "(2003)" is left alone.\noff: the pre-#597 behaviour — Scope decides for every row.';
+    detSel.dataset.tip = 'Tracks named in a credit\n'
+      + 'Auto: a credit that names its own tracks, like “Lead vocals (tracks 2,6,9)”, goes on those recordings, whatever Scope says; the rest follows Scope. '
+      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row';
     // #777: where a work role goes when a credit lands on recordings — "create
     // needed", as in Credit Hoarder, makes the work a track lacks.
     const worksSel = el('select', 'gt-tp-works-sel');
     [['none', 'Works: create none'], ['needed', 'Works: create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
     worksSel.value = scope.works;
-    worksSel.title = 'A role recordings don\'t have but works do (lyricist, composer, librettist, translator) goes on the works of the tracks it is applied to.\n'
-      + 'create none: only works already linked; a track with no work is skipped and counted.\n'
-      + 'create needed: a track with no work also gets a new work, named after the recording. Match existing works first (◎ Match works…), or this creates duplicates.';
+    worksSel.dataset.tip = 'Work roles\nA role works have and recordings don\'t (lyricist, composer, librettist, translator) goes on the works of its tracks.\n'
+      + 'Create none: only works already linked; a track with no work is skipped, and counted\n'
+      + 'Create needed: a track with no work gets a new one, named after the recording\n'
+      + '⚠ Match the existing works first (◎ Match works…), or this makes duplicates';
     scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
@@ -5210,7 +5540,7 @@
         ? `→ ${targets.length} track${targets.length > 1 ? 's' : ''}${ticked ? ' (ticked)' : ''}: ${shown}`
         : (ticked ? '→ no tracks ticked' : '→ nothing matched');
       tracksInfo.style.color = targets.length ? 'var(--mbu-ok)' : 'var(--mbu-warn)';
-      tracksInfo.title = targets.map(t => `${t.num}  ${t.title}`).join('\n');
+      tracksInfo.dataset.tip = targets.map(t => `${t.num}  ${t.title}`).join('\n');
     };
     // The recordings this run will credit: an explicit selector wins, otherwise
     // the editor's own ticked tracks (the same idiom as GT's other tools).
@@ -5234,7 +5564,7 @@
     // top bar has twice been one control too wide (#539), and the tooltip
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
-    freezeBtn.title = 'Freeze matched — lock this pattern onto every line that still uses the default pattern and already matches it, then try another pattern on what is left';
+    freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
     ctrl.append(patIn, patClr, freezeBtn, presets, resolveBtn);
 
     const src = el('div', 'gt-tp-src');
@@ -5289,7 +5619,7 @@
     const cnt = el('span', 'gt-tp-cnt');
     // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
-    applyClearBtn.title = 'Apply the resolved rows, then clear this release\'s annotation — submitted for you, with its own edit note';
+    applyClearBtn.dataset.tip = 'Apply the resolved rows, then clear the release\'s annotation\nSubmitted for you, with its own edit note';
     applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     // #544 (majkinetor): "Add [freeze pattern] option for matching rows the same
@@ -5345,7 +5675,7 @@
           const span = spanByLine.get(r.li);
           const ovTd = el('td'); if (span > 1) ovTd.rowSpan = span;
           const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = pattern; ov.value = lines[r.li].override || '';
-          ov.title = 'Override the pattern for just this line'; ov.dataset.fkey = 'ov:' + r.li;
+          ov.dataset.tip = 'Another pattern for this line only'; ov.dataset.fkey = 'ov:' + r.li;
           ov.addEventListener('input', () => { lines[r.li].override = ov.value; render(); saveState(); });
           ovTd.appendChild(ov); tr.appendChild(ovTd);
 
@@ -5354,14 +5684,14 @@
           // input synced back into the textarea, plus a remove button.
           const rawTd = el('td'); if (span > 1) rawTd.rowSpan = span;
           const rawWrap = el('span', 'gt-tp-rawwrap');
-          const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = r.raw; rawIn.title = r.raw;
+          const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = r.raw; rawIn.dataset.tip = r.raw;
           rawIn.dataset.fkey = 'raw:' + r.li;
           rawIn.addEventListener('input', () => {
             lines[r.li].raw = rawIn.value;
             [...entityOverride.keys()].filter(k => +k.split(':')[0] === r.li).forEach(k => entityOverride.delete(k));
             syncTextareaFromLines(); render(); saveState();
           });
-          const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.title = 'Remove this line';
+          const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.dataset.tip = 'Remove this line';
           delBtn.onclick = () => deleteLine(r.li);
           rawWrap.append(rawIn, delBtn);
           rawTd.appendChild(rawWrap);
@@ -5379,9 +5709,9 @@
         // entity's own canonical name, clearing that stray override.
         const entRawTd = el('td', 'gt-tp-c', r.entity || '');
         if (r.matched && r.entity) {
-          entRawTd.title = r.entityMatch
-            ? `Right-click: replace with the resolved name "${r.entityMatch.name}" (clears suffixes/typos in the raw text)`
-            : 'Resolve the entity first, then right-click here to clean up the raw text';
+          entRawTd.dataset.tip = r.entityMatch
+            ? `Right-click: replace it with the resolved name, “${r.entityMatch.name}”, without the raw text's suffixes and typos`
+            : 'Resolve the entity first\nThen right-click here cleans up the raw text.';
           entRawTd.addEventListener('contextmenu', e => {
             e.preventDefault();
             if (!r.entityMatch) { toast('Resolve this row’s entity first'); return; }
@@ -5415,7 +5745,7 @@
         // opens it directly (skipping the browser's own context menu).
         const roleTd = el('td', 'gt-tp-c');
         if (r.matched && !r.crKind) {
-          if (r.roleMatch) { const rs = el('button', 'gt-tp-search gt-tp-resolved', r.roleMatch.name); rs.type = 'button'; rs.title = 'Click to change'; rs.onclick = () => txpPickRole(r); roleTd.appendChild(rs); }
+          if (r.roleMatch) { const rs = el('button', 'gt-tp-search gt-tp-resolved', r.roleMatch.name); rs.type = 'button'; rs.dataset.tip = 'Click: change it'; rs.onclick = () => txpPickRole(r); roleTd.appendChild(rs); }
           else { const rb = el('button', 'gt-tp-search', 'search'); rb.type = 'button'; rb.onclick = () => txpPickRole(r); roleTd.appendChild(rb); }
         } else if (r.matched) {
           roleTd.appendChild(el('span', r.roleMatch ? 'gt-tp-resolved' : 'gt-tp-status', r.roleMatch ? r.roleMatch.name : '(resolves once holder is picked)'));
@@ -5428,7 +5758,7 @@
             // #544: the disambiguation is set apart from the name here too, so
             // the resolved cell and the search results read the same way.
             if (r.entityMatch.disambiguation) a.appendChild(el('span', 'gt-tp-disamb', ` (${r.entityMatch.disambiguation})`));
-            a.href = '/' + r.entityMatch.entityType + '/' + r.entityMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
+            a.href = '/' + r.entityMatch.entityType + '/' + r.entityMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Click: change it\nRight-click: open it';
             a.addEventListener('click', e => { e.preventDefault(); txpPickEntity(r, a); });
             a.addEventListener('contextmenu', e => { e.preventDefault(); window.open(a.href, '_blank', 'noopener'); });
             entTd.appendChild(a);
@@ -5442,7 +5772,7 @@
             // failed in a way nothing here can see never strands the row.
             const c = el('button', 'gt-tp-creating', `creating “${trunc(r.creating.name, 16)}”… ✕`);
             c.type = 'button';
-            c.title = `A background tab is creating this ${r.creating.kind}; the row fills in on its own once it commits.\nClick to stop waiting and get the search back.`;
+            c.dataset.tip = `A background tab is creating this ${r.creating.kind}\nThe row fills in by itself once it is saved.\nClick: stop waiting, and get the search back`;
             c.onclick = () => { const p = r.creating; if (p && p.cancel) p.cancel('cancelled'); else { pendingCreates.delete((r.entity || '').toLowerCase().trim()); render(); } };
             entTd.appendChild(c);
           } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickEntity(r, ab); entTd.appendChild(ab); }
@@ -5456,12 +5786,12 @@
         if (r.trackNote) {
           // the line carried more than one track list — see txpDetectTracks
           const w = el('span', 'gt-tp-trk-warn', '⚠ split line');
-          w.title = `${r.trackNote}\n\nOne line can only carry one track list, so this credit is going wherever Scope points instead. Split it into one role per line.`;
+          w.dataset.tip = `${r.trackNote}\n⚠ One line carries one track list, so this credit goes where Scope points instead. Split it into one role per line.`;
           trkTd.appendChild(w);
         } else if (r.trackTargets && r.trackTargets.length) {
           const nums = r.trackTargets.map(t => t.num);
           const s = el('span', 'gt-tp-trk-on', nums.length > 4 ? `${nums.slice(0, 4).join(', ')} +${nums.length - 4}` : nums.join(', '));
-          s.title = `From “${r.trackSpec}” in the credit text:\n` + r.trackTargets.map(t => `${t.num}  ${t.title}`).join('\n');
+          s.dataset.tip = `From “${r.trackSpec}” in the credit text\n` + r.trackTargets.map(t => `- ${t.num}  ${t.title}`).join('\n');
           trkTd.appendChild(s);
         } else if (scope.kind === 'recording') {
           trkTd.appendChild(el('span', 'gt-tp-trk-dim', 'scope'));
@@ -5777,7 +6107,7 @@
         // opened), so the spinner belongs on the + button. The background path
         // above closed the popover and signals on the row instead. #544
         createBtn.classList.add('gt-tp-plus-wait');
-        createBtn.title = `Waiting for the new ${kind}…`;
+        createBtn.dataset.tip = `Waiting for the new ${kind}…`;
         const win = window.open(url, '_blank');
         let done = false;
         const finish = async (gid) => {
@@ -5827,7 +6157,7 @@
         const PLURAL = { artist: 'artists', label: 'labels', place: 'places' };
         hdr.textContent = `Pick ${ARTICLE[searchKind]} for “${trunc(r.role || r.raw, 40)}”`;
         q.placeholder = `search ${PLURAL[searchKind]}, or paste an MBID / URL…`;
-        createBtn.title = `Create ${searchKind} “${trunc(r.entity || '', 40)}” ↗  ·  right-click to create in the background`;
+        createBtn.dataset.tip = `Create the ${searchKind} “${trunc(r.entity || '', 40)}” ↗\nRight-click: create it in the background`;
         if (canToggle) [...popEl.querySelectorAll('.gt-tp-tab')].forEach(b => b.classList.toggle('gt-tp-tab-on', b.dataset.kind === searchKind));
       };
       renderChrome();
@@ -6434,7 +6764,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // the ✕ to the right in every other dialog here — the button sat glued to
     // the end of the title text. Same classes as the rest now.
     hdr.appendChild(el('span', 'gt-cons-title', title));
-    const close = el('button', 'gt-cons-x', '✕'); close.type = 'button'; close.title = 'Cancel'; hdr.appendChild(close);
+    const close = el('button', 'gt-cons-x', '✕'); close.type = 'button'; close.dataset.tip = 'Cancel'; hdr.appendChild(close);
     panel.appendChild(hdr);
     const search = el('input', 'gt-role-search');
     search.type = 'text'; search.placeholder = 'Type to filter roles…';
@@ -6628,11 +6958,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   function hintControls(ev) {
     const t = ev.target; if (!t || !t.closest) return;
     const cb = t.closest && t.closest('tr.track input.recording, tr.track input.work');
-    if (cb && !cb.dataset.gtHint) { cb.dataset.gtHint = '1'; if (!cb.title) cb.title = cb.matches('input.work')
-      ? 'Group Therapy: right-click to copy/move this work’s relationships to the ticked works'
-      : 'Group Therapy: right-click to copy/move this recording’s credits to the ticked recordings'; return; }
+    if (cb && !cb.dataset.gtHint) { cb.dataset.gtHint = '1'; if (!cb.title) cb.dataset.tip = cb.matches('input.work')
+      ? 'Group Therapy\nRight-click: copy or move this work’s relationships to the ticked works'
+      : 'Group Therapy\nRight-click: copy or move this recording’s credits to the ticked recordings'; return; }
     const x = t.closest('button.icon.remove-item');
-    if (x && !x.dataset.gtHint) { x.dataset.gtHint = '1'; if (!x.title) x.title = 'Group Therapy: right-click to remove a whole group (this role / this target / both)'; }
+    if (x && !x.dataset.gtHint) { x.dataset.gtHint = '1'; if (!x.title) x.dataset.tip = 'Group Therapy\nRight-click: remove a whole group: this role, this target, or both'; }
   }
 
   // ── boot ────────────────────────────────────────────────────────────────
@@ -6640,7 +6970,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     injectStyle();
     document.body.addEventListener('contextmenu', onContextMenu, true);
     document.body.addEventListener('mouseover', onOver);
-    document.body.addEventListener('mousemove', onMove);
     document.body.addEventListener('mouseout', onOut);
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();

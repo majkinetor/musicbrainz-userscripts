@@ -74,10 +74,10 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
     const mid = el => { const r = el.getBoundingClientRect(); return Math.round(r.top + r.height / 2); };
     const rings = [...h.querySelectorAll('.mc-ring')].map(mid);
     const off = [...h.querySelectorAll('.mc-ring')].map(r => { const a = r.getBoundingClientRect(), b = r.querySelector('img').getBoundingClientRect(); return Math.round(Math.abs((a.left + a.width / 2) - (b.left + b.width / 2)) + Math.abs((a.top + a.height / 2) - (b.top + b.height / 2))); });
-    const fmt = h.querySelector('.mc-fmt'); return { fmt: fmt ? fmt.title : null, ring: getComputedStyle(h.querySelector('.mc-ring')).borderTopWidth, kids, rings, off, cover: !!h.querySelector('.mc-cover'), foot: !!document.querySelector('#mc-root .mc-foot'), dry: !!document.querySelector('#mc-root [data-act="dry"]'), auto: !!document.querySelector('#mc-root [data-act="auto"]'), probe: document.querySelectorAll('#mc-root .mc-steps .mc-re[data-act="probe"]').length };
+    const fmt = h.querySelector('.mc-fmt'); return { fmt: fmt ? fmt.dataset.tip : null, ring: getComputedStyle(h.querySelector('.mc-ring')).borderTopWidth, kids, rings, off, cover: !!h.querySelector('.mc-cover'), foot: !!document.querySelector('#mc-root .mc-foot'), dry: !!document.querySelector('#mc-root [data-act="dry"]'), auto: !!document.querySelector('#mc-root [data-act="auto"]'), probe: document.querySelectorAll('#mc-root .mc-steps .mc-re[data-act="probe"]').length };
   });
   check(JSON.stringify(row.kids) === '["mc-fmt","mc-rel","mc-steps","mc-act"]', `header: format, release, steps, actions (${JSON.stringify(row.kids)})`);
-  check(row.fmt.startsWith(await page.evaluate(() => document.querySelector('#sidebar dd.format').textContent.trim()) + ' · '), `the format icon carries the release's format in its tooltip (${row.fmt})`);
+  check(row.fmt.startsWith(await page.evaluate(() => document.querySelector('#sidebar dd.format').textContent.trim()) + '\n'), `the format icon carries the release's format in its tooltip (${row.fmt})`);
   check(row.ring === '0px', `no ring around a provider's icon (${row.ring})`);
   check(!row.cover && !row.foot && !row.dry && !row.auto && row.probe === 1, `no cover, footer, Dry run or Auto; ↻ probes (${JSON.stringify(row)})`);
   check(Math.max(...row.rings) - Math.min(...row.rings) <= 1, `the rings sit on one line, the parallel ones too (${row.rings})`);

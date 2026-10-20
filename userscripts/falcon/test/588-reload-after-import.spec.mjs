@@ -164,7 +164,7 @@ test("#588: reload after import", { tag: ['@sandbox', '@login'] }, async ({ cont
   const doneBg = await p.evaluate(() => {
     const el = document.getElementById('falcon-launcher');
     const cs = getComputedStyle(el);
-    return { bg: cs.backgroundColor, shadow: cs.boxShadow, title: el.title, opacity: cs.opacity };
+    return { bg: cs.backgroundColor, shadow: cs.boxShadow, title: el.dataset.tip, opacity: cs.opacity };
   });
   console.log('launcher — before:', plainBg, '\n           after :', JSON.stringify(doneBg));
   ck(doneBg.bg !== plainBg,

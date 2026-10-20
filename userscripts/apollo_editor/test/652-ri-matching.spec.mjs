@@ -55,7 +55,7 @@ test.describe('release artist and label', () => {
     check(/Platform link/.test(card) && /deezer\.com\/artist\/27/.test(card), 'the match card says it was the Deezer link');
     // the card opens on hover, as on the Tracklist
     await page.locator('.tc-ri-rb .tc-badge[data-ri="0"]').hover();
-    const opened = await page.waitForSelector('#tc-mtip', { timeout: 5000 }).then(h => h.textContent()).catch(() => '');
+    const opened = await page.waitForSelector('#mbu-tip.mbu-tip-on', { timeout: 5000 }).then(h => h.textContent()).catch(() => '');
     check(/Platform link/.test(opened), 'hovering the badge opens its match card');
 
     const create = await page.evaluate(() => { const opened = []; window.open = u => { opened.push(String(u)); return null; }; document.querySelectorAll('.tc-ri-art .tc-aslot')[1].querySelector('.mk').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 })); return opened[0] || ''; });

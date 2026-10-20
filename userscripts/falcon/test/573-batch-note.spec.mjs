@@ -77,7 +77,7 @@ test("#573: batch note", { tag: ['@sandbox', '@login'] }, async ({ context, page
   ck(await page.evaluate(() => window.__falconTest.batchNote()) === REASON, 'typing in the box sets the batch note');
   const marked = await page.evaluate(() => {
     const b = document.getElementById('falcon-note-btn');
-    return b.style.fontWeight === '700' && !!b.title && b.title.includes('#573 check');
+    return b.style.fontWeight === '700' && !!b.dataset.tip && b.dataset.tip.includes('#573 check');
   });
   ck(marked, 'and the button shows that every edit in the run will carry one');
 

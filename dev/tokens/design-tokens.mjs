@@ -114,6 +114,9 @@ export const TOKENS = {
     // then looks faded and every click lands on the backdrop and dismisses it.
     // Changing one of the pair without the other is exactly how that happened.
     'z-modal-panel': '2147483001',
+    // The tooltip (dev/ui/tooltip.mjs) explains whatever is under the pointer, a modal's
+    // buttons included, so it sits over everything.
+    'z-tip': '2147483600',
 };
 
 /** The `:root{…}` rule as a single CSS string. */

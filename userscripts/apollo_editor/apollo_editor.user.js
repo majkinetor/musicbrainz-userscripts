@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.102033
+// @version      2026.10.20.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1746,7 +1746,7 @@
           if (hits && hits.length === 1) {
             const ent = await fetchEntity(hits[0].gid, 'label');
             if (ent && ent.gid) {
-              try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link: ${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
+              try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link\n${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
               catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
             }
           } else Log.cat('Label').debug(name, '—', p.name, 'link', url, hits == null ? 'lookup unavailable' : hits.length ? hits.length + ' labels have it' : 'not in MusicBrainz', '→ the name');
@@ -2054,12 +2054,12 @@
   function riBadges(td) {
     td.querySelectorAll('.tc-ri-art .tc-ri-rb').forEach(rb => {
       const i = +rb.dataset.ri, p = _riArt[i]; rb.textContent = '';
-      if (_riMatching && p && !p.committed && p.creditedAs) { rb.innerHTML = `<span class="tc-ri-spin" title="${esc(RI_BUSY_TIP)}"></span>`; return; }
+      if (_riMatching && p && !p.committed && p.creditedAs) { rb.innerHTML = `<span class="tc-ri-spin" data-tip="${esc(RI_BUSY_TIP)}"></span>`; return; }
       const txt = p && badgeText(p); if (!txt) return;
       const chip = rb;
       const b = document.createElement('span'); b.className = 'tc-badge ' + p.status; b.dataset.ri = i; b.textContent = txt;
       if (p.status === 'low' && p.entity) {
-        b.classList.add('tc-ri-pick'); b.title = `uncertain: click to link ${p.entity.name}`;
+        b.classList.add('tc-ri-pick'); b.dataset.tip = `Uncertain\nClick: link ${p.entity.name}`;
         b.onclick = () => riPick(i, p.entity, 'picked (the uncertain candidate)');
       }
       chip.appendChild(b);
@@ -2097,7 +2097,7 @@
       const show = riWant() && cur && cur.gid;
       if (!show && riWant() && _riLabBusy.has(lf)) {
         if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
-        if (b.dataset.t !== 'busy') { b.dataset.t = 'busy'; b.dataset.gid = ''; b.innerHTML = `<span class="tc-ri-spin" title="${esc(RI_BUSY_TIP)}"></span>`; }
+        if (b.dataset.t !== 'busy') { b.dataset.t = 'busy'; b.dataset.gid = ''; b.innerHTML = `<span class="tc-ri-spin" data-tip="${esc(RI_BUSY_TIP)}"></span>`; }
         return;
       }
       if (!show) { if (b) b.remove(); inp.style.removeProperty('padding-right'); riLabelDisamb(inp, host, null, null); return; }
@@ -2106,10 +2106,10 @@
       const txt = st.abbr || ({ disc: 'disc', high: 'name', alias: 'alias' })[st.status] || st.status;
       if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
       // click opens the label in a new tab; the tooltip names it with its disambiguation
-      const tip = `${cur.name || ''}${cur.comment ? ' (' + cur.comment + ')' : ''}${st.title ? ' — ' + st.title : ''}
-click to open the label`;
+      const tip = `${cur.name || ''}${cur.comment ? ' (' + cur.comment + ')' : ''}${st.title ? '\n' + st.title.charAt(0).toUpperCase() + st.title.slice(1) : ''}
+Click: open the label`;
       const key = st.status + txt + cur.gid + tip;
-      if (b.dataset.t !== key) { b.dataset.t = key; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" title="${esc(tip)}" style="cursor:pointer">${esc(txt)}</span>`; }
+      if (b.dataset.t !== key) { b.dataset.t = key; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" data-tip="${esc(tip)}" style="cursor:pointer">${esc(txt)}</span>`; }
       b.dataset.gid = cur.gid;
       if (!b._wired) {
         b._wired = true;
@@ -2173,7 +2173,7 @@ click to open the label`;
     if (!riWant() || !_rgAuto || gid !== _rgAuto.gid) { if (b) { b.remove(); inp.style.removeProperty('padding-right'); } return; }
     if (!b) {
       b = document.createElement('span'); b.className = 'tc-ri-lab tc-ri-rgb mbu-ui'; host.appendChild(b);
-      b.innerHTML = `<span class="tc-badge high" title="${esc(_rgAuto.title + ' — picked by Apollo: the only suggested release group with this title' + (_rgAuto.loose ? ' (ignoring punctuation and case)' : '') + ' and artist\nclick to open the release group')}" style="cursor:pointer">auto</span>`;
+      b.innerHTML = `<span class="tc-badge high" data-tip="${esc(_rgAuto.title + '\nPicked by Apollo: the only suggested release group with this title' + (_rgAuto.loose ? ' (ignoring punctuation and case)' : '') + ' and artist\nClick: open the release group')}" style="cursor:pointer">auto</span>`;
       b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
       b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); window.open(`${ORIGIN}/release-group/${_rgAuto.gid}`, '_blank', 'noopener'); });
     }
@@ -2241,7 +2241,7 @@ click to open the label`;
     if (!inp._tcLabWired) { inp._tcLabWired = true; wireLabelPicker(inp, host); }
     if (!host.querySelector(':scope > .tc-ri-labmk')) {
       const mk = document.createElement('button'); mk.type = 'button'; mk.className = 'tc-ri-labmk mbu-ui'; mk.textContent = '＋';
-      mk.title = 'create this label on MusicBrainz  ·  right-click: create silently in a background tab';
+      mk.dataset.tip = 'Create this label on MusicBrainz\nRight-click: create it silently in a background tab';
       const go = bg => { const n = inp.value.trim(); if (n) createLabel(n, inp._tcLabLf, bg); else inp.focus(); };
       mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); e.stopPropagation(); go(false); };
       mk.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); go(true); };
@@ -2255,7 +2255,7 @@ click to open the label`;
     const txt = riWant() && cur && cur.gid && cur.comment ? cur.comment : '';
     if (!txt || !_nmMeasCtx) { if (d) d.remove(); return; }
     if (!d) { d = document.createElement('span'); d.className = 'tc-ri-labdis mbu-ui'; host.appendChild(d); }
-    if (d.title !== txt) { d.title = txt; d.textContent = '(' + txt + ')'; }
+    if (d.dataset.tip !== txt) { d.dataset.tip = txt; d.textContent = '(' + txt + ')'; }
     const cs = getComputedStyle(inp);
     _nmMeasCtx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const left = Math.ceil(inp.offsetLeft + parseFloat(cs.borderLeftWidth || 0) + parseFloat(cs.paddingLeft || 0) + _nmMeasCtx.measureText(inp.value).width + 6) + 'px';
@@ -2276,7 +2276,7 @@ click to open the label`;
       ensure(); list = res; hi = -1;
       pop.innerHTML = res.length ? res.map((c, i) => {
         const aka = aliasStr(c), meta = labelMeta(c);
-        return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}" title="click to set this label"><a class="tic" href="${ORIGIN}/label/${esc(c.gid)}" target="_blank" rel="noopener" title="open label page">${LABEL_SVG}</a><span class="nm">${esc(c.name)}</span>${aka ? `<span class="tc-aka">${esc(aka)}</span>` : ''}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${meta ? `<span class="tc-acmeta">${esc(meta)}</span>` : ''}</div>`;
+        return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}" data-tip="Click: set this label"><a class="tic" href="${ORIGIN}/label/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the label's page">${LABEL_SVG}</a><span class="nm">${esc(c.name)}</span>${aka ? `<span class="tc-aka">${esc(aka)}</span>` : ''}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${meta ? `<span class="tc-acmeta">${esc(meta)}</span>` : ''}</div>`;
       }).join('') : '<div class="tc-acrow none">no matches — use ＋ to create</div>';
       pop.querySelectorAll('.tc-acrow[data-i]').forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(res[+row.dataset.i]); }; });
       // the icon opens the label in a new tab: its mousedown stays off the row (no pick) and off the input (the popup stays)
@@ -3963,7 +3963,7 @@ click to open the label`;
     window.addEventListener('mouseover', e => {
       const h = apolloEnabled() && titleOf(e.target); if (!h || h.b.contains(e.relatedTarget)) return;
       e.stopPropagation();
-      h.b.title = 'Guess case\n(right-click: guess case options)';
+      h.b.dataset.tip = 'Guess case\nRight-click: its options';
       if (e.buttons !== 0 || !h.i.value) return;
       const g = gcGuess(h.i.value, 'release');
       if (g !== h.i.value) { prev = { i: h.i, orig: h.i.value }; h.i.value = g; h.i.classList.add('preview'); }
@@ -4016,7 +4016,7 @@ click to open the label`;
     const autoMode = () => { let lang = null; try { lang = u(release().languageID); } catch (e) { /* no release yet */ } return mbuGuessCase.modeFor(lang); };
     sel.append(new Option('Auto (' + autoMode() + ')', 'auto'), ...mbuGuessCase.modes.map(m => new Option(m, m)));
     sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
-    sel.title = "Guess case mode. Auto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence whatever the language.";
+    sel.dataset.tip = "Guess case mode\nAuto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence, whatever the language.";
     sel.onfocus = () => { sel.options[0].text = 'Auto (' + autoMode() + ')'; sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto'; };
     sel.onchange = () => { SETTINGS.gcMode = sel.value; saveSettings(); Log.cat('Tool').info('guess case mode', sel.value); gcOptionsChanged(); };
     return sel;
@@ -4027,13 +4027,13 @@ click to open the label`;
     box.appendChild(gcModeSelect());
     // the two options as toggles, drawn as S&R's RE: ABC keeps capitals, IV writes roman numerals in capitals
     const gcVal = key => (key === 'gcKeepUC' ? SETTINGS[key] !== false : !!SETTINGS[key]);
-    const mkTog = (text, key, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-srbtn tc-gc-tg' + (key === 'gcRoman' ? ' rn' : ''); b.textContent = text; b.title = title; b.dataset.gcKey = key; const show = () => { b.classList.toggle('on', gcVal(key)); b.setAttribute('aria-pressed', String(gcVal(key))); }; show(); b.onclick = () => { SETTINGS[key] = !gcVal(key); saveSettings(); Log.cat('Tool').info('guess case', key, SETTINGS[key]); gcOptionsChanged(); }; return b; };
+    const mkTog = (text, key, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-srbtn tc-gc-tg' + (key === 'gcRoman' ? ' rn' : ''); b.textContent = text; b.dataset.tip = title; b.dataset.gcKey = key; const show = () => { b.classList.toggle('on', gcVal(key)); b.setAttribute('aria-pressed', String(gcVal(key))); }; show(); b.onclick = () => { SETTINGS[key] = !gcVal(key); saveSettings(); Log.cat('Tool').info('guess case', key, SETTINGS[key]); gcOptionsChanged(); }; return b; };
     box.appendChild(mkTog('ABC', 'gcKeepUC', 'Keep uppercased: a word written in capitals (or with a capital inside, as KoRn) stays as it is'));
     box.appendChild(mkTog('IV', 'gcRoman', 'Roman numerals: in capitals, part ii → Part II'));
-    const sl = document.createElement('label'); sl.title = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts: Love story / история любви → Love Story / История любви. Empty: never split.";
+    const sl = document.createElement('label'); sl.dataset.tip = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts\nLove story / история любви → Love Story / История любви\nEmpty: never split";
     const si = document.createElement('input'); si.type = 'text'; si.className = 'tc-gc-sep'; si.dataset.gcSep = '1'; si.maxLength = 5; si.spellcheck = false; si.value = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep;
     si.onchange = () => { SETTINGS.gcSep = si.value.trim(); saveSettings(); Log.cat('Tool').info('guess case separator', JSON.stringify(SETTINGS.gcSep)); gcOptionsChanged(); };
-    si.title = 'Separator. ' + sl.title; si.setAttribute('aria-label', 'Separator');
+    si.dataset.tip = 'Separator\n' + sl.dataset.tip; si.setAttribute('aria-label', 'Separator');
     sl.append(si);   // no caption: the tooltip names it
     box.appendChild(sl);
     return box;
@@ -4241,7 +4241,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui/ui-components.mjs
@@ -4255,7 +4255,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   function mbuHelpHtml(name, label) {
       return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-          + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+          + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
   }
   function mbuHelpEl(name, label) {
       var a = document.createElement('a');
@@ -4263,7 +4263,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       a.href = mbuHelpHref(name);
       a.target = '_blank';
       a.rel = 'noopener';
-      a.title = 'open the README in a new tab';
+      a.dataset.tip = 'Open the README in a new tab';
       a.textContent = label || '? Help';
       return a;
   }
@@ -4461,12 +4461,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       var html = '<div class="mbu-cfg-h">';
       if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
       html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-      if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+      if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
       html += '<span class="mbu-cfg-sp"></span>';
       if (o.log) {
           html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
               + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-              + ' title="Open the activity log">Log</button>';
+              + ' data-tip="Open the activity log">Log</button>';
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
@@ -4818,18 +4818,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           root.classList.add('mbu-logpop');
           root.dataset.mbuLv = vid;
           root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-              + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-              + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+              + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+              + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
               + '<span class="mbu-logpop-sp"></span>'
-              + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-              + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-              + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-              + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                  + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                  + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+              + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+              + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+              + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+              + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+              + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                  + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                  + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
               + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
           if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
           var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
           var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -4982,14 +4982,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
           var minBtn = pop.querySelector('.mbu-logpop-min');
           var setMin = function (m) {
-              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
               if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
               else Object.assign(pop.style, restore);
           };
           var fullBtn = pop.querySelector('.mbu-logpop-full');
           var setFull = function (f) {
               pop.classList.toggle('full', f);
-              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
           };
           minBtn.onclick = function () {
               var m = pop.classList.toggle('min');
@@ -5417,7 +5417,349 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
       if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
       if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+      if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
   } catch (e) { /* a locked-down page must not stop the script loading */ }
+
+  // Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+  function mbuTipV() { return 1; }
+  function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-k{display:inline-block;padding:0 5px;border:1px solid var(--mbu-border,#cfc6e6);border-bottom-width:2px;border-radius:4px;background:var(--mbu-bg-raised,#faf9fe);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+  function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+  function mbuTipEsc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+  }
+  function mbuTipLabel(line) {
+      var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+      if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+      return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+  }
+  function mbuTipIsKey(label) {
+      return /click|drag|wheel|scroll|hover|double|press|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+  }
+  function mbuTipInline(s) {
+      return mbuTipEsc(s)
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+          .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, '<kbd class="mbu-tip-k">$1</kbd>')
+          .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+  }
+  function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function mbuTipText(src) {
+      var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+      if (!raw) return '';
+      var lines = [];
+      // the shapes the old title texts took, read as the rows they mean:
+      //   "… — click to open it"              → "…" + "Click: open it"
+      //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+      //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+      raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+          .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+          .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+          .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+      raw.split('\n').forEach(function (line) {
+          line = line.replace(/\s+$/, '');
+          // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+          var parts = line.split(/\s+·\s+/), out = [parts[0]];
+          for (var i = 1; i < parts.length; i++) {
+              if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+          }
+          out.forEach(function (seg) {
+              if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+              var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+              bits.forEach(function (b) { lines.push(b); });
+          });
+      });
+      // blocks: lead / paragraph / rows / bullets
+      var blocks = [], rowRun = [];
+      var flushRows = function () {
+          if (!rowRun.length) return;
+          var keyed = rowRun.filter(function (r) { return r.key; }).length;
+          if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+          else blocks.push({ t: 'p', s: rowRun[0].line });
+          rowRun = [];
+      };
+      lines.forEach(function (line, n) {
+          if (!line.trim()) { flushRows(); return; }
+          var b = /^\s*[-•]\s+(.*)$/.exec(line);
+          if (b) {
+              flushRows();
+              var last = blocks[blocks.length - 1];
+              if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+              return;
+          }
+          var l = mbuTipLabel(line);
+          // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+          if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+          flushRows();
+          blocks.push({ t: 'p', s: line });
+      });
+      flushRows();
+      // one long paragraph: its first sentence becomes the lead
+      if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+          var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+          if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+      }
+      var lead = blocks.length > 1 && blocks[0].t === 'p';
+      return blocks.map(function (bl, i) {
+          if (bl.t === 'ul') return '<ul class="mbu-tip-ul">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+          if (bl.t === 'rows') {
+              return '<div class="mbu-tip-rows">' + bl.rows.map(function (r) {
+                  return '<span class="' + (r.key ? 'mbu-tip-k' : 'mbu-tip-o') + '">' + mbuTipEsc(mbuTipCap(r.label)) + '</span><span>' + mbuTipInline(r.text) + '</span>';
+              }).join('') + '</div>';
+          }
+          var warn = /^⚠/.test(bl.s);
+          return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + '">' + mbuTipInline(bl.s) + '</div>';
+      }).join('');
+  }
+  function mbuTipCard(o) {
+      o = o || {};
+      var h = '';
+      if (o.head || o.title || o.aside) {
+          h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+              + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+      }
+      if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+      if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+      return h;
+  }
+  function mbuTipS() {
+      return mbuTipS.s || (mbuTipS.s = {
+          me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+          cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+      });
+  }
+  function mbuTip(el, content, opts) {
+      if (!el) return el;
+      var _mbuTip = mbuTipS();
+      mbuTipStart();
+      opts = opts || {};
+      if (typeof content === 'function') {
+          if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+          el.setAttribute('data-mbu-tip-own', '');
+          el.removeAttribute('title');
+          return el;
+      }
+      if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+      if (opts.place) el.setAttribute('data-tip-place', opts.place);
+      if (opts.wide) el.setAttribute('data-tip-wide', '');
+      el.removeAttribute('title');
+      if (_mbuTip.cur === el) mbuTipRender();
+      return el;
+  }
+  function mbuTipOn(selector, fn, opts) {
+      mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+      mbuTipStart();
+  }
+  function mbuTipShowFor(el, content, opts) {
+      if (!el || content == null || content === '') { mbuTipHide(true); return; }
+      mbuTipStart();
+      var o = opts || {};
+      var fn = typeof content === 'function' ? content : function () { return content; };
+      var S = mbuTipS();
+      if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+      mbuTipShow({ el: el, fn: fn, opts: o });
+  }
+  function mbuTipHtml(s) {
+      if (mbuTipHtml.tt === undefined) {
+          mbuTipHtml.tt = null;
+          try {
+              var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+              if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+          } catch (e) { /* the page allows no new policy: plain strings */ }
+      }
+      return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+  }
+  function mbuTipCss() {
+      var s = document.getElementById('mbu-tip-css');
+      if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+      if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+      s.setAttribute('data-v', String(mbuTipV()));
+      s.textContent = mbuTipCssText();
+  }
+  function mbuTipEl() {
+      var t = document.getElementById('mbu-tip');
+      if (!t) {
+          t = document.createElement('div');
+          t.id = 'mbu-tip';
+          t.setAttribute('role', 'tooltip');
+          (document.body || document.documentElement).appendChild(t);
+      }
+      return t;
+  }
+  function mbuTipFind(node) {
+      var _mbuTip = mbuTipS();
+      var tip = document.getElementById('mbu-tip');
+      for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+          if (el === tip) return null;
+          var reg = _mbuTip.els && _mbuTip.els.get(el);
+          if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+          for (var i = 0; i < _mbuTip.prov.length; i++) {
+              var p = _mbuTip.prov[i];
+              try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+          }
+          if (!_mbuTip.lead) continue;
+          if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+          if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+          // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+          if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+              var root = null;
+              try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+              if (root) {
+                  el.setAttribute('data-tip', el.getAttribute('title'));
+                  el.removeAttribute('title');
+                  return { el: el, opts: {} };
+              }
+          }
+      }
+      return null;
+  }
+  function mbuTipRender() {
+      var _mbuTip = mbuTipS();
+      var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+      if (!a) return false;
+      if (o.fn) {
+          try { c = o.fn(a); } catch (e) { c = null; }
+          if (c == null || c === '') return false;
+          if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+          else { t.textContent = ''; t.appendChild(c); }
+      } else {
+          var s = a.getAttribute('data-tip');
+          if (!s) return false;
+          var h = mbuTipText(s);
+          t.innerHTML = mbuTipHtml(h);
+          // an element with nothing to read of its own is named by its tip
+          if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+              a.setAttribute('aria-label', s.split('\n')[0]);
+          }
+      }
+      t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+      t.setAttribute('data-owner', _mbuTip.me);
+      mbuTipPlace(t, a, o.place);
+      return true;
+  }
+  function mbuTipPlace(t, a, place) {
+      var _mbuTip = mbuTipS();
+      var r = a.getBoundingClientRect();
+      if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+      t.style.left = '0px'; t.style.top = '0px';
+      var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+      var below = place !== 'above';
+      if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+      else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+      var top = below ? r.bottom + gap : r.top - gap - h;
+      // a wide element (a row, a long field): the arrow points where the pointer is
+      var cx = r.left + r.width / 2;
+      if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+      var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+      t.style.left = left + 'px';
+      t.style.top = Math.max(m, Math.round(top)) + 'px';
+      t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+      t.classList.toggle('mbu-tip-up', !below);
+  }
+  function mbuTipShow(found) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+      if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+      mbuTipCss();
+      _mbuTip.cur = found.el;
+      _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+      if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+      var t = mbuTipEl();
+      found.el.setAttribute('aria-describedby', 'mbu-tip');
+      // next frame, so the transition runs from the hidden state
+      requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+      // the element can go (a re-render) or change its text while the tip is up
+      clearInterval(_mbuTip.liveT);
+      _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+      try {
+          if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+          _mbuTip.obs.disconnect();
+          if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+      } catch (e) { /* no observer: the text is read again on the next hover */ }
+  }
+  function mbuTipHide(now) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+      _mbuTip.pend = null;
+      var hide = function () {
+          var a = _mbuTip.cur;
+          if (!a) return;
+          _mbuTip.cur = null;
+          clearInterval(_mbuTip.liveT);
+          try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+          if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+          var t = document.getElementById('mbu-tip');
+          if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+          _mbuTip.warm = Date.now();
+      };
+      if (now) hide();
+      else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+  }
+  function mbuTipStart() {
+      if (mbuTipStart.done || typeof document === 'undefined') return;
+      var _mbuTip = mbuTipS();
+      var root = document.documentElement;
+      if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+      mbuTipStart.done = true;
+      if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+      var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+      document.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+      document.addEventListener('mouseover', function (e) {
+          _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+          if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+          var f = mbuTipFind(e.target);
+          if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+          if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+          if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+          clearTimeout(_mbuTip.showT);
+          _mbuTip.pend = f;
+          var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+          _mbuTip.showT = setTimeout(function () {
+              _mbuTip.pend = null;
+              if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+          }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+      }, true);
+      document.addEventListener('mouseout', function (e) {
+          var to = e.relatedTarget;
+          var q = _mbuTip.quiet;
+          if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+          var p = _mbuTip.pend;
+          if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+          var a = _mbuTip.cur;
+          if (!a) return;
+          if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+          if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+      }, true);
+      document.addEventListener('mousedown', function (e) {
+          if (inTip(e.target)) return;
+          clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+          var f = mbuTipFind(e.target);
+          _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+          if (_mbuTip.cur) mbuTipHide(true);
+      }, true);
+      document.addEventListener('keydown', function (e) {
+          if (!_mbuTip.cur) return;
+          var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+          // typing closes a plain tip, as it does the browser's; modifiers alone don't
+          if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+          mbuTipHide(true);
+          if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+      }, true);
+      window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+      window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+      document.addEventListener('focusin', function (e) {
+          var el = e.target, vis = false;
+          try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+          if (!vis) return;
+          var f = mbuTipFind(el);
+          if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+      }, true);
+      document.addEventListener('focusout', function (e) {
+          if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+      }, true);
+  }
+  mbuTipStart();
   // </ST-UI>
 
   // <ST-ARCHIVE> — generated by dev/archive/sync-archive.mjs from dev/archive/wayback.mjs — DO NOT EDIT
@@ -5519,7 +5861,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
       // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
       const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
-      return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+      return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" data-tip="archive.org keys: optional, shared by First Contact and Apollo Editor\nWith them the save uses Save Page Now 2: higher limits, and a screenshot of the page, the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music).\nWithout them the save is anonymous.">`
           + `<div class="mbu-ia-h">archive.org keys <span class="mbu-ia-st">${mbaKeysState(k.iaKey, k.iaSecret)}</span> <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
           + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
           + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;
@@ -5710,25 +6052,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-mirror td.c-act{vertical-align:top;padding:0}
     .tc-mirror th.c-badge{text-align:center}   /* #654: over its centred pills */
     .tc-mirror .tc-badge[data-slot]{cursor:help}
-    /* #654: the match card, a badge's rich tooltip */
-    #tc-mtip{position:absolute;z-index:var(--mbu-z-pop);width:380px;max-width:94vw;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:9px;box-shadow:var(--mbu-shadow-lg);font:13px/1.4 var(--mbu-font);overflow:hidden}
-    #tc-mtip .tc-mt-h{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised)}
-    #tc-mtip .tc-mt-st{margin-left:auto;font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}
-    #tc-mtip .tc-mt-bd{padding:8px 11px;display:flex;flex-direction:column;gap:6px}
-    #tc-mtip a{color:var(--mbu-accent-text)}
-    #tc-mtip .tc-mt-who a{font-weight:600;text-decoration:none}
-    #tc-mtip .tc-mt-meta{display:block;font-size:11px;color:var(--mbu-text-weak)}
-    #tc-mtip .tc-mt-dim{color:var(--mbu-text-weak)}
-    #tc-mtip .tc-mt-means{color:var(--mbu-text-dim);font-size:12px}
-    #tc-mtip .tc-mt-why{color:var(--mbu-text-dim)}
-    #tc-mtip .tc-mt-alt{font-size:12px;color:var(--mbu-text-dim)}
-    #tc-mtip .tc-mt-tbl{border-collapse:collapse;width:100%;font-size:12px}
-    #tc-mtip .tc-mt-tbl td{padding:2px 4px;border-top:1px solid var(--mbu-divider);vertical-align:top}
-    #tc-mtip .tc-mt-tbl td.ok{color:var(--mbu-ok);font-weight:bold;width:14px}
-    #tc-mtip .tc-mt-tbl td.no{color:var(--mbu-error);font-weight:bold;width:14px}
-    #tc-mtip .tc-mt-tbl td.w{color:var(--mbu-text-weak);text-align:right}
-    #tc-mtip .tc-mt-ft{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft);font-size:11px;color:var(--mbu-text-weak)}
-    #tc-mtip .tc-mt-ft .k{margin-left:auto}
+    /* #654: the match card, a badge's rich tooltip: the shared tooltip's card (mbuTipCard), with what's inside it here */
+    #mbu-tip .tc-mt-who a{font-weight:600;text-decoration:none}
+    #mbu-tip .tc-mt-meta{display:block;font-size:11px;color:var(--mbu-text-weak)}
+    #mbu-tip .tc-mt-dim{color:var(--mbu-text-weak)}
+    #mbu-tip .tc-mt-means{color:var(--mbu-text-dim);font-size:12px}
+    #mbu-tip .tc-mt-why{color:var(--mbu-text-dim)}
+    #mbu-tip .tc-mt-alt{font-size:12px;color:var(--mbu-text-dim)}
+    #mbu-tip .tc-mt-tbl{border-collapse:collapse;width:100%;font-size:12px}
+    #mbu-tip .tc-mt-tbl td{padding:2px 4px;border-top:1px solid var(--mbu-divider);vertical-align:top}
+    #mbu-tip .tc-mt-tbl td.ok{color:var(--mbu-ok);font-weight:bold;width:14px}
+    #mbu-tip .tc-mt-tbl td.no{color:var(--mbu-error);font-weight:bold;width:14px}
+    #mbu-tip .tc-mt-tbl td.w{color:var(--mbu-text-weak);text-align:right}
     .tc-trackacts{height:28px;display:flex;align-items:center;justify-content:center;gap:0;visibility:hidden}
     .tc-mirror tr:hover .tc-trackacts{visibility:visible}
     .tc-trackacts button{cursor:pointer;border:none;border-radius:4px;width:22px;padding:2px 0;background:none;font-size:16px;line-height:1}
@@ -6275,35 +6610,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       </div>
       <div class="tc-tab-pane" data-pane="general">
         <div class="tc-s-group tc-s-top">
-          <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. Apollo's corner icon still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
-          <label title="Replace the native Tracklist editor with the Apollo table on page load. Apollo's corner icon still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
-          <label title="Replace the native Recordings editor with the Apollo table on page load. Apollo's corner icon still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
-          <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (by track-title overlap), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
-          <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
-          <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
-          <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
-          <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
+          <label data-tip="Tidy the Release information tab\nNo help bubble, tidier external links, and the right column put to use.\nApollo's corner icon turns it off and on at any time."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
+          <label data-tip="Apollo's table in place of the Tracklist editor\nFrom the page load. Apollo's corner icon turns it off and on at any time."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
+          <label data-tip="Apollo's table in place of the Recordings editor\nFrom the page load. Apollo's corner icon turns it off and on at any time."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
+          <label data-tip="A Similarity column on the Duplicates tab\nHow closely each existing release matches the one you are entering, by the track titles they share, coloured red → green, so you can pick the right one to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
+          <label data-tip="Edit the annotation as Markdown, with a live preview\nIn the release editor's Additional information, and on the Edit annotation page"><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
+          <label data-tip="A compact header and footer\nThe step tabs and the footer give way to a small step switcher, the wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
+          <label data-tip="Zen: just the editor\nEverything above Apollo's nav bar (the site header, the release title, the entity tabs) and the page footer are hidden; the title and artist, with the version count, move into the nav bar.\nIt needs the compact header."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
+          <label data-tip="Skip the confirmation page of a seeded release\nWhen another site seeds the release form, MusicBrainz asks first; Apollo clicks its submit button for you (chaban's auto-confirm script, built in).\nOnce, without this: add \`?skip_confirmation\` to the seed URL."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
           <div class="tc-s-sub tc-s-gap">Archive</div>
-          <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links. This sends those URLs to archive.org. The archive menu by each link on the release's page finds the snapshots. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
+          <label data-tip="Save the external links on the Wayback Machine at Enter edit\nThe archive menu by each link on the release's page finds the snapshots. First Contact saves the album page of its own import itself.\n⚠ This sends those URLs to archive.org"><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
-          <label title="On release, release group, artist and label pages: a faint clock by each external link opens a menu with its snapshots on the Wayback Machine, its screenshot, all its snapshots, and Save it now. Nothing is sent to archive.org until you pick one."><input type="checkbox" id="tc-s-archivemenu"> <span>Archive menu on external links</span></label>
+          <label data-tip="A Wayback Machine menu by each external link\nOn release, release group, artist and label pages, a faint clock opens the link's snapshots, its screenshot, all its snapshots, and Save it now.\nNothing goes to archive.org until you pick one."><input type="checkbox" id="tc-s-archivemenu"> <span>Archive menu on external links</span></label>
         </div>
       </div>
       <div class="tc-tab-pane" data-pane="matching" hidden>
         <div class="tc-s-group">
           <div class="tc-s-sub">Auto-match on start</div>
           <div class="tc-s-group">
-            <div class="tc-s-row" style="gap:6px 14px;flex-wrap:wrap"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. An ambiguous name (e.g. Columbia) is linked when the similar releases on the Duplicates tab credit exactly one label of that name, else left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" title="Release-info Release group field: when exactly one of the existing release groups MusicBrainz suggests has the release's title and artist, select it instead of adding a new one. Marked with an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
-            <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
-            <label title="When the release has no language or script, fill them in from the release and track titles. A field a seed or you set is never touched, nor one you change after Apollo filled it. Everything found is offered at the top of the field's list. The language needs three titles or more and 80% confidence from lande, Harmony's detector (50 languages); when it isn't sure, a script that implies its language (Japanese, Korean, Greek…) names one."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
+            <div class="tc-s-row" style="gap:6px 14px;flex-wrap:wrap"><label class="tc-s-rad" data-tip="Match the track artists on load, on the Tracklist\nOff: with the Match button"><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" data-tip="Match the recordings not set on load, on Recordings\nOff: with the Match button"><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" data-tip="Label: pick it on load when the name is certain\nWhen the label name, seeded or typed, matches exactly one MusicBrainz label. A name many labels have (Columbia) is picked when the similar releases on the Duplicates tab credit just one of them; otherwise it's yours to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" data-tip="Artist: pick it on load when the name is certain\nWhen the release artist, seeded or typed, matches exactly one MusicBrainz artist. A name many artists have is yours to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" data-tip="Release group: pick an existing one on load\nWhen exactly one release group MusicBrainz suggests has the release's title and artist, instead of adding a new one. It shows an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
+            <label data-tip="Match track artists by their Discogs links first\nWhen the release has a Discogs link, before the search by name: a sure sign, checked by people. One linked MusicBrainz artist is picked; several are offered."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
+            <label data-tip="Fill in a missing language and script from the titles\nOnly when the release has none: a field a seed or you set is never touched, nor one you change after Apollo filled it. What was found is offered at the top of the field's list.\nThe language needs three titles or more, and 80% confidence from lande, Harmony's detector of 50 languages; when it isn't sure, a script that implies a language (Japanese, Korean, Greek, …) names it."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
           </div>
           <div class="tc-s-sub">Recording</div>
           <div class="tc-s-group">
-            <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
-            <div class="tc-s-row lentol" title="Allow up to this many differing characters in the title (edit distance) and still count it as a match. 0 = exact."><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
-            <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
-            <label title="Ignore punctuation &amp; symbols in titles/artists (&amp; → and, brackets, quotes, dashes, dots…)."><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
-            <div class="tc-s-row" style="gap:8px"><label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" title="Highlight colour — the differing characters and the length-mismatch shading"></div>
+            <div class="tc-s-row lentol" data-tip="Lengths this many seconds apart still match"><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
+            <div class="tc-s-row lentol" data-tip="Titles this many characters apart still match\nThe edit distance. 0: exact"><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
+            <label data-tip="Titles and artists that differ only in case, accents or spacing match\nRecommended"><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
+            <label data-tip="Ignore punctuation and symbols in titles and artists\n&amp; → and, brackets, quotes, dashes, dots, …"><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
+            <div class="tc-s-row" style="gap:8px"><label data-tip="Highlight the very characters that differ\nIn a title that doesn't match, instead of the whole field; a length that doesn't match is shaded by how far off it is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" data-tip="The highlight colour\nFor the characters that differ, and the shading of a length"></div>
           </div>
         </div>
       </div>
@@ -6311,10 +6646,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         <div class="tc-s-group">
           <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
           <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
-          <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
-          <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = no enlargement)</span></div>
-          <label title="Moving between tracklist cells with ↑ / ↓ / Enter keeps the text caret at the same column (clamped to the field's length) so you can fix casing or edit in place. Off: select the whole field on arrival (so the next keystroke overwrites it)."><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
-          <label title="When you hover an artist in the tracklist, highlight every other slot where that same artist appears (#284). Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
+          <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" data-tip="Lines between the columns"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" data-tip="Lines between the tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
+          <div class="tc-s-row" data-tip="Enlarge look-alike characters that differ\nPunctuation, confusable and invisible characters (a straight or curly quote, a hyphen or dash, a no-break space, …) grow by this many pixels in the highlight, so they stand out. 0: not enlarged; hovering one still names it."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = no enlargement)</span></div>
+          <label data-tip="Keep the caret's column when moving between cells\nWith ↑, ↓ and Enter, so you can fix the casing or edit in place.\nOff: the whole field is selected, and the next key replaces it"><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
+          <label data-tip="Highlight an artist everywhere on hover\nEvery other place the artist hovered in the tracklist appears. Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
         </div>
       </div>`;
     document.body.appendChild(s);
@@ -6407,7 +6742,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress;
   // when there are unresolved artists the badge is clickable and jumps to the first one
-  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.title = n > 0 ? 'jump to the first unresolved artist' : ''; }); };
+  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.dataset.tip = n > 0 ? 'Go to the first artist not resolved' : ''; }); };
   // #227: persistent missing-Discogs-links badge. Stays until every link is
   // added; each click steps to the NEXT track missing one and focuses its credit.
   let _discNavIdx = -1;
@@ -6441,7 +6776,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         e.classList.add('tc-disc-pend');
         e.textContent = '🔗 Discogs ⟳';
         e.style.cursor = 'pointer';
-        e.title = 'Couldn’t reach Discogs (rate-limited) — click to retry';
+        e.dataset.tip = '⚠ Couldn’t reach Discogs: too many requests\nClick: try again';
         e.onclick = () => tagDiscogsForAll();
       });
       return;
@@ -6456,33 +6791,33 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const n = miss + mism;
     document.querySelectorAll('.tc-discstat').forEach(e => {
       e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend');
-      e.onclick = null; e.style.cursor = ''; e.title = '';
+      e.onclick = null; e.style.cursor = ''; e.dataset.tip = '';
       if (n) {
         // links to add / mismatches → teal action badge, click steps to the next
         e.textContent = `🔗 ${n} link${n === 1 ? '' : 's'}` + (pend ? ` · ${pend}?` : '');
         e.classList.add('tc-disc-badge');
         e.onclick = focusNextMissingDiscogs; e.style.cursor = 'pointer';
-        e.title = `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'}` + (pend ? `, ${pend} unchecked` : '') + ' — click to step to the next';
+        e.dataset.tip = `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'}` + (pend ? `, ${pend} not checked` : '') + '\nClick: go to the next';
       } else if (pend) {
         // every job ran but some lookups couldn't complete (rate-limited / cold) →
         // say so honestly and let a click retry, rather than reading as "all OK"
         e.textContent = `🔗 ${pend} unchecked`;
         e.classList.add('tc-disc-pend');
         e.onclick = () => tagDiscogsForAll(); e.style.cursor = 'pointer';
-        e.title = `${pend} Discogs link${pend === 1 ? '' : 's'} couldn't be checked (rate-limited) — click to retry`;
+        e.dataset.tip = `${pend} Discogs link${pend === 1 ? '' : 's'} not checked: too many requests\nClick: try again`;
       } else if (checked) {
         // the check ran and every Discogs artist credit is already linked in MB —
         // a positive confirmation so a blank badge no longer means "did it run?"
         e.textContent = '✓ Discogs links OK';
         e.classList.add('tc-disc-ok');
-        e.title = 'every Discogs artist credit on this release is already linked in MusicBrainz';
+        e.dataset.tip = 'Every Discogs artist credit on this release is already linked on MusicBrainz';
       } else {
         e.textContent = '';   // no Discogs link on the release / not checked yet
       }
     });
   };
   // transient progress text in the same slot, while the check runs (not a pill)
-  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
+  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend'); e.onclick = null; e.style.cursor = ''; e.dataset.tip = ''; });
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   // majkinetor: "it doesn't seem like a good idea to show messages in the toolbar as it moves
@@ -6545,7 +6880,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const ack = (b, live) => {
       if (!b || !live) return;
       (b.querySelector('.tc-rec-am-lbl') || b).textContent = '⏳ Stopping…';
-      b.title = 'Stopping once the request in flight comes back — everything matched so far is kept';
+      b.dataset.tip = 'Stopping once the request on its way comes back\nWhat matched so far stays.';
     };
     ack(document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'), _matching);
     ack(document.querySelector('#tc-recwrap .tc-rec-am'), _autoMatching);
@@ -6570,7 +6905,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     b.disabled = false;
     b.classList.toggle('tc-stopping', on);
     b.textContent = on ? '■ Stop' : '⚡ Match';
-    b.title = on ? 'Stop matching — what has already been matched is kept' : 'search MusicBrainz for the unmatched artists';
+    b.dataset.tip = on ? 'Stop matching\nWhat matched so far stays.' : 'Search MusicBrainz for the artists not matched';
   }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
   const rerender = () => { const restore = keepScroll(); _hlCur = null; renderRiArtist(true); if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); restore(); };   // #685: re-filling the rows mustn't scroll the view
@@ -6638,7 +6973,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // the artist-selection-mode switch (all | one, radios under a sliding thumb) — live in the toolbar; value is SETTINGS.applyMode ('all' | 'single')
   let _amSeq = 0;
-  const amRadios = () => { const n = 'tc-am-' + (++_amSeq); return `<span class="tc-applymode" role="radiogroup" title="when you pick an artist, apply it to…"><span class="tc-am-thumb"></span><label title="all matching tracks"><input type="radio" name="${n}" value="all">all</label><label title="single track"><input type="radio" name="${n}" value="single">one</label></span>`; };
+  const amRadios = () => { const n = 'tc-am-' + (++_amSeq); return `<span class="tc-applymode" role="radiogroup" data-tip="When you pick an artist, it goes to…"><span class="tc-am-thumb"></span><label data-tip="Every track it matches"><input type="radio" name="${n}" value="all">all</label><label data-tip="This track only"><input type="radio" name="${n}" value="single">one</label></span>`; };
   function syncApplyMode() { const v = SETTINGS.applyMode || 'all'; document.querySelectorAll('.tc-applymode input').forEach(r => { r.checked = r.value === v; }); }
   function wireApplyMode(root) {
     const am = (root || document).querySelector('.tc-applymode'); if (!am) return;
@@ -6656,7 +6991,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // #329), and native MB leaves these controls enabled there too.
     const opts = document.createElement('span'); opts.className = 'tc-medopts';
     const mkOpt = (label, prop, help) => {
-      const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.title = help;
+      const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.dataset.tip = help;
       const cb = document.createElement('input'); cb.type = 'checkbox';
       try { cb.checked = typeof med[prop] === 'function' && !!med[prop](); } catch (e) {}
       cb.onchange = () => {
@@ -6742,7 +7077,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (canAdd || opts) {
       const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
       if (canAdd) {
-        addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
+        addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" data-tip="Add empty tracks">＋</button>`;
         const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
         addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
       }
@@ -6985,15 +7320,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // content-sizing the matched field leaves a short name with almost no click target, so clicking
     // anywhere in the rest of the bar (the empty space / alias) focuses it to open the search. #128
     search.onmousedown = e => { if (e.target === inp || e.target.closest('.tc-joinwrap, .mk')) return; e.preventDefault(); inp.focus(); };
-    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.title = aka; search.insertBefore(al, ref); }
+    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.dataset.tip = aka; search.insertBefore(al, ref); }
     // artist disambiguation, like native MB's credit editor — grey, after the alias.
     // Sourced from the cache (filled by the same gid alias fetch); shows even for
     // special-purpose artists like [unknown], whose alias is suppressed. #195
     const dis = slot.committed ? (getDisamb(slot.gid) || (slot.entity && slot.entity.comment) || '') : '';   // #450 entity fallback (created/pasted picks)
-    if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
+    if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.dataset.tip = dis; search.insertBefore(ds, ref); }
     // #580: always built. On an unresolved slot it shows outright; on a resolved
     // one the .tc-search.matched rules keep it hidden until the slot has focus.
-    const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz  ·  right-click: create silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref);
+    const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.dataset.tip = 'Create this artist on MusicBrainz\nRight-click: create it silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref);
   }
   // #626: what a `pos` match rests on, on hover
   /* ── #654: the match card — a badge's rich tooltip ─────────────────────────────
@@ -7087,48 +7422,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const body = (s.gid ? mtEntityHtml(s.entity, s.gid, s.name) : '')
       + (ev || `<div class="tc-mt-means">${esc(st.means)}</div>`)
       + (alts.length ? `<div class="tc-mt-alt">Also considered: ${alts.map(c => `${mtArtistLink(c.gid || c.id, c.name)}${c.comment ? ` <span class="tc-mt-dim">(${esc(c.comment)})</span>` : ''}`).join(', ')}</div>` : '');
-    return `<div class="tc-mt-h"><span class="tc-badge ${esc(s.status)}">${esc(badgeText(s))}</span><b>${esc(st.name)}</b><span class="tc-mt-st">${st.n ? 'stage ' + st.n + ' · ' : ''}${auto}</span></div>`
-      + `<div class="tc-mt-bd">${body}</div>`
-      + `<div class="tc-mt-ft"><span>${at ? (s.status === 'user' ? 'picked ' : 'matched ') + mtClock(at) : ''}</span><span class="k">click the artist to change</span></div>`;
+    return mbuTipCard({ head: `<span class="tc-badge ${esc(s.status)}">${esc(badgeText(s))}</span>`, title: st.name, aside: (st.n ? 'stage ' + st.n + ' · ' : '') + auto,
+      body, foot: at ? (s.status === 'user' ? 'picked ' : 'matched ') + mtClock(at) : '', footAside: 'click the artist to change' });
   }
-  let _mtCard = null, _mtShowT = 0, _mtHideT = 0, _mtFor = null;
-  function closeMatchCard() { clearTimeout(_mtShowT); clearTimeout(_mtHideT); if (_mtCard) { _mtCard.remove(); _mtCard = null; _mtFor = null; } }
-  function openMatchCard(badge, slot) {
-    closeMatchCard();
-    const c = document.createElement('div'); c.id = 'tc-mtip'; c.className = 'mbu-ui'; c.setAttribute('role', 'tooltip');
-    c.innerHTML = matchCardHtml(slot);
-    document.body.appendChild(c);
-    const b = badge.getBoundingClientRect(), w = c.offsetWidth, h = c.offsetHeight;
-    let left = Math.min(b.right - w, window.innerWidth - w - 8); left = Math.max(8, left);
-    let top = b.bottom + 6; if (top + h > window.innerHeight - 8 && b.top - h - 6 > 8) top = b.top - h - 6;
-    c.style.left = (left + window.scrollX) + 'px'; c.style.top = (top + window.scrollY) + 'px';
-    c.addEventListener('mouseenter', () => clearTimeout(_mtHideT));
-    c.addEventListener('mouseleave', () => { _mtHideT = setTimeout(closeMatchCard, 250); });
-    _mtCard = c; _mtFor = badge;
-    Log.cat('Artist').debug('match card: ' + slot.status + ' for "' + slot.creditedAs + '"' + (slot._why ? '' : ' (no match record: linked before this session or picked)'));
+  // one provider for every badge, now and after any re-render. The shared tooltip (dev/ui/tooltip.mjs)
+  // opens the card after half a second, keeps it while the pointer is on it, and closes it on Esc.
+  function matchCardSlot(badge) {
+    if (badge.dataset.ri != null) return _riArt[+badge.dataset.ri] || null;   // #652
+    const row = badge.closest('tr[data-tk]'); if (!row || !MODEL) return null;
+    const t = MODEL.tracks.find(x => x.mi + ':' + x.ti === row.dataset.tk);
+    return (t && t.slots[+badge.dataset.slot]) || null;
   }
-  // one listener for every badge, now and after any re-render
   function wireMatchCards() {
     if (wireMatchCards.done) return; wireMatchCards.done = true;
-    document.addEventListener('mouseover', e => {
-      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]');
-      if (!badge || badge === _mtFor) return;
-      clearTimeout(_mtShowT); clearTimeout(_mtHideT);
-      _mtShowT = setTimeout(() => {
-        if (!badge.isConnected || !badge.matches(':hover')) return;
-        if (badge.dataset.ri != null) { const ps = _riArt[+badge.dataset.ri]; if (ps) openMatchCard(badge, ps); return; }   // #652
-        const row = badge.closest('tr[data-tk]'); if (!row || !MODEL) return;
-        const t = MODEL.tracks.find(x => x.mi + ':' + x.ti === row.dataset.tk);
-        const slot = t && t.slots[+badge.dataset.slot]; if (slot) openMatchCard(badge, slot);
-      }, 500);
-    });
-    document.addEventListener('mouseout', e => {
-      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]');
-      if (!badge || (e.relatedTarget && badge.contains(e.relatedTarget))) return;
-      clearTimeout(_mtShowT);
-      if (_mtFor === badge) _mtHideT = setTimeout(closeMatchCard, 250);
-    });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && _mtCard) closeMatchCard(); }, true);
+    mbuTipOn('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]', badge => {
+      const slot = matchCardSlot(badge); if (!slot) return null;
+      Log.cat('Artist').debug('match card: ' + slot.status + ' for "' + slot.creditedAs + '"' + (slot._why ? '' : ' (no match record: linked before this session or picked)'));
+      return matchCardHtml(slot);
+    }, { interactive: true, card: true, delay: 500 });
   }
   function posBadgeTitle(s) {
     if (s.status !== 'pos' || !s._pos) return '';
@@ -7147,8 +7458,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const row = cell.closest('tr');
     const actCell = (row && row.querySelector('td.c-act')) || cell;
     // both slots always rendered, so ✕ never moves when ↺ comes and goes
-    actCell.innerHTML = `<div class="tc-trackacts"><button class="trev${changed ? '' : ' void'}" title="revert this track"${changed ? '' : ' tabindex="-1" aria-hidden="true"'}>↺</button>`
-      + `<button class="rm${locked ? ' void' : ''}" title="remove track"${locked ? ' tabindex="-1" aria-hidden="true"' : ''}>✕</button></div>`;
+    actCell.innerHTML = `<div class="tc-trackacts"><button class="trev${changed ? '' : ' void'}" data-tip="Revert this track"${changed ? '' : ' tabindex="-1" aria-hidden="true"'}>↺</button>`
+      + `<button class="rm${locked ? ' void' : ''}" data-tip="Remove the track"${locked ? ' tabindex="-1" aria-hidden="true"' : ''}>✕</button></div>`;
     const trev = actCell.querySelector('.trev:not(.void)'); if (trev) trev.onclick = () => revertTrack(track);
     const rm = actCell.querySelector('.rm:not(.void)'); if (rm) rm.onclick = () => { removeTrack(track); rebuild(); };
     if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
@@ -7156,7 +7467,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
   function joinControl(entry, slot, refreshBadges) {
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
-    const inp = noPw(document.createElement('input')); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
+    const inp = noPw(document.createElement('input')); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.dataset.tip = 'The join phrase to the next artist\nType one, or pick a common one from ▾';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
     // #208: flag a join phrase missing a space on either side (␣) or missing
     // entirely (␣?␣). Every rendered join control sits BETWEEN two artists
@@ -7181,7 +7492,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const commit = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); };
     inp.oninput = () => { fit(); markJoin(); if (inp.value.trim()) open(inp.value); else close(); };   // #419: typing filters the presets live
     inp.onchange = () => { commit(); };
-    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases (type to filter · ↑↓ + Enter)';
+    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.dataset.tip = 'Common join phrases\nType: filter them\n↑↓ + Enter: pick one';
     // #419: keyboard-first presets — typing filters ("fe" → feat. / featuring), ArrowDown
     // opens/moves, Enter picks the highlighted row, Esc closes; same keys on the ▾ button.
     let pop = null, items = [], hi = -1;
@@ -7247,9 +7558,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       list = arr;
       const of = lead.length ? slot._pos.of : 0;
       const sec = (i) => !lead.length ? '' : i === 0 ? '<div class="tc-acsec">On other editions at this position</div>' : i === lead.length ? '<div class="tc-acsec">Search</div>' : '';
-      const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" title="credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
-      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" title="open artist page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
-      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.title = 'click to set · Ctrl-click to set on all unresolved tracks'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
+      const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" data-tip="Credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
+      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the artist's page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.dataset.tip = 'Click: set it\nCtrl+click: set it on every track not resolved'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
       // #689: the type icon opens the artist in a new tab, like the one beside a resolved field — its
       // mousedown stays off the row (no pick) and off the input (focus, so the popup stays open)
       pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
@@ -7334,9 +7645,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) line.classList.add('tc-can-split');
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
-    const cred = noPw(document.createElement('input')); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
+    const cred = noPw(document.createElement('input')); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.dataset.tip = 'Credited as\nEmpty: the artist’s name';
     // #228: a hover × on the left of the field clears the credited-as override
-    const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.title = 'clear the credited-as override  ·  right-click: clear every credited-as on the tracklist';
+    const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.dataset.tip = 'Clear the credited-as name\nRight-click: clear every credited-as on the tracklist';
     const updCredClr = () => line.classList.toggle('tc-has-cred', !!cred.value.trim());
     credClr.onmousedown = e => e.preventDefault();
     credClr.onclick = () => { if (!cred.value) return; cred.value = ''; cred.onchange(); updCredClr(); };
@@ -7363,8 +7674,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // different Discogs page) → amber circle-! ; conflict wins the icon when both are flagged.
       const warnCls = conf ? 'discogs-conflict' : 'discogs-mismatch', warnSvg = conf ? DISCOGS_WARN_SVG : DISCOGS_MISMATCH_SVG;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? warnCls : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? warnSvg : DISCOGS_LINK_SVG;
-      ic.title = discAddTooltip(s);
-      ic.title += '  ·  right-click: do it silently in a background tab';
+      ic.dataset.tip = discAddTooltip(s);
+      ic.dataset.tip += '\nRight-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreateDiscogsLink(s, true); };   // #273 background
@@ -7372,7 +7683,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // #651: the same offer for First Contact's platform link
       const conf = s._platConflict;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + (conf ? 'discogs-conflict' : 'discogs-add') + ' plat-offer'; ic.href = '#'; ic.innerHTML = conf ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
-      ic.title = platAddTooltip(s) + '  ·  right-click: do it silently in a background tab';
+      ic.dataset.tip = platAddTooltip(s) + '\nRight-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreatePlatformLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreatePlatformLink(s, true); };
@@ -7380,24 +7691,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._discogsConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
-      ic.title = `Discogs links this URL to ${s._discogsConflict.name} — pick that artist`;
+      ic.dataset.tip = `⚠ Discogs links this URL to ${s._discogsConflict.name}\nPick that artist`;
     } else if (s._platConflict && !(s.committed && s.gid)) {
       // #651: an unmatched slot whose platform link belongs to an MB artist — info only (pick that artist)
       const p = platformOf(s._platUrl) || { name: 'platform' };
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict plat-offer'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._platConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
-      ic.title = `${p.name}: ${s._platUrl} is linked to ${s._platConflict.name} — pick that artist`;
+      ic.dataset.tip = `⚠ ${p.name}: ${s._platUrl} is linked to ${s._platConflict.name}\nPick that artist`;
     } else {
       ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
-      if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
+      if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.dataset.tip = 'Open the artist’s page'; } else ic.dataset.tip = 'No artist linked yet';
     }
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = noPw(document.createElement('input')); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
+    const inp = noPw(document.createElement('input')); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.dataset.tip = inp.value;
     search.appendChild(inp);
     // #228: hover × right after the name clears the field (and unsets a matched
     // artist — the input handler un-links on an empty value)
-    const nmClr = document.createElement('button'); nmClr.type = 'button'; nmClr.className = 'tc-nm-clr'; nmClr.textContent = '×'; nmClr.title = 'clear / unset the artist';
+    const nmClr = document.createElement('button'); nmClr.type = 'button'; nmClr.className = 'tc-nm-clr'; nmClr.textContent = '×'; nmClr.dataset.tip = 'Clear the artist';
     // size the input to its text (so the clear × hugs the name when not editing — #284 follow-up);
     // `size` is in characters, close enough. Min 2 keeps a clicked-but-empty field usable.
     const updNmClr = () => { const v = inp.value.trim(); search.classList.toggle('tc-has-nm', !!v); fitNmWidth(inp); };
@@ -7413,12 +7724,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wireAutocomplete(inp, s, () => { adorn(search, s, inp); applyPend(); refreshBadges(); refreshStatus(); });
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
     const acts = document.createElement('span'); acts.className = 'tc-acts';
-    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
+    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.dataset.tip = 'Add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
     // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
-    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
+    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.dataset.tip = 'Split into separate artists, and match them\nAt &, feat. and the like'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
     if (entry.slots.length > 1) {
-      const g = document.createElement('span'); g.className = 'tc-slotgrab'; g.textContent = '⠿'; g.draggable = true; g.title = 'drag to reorder this artist within the credit'; acts.appendChild(g);   // #150
-      const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x);
+      const g = document.createElement('span'); g.className = 'tc-slotgrab'; g.textContent = '⠿'; g.draggable = true; g.dataset.tip = 'Drag: move this artist within the credit'; acts.appendChild(g);   // #150
+      const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.dataset.tip = 'Remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x);
     }
     line.appendChild(acts);
     if (entry.slots.length > 1) wireSlotDrag(line, entry, idx);   // #150
@@ -7503,7 +7814,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (kind !== 'audio') tr.classList.add(kind === 'pregap' ? 'tc-row-pregap' : 'tc-row-data');
       // #376 mirror MB's native "modification pending" mark (span.mp): flag recordings that have open edits
       const ps = recPendingState(t.mi, t.ti);
-      if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; }
+      if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.dataset.tip = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; }
       const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
       const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
       /* #586 (chaban-mb: "is it intentional within the data section tracks cannot
@@ -7526,15 +7837,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
          last track it is inert and permanently invisible, so the column lines up. */
       const dtBtn = locked || kind === 'pregap' ? ''
         : kind === 'data'
-          ? '<button type="button" class="tc-dtmv up" title="Move this track — and any data track above it — back into the audio section">⤒</button>'
+          ? '<button type="button" class="tc-dtmv up" data-tip="Move this track back into the audio section\nWith any data track above it">⤒</button>'
           : lastOfMedium
             ? '<button type="button" class="tc-dtmv down void" tabindex="-1" aria-hidden="true">⤓</button>'   // the glyph, hidden: an EMPTY button is ~6px and still misaligns the handle
-            : '<button type="button" class="tc-dtmv down" title="Move this track and everything below it on this medium into the data-track section">⤓</button>';
-      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}${dtBtn}</td>
-        <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}${trackRecIsVideo(t) ? VIDEO_MARK_PRE : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
+            : '<button type="button" class="tc-dtmv down" data-tip="Move this track into the data-track section\nWith everything below it on this medium">⤓</button>';
+      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" data-tip="Drag: move it within this medium">⠿</span>' : ''}${dtBtn}</td>
+        <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" data-tip="The track number"></td>
+        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" data-tip="A hidden pregap track, at position 0">pregap</span>' : ''}${trackRecIsVideo(t) ? VIDEO_MARK_PRE : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
         <td class="c-art"></td>
-        <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
+        <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" data-tip="The length is fixed by this medium’s disc ID"' : ''}></td>
         <td class="c-badge"></td>
         <td class="c-act"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
@@ -7575,8 +7886,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         paintDisp(t.title);
       }
       if (diff) {
-        tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
-        const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle + '\n(right-click: guess case all tracks)';
+        tin.classList.add('diff'); tin.dataset.tip = 'Guess case would make it\n' + t.guessTitle;
+        const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.dataset.tip = 'Guess case\n→ ' + t.guessTitle + '\nRight-click: guess case every track';
         const wrap = tr.querySelector('.t-wrap');
         // like MB's integrated guess case: hovering the title cell previews the guessed name
         // (highlighted), leaving restores it, clicking Aa applies it. Never preview while editing.
@@ -7592,9 +7903,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // featured-artist split: flag titles carrying "feat./ft./featuring" and offer the split inline,
       // mirroring [Aa] — click ⋔ splits this track, right-click splits all (#124)
       if (FEAT_RE.test(t.title)) {
-        tin.classList.add('hasfeat'); if (!tin.title) tin.title = 'Title has a featured artist';
+        tin.classList.add('hasfeat'); if (!tin.dataset.tip) tin.dataset.tip = 'The title has a featured artist';
         const fb = document.createElement('button'); fb.className = 't-feat'; fb.textContent = '⋔';
-        fb.title = 'Split featured artist out of the title into the artist credit\n(right-click: split all tracks)';
+        fb.dataset.tip = 'Move the featured artist from the title to the artist credit\nRight-click: every track';
         fb.onclick = () => guessFeatTrack(t);
         fb.oncontextmenu = e => { e.preventDefault(); guessFeatAll(); };
         tActions(tr.querySelector('.t-wrap')).appendChild(fb);
@@ -7975,22 +8286,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       ? `<select class="tc-tpp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-tpp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" title="Maximize / restore">⛶</button><button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" data-tip="Maximize or restore">⛶</button><button type="button" class="tc-tpp-x" data-tip="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
-        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char · X[~a:.] from the LAST occurrence"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
-        <button type="button" class="tc-tpp-freeze" title="Lock this pattern onto every still-«default» row that already matches it, so a later pattern change won't affect them — then try a new pattern on what's left">🔒 Freeze matched</button>
+        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" data-tip="The pattern\n- \`#\` position, \`T\` title, \`A\` artist, \`L\` length, \`M\` medium, \`_\` skip\n- \`\$X\` explicit\n- \`X[a-b]\` a slice\n- \`X[a:.]\` up to a character\n- \`X[~a:.]\` from its last occurrence"><button type="button" class="tc-tpp-piclr" data-tip="Clear the pattern" tabindex="-1">✕</button></span>
+        <button type="button" class="tc-tpp-freeze" data-tip="Freeze what matched\nThis pattern sticks to every row on the default pattern that matches it, so changing the pattern later leaves them be; try a new one on what is left.">🔒 Freeze matched</button>
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
-        <button type="button" class="tc-tpp-split" title="Which separator a text field splits on when it repeats (A - T on 'a - b - c')">split: <b>first</b></button>
+        <button type="button" class="tc-tpp-split" data-tip="Which separator a field splits on when it repeats\n\`A - T\` on \`a - b - c\`">split: <b>first</b></button>
       </div>
       <div class="tc-tpp-body">
         <div class="tc-tpp-src">
-          <button type="button" class="tc-tpp-srctgl" title="Show / hide the paste box">▾ Paste tracklist</button>
+          <button type="button" class="tc-tpp-srctgl" data-tip="Show or hide the paste box">▾ Paste tracklist</button>
           <textarea class="tc-tpp-ta" spellcheck="false" placeholder="Paste the tracklist — one track per line"></textarea>
         </div>
         <div class="tc-tpp-tblwrap"><table class="tc-tpp-tbl"><thead><tr><th></th><th>pattern</th><th>raw</th><th>#</th><th>artist</th><th>title</th><th>length</th></tr></thead><tbody></tbody></table></div>
       </div>
-      <div class="tc-tpp-ft"><span class="tc-tpp-cnt"></span><span class="tc-tpp-acts"><button type="button" class="tc-tpp-ok" disabled>Apply</button><button type="button" class="tc-tpp-menu" title="Apply options" disabled>▾</button></span></div>`;
+      <div class="tc-tpp-ft"><span class="tc-tpp-cnt"></span><span class="tc-tpp-acts"><button type="button" class="tc-tpp-ok" disabled>Apply</button><button type="button" class="tc-tpp-menu" data-tip="Apply: the options" disabled>▾</button></span></div>`;
     document.body.appendChild(p);
     const $ = s => p.querySelector(s);
     const ta = $('.tc-tpp-ta'), tbody = $('.tc-tpp-tbl tbody'), patIn = $('.tc-tpp-pi');
@@ -8019,14 +8330,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const ti = r.raw.trim() === '' ? -1 : k++;
         // dimmed: a row with no track to land on (a disc-ID-locked medium can't grow)
         const tr = document.createElement('tr'); tr.className = 'tc-tpp-tr' + (locked && ti >= nT ? ' notrk' : '');
-        const cell = v => `<td class="tc-tpp-c" title="${esc(v || '')}">${esc(v || '')}</td>`;
-        tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" title="${state === 'none' ? 'no match — adjust the pattern' : state === 'over' ? 'matched via a per-row pattern' : 'matched'}"></span></td>`
-          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" ${NOPW_ATTRS} spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" title="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
-          + `<td class="tc-tpp-raw" contenteditable="plaintext-only" spellcheck="false" title="Click to edit this line — the change goes back to the pasted text">${esc(r.raw)}</td>`
+        const cell = v => `<td class="tc-tpp-c" data-tip="${esc(v || '')}">${esc(v || '')}</td>`;
+        tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" data-tip="${state === 'none' ? 'No match: adjust the pattern' : state === 'over' ? 'Matched by its own pattern' : 'Matched'}"></span></td>`
+          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" ${NOPW_ATTRS} spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" data-tip="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
+          + `<td class="tc-tpp-raw" contenteditable="plaintext-only" spellcheck="false" data-tip="Click: edit this line\nThe change goes back into the pasted text.">${esc(r.raw)}</td>`
           + cell(parsed && parsed.pos) + cell(parsed && parsed.artist) + cell(parsed && parsed.title) + cell(parsed && parsed.length);
         const ov = tr.querySelector('.tc-tpp-ov'), ovwrap = tr.querySelector('.tc-tpp-ovwrap');
         // re-parse just this row in place (a full render() would steal the focus from the cell being typed in)
-        const refreshRow = () => { const pr = parseRow(r); const st = !pr ? 'none' : (r.override && r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        const refreshRow = () => { const pr = parseRow(r); const st = !pr ? 'none' : (r.override && r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].dataset.tip = v || ''; }); refreshFoot(); };
         ov.oninput = () => { r.override = ov.value; ovwrap.classList.toggle('has', !!ov.value); refreshRow(); };
         // #732: edit the raw line in place; it's written back to the same line of the paste box
         const rawTd = tr.querySelector('.tc-tpp-raw');
@@ -8131,7 +8442,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      * that span to a field for THAT row, writing a slice into its pattern cell (T[a-b], …). */
     const FIELD_CHIPS = [['#', 'pos'], ['A', 'artist'], ['T', 'title'], ['L', 'length']];
     const chipBar = document.createElement('div'); chipBar.className = 'tc-tpp-chipbar'; chipBar.style.display = 'none';
-    chipBar.innerHTML = FIELD_CHIPS.map(([g, f]) => `<button type="button" data-f="${f}" data-g="${g}" title="Bind the selection to ${f}">${g}</button>`).join('') + '<button type="button" data-clr="1" title="Clear this row’s pattern">✕</button>';
+    chipBar.innerHTML = FIELD_CHIPS.map(([g, f]) => `<button type="button" data-f="${f}" data-g="${g}" data-tip="Bind the selection to ${f}">${g}</button>`).join('') + '<button type="button" data-clr="1" data-tip="Clear this row’s pattern">✕</button>';
     document.body.appendChild(chipBar);   // on body, not the modal — the modal's transform would otherwise re-base position:fixed (#456)
     let _selCtx = null;   // { rowIdx, a, b } — 1-based inclusive char range in the raw text
     const hideChips = () => { chipBar.style.display = 'none'; _selCtx = null; };
@@ -8180,8 +8491,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     $('.tc-tpp-max').onclick = () => {
       const btn = $('.tc-tpp-max');
       if (!_maxed) { _prevBox = { left: p.style.left, top: p.style.top, width: p.style.width, height: p.style.height, transform: p.style.transform };
-        p.style.transform = 'none'; p.style.left = '2vw'; p.style.top = '2vh'; p.style.width = '96vw'; p.style.height = '94vh'; _maxed = true; btn.textContent = '❐'; btn.title = 'Restore'; }
-      else { Object.assign(p.style, _prevBox); _maxed = false; btn.textContent = '⛶'; btn.title = 'Maximize / restore'; }
+        p.style.transform = 'none'; p.style.left = '2vw'; p.style.top = '2vh'; p.style.width = '96vw'; p.style.height = '94vh'; _maxed = true; btn.textContent = '❐'; btn.dataset.tip = 'Restore'; }
+      else { Object.assign(p.style, _prevBox); _maxed = false; btn.textContent = '⛶'; btn.dataset.tip = 'Maximize or restore'; }
     };
     const medEl = $('.tc-tpp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
     p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!$('.tc-tpp-ok').disabled) apply('all'); } };
@@ -8291,13 +8602,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back to the source chooser" style="display:none">‹ Sources</button><span class="tc-lp-t">Length parser</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" data-tip="Back to the sources" style="display:none">‹ Sources</button><span class="tc-lp-t">Length parser</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" data-tip="Close (Esc)">✕</button></div>
       <div class="tc-lp-body">
         <div class="tc-lp-left">
           <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
           <div class="tc-lp-choose">
             <div class="tc-lp-crow"><button type="button" class="tc-lp-cbtn" data-o="text">Enter text</button><button type="button" class="tc-lp-cbtn" data-o="clip">Paste from clipboard</button></div>
-            <div class="tc-lp-clbl" title="Copy a link to a page with the tracklist, then press Ctrl+V anywhere in this window">Parse from external link — or paste one (Ctrl+V)</div>
+            <div class="tc-lp-clbl" data-tip="Copy a link to a page with the tracklist\nCtrl+V: paste it anywhere in this window">Parse from external link — or paste one (Ctrl+V)</div>
             <div class="tc-lp-favs"><span class="tc-lp-favload">…</span></div>
           </div>
         </div>
@@ -8332,10 +8643,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     lpExternalLinks().then(urls => {
       const favs = chooser.querySelector('.tc-lp-favs');
       if (!urls.length) { favs.innerHTML = `<span class="tc-lp-nofav">no external links on this release</span>`; return; }
-      favs.innerHTML = urls.map(x => { let h = ''; try { h = new URL(x).hostname.replace(/^www\./, ''); } catch (e) {} return `<img class="tc-lp-fav" src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(h)}" title="Read track lengths from ${esc(x)}" data-u="${esc(x)}" data-h="${esc(h)}" alt="${esc(h)}" referrerpolicy="no-referrer">`; }).join('');
+      favs.innerHTML = urls.map(x => { let h = ''; try { h = new URL(x).hostname.replace(/^www\./, ''); } catch (e) {} return `<img class="tc-lp-fav" src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(h)}" data-tip="Read track lengths from ${esc(x)}" data-u="${esc(x)}" data-h="${esc(h)}" alt="${esc(h)}" referrerpolicy="no-referrer">`; }).join('');
       favs.querySelectorAll('.tc-lp-fav').forEach(im => {
         im.onclick = () => fetchLink(im.dataset.u);
-        im.onerror = () => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-favtxt'; b.textContent = im.dataset.h || 'link'; b.title = im.title; b.onclick = () => fetchLink(im.dataset.u); im.replaceWith(b); };   // favicon blocked/offline → clickable hostname chip
+        im.onerror = () => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-favtxt'; b.textContent = im.dataset.h || 'link'; b.dataset.tip = im.dataset.tip || ''; b.onclick = () => fetchLink(im.dataset.u); im.replaceWith(b); };   // favicon blocked/offline → clickable hostname chip
       });
     });
     async function fetchLink(url) {
@@ -8384,15 +8695,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const nT = tracks().length; listEl.innerHTML = '';
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
-        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? (trackTitle(i) || '') : 'no track — ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
+        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" data-tip="${esc(i < nT ? (trackTitle(i) || '') : 'No track: left out')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
         const inp = noPw(document.createElement('input')); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpBad(it.value) ? ' bad' : ''); inp.value = it.value;
         inp.placeholder = '—';   // #621 an empty row is allowed: that track keeps its current length
-        const tip = () => { inp.title = lpEmpty(inp.value) ? 'empty — this track keeps its current length' : (it.raw ? ('detected: ' + it.raw) : ''); };
+        const tip = () => { inp.dataset.tip = lpEmpty(inp.value) ? 'Empty: this track keeps its length' : (it.raw ? ('Read from\n' + it.raw) : ''); };
         tip();
         inp.oninput = () => { it.value = inp.value; inp.classList.toggle('bad', lpBad(inp.value)); tip(); refreshFoot(); };   // clears the red the moment it's valid (or emptied)
-        const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.title = 'insert a length below (rows shift down)';
+        const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.dataset.tip = 'Insert a length below\nThe rows below move down.';
         add.onclick = () => { items.splice(i + 1, 0, { value: '', raw: '' }); render(); listEl.querySelectorAll('.tc-lp-val')[i + 1]?.focus(); };
-        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.textContent = '✕'; del.title = 'delete (rows below shift up)';
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.textContent = '✕'; del.dataset.tip = 'Delete\nThe rows below move up.';
         del.onclick = () => { items.splice(i, 1); render(); };
         row.append(inp, add, del);
         listEl.appendChild(row);
@@ -8471,14 +8782,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolsmenu') openToolsMenu(b); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolsmenu') openToolsMenu(b); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'Revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'Unselect every track artist\nThe credited-as text, titles and lengths stay.', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
   // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
   function openMiniMenu(anchor, items) {
     document.querySelectorAll('.tc-menu.tc-mini').forEach(m => m.remove());
     const m = document.createElement('div'); m.className = 'tc-menu tc-mini';
-    m.innerHTML = items.map((it, i) => `<div class="tc-mi" data-i="${i}"${it.title ? ` title="${esc(it.title)}"` : ''}>${esc(it.label)}</div>`).join('');
+    m.innerHTML = items.map((it, i) => `<div class="tc-mi" data-i="${i}"${it.title ? ` data-tip="${esc(it.title)}"` : ''}>${esc(it.label)}</div>`).join('');
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(); const w = m.offsetWidth, h = m.offsetHeight;
     // right-align the menu to the anchor (opens leftward) and clamp on-screen, so it never runs off the edge
@@ -8681,7 +8992,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '');
     b.dataset.act = t.act;
     b.innerHTML = (t.icon ? `<span class="tc-tbic">${iconHtml(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
-    if (!t.text) b.title = m.label;
+    if (!t.text) b.dataset.tip = m.label;
     b.onclick = () => pickTool(t.act);
     return b;
   }
@@ -8742,9 +9053,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const openOnDown = e => { if (e.key === 'ArrowDown' && !_srPop) { e.preventDefault(); openSrTemplates(find, find, rep, re); } };   // popup anchors to the search field (left-aligned)
       find.addEventListener('keydown', openOnDown); rep.addEventListener('keydown', openOnDown);
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
-      re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
+      re.dataset.tip = 'Regular expressions\nThe search is a regex; `$1` and `$<name>` work in the replacement.';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved patterns, chains & recent (or press ↓ in the search field)';
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.dataset.tip = 'Saved patterns, chains and recent ones\n↓: the same, in the search field';
       // #409: in chain mode `find` is hidden (display:none → a 0,0 rect that flung the popup to the
       // corner). Anchor to whatever's actually visible — the chain chip, else the ★ button.
       star.onclick = () => { const b = star.closest('.tc-sro'); const anchor = (find.offsetParent !== null) ? find : ((b && b.querySelector('.tc-sr-chainchip')) || star); openSrTemplates(anchor, find, rep, re); };
@@ -8752,7 +9063,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (_srChain) srShowChain(_srChain);   // #409: restore the chain chip if a chain was active
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
-      const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
+      const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.dataset.tip = title; b.onclick = fn; return b; };
       box.append(
         mk('Fit', 'size #, Title and Length to their content (Artist absorbs the slack)', colsFit),
         mk('Centered', 'balance Title and Artist to equal width', colsBalanced),
@@ -8767,7 +9078,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = all.length > 1 ? 'into first ticked:' : 'only one medium';
       box.appendChild(lab);
       all.forEach((m, i) => {
-        const l = document.createElement('label'); l.title = medLabel(m, i);
+        const l = document.createElement('label'); l.dataset.tip = medLabel(m, i);
         const c = document.createElement('input'); c.type = 'checkbox'; c.checked = _mergeSel.has(i);
         c.onchange = () => { if (c.checked) _mergeSel.add(i); else _mergeSel.delete(i); };
         l.append(c, document.createTextNode(String(i + 1))); box.appendChild(l);
@@ -8778,7 +9089,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const box = document.createElement('span'); box.className = 'tc-medo tc-spo';
       const all = mediums(); let mi = toolMedium(); if (!all[mi]) mi = 0;
       if (all.length > 1) {
-        const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
+        const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.dataset.tip = 'Which medium';
         all.forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); o.title = medLabel(m, i); sel.appendChild(o); });
         sel.value = String(mi); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; _splitAt = null; renderToolbar(); };
         box.appendChild(sel);
@@ -8787,7 +9098,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // MB lazy-loads a collapsed medium's tracks — load it, then rebuild these params with its tracks
       if (m && !medLoaded(m) && !_splitLoading) { _splitLoading = true; loadMediums([m]).then(() => { _splitLoading = false; renderToolbar(); }); }
       const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = m && !medLoaded(m) ? 'loading medium…' : 'new medium from #';
-      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat'; at.title = 'the first track of the new medium';
+      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat'; at.dataset.tip = 'The first track of the new medium';
       tr.forEach((t, i) => { if (i === 0) return; const o = document.createElement('option'); o.value = String(i); o.textContent = String(u(t.number) || i + 1); o.title = u(t.name) || ''; at.appendChild(o); });
       if (_splitAt == null || _splitAt <= 0 || _splitAt >= tr.length) _splitAt = Math.floor(tr.length / 2) || null;
       if (_splitAt != null) at.value = String(_splitAt);
@@ -8796,7 +9107,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       box.append(lab, at); host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
       const box = document.createElement('span'); box.className = 'tc-medo';
-      const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
+      const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.dataset.tip = 'Which medium';
       mediums().forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); sel.appendChild(o); });
       sel.value = String(toolMedium()); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; };
       // #280: no Run button — pick the medium here, then click the tool's icon/name to run it
@@ -8817,7 +9128,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     grp.addEventListener('click', e => { if (e.target === grp && grp.classList.contains('tc-collapsed')) triggerTool(act); });
     grp.addEventListener('contextmenu', e => { if (e.target === grp) name.oncontextmenu(e); });
     // collapsed: drop the title so the native tooltip can't pop up over the flyout
-    const setTitle = () => { name.title = grp.classList.contains('tc-collapsed') ? '' : TOOL[act].label + ' — click to run, right-click to collapse parameters'; };
+    const setTitle = () => { name.dataset.tip = grp.classList.contains('tc-collapsed') ? '' : TOOL[act].label + '\nClick: run it\nRight-click: fold its parameters'; };
     // #280: right-click the name collapses/expands its params (state remembered);
     // collapsed params fly out on hover/focus. Toggle in place so typed S&R text survives.
     name.oncontextmenu = (e) => {
@@ -8880,10 +9191,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const m = TD(t.act);
         const row = document.createElement('div'); row.className = 'tc-tc-row' + (t.onBar ? '' : ' off'); row.dataset.act = t.act; row.draggable = true;
         row.innerHTML =
-          '<span class="tc-tc-grab" title="drag to reorder">⠿</span>'
-          + `<label class="tc-tc-onbar" title="show on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
+          '<span class="tc-tc-grab" data-tip="Drag: move it">⠿</span>'
+          + `<label class="tc-tc-onbar" data-tip="Show it on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
           + `<span class="tc-tc-ic">${iconHtml(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
-          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${iconHtml(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`;
+          + `<span class="tc-tc-dens" data-tip="What the button shows\nIts icon, its text, or both"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" data-tip="Show the icon">${iconHtml(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" data-tip="Show the text">T</button></span>`;
         list.appendChild(row);
       });
       list.querySelectorAll('.tc-tc-row').forEach(row => {
@@ -9042,11 +9353,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!chip) {
       chip = document.createElement('span'); chip.className = 'tc-sr-chainchip';
       const lbl = document.createElement('span'); lbl.className = 'tc-sr-chainlbl';
-      const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-sr-chainx'; x.textContent = '✕'; x.title = 'Exit chain — back to search / replace'; x.onclick = srExitChain;
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-sr-chainx'; x.textContent = '✕'; x.dataset.tip = 'Leave the chain\nBack to search and replace'; x.onclick = srExitChain;
       chip.append(lbl, x); box.insertBefore(chip, box.firstChild);
     }
     chip.querySelector('.tc-sr-chainlbl').textContent = '⛓ ' + name;
-    chip.title = 'S&R chain "' + name + '" (read-only — several patterns)';
+    chip.dataset.tip = 'Search and replace chain “' + name + '”\nSeveral patterns; read-only';
   }
   function srExitChain() {
     _srChain = null;
@@ -9150,7 +9461,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
       const back = document.createElement('button'); back.type = 'button'; back.className = 'tc-srtpl-savebtn'; back.textContent = '‹ Back'; back.onclick = () => render();
       const ttl = document.createElement('span'); ttl.className = 'tc-srtpl-hdt'; ttl.textContent = 'Import / Export';
-      const imp = document.createElement('button'); imp.type = 'button'; imp.className = 'tc-srtpl-saveok tc-srtpl-impok'; imp.textContent = '✓ Import'; imp.title = 'Replace your saved patterns & chains with the JSON below';
+      const imp = document.createElement('button'); imp.type = 'button'; imp.className = 'tc-srtpl-saveok tc-srtpl-impok'; imp.textContent = '✓ Import'; imp.dataset.tip = 'Replace your saved patterns and chains with the JSON below';
       hd.append(back, ttl, imp); pop.appendChild(hd);
       const ta = document.createElement('textarea'); ta.className = 'tc-srtpl-io'; ta.spellcheck = false;
       ta.value = JSON.stringify({ templates: srTemplates().filter(t => t.name && t.name[0] !== '_'), default: srDefaultName() }, null, 2);
@@ -9173,17 +9484,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     };
     const mkRow = (cells, onClick, extras) => {
       const row = document.createElement('div'); row.className = 'tc-srtpl-row' + (extras && extras.isDefault ? ' tc-srtpl-defrow' : '');
-      cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
+      cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.dataset.tip = c.txt; row.appendChild(s); });
       const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = extras && extras.re ? 'RE' : ''; row.appendChild(rec);
       const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
       // #410: mark this pattern/chain as the default (runs on Tracklist open). Filled ◉ + always
       // visible when it IS the default; a faint ○ on hover otherwise.
-      if (extras && extras.onDefault) { const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-srtpl-def' + (extras.isDefault ? ' on' : ''); d.textContent = extras.isDefault ? '◉' : '○'; d.title = extras.isDefault ? 'Default — runs on Tracklist open · click to unset' : 'Set as default — runs on Tracklist open'; d.onclick = e => { e.stopPropagation(); extras.onDefault(); }; tail.appendChild(d); }
+      if (extras && extras.onDefault) { const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-srtpl-def' + (extras.isDefault ? ' on' : ''); d.textContent = extras.isDefault ? '◉' : '○'; d.dataset.tip = extras.isDefault ? 'The default: runs when the Tracklist opens\nClick: unset' : 'Make it the default\nThe default runs when the Tracklist opens.'; d.onclick = e => { e.stopPropagation(); extras.onDefault(); }; tail.appendChild(d); }
       // #409: hover action — add this (non-chain) pattern to a chain
-      if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.title = 'Add / remove this pattern in a chain'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
+      if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.dataset.tip = 'Add this pattern to a chain, or take it out'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
       // #409: hover action — rename this pattern / chain in place
-      if (extras && extras.onRename) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'tc-srtpl-rename'; ed.textContent = '✎'; ed.title = 'Rename'; ed.onclick = e => { e.stopPropagation(); startRename(row, extras.renameValue, extras.onRename); }; tail.appendChild(ed); }
-      if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
+      if (extras && extras.onRename) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'tc-srtpl-rename'; ed.textContent = '✎'; ed.dataset.tip = 'Rename'; ed.onclick = e => { e.stopPropagation(); startRename(row, extras.renameValue, extras.onRename); }; tail.appendChild(ed); }
+      if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.dataset.tip = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
       row.appendChild(tail);
       row.onclick = onClick; row.onmousemove = () => { sel = navRows.indexOf(row); highlight(); };
       navRows.push(row); return row;
@@ -9226,12 +9537,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
       const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
       const nm = noPw(document.createElement('input')); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
-      const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.title = 'Save';
+      const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.dataset.tip = 'Save';
       // #409: "Add chain" button next to "Save current", each unrolling its own name field
-      const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.title = 'Create a chain that runs several saved patterns in one click';
+      const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.dataset.tip = 'Create a chain that runs several saved patterns in one click';
       const cwrap = document.createElement('span'); cwrap.className = 'tc-srtpl-savewrap'; cwrap.style.display = 'none';
       const cnm = noPw(document.createElement('input')); cnm.type = 'text'; cnm.className = 'tc-srtpl-name'; cnm.placeholder = 'name this chain';
-      const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.title = 'Create chain';
+      const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.dataset.tip = 'Create the chain';
       const resetHd = () => { saveBtn.style.display = ''; chainBtn.style.display = ''; wrap.style.display = 'none'; cwrap.style.display = 'none'; };
       const doSave = () => { if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); };
       const doAddChain = () => { if (srAddChain(cnm.value)) render(); else toast('Name is empty or already used'); };
@@ -9241,7 +9552,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
       chainBtn.onclick = () => { saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; cwrap.style.display = ''; cnm.value = ''; setTimeout(() => cnm.focus(), 0); };
       // #409 redesign: Import/Export button, pushed to the right edge of the header.
-      const ioBtn = document.createElement('button'); ioBtn.type = 'button'; ioBtn.className = 'tc-srtpl-iobtn'; ioBtn.textContent = 'Import/Export'; ioBtn.title = 'Import or export your saved patterns & chains as JSON (history is not included)';
+      const ioBtn = document.createElement('button'); ioBtn.type = 'button'; ioBtn.className = 'tc-srtpl-iobtn'; ioBtn.textContent = 'Import/Export'; ioBtn.dataset.tip = 'Import or export your saved patterns and chains as JSON\nWithout the history';
       ioBtn.onclick = () => showImportExport();
       wrap.append(nm, ok); cwrap.append(cnm, cok); hd.append(saveBtn, chainBtn, wrap, cwrap, ioBtn); pop.appendChild(hd);
       // #409: Chains first — click to run all their member patterns in order; ✕ removes the chain
@@ -9292,15 +9603,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.addEventListener('keydown', _srPopKey, true);
   }
 
-  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span></div>`
-    + `<span class="tc-discstat"></span><span class="tc-globalstat"></span><span class="tc-am-lbl"><b>Change:</b> ${amRadios()}</span><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
-    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
+  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" data-tip="More tools, and the toolbar's setup">Tools ▾</span><span class="tc-toolbtns"></span></div>`
+    + `<span class="tc-discstat"></span><span class="tc-globalstat"></span><span class="tc-am-lbl"><b>Change:</b> ${amRadios()}</span><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" data-tip="Search MusicBrainz for the artists not matched">⚡ Match</button>`
+    + `<button class="tc-btn tc-caret" data-act="revertmenu" data-tip="Revert or clear it all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
     style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) { l.remove(); mbRestackCorner('br'); }
     const p = document.createElement('div'); p.id = 'tc-panel';
-    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Apollo Editor</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" title="close">✕</button></div>
+    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Apollo Editor</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" data-tip="Close">✕</button></div>
       <div id="tc-body"></div>`;
     document.body.appendChild(p);
     const tbody = mountTable(p.querySelector('#tc-body'));
@@ -9351,7 +9662,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // Tooltip says so; the contextmenu listener is guarded so it's added once per button.
       const expBtn = fs.querySelector('button.icon.expand-medium');
       if (expBtn) {
-        expBtn.title = 'Left click: expand this medium · Right click: expand all media';
+        expBtn.dataset.tip = 'Click: expand this medium\nRight-click: expand every medium';
         if (!expBtn._tcExpAll) { expBtn._tcExpAll = true; expBtn.addEventListener('contextmenu', e => { e.preventDefault(); expandAllTracklistMediums(); }); }
       }
     });
@@ -9510,7 +9821,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const b = document.getElementById('tc-launch'); if (!b) return;
     const on = apolloEnabled();
     mbuCls(b, 'on', on);
-    mbuAttr(b, 'title', (on ? 'Apollo Editor is on · click: show the original editor' : 'Apollo Editor is off · click: turn it on') + ' (every tab, stays until you switch back)\nRight-click: settings');
+    mbuAttr(b, 'data-tip', (on ? 'Apollo Editor is on\nClick: show MusicBrainz’s own editor' : 'Apollo Editor is off\nClick: turn it on') + '\nOn every tab, until you switch back.\nRight-click: settings');
   }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
@@ -9631,7 +9942,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         b.innerHTML = '<span class="tc-badge auto">auto</span>'; host.appendChild(b);
         if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       }
-      b.firstChild.title = st.why || '';
+      b.firstChild.dataset.tip = st.why || '';
       // level with the field's right end, wherever the cell's edge is
       const pin = document.documentElement.querySelector('.mmthf-pin') ? 48 : 28;
       b.style.right = Math.max(0, host.clientWidth - (sel.offsetLeft + sel.offsetWidth)) + pin + 'px';
@@ -9734,7 +10045,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const og = document.createElement('optgroup'); og.className = 'tc-ls-found'; og.label = 'Detected by Apollo';
         for (const c of list) {
           const src = lsOption(sel, c.name); if (!src) { Log.cat('Language').debug('MusicBrainz has no', k, JSON.stringify(c.name)); continue; }
-          const o = document.createElement('option'); o.value = src.value; o.textContent = src.textContent.trim(); o.title = c.why; og.appendChild(o);   // MB's own name for it, in its language
+          const o = document.createElement('option'); o.value = src.value; o.textContent = src.textContent.trim(); o.title = c.why;   // an <option> keeps the native title: the browser draws the list, no page tooltip reaches it og.appendChild(o);   // MB's own name for it, in its language
         }
         if (og.children.length) sel.insertBefore(og, sel.options[0] && !sel.options[0].value ? sel.options[0].nextSibling : sel.firstChild);
       }
@@ -9855,7 +10166,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function paintDupCell(td, tr, gid, sim, candTracks) {
     if (sim == null) {
       td.textContent = '?'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)' + (gid ? ';cursor:pointer' : '');
-      td.title = 'no track overlap could be computed (tracklist unavailable, or no tracks entered yet)';
+      td.dataset.tip = 'No tracks to compare\nThe tracklist isn’t there, or has no tracks yet.';
       if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
       return;
     }
@@ -9867,8 +10178,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const trackMiss = myTracks > 0 && !isNaN(candTracks) && candTracks !== myTracks;
     td.innerHTML = pct + '%' + (trackMiss ? ' <span class="tc-dup-tm">⚠ tracks</span>' : '');
     td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px' + (gid ? ';cursor:pointer' : '');
-    td.title = 'track-overlap similarity to the release you are entering' + (gid ? ' — click for a track-by-track comparison' : '');
-    if (trackMiss) td.title += ` — track count differs: you entered ${myTracks}, this release has ${candTracks}`;
+    td.dataset.tip = 'How alike its tracks are to the release you are entering' + (gid ? '\nClick: compare them track by track' : '');
+    if (trackMiss) td.dataset.tip += `\n⚠ The track count differs: you entered ${myTracks}, this release has ${candTracks}`;
     if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
   }
   // 0% → Apollo red, 50% → amber, 100% → Apollo's match green (#1f8a4c) — uses the
@@ -9893,7 +10204,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (tr.querySelector('.tc-dup-sim')) return;          // already scored this (KO-rendered) row
       const gid = (tr.querySelector('input[name="base-release"]') || {}).value || null;
       const td = document.createElement('td'); td.className = 'tc-dup-sim';
-      td.textContent = '…'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)'; td.title = 'computing track-by-track similarity…';
+      td.textContent = '…'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)'; td.dataset.tip = 'Comparing the tracks…';
       tr.insertBefore(td, tr.children[dupSimIndex(tr)] || null);   // right after the Release column
       if (gid) enqueueDupScore(gid, td, tr); else td.textContent = '—';   // neutral until the tracklist is fetched (never a metadata-only guess)
     });
@@ -10033,7 +10344,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function seededAcHtml(names, whole) {
     const h = names.map(n => (n.gid
       ? `<a href="${ORIGIN}/artist/${n.gid}" target="_blank" rel="noopener">${esc(n.name)}</a>`
-      : `<span class="tc-dd-unres" title="not matched to a MusicBrainz artist yet">${esc(n.name)}</span>`) + esc(n.join)).join('');
+      : `<span class="tc-dd-unres" data-tip="Not matched to a MusicBrainz artist yet">${esc(n.name)}</span>`) + esc(n.join)).join('');
     return whole ? `<span class="tc-dh">${h}</span>` : h;
   }
   function buildDupDetail(media, entered) {
@@ -10102,7 +10413,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     dupStyle();
     if (thead && !thead.querySelector('.tc-dup-th')) {
       const th = document.createElement('th'); th.className = 'tc-dup-th'; th.textContent = 'Similarity';
-      th.title = 'How closely each existing release matches the one you are entering — click a score for a track-by-track comparison.';
+      th.dataset.tip = 'How closely each existing release matches the one you are entering\nClick a score: compare track by track';
       const row0 = tbody && [...tbody.querySelectorAll(':scope > tr')].find(tr => !tr.classList.contains('tc-dup-detail'));
       thead.insertBefore(th, thead.children[dupSimIndex(row0)] || null);
     }
@@ -10355,7 +10666,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!cf) { out += esc(ch); continue; }
       // invisibles carry a persistent highlight (like the join ␣) so they're obvious at any size
       const cls = 'tc-cf' + (cf.vis ? ' tc-cf-inv' : '');
-      out += '<span class="' + cls + '"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>';
+      out += '<span class="' + cls + '"' + st + ' data-tip="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>';
     }
     return out;
   }
@@ -10438,8 +10749,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const j = String(join == null ? '' : join);
     if (!dhMark()) return esc(j);                // #443: gated by detailed highlighting, not the px size
     if (isLast) return dhRun(j);                 // trailing artist — empty join is fine
-    if (j === '') return '<span class="tc-jp" title="missing join phrase — no separator between these artists">␣?␣</span>';
-    const mk = side => '<span class="tc-jp" title="missing ' + side + ' space around the join phrase">␣</span>';
+    if (j === '') return '<span class="tc-jp" data-tip="A join phrase is missing\nNothing separates these artists.">␣?␣</span>';
+    const mk = side => '<span class="tc-jp" data-tip="A space is missing ' + (side === 'leading' ? 'before' : side === 'trailing' ? 'after' : side) + ' the join phrase">␣</span>';
     const need = joinNeed(j);
     if (isCjk(j) || isCjk(prevName) || isCjk(nextName)) { need.lead = false; need.trail = false; }   // CJK: no space convention
     return (need.lead ? mk('leading') : '') + dhRun(j) + (need.trail ? mk('trailing') : '');
@@ -10725,11 +11036,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
-        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <span class="tc-cutoff" tabindex="0"><span class="tc-cutoff-dot"></span><span class="tc-cutoff-lbl"></span><span class="tc-cutoff-caret">▾</span></span></label>' +
+        '<label class="tc-rec-tbl" data-tip="Match links a recording only at this confidence or above\nAnything lower is left unmatched."><b>Cutoff</b> <span class="tc-cutoff" tabindex="0"><span class="tc-cutoff-dot"></span><span class="tc-cutoff-lbl"></span><span class="tc-cutoff-caret">▾</span></span></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
-        '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions"><span class="tc-spin"></span><span class="tc-rec-am-lbl">⚡ Match</span></button>' +
-        '<button class="tc-rec-revcaret" type="button" title="revert / clear all">▾</button>' +
+        '<button class="tc-rec-am tc-btn primary" type="button" data-tip="Match the recordings not set to MusicBrainz’s suggestions"><span class="tc-spin"></span><span class="tc-rec-am-lbl">⚡ Match</span></button>' +
+        '<button class="tc-rec-revcaret" type="button" data-tip="Revert or clear it all">▾</button>' +
         '' +   /* gear moved to the Apollo launcher */
       '</div>' +
       '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.gridCols ? ' gridcols' : '') + (SETTINGS.gridRows !== false ? ' gridrows' : '') + '">' +
@@ -10753,7 +11064,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         amBtn.classList.add('busy');
         const lbl = amBtn.querySelector('.tc-rec-am-lbl');
         if (lbl) lbl.textContent = _matchStop ? '⏳ Stopping…' : '■ Stop';
-        amBtn.title = 'Stop matching — the recordings already linked are kept';
+        amBtn.dataset.tip = 'Stop matching\nThe recordings already linked stay.';
       }
     }
     // #582 — restore the last pass's verdict; the shell above was rebuilt from
@@ -10761,8 +11072,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const amStatus = wrap.querySelector('.tc-rec-amstatus');
     if (amStatus && _recLastStatus && !_autoMatching) amStatus.textContent = _recLastStatus;
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [
-      { label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings },
-      { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings },
+      { label: '↺ Revert all', title: 'Revert every recording to its page-load state', onClick: revertAllRecordings },
+      { label: '✕ Clear all', title: 'Set every track to a new recording', onClick: clearAllRecordings },
     ]);
     wireRecCellContextMenu(wrap);
     renderRecBody(wrap);
@@ -11033,7 +11344,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     openRecPicker(row, (tr && tr.querySelector('.tc-recname')) || wrap.querySelector('.tc-recwarn'));
   }
   // #303 — recording video marker (mirrors the native recordings table's <span class="video">)
-  const VIDEO_MARK = '<span class="tc-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
+  const VIDEO_MARK = '<span class="tc-rec-video" data-tip="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
   /* #584 (majkinetor): "In recordings editor the video icons are displayed after
      the titles. While in the original editor they shown before titles. The latter
      makes it easier to scan and notice videos in the list (because titles rarely
@@ -11055,7 +11366,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (warn) {
       warn.textContent = unset ? '⚠ ' + unset + ' without a recording' : '';
       warn.onclick = (unset && firstUnset) ? () => openFirstUnsetPicker(firstUnset) : null;   // #139 follow-up: jump to the first unset track's picker
-      warn.title = unset ? 'jump to the first track without a recording' : '';
+      warn.dataset.tip = unset ? 'Go to the first track without a recording' : '';
     }
     tb.innerHTML = '';
     // #149: iterate ALL mediums so collapsed ones still appear (with an expand
@@ -11069,7 +11380,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const td = document.createElement('td'); td.colSpan = 8;
           const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tc-recmed-exp';
           btn.textContent = '▸ Medium ' + (mi + 1) + ' — left click to expand, right click to expand all';
-          btn.title = 'Left click: load this medium · Right click: load all collapsed media';
+          btn.dataset.tip = 'Click: load this medium\nRight-click: load every folded medium';
           btn.onclick = () => expandRecMedium(mi, btn);
           btn.oncontextmenu = (e) => { e.preventDefault(); expandAllRecMediums(btn); };
           td.appendChild(btn); mr.appendChild(td);
@@ -11163,7 +11474,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (sh) { recLenCls = 'tc-dh-len'; recLenStyle = ' style="background:' + sh.bg + ';color:' + sh.fg + '"'; }
       }
       const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
-      { const ps = recPendingState(r.mi, r.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }   // #376
+      { const ps = recPendingState(r.mi, r.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.dataset.tip = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }   // #376
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
         '<td class="tc-tkt">' + trackTitleHtml + '</td>' +
@@ -11174,36 +11485,36 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         '<td class="tc-recartist ' + aCls + '">' + recArtistCell + '</td>' +
         '<td class="c-len ' + recLenCls + '"' + recLenStyle + '>' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
-      if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
-      else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.title = r.exact ? 'Exact match' : 'Tolerance match' + (r.tolDiffs && r.tolDiffs.length ? ' (' + r.tolDiffs.join(', ') + ')' : ''); }
+      if (r.conf) { dot.style.background = r.conf.color; dot.dataset.tip = r.conf.label + '\nDiffers: ' + r.conf.diffs.join(', '); }
+      else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.dataset.tip = r.exact ? 'An exact match' : 'A match within the tolerances' + (r.tolDiffs && r.tolDiffs.length ? '\nDiffers: ' + r.tolDiffs.join(', ') : ''); }
       else dot.style.visibility = 'hidden';
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable');
-      nameCell.title = 'change recording — suggestions / search' + (tElig ? '  ·  right-click: copy track title to recording (Ctrl: row · Alt: column · Ctrl+Alt: whole recording side)' : '');
+      nameCell.dataset.tip = 'Change the recording\nSuggestions, or a search' + (tElig ? '\nRight-click: copy the track title to the recording\nCtrl+right-click: the row\nAlt+right-click: the column\nCtrl+Alt+right-click: the whole recording side' : '');
       nameCell.onclick = () => openRecPicker(r, nameCell);
-      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.title = 'right-click: copy track artist to recording (Ctrl: row · Alt: column · Ctrl+Alt: whole recording side)'; }
+      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.dataset.tip = 'Right-click: copy the track artist to the recording\nCtrl+right-click: the row\nAlt+right-click: the column\nCtrl+Alt+right-click: the whole recording side'; }
       // #583 — ＋ "new recording", the picker's action lifted onto the row. It
       // holds the first position on the right so it sits at the same x on every
       // row; ↺ (which only appears when the row changed) tucks in beside it.
       if (!r.isNew) {
         const nw = document.createElement('button'); nw.className = 'tc-rec-new-btn'; nw.textContent = '＋';
-        nw.title = 'unset this recording — the track will create a NEW recording on submit';
+        nw.dataset.tip = 'Unset this recording\nThe track gets a new recording on submit.';
         nw.onclick = e => { e.stopPropagation(); newRecordingFor(r); };
         nameCell.appendChild(nw);
       }
       if (changed) {   // per-row revert ↺ (single), shown on hover when changed
-        const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
+        const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.dataset.tip = 'Back to the original recording';
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
         nameCell.appendChild(rev);
       }
       // #348: hint the track-title / track-artist cells' right-click when the recording's value differs
       const tkt = tr.querySelector('.tc-tkt');
       if (tkt && !r.isNew && r.recName != null && r.recName !== '' && (r.title || '') !== r.recName) {
-        tkt.title = 'right-click: set track title to the recording title “' + r.recName + '” (Alt: whole column · Ctrl+Alt: whole track side)';
+        tkt.dataset.tip = 'Right-click: set the track title to the recording’s, “' + r.recName + '”\nAlt+right-click: the whole column\nCtrl+Alt+right-click: the whole track side';
       }
       const tka = tr.querySelector('.tc-tka');
       if (tka && !r.isNew && r.recArtist != null && r.recArtist !== '' && (r.trackArtist || '') !== r.recArtist) {
-        tka.title = 'right-click: set track artist to the recording artist “' + r.recArtist + '” (Alt: whole column · Ctrl+Alt: whole track side)';
+        tka.dataset.tip = 'Right-click: set the track artist to the recording’s, “' + r.recArtist + '”\nAlt+right-click: the whole column\nCtrl+Alt+right-click: the whole track side';
       }
       return tr;
   }
@@ -11423,7 +11734,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       b.disabled = false;
       const lbl = b.querySelector('.tc-rec-am-lbl');
       if (lbl) lbl.textContent = on ? '■ Stop' : '⚡ Match';
-      b.title = on ? 'Stop matching — the recordings already linked are kept'
+      b.dataset.tip = on ? 'Stop matching\nThe recordings already linked stay.'
                    : 'auto-match unset recordings to MusicBrainz suggestions';
       const st = document.querySelector('#tc-recwrap .tc-rec-amstatus');
       if (st) st.classList.toggle('busy', on);
@@ -12039,7 +12350,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (g.count > 1) {   // multiple releases in this RG → link the RG title with a count
         const label = esc(g.rgName || g.name);
         const a = g.rgGid ? '<a href="' + ORIGIN + '/release-group/' + esc(g.rgGid) + '" target="_blank" rel="noopener">' + label + '</a>' : label;
-        return a + ' <span class="tc-rpk-rgx" title="' + g.count + ' releases in this release group">×' + g.count + '</span>';
+        return a + ' <span class="tc-rpk-rgx" data-tip="' + g.count + ' releases in this release group">×' + g.count + '</span>';
       }
       return g.gid ? '<a href="' + ORIGIN + '/release/' + esc(g.gid) + '" target="_blank" rel="noopener">' + esc(g.name) + '</a>' : esc(g.name);
     }).join(', ');
@@ -12078,7 +12389,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       : esc(data.name || '');
     const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main">' + (data._isrc ? '<span class="tc-badge isrc tc-rpk-isrcm" title="has the ISRC First Contact read for this track,  ' + esc(data._isrc) + '">ISRC</span> ' : '') + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
+      '<div class="tc-rpk-main">' + (data._isrc ? '<span class="tc-badge isrc tc-rpk-isrcm" data-tip="Has the ISRC First Contact read for this track\n' + esc(data._isrc) + '">ISRC</span> ' : '') + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
         '<span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
@@ -12130,9 +12441,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
-      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
-      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty tc-rpk-busy">finding suggestions…</div></div>' +
-      '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
+      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" data-tip="A new recording for this track">＋</button></div>' +
+      '<div class="tc-rpk-sec tc-rpk-suggsec" data-tip="Click: fold or unfold"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty tc-rpk-busy">finding suggestions…</div></div>' +
+      '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" data-tip="A looser search\nEvery recording with this title, whatever the artist and length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
@@ -12219,7 +12530,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       setTimeout(poll, 250);
     }
     q.value = u(ko.name) || '';
-    q.title = 'free-form — raw MB query, e.g. isrc:USXXX… or artist:"…"';
+    q.dataset.tip = 'Free form: a MusicBrainz query as it is\nLike `isrc:USXXX…` or `artist:"…"`';
     // auto-query for THIS track. Narrow = title + artist + a ±10s length window (precise). Relaxed
     // ("show all") = title only, ignoring artist & length — for classical, covers, re-recordings. #119
     // the relaxed/narrow choice is remembered (SETTINGS) so it carries across picker opens and reloads.
@@ -12277,7 +12588,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const paintRelax = () => {
       if (!relaxBtn) return;
       relaxBtn.classList.toggle('on', relax); relaxBtn.textContent = relax ? 'narrow' : 'show all';
-      relaxBtn.title = relax ? 'back to a precise search (title + artist + ±10s length)' : 'relaxed search — show all recordings with this title, ignoring artist & length';
+      relaxBtn.dataset.tip = relax ? 'Back to the precise search\nThe title, the artist, and the length ±10 s' : 'A looser search\nEvery recording with this title, whatever the artist and length';
     };
     paintRelax();
     if (relaxBtn) relaxBtn.onclick = () => {
@@ -12333,7 +12644,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     { key: 'duplicates-tab', label: 'Duplicates', title: 'Release duplicates' },   // Add-release only; hidden when its native tab is absent
     { key: 'tracklist', label: 'Tracklist', title: 'Tracklist' },
     { key: 'recordings', label: 'Recordings', title: 'Recordings' },
-    { key: 'edit-note', diff: true, title: 'Edit note — review changes & add an edit note' }
+    { key: 'edit-note', diff: true, title: 'Edit note\nReview the changes and add an edit note' }
   ];
   // only the submit button is kept (Cancel/Prev/Next are reachable via the entity tabs / step switcher);
   // it shows ONLY when there are pending changes. Both forms are mirrored — whichever MB renders.
@@ -12447,7 +12758,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
     STEP_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key; b.dataset.baseTitle = d.title;
-      b.innerHTML = d.diff ? DIFF_ICON : d.label; b.title = d.title;
+      b.innerHTML = d.diff ? DIFF_ICON : d.label; b.dataset.tip = d.title;
       b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
       steps.appendChild(b);
     });
@@ -12499,7 +12810,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (va) { const m = (va.textContent.match(/(\d+)/) || [])[1]; ver = ' <a href="' + esc(va.href) + '" target="_blank" rel="noopener" class="tc-nav-title-ver">(' + (m ? m + ' versions' : 'all versions') + ')</a>'; }
     el.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + album + '</span></div>'
                  + '<div class="tc-nav-title-artist">' + artist + ver + '</div>';
-    el.querySelectorAll('.tc-nav-title-album, .tc-nav-title-artist').forEach(d => { d.title = d.textContent.trim(); });   // the whole text, when it's cut to …
+    el.querySelectorAll('.tc-nav-title-album, .tc-nav-title-artist').forEach(d => { d.dataset.tip = d.textContent.trim(); });   // the whole text, when it's cut to …
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
@@ -12514,7 +12825,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
       const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
       mbuProp(b, 'disabled', dis); mbuCls(b, 'tc-nav-disabled', dis); mbuCls(b, 'tc-nav-warn', err);
-      mbuProp(b, 'title', (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title));   // disabled → MB's "enter all track info…" hint
+      mbuAttr(b, 'data-tip', (dis && link && link.title) ? link.title : (b.dataset.baseTitle || ''));   // disabled → MB's "enter all track info…" hint
     });
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
@@ -12554,7 +12865,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const want = navOn() && document.getElementById('tc-mirror-wrap') && nat;
     if (!want) { const p = document.getElementById('tc-addmed'); if (p) p.remove(); return; }
     if (document.getElementById('tc-addmed')) return;          // proxy already placed (the add-row may rebuild → re-add then)
-    const btn = document.createElement('button'); btn.id = 'tc-addmed'; btn.className = 'tc-addmed'; btn.title = 'add a new medium'; btn.textContent = '＋ Add medium';
+    const btn = document.createElement('button'); btn.id = 'tc-addmed'; btn.className = 'tc-addmed'; btn.dataset.tip = 'Add a new medium'; btn.textContent = '＋ Add medium';
     btn.onclick = () => { const n = nativeAddMediumBtn(); if (n) n.click(); };
     const rows = document.querySelectorAll('.tc-medsec .tc-addrow'); const host = rows[rows.length - 1];
     if (host) host.appendChild(btn);                            // far right of the last medium's add-tracks row
@@ -12671,7 +12982,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (li.querySelector('.tc-wb')) return;
         const a = li.querySelector('a[href^="http"]');
         if (!a || /(^|\.)(musicbrainz|metabrainz|archive)\.org$/i.test(a.hostname)) return;
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-wb'; b.title = 'Internet Archive'; b.innerHTML = WB_CLOCK;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-wb'; b.dataset.tip = 'Internet Archive'; b.innerHTML = WB_CLOCK;
         b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openArchiveMenu(b, a.href); });
         li.appendChild(b);
       });
@@ -13099,7 +13410,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     box.style.display = 'none';   // hidden until the cover actually loads — no "FRONT COVER" flash on coverless releases
     box.innerHTML = '<div class="tc-ri-cover-h">Front cover</div>';
     const a = document.createElement('a');
-    a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Cover art (Cover Art Archive)';
+    a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Cover art (Cover Art Archive)';
     const img = document.createElement('img');
     img.alt = 'Front cover'; img.referrerPolicy = 'no-referrer';   // not lazy: a hidden (display:none) box would never load a lazy image
     // reveal only once the image loads. On error the box stays hidden — but is KEPT
@@ -13354,7 +13665,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!bar) {
       fs.style.position = fs.style.position || 'relative';
       bar = document.createElement('div'); bar.id = 'tc-ri-toolbar';
-      bar.innerHTML = '<span id="tc-ri-check-status"></span><button id="tc-ri-check" type="button" title="Check every external link for a dead/404 status. Dead links are faded and each of their relationship types is marked “This relationship has ended”."><span class="tc-spin"></span>⟳ Check links</button>';
+      bar.innerHTML = '<span id="tc-ri-check-status"></span><button id="tc-ri-check" type="button" data-tip="Check every external link for a dead page\nA dead link is faded, and each of its relationship types is marked “This relationship has ended”."><span class="tc-spin"></span>⟳ Check links</button>';
       bar.querySelector('#tc-ri-check').onclick = () => checkAllLinks(true);
       fs.appendChild(bar);
     }
@@ -13669,15 +13980,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
     const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
-      '<button type="button" id="tc-anno-preview-btn" title="Toggle a live split preview — editor on the left, rendered annotation on the right">👁 Preview</button>' +
-      '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
+      '<button type="button" id="tc-anno-preview-btn" data-tip="A live preview, side by side\nThe editor on the left, the annotation on the right">👁 Preview</button>' +
+      '<button type="button" id="tc-anno-clear" data-tip="Clear the annotation">✕ Clear</button>' +
       '<span class="tc-anno-sp tc-anno-sp1"></span>' +
-      '<button type="button" id="tc-anno-join" class="tc-anno-icon" title="Join lines — merge the selected lines into one, dropping the hard line breaks so the text reflows. With nothing selected, joins the paragraph at the cursor." aria-label="Join lines">' + ANNO_JOIN_ICON + '</button>' +
-      '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
-      '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
+      '<button type="button" id="tc-anno-join" class="tc-anno-icon" data-tip="Join lines\nThe selected lines become one, without their line breaks, so the text flows again. With nothing selected, the paragraph at the cursor." aria-label="Join lines">' + ANNO_JOIN_ICON + '</button>' +
+      '<button type="button" id="tc-anno-md" class="tc-anno-icon" data-tip="">' + ANNO_MD_LOGO + '</button>' +
+      '<button type="button" id="tc-anno-help" class="tc-anno-icon" data-tip="Annotation syntax help" aria-label="Syntax help">?</button>' +
       '<span class="tc-anno-sp tc-anno-sp2"></span>' +
-      '<button type="button" id="tc-anno-max" class="tc-anno-icon" title="Maximize the editor (Esc to restore)" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
-      (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '');
+      '<button type="button" id="tc-anno-max" class="tc-anno-icon" data-tip="Maximize the editor\nEsc: restore it" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
+      (mbid ? '<button type="button" id="tc-anno-history-btn" data-tip="This annotation\'s earlier versions\nShow any one of them">🕘 History</button>' : '');
     const body = document.createElement('div'); body.id = 'tc-anno-body';
     const editPane = document.createElement('div'); editPane.id = 'tc-anno-edit';
     const md = document.createElement('textarea'); md.id = 'tc-anno-mdinput'; md.spellcheck = false;   // the Markdown editing surface
@@ -13734,7 +14045,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       bar.classList.toggle('tc-anno-hist-on', view === 'history');
       const mdBtn = $('tc-anno-md');
       mdBtn.innerHTML = surface === 'md' ? ANNO_MD_LOGO : ANNO_MB_LOGO;
-      mdBtn.title = surface === 'md' ? 'Editing as Markdown — click to edit the raw MusicBrainz markup' : 'Editing raw MusicBrainz markup — click to edit as Markdown';
+      mdBtn.dataset.tip = surface === 'md' ? 'Editing as Markdown\nClick: edit MusicBrainz’s own markup' : 'Editing MusicBrainz’s own markup\nClick: edit as Markdown';
       renderPreview();
     };
 
@@ -13779,7 +14090,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // Join lines: reflow the selected lines (or the caret's paragraph) into one — works on whichever surface is active
     $('tc-anno-join').onclick = () => { const el = activeEl(); const r = annoJoinBlock(el.value, el.selectionStart, el.selectionEnd); editTa(el, r.value, r.selStart, r.selEnd); el.focus(); };
     // maximize / restore the editor (fills the viewport)
-    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
+    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.dataset.tip = on ? 'Restore the editor (Esc)' : 'Maximize the editor\nEsc: restore it'; renderPreview(); };
     $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
     wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('tc-anno-max')) { setMax(false); activeEl().focus(); } });
 
@@ -13815,8 +14126,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         card.innerHTML = (v.avatar ? `<img class="tc-hist-av" src="${_annoEsc(v.avatar)}" alt="">` : '<span class="tc-hist-av tc-hist-av0"></span>') +
           `<span class="tc-hist-meta"><span class="tc-hist-editor">${_annoEsc(v.editor)}</span><span class="tc-hist-date">${_annoEsc(v.date)}</span>` +
           (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : '') +
-          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" title="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>' +
-          `<button type="button" class="tc-hist-revert" title="${idx === 0 ? 'Revert the editor to the saved version (discard unsaved changes made this session)' : 'Revert the editor to this version (reconstructed from the rendered version — review before submitting)'}">↶</button>`;
+          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" data-tip="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>' +
+          `<button type="button" class="tc-hist-revert" data-tip="${idx === 0 ? 'Back to the saved version\nThe changes of this session not saved are dropped.' : 'Back to this version\n⚠ Rebuilt from the rendered page: check it before you submit'}">↶</button>`;
         card.onclick = async (e) => {
           if (e.target.closest('.tc-hist-revert')) return;
           list.querySelectorAll('.tc-hist-card').forEach(c => c.classList.remove('on')); card.classList.add('on');
@@ -13965,7 +14276,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const idx = [...document.querySelectorAll(sel)].indexOf(btn);   // the clicked row's position = its array index
       const keep = idx >= 0 ? list[idx] : list[0];
       const noun = isEvent ? 'release event' : 'label';
-      openMiniMenu(btn, [{ label: `Remove all but this one (${n})`, title: `Remove the other ${n} ${noun}${n > 1 ? 's' : ''}, keeping this row`, onClick: () => {
+      openMiniMenu(btn, [{ label: `Remove all but this one (${n})`, title: `Remove the other ${n} ${noun}${n > 1 ? 's' : ''}\nThis row stays.`, onClick: () => {
         for (const it of (arr() || []).slice()) { if (it !== keep) { try { arr.remove(it); } catch (x) {} } }
       } }]);
     }, true);
@@ -13975,8 +14286,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function annotateLinkEditHints() {
     const ext = document.getElementById('external-links-editor'); if (!ext) return;
     const URL_HINT = 'Right-click to edit the URL', TYPE_HINT = 'Right-click to edit the relationship type';
-    ext.querySelectorAll('tr.external-link-item > td:first-child').forEach(td => { if (td.title !== URL_HINT) td.title = URL_HINT; });
-    ext.querySelectorAll('tr.relationship-item .relationship-name, tr.relationship-item select.link-type').forEach(el => { if (el.title !== TYPE_HINT) el.title = TYPE_HINT; });
+    ext.querySelectorAll('tr.external-link-item > td:first-child').forEach(td => { if (td.dataset.tip !== URL_HINT) td.dataset.tip = URL_HINT; });
+    ext.querySelectorAll('tr.relationship-item .relationship-name, tr.relationship-item select.link-type').forEach(el => { if (el.dataset.tip !== TYPE_HINT) el.dataset.tip = TYPE_HINT; });
   }
   // MB indents hierarchical link-type options with leading spaces ("  purchase for download"); the <select>
   // shows the selected option *with* that indent, pushing the text right of the URL. Trim it (display only —
@@ -13992,12 +14303,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // the attribute checkbox (e.g. "video") shows compactly with its caption hidden — surface the caption as a tooltip
       ext.querySelectorAll('tr.relationship-item .attribute-container label').forEach(l => {
         const cap = (l.textContent || '').trim(); if (!cap) return;
-        if (l.title !== cap) l.title = cap;
-        const cb = l.querySelector('input'); if (cb && cb.title !== cap) cb.title = cap;
+        if (l.dataset.tip !== cap) l.dataset.tip = cap;
+        const cb = l.querySelector('input'); if (cb && cb.dataset.tip !== cap) cb.dataset.tip = cap;
       });
       // the error text is collapsed to a "!" badge — surface the full message as its tooltip
       ext.querySelectorAll('tr.relationship-item .error.field-error').forEach(e => {
-        const t = (e.textContent || '').trim(); if (t && e.title !== t) e.title = t;
+        const t = (e.textContent || '').trim(); if (t && e.dataset.tip !== t) e.dataset.tip = t;
       });
       remarkDeadLinks();   // re-apply dead-link fading after a re-render
       ensureCheckToolbar();   // keep the Check-links button present + hidden when there are no links

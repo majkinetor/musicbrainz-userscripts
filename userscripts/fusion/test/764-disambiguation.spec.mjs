@@ -18,7 +18,7 @@ test("a recording's disambiguation shows after its title", { tag: ['@sandbox'] }
   const got = await until(() => page.evaluate(gid => {
     const a = document.querySelector(`.fs-t a[href$="/recording/${gid}"]`);
     const dis = a && a.parentElement.querySelector('.fs-dis');
-    return dis && { text: dis.textContent, tip: a.parentElement.title };
+    return dis && { text: dis.textContent, tip: a.parentElement.dataset.tip };
   }, REC), Boolean, { timeout: 45000 });
   console.log('shown: ' + JSON.stringify(got));
   check(got && got.text === '(' + want + ')', `the title is followed by "(${want})" (shown ${got && got.text})`);

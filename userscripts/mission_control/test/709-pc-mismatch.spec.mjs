@@ -42,7 +42,7 @@ test('#709: a track count or format that is not the release\'s shows, and take a
   const mark = await lane.locator('.mc-ti.off').first().evaluate(i => getComputedStyle(i, '::before').backgroundColor);
   const warn = await page.evaluate(() => { const s = document.createElement('span'); s.style.color = 'var(--mbu-warn)'; document.querySelector('#mc-root').append(s); const c = getComputedStyle(s).color; s.remove(); return c; });
   check(mark === warn, `the mark is amber (${mark})`);
-  check((await lane.locator('.mc-ti[data-key="ytmusic"]').getAttribute('title')).includes('10 tracks, the release has 13'), 'the icon\'s tooltip says why');
+  check((await lane.locator('.mc-ti[data-key="ytmusic"]').getAttribute('data-tip')).includes('10 tracks, the release has 13'), 'the icon\'s tooltip says why');
 
   // take all in takes only Amazon Music; the marked ones still toggle one by one
   await lane.locator('.mc-all').click();

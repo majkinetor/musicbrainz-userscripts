@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.101432
+// @version      2026.10.20.120000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -922,7 +922,7 @@
     if (!it._rmOpen) return '';
     const d = Math.ceil((it._rmOpen.until - Date.now()) / 86400000);
     const left = isNaN(d) ? '' : d <= 0 ? ' · closing' : ` · ${d} day${d === 1 ? '' : 's'}`;
-    return `<a class="as-rmopen" href="/edit/${esc(it._rmOpen.edit)}" target="_blank" rel="noopener" title="Edit #${esc(it._rmOpen.edit)}: a removal open for votes${isNaN(it._rmOpen.until) ? '' : ', closes ' + esc(new Date(it._rmOpen.until).toLocaleString())}">removal open${left}</a>`;
+    return `<a class="as-rmopen" href="/edit/${esc(it._rmOpen.edit)}" target="_blank" rel="noopener" data-tip="Edit #${esc(it._rmOpen.edit)}: a removal open for votes${isNaN(it._rmOpen.until) ? '' : ', closes ' + esc(new Date(it._rmOpen.until).toLocaleString())}">removal open${left}</a>`;
   };
   function measure(it) {
     if (it.w || (it._new && it._pdf)) return;          // measured already, or a PDF (no pixel dims)
@@ -1094,7 +1094,7 @@
       mbRestackCorner('br');
     }
     mbuCls(sw, 'on', !_showOrig);
-    mbuAttr(sw, 'title', (_showOrig ? 'Art Station is off · click: back to the Art Station gallery' : 'Art Station is on · click: show the original MusicBrainz cover-art page') + '\nRight-click: settings');
+    mbuAttr(sw, 'data-tip', (_showOrig ? 'Art Station is off\nClick: back to the Art Station gallery' : 'Art Station is on\nClick: show MusicBrainz’s own cover-art page') + '\nRight-click: settings');
   }
   // setup panel (Apollo-style): script info + help + toggles
   function openSetup() {
@@ -1114,9 +1114,9 @@
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
       // #560 — a big PDF booklet against a slow Internet Archive needs more than
       // the old fixed 5 minutes; the native uploader sets no timeout at all.
-      + `<div class="as-setup-opt as-setup-num" title="How long a single file may take to upload to the Internet Archive before Art Station gives up. Raise it for large PDF booklets, or when the Archive is slow. Max ${UPLOAD_TIMEOUT_MIN_MAX}.">`
+      + `<div class="as-setup-opt as-setup-num" data-tip="How long one file may take to upload\nArt Station gives up on the Internet Archive after this. Raise it for large PDF booklets, or when the Archive is slow. At most ${UPLOAD_TIMEOUT_MIN_MAX}.">`
       + `<label class="as-setup-optlbl">Upload timeout <input type="number" class="as-setup-uptimeout" min="1" max="${UPLOAD_TIMEOUT_MIN_MAX}" step="1" value="${esc(String(Math.round(uploadTimeoutMs() / 60000)))}"> minutes</label></div>`
-      + `<div class="as-setup-opt as-setup-num" title="When a commit finishes with failures, re-run just the failed operations by itself until they succeed or the allowance runs out. Off by default. Stops at whichever limit comes first; progress is shown in the commit window's footer.">`
+      + `<div class="as-setup-opt as-setup-num" data-tip="Repeat what failed\nWhen a commit ends with failures, Art Station runs only those again until they succeed or a limit is reached, whichever comes first. The commit window's footer shows the progress. Off by default.">`
       + `<label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autorepeat"${SETTINGS.autoRepeat ? ' checked' : ''}> Automatically repeat failures up to`
       + ` <input type="number" class="as-setup-ar-min" min="1" max="${AR_MIN_MAX}" step="1" value="${esc(String(arMinutes()))}"> minutes or`
       + ` <input type="number" class="as-setup-ar-times" min="1" max="${AR_TIMES_MAX}" step="1" value="${esc(String(arTimes()))}"> times</label></div>`
@@ -1265,14 +1265,14 @@
 
   function bar(n) {
     return `<div class="as-bar">
-      <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="mbu-bt">Add image</span></button>
-      ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
-      <button class="as-btn as-src" title="Source ${ENT.noun} from a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
-      <span class="as-ctl"><span class="mbu-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size — scroll the wheel over the slider, or hold right-click and scroll the wheel anywhere in the gallery"></span>
-      <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
-      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
+      <button class="as-btn as-add" data-tip="Add ${ENT.noun}\nA drop zone for files, first in the gallery"><span class="as-bi">＋</span><span class="mbu-bt">Add image</span></button>
+      ${IS_EVENT ? '' : `<button class="as-btn as-mh" data-tip="MH Covers\nFind a cover on covers.musichoarders.xyz"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
+      <button class="as-btn as-src" data-tip="Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
+      <span class="as-ctl"><span class="mbu-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" data-tip="Thumbnail size\nWheel: over the slider\nRight-click + wheel: anywhere in the gallery"></span>
+      <button class="as-btn as-view" data-tip="Sort and group">View ▾</button>
+      ${!canReorder() ? '<span class="as-dragwarn" data-tip="Dragging to reorder is off\nIt works only sorted by Position, in the grid view.\nClick: change the view">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
-      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits — right-click to skip the &quot;Run&quot; click and start immediately"${n?'':' disabled'}>${commitInner(n)}</button>
+      <button class="as-btn as-commit" data-tip="Review and apply the staged changes as MusicBrainz edits\nRight-click: start at once, without the Run click"${n?'':' disabled'}>${commitInner(n)}</button>
     </div>`;
   }
   const commitInner = n => `<span class="as-bi">✓</span><span class="mbu-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
@@ -1283,14 +1283,14 @@
     const sel = MODEL.filter(it => it._sel && !it._del), kept = MODEL.filter(it => it._sel && it._del && !it._mcOffer);   // #787 marked ones can be selected, to keep them
     const all = sel.length + kept.length;
     return `${all ? `<b class="as-selcnt">${all} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
-      <button class="as-ic as-selall" title="Select all ${ITEMS}">✳</button>
-      <button class="as-ic as-selclr" title="Clear selection"${all ? '' : ' disabled'}>✕</button>
-      ${kept.length ? `<button class="as-btn as-bk-keep" title="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
-      ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
-      <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
-      <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
-      <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="mbu-bt">Delete</span></button>` : ''}`;
+      <button class="as-ic as-selall" data-tip="Select all ${ITEMS}">✳</button>
+      <button class="as-ic as-selclr" data-tip="Clear selection"${all ? '' : ' disabled'}>✕</button>
+      ${kept.length ? `<button class="as-btn as-bk-keep" data-tip="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
+      ${sel.length ? `<button class="as-btn as-bk-type" data-tip="Set the type of the selection">Type ▾</button>
+      <button class="as-btn as-bk-cmt" data-tip="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
+      <button class="as-btn as-bk-dl" data-tip="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
+      <button class="as-btn as-bk-report" data-tip="A report of the selection\nMarkdown or HTML, ready to post"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
+      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="mbu-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? ('All ' + ITEMS) : type;
@@ -1305,7 +1305,7 @@
   }
   function dropZone() {
     if (!_dropZone) return '';
-    return `<div class="as-dropzone" tabindex="0" title="Drop image / PDF files, a folder or a .zip, or click to browse. Folders and zips upload one level of subfolders deep, up to ${DIR_MAX_FILES} files. Shift-click to browse a folder.">
+    return `<div class="as-dropzone" tabindex="0" data-tip="Drop images, PDFs, a folder or a .zip\nFolders and zips upload one level of subfolders deep, up to ${DIR_MAX_FILES} files.\nClick: browse for files\nShift+click: browse for a folder">
       <div class="as-dz-in">⬇ Drop ${ENT.noun} files, a folder or a .zip here<span>or click to browse · Shift-click for a folder · new ${ITEMS} go first</span></div></div>`;
   }
   function newSection() {
@@ -1340,8 +1340,8 @@
     return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
       + stores.map(g => { const k = g.one ? 0 : g.xs.filter(x => !x._mcDup).length;   // the shared row has no take all in: one of them is taken in
         return sec(g.xs, `More images · ${g.one ? 'one from each store' : esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
-        !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled title="checking for duplicates…">＋ take all in</button>`
-          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
+        !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled data-tip="Checking for duplicates…">＋ take all in</button>`
+          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" data-tip="Take in every ${esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1379,10 +1379,10 @@
   function provBadge(it) {
     if (!(it._new && it._provIcon)) return '';
     const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}` : '');   // #249 URL on a second line
-    return `<span class="as-prov" title="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
+    return `<span class="as-prov" data-tip="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
   }
   // #248 (vzell) tooltip for a locally-uploaded cover — its original file name.
-  const uploadTip = it => (it._new && it._uploadName) ? ` title="${esc(it._uploadName)}"` : '';
+  const uploadTip = it => (it._new && it._uploadName) ? ` data-tip="${esc(it._uploadName)}"` : '';
   // #660 (majkinetor): "When importing all images from streaming provider the point is to keep the
   // best one. Currently, one must select other images and delete them … Lets have an option on new
   // images only to keep just one." On a NEW cover, while there are others: mark every other new
@@ -1391,7 +1391,7 @@
   const otherNews = it => MODEL.filter(x => x !== it && x._new && !x._del && !x._sourcing);
   function onlyBtn(it) {
     if (!it._new || it._del || it._sourcing || !otherNews(it).length) return '';
-    return `<button class="as-only" title="Keep only this one: the other ${otherNews(it).length} new ${otherNews(it).length === 1 ? ITEM : ITEMS} are marked for removal (↺ keep undoes it)">✓ only this</button>`;
+    return `<button class="as-only" data-tip="Keep only this one\nThe other ${otherNews(it).length} new ${otherNews(it).length === 1 ? ITEM : ITEMS} are marked for removal; ↺ keep undoes it.">✓ only this</button>`;
   }
   function keepOnly(it) {
     if (!it || !it._new) return;
@@ -1404,16 +1404,16 @@
   // #784: while the stores' images are compared with the archive (mcExtras), nothing is taken in; a duplicate never is
   var _mcChecking = false;
   function card(it) {
-    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">`
+    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" data-tip="${esc(it._srcLabel || 'Sourcing…')}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     return `<div class="as-card${it._del?' del':''}${it._del && !it._mcOffer?' rm':''}${it._rmOpen?' rmopen':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       <div class="as-thumb"${uploadTip(it)}>${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._del && !it._mcOffer ? '<span class="as-newban as-rmban">REMOVE</span>' : it._new ? '<span class="as-newban">NEW</span>' : ''}
-        ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
+        ${it._pdf ? '<span class="as-pdfban" data-tip="A PDF: opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}${rmOpenChip(it)}
-        ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" title="Mark this ${ITEM} for removal">✕</button>` : ''}
-        ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
-        ${it._mcDup && it._del ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
+        ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" data-tip="Mark this ${ITEM} for removal">✕</button>` : ''}
+        ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled data-tip="Checking for duplicates…"' : ' data-tip="Take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" data-tip="Keep this image">↺ keep</button>') : ''}
+        ${it._mcDup && it._del ? `<span class="as-mcdup" data-tip="The same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
       ${foot(it)}
@@ -1429,8 +1429,8 @@
     const firstType = it.types[0] || '';
     // seed with the full list; fitTypePills() trims to what fits and adds "+" if needed
     const typePill = firstType
-      ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
-      : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
+      ? `<span class="as-type" data-tip="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
+      : `<span class="as-type as-type-add" data-tip="Set the type">＋ type</span>`;
     /* #592: no flanking rules. The type pill straddles the card's own bottom
        border, which already IS the line these drew — so they doubled it, 1px
        above it, in a different colour, and stopped at x=9 where the corner
@@ -1443,13 +1443,13 @@
     const cmt = it._editcmt
       ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
       : (it.comment
-          ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
-          : `<button class="as-pencil" title="add a comment">✎</button>`);
+          ? `<span class="as-cmt-text" data-tip="Edit the comment">${esc(it.comment)}</span>`
+          : `<button class="as-pencil" data-tip="Add a comment">✎</button>`);
     // reverse-image search this cover — flat magnifier, hover-revealed, in the comment
     // row. Shown for any cover with a public URL: a published cover, or a new cover
     // sourced from a URL (a purely local dropped file has no URL to search by).
     const search = searchUrlFor(it)
-      ? `<button class="as-fsearch" title="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
+      ? `<button class="as-fsearch" data-tip="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
     return `<div class="as-foot">
       <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
       ${typeRow}
@@ -1459,7 +1459,7 @@
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
-    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">
+    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}" data-tip="${esc(it._srcLabel || 'Sourcing…')}">
       <div class="as-dthumb as-srcing-thumb"><div class="as-spinner"></div></div>
       <div class="as-dmeta"><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     if (it._del) return `<div class="as-drow del${it._mcOffer ? '' : ' rm'}" data-id="${esc(it.id)}">
@@ -1471,14 +1471,14 @@
       </div>
       <div class="as-dmeta as-dmeta-del">
         <div class="as-ddel-lbl">${esc(it.types.join(', ') || 'no type')}${it.comment ? ` — “${esc(it.comment)}”` : ''}</div>
-        ${it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'}
+        ${it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled data-tip="Checking for duplicates…"' : ' data-tip="Take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" data-tip="Keep this image">↺ keep</button>'}
       </div>
     </div>`;
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
-      <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
+      <input type="checkbox" class="as-dsel" data-tip="Select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${rmOpenChip(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${rmOpenChip(it)}${it._pdf ? '<span class="as-pdfban" data-tip="A PDF: opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -1897,7 +1897,7 @@
   function openTypePopFor(it, anchor, onChange) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop';
-    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: set only this type"><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
+    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label data-tip="Right-click: set only this type"><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
     placePop(pop, anchor.getBoundingClientRect());
     const close = () => { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); };
@@ -3033,11 +3033,11 @@
       n.textContent = total ? ` (${total})` : '';
       // #558: the tooltip has to advertise the right-click shortcut — an invisible
       // one nobody is told about is one nobody uses.
-      src.title = total
-        ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''} (linked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL)`
+      src.dataset.tip = total
+        ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''}\nLinked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL`
           + `\nRight-click: import from all ${total} at once, without opening this panel`
-          + `\nMiddle-click: import from all and keep only the best cover (highest resolution, then smallest file)`
-        : `Source ${ENT.noun} from a linked platform, a registered provider, or any URL`;
+          + `\nMiddle-click: import from all, keeping only the best cover (the highest resolution, then the smallest file)`
+        : `Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL`;
     }).catch(() => {});
   }
   // #558 (majkinetor): "Currently I have to open popup and click import all (or
@@ -3425,7 +3425,7 @@
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
     pop.innerHTML = `<div class="as-pop-h as-src-hd"><span class="as-src-htxt">Source ${ENT.noun}</span>`
-      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import by URL — paste a provider page or direct image URL">By URL</button>`
+      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" data-tip="Import by URL\nPaste a provider’s page or an image’s own URL">By URL</button>`
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
@@ -4205,14 +4205,14 @@
       : o.it && o.it._file ? `<img alt="" data-alt="" src="${esc(o.it._file)}">`
       : o.id ? `<img alt="" data-alt="${esc(imgUrl(o.id))}" src="${esc(thumb(o.id, 250))}">` : '<span class="as-cm-thi">🖼</span>';
     ov.innerHTML = `<div class="as-cm-box">
-      <div class="as-cm-h"><span class="as-cm-h-t" title="Each change is applied as a MusicBrainz edit">Apply ${plan.length} change${plan.length===1?'':'s'}</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" title="Your ${ENT.noun} edits on MusicBrainz">🕓 My edits</a><button type="button" class="as-cm-x" title="Close — during a run, cancels it">✕</button></div>
+      <div class="as-cm-h"><span class="as-cm-h-t" data-tip="Each change is applied as a MusicBrainz edit">Apply ${plan.length} change${plan.length===1?'':'s'}</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" data-tip="Your ${ENT.noun} edits on MusicBrainz">🕓 My edits</a><button type="button" class="as-cm-x" data-tip="Close\nDuring a run, it cancels the run">✕</button></div>
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span><span class="as-cm-th">${opThumb(o)}</span><div class="as-cm-main"><div class="as-cm-ttl"><span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}</div><span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <div class="as-cm-nb">
-        <div class="as-cm-ns" role="button" tabindex="0" title="Edit note added to each edit — click to show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span></div>
+        <div class="as-cm-ns" role="button" tabindex="0" data-tip="The edit note added to each edit\nClick: show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span></div>
         <div class="as-cm-nbody"><textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea></div>
       </div>
-      <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" title="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" title="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
+      <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" data-tip="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" data-tip="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
       <div class="as-cm-ar"></div>
     </div>`;
     document.body.appendChild(ov);
@@ -4645,15 +4645,15 @@
     let ov = document.getElementById('as-lb');
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
-      ov.innerHTML = `<button class="as-lb-del" title="Mark for removal (Del)">🗑️</button>
-        <div class="as-lb-top"><button class="as-lb-play" title="slideshow (P)">▶ Play</button><button class="as-lb-x" title="close (Esc)">✕</button></div>
-        <button class="as-lb-nav as-lb-prev" title="previous (←)">‹</button>
+      ov.innerHTML = `<button class="as-lb-del" data-tip="Mark for removal (Del)">🗑️</button>
+        <div class="as-lb-top"><button class="as-lb-play" data-tip="Slideshow (P)">▶ Play</button><button class="as-lb-x" data-tip="Close (Esc)">✕</button></div>
+        <button class="as-lb-nav as-lb-prev" data-tip="Previous (←)">‹</button>
         <img class="as-lb-img" alt="">
-        <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
+        <button class="as-lb-nav as-lb-next" data-tip="Next (→)">›</button>
         <div class="as-lb-bar"><div class="as-lb-caprow"><div class="as-lb-cap"></div>
-          <div class="as-lb-dlwrap"><button class="as-lb-dl" title="Download original">⬇ Download</button><button class="as-lb-dlcaret" title="Other sizes">▾</button>
+          <div class="as-lb-dlwrap"><button class="as-lb-dl" data-tip="Download original">⬇ Download</button><button class="as-lb-dlcaret" data-tip="Other sizes">▾</button>
             <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div>
-          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" title="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" title="Rotate right 90°">↷</button></div></div>
+          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" data-tip="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" data-tip="Rotate right 90°">↷</button></div></div>
           <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
@@ -4797,9 +4797,9 @@
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
     // the store it came from, as on the card (#249)
-    const prov = it._new && it._provIcon ? `<span class="as-lb-prov" title="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
+    const prov = it._new && it._provIcon ? `<span class="as-lb-prov" data-tip="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
 ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
-    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
     cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
@@ -4828,10 +4828,10 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       inp.focus();
     } else if (it.comment) {
       // not editing: show the comment as plain centered text (no input box), like the gallery
-      area.innerHTML = `<div class="as-lb-cmt-text" title="edit comment">${esc(it.comment)}</div>`;
+      area.innerHTML = `<div class="as-lb-cmt-text" data-tip="Edit the comment">${esc(it.comment)}</div>`;
       area.querySelector('.as-lb-cmt-text').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
     } else {
-      area.innerHTML = `<button class="as-lb-cmtadd" title="add a comment">✎ comment</button>`;
+      area.innerHTML = `<button class="as-lb-cmtadd" data-tip="Add a comment">✎ comment</button>`;
       area.querySelector('.as-lb-cmtadd').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
     }
   }
@@ -5048,7 +5048,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>`
-      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: replace with only this type"><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
+      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label data-tip="Right-click: replace with only this type"><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
@@ -5077,7 +5077,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
     // latest (main-branch) install link for the companion — never a feature branch
     const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/as_picker/as_picker.user.js';
-    pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy<button class="as-search-all" type="button" title="Open every engine in its own tab">Open all</button></div>`
+    pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy<button class="as-search-all" type="button" data-tip="Open every engine in its own tab">Open all</button></div>`
       + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('')
       + `<div class="as-search-foot">Requires the <a href="${COMPANION_URL}" target="_blank" rel="noopener">Art Station Picker</a> script for click-capture.</div>`;
     document.body.appendChild(pop);
@@ -5255,7 +5255,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   // run on one page (or all of them do, via String Theory) the duplicates are
   // identical and the last one simply wins.
   // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+  const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
   // </ST-TOKENS>
 
   // The shared UI components (#563). Definitions live in dev/ui/ui-components.mjs
@@ -5269,7 +5269,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   }
   function mbuHelpHtml(name, label) {
       return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-          + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+          + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
   }
   function mbuHelpEl(name, label) {
       var a = document.createElement('a');
@@ -5277,7 +5277,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       a.href = mbuHelpHref(name);
       a.target = '_blank';
       a.rel = 'noopener';
-      a.title = 'open the README in a new tab';
+      a.dataset.tip = 'Open the README in a new tab';
       a.textContent = label || '? Help';
       return a;
   }
@@ -5475,12 +5475,12 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       var html = '<div class="mbu-cfg-h">';
       if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
       html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-      if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+      if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
       html += '<span class="mbu-cfg-sp"></span>';
       if (o.log) {
           html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
               + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-              + ' title="Open the activity log">Log</button>';
+              + ' data-tip="Open the activity log">Log</button>';
       }
       html += mbuHelpHtml(o.script);
       return html + '</div>';
@@ -5832,18 +5832,18 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           root.classList.add('mbu-logpop');
           root.dataset.mbuLv = vid;
           root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-              + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-              + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+              + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+              + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
               + '<span class="mbu-logpop-sp"></span>'
-              + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-              + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-              + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-              + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-              + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                  + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                  + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+              + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+              + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+              + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+              + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+              + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                  + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                  + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
               + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+              + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
           if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
           var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
           var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -5996,14 +5996,14 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
           var minBtn = pop.querySelector('.mbu-logpop-min');
           var setMin = function (m) {
-              minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+              minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
               if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
               else Object.assign(pop.style, restore);
           };
           var fullBtn = pop.querySelector('.mbu-logpop-full');
           var setFull = function (f) {
               pop.classList.toggle('full', f);
-              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+              fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
           };
           minBtn.onclick = function () {
               var m = pop.classList.toggle('min');
@@ -6431,7 +6431,349 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
       if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
       if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+      if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
   } catch (e) { /* a locked-down page must not stop the script loading */ }
+
+  // Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+  function mbuTipV() { return 1; }
+  function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-k{display:inline-block;padding:0 5px;border:1px solid var(--mbu-border,#cfc6e6);border-bottom-width:2px;border-radius:4px;background:var(--mbu-bg-raised,#faf9fe);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+  function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+  function mbuTipEsc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+  }
+  function mbuTipLabel(line) {
+      var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+      if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+      return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+  }
+  function mbuTipIsKey(label) {
+      return /click|drag|wheel|scroll|hover|double|press|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+  }
+  function mbuTipInline(s) {
+      return mbuTipEsc(s)
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+          .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, '<kbd class="mbu-tip-k">$1</kbd>')
+          .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+  }
+  function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function mbuTipText(src) {
+      var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+      if (!raw) return '';
+      var lines = [];
+      // the shapes the old title texts took, read as the rows they mean:
+      //   "… — click to open it"              → "…" + "Click: open it"
+      //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+      //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+      raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+          .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+          .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+          .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+      raw.split('\n').forEach(function (line) {
+          line = line.replace(/\s+$/, '');
+          // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+          var parts = line.split(/\s+·\s+/), out = [parts[0]];
+          for (var i = 1; i < parts.length; i++) {
+              if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+          }
+          out.forEach(function (seg) {
+              if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+              var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+              bits.forEach(function (b) { lines.push(b); });
+          });
+      });
+      // blocks: lead / paragraph / rows / bullets
+      var blocks = [], rowRun = [];
+      var flushRows = function () {
+          if (!rowRun.length) return;
+          var keyed = rowRun.filter(function (r) { return r.key; }).length;
+          if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+          else blocks.push({ t: 'p', s: rowRun[0].line });
+          rowRun = [];
+      };
+      lines.forEach(function (line, n) {
+          if (!line.trim()) { flushRows(); return; }
+          var b = /^\s*[-•]\s+(.*)$/.exec(line);
+          if (b) {
+              flushRows();
+              var last = blocks[blocks.length - 1];
+              if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+              return;
+          }
+          var l = mbuTipLabel(line);
+          // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+          if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+          flushRows();
+          blocks.push({ t: 'p', s: line });
+      });
+      flushRows();
+      // one long paragraph: its first sentence becomes the lead
+      if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+          var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+          if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+      }
+      var lead = blocks.length > 1 && blocks[0].t === 'p';
+      return blocks.map(function (bl, i) {
+          if (bl.t === 'ul') return '<ul class="mbu-tip-ul">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+          if (bl.t === 'rows') {
+              return '<div class="mbu-tip-rows">' + bl.rows.map(function (r) {
+                  return '<span class="' + (r.key ? 'mbu-tip-k' : 'mbu-tip-o') + '">' + mbuTipEsc(mbuTipCap(r.label)) + '</span><span>' + mbuTipInline(r.text) + '</span>';
+              }).join('') + '</div>';
+          }
+          var warn = /^⚠/.test(bl.s);
+          return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + '">' + mbuTipInline(bl.s) + '</div>';
+      }).join('');
+  }
+  function mbuTipCard(o) {
+      o = o || {};
+      var h = '';
+      if (o.head || o.title || o.aside) {
+          h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+              + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+      }
+      if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+      if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+      return h;
+  }
+  function mbuTipS() {
+      return mbuTipS.s || (mbuTipS.s = {
+          me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+          cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+      });
+  }
+  function mbuTip(el, content, opts) {
+      if (!el) return el;
+      var _mbuTip = mbuTipS();
+      mbuTipStart();
+      opts = opts || {};
+      if (typeof content === 'function') {
+          if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+          el.setAttribute('data-mbu-tip-own', '');
+          el.removeAttribute('title');
+          return el;
+      }
+      if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+      if (opts.place) el.setAttribute('data-tip-place', opts.place);
+      if (opts.wide) el.setAttribute('data-tip-wide', '');
+      el.removeAttribute('title');
+      if (_mbuTip.cur === el) mbuTipRender();
+      return el;
+  }
+  function mbuTipOn(selector, fn, opts) {
+      mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+      mbuTipStart();
+  }
+  function mbuTipShowFor(el, content, opts) {
+      if (!el || content == null || content === '') { mbuTipHide(true); return; }
+      mbuTipStart();
+      var o = opts || {};
+      var fn = typeof content === 'function' ? content : function () { return content; };
+      var S = mbuTipS();
+      if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+      mbuTipShow({ el: el, fn: fn, opts: o });
+  }
+  function mbuTipHtml(s) {
+      if (mbuTipHtml.tt === undefined) {
+          mbuTipHtml.tt = null;
+          try {
+              var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+              if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+          } catch (e) { /* the page allows no new policy: plain strings */ }
+      }
+      return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+  }
+  function mbuTipCss() {
+      var s = document.getElementById('mbu-tip-css');
+      if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+      if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+      s.setAttribute('data-v', String(mbuTipV()));
+      s.textContent = mbuTipCssText();
+  }
+  function mbuTipEl() {
+      var t = document.getElementById('mbu-tip');
+      if (!t) {
+          t = document.createElement('div');
+          t.id = 'mbu-tip';
+          t.setAttribute('role', 'tooltip');
+          (document.body || document.documentElement).appendChild(t);
+      }
+      return t;
+  }
+  function mbuTipFind(node) {
+      var _mbuTip = mbuTipS();
+      var tip = document.getElementById('mbu-tip');
+      for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+          if (el === tip) return null;
+          var reg = _mbuTip.els && _mbuTip.els.get(el);
+          if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+          for (var i = 0; i < _mbuTip.prov.length; i++) {
+              var p = _mbuTip.prov[i];
+              try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+          }
+          if (!_mbuTip.lead) continue;
+          if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+          if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+          // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+          if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+              var root = null;
+              try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+              if (root) {
+                  el.setAttribute('data-tip', el.getAttribute('title'));
+                  el.removeAttribute('title');
+                  return { el: el, opts: {} };
+              }
+          }
+      }
+      return null;
+  }
+  function mbuTipRender() {
+      var _mbuTip = mbuTipS();
+      var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+      if (!a) return false;
+      if (o.fn) {
+          try { c = o.fn(a); } catch (e) { c = null; }
+          if (c == null || c === '') return false;
+          if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+          else { t.textContent = ''; t.appendChild(c); }
+      } else {
+          var s = a.getAttribute('data-tip');
+          if (!s) return false;
+          var h = mbuTipText(s);
+          t.innerHTML = mbuTipHtml(h);
+          // an element with nothing to read of its own is named by its tip
+          if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+              a.setAttribute('aria-label', s.split('\n')[0]);
+          }
+      }
+      t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+      t.setAttribute('data-owner', _mbuTip.me);
+      mbuTipPlace(t, a, o.place);
+      return true;
+  }
+  function mbuTipPlace(t, a, place) {
+      var _mbuTip = mbuTipS();
+      var r = a.getBoundingClientRect();
+      if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+      t.style.left = '0px'; t.style.top = '0px';
+      var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+      var below = place !== 'above';
+      if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+      else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+      var top = below ? r.bottom + gap : r.top - gap - h;
+      // a wide element (a row, a long field): the arrow points where the pointer is
+      var cx = r.left + r.width / 2;
+      if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+      var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+      t.style.left = left + 'px';
+      t.style.top = Math.max(m, Math.round(top)) + 'px';
+      t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+      t.classList.toggle('mbu-tip-up', !below);
+  }
+  function mbuTipShow(found) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+      if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+      mbuTipCss();
+      _mbuTip.cur = found.el;
+      _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+      if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+      var t = mbuTipEl();
+      found.el.setAttribute('aria-describedby', 'mbu-tip');
+      // next frame, so the transition runs from the hidden state
+      requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+      // the element can go (a re-render) or change its text while the tip is up
+      clearInterval(_mbuTip.liveT);
+      _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+      try {
+          if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+          _mbuTip.obs.disconnect();
+          if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+      } catch (e) { /* no observer: the text is read again on the next hover */ }
+  }
+  function mbuTipHide(now) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+      _mbuTip.pend = null;
+      var hide = function () {
+          var a = _mbuTip.cur;
+          if (!a) return;
+          _mbuTip.cur = null;
+          clearInterval(_mbuTip.liveT);
+          try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+          if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+          var t = document.getElementById('mbu-tip');
+          if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+          _mbuTip.warm = Date.now();
+      };
+      if (now) hide();
+      else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+  }
+  function mbuTipStart() {
+      if (mbuTipStart.done || typeof document === 'undefined') return;
+      var _mbuTip = mbuTipS();
+      var root = document.documentElement;
+      if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+      mbuTipStart.done = true;
+      if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+      var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+      document.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+      document.addEventListener('mouseover', function (e) {
+          _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+          if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+          var f = mbuTipFind(e.target);
+          if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+          if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+          if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+          clearTimeout(_mbuTip.showT);
+          _mbuTip.pend = f;
+          var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+          _mbuTip.showT = setTimeout(function () {
+              _mbuTip.pend = null;
+              if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+          }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+      }, true);
+      document.addEventListener('mouseout', function (e) {
+          var to = e.relatedTarget;
+          var q = _mbuTip.quiet;
+          if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+          var p = _mbuTip.pend;
+          if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+          var a = _mbuTip.cur;
+          if (!a) return;
+          if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+          if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+      }, true);
+      document.addEventListener('mousedown', function (e) {
+          if (inTip(e.target)) return;
+          clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+          var f = mbuTipFind(e.target);
+          _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+          if (_mbuTip.cur) mbuTipHide(true);
+      }, true);
+      document.addEventListener('keydown', function (e) {
+          if (!_mbuTip.cur) return;
+          var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+          // typing closes a plain tip, as it does the browser's; modifiers alone don't
+          if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+          mbuTipHide(true);
+          if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+      }, true);
+      window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+      window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+      document.addEventListener('focusin', function (e) {
+          var el = e.target, vis = false;
+          try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+          if (!vis) return;
+          var f = mbuTipFind(el);
+          if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+      }, true);
+      document.addEventListener('focusout', function (e) {
+          if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+      }, true);
+  }
+  mbuTipStart();
   // </ST-UI>
 
   const css = MBU_TOKENS + MBU_UI_CSS + `

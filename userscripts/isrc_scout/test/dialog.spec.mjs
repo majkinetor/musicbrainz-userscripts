@@ -10,7 +10,7 @@ test.use({ gm: { name: 'ISRC Scout' } });
 // toggleMaximize() sets, on every open and every viewport resize.
 test('#484: a maximized window reopens maximized, and Restore restores it', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await openScout(page, inject);
-  const box = () => page.evaluate(() => { const m = document.getElementById('ii-modal'); return { width: m.style.width, title: document.getElementById('ii-maximize-toggle').title, px: m.getBoundingClientRect().width, vw: window.innerWidth }; });
+  const box = () => page.evaluate(() => { const m = document.getElementById('ii-modal'); return { width: m.style.width, title: document.getElementById('ii-maximize-toggle').dataset.tip, px: m.getBoundingClientRect().width, vw: window.innerWidth }; });
   await page.click('#ii-maximize-toggle');
   const max = await box();
   check(max.width === '96vw' && max.title === 'Restore', `maximized (${JSON.stringify(max)})`);

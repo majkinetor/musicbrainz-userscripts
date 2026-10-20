@@ -41,7 +41,7 @@ test('#680: links grouped by barcode, a lane each', { tag: ['@sandbox'] }, async
 
   const card = page.locator('#mc-root .mc-sect:has([data-card="pc"])');
   const lanes = () => card.locator('.mc-bcl').evaluateAll(ls => ls.map(l => ({
-    bc: l.querySelector('.mc-bc').innerText, c: getComputedStyle(l.querySelector('.mc-bc')).color, t: l.querySelector('.mc-bc').title,
+    bc: l.querySelector('.mc-bc').innerText, c: getComputedStyle(l.querySelector('.mc-bc')).color, t: l.querySelector('.mc-bc').dataset.tip,
     icons: [...l.querySelectorAll('.mc-ti')].map(i => i.dataset.key), on: [...l.querySelectorAll('.mc-ti.on')].map(i => i.dataset.key),
     all: (l.querySelector('.mc-all') || {}).textContent || '', pill: (l.querySelector('.mc-pill') || {}).textContent || '', open: l.classList.contains('open') })));
   let L = await lanes();

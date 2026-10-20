@@ -84,7 +84,7 @@ test("#467: harmony", { tag: ['@sandbox', '@login'] }, async ({ context, page })
       const cover = window.__falconTest.scrapeHarmonyCover();
       const btn = document.getElementById('falcon-harmony-btn');
       return {
-        count: items.length, coverCount: cover ? 1 : 0, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.title,
+        count: items.length, coverCount: cover ? 1 : 0, btnExists: !!btn, btnText: document.getElementById('falcon-harmony-lbl')?.textContent, btnTitle: btn?.dataset.tip,
         byType: items.reduce((m, i) => { m[i.entityType] = (m[i.entityType] || 0) + 1; return m; }, {}),
       };
     });

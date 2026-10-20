@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.103420
+// @version      2026.10.20.120000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -366,7 +366,7 @@ function bestHtml(b) {
     // a click on a cover opens it full screen, the other one a ← / → away (coverViewer)
     let n = 0;
     // `alt`: the full image, for a thumbnail that fails (a cover in an open edit has no CAA thumbnails yet)
-    const fig = (src, alt, title, lines) => '<div class="mc-best-c">' + (src ? '<button type="button" class="mc-cov" data-act="cover" data-i="' + (n++) + '" title="Show full screen (← → to compare)"><img alt="" src="' + esc(src) + '"' + (alt && alt !== src ? ' data-alt="' + esc(alt) + '"' : '') + '></button>' : '<span class="mc-best-no">🖼</span>')
+    const fig = (src, alt, title, lines) => '<div class="mc-best-c">' + (src ? '<button type="button" class="mc-cov" data-act="cover" data-i="' + (n++) + '" data-tip="Show it full screen\n← →: compare"><img alt="" src="' + esc(src) + '"' + (alt && alt !== src ? ' data-alt="' + esc(alt) + '"' : '') + '></button>' : '<span class="mc-best-no">🖼</span>')
         + '<div class="mc-best-t"><b>' + esc(title) + '</b>' + lines.filter(Boolean).map(l => '<span>' + esc(l) + '</span>').join('') + '</div></div>';
     const c = b.current;
     // the same size to the pixel and the byte: the front already is the best cover (imported earlier), not a comparison
@@ -403,9 +403,9 @@ function coverViewer(list, at) {
     let i = Math.min(at || 0, list.length - 1);
     const v = el('div', ''); v.id = 'mc-cover';
     v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', 'Cover, full screen');
-    v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" title="Close (Esc)">✕</button></div>'
+    v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" data-tip="Close (Esc)">✕</button></div>'
         + '<div class="mc-cov-stage"><img alt=""></div>'
-        + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" title="Previous (←)">‹</button><button type="button" class="mc-cov-go next" title="Next (→)">›</button>' : ''));
+        + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" data-tip="Previous (←)">‹</button><button type="button" class="mc-cov-go next" data-tip="Next (→)">›</button>' : ''));
     const show = () => {
         const x = list[i];
         v.querySelector('img').src = x.src;
@@ -465,8 +465,8 @@ function falconHtml(f) {
     const bad = f.items.filter(i => ['failed', 'partial', 'manual'].includes(i.status)).length;
     const head = 'Falcon ' + (settled < f.items.length ? 'is running: ' + settled + ' of ' + f.items.length + ' finished' : bad ? 'finished, ' + bad + ' need' + (bad === 1 ? 's' : '') + ' a look' : 'finished');
     return '<div class="mc-falcon' + (bad ? ' bad' : settled === f.items.length ? ' ok' : '') + '"><div class="mc-falcon-h">' + esc(head)
-        + (bad ? ' <button type="button" class="mc-falcon-open" data-act="falcon-open" title="Open Falcon\'s panel to see why and retry">Open Falcon</button>' : '') + '</div>'
-        + f.items.map(i => { const k = FALCON_MARK[i.status] || ['?', i.status]; return '<div class="mc-falcon-i st-' + esc(i.status) + '" title="' + esc(k[1] + (i.error ? ': ' + i.error : '')) + '"><span class="mk">' + k[0] + '</span><span class="ty">' + esc(i.entityType.replace('_', ' ')) + '</span><span class="nm">' + esc(i.name || i.mbid) + '</span><span class="ct">'
+        + (bad ? ' <button type="button" class="mc-falcon-open" data-act="falcon-open" data-tip="Open Falcon\'s panel\nTo see why, and try again">Open Falcon</button>' : '') + '</div>'
+        + f.items.map(i => { const k = FALCON_MARK[i.status] || ['?', i.status]; return '<div class="mc-falcon-i st-' + esc(i.status) + '" data-tip="' + esc(k[1] + (i.error ? ': ' + i.error : '')) + '"><span class="mk">' + k[0] + '</span><span class="ty">' + esc(i.entityType.replace('_', ' ')) + '</span><span class="nm">' + esc(i.name || i.mbid) + '</span><span class="ct">'
             + esc([i.urls ? i.urls + ' link' + (i.urls === 1 ? '' : 's') : '', i.cover ? 'cover' : ''].filter(Boolean).join(' + ')) + '</span>' + (i.error ? '<span class="er">' + esc(i.error) + '</span>' : '') + '</div>'; }).join('') + '</div>';
 }
 // #680: what a provider applied shows as linked from then on: its rows move to the linked icons,
@@ -892,12 +892,12 @@ function header() {
     h.addEventListener('animationiteration', e => { if (e.target === h && e.pseudoElement === '::after' && !isBusy()) h.classList.remove('mc-busy'); });
     // #680: the release where Probe was (the cover is the one in the Cover art card), the steps, then
     // Execute with its count; logo, version and Auto probe live in ⚙
-    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
-        + '<div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '')
-        + (rel.versions ? ' <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener" title="All versions of this release">(' + esc(rel.versions.text) + ')</a>' : '') + '</div></div>'
-        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled title="Apply the selected changes, step by step">Execute</button>'
-        + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
-        + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
+    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" data-tip="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
+        + '<div class="mc-art" data-tip="' + esc(rel.artist) + '">' + esc(rel.artist || '')
+        + (rel.versions ? ' <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener" data-tip="Every version of this release">(' + esc(rel.versions.text) + ')</a>' : '') + '</div></div>'
+        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled data-tip="Apply the selected changes, step by step">Execute</button>'
+        + '<button type="button" class="mc-btn ghost" data-act="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button>'
+        + '<button type="button" class="mc-btn ghost" data-act="close" data-tip="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
     return h;
 }
@@ -932,20 +932,20 @@ const FORMAT_KINDS = [
 function fmtIcon(format) {
     const first = (format || '').split('+')[0];
     const k = (format && FORMAT_KINDS.find(([, re]) => re.test(first)) || ['disc'])[0];
-    return '<span class="mc-fmt" title="' + esc((format || 'Format unknown') + ' · click: show or hide the execution order') + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
+    return '<span class="mc-fmt" data-tip="' + esc((format || 'Format unknown') + '\nClick: show or hide the order of the steps') + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
 }
 
 function seg(p) {
-    return '<div class="mc-seg" data-mode="' + p.mode + '" title="Auto: fetch during Probe · Ask: fetch on a button · Off: skip">'
+    return '<div class="mc-seg" data-mode="' + p.mode + '" data-tip="Auto: fetch during Probe · Ask: fetch on a button · Off: skip">'
         + ['auto', 'ask', 'off'].map(m => '<button type="button" data-v="' + m + '"' + (S[p.mode] === m ? ' class="on"' : '') + '>' + m[0].toUpperCase() + m.slice(1) + '</button>').join('') + '</div>';
 }
 
 function orderSidebar() {
     const a = el('aside', 'mc-side left');
-    let html = '<h2 class="mc-sec">Execution order <button type="button" class="mc-x" data-close="left" title="Hide">×</button></h2>';
+    let html = '<h2 class="mc-sec">Execution order <button type="button" class="mc-x" data-close="left" data-tip="Hide">×</button></h2>';
     const pv = p => '<div class="mc-pv">' + esc(p.provider) + '</div>';
     STEPS.forEach((s, k) => {
-        const node = '<span class="mc-node">' + (s.lanes ? '<span class="par" title="run in parallel">⇶</span>' : sIcon(s.id)) + '<span class="num">' + (k + 1) + '</span></span>';
+        const node = '<span class="mc-node">' + (s.lanes ? '<span class="par" data-tip="These run side by side">⇶</span>' : sIcon(s.id)) + '<span class="num">' + (k + 1) + '</span></span>';
         const last = k === STEPS.length - 1 ? ' last' : '';
         if (s.lanes) {
             html += '<div class="mc-stage head">' + node + '<div><div class="nm">' + esc(s.name) + ' <span class="tag">parallel</span></div></div></div>'
@@ -958,7 +958,7 @@ function orderSidebar() {
         }
     });
     html += '<div class="mc-runs"><div><span>Probed</span><b class="f-probe"></b></div><div><span>On Execute</span><b class="f-exec"></b></div>'
-        + '<div><span>Last run</span><b><span class="f-run"></span> · <button type="button" class="mc-loglink" data-act="log" title="Mission Control’s log">Log</button></b></div></div>';
+        + '<div><span>Last run</span><b><span class="f-run"></span> · <button type="button" class="mc-loglink" data-act="log" data-tip="Mission Control’s log">Log</button></b></div></div>';
     a.innerHTML = mbuHtml(html);
     return a;
 }
@@ -996,7 +996,7 @@ function paintCoverage(n) {
     const t = { linked: 0, new: 0, held: 0, none: 0 };
     xs.forEach(x => { t[x.state === 'withheld' || x.state === 'unsure' ? 'held' : x.state in t ? x.state : 'none']++; });
     bar.innerHTML = mbuHtml(xs.length ? Object.keys(t).filter(k => t[k]).map(k => '<i class="' + k + '" style="width:' + (100 * t[k] / xs.length).toFixed(2) + '%"></i>').join('') : '');
-    bar.title = xs.length ? t.linked + ' linked · ' + t.new + ' to add · ' + t.held + ' held back · ' + t.none + ' not found' : '';
+    bar.dataset.tip = xs.length ? '- ' + t.linked + ' linked\n- ' + t.new + ' to add\n- ' + t.held + ' held back\n- ' + t.none + ' not found' : '';
 }
 // the footer: when the last probe ran and how long it took, what Execute would send, the last run
 let probeAt = 0, probeTook = 0, lastRun = null;
@@ -1020,8 +1020,8 @@ let STALL_MS = 20000;
 function steps() {
     const d = el('div', 'mc-steps');
     const node = p => '<span class="mc-step" data-step="' + p.id + '"><span class="mc-ring">' + sIcon(p.id) + '<sup hidden></sup></span><span class="tx"><b>' + esc(p.provider) + '</b><i></i></span></span>';
-    d.innerHTML = mbuHtml('<button type="button" class="mc-re" data-act="probe" title="Probe: ask every provider what is missing (⚙: probe on open)">↻</button>'
-        + STEPS.map(s => s.lanes ? '<span class="mc-par" title="run in parallel">' + s.lanes.map(node).join('') + '</span>' : node(s)).join('<span class="mc-arrow">→</span>'));
+    d.innerHTML = mbuHtml('<button type="button" class="mc-re" data-act="probe" data-tip="Probe\nAsk every provider what is missing. ⚙ can make it run on open.">↻</button>'
+        + STEPS.map(s => s.lanes ? '<span class="mc-par" data-tip="These run side by side">' + s.lanes.map(node).join('') + '</span>' : node(s)).join('<span class="mc-arrow">→</span>'));
     return d;
 }
 function addText(p) {
@@ -1055,7 +1055,7 @@ function paintSteps() {
         const n = ui.querySelector('.mc-step[data-step="' + p.id + '"]'); if (!n) return;
         const [cls, words, mark] = stepState(p);
         n.className = 'mc-step ' + cls;
-        n.title = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? '. Click to switch it on' : '. Click to switch it off');
+        n.dataset.tip = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? '\nClick: switch it on' : '\nClick: switch it off');
         n.querySelector('i').textContent = words;
         const sup = n.querySelector('sup'); sup.hidden = !mark; sup.textContent = mark;
         // the provider's card shows the same state: a stripe on its edge, a tint and a word in its header (#680)
@@ -1077,10 +1077,10 @@ let stepClock = 0;
 const COLS = [
     { id: 'isrc', p: 'is', head: 'ISRC · IS', pick: true, cell: x =>
         x.state === 'new' ? '<span class="mc-add mono">+ ' + isrcHtml(x.isrc) + '</span>'
-        : x.state === 'unsure' ? '<span class="mc-warn mono" title="' + esc(x.why || '') + '">+ ' + isrcHtml(x.isrc) + ' ⚠</span>'
+        : x.state === 'unsure' ? '<span class="mc-warn mono" data-tip="' + esc(x.why || '') + '">+ ' + isrcHtml(x.isrc) + ' ⚠</span>'
         // a provider's hard stop (#680: an ISRC on two recordings): shown, never tickable
-        : x.state === 'blocked' ? '<span class="mc-err mono" title="' + esc('Blocked: ' + (x.why || '')) + '">⊘ ' + isrcHtml(x.isrc) + '</span>'
-        : x.state === 'linked' ? '<span class="weak mono" title="' + esc((x.existing || []).join(', ')) + '">' + isrcHtml((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
+        : x.state === 'blocked' ? '<span class="mc-err mono" data-tip="' + esc('⚠ Blocked\n' + (x.why || '')) + '">⊘ ' + isrcHtml(x.isrc) + '</span>'
+        : x.state === 'linked' ? '<span class="weak mono" data-tip="' + esc((x.existing || []).join(', ')) + '">' + isrcHtml((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
         : '<span class="pend">none found</span>' },
     // rendered by linksCell: IS's linked icons plus the links Find links found (#680)
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
@@ -1088,17 +1088,17 @@ const COLS = [
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
         FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>'
         // as Fusion's pool badge: this recording has an open edit, so Fusion groups it with nothing
-        : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" title="This recording has an open edit: Fusion leaves it out of auto-match until the edit closes">⏳ pending</a>'
+        : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" data-tip="This recording has an open edit\nFusion leaves it out of Match until the edit closes.">⏳ pending</a>'
         : '<span class="pend">—</span>' },
     // #782: what the platforms give for the track: a length the track hasn't, a title that differs (shown, never applied)
     // a title or length taken in on the row under the track replaces them
     { id: 'plat', p: 'fc', head: 'Platforms · FC', cell: x => {
         const p = CMP.picks[pfIndex(x)];
-        if (p) return pfPill(x) + ' <span class="mc-add" title="Taken in: Platform Check sends it with the release">' + [p.title != null ? '→ ' + esc(p.title) : '', p.ms ? '→ <span class="mono">' + ccLen(p.ms) + '</span>' : ''].filter(Boolean).join(' · ') + '</span>';
-        return (x.lenNew ? '<span class="mc-add mono" title="' + esc('The track has no length; ' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths)') + '">+ ' + ccLen(x.len) + '</span> ' : '') + pfPill(x);
+        if (p) return pfPill(x) + ' <span class="mc-add" data-tip="Taken in\nPlatform Check sends it with the release.">' + [p.title != null ? '→ ' + esc(p.title) : '', p.ms ? '→ <span class="mono">' + ccLen(p.ms) + '</span>' : ''].filter(Boolean).join(' · ') + '</span>';
+        return (x.lenNew ? '<span class="mc-add mono" data-tip="' + esc('The track has no length\n' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths).') + '">+ ' + ccLen(x.len) + '</span> ' : '') + pfPill(x);
     } },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
-        x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
+        x.credits ? '<span data-tip="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
 const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits', fc: 'Compare' };
 function colHead(c) {
@@ -1106,7 +1106,7 @@ function colHead(c) {
     if (!p.mode) return esc(c.head);
     const r = results[p.id];
     const ask = S[p.mode] === 'ask' && found[p.id] && (!r || r.state !== 'busy');
-    return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" title="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
+    return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" data-tip="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
         : '<span class="mc-mode">' + S[p.mode] + '</span>');
 }
 function trackFinding(pid, rec) {
@@ -1124,13 +1124,13 @@ function trackLinks(rec) {
 const byIcon = (a, b) => a.localeCompare(b);
 function linksCell(t) {
     const x = trackFinding('is', t.rec), add = trackLinks(t.rec).slice().sort((a, b) => byIcon(urlIcon(a.url), urlIcon(b.url)));
-    const have = (x && x.linkUrls || []).slice().sort((a, b) => byIcon(urlIcon(a), urlIcon(b))).map(u => '<a class="mc-pico mc-have" target="_blank" rel="noopener" href="' + esc(u) + '" title="' + esc('Linked: ' + u) + '">' + stIcon(urlIcon(u), 14) + '</a>');
+    const have = (x && x.linkUrls || []).slice().sort((a, b) => byIcon(urlIcon(a), urlIcon(b))).map(u => '<a class="mc-pico mc-have" target="_blank" rel="noopener" href="' + esc(u) + '" data-tip="' + esc('Linked: ' + u) + '">' + stIcon(urlIcon(u), 14) + '</a>');
     const neu = add.map(l => {
         const on = picked.is && picked.is.has(l.key);
         // a found link opens on click like a linked one; right-click takes it in or leaves it out
         const ico = urlIcon(l.url);
-        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-col="links" data-ico="' + ico + '" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" title="' + esc(l.name + ': ' + l.url + '\nClick to open · right-click to ' + (on ? 'leave out (taken in)' : 'take in')
-            + '\nCtrl+right-click: the whole track · Alt+right-click: ' + l.name + ' on every track · Ctrl+Alt+right-click: everything') + '">+' + stIcon(ico, 14) + '</a>';
+        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-col="links" data-ico="' + ico + '" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" data-tip="' + esc(l.name + (on ? ' — taken in' : '') + '\n' + l.url + '\nClick: open' + '\nRight-click: ' + (on ? 'leave it out' : 'take it in')
+            + '\nCtrl+right-click: the whole track\nAlt+right-click: ' + l.name + ' on every track\nCtrl+Alt+right-click: everything') + '">+' + stIcon(ico, 14) + '</a>';
     });
     if (!have.length && !neu.length) return '<span class="pend">none</span>';
     return '<span class="mc-icons">' + have.join('') + (have.length && neu.length ? '<span class="mc-isep"></span>' : '') + neu.join('') + '</span>';
@@ -1148,8 +1148,8 @@ function cellHtml(c, t) {
     // a pickable cell is its own toggle, no tick box (#680): a click takes it in or leaves it out
     if (!c.pick || !PICKABLE[x.state]) return lead + c.cell(x);
     const on = picked[p.id] && picked[p.id].has(x.key);
-    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-col="' + c.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in')
-        + '\nCtrl-click: the whole track · Alt-click: the whole column · Ctrl+Alt-click: everything · drag: down the column">' + c.cell(x) + '</span>';
+    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-col="' + c.id + '" data-key="' + esc(x.key) + '" data-tip="' + (on ? 'Taken in\nClick: leave it out' : 'Click: take it in')
+        + '\nCtrl+click: the whole track\nAlt+click: the whole column\nCtrl+Alt+click: everything\nDrag: down the column">' + c.cell(x) + '</span>';
 }
 
 // Fusion's comparison (#680) under the track is Fusion's own group card (#790): MC leaves a slot
@@ -1165,11 +1165,11 @@ const fxLenDiff = (me, m) => {
 };
 const fxCan = cap => !!(found.fusion && (found.fusion.capabilities || []).includes(cap));
 // Fusion's icon, not a labelled button: one sits on every comparison and the label was noise
-const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-fxgo" data-act="fx-fusion" data-key="' + esc(x.key) + '" title="Open in Fusion: Fusion\'s window with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + PROVIDER_ICONS.fusion + '"></button>' : '';
+const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-fxgo" data-act="fx-fusion" data-key="' + esc(x.key) + '" data-tip="Open in Fusion\nFusion\'s window, with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + PROVIDER_ICONS.fusion + '"></button>' : '';
 function fxPill(x) {
     if (!FX_SHOWN[x.state]) return '';
     const open = fxOpen.has(x.key), n = (x.matches || []).length;
-    return '<button type="button" class="mc-fxo" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + (open ? 'Hide' : 'Show') + ' what Fusion compared">'
+    return '<button type="button" class="mc-fxo" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + (open ? 'Hide' : 'Show') + ' what Fusion compared">'
         + '<span class="car">▸</span>' + n + ' match' + (n === 1 ? '' : 'es') + '</button> ';
 }
 // #782: a track whose title differs opens, under its row, what each platform gives for it
@@ -1223,7 +1223,7 @@ function pfGuess(title) {   // the language, not its mode: a Cyrillic title gets
 // #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
     const open = fxOpen.has(x.key), d = x.differs;
-    return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + esc((d ? 'The platforms\' title: ' + x.title + ' (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\n' + (open ? 'Hide' : 'Show') + ' what each platform gives: a click on a title or a length takes it in') + '">'
+    return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + esc((d ? 'The platforms\' title: ' + x.title + ' (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\nClick: ' + (open ? 'hide' : 'show') + ' what each platform gives. A click on a title or a length there takes it in.') + '">'
         + '<span class="car">▸</span>' + (d ? '≠ title' : '✓') + '</button>';
 }
 // the lines under a track, as rows of the Tracks table: the track's own (what it gets, typed in), then one per version
@@ -1232,17 +1232,17 @@ function pfRows(x, t, heads) {
     const i = pfIndex(x), p = CMP.picks[i] || {}, own = pfMs(t.len);
     const take = (what, k, inner, val, tip) => {
         const on = what === 'title' ? p.title === val : !!p.ms && pfSameLen(p.ms, val);
-        return '<button type="button" class="mc-pft' + (on ? ' on' : '') + '" data-act="fx-take" data-i="' + i + '" data-what="' + what + '" data-k="' + esc(k) + '" title="' + esc(tip) + '">' + inner + '</button>';
+        return '<button type="button" class="mc-pft' + (on ? ' on' : '') + '" data-act="fx-take" data-i="' + i + '" data-what="' + what + '" data-k="' + esc(k) + '" data-tip="' + esc(tip) + '">' + inner + '</button>';
     };
     const row = (cells, cls) => '<tr class="mc-pfr' + (cls ? ' ' + cls : '') + '" data-pfr="' + i + '">' + heads.map(h => '<td' + (h === 'ttl' ? ' class="ttl"' : '') + '>' + (cells[h] || '') + '</td>').join('') + '</tr>';
     const cur = p.title != null ? p.title : t.title, guess = pfGuess(cur);
     const mine = row({
-        ttl: '<span class="mc-pfti"><input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(cur) + '" spellcheck="false" title="The track\'s title: type another, or click a platform\'s below. Enter keeps it, Escape puts it back">'
-            + '<button type="button" class="mc-pfgc' + (guess === cur ? ' same' : '') + '" data-act="fx-gc" data-i="' + i + '" title="' + esc(guess === cur ? 'Guess case: the title is as guess case writes it (' + pfGuessMode() + ')' : 'Guess case (' + pfGuessMode() + ') → ' + guess) + '">Aa</button></span>',
-        len: '<input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" title="The track\'s length (m:ss): type another, or click a platform\'s below">',
+        ttl: '<span class="mc-pfti"><input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(cur) + '" spellcheck="false" data-tip="The track\'s title\nType another, or click a platform\'s below.\nEnter: keep it\nEsc: put it back">'
+            + '<button type="button" class="mc-pfgc' + (guess === cur ? ' same' : '') + '" data-act="fx-gc" data-i="' + i + '" data-tip="' + esc(guess === cur ? 'Guess case (' + pfGuessMode() + ')\nThe title is already as guess case writes it.' : 'Guess case (' + pfGuessMode() + ')\n→ ' + guess) + '">Aa</button></span>',
+        len: '<input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" data-tip="The track\'s length (`m:ss`)\nType another, or click a platform\'s below.">',
         // Apollo's revert-this-track; its slot stays when there's nothing to revert, so nothing beside it moves
-        plat: '<span class="mc-pfa"><button type="button" class="mc-pfrev' + (CMP.picks[i] ? '" data-act="fx-untake" data-i="' + i + '" title="Revert this track: keep it as it is"' : ' void" tabindex="-1" aria-hidden="true"') + '>↺</button>'
-            + (p.title != null ? '<label title="Give the recording this title too (the release editor\'s &quot;update the recording title&quot;)"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '>the recording too</label>' : '<span class="weak">this track</span>') + '</span>',
+        plat: '<span class="mc-pfa"><button type="button" class="mc-pfrev' + (CMP.picks[i] ? '" data-act="fx-untake" data-i="' + i + '" data-tip="Revert this track\nKeep it as it is"' : ' void" tabindex="-1" aria-hidden="true"') + '>↺</button>'
+            + (p.title != null ? '<label data-tip="Give the recording this title too\nThe release editor\'s “update the recording title”"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '>the recording too</label>' : '<span class="weak">this track</span>') + '</span>',
     }, 'own');
     const vs = x.versions || [];
     return mine + vs.map((v, n) => {
@@ -1299,7 +1299,7 @@ function fxAllBtn() {
     const ks = fxOpenable();
     if (!ks.length) return '';
     const all = ks.every(k => fxOpen.has(k));
-    return '<button type="button" class="mc-all" data-act="fx-all" title="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks: Fusion\'s, and the platforms\' where a title or a length differs (a click on a title or a length there takes it in; Platform Check sends it with the release, and Falcon writes it in the release editor)') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
+    return '<button type="button" class="mc-all" data-act="fx-all" data-tip="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks\nFusion\'s, and the platforms\' where a title or a length differs. A click on a title or a length there takes it in: Platform Check sends it with the release, and Falcon writes it in the release editor.') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
 }
 function fxAct(b) {
     const k = b.dataset.key;
@@ -1354,9 +1354,9 @@ function paintMatrix() {
     if (fa) fa.innerHTML = mbuHtml(fxAllBtn());
     const slot = ui.querySelector('.mc-tapplied');
     if (slot) slot.innerHTML = mbuHtml(COLS.map(c => c.p).filter((p, i, a) => a.indexOf(p) === i).map(p => results[p] && results[p].applied)
-        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" title="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).provider + ': ' + (a.note || '')) + '</span>'
+        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" data-tip="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).provider + ': ' + (a.note || '')) + '</span>'
             // #748: a per-track provider's failure that can be tried again offers Retry here, as a card's does (#741)
-            + (!a.ok && a.retry ? '<button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(a.id) + '" title="Apply ' + esc(PROVIDERS.find(x => x.id === a.id).provider) + ' again, with what is still taken in">Retry</button>' : '')).join(''));
+            + (!a.ok && a.retry ? '<button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(a.id) + '" data-tip="Apply ' + esc(PROVIDERS.find(x => x.id === a.id).provider) + ' again, with what is still taken in">Retry</button>' : '')).join(''));
     let pend = 0, rows = 0;
     ui.querySelectorAll('.mc-tbl tbody tr[data-i]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.i], n = trackPicks(t);
@@ -1513,7 +1513,7 @@ function paintReleaseCredits() {
     // and its pre-flight starts (the same choice as CH's toolbar, #680)
     const open = (r && r.open) || (found.ch && found.ch.open) || [], slot = box.parentNode.querySelector('.mc-chopen');
     // drawn as CH's toolbar draws them: an icon per source, All (no icon) as ⚛ All
-    const openHtml = open.length ? '<span class="mc-chlbl">Import credits:</span>' + open.map(o => '<a class="mc-btn mc-chsrc' + (o.icon ? '' : ' mc-chall') + '" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '" aria-label="' + esc(o.label) + '">'
+    const openHtml = open.length ? '<span class="mc-chlbl">Import credits:</span>' + open.map(o => '<a class="mc-btn mc-chsrc' + (o.icon ? '' : ' mc-chall') + '" href="' + esc(o.url) + '" data-tip="' + esc(o.title || o.label) + '" aria-label="' + esc(o.label) + '">'
         + (o.icon ? stIcon(o.icon, 14) : '<b>⚛</b>' + esc(o.label)) + '</a>').join('') : '';
     if (slot && slot._mcHtml !== openHtml) { slot._mcHtml = openHtml; slot.innerHTML = mbuHtml(openHtml); }
     if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">Credit Hoarder: ' + esc(stateText(p)) + (r ? '' : '. Fetch credits fills this in.') + '</div>'); return; }
@@ -1548,9 +1548,9 @@ function linkedBtn(linked, k) {
     const by = new Map();
     linked.forEach(x => { const k = x.icon || x.key; (by.get(k) || by.set(k, []).get(k)).push(x); });
     const nm = x => (isEnt(x) ? (x.entity.name || '') + ' · ' : '') + (x.name || x.key);
-    return '<button type="button" class="mc-linked' + (open ? ' on' : '') + '" data-act="linked" data-lk="' + esc(k) + '" title="'
-        + esc('Already linked: ' + linked.map(nm).join(', ') + (open ? '. Click to fold them back.' : '. Click to list them as rows.')) + '">'
-        + [...by].map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" title="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
+    return '<button type="button" class="mc-linked' + (open ? ' on' : '') + '" data-act="linked" data-lk="' + esc(k) + '" data-tip="'
+        + esc('Already linked\n' + linked.map(x => '- ' + nm(x)).join('\n') + (open ? '\nClick: fold them back' : '\nClick: list them as rows')) + '">'
+        + [...by].map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" data-tip="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
         + '<span class="mc-lk">✓ ' + linked.length + '</span></button>';
 }
 // a repaint rebuilds the card, which reloads its images: the cover thumbnails blinked on each
@@ -1572,7 +1572,7 @@ function paintCards() {
         const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
         const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed'))
             // #741: a provider that says it can try again (retry) gets a button that applies it alone, with what is still taken in
-            + (!r.applied.ok && r.applied.retry ? ' <button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(id) + '" title="Apply ' + esc(p.provider) + ' again, with what is taken in">Retry</button>' : '') + '</div>' : '')
+            + (!r.applied.ok && r.applied.retry ? ' <button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(id) + '" data-tip="Apply ' + esc(p.provider) + ' again, with what is taken in">Retry</button>' : '') + '</div>' : '')
             + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
@@ -1606,13 +1606,13 @@ function paintCards() {
             const parts = String(x.why || '').split(' · ').filter(w => w && !(lane && /barcode/.test(w)));
             const cons = w => Array.isArray(x.consFrom) && x.consFrom.length && /^consolidated by Mission Control from /.test(w);
             const others = w => Array.isArray(x.others) && x.others.length && /^already linked to /.test(w);
-            const otherA = o => '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + o.type + '/' + o.mbid) + '" title="' + esc('Open this ' + o.type + ' on MusicBrainz') + '">' + esc(o.name || o.mbid) + '</a>' + (o.disambiguation ? ' (' + esc(o.disambiguation) + ')' : '');
-            return parts.length ? '<div class="s">' + parts.map(w => others(w) ? 'already linked to ' + x.others.map(o => esc(o.type) + ' ' + otherA(o)).join(', ') : cons(w) ? '<span title="' + esc(w) + '">consolidated from ' + ccIcons(x.consFrom) + '</span>' : (x.mismatch || []).includes(w) ? '<b class="mc-off">' + esc(w) + '</b>' : esc(w)).join(' · ') + '</div>' : '';
+            const otherA = o => '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + o.type + '/' + o.mbid) + '" data-tip="' + esc('Open this ' + o.type + ' on MusicBrainz') + '">' + esc(o.name || o.mbid) + '</a>' + (o.disambiguation ? ' (' + esc(o.disambiguation) + ')' : '');
+            return parts.length ? '<div class="s">' + parts.map(w => others(w) ? 'already linked to ' + x.others.map(o => esc(o.type) + ' ' + otherA(o)).join(', ') : cons(w) ? '<span data-tip="' + esc(w) + '">consolidated from ' + ccIcons(x.consFrom) + '</span>' : (x.mismatch || []).includes(w) ? '<b class="mc-off">' + esc(w) + '</b>' : esc(w)).join(' · ') + '</div>' : '';
         };
         const coverChip = x => {
             const c = x.cover, dims = c.w ? c.w + '×' + c.h : '';
             if (!c.url) return '<span class="mc-csize">' + (dims || 'no cover') + '</span>';
-            return '<a class="mc-csize" target="_blank" rel="noopener" href="' + esc(c.url) + '" title="' + esc('Open the cover on ' + (x.name || x.key) + (dims ? ' (' + dims + ')' : '')) + '">' + (dims || 'cover') + ' ↗</a>';
+            return '<a class="mc-csize" target="_blank" rel="noopener" href="' + esc(c.url) + '" data-tip="' + esc('Open the cover on ' + (x.name || x.key) + (dims ? ' (' + dims + ')' : '')) + '">' + (dims || 'cover') + ' ↗</a>';
         };
         // an artist or label row: its name, its disambiguation (weak, as MusicBrainz shows it), the platform
         const entName = x => {
@@ -1626,11 +1626,11 @@ function paintCards() {
             const pill = x.role === 'searched' ? ['idle', 'searched'] : x.role === 'best' && x.state === 'new' ? ['add', 'enters'] : isBc(x) && x.state === 'linked' ? ['ok', 'added'] : PILL[x.state] || ['idle', x.state];
             // in a lane, the barcode and its reason are on the lane: only a differently written barcode stays
             return '<div class="mc-line ' + esc(x.state) + (x.cover ? ' mc-hassize' : '') + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
-                + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
+                + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" data-tip="' + (on ? 'Taken in\nClick: leave it out' : 'Click: take it in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
                 + '<span class="mc-pico">' + (x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : x.kind === 'event' || x.kind === 'lengths' ? FIELD_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + (x.kind === 'event' ? 'Release event <b>' + esc(x.code) + '</b>' : x.kind === 'lengths' ? 'Track lengths for <b>' + esc(x.code) + '</b>' : x.kind === 'label' ? 'Label <b>' + esc(x.label && x.label.name || '') + '</b>' + (x.code ? ' · cat. no. <b class="mc-bcn">' + esc(x.code) + '</b>' : '') : x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : entName(x)) + '</div>'
-                + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
+                + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" data-tip="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + whyHtml(x, lane) + '</div>'
                 // #751: Art Station's row, the size of the platform's own cover in a column of its own, a link to the cover
                 + (x.cover ? coverChip(x) : '')
@@ -1666,22 +1666,22 @@ function paintCards() {
             const catChips = l => catsOf(l).map(x => {
                 placedCats.add(x.key);
                 const on = picked[id] && picked[id].has(x.key);
-                return '<span class="mc-cat mc-pick ' + esc(x.state) + (on ? ' on' : '') + '" data-prov="' + id + '" data-key="' + esc(x.key) + '" title="'
-                    + esc('Catalog number ' + x.code + ' for ' + x.label.name + ' · ' + (x.why || '') + (on ? '. Taken in: click to leave out' : '. Click to take in')) + '">' + (on ? '✓ ' : '') + esc(x.code) + '</span>';
+                return '<span class="mc-cat mc-pick ' + esc(x.state) + (on ? ' on' : '') + '" data-prov="' + id + '" data-key="' + esc(x.key) + '" data-tip="'
+                    + esc('Catalog number ' + x.code + ' for ' + x.label.name + (x.why ? '\n' + x.why : '') + (on ? '\nTaken in. Click: leave it out' : '\nClick: take it in')) + '">' + (on ? '✓ ' : '') + esc(x.code) + '</span>';
             }).join('');
             relHtml = order.map(l => {
                 const open = laneOpen.has(l.k), picks = l.rows.filter(laneTakes), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
                 const states = [...new Set(l.rows.filter(x => x.state !== 'linked').map(x => x.state))].concat(l.rows.every(x => x.state === 'linked') ? ['linked'] : []), pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
                 // every chip as wide as a 13-digit barcode, the digits centred: the icons line up in every lane
-                const chip = '<span class="mc-bc' + (l.k ? '' : ' none') + '"' + (l.k ? ' style="--bc:' + l.color + '"' : '') + ' title="' + esc(l.tip) + '"><i>0000000000000</i>' + (l.k ? '<b>' + bcShow(l.k) + '</b>' : '') + '</span>';
+                const chip = '<span class="mc-bc' + (l.k ? '' : ' none') + '"' + (l.k ? ' style="--bc:' + l.color + '"' : '') + ' data-tip="' + esc(l.tip) + '"><i>0000000000000</i>' + (l.k ? '<b>' + bcShow(l.k) + '</b>' : '') + '</span>';
                 const icons = l.rows.length ? l.rows.map(x => {
                     const pk = !!PICKABLE[x.state], on = pk && picked[id] && picked[id].has(x.key);
                     return '<span class="mc-ti ' + esc(x.state) + (x.mismatch ? ' off' : '') + (pk ? ' mc-pick' : '') + (on ? ' on' : '') + '"' + (pk ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '"' : '')
-                        + ' title="' + esc((x.name || x.key) + (x.url ? ' — ' + x.url : '') + (x.why ? ' (' + x.why + ')' : '') + (x.state === 'linked' ? '. Already linked' : '') + (pk ? (on ? '. Taken in: click to leave out' : '. Click to take in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
+                        + ' data-tip="' + esc((x.name || x.key) + (x.state === 'linked' ? ' — already linked' : on ? ' — taken in' : '') + (x.url ? '\n' + x.url : '') + (x.why ? '\n' + x.why : '') + (pk ? (on ? '\nClick: leave it out' : '\nClick: take it in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
                 }).join('') : '<span class="mc-bcl-no">no platform found it</span>';
-                const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" title="' + esc('Take every link in this group in, or leave them all out' + (l.rows.some(x => PICKABLE[x.state] && x.mismatch) ? '. Not the ones marked amber: their track count or format is not the release\'s' : '')) + '">'
+                const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" data-tip="' + esc('Take every link in this group in, or leave them all out' + (l.rows.some(x => PICKABLE[x.state] && x.mismatch) ? '\nNot the ones marked amber: their track count or format is not the release\'s.' : '')) + '">'
                     + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '<span></span>';
-                return '<div class="mc-bcl' + (open ? ' open' : '') + (catW ? ' mc-hascat' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
+                return '<div class="mc-bcl' + (open ? ' open' : '') + (catW ? ' mc-hascat' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' data-tip="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
                     + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip + catCell(l)
                     + '<span class="mc-bcl-ic">' + icons + '</span>' + all + (pill ? '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>' : '<span></span>') + '</div>'
                     + (open ? l.rows.map(x => line(x, l)).join('') : '');
@@ -1694,8 +1694,8 @@ function paintCards() {
         const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk, 'pc:' + sub) + '</div>' + body : '';
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
         setCard(box, mbuHtml(sum + (pc ? cmpHtml() : '') + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
-            + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
-            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? asGalleryHtml() : '')));
+            + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" data-tip="' + esc('Not found\n' + none.map(x => '- ' + (x.name || x.key)).join('\n')) + '"><span>Not found</span>'
+            + none.map(x => '<span class="mc-pico" data-tip="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? asGalleryHtml() : '')));
     });
 }
 // #727: a catalog number's icon, a tag
@@ -1727,13 +1727,13 @@ function paintExec() {
     ex.textContent = executing ? 'Executing…' : autoTimer ? 'Executing ' + n + ' in ' + Math.max(1, Math.ceil((autoEnd - Date.now()) / 1000)) + '… (click to cancel)' : n ? 'Execute (' + n + ')' : 'Execute';
     ex.classList.toggle('mc-cd', !!autoTimer);
     ex.style.setProperty('--mc-cd', autoTimer ? Math.min(100, 100 - (autoEnd - Date.now()) / (AUTO_EXEC_S * 10)).toFixed(1) + '%' : '0%');
-    ex.title = autoTimer ? 'Mission Control executes the selected changes when the countdown ends: click to cancel' : 'Apply the selected changes, step by step';
+    ex.dataset.tip = autoTimer ? 'Mission Control applies the selected changes when the countdown ends\nClick: cancel' : 'Apply the selected changes, step by step';
     autoExecCheck();
 }
 
 function inspector() {
     const a = el('aside', 'mc-side right');
-    a.innerHTML = mbuHtml('<h2 class="mc-sec"><span class="mc-insp-t">Inspector</span> <button type="button" class="mc-x" data-close="right" title="Hide">×</button></h2><div class="mc-insp"></div>');
+    a.innerHTML = mbuHtml('<h2 class="mc-sec"><span class="mc-insp-t">Inspector</span> <button type="button" class="mc-x" data-close="right" data-tip="Hide">×</button></h2><div class="mc-insp"></div>');
     return a;
 }
 function paintInspector() {
@@ -1763,12 +1763,12 @@ function paintInspector() {
             + (m.artist ? '<span>artist</span><span>' + esc(m.artist) + '</span>' : '')
             + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (m.isrcs.map(isrcHtml).join(', ') || 'none') + '</span>' : '')
             + '<span>AcoustIDs</span><span class="mono">' + (m.acoustids == null ? '<span class="weak">' + (fxBusy.has(x.key) ? 'checking…' : 'not checked') + '</span>'
-                : m.acoustids.map(v => '<span title="' + esc(v) + '"' + (x.self && (x.self.acoustids || []).includes(v) ? ' class="mc-fxs"' : '') + '>' + esc(v.slice(0, 8)) + '…</span>').join(', ') || 'none') + '</span>'
+                : m.acoustids.map(v => '<span data-tip="' + esc(v) + '"' + (x.self && (x.self.acoustids || []).includes(v) ? ' class="mc-fxs"' : '') + '>' + esc(v.slice(0, 8)) + '…</span>').join(', ') || 'none') + '</span>'
             + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
         + (x.signals ? '<div class="weak" style="font-size:11px;margin:4px 0">every pair agrees on: ' + esc(x.signals.join(', ') || 'nothing') + '</div>' : '')
         + fxOpenBtn(x);
     // #782: the track's versions on the platforms, the one most give first, what differs from the track's own title marked
-    const platBody = x => x.versions.map(v => '<div class="mc-fxm">' + mini('<span title="' + esc(v.title) + '">' + ccTitleDiff(v.title, t.title) + '</span>', ccIcons(v.keys))
+    const platBody = x => x.versions.map(v => '<div class="mc-fxm">' + mini('<span data-tip="' + esc(v.title) + '">' + ccTitleDiff(v.title, t.title) + '</span>', ccIcons(v.keys))
         + '<div class="mc-kv"><span>length</span><span>' + (ccLen(v.len) || '?') + '</span>' + (v.isrc ? '<span>ISRC</span><span class="mono">' + isrcHtml(v.isrc) + '</span>' : '') + '</div></div>').join('');
     // each credit names the sources that give it, when more than one source was read (#680)
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
@@ -1786,7 +1786,7 @@ function paintBadges() {
     ui.querySelectorAll('[data-p]').forEach(n => {
         const p = PROVIDERS.find(x => x.id === n.dataset.p); if (!p) return;
         const dot = n.querySelector('.mc-dot'); if (dot) dot.className = 'mc-dot ' + stateOf(p);
-        const st = n.querySelector('.st'); if (st) { st.textContent = sideText(p); st.title = stateText(p); }
+        const st = n.querySelector('.st'); if (st) { st.textContent = sideText(p); st.dataset.tip = stateText(p); }
         const chip = n.querySelector('.mc-chip'); if (chip) { const [c, t] = chipOf(p); chip.className = 'mc-chip ' + c; chip.textContent = t; }
         if (p.id === 'pc') paintCoverage(n);
     });
@@ -2060,7 +2060,7 @@ function paintOnOff() {
         s.classList.toggle('mc-off', off);
         if (!b) return;
         b.setAttribute('aria-pressed', String(!off));
-        b.title = off ? 'Left out: Execute skips this card. Click to take it in' : 'Click to leave this card out of Execute';
+        b.dataset.tip = off ? 'Left out: Execute skips this card\nClick: take it in' : 'Click: leave this card out of Execute';
     });
 }
 function setCardOff(id, off) {
@@ -2117,7 +2117,7 @@ const CC_NAMES = { discogs: 'Discogs', bandcamp: 'Bandcamp', spotify: 'Spotify',
 const ccName = k => CC_NAMES[k] || k;
 const CC_UNREAD = { spotify: 'Spotify is read through its web player only: its link is added, its data is not compared' };
 const ccIco = (k, size) => stIcon(k, size || 14) || '<span class="mcc-abbr">' + esc(String(k).slice(0, 2).toUpperCase()) + '</span>';
-const ccIcons = keys => '<span class="mcc-icos">' + keys.map(k => '<span title="' + esc(ccName(k)) + '">' + ccIco(k, 13) + '</span>').join('') + '</span>';
+const ccIcons = keys => '<span class="mcc-icos">' + keys.map(k => '<span data-tip="' + esc(ccName(k)) + '">' + ccIco(k, 13) + '</span>').join('') + '</span>';
 const ccBc = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
 const ccNorm = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s.,'’"“”!?()[\]\-–—:;/&+]+/g, ' ').trim();
 const ccLen = ms => { if (!ms) return ''; const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
@@ -3693,7 +3693,7 @@ function ccTitleDiff(a, b) {
     let p = 0; while (p < a.length && p < b.length && a[p] === b[p]) p++;
     let q = 0; while (q < a.length - p && q < b.length - p && a[a.length - 1 - q] === b[b.length - 1 - q]) q++;
     const mid = a.slice(p, a.length - q);
-    return esc(a.slice(0, p)) + (mid ? '<span class="hl">' + esc(mid) + '</span>' : '<span class="hl gap" title="missing here: ' + esc(b.slice(p, b.length - q)) + '"></span>') + esc(a.slice(a.length - q));
+    return esc(a.slice(0, p)) + (mid ? '<span class="hl">' + esc(mid) + '</span>' : '<span class="hl gap" data-tip="Missing here: ' + esc(b.slice(p, b.length - q)) + '"></span>') + esc(a.slice(a.length - q));
 }
 function ccDiff(v, w) {
     const out = [];
@@ -3980,10 +3980,10 @@ function ccPaintHeader() {
     const t = CC.ui.querySelector('.mcc-ttl'), sub = CC.ui.querySelector('.mcc-sub');
     const title = m.fields && m.fields.title.win ? m.fields.title.win.val : CC.src ? CC.src.rel.title : 'Consolidate';
     const artist = m.fields && m.fields.artist.win ? m.fields.artist.win.val : CC.src ? ccCredit(CC.src.rel.credit) : '';
-    if (t) { t.textContent = title; t.title = title; }
+    if (t) { t.textContent = title; t.dataset.tip = title; }
     const slot = CC.ui.querySelector('.mcc-fmt-slot'), fmt = ccFormat();
     if (slot && slot.dataset.fmt !== fmt) { slot.dataset.fmt = fmt; slot.innerHTML = mbuHtml(fmtIcon(fmt) || '<img src="' + ICON_URL + '" alt="" width="28" height="28">'); }
-    if (sub) { sub.textContent = artist; sub.title = artist; }   // majkinetor: only the artist; the Source step links the platform
+    if (sub) { sub.textContent = artist; sub.dataset.tip = artist; }   // majkinetor: only the artist; the Source step links the platform
     CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Add release →'; });
     CC.ui.querySelectorAll('[data-cc="more"]').forEach(b => { b.disabled = !m.fields || CC.seeded; });
     ccPaintSteps();
@@ -3997,7 +3997,7 @@ function ccSideHtml() {
     const srcTracks = CC.sources[0].tracks;
     let h = '<div class="mcc-h">Sources</div>';
     lanes.forEach(l => {
-        h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" title="' + (l.own ? 'The source\'s barcode' : 'Another barcode: another release') + '">' + esc(l.shown) + '</span>' : l.own ? '<div class="mcc-lane-note">no barcode</div>' : '');   // the other no-barcode lane's note says it
+        h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" data-tip="' + (l.own ? 'The source\'s barcode' : 'Another barcode\nAnother release') + '">' + esc(l.shown) + '</span>' : l.own ? '<div class="mcc-lane-note">no barcode</div>' : '');   // the other no-barcode lane's note says it
         if (!l.own && l.bc) h += '<div class="mcc-lane-note">' + esc(l.list.map(s => ccName(s.key) + (s.format ? ': ' + s.format : '')).join(', ')) + ' — another release, not read unless ticked</div>';
         else if (!l.bc && !l.own) h += '<div class="mcc-lane-note">no barcode shown: taken when the track count is the source\'s (' + srcTracks + ')</div>';
         l.list.forEach(s => {
@@ -4010,9 +4010,9 @@ function ccSideHtml() {
                 : r.state === 'failed' ? ['err', 'failed']
                 : r.state === 'done' ? ['', ccCount(r.rel) + ' tracks' + (r.rel.mediums.some(md => md.tracks.some(t => t.isrc)) ? ' · ISRCs' : '')]
                 : ['', s.tracks != null ? s.tracks + ' tracks' : ''];
-            const tip = s.role === 'source' ? 'The album First Contact read: ' + s.url
+            const tip = s.role === 'source' ? 'The album First Contact read\n' + s.url
                 : (meta[1] ? meta[1] + '\n' : '') + (CC_UNREAD[s.key] || (r.state === 'failed' ? 'Reading it failed: ' + r.error : s.why || '')) + '\n' + s.url;   // the note in full: the row may cut it short
-            h += '<label class="mcc-src' + (s.take ? '' : ' off') + (s.role === 'source' ? ' source' : '') + '" title="' + esc(tip.trim()) + '">'
+            h += '<label class="mcc-src' + (s.take ? '' : ' off') + (s.role === 'source' ? ' source' : '') + '" data-tip="' + esc(tip.trim()) + '">'
                 + '<input type="checkbox" data-cc="take" data-k="' + esc(s.key) + '"' + (s.take ? ' checked' : '') + (s.role === 'source' ? ' disabled' : '') + '>'
                 + ccIco(s.key, 15) + '<span class="nm"><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(ccName(s.key)) + '</a></span><span class="meta ' + meta[0] + '">' + esc(meta[1]) + '</span></label>';
         });
@@ -4040,12 +4040,12 @@ function ccFieldsHtml(m) {
             const w = k === 'date' ? ' style="min-width:' + (Math.max(...v.groups.map(g => String(g.show).length)) + 1) + 'ch"' : '';
             const val = g => '<span class="d"' + w + '><span>' + esc(g.show) + '</span></span>' + ccIcons(g.keys);   // the slot in one font for all, so the taken (larger) date lines up too
             // majkinetor: the platforms that give none follow on the value's line, greyed like Platform Check's strip
-            const none = v.none.length ? '<span class="mcc-none-sep"></span><span class="mcc-icos mcc-none-icos">' + v.none.map(k2 => '<span title="none from ' + esc(ccName(k2)) + '">' + ccIco(k2, 13) + '</span>').join('') + '</span>' : '';
+            const none = v.none.length ? '<span class="mcc-none-sep"></span><span class="mcc-icos mcc-none-icos">' + v.none.map(k2 => '<span data-tip="None from ' + esc(ccName(k2)) + '">' + ccIco(k2, 13) + '</span>').join('') + '</span>' : '';
             h += '<div class="mcc-win' + (k === 'date' ? ' lined' : '') + '">' + val(v.win) + none + '</div>';
             if (k === 'date') alts.sort((a, b) => String(a.val).localeCompare(String(b.val)));
             h += '<div class="mcc-alts' + (k === 'date' ? ' two" style="grid-template-rows:repeat(' + Math.ceil(alts.length / 2) + ',auto)' : '') + '">';   // down the first column, then the second
             alts.forEach(g => {
-                h += '<div class="mcc-alt" data-cc="field" data-f="' + k + '" data-v="' + esc(g.val) + '" title="Take this instead"><span class="r"></span><span class="v">' + val(g) + '</span></div>';
+                h += '<div class="mcc-alt" data-cc="field" data-f="' + k + '" data-v="' + esc(g.val) + '" data-tip="Take this instead"><span class="r"></span><span class="v">' + val(g) + '</span></div>';
             });
             h += '</div>';
         }
@@ -4057,7 +4057,7 @@ function ccTracksHtml(m) {
     const t = m.tracks;
     const agree = t.rows.filter(r => r.versions.length === 1).length, differ = t.rows.length - agree;
     let h = '<section class="mcc-sect" data-sect="tracks"><div class="mcc-sect-h"><b>Tracks</b><span class="hint">one row per track, the version most platforms have · a row that differs opens into its versions</span>'
-        + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" title="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
+        + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" data-tip="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
         + '<table class="mcc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th><th>ISRC</th><th>Agree</th><th></th></tr></thead><tbody>';
     const nM = new Set(t.rows.map(r => r.mi)).size;
     t.rows.forEach((r, i) => {
@@ -4072,7 +4072,7 @@ function ccTracksHtml(m) {
     });
     t.extras.forEach(x => {
         const v = x.versions[0], on = !!CC.extraTake[x.id];
-        h += '<tr class="row extra' + (on ? ' on' : '') + '" data-cc="extra" data-x="' + x.id + '" title="' + (on ? 'Taken in, at the end: click to leave it out' : 'Only ' + v.keys.map(ccName).join(', ') + ' has it: click to take it in') + '"><td class="pos">+</td><td class="ttl">' + esc(v.title) + '</td><td class="len">' + ccLen(v.len) + '</td><td class="isrc">' + (v.isrc ? isrcHtml(v.isrc) : '—') + '</td><td><span class="mcc-chip">only ' + esc(v.keys.map(ccName).join(', ')) + '</span></td><td></td></tr>';
+        h += '<tr class="row extra' + (on ? ' on' : '') + '" data-cc="extra" data-x="' + x.id + '" data-tip="' + (on ? 'Taken in, at the end\nClick: leave it out' : 'Only ' + v.keys.map(ccName).join(', ') + ' has it\nClick: take it in') + '"><td class="pos">+</td><td class="ttl">' + esc(v.title) + '</td><td class="len">' + ccLen(v.len) + '</td><td class="isrc">' + (v.isrc ? isrcHtml(v.isrc) : '—') + '</td><td><span class="mcc-chip">only ' + esc(v.keys.map(ccName).join(', ')) + '</span></td><td></td></tr>';
     });
     return h + '</tbody></table></section>';
 }
@@ -4102,9 +4102,9 @@ function ccPaintInspector() {
             const on = v === w, title = on ? esc(v.title) : ccTitleDiff(v.title, w.title);
             const len = !on && v.len && w.len && Math.abs(v.len - w.len) > 1000 ? hl(ccLen(v.len)) : esc(ccLen(v.len) || '?:??');
             const isrc = !v.isrc ? (on || !w.isrc ? 'no ISRC' : hl('no ISRC')) : !on && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + isrcHtml(v.isrc) + '</span>' : isrcHtml(v.isrc);
-            h += '<div class="mcc-ver' + (on ? ' on' : '') + '"' + (on || r.versions.length < 2 ? '' : ' data-cc="ver" data-r="' + esc(r.id) + '" data-k="' + esc(v.keys[0]) + '" title="Take this version"') + '>'
+            h += '<div class="mcc-ver' + (on ? ' on' : '') + '"' + (on || r.versions.length < 2 ? '' : ' data-cc="ver" data-r="' + esc(r.id) + '" data-k="' + esc(v.keys[0]) + '" data-tip="Take this version"') + '>'
                 + '<span class="r"></span><div class="t">' + title + '</div><span class="n">' + (on ? 'taken · ' : '') + v.keys.length + '</span>'
-                + '<div class="m"><span class="mono">' + len + ' · ' + isrc + '</span><span class="i" title="' + esc(v.keys.map(ccName).join(', ')) + '">' + ccIcons(v.keys) + '</span></div></div>';
+                + '<div class="m"><span class="mono">' + len + ' · ' + isrc + '</span><span class="i" data-tip="' + esc(v.keys.map(ccName).join(', ')) + '">' + ccIcons(v.keys) + '</span></div></div>';
         });
         h += '</div>';
         const cr = r.tracks.map(x => x.key + ': ' + ccCredit(x.t.credit)).filter((s, i, a) => a.findIndex(y => y.split(': ')[1] === s.split(': ')[1]) === i);
@@ -4214,7 +4214,7 @@ function ccLauncher() {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.title = 'Mission Control: the consolidation';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control — the consolidation';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';
     b.onclick = () => { b.remove(); mbRestackCorner('br'); ccOpen(); };
     document.body.appendChild(b);
@@ -4241,10 +4241,10 @@ function ccOpen() {
     mcStyle(); ccStyle();
     const ui = el('div', 'mbu-ui'); ui.id = 'mcc-root';
     ui.innerHTML = mbuHtml('<header class="mcc-hdr"><span class="mcc-fmt-slot"></span><div class="mcc-rel"><div class="mcc-ttl"></div><div class="mcc-sub"></div></div><div class="mcc-steps"></div>'
-        + '<div class="mcc-split"><button type="button" class="mcc-btn go" data-cc="open" disabled title="Open MusicBrainz\'s release editor in this tab, seeded with what is taken here">Add release →</button>'
-        + '<button type="button" class="mcc-btn go mcc-more" data-cc="more" disabled aria-haspopup="menu" aria-expanded="false" title="More">▾</button>'
-        + '<div class="mcc-menu" role="menu" hidden><button type="button" role="menuitem" data-cc="md" title="The whole comparison as Markdown tables, for an issue or an edit note">Copy as Markdown</button></div></div>'
-        + '<button type="button" class="mcc-btn ghost" data-cc="cfg" title="Settings">' + MBU_CFG_ICON + '</button><button type="button" class="mcc-btn ghost" data-cc="close" title="Close: the empty release editor is under it">✕</button></header>'
+        + '<div class="mcc-split"><button type="button" class="mcc-btn go" data-cc="open" disabled data-tip="Open MusicBrainz\'s release editor in this tab\nFilled in with what is taken here">Add release →</button>'
+        + '<button type="button" class="mcc-btn go mcc-more" data-cc="more" disabled aria-haspopup="menu" aria-expanded="false" data-tip="More">▾</button>'
+        + '<div class="mcc-menu" role="menu" hidden><button type="button" role="menuitem" data-cc="md" data-tip="Copy the whole comparison as Markdown tables\nFor an issue or an edit note">Copy as Markdown</button></div></div>'
+        + '<button type="button" class="mcc-btn ghost" data-cc="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button><button type="button" class="mcc-btn ghost" data-cc="close" data-tip="Close\nThe empty release editor is under it.">✕</button></header>'
         + '<div class="mcc-main"><aside class="mcc-side"></aside><main class="mcc-center"></main><aside class="mcc-insp"></aside></div>');
     document.body.appendChild(ui);
     CC.ui = ui;
@@ -4375,7 +4375,7 @@ function ccInMbHtml() {
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
     let h = '';
     // #727: Update this release takes what is consolidated here to it, for what it lacks
-    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" title="Open this release in this tab: Mission Control probes it, compares it with the platforms and offers what it lacks (the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths)">Update this release →</button>';
+    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" data-tip="Open this release in this tab\nMission Control probes it, compares it with the platforms and offers what it lacks: the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths.">Update this release →</button>';
     if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Update it with what it lacks, rather than adding the album again.<ul>' + same.map(e => li(e).replace(/<\/li>$/, upd(e) + '</li>')).join('') + '</ul></div>';
     if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
     return h;
@@ -4520,8 +4520,8 @@ function cmpHtml() {
     const r = results.fc;
     if (!r || r.state !== 'done' || !CMP.cons) return '';
     const read = CC.sources.filter(s => s.take && s.read.state === 'done').map(s => s.key);
-    return '<div class="mc-summary mc-cmp" title="' + esc('Mission Control compared the release with ' + read.map(ccName).join(', ') + ': what the release lacks is in the rows below') + '">Compared with ' + ccIcons(read)
-        + (CMP.title ? ' · <span class="mc-warn" title="' + esc('Shown only: Mission Control changes no title') + '">the platforms call it <b>' + esc(CMP.title.val) + '</b> (' + esc(CMP.title.from) + ')</span>' : '') + '</div>';
+    return '<div class="mc-summary mc-cmp" data-tip="' + esc('Mission Control compared the release with ' + read.map(ccName).join(', ') + '\nWhat the release lacks is in the rows below.') + '">Compared with ' + ccIcons(read)
+        + (CMP.title ? ' · <span class="mc-warn" data-tip="' + esc('Shown only\nMission Control changes no title.') + '">the platforms call it <b>' + esc(CMP.title.val) + '</b> (' + esc(CMP.title.from) + ')</span>' : '') + '</div>';
 }
 
 /* after saving: Mission Control on the new release (#702) */
@@ -4564,7 +4564,7 @@ function launcher() {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.title = 'Mission Control\nRight-click: settings';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control\nRight-click: settings';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';   // highest priority: closest to the corner
     b.onclick = () => open();
     b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
@@ -4581,7 +4581,7 @@ function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; 
 // </ST-ICONS>
 
 // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
 // </ST-TOKENS>
 
 // <ST-UI> — generated by dev/ui/sync-ui.mjs from dev/ui/ui-components.mjs — DO NOT EDIT
@@ -4593,7 +4593,7 @@ function mbuHelpHref(name) {
 }
 function mbuHelpHtml(name, label) {
     return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-        + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+        + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
 }
 function mbuHelpEl(name, label) {
     var a = document.createElement('a');
@@ -4601,7 +4601,7 @@ function mbuHelpEl(name, label) {
     a.href = mbuHelpHref(name);
     a.target = '_blank';
     a.rel = 'noopener';
-    a.title = 'open the README in a new tab';
+    a.dataset.tip = 'Open the README in a new tab';
     a.textContent = label || '? Help';
     return a;
 }
@@ -4799,12 +4799,12 @@ function mbuCfgHeader(o) {
     var html = '<div class="mbu-cfg-h">';
     if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
     html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-    if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
     html += '<span class="mbu-cfg-sp"></span>';
     if (o.log) {
         html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
             + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-            + ' title="Open the activity log">Log</button>';
+            + ' data-tip="Open the activity log">Log</button>';
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
@@ -5156,18 +5156,18 @@ function mbuLog(o) {
         root.classList.add('mbu-logpop');
         root.dataset.mbuLv = vid;
         root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-            + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-            + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
-            + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-            + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-            + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+            + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+            + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
             + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
         if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
         var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
         var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -5320,14 +5320,14 @@ function mbuLog(o) {
         win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
         var minBtn = pop.querySelector('.mbu-logpop-min');
         var setMin = function (m) {
-            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
             if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
             else Object.assign(pop.style, restore);
         };
         var fullBtn = pop.querySelector('.mbu-logpop-full');
         var setFull = function (f) {
             pop.classList.toggle('full', f);
-            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
         };
         minBtn.onclick = function () {
             var m = pop.classList.toggle('min');
@@ -5755,7 +5755,349 @@ try {
     if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
     if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
     if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+    if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
+
+// Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+function mbuTipV() { return 1; }
+function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-k{display:inline-block;padding:0 5px;border:1px solid var(--mbu-border,#cfc6e6);border-bottom-width:2px;border-radius:4px;background:var(--mbu-bg-raised,#faf9fe);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+function mbuTipEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+}
+function mbuTipLabel(line) {
+    var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+    if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+    return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+}
+function mbuTipIsKey(label) {
+    return /click|drag|wheel|scroll|hover|double|press|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+}
+function mbuTipInline(s) {
+    return mbuTipEsc(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, '<kbd class="mbu-tip-k">$1</kbd>')
+        .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+}
+function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function mbuTipText(src) {
+    var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+    if (!raw) return '';
+    var lines = [];
+    // the shapes the old title texts took, read as the rows they mean:
+    //   "… — click to open it"              → "…" + "Click: open it"
+    //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+    //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+    raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+        .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+    raw.split('\n').forEach(function (line) {
+        line = line.replace(/\s+$/, '');
+        // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+        var parts = line.split(/\s+·\s+/), out = [parts[0]];
+        for (var i = 1; i < parts.length; i++) {
+            if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+        }
+        out.forEach(function (seg) {
+            if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+            var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+            bits.forEach(function (b) { lines.push(b); });
+        });
+    });
+    // blocks: lead / paragraph / rows / bullets
+    var blocks = [], rowRun = [];
+    var flushRows = function () {
+        if (!rowRun.length) return;
+        var keyed = rowRun.filter(function (r) { return r.key; }).length;
+        if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+        else blocks.push({ t: 'p', s: rowRun[0].line });
+        rowRun = [];
+    };
+    lines.forEach(function (line, n) {
+        if (!line.trim()) { flushRows(); return; }
+        var b = /^\s*[-•]\s+(.*)$/.exec(line);
+        if (b) {
+            flushRows();
+            var last = blocks[blocks.length - 1];
+            if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+            return;
+        }
+        var l = mbuTipLabel(line);
+        // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+        if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+        flushRows();
+        blocks.push({ t: 'p', s: line });
+    });
+    flushRows();
+    // one long paragraph: its first sentence becomes the lead
+    if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+        var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+        if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+    }
+    var lead = blocks.length > 1 && blocks[0].t === 'p';
+    return blocks.map(function (bl, i) {
+        if (bl.t === 'ul') return '<ul class="mbu-tip-ul">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+        if (bl.t === 'rows') {
+            return '<div class="mbu-tip-rows">' + bl.rows.map(function (r) {
+                return '<span class="' + (r.key ? 'mbu-tip-k' : 'mbu-tip-o') + '">' + mbuTipEsc(mbuTipCap(r.label)) + '</span><span>' + mbuTipInline(r.text) + '</span>';
+            }).join('') + '</div>';
+        }
+        var warn = /^⚠/.test(bl.s);
+        return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + '">' + mbuTipInline(bl.s) + '</div>';
+    }).join('');
+}
+function mbuTipCard(o) {
+    o = o || {};
+    var h = '';
+    if (o.head || o.title || o.aside) {
+        h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+            + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+    }
+    if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+    if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+    return h;
+}
+function mbuTipS() {
+    return mbuTipS.s || (mbuTipS.s = {
+        me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+        cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+    });
+}
+function mbuTip(el, content, opts) {
+    if (!el) return el;
+    var _mbuTip = mbuTipS();
+    mbuTipStart();
+    opts = opts || {};
+    if (typeof content === 'function') {
+        if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+        el.setAttribute('data-mbu-tip-own', '');
+        el.removeAttribute('title');
+        return el;
+    }
+    if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+    if (opts.place) el.setAttribute('data-tip-place', opts.place);
+    if (opts.wide) el.setAttribute('data-tip-wide', '');
+    el.removeAttribute('title');
+    if (_mbuTip.cur === el) mbuTipRender();
+    return el;
+}
+function mbuTipOn(selector, fn, opts) {
+    mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+    mbuTipStart();
+}
+function mbuTipShowFor(el, content, opts) {
+    if (!el || content == null || content === '') { mbuTipHide(true); return; }
+    mbuTipStart();
+    var o = opts || {};
+    var fn = typeof content === 'function' ? content : function () { return content; };
+    var S = mbuTipS();
+    if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+    mbuTipShow({ el: el, fn: fn, opts: o });
+}
+function mbuTipHtml(s) {
+    if (mbuTipHtml.tt === undefined) {
+        mbuTipHtml.tt = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings */ }
+    }
+    return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+}
+function mbuTipCss() {
+    var s = document.getElementById('mbu-tip-css');
+    if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+    if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+    s.setAttribute('data-v', String(mbuTipV()));
+    s.textContent = mbuTipCssText();
+}
+function mbuTipEl() {
+    var t = document.getElementById('mbu-tip');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'mbu-tip';
+        t.setAttribute('role', 'tooltip');
+        (document.body || document.documentElement).appendChild(t);
+    }
+    return t;
+}
+function mbuTipFind(node) {
+    var _mbuTip = mbuTipS();
+    var tip = document.getElementById('mbu-tip');
+    for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+        if (el === tip) return null;
+        var reg = _mbuTip.els && _mbuTip.els.get(el);
+        if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+        for (var i = 0; i < _mbuTip.prov.length; i++) {
+            var p = _mbuTip.prov[i];
+            try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+        }
+        if (!_mbuTip.lead) continue;
+        if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+        if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+        // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+        if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+            var root = null;
+            try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+            if (root) {
+                el.setAttribute('data-tip', el.getAttribute('title'));
+                el.removeAttribute('title');
+                return { el: el, opts: {} };
+            }
+        }
+    }
+    return null;
+}
+function mbuTipRender() {
+    var _mbuTip = mbuTipS();
+    var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+    if (!a) return false;
+    if (o.fn) {
+        try { c = o.fn(a); } catch (e) { c = null; }
+        if (c == null || c === '') return false;
+        if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+        else { t.textContent = ''; t.appendChild(c); }
+    } else {
+        var s = a.getAttribute('data-tip');
+        if (!s) return false;
+        var h = mbuTipText(s);
+        t.innerHTML = mbuTipHtml(h);
+        // an element with nothing to read of its own is named by its tip
+        if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+            a.setAttribute('aria-label', s.split('\n')[0]);
+        }
+    }
+    t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+    t.setAttribute('data-owner', _mbuTip.me);
+    mbuTipPlace(t, a, o.place);
+    return true;
+}
+function mbuTipPlace(t, a, place) {
+    var _mbuTip = mbuTipS();
+    var r = a.getBoundingClientRect();
+    if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+    t.style.left = '0px'; t.style.top = '0px';
+    var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+    var below = place !== 'above';
+    if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+    else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+    var top = below ? r.bottom + gap : r.top - gap - h;
+    // a wide element (a row, a long field): the arrow points where the pointer is
+    var cx = r.left + r.width / 2;
+    if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+    var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+    t.style.left = left + 'px';
+    t.style.top = Math.max(m, Math.round(top)) + 'px';
+    t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+    t.classList.toggle('mbu-tip-up', !below);
+}
+function mbuTipShow(found) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+    if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+    mbuTipCss();
+    _mbuTip.cur = found.el;
+    _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+    if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+    var t = mbuTipEl();
+    found.el.setAttribute('aria-describedby', 'mbu-tip');
+    // next frame, so the transition runs from the hidden state
+    requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+    // the element can go (a re-render) or change its text while the tip is up
+    clearInterval(_mbuTip.liveT);
+    _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+    try {
+        if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+        _mbuTip.obs.disconnect();
+        if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+    } catch (e) { /* no observer: the text is read again on the next hover */ }
+}
+function mbuTipHide(now) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+    _mbuTip.pend = null;
+    var hide = function () {
+        var a = _mbuTip.cur;
+        if (!a) return;
+        _mbuTip.cur = null;
+        clearInterval(_mbuTip.liveT);
+        try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+        if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+        var t = document.getElementById('mbu-tip');
+        if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+        _mbuTip.warm = Date.now();
+    };
+    if (now) hide();
+    else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+}
+function mbuTipStart() {
+    if (mbuTipStart.done || typeof document === 'undefined') return;
+    var _mbuTip = mbuTipS();
+    var root = document.documentElement;
+    if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+    mbuTipStart.done = true;
+    if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+    var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+    document.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+    document.addEventListener('mouseover', function (e) {
+        _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+        if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+        var f = mbuTipFind(e.target);
+        if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+        if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+        if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+        clearTimeout(_mbuTip.showT);
+        _mbuTip.pend = f;
+        var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+        _mbuTip.showT = setTimeout(function () {
+            _mbuTip.pend = null;
+            if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+        }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+    }, true);
+    document.addEventListener('mouseout', function (e) {
+        var to = e.relatedTarget;
+        var q = _mbuTip.quiet;
+        if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+        var p = _mbuTip.pend;
+        if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+        var a = _mbuTip.cur;
+        if (!a) return;
+        if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+        if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+    }, true);
+    document.addEventListener('mousedown', function (e) {
+        if (inTip(e.target)) return;
+        clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+        var f = mbuTipFind(e.target);
+        _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+        if (_mbuTip.cur) mbuTipHide(true);
+    }, true);
+    document.addEventListener('keydown', function (e) {
+        if (!_mbuTip.cur) return;
+        var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+        // typing closes a plain tip, as it does the browser's; modifiers alone don't
+        if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+        mbuTipHide(true);
+        if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+    }, true);
+    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+    window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+    document.addEventListener('focusin', function (e) {
+        var el = e.target, vis = false;
+        try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+        if (!vis) return;
+        var f = mbuTipFind(el);
+        if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+    }, true);
+    document.addEventListener('focusout', function (e) {
+        if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+    }, true);
+}
+mbuTipStart();
 // </ST-UI>
 
 if (CONS) consolidateMain(CONS);

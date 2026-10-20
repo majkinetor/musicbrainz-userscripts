@@ -311,8 +311,8 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   await frames(page);
   // the new maximize button shares .gt-cons-x with the close button (same
   // convention Match Works already uses for its own header icons) — only the
-  // close button has no title, so :not([title]) picks it out unambiguously.
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  // close button has no tip, so :not([data-tip]) picks it out unambiguously.
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
   check(!(await page.isVisible('.gt-cons.gt-tp')), 'modal closes');
   await page.evaluate(() => window.__groupTherapy.openTextParser());
@@ -347,14 +347,14 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
       header: document.querySelector('.gt-tp-apop .gt-pop-hdr')?.textContent,
       noOldCreateLinkRow: !document.querySelector('.gt-tp-apop .gt-tp-createlink'),
       plusInsideQwrap: !!document.querySelector('.gt-tp-apop .gt-tp-qwrap > .gt-tp-plus'),
-      plusTitle: plus ? plus.title : null,
+      plusTitle: plus ? plus.dataset.tip : null,
     };
   });
   console.log('copyright-row picker:', JSON.stringify(pickerInfo));
   check(/label/i.test(pickerInfo.header) && !/artist/i.test(pickerInfo.header), `the picker header asks for a label, not "label or artist" (got "${pickerInfo.header}")`);
   check(pickerInfo.noOldCreateLinkRow, 'the old separate "+ Create label" link row is gone');
   check(pickerInfo.plusInsideQwrap, 'a "+" create button now lives inside the search box itself');
-  check(/create label/i.test(pickerInfo.plusTitle || ''), `the "+" button is scoped to label creation for a copyright row (got "${pickerInfo.plusTitle}")`);
+  check(/create the label/i.test(pickerInfo.plusTitle || ''), `the "+" button is scoped to label creation for a copyright row (got "${pickerInfo.plusTitle}")`);
   await page.keyboard.press('Escape');
   await frames(page);
 
@@ -513,12 +513,12 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
 
   // 19. maximize button toggles a near-fullscreen class and back.
   const maxBefore = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
-  await page.click('.gt-cons.gt-tp .gt-cons-x[title="Maximize / restore"]');
+  await page.click('.gt-cons.gt-tp .gt-cons-x[data-tip="Maximize or restore"]');
   await frames(page);
   const maxAfter = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
   console.log('maximize toggle:', { maxBefore, maxAfter });
   check(!maxBefore && maxAfter, `the maximize button adds the near-fullscreen class (before ${maxBefore}, after ${maxAfter})`);
-  await page.click('.gt-cons.gt-tp .gt-cons-x[title="Restore"]');
+  await page.click('.gt-cons.gt-tp .gt-cons-x[data-tip="Restore"]');
   await frames(page);
   check(!(await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'))), 'clicking it again restores');
 
@@ -538,7 +538,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
 
   // #522 fourth round (majkinetor, live): "memorize as you do it constantly"
   // — a resized column width survives closing and reopening the tool.
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
   await page.evaluate(() => window.__groupTherapy.openTextParser());
   await frames(page);
@@ -555,7 +555,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   const beforeClose = await page.evaluate(() => document.querySelector('button.gt-tp-resolved')?.textContent);
   console.log('role resolved before close:', beforeClose);
   check(beforeClose && beforeClose.toLowerCase() === 'mastering', 'sanity: the role is resolved before closing');
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
   await page.evaluate(() => window.__groupTherapy.openTextParser());
   await frames(page);
@@ -664,7 +664,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     // tool's bug, so don't fail the run over sandbox replication timing.
     console.log('SKIP: annotation text did not come back from the sandbox this run (likely replication lag, not a real failure)');
   }
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // 26. state persistence is SESSION-only — majkinetor, live: "restarting
@@ -681,7 +681,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   const textAfterReload = await page.inputValue('.gt-tp-ta');
   console.log('text after simulated page reload:', JSON.stringify(textAfterReload));
   check(textAfterReload === '', `pasted text does NOT survive a real page reload (got ${JSON.stringify(textAfterReload)})`);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // ── sixth round of live feedback ────────────────────────────────────────
@@ -743,7 +743,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(roleSelInfo && roleSelInfo.len > 0 && roleSelInfo.start === 0 && roleSelInfo.end === roleSelInfo.len, `the role picker's pre-filled text is fully selected (got ${JSON.stringify(roleSelInfo)})`);
   await page.keyboard.press('Escape');
   await frames(page);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // ── seventh round: "distributed by and friends" + artist-vs-label (#524) ──
@@ -855,7 +855,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(noToggle, '"distributed by" (label-only concept) never offers the artist/label toggle');
   await page.keyboard.press('Escape');
   await frames(page);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // ── eighth round: #525, "Published by is also label, but artist is offered" ──
@@ -907,7 +907,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(!publishedByPicker.hasToggle, '"Published by" (label-only MB type) never offers the artist/label toggle');
   await page.keyboard.press('Escape');
   await frames(page);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // 35. #525 (majkinetor, live, screenshot): "one for the company was
@@ -939,7 +939,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   console.log('mastering/graphic-design picker headers:', JSON.stringify({ masteringHeader, graphicDesignHeader }));
   check(/an artist/i.test(masteringHeader || ''), `"Mastering" defaults to ARTIST search, not label (got "${masteringHeader}")`);
   check(/an artist/i.test(graphicDesignHeader || ''), `"Graphic Design" defaults to ARTIST search, not label (got "${graphicDesignHeader}")`);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // 36. #525 (majkinetor, live, screenshot): "Biography and Pictures" role
@@ -959,7 +959,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   const biographyRow = await page.evaluate(() => [...document.querySelector('.gt-tp-row').querySelectorAll('.gt-tp-c')].map(c => c.textContent));
   console.log('"Biography and Pictures" row:', JSON.stringify(biographyRow));
   check(biographyRow[2] === 'search', `"Biography and Pictures" no longer false-positive-matches the short instrument "pi" (got role cell "${biographyRow[2]}")`);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   // 37. #525 follow-up (majkinetor): "Can we just replace role with the
@@ -1091,7 +1091,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
     await frames(page);
     const afterSecondClick = await readRow();
     check(afterSecondClick.rawEntity === canonicalName, `right-clicking an already-clean entity cell is a no-op, not an error (got "${afterSecondClick.rawEntity}")`);
-    await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+    await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
     await frames(page);
   } else {
     console.log('SKIP: no real artist gid available for the raw-entity-cleanup test');
@@ -1136,7 +1136,7 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(splitRows.length === 2, `2 rows produced from the one pasted line (got ${splitRows.length})`);
   check(splitRows[0]?.role === '© copyright' && splitRows[0]?.entity === 'Albarika Stores BV', `row 1 is the copyright holder alone, no suffix (got ${JSON.stringify(splitRows[0])})`);
   check(splitRows[1]?.role === 'licensed to' && splitRows[1]?.entity === 'Acid Jazz Acquisitions', `row 2 is the licensee alone, DISTINCT entity text from row 1 (got ${JSON.stringify(splitRows[1])})`);
-  await page.click('.gt-cons.gt-tp .gt-cons-x:not([title])');
+  await page.click('.gt-cons.gt-tp .gt-cons-x:not([data-tip])');
   await frames(page);
 
   check(posts.length === 0, `nothing submitted during the test (${posts.length})`);

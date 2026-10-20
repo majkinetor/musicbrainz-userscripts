@@ -15,7 +15,7 @@ test('Consolidate stores the album for Mission Control and opens its page', { ta
   await inject('first_contact', { waitFor: '__fcTest' });
   const b = page.locator('#fc-root .fc-cons');
   await b.waitFor({ state: 'visible' });
-  check(/^Consolidate in Mission Control: read this Deezer album/.test(await b.getAttribute('title')), `the tooltip says what it does: ${await b.getAttribute('title')}`);
+  check(/^Consolidate in Mission Control\nReads this Deezer album/.test(await b.getAttribute('data-tip')), `the tooltip says what it does: ${await b.getAttribute('data-tip')}`);
   await b.click();
   const sent = await until(() => page.evaluate(() => window.__fcLastCons && { token: window.__fcLastCons.token, url: window.__fcLastCons.url }), Boolean, { timeout: 60_000 });
   check(sent && new RegExp('^https://musicbrainz\\.org/release/add#mc=' + sent.token + '$').test(sent.url), `Mission Control's page: ${sent && sent.url}`);

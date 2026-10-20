@@ -1,10 +1,10 @@
 # Standards
 
-This repo's numbered conventions. The ones that hold on any project are in [`dev/agents/STANDARDS.general.md`](dev/agents/STANDARDS.general.md) and apply here in full; this file holds the standards of this repo alone and the repo's details for the general ones. Numbers are shared between the two files and never reused (the next is 14); every number keeps its anchor here, so an old `STANDARDS.md#standard-N` link still lands on it. New ones arrive when the maintainer starts a chat message with `standard: …`: one that would hold on any project goes in the general file.
+This repo's numbered conventions. The ones that hold on any project are in [`dev/agents/STANDARDS.general.md`](dev/agents/STANDARDS.general.md) and apply here in full; this file holds the standards of this repo alone and the repo's details for the general ones. Numbers are shared between the two files and never reused (the next is 15); every number keeps its anchor here, so an old `STANDARDS.md#standard-N` link still lands on it. New ones arrive when the maintainer starts a chat message with `standard: …`: one that would hold on any project goes in the general file.
 
 | Category | Standards |
 | --- | --- |
-| [Userscripts](#userscripts) | [10](#standard-10) install links |
+| [Userscripts](#userscripts) | [10](#standard-10) install links · [14](#standard-14) tooltips |
 | [This repo's details](#this-repos-details) | [labels](#labels) · [links](#links) · [script READMEs](#script-readmes) · [tables](#tables) |
 | [General](#general) | [1](#standard-1) · [2](#standard-2) · [3](#standard-3) · [5](#standard-5) · [6](#standard-6) · [7](#standard-7) · [8](#standard-8) · [9](#standard-9) · [11](#standard-11) · [12](#standard-12) · [13](#standard-13) |
 | [Retired](#retired) | [4](#standard-4) per-project decision log |
@@ -30,6 +30,17 @@ Every userscript install link shared in chat or on GitHub follows the branch the
 - **Check the posted comment**: `node dev/install-links/install-links.mjs --check <comment-url>`. If it fails, edit the comment until the check passes; until then the handoff isn't done.
 
 Tampermonkey/Violentmonkey auto-detect the `.user.js` and offer install, and the manager checks that same URL for updates: a `main` link follows latest, a branch link follows the branch (and stops updating once the branch is deleted, so reinstall from `main` after the merge).
+
+<a id="standard-14"></a>
+
+### 14. Tooltips are ours, never the browser's
+
+A script's tooltip is the shared one, `mbuTip` ([dev/ui → Tooltips](dev/ui/README.md#tooltips)), never the browser's `title`: the browser's can't be styled and shows a long text as one wall ([#793](https://github.com/majkinetor/musicbrainz-userscripts/issues/793)).
+
+- **`data-tip="…"` in place of `title="…"`**, `el.dataset.tip` in place of `el.title`; a rich tip (links, a table) is a card through `mbuTipOn`.
+- **Write the text for it**: a short lead that says what the control does, then the detail on its own line; each click or key on its own line as `Right-click: …`; a setting's `On: …` and `Off: …` as two lines. Sentence case, no closing period on a one-line tip, no issue numbers, no "click to …" endings.
+- **The exceptions**: an `<option>` keeps `title`, since the browser draws a dropdown's list and no page tooltip reaches it; an `<iframe>`'s `title` is its accessible name, not a tooltip; and MusicBrainz's own titles on its own page stay as they are.
+- A `title` left in one of our windows is taken over on hover, so a slip still shows ours; it is still a slip.
 
 ---
 
