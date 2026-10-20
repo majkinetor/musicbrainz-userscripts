@@ -22,11 +22,11 @@ An importer like [Harmony] hands you 20–50 artists, recordings and labels that
 - **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
 - **[Export and import](#json-model)** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
 
-Untouched rows and aliases the entity already has are skipped, not submitted again. So is a link the entity already has, even in another locale: a Qobuz or Apple Music page already linked as `gb-en` or `/gb/` (or open.qobuz.com, itunes.apple.com) isn't added again as `us-en`. The row says which link it already is.
+Untouched rows, and aliases and links the entity already has, are skipped. A link in another locale counts as had (a Qobuz page linked as `gb-en` isn't added as `us-en`), and the row says which.
 
 ## Filling the queue
 
-Open Falcon on any MusicBrainz page with **Ctrl+Alt+F** (or its corner icon; right-click the icon for **Options**). The release editor has no icon, since Falcon has nothing to do there; **Ctrl+Alt+F** still opens it.
+Open Falcon with **Ctrl+Alt+F** or its corner icon (right-click: **Options**). The release editor has no icon, but the key works.
 
 ### From Harmony
 
@@ -35,14 +35,14 @@ On a [Harmony] *Release Actions* page, **Send N to Falcon** (bottom-right) opens
 <img src="./screenshots/harmony.png" width="400">
 
 - **ISRCs** go by tracklist position: ISRC *N* to track *N* as MusicBrainz has it. If the counts differ, the extras are dropped and logged. (A recording linked to the wrong provider track still gets that track's ISRC; Falcon can't tell.)
-- **Cover art**: Falcon swaps every candidate for the store's largest version (a Deezer 1000×1000 for its full size, a Bandcamp thumbnail for the original), measures it (Harmony's sizes are often wrong) and picks the largest, then the smallest file. Expand the row to change the pick, its type or its comment. The edit note names the source, its size, the URL it was maximised from, and what it was chosen over.
+- **Cover art**: Falcon takes each candidate's largest version from its store, measures it, and picks the largest, then the smallest file; expand the row to change the pick, type or comment. The edit note names the source, its size and what it was chosen over.
 
 > [!WARNING]
 > A release that already has cover art gets none. Turn off *Add covers only when there aren't any* to add one anyway; the row then warns when the release has art. If you upload covers with [Art Station](../art_station) instead, turn on *Ignore cover art* under *Harmony*.
 
 ### From the current page
 
-On a release or release group page, **+ Add from** fills the queue with its entities, with empty fields. Fill in the rows you care about and press Start; untouched rows are skipped. **Export** turns it into a JSON worksheet to fill in later.
+On a release or release group page, **+ Add from** fills the queue with its entities, with empty fields. Fill in the rows you want and press **Start**. **Export** turns it into a JSON worksheet to fill in later.
 
 <img src="./screenshots/add-from-release.png" width="520">
 
@@ -54,17 +54,17 @@ On a series page, **+ Add from series** queues its release groups (optionally ev
 
 ## Editing the queue
 
-The **List** / **Grid** button, right of the type chips, switches between two views.
+**List** / **Grid** switches the view.
 
-- **List**: expand a row to edit it as a labelled form. Its links are listed one per URL, each with its link types by name; a URL added under two types shows both. The mark before a URL (✓ done, ✗ failed, ↗ not run yet) opens it. Long link lists fold after three, with *+ N more*.
-- Links are editable: change a URL in its box (empty it to drop it). A type badge is a dropdown: pick another type to change it, or **✕** it off. The **+** after the types adds one from that entity's link types, the row's **✕** removes the link, and the **+** by the *Links* label adds a link. A link with no type shows *auto* and is left for MusicBrainz to guess.
+- **List**: expand a row to edit it as a form. Each link shows its types; the mark before it (✓ done, ✗ failed, ↗ not run yet) opens it.
+- Edit a URL in its box (empty drops it). A type badge picks another type or **✕** drops it; **+** after the types adds one, **+** by *Links* adds a link, the link's **✕** removes it. A link without a type shows *auto*, left for MusicBrainz to guess.
 - **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
 
-The [keyboard](#shortcuts) moves between fields in both views, like a spreadsheet. In the list, the row you move into opens and the one you leave closes again.
+The [keyboard](#shortcuts) moves between fields like a spreadsheet; in the list, rows open and close as you go.
 
 ## The run
 
-Review the queue (remove rows, edit fields), then press **Start**. Right-click a row's type to select every item of that type; the header chips (`art`, `lbl`, `rec`, `rel`, `rg`) exclude a type without removing it.
+Review the queue, then press **Start**. Right-click a row's type to select every item of that type; the header chips (`art`, `lbl`, `rec`, `rel`, `rg`) exclude a type without removing it.
 
 | Status      |                                                                                |
 | ----------- | ------------------------------------------------------------------------------ |
@@ -92,9 +92,9 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 ### The log
 
-The **Log** tab is the activity log every script shares: filter by level or by worker (`w1`, `w2`, …), search the text, and **⧉ Copy** it as Markdown for an issue. **debug** (off by default) also records each worker's every step.
+The **Log** tab filters by level or worker (`w1`, `w2`, …) and searches; **⧉ Copy** gives Markdown for an issue, and **debug** records each worker's every step.
 
-Each run keeps its own log in this browser, so a run whose tab crashed or navigated away can still be read. Pick a past run from the list beside the filter (they go by date and release); **Clear history** deletes them. A long run keeps its start and its end.
+Each run's log is kept in this browser, so a run whose tab crashed can still be read: pick it beside the filter. **Clear history** deletes them. A long run keeps its start and end.
 
 ## Attributes
 
@@ -104,12 +104,12 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 | ISRCs, video, length                 |        |       |     ✓     |         |               |
 | cover art, barcode, event, tracks    |        |       |           |    ✓    |               |
 
-- **Name**: an expanded row's ✎ box starts with the current name, so a fix is an edit, not a retype. A rename is votable, so it shows once the edit passes.
+- **Name**: the ✎ box starts with the current name. A rename shows once its edit passes the vote.
 - **Aliases**: one row per alias, with its name, its language and **✕**; the **+** by the *Aliases* label adds one, or use [JSON](./examples/aliases.json) for many. A new alias takes the language last typed; `name@locale` typed in the name box sets the language too. Enter on a filled alias opens the next one, on an empty one moves on to the next row's aliases; Esc drops a new, still empty row.
 - **Video** is only ever set, never cleared.
-- **Barcode** fills a release that has none, and unticks *This release does not have a barcode* if it is ticked. A release that already has a different barcode keeps it, and the row says so. In the grid it is in the row's opened part, with the links.
-- **Event** gives a release that has no release event one: the date (`2014`, `2014-02` or `2014-02-20`), then the country's code, `2014-02-20 XW`. Only [Worldwide] (`XW`) is known as a country so far; another code leaves the country empty. A release that has an event keeps it, and the row says so.
-- **Tracks** changes a release's track titles and lengths, each as medium.track, a quoted title, a length, separated by `;`: `1.2 "New title" 5:02; 1.3 6:58`. `+rec` after the title gives the recording that title too. A track that changed since the change was made (another script hands Falcon what the track had) keeps what it has, and the row says so; so does a medium with a disc ID, whose lengths MusicBrainz locks. In the grid, Event and Tracks are in the row's opened part, with the barcode.
+- **Barcode** fills a release that has none and unticks *This release does not have a barcode*. A different barcode is kept, and the row says so.
+- **Event** gives a release that has no release event one: the date (`2014`, `2014-02` or `2014-02-20`), then the country's code, `2014-02-20 XW`. Only `XW` ([Worldwide]) is known so far; another code leaves the country empty. An existing event is kept, and the row says so.
+- **Tracks** changes a release's track titles and lengths, each as medium.track, a quoted title, a length, separated by `;`: `1.2 "New title" 5:02; 1.3 6:58`. `+rec` after the title gives the recording that title too. A track that has changed since, or a length on a medium with a disc ID, is kept, and the row says so. In the grid, barcode, event and tracks are in the row's opened part.
 - **Length** sets a recording's own length (`m:ss`). MusicBrainz takes it only for a recording without tracks; any other's comes from its tracks, and the row says so.
 
 > [!WARNING]
@@ -117,7 +117,7 @@ Each run keeps its own log in this browser, so a run whose tab crashed or naviga
 
 ## Batch edit note
 
-**✎ Note**, left of Start, adds its text to every edit of the run: forms, aliases and covers. The button is marked while a note is set. The note is not kept across reloads, so an old reason can't slip into a new batch.
+**✎ Note**, left of Start, adds its text to every edit of the run: forms, aliases and covers. It isn't kept across reloads, so an old reason can't slip into a new batch.
 
 ## Hands-free import
 
@@ -128,18 +128,18 @@ Two settings, both on by default, carry a finished Harmony import to a finished 
 | *Auto send*         | Harmony     | presses *Send to Falcon* |
 | *Auto start import* | MusicBrainz | presses *Start*          |
 
-*Auto send* waits until the import is complete and Harmony has finished listing its actions. It stands down if there's nothing to send. It counts down on the button first; a click cancels.
+*Auto send* waits for Harmony to finish, counts down on the button (a click cancels), and stands down when there's nothing to send.
 
-**When Harmony errors**, the page still loads, just short of actions. Falcon handles this without a setting:
+**When Harmony errors**, the page loads short of actions:
 
 - **a MusicBrainz error**: Falcon reloads the page, a few times, waiting longer each time;
 - **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
 
-Falcon is idempotent, so a partial run can be topped up later. *Reload release page after import without errors* (a Harmony option, like Picard: both follow only a queue Harmony sent) shows the result on the release page and turns the corner icon green. A run with failures isn't reloaded, since the queue wouldn't survive it; the log would.
+A partial run can be topped up later; what went through isn't repeated. *Reload release page after import without errors* shows the result on the release page, the corner icon green; a run with failures isn't reloaded, so its queue survives.
 
 ## Disc IDs from a rip log
 
-On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Falcon reads the TOC, computes the disc ID in the browser, and takes you straight to MusicBrainz's attach page with the edit note signed. **Enter edit** is yours.
+On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Falcon computes its disc ID and opens MusicBrainz's attach page, edit note signed, for you to **Enter edit**.
 
 | Program          | Reads                             |
 | ---------------- | --------------------------------- |
