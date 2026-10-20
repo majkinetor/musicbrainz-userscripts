@@ -38,7 +38,7 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 10;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 11;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
@@ -67,7 +67,11 @@ const CSS = [
     '#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}',
     '#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}',
     '#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}',
-    '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}',
+    '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:start;color:var(--mbu-text-dim,#555)}',
+    // a label is centred on its text's first line (12.5px × 1.45 ≈ 18px), whether keys, a mouse or both
+    // (majkinetor: "why is the first mouse lower?" — a baseline set by a mouse's bottom edge needed nudging)
+    '#mbu-tip .mbu-tip-rows>.mbu-tip-kk,#mbu-tip .mbu-tip-rows>.mbu-tip-dl{min-height:18px}',
+    '#mbu-tip .mbu-tip-rows>.mbu-tip-k{line-height:18px}',
     '#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}',
     '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}',
     // a key is bold grey text, no box (majkinetor picked B of six mocks, then "make keys gray too")
@@ -82,8 +86,6 @@ const CSS = [
     '#mbu-tip .mbu-tip-sym{letter-spacing:.2px}',
     // the mouse small and grey, only the pressed button in the accent (majkinetor: 6 of six mocks)
     '#mbu-tip .mbu-tip-mouse{display:block;flex:none;position:relative}',
-    // a mouse that leads its label gives the row its baseline (its bottom edge): down to sit on the line
-    '#mbu-tip .mbu-tip-sr+.mbu-tip-mouse{top:3px}',
     '#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}',
     '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}',
     '#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
