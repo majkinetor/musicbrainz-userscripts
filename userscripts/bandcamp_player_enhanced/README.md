@@ -15,18 +15,17 @@ A Bandcamp album player with keyboard shortcuts, an album preview, and a few cus
 | ↑ / ↓ | previous / next track; with Shift, volume up / down |
 | ← / → | back / forward 5 s; with Shift, 30 s                |
 | P     | album preview (30 s of each track)                  |
-
-The mouse wheel over the player bar seeks too; over the open track list it scrolls, over the volume control it sets the volume.
+| Wheel | on the player bar, seek; on the volume, volume      |
 
 ## Settings
 
 **⚙** on the player bar:
 
-| Setting            | Default           |                                                                                            |
-| ------------------ | ----------------- | ------------------------------------------------------------------------------------------ |
-| Theme              | Page              | follows the album page: dark on a dark page, light on a light one; or always Dark or Light |
-| Scale              | 100%              | 70–130%                                                                                    |
-| Start from track 1 | on                | when Bandcamp opens on a "featured" track, the player moves to track 1 without playing     |
-| Hide on page       | the native player | also the track list and the tags row                                                       |
+| Setting            | Default           |                                                               |
+| ------------------ | ----------------- | ------------------------------------------------------------- |
+| Theme              | Page              | as the album page, or Dark, Light                             |
+| Scale              | 100%              | 70–130%                                                       |
+| Start from track 1 | on                | a page opened on a "featured" track starts at track 1, paused |
+| Hide on page       | the native player | also the track list, the tags row                             |
 
 <img width="300" src="./screenshots/config.png" />
