@@ -16,8 +16,11 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
   const ck = check;
 
   const REC1 = 'e42f8e08-3150-4c6c-be5b-4030c29b1bf7';
-  // the name pill starts MISSING — a script on the page adds it 1s later,
-  // simulating Harmony's own async per-entity resolution finishing late.
+  // the name pill starts MISSING — a script on the page adds it 1s after the
+  // click, simulating Harmony's own async per-entity resolution finishing late.
+  // The clock starts at the click, not at load: the setup before the click
+  // (injecting the script, waiting for its button) took over 100ms of a
+  // load-timed second on a slow nightly, so the wait measured short.
   const HTML = `<html><body>
   <div class="action" id="row1">
     <div><p>
@@ -28,12 +31,16 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
     </p></div>
   </div>
   <script>
-  setTimeout(() => {
-    const a = document.createElement('a');
-    a.href = 'https://musicbrainz.org/recording/${REC1}';
-    a.innerHTML = '<span class="musicbrainz"></span>Dusk';
-    document.getElementById('links1').appendChild(a);
-  }, 1000);
+  document.addEventListener('click', e => {
+    if (window.__pillTimer || !e.target.closest('#falcon-harmony-btn')) return;
+    window.__clickAt = Date.now();
+    window.__pillTimer = setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = 'https://musicbrainz.org/recording/${REC1}';
+      a.innerHTML = '<span class="musicbrainz"></span>Dusk';
+      document.getElementById('links1').appendChild(a);
+    }, 1000);
+  }, true);
   </script>
   </body></html>`;
 
@@ -42,7 +49,7 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
     window.__gmWrites = [];
     const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
-    window.GM_setValue = (k, v) => { store.set(k, v); window.__gmWrites.push([k, v]); };
+    window.GM_setValue = (k, v) => { store.set(k, v); window.__gmWrites.push([k, v]); if (k.startsWith('falcon:pending:')) window.__writeAt = Date.now(); };
     window.GM_deleteValue = k => store.delete(k);
     window.GM_info = { script: { name: 'Falcon', version: 't' } };
     window.open = () => ({ closed: false });   // a tab opened (null would read as a blocked popup)
@@ -53,8 +60,7 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
   await page.waitForSelector('#falcon-harmony-btn', { timeout: 5000 });
 
-  // click IMMEDIATELY — before the 1s setTimeout above has added the name pill.
-  const clickTime = Date.now();
+  // the click starts the 1s timer above that adds the name pill
   await page.click('#falcon-harmony-btn');
   // the label should switch to "Resolving names…" while it waits
   await page.waitForFunction(() => document.getElementById('falcon-harmony-lbl')?.textContent === 'Resolving names…', { timeout: 2000 }).catch(() => {});
@@ -63,7 +69,7 @@ test("#509: click waits for names", { tag: ['@sandbox', '@login'] }, async ({ co
   ck(midLabel === 'Resolving names…', `the button shows it's waiting, not silently stuck (got "${midLabel}")`);
 
   await page.waitForFunction(() => window.__gmWrites.some(([k]) => k.startsWith('falcon:pending:')), null, { timeout: 8000 });
-  const elapsed = Date.now() - clickTime;
+  const elapsed = await page.evaluate(() => window.__writeAt - window.__clickAt);   // both in the page, so the test's own round trips don't count
   console.log('elapsed until payload written:', elapsed, 'ms');
   ck(elapsed >= 900, `it actually waited for the pill to render, not send instantly (got ${elapsed}ms)`);
   ck(elapsed < 5500, `and didn't wait needlessly past when the name arrived (got ${elapsed}ms, cap is 5000ms)`);
