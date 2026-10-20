@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 11:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 11:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -75,7 +75,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 
 **Tracks**
 
-- On hover: **Split** and **Guess case**; left-click for one track, right-click for all.
+- On hover: **Split** and **Aa** (Guess case); left-click for one track, right-click for all.
 - **⠿** drags a track within its medium. **⤓** moves a track and everything below it into the data section; **⤒** moves it back. A medium with a disc ID can't have data tracks.
 - On hover, the last column has the track's **↺** (revert, when it has changed) and **✕** (remove).
 - Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
@@ -196,16 +196,32 @@ The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Cu
 
 #### Guess case
 
-Capitalises the track titles the way MusicBrainz's own Guess case does, with more languages and a few more rules. Click **Guess case** for every track; a track's **Aa** on hover does one track and shows the guess before you click.
+MusicBrainz's capitalisation, with more languages and rules. **Guess case** in the toolbar does every track; a track's **Aa** on hover shows its guess, a click applies it, a right-click does every track. MusicBrainz's own guess-case buttons give the same guess.
 
-- **Mode**: **Auto** follows the release's language. English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own mode; any other language gets Sentence (a capital only at the start of a sentence). Pick a mode to use it whatever the language.
-- **ABC** (Keep uppercased), a toggle: a word in capitals stays in capitals, and a word with a capital inside it (*KoRn*, *JoJo*, *OutKast*) keeps it.
-- **IV** (Roman numerals), a toggle: *part ii* becomes *Part II*.
-- **Separator**, the small field after them: in Auto, a title written mostly in Cyrillic gets Sentence whatever the release's language. A title whose parts, split by this (`/` by default), are in different scripts has each part guessed on its own: *love story / история любви* becomes *Love Story / История любви*. Empty never splits.
+The options sit beside **Guess case**, or open with a right-click on the release title's **Aa**.
 
-On top of MusicBrainz's rules, version words in brackets are lowercased (*official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*), and Dutch writes *IJ* as one capital (*IJsland*).
+| Option    | Default | What it does                                  |
+| --------- | ------- | --------------------------------------------- |
+| Mode      | Auto    | the capitalisation, below                     |
+| ABC       | on      | keeps capitals: *ABBA*, *KoRn*                |
+| IV        | off     | *part ii* → *Part II*                         |
+| Separator | `/`     | splits a title into parts; empty never splits |
 
-MusicBrainz's own guess-case buttons give the same guess with the same options: the release title's **Aa**, a medium title's, and **Guess case** under MusicBrainz's tracklist. In the release information, right-click the title's **Aa** for the options; MusicBrainz's own options show Apollo's modes.
+| Mode                         | Capitals                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| English                      | every word but small ones: *The Sound of Silence*; keys as *in C-sharp minor* |
+| Turkish                      | as English, with Turkish small words and *İ*/*ı*                              |
+| French                       | Sentence, with French spacing: *Où es-tu ?*                                   |
+| Spanish, Italian, Portuguese | Sentence                                                                      |
+| Dutch                        | Sentence, *IJ* as one capital: *IJsland*                                      |
+| Sentence                     | only the first word                                                           |
+
+**Auto** picks the mode by the release's language, and Sentence for any other language. Only in Auto:
+
+- A title mostly in Cyrillic gets Sentence.
+- Parts in different scripts are guessed apart: *love story / история любви* → *Love Story / История любви*.
+
+Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 
 #### Search and Replace
 
@@ -343,16 +359,18 @@ Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**,
 
 ### Shortcuts
 
-| Where         | Key                |                                                 |
-| ------------- | ------------------ | ----------------------------------------------- |
-| Tracklist     | ↓, Enter           | next row                                        |
-| Tracklist     | ↑, Shift+Enter     | previous row                                    |
-| Tracklist     | Tab, Shift+Tab     | next, previous column                           |
-| Join phrase   | typing, ↓ ↑, Enter | filter the presets, move, pick                  |
-| Length parser | Ctrl+V             | read the lengths from the link on the clipboard |
-| Length parser | Ctrl+Enter         | apply                                           |
-| Annotation    | Ctrl+B, Ctrl+I     | bold, italic                                    |
-| Annotation    | Tab, Shift+Tab     | make or change a list, remove it                |
+| Where         | Key                                    |                                                 |
+| ------------- | -------------------------------------- | ----------------------------------------------- |
+| Tracklist     | ↓, Enter                               | next row                                        |
+| Tracklist     | ↑, Shift+Enter                         | previous row                                    |
+| Tracklist     | Tab, Shift+Tab                         | next, previous column                           |
+| Join phrase   | typing, ↓ ↑, Enter                     | filter the presets, move, pick                  |
+| Length parser | Ctrl+V                                 | read the lengths from the link on the clipboard |
+| Length parser | Ctrl+Enter                             | apply                                           |
+| Annotation    | Ctrl+B, Ctrl+I                         | bold, italic                                    |
+| Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                |
+| Guess case    | right-click a track's **Aa**           | every track                                     |
+| Guess case    | right-click the release title's **Aa** | the options                                     |
 
 ### Notes
 
