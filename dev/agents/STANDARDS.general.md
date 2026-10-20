@@ -125,6 +125,7 @@ Every user doc of one kind (a component's README, say) follows **one shape**, so
 
 **Writing**
 
+- **Fewest words that say it.** Cut every word, clause and sentence that tells the reader nothing new: a sentence that only restates the obvious ("pick a mode to use it") or what a nearby one already implies goes. Before finishing, reread each sentence and ask what the user would lose without it.
 - Short sentences, plain words. Say what the user sees and does, not how the code does it.
 - No low-level technical detail (APIs, tokens, storage keys, events, selectors, timings) in the README. A user who might need it gets a short line in **Notes** that links the component's `DEVELOP.md`, where the detail lives.
 - A list of alike things is a table: sources, cutoffs, confidence levels, settings, gestures. Keep its cells short (a word, a value, a ✓). When many cells would hold sentences, keep the table to the short facts and give each item its own heading below it, so the text reads as prose and each item can be linked.
