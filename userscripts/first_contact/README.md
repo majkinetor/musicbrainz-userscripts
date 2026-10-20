@@ -119,6 +119,7 @@ Pages: `<name>.bandcamp.com/album/<slug>`
 Pages: `discogs.com/release/<id>`
 
 - Format per medium (LP is 12" Vinyl), and sides A/B, C/D… become one medium each, numbered A1, B2…; *CD 1 …* style headings become medium titles.
+- A work listed over its movements becomes one track per movement, *Concerto…, RV 531: I. Allegro*, when each movement has its own track number; movements that share one (*3a*, *3b*) stay one track, *Concerto…: I. Allegro / II. Largo*.
 - Status *Promotion* or *Bootleg* and the *Compilation* type come from the format's descriptions, packaging from its free text.
 - Artists keep their credited name (*DJ Fresh* for *Fresh*) and lose Discogs's *(2)* numbering; *Featuring* track credits go after *feat.*
 - Country when it is one country (not *UK, Europe & US*).

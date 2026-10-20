@@ -79,3 +79,14 @@ test('a Various 2×CD compilation: headings, Feat. joins, credited names', { tag
   });
   check(JSON.stringify(ids) === JSON.stringify(['4570366', '4570366', '4570366', null, null, null]), `release pages only: ${JSON.stringify(ids)}`);
 });
+
+// 3718361  Yo-Yo Ma, "Vivaldi's Cello", CD: concertos are index tracks whose movements have their own
+//          positions (1, 2, 3…), so each movement is a track of its own: 19 tracks, not 11.
+test('index tracks: movements with their own positions become their own tracks', { tag: ['@web'] }, async ({ page, inject }) => {
+  const rel = await read(page, inject, '3718361');
+  const tr = rel.mediums[0].tracks;
+  check(rel.mediums.length === 1 && tr.length === 19, `one CD of 19 tracks: ${rel.mediums.map(m => m.tracks.length)}`);
+  check(tr[0].title === 'Concerto In G Minor For Two Cellos, Strings And Basso Continuo, RV 531: I. Allegro' && tr[0].lengthMs === 198000, `movement titled after its work, with its own length: ${tr[0].title} ${tr[0].lengthMs}`);
+  check(tr[3].title.endsWith('RV 297: II. Largo') && tr[7].title.startsWith('"Così Sugl'), `a one-movement index and a plain track keep their places: ${tr[3].title} | ${tr[7].title}`);
+  check(text(tr[0].credit) === 'Yo-Yo Ma, The Amsterdam Baroque Orchestra, Ton Koopman', `movements keep the release credit: ${text(tr[0].credit)}`);
+});
