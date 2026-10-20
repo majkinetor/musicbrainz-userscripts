@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 13:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 14:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2107,7 +2107,7 @@ On a release without one, a dashed barcode button under the title counts the bar
 
 ### Catalog numbers
 
-Beatport and Discogs give the album's catalog number, shown after the platform's label (*Artoffact AOF 146*; *+1* when there are more, all in the tooltip). When a release's label has none, a dashed tag button beside the barcode's counts the ones the platforms give.
+Beatport and Discogs give the album's catalog number, shown after the platform's label (*Artoffact AOF 146*; *+1* when there are more, all in the tooltip). The MusicBrainz row shows the release's own the same way. When a release's label has none, a dashed tag button beside the barcode's counts the ones the platforms give.
 
 - Click it for the list: each catalog number with its label and the platforms that give it. ✓ marks one from a link like this release (with the release's barcode, or one it already has, and the same track count and medium); ⚠ one from another barcode, another format, or platforms that give no barcode.
 - The platform's label name is matched to the release's loosely (*Artoffact* is *Artoffact Records*), and the same number written differently (*AOF146*) is one.

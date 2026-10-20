@@ -115,3 +115,16 @@ test('#740: a catalog number from another medium in the release\'s own lane is n
   check(out.found.length === 1 && !out.found[0].sure, 'its catalog number is not sure');
   check(out.mc[0] && out.mc[0].state === 'unsure' && /CD/.test(out.mc[0].why) && out.mc[0].mismatch, `Mission Control gets it unsure, saying why (${JSON.stringify(out.mc[0])})`);
 });
+
+// majkinetor: the MusicBrainz row shows the release's own catalog number after its label, as a platform's row does
+test('#740: the MusicBrainz row shows the release\'s catalog number', { tag: ['@sandbox', '@critical'] }, async ({ page, context, inject }) => {
+  answerGm(context, ({ url }) => /musicbrainz\.org|wikidata/.test(url) ? null : { status: 404, body: '' });
+  await page.goto(`${SANDBOX}/release/28d39ba8-3330-4768-a305-93b25b6a5ece`, { waitUntil: 'domcontentloaded' });   // "Wings Of Africa": M.O.T. Records, LMOT 1017
+  await page.waitForSelector('#content table.medium');
+  await inject('platform_check', { waitFor: '__pcTest680' });
+  const row = await until(() => page.evaluate(() => { const l = document.getElementById('mb-mb-label'); return [l.querySelector('.pc-lbl-t')?.textContent, l.querySelector('.pc-cell-cat')?.textContent, l.dataset.tip]; }), r => !!r[1]);
+  console.log(JSON.stringify(row));
+  check(row[0] === 'M.O.T. Records' && row[1] === 'LMOT 1017', `after the label (${row})`);
+  check(/Catalog number LMOT 1017 \(M\.O\.T\. Records\)/.test(row[2]), 'and in its tooltip');
+  await page.locator('#mb-pc-panel').screenshot({ path: 'test-results/pc-740-mb-row.png' });
+});

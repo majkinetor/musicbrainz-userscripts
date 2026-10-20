@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.20.120000
+// @version      2026.10.20.142620
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -4246,15 +4246,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     setMetaCells(`year-${p}`, `format-${p}`, `label-${p}`, year, format, label ? stripCopyright(label) : label);
     // #740: the catalog number after the label, as the platform gives it
     const catnos = url ? (cacheGet(mbid, p)?.catnos || []) : [];
-    const lEl = document.getElementById(`label-${p}`);
-    if (lEl) lEl.classList.toggle('pc-has-cat', !!catnos.length);
-    if (lEl && catnos.length) {
-        // the label shrinks with "…", the catalog number never does
-        const t = document.createElement('span'); t.className = 'pc-lbl-t'; t.textContent = lEl.textContent;
-        const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = catnos[0].catno + (catnos.length > 1 ? ` +${catnos.length - 1}` : '');   // the rest in the tooltip
-        lEl.textContent = ''; lEl.append(t, c);
-        lEl.dataset.tip = `${lEl.dataset.tip || ''}${lEl.dataset.tip ? '\n' : ''}Catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
-    }
+    pcSetLabelCat(document.getElementById(`label-${p}`), catnos);
     pcNoteFoundCatnos(p, catnos);
     refreshCompactStrip();   // #355
 }
@@ -4325,6 +4317,18 @@ function refreshCompactStrip() {
 // ("2026 · Digital · Selections Lab"). Format is normalized (Digital Media →
 // Digital); the full label is set as a tooltip so a truncated label (CSS
 // ellipsis) is still readable on hover.
+// #740: a label cell's catalog numbers ([{ label, catno }]) after its label, once setMetaCells has set it
+function pcSetLabelCat(lEl, catnos) {
+    if (!lEl) return;
+    lEl.classList.toggle('pc-has-cat', !!catnos.length);
+    if (!catnos.length) return;
+    // the label shrinks with "…", the catalog number never does
+    const t = document.createElement('span'); t.className = 'pc-lbl-t'; t.textContent = lEl.textContent;
+    const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = catnos[0].catno + (catnos.length > 1 ? ` +${catnos.length - 1}` : '');   // the rest in the tooltip
+    lEl.textContent = ''; lEl.append(t, c);
+    lEl.dataset.tip = `${lEl.dataset.tip || ''}${lEl.dataset.tip ? '\n' : ''}Catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
+}
+
 function setMetaCells(yearId, formatId, labelId, year, format, label) {
     const yEl = document.getElementById(yearId);
     const fEl = document.getElementById(formatId);
@@ -7738,7 +7742,9 @@ function parseMbFromDom() {
         // Sanity gate: we need artist + album + at least one track row. Anything
         // less is an unrendered or unfamiliar layout — bail to API.
         if (!artist || !album || mbTracks < 1) return null;
-        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
+        // the release's own catalog numbers, for its row
+        const releaseCatnos = pcPageLabels().filter(l => l.catno && !/^\[?none\]?$/i.test(l.catno)).map(l => ({ label: l.name, catno: l.catno }));
+        return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, releaseCatnos, barcode };
     } catch (e) {
         appendLog('System', `parseMbFromDom threw: ${e.message}`, 'error');
         return null;
@@ -7793,7 +7799,9 @@ function parseMbData(data) {
         .filter(Boolean)
         .filter((v, i, a) => a.indexOf(v) === i)
         .join(', ') || null;
-    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode };
+    const releaseCatnos = (data['label-info'] || []).map(li => ({ label: li.label?.name || '', catno: String(li['catalog-number'] || '').trim() }))
+        .filter(c => c.catno && !/^\[?none\]?$/i.test(c.catno));
+    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, releaseCatnos, barcode };
 }
 
 // (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
@@ -7901,7 +7909,7 @@ async function runScansInner() {
     // from a different tab and wants to jump back to MB without re-typing.
     appendLog('MusicBrainz', `Release: ${MB_ORIGIN}/release/${mbid}`);
 
-    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, barcode } = mbData;
+    const { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, releaseCatnos, barcode } = mbData;
     /* majkinetor: "still can't click first 2 rows in PC but only on initial load.
        If I click refresh, its there." This block used to sit ~70 lines further
        down, after the release-group lookup, the cache-upgrade pass and the
@@ -7960,12 +7968,13 @@ async function runScansInner() {
     // track count right-aligned so it sits in the same column as the
     // platform vals below.
     setMetaCells('mb-mb-year', 'mb-mb-format', 'mb-mb-label', year, format, releaseLabel);
+    pcSetLabelCat(document.getElementById('mb-mb-label'), releaseLabel ? releaseCatnos || [] : []);
     const trkEl = document.getElementById('mb-mb-tracks');
     if (trkEl) trkEl.textContent = `${mbTracks}`;
     const nameEl = document.getElementById('mb-mb-name');
     if (nameEl) nameEl.href = `${MB_ORIGIN}/release/${mbid}`;
     appendLog('MusicBrainz', `Artist: "${artist}"${isVariousArtists ? ' (Various Artists — search by album only)' : ''}  Album: "${album}"  Tracks: ${mbTracks}  rg=${releaseGroupMbid || '(none)'}`);
-    appendLog('MusicBrainz', `Header meta — year=${year || '?'}  format=${format || '?'}  label=${releaseLabel || '?'}  source=${dataSource}`);
+    appendLog('MusicBrainz', `Header meta — year=${year || '?'}  format=${format || '?'}  label=${releaseLabel || '?'}  catno=${(releaseCatnos || []).map(c => c.catno).join(', ') || '?'}  source=${dataSource}`);
     // #527 follow-up (majkinetor, live): this line used to hardcode only 5 of
     // the 11 providers (spotify/discogs/bandcamp/deezer/apple) — soundcloud
     // (among others) was silently left out of the summary even though
