@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 11:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 11:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -405,20 +405,20 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 Thumbnail size, a grid or a detailed view, grouping by [type](https://musicbrainz.org/doc/Cover_Art/Types), and sorting by position, type, dimensions or date. Drag one cover, or a whole selection, to reorder; select with right-click or right-drag.
 
-Art Station's icon in the bottom-right corner switches to MusicBrainz's own page and back; it's in colour while Art Station shows and grey while off. Right-click it for the settings (⚙ below).
+Art Station's corner icon switches to MusicBrainz's own page and back; right-click it for the settings (⚙).
 
 | Grouped by type                    | Detailed view                      |
 | ---------------------------------- | ---------------------------------- |
 | ![](../art_station/screenshots/screenshot2.png) | ![](../art_station/screenshots/screenshot3.png) |
 
-Each cover shows its size and resolution. *Show each cover's file type next to its size* (⚙, off by default) adds the format: `3.2Mb PNG`.
+Each cover shows its size and resolution, and with *Show each cover's file type next to its size* (⚙) its format: `3.2Mb PNG`.
 
 ### Actions
 
 - **Set type**: tick one or more types; right-click a type to set only that one.
 - **Set comment**: Enter moves to the next cover's comment. With [Mammoth](../mammoth) installed, the comment field gets its 🦣 memory.
-- **Remove**: marks the cover for removal; on a single cover, the **✕** that shows at the image's bottom right while the mouse is over it does the same. It moves under the gallery, to *Marked for removal*, greyed on red with a **REMOVE** ribbon and its type struck through, until **Enter edit** removes it. **↺ keep**, top left, brings one back; select several there (drag with the right button, as anywhere) and **↺ Keep** brings them all back. A cover whose removal is already entered and open for votes stays in the gallery with a red dashed border and a **removal open · 6 days** chip, which opens the edit; it can't be marked again.
-- **Only this**: on a new cover, while there are others (after *Import all*, say), **✓ only this** in its top-left corner marks every other new cover for removal; the release's own covers stay. **↺ keep** brings one back.
+- **Remove**, or a cover's hover **✕**: the cover moves under the gallery to *Marked for removal*, with a **REMOVE** ribbon, until **Enter edit** removes it. **↺ keep** on one, or **↺ Keep** on a selection, brings it back. A cover whose removal is open for votes stays in the gallery, dashed red, with a **removal open · 6 days** chip that opens the edit.
+- **✓ only this** on a new cover marks every other new cover for removal; the release's own covers stay.
 - **Download** as a zip, [named by type](#file-names--types).
 - **Report** in HTML or Markdown: inline, captioned, or a table (position, file, resolution, size) that also serves as the archive's `README.md`.
 
@@ -435,11 +435,11 @@ Each cover shows its size and resolution. *Show each cover's file type next to i
 
 An Art Station download, added back as a zip, restores each cover's types and comment.
 
-The Cover Art Archive takes JPEG, PNG, GIF and PDF. A WebP, AVIF, BMP or TIFF is converted as it's added, from any source: to JPEG when it's lossy (WebP, AVIF), to PNG when it's lossless or transparent. With the file type shown (⚙), it reads `WEBP→JPEG`. TIFF converts only in browsers that can show it (Safari); elsewhere it's skipped with a message.
+The Cover Art Archive takes JPEG, PNG, GIF and PDF, so a WebP, AVIF, BMP or TIFF is converted as it's added: to JPEG when lossy, to PNG when lossless or transparent (`WEBP→JPEG` with the file type shown). TIFF converts only where the browser shows it (Safari); elsewhere it's skipped.
 
-The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). Right-click it to import from all of them; middle-click to import from all and keep only the best cover: the largest front (each source's first image, as sources give no types), then the smallest file, with the edit note saying Art Station chose it.
+The **URL (N)** panel has an import for each source the release links, plus any [registered providers](../art_station/DEVELOP.md#plugin-api). A middle-click imports from all and keeps the best cover: the largest front (each source's first image), then the smallest file.
 
-A URL can be a store's release page or an image. Art Station takes the largest version the store has, and the edit note names the page, the image, and the smaller one the store offered:
+A URL can be a store's release page or an image. Art Station takes the store's largest version; the edit note names the page, the image and the smaller one offered:
 
 | Store pages                                |                                                           |
 | ------------------------------------------ | --------------------------------------------------------- |
@@ -449,15 +449,15 @@ A URL can be a store's release page or an image. Art Station takes the largest v
 | VGMdb                                      | every scan, typed by its caption                          |
 | any other page                             | its preview image                                         |
 
-Links that open the add page with images to add, as Harmony's do, are imported the same way, with their types and comment.
+Links that open the add page with images, as Harmony's do, import with their types and comment.
 
 With the [Picker](../art_station/as_picker/README.md), clicking a copy in the search results sends it back to the gallery.
 
 ### Full-screen viewer
 
-← → move between covers, ↑ ↓ zoom (the level is remembered). When zoomed, the image follows the mouse (switch it off in ⚙ to drag instead). **P** runs a slideshow, **Enter** edits the comment, **Delete** marks the cover for removal. See [Shortcuts](#shortcuts-1).
+Its keys are in [Shortcuts](#shortcuts-1). A zoomed image follows the mouse, or drags with that off in ⚙.
 
-**Rotate** (↶ ↷ next to **Download**) turns the cover 90° at a time; repeat for 180°/270°. A cover you added but haven't submitted rotates in place. An existing, published cover can't be changed on the archive, so rotating it stages the rotated copy as a new cover — same type, comment and position — and marks the original for removal; on **Enter edit** that's an add plus a remove. PNGs rotate losslessly; JPEGs are re-saved at high quality.
+**↶ ↷** by **Download** turn the cover 90°. A new cover rotates in place; an existing one is staged as a rotated new copy with its type, comment and position, and the original is marked for removal. PNGs rotate losslessly, JPEGs are re-saved at high quality.
 
 ### File names ⇄ types
 
@@ -479,12 +479,12 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 
 **Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
 
-- Each operation shows the cover it acts on and its own progress bar; the bar at the top counts the whole batch, and while images upload, what's been sent and the upload rate.
-- The edit note starts folded to one line: its line count and first line. Click it to edit.
+- Each operation shows its cover and progress; the top bar counts the batch, with the upload rate while images upload.
+- The edit note starts folded to its first line; click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
-- With *Automatically repeat failures* on (the default), Art Station retries the failed operations by itself, up to 10 times or 10 minutes. A footer row shows the attempt and the countdown; **Close** stops it.
+- *Automatically repeat failures* (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
 
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
@@ -515,7 +515,7 @@ Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g
 
 Another userscript can add its own image source, shown as **Import from &lt;name&gt;** in the URL panel; how is in [DEVELOP.md](../art_station/DEVELOP.md#plugin-api).
 
-Discogs' full-size images, Amazon, VGMdb, Juno and 7digital check for bots: if an import says to open the page first, open the store page once in the same browser and import again. How each store is read is in [DEVELOP.md](../art_station/DEVELOP.md#sourcing-art-from-a-store).
+Discogs' full-size images, Amazon, VGMdb, Juno and 7digital check for bots: when an import asks, open the store page once in the same browser and import again. How each store is read is in [DEVELOP.md](../art_station/DEVELOP.md#sourcing-art-from-a-store).
 
 ---
 
