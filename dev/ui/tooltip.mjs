@@ -38,7 +38,7 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 5;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 6;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
@@ -70,9 +70,9 @@ const CSS = [
     '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}',
     '#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}',
     '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}',
-    // a key is bold accent text, no box (majkinetor picked B of six mocks)
+    // a key is bold grey text, no box (majkinetor picked B of six mocks, then "make keys gray too")
     '#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;',
-    'background:none;color:var(--mbu-accent-text,#5f3ec0);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
+    'background:none;color:var(--mbu-text-weak,#888);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
     '#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}',
     '#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}',
     '#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}',
