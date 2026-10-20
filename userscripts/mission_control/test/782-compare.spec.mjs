@@ -92,7 +92,9 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
 
   const cells = await page.locator('#mc-root .mc-tbl td[data-col="plat"]').allTextContents();
   check(cells.length === 5 && cells.every(c => /\+ \d:\d\d/.test(c)), `each track shows the length it gets (${JSON.stringify(cells)})`);
-  check(/≠ title/.test(cells[1]) && !/≠ title/.test(cells[0]), 'the second track\'s title differs ("Remix"), the first doesn\'t');
+  // the platforms give "(Remix)" where the release has "(remix)": only the capitals differ, which guess case settles
+  check(/≠ case/.test(cells[1]) && !/≠ (title|case)/.test(cells[0]), `the second track's title differs in case only ("Remix"), the first doesn't (${JSON.stringify(cells.slice(0, 2))})`);
+  check(!cells.some(c => /≠ title/.test(c)), 'no track is reported as another title');
   await page.locator('#mc-root .mc-tbl tbody tr[data-i="1"] td.ttl').click();
   const insp = await page.locator('#mc-root .mc-insp').textContent();
   check(/Platforms/.test(insp) && /Homes & Gardens \(Remix\)/.test(insp), 'the inspector shows the track\'s versions on the platforms');
@@ -165,6 +167,6 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   check(/Compared with/.test(await card.textContent()), 'Platform Check\'s card says the release was compared');
   check(await card.locator('.mc-line:has-text("Release event")').count() === 1 && await card.locator('.mc-line:has-text("Track lengths for")').count() === 1, 'the release event and the track lengths are rows of the Release section');
   const step = await page.locator('#mc-root .mc-step[data-step="fc"]').textContent();
-  check(/2 platforms read · 1 track title differs/.test(step), `the step says what it did (${step})`);
+  check(/2 platforms read · 1 in case only/.test(step), `the step says what it did (${step})`);
   await page.locator('#mc-root').screenshot({ path: 'dev/_782-compare.png' });
 });

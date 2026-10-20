@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 14:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 12:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1941,7 +1941,7 @@ Execute adds the links through [Falcon](../falcon/README.md), listing each with 
 | Track title, length | you take a platform's, or type your own                      | the row under the track                     |
 | Title               | the platforms give another                                   | shown only, never changed                   |
 
-Nothing the release has changes unless you take it. Tracks are compared only when the platforms have as many as the release. The Platforms column shows a length to add (*+ 4:01*) and *≠ title* when the platforms call the track something else (*✓* when they agree); either opens its versions under the row, the differing part marked. Click a title or length to take it, or type your own on the track's line (Enter keeps it, Esc reverts). **Aa** takes the title as [Guess case](../apollo_editor/README.md#guess-case) writes it; *the recording too* renames the recording as well; **↺** reverts the track. The column then shows what the track gets (*→ Title · → 5:02*).
+Nothing the release has changes unless you take it. Tracks are compared only when the platforms have as many as the release. The Platforms column shows a length to add (*+ 4:01*) *≠ title* when the platforms call the track something else, *≠ case* when only its capitals differ (*✓* when they agree); either opens its versions under the row, the differing part marked. Click a title or length to take it, or type your own on the track's line (Enter keeps it, Esc reverts). **Aa** takes the title as [Guess case](../apollo_editor/README.md#guess-case) writes it; *the recording too* renames the recording as well; **↺** reverts the track. The column then shows what the track gets (*→ Title · → 5:02*).
 
 Execute adds the release event, the track lengths and the titles and lengths you took with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md). A track that changed on MusicBrainz since you compared keeps what it has.
 

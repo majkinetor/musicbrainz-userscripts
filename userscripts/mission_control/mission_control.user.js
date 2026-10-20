@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.143151
+// @version      2026.10.20.123600
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -797,6 +797,7 @@ function mcStyle() {
         + '.mc-fxo{display:inline-flex;align-items:center;gap:4px;font:inherit;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;cursor:pointer;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn-border)}'
         + '.mc-fxgo{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;border-radius:8px;cursor:pointer;background:transparent;border:1px solid transparent}.mc-fxgo:hover,.mc-fxgo:focus-visible{background:var(--mbu-bg);border-color:var(--mbu-accent)}.mc-fxgo img{width:20px;height:20px;display:block}'
         + '.mc-fxo.same{color:var(--mbu-text-weak);background:transparent;border-color:var(--mbu-border)}'
+        + '.mc-fxo.case{color:var(--mbu-info);background:var(--mbu-info-bg);border-color:var(--mbu-border)}'
         // #782: the lines under a track are rows of the Tracks table, each value in its column: no box, no background;
         // a box's or a taken value's text starts where the track's own does (padding and border offset by the margin)
         + '.mc-tbl tr.mc-pfr{cursor:default}.mc-tbl tr.mc-pfr>td,.mc-tbl tr.mc-pfr:hover>td{background:none;border-bottom:none;padding-top:2px;padding-bottom:2px;white-space:normal}'
@@ -1243,11 +1244,16 @@ const pfGuessMode = () => mbuGuessCase.modeFor(rel && rel.language);
 function pfGuess(title) {   // the language, not its mode: a Cyrillic title gets Sentence whatever it is
     try { return mbuGuessCase(title || '', { entity: 'track', language: (rel && rel.language) || null }); } catch (e) { Log.cat('UI').warn('guess case failed on "' + title + '": ' + e.message); return title; }
 }
+// a title the platforms give that differs from the track's only in its capitals: a matter of guess case, not another title
+function pfCaseOnly(x) { const t = rel.tracks[pfIndex(x)]; return !!(x.differs && t && x.title.toLowerCase() === String(t.title || '').toLowerCase()); }
 // #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
-    const open = fxOpen.has(x.key), d = x.differs;
-    return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + esc((d ? 'The platforms give “' + x.title + '” (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\nClick: ' + (open ? 'hide' : 'show') + ' what each platform gives\n\nA click on a title or a length there takes it in.') + '">'
-        + '<span class="car">▸</span>' + (d ? '≠ title' : '✓') + '</button>';
+    const open = fxOpen.has(x.key), d = x.differs, cs = pfCaseOnly(x);
+    const lead = !d ? 'The platforms agree with the title (' + x.titleFrom + ')'
+        : cs ? 'Only the capitals differ: the platforms give “' + x.title + '” (' + x.titleFrom + ')\nAa on the track\'s title guesses its case'
+        : 'The platforms give “' + x.title + '” (' + x.titleFrom + ')';
+    return '<button type="button" class="mc-fxo' + (!d ? ' same' : cs ? ' case' : '') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + esc(lead + '\nClick: ' + (open ? 'hide' : 'show') + ' what each platform gives\n\nA click on a title or a length there takes it in.') + '">'
+        + '<span class="car">▸</span>' + (!d ? '✓' : cs ? '≠ case' : '≠ title') + '</button>';
 }
 // the lines under a track, as rows of the Tracks table: the track's own (what it gets, typed in), then one per version
 // (the platforms giving the same title, length and ISRC), each value in its column, the platforms under Platforms
@@ -4558,8 +4564,11 @@ function cmpFinish() {
     CMP.cons = cons;
     Log.cat('Platforms').ok('platforms: ' + read + ' · barcode ' + (cons.barcode || '—') + ' · labels ' + (cons.labels.map(l => l.name + (l.catno ? ' ' + l.catno : '')).join(', ') || '—') + ' · event ' + (cons.event ? JSON.stringify(cons.event.date) + ' ' + (cons.event.country || '') : '—')
         + ' · ' + lengths.length + ' length(s) · ' + (CMP.isrcs || []).filter(Boolean).length + ' ISRC(s) · ' + findings.filter(x => x.differs).length + ' title(s) differ' + (CMP.title ? ' · release title "' + CMP.title.val + '"' : ''));
-    const differ = findings.filter(x => x.differs).length;
-    cmpDone(read + (aligned ? differ ? ' · ' + differ + ' track title' + (differ === 1 ? ' differs' : 's differ') : '' : ' · ' + t.n + ' tracks there, not compared'), findings);
+    // a title that differs only in its capitals is counted apart: guess case settles it, not another title
+    const caseOnly = findings.filter(pfCaseOnly).length;
+    const differ = findings.filter(x => x.differs).length - caseOnly;
+    const said = [differ && differ + ' track title' + (differ === 1 ? ' differs' : 's differ'), caseOnly && caseOnly + ' in case only'].filter(Boolean).join(', ');
+    cmpDone(read + (aligned ? said ? ' · ' + said : '' : ' · ' + t.n + ' tracks there, not compared'), findings);
     // what the release lacks, offered by those who add it
     if (found.pc && !providerOff('pc')) probeOne('pc');
     if (CMP.isrcs && found.is && !providerOff('is')) probeOne('is');
