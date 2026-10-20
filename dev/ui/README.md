@@ -54,7 +54,9 @@ Every tooltip is `mbuTip` (#793), never the browser's `title` ([Standard 14](../
 
 The text form reads structure out of plain text, so the strings stay readable in the source:
 
-- a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row. A mouse action is drawn: its modifiers as keys, then a mouse with its button filled in (×2 for a double click, `drag`, ↕ for the wheel). Any other key is a chip with its name. Rows with a note between them stay in one grid, so their labels line up, the note in the text column under the row before it;
+- a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row. A mouse action is drawn: its modifiers as keys, then a mouse with its button filled in (×2 for a double click, `drag`, ↕ for the wheel). Any other key is a chip with its name; Ctrl, Alt, Shift and Cmd are drawn ⌃ ⌥ ⇧ ⌘, there and in a bracketed shortcut, with the words kept for a screen reader. Rows with a note between them stay in one grid, so their labels line up, the note in the text column under the row before it;
+- a field that takes an MBID says so in a `Paste: an MBID, or its MusicBrainz URL, …` row;
+- a level row `{#2f6fd6} Exact: …` has a dot in that colour; `{#… on}` marks the chosen level and `{#… off}` dims one. A cutoff's tip is its levels' table: the chosen one marked, the ones it leaves out dimmed;
 - two or more lines `On: …`, `Off: …` (up to three words before the colon) are an option list;
 - ` · ` before such a label starts a new line, and so does `. ` between two of them;
 - the old shapes read the same way: `… — click to X` and a closing `(right-click: X)` become rows, `Ctrl-click` is `Ctrl+click`;

@@ -457,7 +457,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         function buildCutoffChip() {
             const wrap = document.createElement('span');
             wrap.className = 'ch-cutoff';
-            wrap.dataset.tip = 'The lowest match confidence picked automatically\nA match below it is offered first on its row, not picked.';
             wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--mbu-text);flex-shrink:0;';
             const lbl = document.createElement('b');
             lbl.textContent = 'Cutoff';
@@ -466,6 +465,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             chip.className = 'ch-cutoff-chip';
             chip.style.cssText = 'display:inline-flex;align-items:center;gap:0.35rem;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 10px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font:inherit;';
             const paint = () => {
+                // the tip is the levels' table, the chosen one marked and the ones below it dimmed
+                wrap.dataset.tip = 'The lowest match confidence picked automatically\n'
+                    + MATCH_LEVELS.map((lv, i) => `{${lv.color}${i === cutoff ? ' on' : i > cutoff ? ' off' : ''}} ${lv.label}: ${lv.hint}`).join('\n')
+                    + '\nA match below it is offered first on its row, not picked.';
                 chip.replaceChildren(makeLevelDot(cutoff), document.createTextNode(MATCH_LEVELS[cutoff].label));
                 const caret = document.createElement('span');
                 caret.textContent = '▾';
@@ -1003,6 +1006,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             searchRow.style.cssText = 'display:flex;gap:0.3rem;';
             const searchInput = noPasswordManagers(document.createElement('input'));
             searchInput.value = displayName;
+            searchInput.dataset.tip = 'Search MusicBrainz by name\nPaste: an MBID, or its MusicBrainz URL, picks that entity at once';
             searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid var(--mbu-border);border-radius:3px;';
             rowSearchInputs.set(_entityKey, searchInput);   // #139: header "N unresolved" jumps here
             const searchBtn = document.createElement('button');
