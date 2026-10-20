@@ -17,6 +17,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
+- **[AI scan](#ai-scan)** reads a cover's printed credits for Group Therapy's Text parser.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
 
 ## Gallery
@@ -92,6 +93,15 @@ When an added image has no type, it's guessed from its file name (switch it off 
 Matching is by whole word and order-aware: `back cover` is **Back**, and *Super Disco Pirata* is no type at all.
 
 Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g. `09 front,sticker Front cover with the sticker.jpg`.
+
+## AI scan
+
+**✦** on a cover sends it to an AI chat to read its printed credits: ChatGPT, Claude, Gemini, Perplexity, Grok or Copilot. The chat opens with the instructions, the release and its tracklist, and the image is on the clipboard: press **Ctrl+V**, then **Enter**. Right-click **✦** for the last AI used; **Copy prompt** copies only the instructions, for any other AI.
+
+The answer is the credits as printed, each line with its [pattern](../group_therapy/README.md#patterns-in-the-text): paste it into [Group Therapy's Text parser](../group_therapy/README.md#text-parser) on the release's relationship editor and compare it with the cover there.
+
+> [!NOTE]
+> Gemini takes no instructions in its address, so they go on the clipboard with the image. Event art and PDFs have no **✦**.
 
 ## Applying changes
 

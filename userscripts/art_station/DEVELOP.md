@@ -63,6 +63,12 @@ window.ArtStation?.registerProvider({
 - Each returned item is `{ types?, comment? }` plus one image: **`url`** or **`dataUrl`** (preferred: Art Station fetches it itself), or **`blob`** with its **`source`** URL.
 - If your manager isolates `window` between scripts, dispatch `artstation:register-provider` with the provider as `detail` instead.
 
+## AI scan
+
+The ✦ menu prepares the image and the prompt as it opens, so a provider's click only has to write the clipboard and open the tab, inside the click's activation. The image goes on the clipboard as PNG (the one image type every browser's clipboard takes), at most 2400 px on its long side; the prompt goes in the chat's `?q=`, or with the image on the clipboard for Gemini, which has none. The release's title, artist credit and tracklist come from one ws/2 `release?inc=recordings+artist-credits` read per page, through the gate.
+
+The prompt's rules (`aiScanPrompt`) restate [Group Therapy's Text parser](../group_therapy/README.md#text-parser) format, `{{…}}` patterns included: a change to that format changes them too.
+
 ## Zips
 
 A zip is unpacked in the browser. Stored and deflated entries are read; an encrypted or ZIP64 archive is skipped with a message.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.20.120000
+// @version      2026.10.20.131711
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4816,6 +4816,19 @@
     '|distributed\\s+by|marketed\\s+by' +
     '|℗|\\(p\\)|phonographic\\s+copyright' +
     '|©|\\(c\\)|copyright)';
+  // #796 a pattern written into the pasted text itself, in {{…}} (never seen in liner
+  // notes, and no pattern uses braces): a line that is only `{{E - R}}` sets the pattern
+  // for the lines after it (`{{}}` goes back to the parser's own), and `{{…}}` at a
+  // line's end sets it for that line. So an AI, or a user, can hand over credits that
+  // need several patterns as one paste.
+  function txpDirective(raw) {
+    const s = String(raw || '');
+    let m = /^\s*\{\{([^{}]*)\}\}\s*$/.exec(s);
+    if (m) return { block: m[1].trim() };
+    m = /^(.*?)\s*\{\{([^{}]*)\}\}\s*$/.exec(s);
+    if (m) return { text: m[1], inline: m[2].trim() };
+    return null;
+  }
   function txpParseCopyrightLine(line) {
     const s = String(line).trim();
     const types = [];
@@ -5275,9 +5288,14 @@
         rec.trackTargets = det.targets;
         return rec;
       };
+      let blockPat = '';   // #796 the last {{…}} line's pattern
       lines.forEach((ln, li) => {
         if (!ln.raw.trim()) return;   // blank lines are silently skipped, not even shown unmatched
-        splitPairs(ln.raw).forEach((piece, pi) => {
+        const dir = txpDirective(ln.raw);
+        if (dir && 'block' in dir) { blockPat = dir.block; return; }   // a directive line makes no row
+        const text = dir ? dir.text : ln.raw;
+        const textPat = (dir && dir.inline) || blockPat;   // the pattern the text itself asks for
+        splitPairs(text).forEach((piece, pi) => {
           const cr = txpParseCopyrightLine(piece);
           if (cr) {
             // #524: one row per (type × holder) combination — "marketed
@@ -5286,16 +5304,16 @@
             // holders = 3 rows, all sharing the same underlying notice.
             let si = 0;
             cr.types.forEach(kind => cr.holders.forEach(holder => out.push({
-              li, pi, si: si++, raw: ln.raw,
+              li, pi, si: si++, raw: ln.raw, textPat,
               role: TXP_CR_LABELS[kind], crKind: kind, entity: holder, year: cr.year, matched: true,
             })));
             return;
           }
-          const pat = (ln.override || pattern || '').trim();
+          const pat = (ln.override || textPat || pattern || '').trim();
           const compiled = pat ? compiledFor(pat) : null;
           const expanded = compiled ? txpExpand(compiled, piece) : null;
-          if (!expanded) { out.push({ li, pi, si: 0, raw: ln.raw, role: null, entity: null, matched: false }); return; }
-          expanded.forEach((row, si) => out.push(attachTracks({ li, pi, si, raw: ln.raw, role: row.role || '', entity: row.entity || '', matched: true })));
+          if (!expanded) { out.push({ li, pi, si: 0, raw: ln.raw, textPat, role: null, entity: null, matched: false }); return; }
+          expanded.forEach((row, si) => out.push(attachTracks({ li, pi, si, raw: ln.raw, textPat, role: row.role || '', entity: row.entity || '', matched: true })));
         });
       });
       return out;
@@ -5738,8 +5756,8 @@
         if (r.pi === 0 && r.si === 0) {
           const span = spanByLine.get(r.li);
           const ovTd = el('td'); if (span > 1) ovTd.rowSpan = span;
-          const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = pattern; ov.value = lines[r.li].override || '';
-          ov.dataset.tip = 'Another pattern for this line only'; ov.dataset.fkey = 'ov:' + r.li;
+          const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = r.textPat || pattern; ov.value = lines[r.li].override || '';
+          ov.dataset.tip = r.textPat ? 'Another pattern for this line only\nThe text sets {{' + r.textPat + '}} for it' : 'Another pattern for this line only'; ov.dataset.fkey = 'ov:' + r.li;
           ov.addEventListener('input', () => { lines[r.li].override = ov.value; render(); saveState(); });
           ovTd.appendChild(ov); tr.appendChild(ovTd);
 
@@ -6544,7 +6562,7 @@
       parsedRows().forEach(r => {
         if (seen.has(r.li)) return;
         const ln = lines[r.li];
-        if (!ln || (ln.override || '').trim()) return;   // already pinned to something
+        if (!ln || (ln.override || '').trim() || r.textPat) return;   // already pinned to something, by hand or by the text's {{…}}
         if (!r.matched) return;                          // nothing matched, nothing to freeze
         seen.add(r.li);
         ln.override = pattern;

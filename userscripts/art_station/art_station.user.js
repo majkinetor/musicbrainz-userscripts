@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.120000
+// @version      2026.10.20.131711
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -631,6 +631,48 @@
     { name: 'TinEye',      u: url => `https://tineye.com/search?url=${encodeURIComponent(url)}&sort=size&order=desc` },   // biggest copy first
     { name: 'Bing',        u: url => `https://www.bing.com/images/searchbyimage?cbir=sbi&imgurl=${encodeURIComponent(url)}` },
   ];
+
+  // #796 AI scan: a cover's printed credits, transcribed by an AI chat into lines Group
+  // Therapy's Text parser reads. No chat takes an image by URL, so the image goes on the
+  // clipboard and the prompt in the chat's ?q= (Gemini has none: the prompt rides the
+  // clipboard with the image). The rules below must follow the Text parser's format
+  // (group_therapy README → Text parser); change them together.
+  const AI_PROVIDERS = [
+    { name: 'ChatGPT',    u: q => `https://chatgpt.com/?q=${encodeURIComponent(q)}` },
+    { name: 'Claude',     u: q => `https://claude.ai/new?q=${encodeURIComponent(q)}` },
+    { name: 'Gemini',     u: null, home: 'https://gemini.google.com/app' },
+    { name: 'Perplexity', u: q => `https://www.perplexity.ai/search?q=${encodeURIComponent(q)}` },
+    { name: 'Grok',       u: q => `https://grok.com/?q=${encodeURIComponent(q)}` },
+    { name: 'Copilot',    u: q => `https://copilot.microsoft.com/?q=${encodeURIComponent(q)}` },
+  ];
+  const AI_PARSER_DOC = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/group_therapy/README.md#text-parser';
+  function aiScanPrompt(it, rel) {
+    const what = it.types && it.types.length ? it.types.join(', ') : 'artwork';
+    const url = searchUrlFor(it);
+    const head = [
+      `Transcribe the credits printed on the attached image into lines for a credit parser.`,
+      `The image is the ${what} of "${rel.title}"${rel.artist ? ' by ' + rel.artist : ''}, ${rel.url}${url ? '; image: ' + url : ''}.`,
+      `If no image is attached yet, answer only "Paste the image" and wait for it.`,
+    ];
+    const rules = [
+      `Rules:`,
+      `- One credit per line. Keep each credit as printed: its wording, order and shape, so it can be compared with the image.`,
+      `- Each line is read by a pattern: R is the role, E the name (person, band, company or studio), and the text between them is literal. "R: E" reads "Mastering: Nick Robbins"; "E - R" reads "Nick Robbins - Mastering"; "R by E" reads "Mastered by Nick Robbins".`,
+      `- Several names or roles in one field: [,] splits on commas, [, and] also on "and", [&] on " & ". "E - R[,]" reads "Cameron Allen - Flute, Tenor Saxophone"; "R: E[&]" reads "Design: Ann Lee & Bo Diaz".`,
+      `- The default pattern is "R: E". A line in another shape ends with its pattern in double braces: "Nick Robbins - Mastering {{E - R}}". A line of only {{pattern}} sets it for the lines below, until the next one; {{}} goes back to "R: E".`,
+      `- Rewrite only what no pattern can read: a heading followed by names becomes one line per role ("Musicians:" then "Ann Lee (guitar)" becomes "Ann Lee - Guitar {{E - R}}").`,
+      `- Several credits on one printed line may be separated by ";" when they share one pattern.`,
+      `- Instruments and vocals are roles: "Flute: Cameron Allen", "Backing Vocals: Bo Diaz".`,
+      `- A credit for some tracks only keeps a clause after the role or the name: "Lyricist: Mimmo Epifani (tracks 1-3, 5-11)", with the track positions below (A1, B2 on vinyl). When the credits are printed under each track, write each one with its track clause.`,
+      `- Copyright, phonographic copyright, licence, distribution and marketing lines stay as printed: "℗ 2012 Shady/Aftermath", "Distributed by Universal". They need no pattern.`,
+      `- Names and roles exactly as printed: don't translate, correct or guess. Mark unreadable text [?].`,
+      `- Leave out thanks, lyrics, track titles and anything that isn't a credit.`,
+      `- Answer with one code block and nothing else.`,
+    ];
+    const tl = rel.tracks && rel.tracks.length
+      ? ['', `Tracks (position. title):`, ...rel.tracks.map(t => `${t.pos}. ${t.title}`)] : [];
+    return [...head, '', ...rules, ...tl, '', `Format reference: ${AI_PARSER_DOC}`].join('\n');
+  }
 
   // canonical MB art types per entity, in a sensible display order; "(none)" is virtual.
   // Event art has its own vocabulary (Poster/Flyer/Setlist/…) — wholly distinct from cover art.
@@ -1450,8 +1492,11 @@
     // sourced from a URL (a purely local dropped file has no URL to search by).
     const search = searchUrlFor(it)
       ? `<button class="as-fsearch" data-tip="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
+    // #796 AI scan of the printed credits — release art only, and an image (not a PDF)
+    const ai = !IS_EVENT && !it._pdf
+      ? `<button class="as-fai" data-tip="Scan the credits with an AI\nIts answer pastes into Group Therapy's Text parser\nRight-click: the last AI used">✦</button>` : '';
     return `<div class="as-foot">
-      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
+      <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${ai}${dim}</div>
       ${typeRow}
     </div>`;
   }
@@ -1502,6 +1547,14 @@
   const focusCmtEnd = inp => { if (!inp) return; inp.focus(); const n = inp.value.length; try { inp.setSelectionRange(n, n); } catch (e) {} };
   function wireComments() {
     root.querySelectorAll('.as-fsearch').forEach(b => b.onclick = e => { e.stopPropagation(); openImageSearchPop(b, byId(cardId(b))); });
+    root.querySelectorAll('.as-fai').forEach(b => {
+      b.onclick = e => { e.stopPropagation(); openAiScanPop(b, byId(cardId(b))); };
+      b.oncontextmenu = e => {
+        e.preventDefault(); e.stopPropagation();
+        const last = AI_PROVIDERS.find(p => p.name === gmLoad('aiScanLast'));
+        if (last) aiScan(byId(cardId(b)), last); else openAiScanPop(b, byId(cardId(b)));
+      };
+    });
     root.querySelectorAll('.as-pencil, .as-cmt-text').forEach(el => el.onclick = e => {
       e.stopPropagation(); const it = byId(cardId(el)); if (!it) return;
       it._editcmt = true; render();
@@ -5111,6 +5164,86 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     setTimeout(() => document.addEventListener('mousedown', off), 0);
   }
 
+  // #796 the release's title, artist and tracklist for the AI scan's prompt: one ws/2
+  // read per page, on the first scan (the cover-art page shows no tracklist)
+  let _aiRel = null;
+  function aiRelease() {
+    if (_aiRel) return _aiRel;
+    const ri = releaseInfo();
+    const base = { title: ri.title, artist: ri.artists.map(a => a.name).join(', '), url: ri.url, tracks: [] };
+    _aiRel = (async () => {
+      try {
+        const r = await mbnFetch(`${location.origin}/ws/2/release/${MBID}?inc=recordings+artist-credits&fmt=json`, { headers: { Accept: 'application/json' } },
+          { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
+        if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'no answer');
+        const j = await r.json();
+        const media = j.media || [];
+        const ac = (j['artist-credit'] || []).map(c => (c.name || (c.artist && c.artist.name) || '') + (c.joinphrase || '')).join('');
+        return { ...base, title: j.title || base.title, artist: ac || base.artist,
+          tracks: media.flatMap((m, mi) => (m.tracks || []).map(t => ({ pos: (media.length > 1 && /^\d+$/.test(t.number) ? (mi + 1) + '.' : '') + t.number, title: t.title }))) };
+      } catch (e) { asLog.warn(`AI scan: no tracklist (${e.message})`); _aiRel = null; return base; }
+    })();
+    return _aiRel;
+  }
+  // the image as PNG (all a clipboard takes), at most 2400 px on its long side: enough
+  // for small print, and within what the chats accept
+  async function aiScanImage(it) {
+    const src = (it._new ? it._file : (it._img || imgUrl(it.id))).replace(/^http:\/\//i, 'https://');
+    const blob = (it._new && it._fileObj) ? it._fileObj
+      : await fetch(src).then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status))).catch(() => gmFetch(src));
+    const bmp = await createImageBitmap(blob);
+    const k = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    try { bmp.close(); } catch (e) {}
+    return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('no PNG')), 'image/png'));
+  }
+  const _aiPrep = new Map();   // cover id -> Promise<{ png, prompt }>, started as the menu opens
+  function aiScanPrep(it) {
+    if (!_aiPrep.has(it.id)) _aiPrep.set(it.id, Promise.all([aiScanImage(it), aiRelease()])
+      .then(([png, rel]) => ({ png, prompt: aiScanPrompt(it, rel) }))
+      .catch(e => { _aiPrep.delete(it.id); throw e; }));
+    return _aiPrep.get(it.id);
+  }
+  // Clipboard first, while this page has the focus, then the chat's tab (a click's
+  // activation outlasts the short wait for the prepared image)
+  async function aiScan(it, prov) {
+    if (!it) return;
+    let prep;
+    try { prep = await aiScanPrep(it); }
+    catch (e) { asLog.warn(`AI scan: image not read (${e.message})`); toast('AI scan: the image could not be read'); return; }
+    const items = { 'image/png': prep.png };
+    if (!prov.u) items['text/plain'] = new Blob([prep.prompt], { type: 'text/plain' });
+    try { await navigator.clipboard.write([new ClipboardItem(items)]); }
+    catch (e) { asLog.warn(`AI scan: clipboard refused (${e.message})`); toast('AI scan: the browser refused the clipboard'); return; }
+    gmSave('aiScanLast', prov.name);
+    asLog.info(`AI scan: ${prov.name} ← ${it.types && it.types.length ? it.types.join('/') : ITEM} ${it.id}`);
+    window.open(prov.u ? prov.u(prep.prompt) : prov.home, '_blank', 'noopener,noreferrer');
+    toast(prov.u ? 'Image copied: press Ctrl+V in the chat, then Enter' : 'Image and prompt copied: press Ctrl+V in the chat, then Enter', 6000);
+  }
+  function openAiScanPop(btn, it) {
+    document.querySelectorAll('.as-pop').forEach(p => p.remove());
+    if (!it) return;
+    aiScanPrep(it).catch(() => {});   // the image and the tracklist load while a provider is picked
+    const last = gmLoad('aiScanLast');
+    const order = AI_PROVIDERS.slice().sort((a, b) => (b.name === last) - (a.name === last));
+    const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop as-ai-pop';
+    pop.innerHTML = `<div class="as-pop-h">Scan the credits with<button class="as-search-all as-ai-copy" type="button" data-tip="Copy only the prompt\nFor another AI, or to paste it by hand">Copy prompt</button></div>`
+      + order.map(p => `<button class="as-btn as-search-eng${p.name === last ? ' as-ai-last' : ''}" data-n="${esc(p.name)}">${esc(p.name)}</button>`).join('')
+      + `<div class="as-search-foot">Paste the answer into <a href="${AI_PARSER_DOC}" target="_blank" rel="noopener">Group Therapy's Text parser</a> on the relationship editor.</div>`;
+    document.body.appendChild(pop);
+    placePop(pop, btn.getBoundingClientRect());
+    pop.querySelectorAll('.as-search-eng').forEach(b => b.onclick = () => { pop.remove(); aiScan(it, AI_PROVIDERS.find(p => p.name === b.dataset.n)); });
+    pop.querySelector('.as-ai-copy').onclick = async () => {
+      pop.remove();
+      try { const prep = await aiScanPrep(it); await navigator.clipboard.writeText(prep.prompt); toast('Prompt copied'); }
+      catch (e) { toast('AI scan: the prompt could not be copied'); }
+    };
+    const off = e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener('mousedown', off); } };
+    setTimeout(() => document.addEventListener('mousedown', off), 0);
+  }
+
   function openBulkCommentPop(btn) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
@@ -7083,6 +7216,10 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-fsearch{display:inline-flex;align-items:center;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0 2px;flex:none;line-height:0;opacity:0;transition:opacity .1s}
   .as-card:hover .as-fsearch{opacity:.85}
   .as-fsearch:hover{opacity:1;color:var(--mbu-accent-text)}
+  .as-fai{display:inline-flex;align-items:center;color:var(--mbu-accent-text);background:none;border:none;cursor:pointer;padding:0 2px;flex:none;font-size:13px;line-height:1;opacity:0;transition:opacity .1s}
+  .as-card:hover .as-fai{opacity:.85}
+  .as-fai:hover{opacity:1}
+  .as-ai-pop .as-ai-last{font-weight:600}
   /* selection + keyboard cursor */
   /* Selection used to be a 3px outline at offset -1px sitting ON TOP of the
      card's own 1px border: two rounded edges of different radii, a hairline of

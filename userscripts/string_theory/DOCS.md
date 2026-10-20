@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 14:37 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 13:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -396,6 +396,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
 - **[File names ⇄ types](#file-names--types)**: a downloaded archive re-adds with its types and comments.
+- **[AI scan](#ai-scan)** reads a cover's printed credits for Group Therapy's Text parser.
 - **[Applying changes](#applying-changes)** as parallel edits, with automatic retries.
 
 ### Gallery
@@ -471,6 +472,15 @@ When an added image has no type, it's guessed from its file name (switch it off 
 Matching is by whole word and order-aware: `back cover` is **Back**, and *Super Disco Pirata* is no type at all.
 
 Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g. `09 front,sticker Front cover with the sticker.jpg`.
+
+### AI scan
+
+**✦** on a cover sends it to an AI chat to read its printed credits: ChatGPT, Claude, Gemini, Perplexity, Grok or Copilot. The chat opens with the instructions, the release and its tracklist, and the image is on the clipboard: press **Ctrl+V**, then **Enter**. Right-click **✦** for the last AI used; **Copy prompt** copies only the instructions, for any other AI.
+
+The answer is the credits as printed, each line with its [pattern](../group_therapy/README.md#patterns-in-the-text): paste it into [Group Therapy's Text parser](../group_therapy/README.md#text-parser) on the release's relationship editor and compare it with the cover there.
+
+> [!NOTE]
+> Gemini takes no instructions in its address, so they go on the clipboard with the image. Event art and PDFs have no **✦**.
 
 ### Applying changes
 
@@ -1429,7 +1439,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 | `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
 | `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
-`R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line.
+`R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
 
 <img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
 
@@ -1449,6 +1459,18 @@ The text and the resolutions last until the page reloads.
 
 > [!NOTE]
 > Only single-line credits are parsed; grouped multi-line blocks are not.
+
+#### Patterns in the text
+
+A pattern in `{{…}}` in the pasted text lets credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them.
+
+| Line                                 | Pattern                    |
+| ------------------------------------ | -------------------------- |
+| `{{E - R[,]}}`                       | for the lines below it     |
+| `{{}}`                               | the parser's own, below it |
+| `Nick Robbins - Mastering {{E - R}}` | for this line              |
+
+A pattern typed in a line's own box still wins, and **🔒 Freeze matched** leaves these lines alone.
 
 #### Track selector
 

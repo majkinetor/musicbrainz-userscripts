@@ -107,7 +107,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 | `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
 | `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
-`R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line.
+`R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
 
 <img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
 
@@ -127,6 +127,18 @@ The text and the resolutions last until the page reloads.
 
 > [!NOTE]
 > Only single-line credits are parsed; grouped multi-line blocks are not.
+
+### Patterns in the text
+
+A pattern in `{{…}}` in the pasted text lets credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them.
+
+| Line                                 | Pattern                    |
+| ------------------------------------ | -------------------------- |
+| `{{E - R[,]}}`                       | for the lines below it     |
+| `{{}}`                               | the parser's own, below it |
+| `Nick Robbins - Mastering {{E - R}}` | for this line              |
+
+A pattern typed in a line's own box still wins, and **🔒 Freeze matched** leaves these lines alone.
 
 ### Track selector
 
