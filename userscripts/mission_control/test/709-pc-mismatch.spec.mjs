@@ -1,6 +1,6 @@
 // #709: a link that is another release must say so. On Lou Rawls's "Stormy Monday" (Digital
 // Media, 13 tracks) YouTube Music's 10-track album sat in the empty-barcode lane, withheld only for
-// "barcode not confirmed", which a lane doesn't repeat: nothing said 10 tracks, so it was taken in by
+// "barcode not confirmed", which the lane then didn't repeat: nothing said 10 tracks, so it was taken in by
 // hand. Discogs's vinyl was the same. PC now sends the track count and format, and its mismatch
 // reasons lead its why: MC shows them in amber on the row, marks the lane icon, and take all in
 // leaves those links out. A stand-in PC answers the probe with the platforms of that release.
@@ -51,13 +51,13 @@ test('#709: a track count or format that is not the release\'s shows, and take a
   await lane.locator('.mc-ti[data-key="ytmusic"]').click();
   check((await page.evaluate(() => window.__mcTest.picked().pc)).sort().join() === 'amazonmusic,ytmusic', 'a marked link is still taken in by hand');
 
-  // opened into rows: the mismatch in amber, the barcode reason left to the lane
+  // opened into rows: the mismatch in amber; in the lane without a barcode the barcode reason stays, it is why
   await lane.locator('.mc-bc').click();
   const rows = await card.locator('.mc-line.mc-in').evaluateAll(rs => rs.map(r => ({ t: r.querySelector('.t').textContent, s: (r.querySelector('div.s') || {}).textContent || '', amber: [...r.querySelectorAll('.mc-off')].map(b => b.textContent) })));
   console.log(JSON.stringify(rows));
   const by = k => rows.find(r => r.t === k) || {};
-  check(by('YouTube Music').s === '10 tracks, the release has 13' && by('YouTube Music').amber.length === 1, 'YouTube Music\'s row says 10 tracks, in amber');
+  check(by('YouTube Music').s === '10 tracks, the release has 13 · barcode not confirmed' && by('YouTube Music').amber.length === 1, `YouTube Music's row says 10 tracks, in amber, and why it is withheld (${by('YouTube Music').s})`);
   check(by('Discogs').amber.join(' | ') === '10 tracks, the release has 13 | Vinyl, the release is Digital Media', 'Discogs\'s says 10 tracks and vinyl');
-  check(by('Amazon Music').s === '' && rows.every(r => !r.s.includes('barcode')), 'no barcode reason in a lane, and nothing on the matching one');
+  check(by('Amazon Music').s === 'barcode not confirmed', `Amazon Music's row says why it is withheld (${by('Amazon Music').s})`);
   await card.screenshot({ path: 'test-results/mc-709-pc-mismatch.png' });
 });
