@@ -30,14 +30,14 @@ test.beforeEach(async ({ page }) => {
 
 test('the text form: key rows, option rows, the lead, a shortcut', { tag: ['@unit'] }, async () => {
   const keys = mbuTipText('Use it as if it were pasted · right-click: add it in the background · Ctrl+click: copy it');
-  check(/mbu-tip-lead">Use it as if it were pasted</.test(keys) && (keys.match(/class="mbu-tip-mouse"/g) || []).length === 2 && /aria-hidden="true">⌃<\/kbd><svg/.test(keys), `" · Right-click: …" become key rows under a lead (${keys})`);
+  check(/mbu-tip-lead">Use it as if it were pasted</.test(keys) && (keys.match(/class="mbu-tip-mouse"/g) || []).length === 2 && /aria-hidden="true">Ctrl<\/kbd><svg/.test(keys), `" · Right-click: …" become key rows under a lead (${keys})`);
   const opts = mbuTipText('Auto: fetch during Probe · Ask: fetch on a button · Off: skip');
   check((opts.match(/class="mbu-tip-o">/g) || []).length === 3, 'two or more "Label: …" lines are an option list, the first line too');
   check(!/mbu-tip-o|mbu-tip-k/.test(mbuTipText('Release group: when one release group fits, pick it')), 'a lone "Label: …" sentence stays a sentence');
   const sc = mbuTipText('Falcon (Ctrl+Alt+F)');
   // majkinetor: "replace ctrl shift alt with symbols too"
-  check(/<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">Ctrl\+Alt\+F<\/span><span aria-hidden="true">⌃⌥F<\/span><\/kbd>/.test(sc), `a shortcut in brackets is one key, its modifiers as symbols (${sc})`);
-  check(/⌃V</.test(mbuTipText('Paste it\nCtrl+V: paste a barcode')), 'a Ctrl+V key row too');
+  check(/<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">Ctrl\+Alt\+F<\/span><span aria-hidden="true">Ctrl Alt F<\/span><\/kbd>/.test(sc), `a shortcut in brackets is one key, its Ctrl and Alt as words (majkinetor: "whats ⌥") (${sc})`);
+  check(/Ctrl V</.test(mbuTipText('Paste it\nCtrl+V: paste a barcode')), 'a Ctrl+V key row too');
   // majkinetor: "add cutoff table with meanings"
   const lv = mbuTipText('The cutoff\n{#2f6fd6} Exact: same\n{#86c686 on} Strong: close\n{#ffb74d off} Weak: a guess\n{red;x} Bad: not a colour');
   check(/<i style="background:#2f6fd6"><\/i>Exact<\/span><span class="mbu-tip-dt">same/.test(lv) && /mbu-tip-dl mbu-tip-on/.test(lv) && /mbu-tip-dt mbu-tip-off">a guess/.test(lv), `level rows: a dot, the chosen one marked, the ones past it dimmed (${lv})`);
@@ -71,7 +71,7 @@ test('a page that stops mouseover at the window still gets its tip; a lone key l
   const k = l => mbuTipText(l + ': x');
   check(/M6 1C3\.2/.test(k('Click')) && !/<kbd/.test(k('Click')), 'Click: the left button, no key');
   check(/mbu-tip-kx" aria-hidden="true">×2/.test(k('Double-click')), 'Double-click: ×2');
-  check(/aria-hidden="true">⌃⇧<\/kbd><svg/.test(k('Ctrl+Shift+click')), 'Ctrl+Shift+click: ⌃⇧ and the mouse');
+  check(/aria-hidden="true">Ctrl ⇧<\/kbd><svg/.test(k('Ctrl+Shift+click')), 'Ctrl+Shift+click: Ctrl ⇧ and the mouse');
   check(/rx="1" fill/.test(k('Middle-click')) && !/<path d="M6 1C/.test(k('Middle-click')), 'Middle-click: the wheel');
   check(/mbu-tip-k">Esc</.test(k('Esc')) && !/svg/.test(k('Esc')), 'Esc stays a key chip');
   // rows with a note between them are one grid, the note across it (majkinetor: "not aligned properly")

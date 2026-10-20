@@ -78,7 +78,7 @@ const CSS = [
     '#mbu-tip .mbu-tip-on{color:var(--mbu-accent-text,#5f3ec0)}',
     '#mbu-tip .mbu-tip-dl.mbu-tip-on::after{content:"◂";margin-left:-2px;font-size:11px}',
     '#mbu-tip .mbu-tip-off{opacity:.45}',
-    '#mbu-tip .mbu-tip-sym{letter-spacing:1px;font-family:"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2","DejaVu Sans",sans-serif;font-size:13px;line-height:1.25}',
+    '#mbu-tip .mbu-tip-sym{letter-spacing:.2px}',
     '#mbu-tip .mbu-tip-mouse{display:block;flex:none}',
     '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif)}',
     '#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
@@ -144,18 +144,18 @@ function mbuTipKey(label) {
         + '</svg>';
     var extra = btn === 'double' ? '×2' : act === 'drag' ? 'drag' : (act === 'wheel' || act === 'scroll') ? '↕' : '';
     return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + '</span>'
-        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join('') + '</kbd>' : '')
+        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join(' ') + '</kbd>' : '')
         + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + '</span>' : '') + '</span>';
 }
 
-// Ctrl ⌃, Alt ⌥, Shift ⇧, Cmd ⌘
-function mbuTipMod(k) { return { ctrl: '⌃', alt: '⌥', shift: '⇧', cmd: '⌘', meta: '⌘' }[String(k).toLowerCase()] || k; }
-// a shortcut, Ctrl+Alt+F → one key chip ⌃⌥F, its words kept for a screen reader
+// Shift ⇧ and Cmd ⌘; Ctrl and Alt stay words (majkinetor didn't know ⌥: Windows has no such key cap)
+function mbuTipMod(k) { return { ctrl: 'Ctrl', alt: 'Alt', shift: '⇧', cmd: '⌘', meta: '⌘' }[String(k).toLowerCase()] || k; }
+// a shortcut, Ctrl+Shift+F → one key chip "Ctrl ⇧ F", its words kept for a screen reader
 function mbuTipKbd(combo) {
     var parts = String(combo).split(/\s*\+\s*/);
     var key = parts.pop();
     return '<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">' + mbuTipEsc(combo) + '</span><span aria-hidden="true">'
-        + parts.map(mbuTipMod).join('') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
+        + parts.concat('').map(mbuTipMod).join(' ') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
 }
 
 // Plain text → the tooltip's HTML (see the header for what is read out of it).
