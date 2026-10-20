@@ -21,23 +21,22 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 - **[Archive](#archive)**: the release's links saved on the Internet Archive, and a menu by each external link to its copies there.
 
-Each part is optional, and Apollo's icon in the bottom-right corner switches back to MusicBrainz's own editor at any time; it's in colour while Apollo is on and grey while off.
+Each part is optional, and Apollo's corner icon switches to MusicBrainz's own editor and back.
 
 ## Release information
 
 <img width="1200" src="./screenshots/release.png" />
 
-- **External links** sit in a right column, checked for dead links. Right-click a favicon or type to edit it. A link type that takes the video attribute shows a small camera glyph instead of a checkbox: click it to mark the link as video (filled when on).
+- **External links** sit in a right column, checked for dead links. Right-click a favicon or type to edit it. A link that can be a video has a camera glyph to mark it as one.
 - **+** takes several links at once and pulls URLs out of anything pasted, HTML included, dropping duplicates and setting each link's type.
 - A **front-cover thumbnail** under the links opens the cover-art page.
 - Right-click a date's or label's ✕ to remove all of them.
-- The help bubbles are gone, including the "You selected …" ones on the artist, label and release group: the badges say what is linked.
+- The help bubbles are gone; the badges say what is linked.
 - The release **Artist** field is the Tracklist's artist cell, in place of MusicBrainz's box and its Edit popup. One line per artist, with its credited-as name, search, join phrase and match badge. **↵** adds an artist, **⋔** splits a combined name, **⠿** reorders, **✕** removes, and **＋** / **🔗** / **⚠** offer to create the artist or add its link.
-- The release **Artist** is [matched](#artist-matching) on load like a track artist, through the same stages: the Discogs or platform link, the release artist of other editions, the exact name or alias, and co-credit with the artists on the tracks. A confident match is linked. Each artist's badge sits at the end of its line, its match card on hover; click an uncertain **LOW** badge to link its candidate.
-- The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias, else when the similar releases on the **Duplicates** tab credit exactly one label of that name. A badge by the field says which; a label already on the release shows **set**, one you picked shows **user**. Hover the badge for the label and its disambiguation; click it to open the label.
-- This matching runs first on load, before the Tracklist's, which leans on the release artist. A spinner sits where a badge will land while Apollo is still matching that artist or label.
-- The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title and artist. The title may differ in punctuation, spaces and letter case, never in a letter or digit. **auto** in the field marks it. Click the badge to open the release group. Pick **Add a new release group** to undo it, and Apollo leaves it.
-- The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. A pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it silently in a background tab.
+- The release **Artist** is [matched](#artist-matching) on load like a track artist, and a confident match is linked. Click an uncertain **LOW** badge to link its candidate.
+- The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias, else when the similar releases on the **Duplicates** tab credit exactly one label of that name. A badge by the field says how (**set**: already on the release, **user**: picked by you); click it to open the label.
+- The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title (punctuation, spaces and case aside) and artist, and marked **auto**. Pick **Add a new release group** to undo it.
+- The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. A pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it in a background tab.
 
 ## Tracklist
 
@@ -80,7 +79,7 @@ Each part is optional, and Apollo's icon in the bottom-right corner switches bac
 | Ctrl + Alt + right-click | both fields in every row                             |
 | Right-drag               | every cell it passes over, on the side it started on |
 
-On the recording side the copy is applied when you submit, like MusicBrainz's own checkboxes; the cell shows `→ New` and the old value struck through. On the track side it's applied at once. A copy is offered wherever MusicBrainz would show its checkbox, including case-only differences.
+A copy to the recording applies on submit, shown as `→ New` beside the old value struck through; a copy to the track applies at once.
 
 ## Matching
 
@@ -90,7 +89,7 @@ On the recording side the copy is applied when you submit, like MusicBrainz's ow
 
 Stages, most confident first:
 
-1. **Discogs or platform link.** When the release links to Discogs, each credited artist (featured ones too) is matched by the Discogs link on the MusicBrainz artist. Badge: **DISC**. When the release was imported with [First Contact](../first_contact/README.md), each credited artist is matched the same way by its page on the platform the release came from (Deezer, Spotify, Tidal, …). Badge: the platform, such as **DZ** for Deezer. A release from [Mission Control's consolidation](../mission_control/README.md#consolidate-a-new-release) also carries each artist's pages on the other platforms it compared: when the source's page matches no one, or the source has none, they are tried in turn, and the badge names the platform whose page matched.
+1. **Discogs or platform link.** Each credited artist, featured ones too, is matched by the release's Discogs link on the MusicBrainz artist (**DISC**), or, imported with [First Contact](../first_contact/README.md), by its page on the platform (**DZ** for Deezer…). A [consolidated](../mission_control/README.md#consolidate-a-new-release) release tries the other platforms' pages in turn.
 2. **Release group.** The same track on other releases in the group, with its credited artists. This settles most tracks, compilations included. Badge: **RG**.
 3. **Same position on other editions.** The track at the same position on the release group's other editions and on the [duplicates](#duplicates), when that track passes the [recording](#recording-matching) test (similar title and length within tolerance, or a title in another script on a medium that lines up). Its artist is taken if the name matches loosely (spaces, punctuation, quotes, a leading *The* ignored, or 85% similar): *Juan Formel* → *Juan Formell*, *Cedric Im Brooks* → *Cedric “Im” Brooks*. When the editions agree the artist is linked, keeping the seeded credited name. Badge: **POS**. When they disagree nothing is linked, and they head the picker under **On other editions at this position**.
 4. **Exact name or alias.** Linked only when exactly one artist has the credited name as its name or an alias, among all of MusicBrainz's matches, not only the first page. Badge: **NAME** or **ALIAS**.
@@ -101,7 +100,7 @@ Green means matched confidently; a white search box means unresolved, counted by
 **Match card.** Hover a badge for a card that shows:
 - the stage, and whether Apollo linked the artist or you picked it;
 - the linked artist, with its disambiguation, type, area and dates;
-- the evidence the stage had: the Discogs artist or the platform page; the release-group release and track; each other edition and whom it credits (✓ / ✗), with a release found by the duplicate search (the same title and artist, outside the release group) marked as such, since it may be this very release already in MusicBrainz; the alias; the co-credit counts;
+- the evidence: the Discogs artist or platform page, the release-group track, each other edition and whom it credits (✓ / ✗; one from the duplicate search may be this very release), the alias, the co-credit counts;
 - the other candidates;
 - when it matched.
 
@@ -122,18 +121,16 @@ The platform badges: **DZ** Deezer, **SP** Spotify, **TD** Tidal, **AM** Apple M
 
 **Discogs links.** When the Discogs link is known, the type icon offers what's missing: **🔗** creates the artist with the link, or adds the link to the matched artist. **⚠** warns that the link belongs to a different artist, or that the artist links a different Discogs page (often a wrong match). **🔗 N links** in the toolbar counts them and steps through them.
 
-**Platform links.** A release imported with First Contact gets the same offers for each artist's platform page: **🔗** creates the artist with it, or adds it to the matched artist; **⚠** warns that it belongs to a different artist.
-
-The release **Artist** and **Label** are matched on load too; see [Release information](#release-information).
+**Platform links.** A release imported with First Contact gets the same offers for each artist's platform page.
 
 > [!NOTE]
-> After a match, Apollo sometimes rebuilds its table, when the page's tracklist changed meanwhile. The badges are kept. If one is ever lost (the artist stays linked, but shows as *set*), a toast says so and offers **Copy log** for a bug report.
+> If a badge is ever lost when Apollo rebuilds its table (the artist stays linked, shown as *set*), a toast offers **Copy log** for a bug report.
 
 ### Recording matching
 
-**ISRC first.** On a release imported with [First Contact](../first_contact/README.md) from a platform that gives ISRCs (Deezer, Apple Music, Tidal, Beatport, …), the release's ISRCs are looked up first, together in one search. A recording that is the only one with that ISRC, and agrees with the track on title and artist, is linked ahead of every other candidate. When several recordings share the ISRC, or the one that has it differs from the track, they are only offered: the picker lists them on top with an **ISRC** badge.
+**ISRC first.** On a release imported with [First Contact](../first_contact/README.md) from a platform that gives ISRCs (Deezer, Apple Music, Tidal, Beatport, …), the release's ISRCs are looked up first. A recording that is the only one with that ISRC, and agrees with the track on title and artist, is linked ahead of every other candidate. When several recordings share the ISRC, or the one that has it differs from the track, they are only offered: the picker lists them on top with an **ISRC** badge.
 
-All the release group's recordings come in one request and are matched by title, artist and length. Tracks the group can't answer are looked up one by one. When a title is worded differently (*Part 1* / *Pt. 1*), the same position on other editions, and then on releases of the same title and artist in other groups, is used if the title is similar and the length agrees. A title in another script (*Kalimba Night* for *カリンバナイト*) can't be compared, so its position is used when that edition's whole medium lines up: as many tracks, and every length within the tolerance.
+Then the release group's recordings are matched by title, artist and length, and the other tracks looked up one by one. When a title is worded differently (*Part 1* / *Pt. 1*), the same position on other editions, and then on releases of the same title and artist in other groups, is used if the title is similar and the length agrees. A title in another script (*Kalimba Night* for *カリンバナイト*) can't be compared, so its position is used when that edition's whole medium lines up: as many tracks, and every length within the tolerance.
 
 | Colour | Confidence |                                               |
 | :----: | ---------- | --------------------------------------------- |
@@ -226,7 +223,7 @@ Anything else is literal and whitespace is elastic. A capital is a token only st
 
 For fixed-width text a token takes a range: `T[6-]`, `T[6-20]`, `T[-5]`, `T[~3-]` (last 3), or `[from:to]` up to a character, such as `#[1:.]` or `L[(:)]`. `~` before a character means its last occurrence: `L[~(:)]`.
 
-Each line's dot shows whether it matched (amber: by its own pattern). Click a row's raw text to edit it; the change goes back to the pasted text. A row can get its own pattern, or you select part of its raw text and bind it to a field. **🔒 Freeze matched** keeps the current pattern on every row it matches, so you can change the pattern for the rest. **Apply** writes only the fields the pattern has, and makes the medium as long as the non-empty lines, like the native parser: tracks are added, or removed from the end. Its ▾ applies one field and keeps the track count.
+Each line's dot shows whether it matched (amber: by its own pattern). Edit a row's raw text in place, give it its own pattern, or bind a selected part of it to a field. **🔒 Freeze matched** keeps the current pattern on the rows it matches, so you can change it for the rest. **Apply** writes the pattern's fields and sizes the medium to the non-empty lines; its ▾ applies one field and keeps the track count.
 
 ### Length parser
 
@@ -243,7 +240,7 @@ The lengths line up with the tracks by order: **✕** removes a row, **+** inser
 - **Merge mediums**: the ticked mediums go into the first of them, in order; the others are removed.
 - **Split medium**: the chosen track and the ones after it become a new medium after it, in the same format.
 
-Titles, lengths, credits and recordings are kept and tracks are renumbered. Nothing is submitted until you enter the edit. A medium with a disc ID is refused.
+Titles, lengths, credits and recordings are kept and tracks are renumbered. A medium with a disc ID is refused.
 
 > [!NOTE]
 > MusicBrainz records this as an *Edit medium* plus a *Remove medium* per merged-away medium, or an *Add medium* for a split. The moved tracks get new track MBIDs. Without auto-edit rights, *Remove medium* waits for votes, so the old mediums show beside the merged one until then.
@@ -282,18 +279,18 @@ Apollo follows a dark MusicBrainz theme, such as kellnerd's [userstyle](https://
 
 ## Archive
 
-When you click **Enter edit**, Apollo asks the Internet Archive's Wayback Machine to save every external link of the release, so anyone can later check what the pages showed. The edit note doesn't mention it: the [archive menu](#archive-menu) by each link opens its copies.
+At **Enter edit**, Apollo has the Internet Archive's Wayback Machine save every external link of the release, so anyone can later check what the pages showed; the [archive menu](#archive-menu) by each link opens its copies.
 
 - Only the release's own links are saved, not the links an edit note mentions.
-- Some sites refuse the Internet Archive, and their pages can't be saved. Discogs is one: for a Discogs link Apollo saves the same data from Discogs' API.
+- Some sites refuse the Internet Archive; for Discogs, its release data is saved instead.
 - Every edit saves them again. A page the Internet Archive saved a moment ago isn't saved twice.
-- The edit doesn't wait for the saves, which take from a few seconds to a minute.
+- The edit doesn't wait for the saves.
 - Links on MusicBrainz and the Internet Archive aren't saved, nor what [First Contact](../first_contact/README.md#archive) already archives for its import.
-- Without keys the saves are anonymous, and the Internet Archive refuses some when a release has many links. With your archive.org keys the limit is much higher, and each save also takes a screenshot, which the menu's *Open the latest screenshot* opens. They are the same keys First Contact uses: in [String Theory](../string_theory/README.md) keys set in one show in the other. To get them, see [First Contact → archive.org keys](../first_contact/README.md#archiveorg-keys).
+- Anonymous saves are limited, so some are refused on a release with many links. With your [archive.org keys](../first_contact/README.md#archiveorg-keys), shared with First Contact, the limit is much higher and each save takes a screenshot.
 
 ### Archive menu
 
-On release, release group, artist and label pages, a faint clock sits at the end of each external link in the sidebar. Click it for the link's copies on the Wayback Machine, each in a new tab:
+On release, release group, artist and label pages, a clock after each sidebar link lists its copies on the Wayback Machine:
 
 | Menu item                  |                                                |
 | -------------------------- | ---------------------------------------------- |
@@ -302,14 +299,14 @@ On release, release group, artist and label pages, a faint clock sits at the end
 | All snapshots (calendar)   | every saved copy, by date                      |
 | Save it now                | saves the page now, in Save Page Now's own tab |
 
-A Discogs link offers the same for Discogs' API data, since Discogs' pages can't be saved. Nothing is sent to archive.org until you pick an item.
+A Discogs link offers its saved release data. Nothing is sent to archive.org until you pick an item.
 
 > [!NOTE]
 > Archiving sends the address of every link on the releases you edit to archive.org, and with keys, under your account. Turn **Archive links on the Internet Archive** off in [Settings](#settings) if you don't want that.
 
 ## Settings
 
-Right-click Apollo's corner icon. Column widths, the toolbar layout, **Change**, **Cutoff** and the picker's folded sections are remembered as you use them.
+Right-click Apollo's corner icon.
 
 | Setting                                                       | Default |                                                                                         |
 | ------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------- |
