@@ -58,7 +58,7 @@ test('#490: SoundExchange search is a row-hover icon that survives "Clear ISRCs"
 test('#580: a status that says "see Log" opens the log; ordinary progress does not look clickable', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await openScout(page, inject);
   await page.waitForFunction(() => !!(window.__isrcScoutTestProg && window.__isrcScoutTestProg.setProg), null, { timeout: 5000 });
-  const probe = () => page.evaluate(() => { const el = document.getElementById('ii-prog'), pane = document.getElementById('mbu-logpop'); return { tolog: el.classList.contains('tolog'), err: el.classList.contains('err'), cursor: getComputedStyle(el).cursor, title: el.title, click: typeof el.onclick === 'function', open: !!pane }; });
+  const probe = () => page.evaluate(() => { const el = document.getElementById('ii-prog'), pane = document.getElementById('mbu-logpop'); return { tolog: el.classList.contains('tolog'), err: el.classList.contains('err'), cursor: getComputedStyle(el).cursor, title: el.dataset.tip, click: typeof el.onclick === 'function', open: !!pane }; });
   await page.evaluate(() => window.__isrcScoutTestProg.setProg('reading tracklist…', false));
   const plain = await probe();
   check(!plain.tolog && !plain.click && plain.cursor !== 'pointer', `a progress line is not clickable (${JSON.stringify(plain)})`);

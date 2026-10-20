@@ -23,7 +23,7 @@ const shown = page => page.evaluate(() => [...document.querySelectorAll('td.ii-c
     isrcs: [...td.querySelectorAll('.ii-trk-isrc')].map(a => a.textContent),
     // one icon per platform, its count when the recording has several links there
     links: [...tr.querySelectorAll('td.ii-col-links .ii-trk-ln')].reduce((n, a) => n + (+a.querySelector('.ii-trk-n')?.textContent || 1), 0),
-    perPlatform: (n => n.length === new Set(n).size)([...tr.querySelectorAll('td.ii-col-links .ii-trk-ln')].map(a => a.title.split(' · ')[0])),
+    perPlatform: (n => n.length === new Set(n).size)([...tr.querySelectorAll('td.ii-col-links .ii-trk-ln')].map(a => a.dataset.tip.split('\n')[0].replace(/ — \d+ links$/, ''))),
     beforeRating: td.nextElementSibling?.classList.contains('ii-col-links') && !!td.nextElementSibling.nextElementSibling?.matches('td.rating, td.treleases'),
   };
 }));

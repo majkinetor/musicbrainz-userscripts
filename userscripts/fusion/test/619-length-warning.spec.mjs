@@ -36,7 +36,7 @@ test('lengths outside tolerance warn in the chip, the badge, the row and the too
     const c = document.querySelector(`.fs-gcard[data-gid="${id}"]`); if (!c) return null;
     const chip = [...c.querySelectorAll('.fs-sig span')].find(s => /Length/.test(s.textContent));
     const offRow = c.querySelector(`.fs-grow[data-gid="${off}"] .fs-len`);
-    return { chipWarn: !!(chip && chip.classList.contains('warn')), chipTitle: chip ? chip.dataset.tip : '', badge: (c.querySelector('.fs-lenwarn') || {}).textContent || null, offCells: c.querySelectorAll('.fs-len-off').length, offRowOff: !!(offRow && offRow.classList.contains('fs-len-off')), offRowTitle: offRow ? offRow.title : '', cardTitle: c.title };
+    return { chipWarn: !!(chip && chip.classList.contains('warn')), chipTitle: chip ? chip.dataset.tip : '', badge: (c.querySelector('.fs-lenwarn') || {}).textContent || null, offCells: c.querySelectorAll('.fs-len-off').length, offRowOff: !!(offRow && offRow.classList.contains('fs-len-off')), offRowTitle: offRow ? offRow.dataset.tip : '', cardTitle: c.dataset.tip };
   }, [id, ids.off]);
   const a = await until(() => card(ids.g1), a => a && a.badge), b = await card(ids.g2);
   console.log('15s group :', JSON.stringify(a)); console.log('2s group  :', JSON.stringify(b));

@@ -13,7 +13,7 @@ test('the corner launcher is an icon: click switches, monochrome while off, righ
   const read = () => page.evaluate(() => {
     const b = document.getElementById('as-switch'), r = b.getBoundingClientRect();
     return { w: Math.round(r.width), h: Math.round(r.height), text: b.textContent.trim(), img: !!b.querySelector('img'), on: b.classList.contains('on'), grey: getComputedStyle(b.querySelector('img')).filter.includes('grayscale'),
-      title: b.title, gear: !!document.getElementById('as-setup-btn'), asShown: !document.getElementById('as-root').classList.contains('as-orig') };
+      title: b.dataset.tip, gear: !!document.getElementById('as-setup-btn'), asShown: !document.getElementById('as-root').classList.contains('as-orig') };
   });
   const a = await read();
   check(a.w === 40 && a.h === 40 && a.img && !a.text, `a 40 px icon with no label (${JSON.stringify(a)})`);

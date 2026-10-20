@@ -102,7 +102,7 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   check(await subRows.count() === 0, 'the platforms\' titles are folded at first');
   await page.locator('#mc-root .mc-tbl tr[data-i="1"] td[data-col="plat"] [data-act="fx-pf"]').click();
   const lines = await subRows.allTextContents();
-  const icons = await subRows.nth(1).locator('.mcc-icos > span').evaluateAll(s => s.map(x => x.title));
+  const icons = await subRows.nth(1).locator('.mcc-icos > span').evaluateAll(s => s.map(x => x.dataset.tip));
   // each value in its column: the version's title under Title, its icons under Platforms
   const cols = await subRows.nth(1).evaluate(r => { const hs = [...r.closest('table').querySelectorAll('thead th')].map(h => h.textContent.trim()); return { title: hs[[...r.cells].findIndex(c => /Homes/.test(c.textContent))], icons: hs[[...r.cells].findIndex(c => c.querySelector('.mcc-icos'))] }; });
   check(/^Title/i.test(cols.title) && /^Platforms/.test(cols.icons), `the line's title is under Title, its platforms under Platforms (${JSON.stringify(cols)})`);
@@ -155,7 +155,7 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   const aa = sub.locator('[data-act="fx-gc"][data-i="1"]');
   const want = 'Homes and Gardens of KoRn (official music video)';
   const tip = await until(() => aa.getAttribute('data-tip'), t => (t || '').includes(want));
-  check((tip || '').includes('Guess case (English) → ' + want), `Aa shows the guess (${tip})`);
+  check((tip || '').includes('Guess case (English)\n→ ' + want), `Aa shows the guess (${tip})`);
   await aa.click();
   st = await page.evaluate(() => window.__mcTest.cmp());
   check(st.picks[1] && st.picks[1].title === want && await sub.locator('[data-pf-title="1"]').inputValue() === want, `a click takes it in (${JSON.stringify(st.picks[1])})`);

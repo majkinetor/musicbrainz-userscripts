@@ -22,7 +22,7 @@ test.describe('default settings', () => {
   test.use({ gm: { name: 'Platform Check' } });
   test('HDtracks, Tidal and Spotify are found by barcode, and ↻ shows the scan', { tag: ['@sandbox', '@critical'] }, async ({ page, inject }) => {
     const ws = await openPc(page, inject, { release: RAM, links, settle: false, replay: new URL('./fixtures/ws-182.json.gz', import.meta.url) });
-    const btn = () => page.evaluate(() => { const b = document.getElementById('mb-refresh-btn'); return { spinning: b.classList.contains('pc-scanning'), title: b.title, pe: getComputedStyle(b).pointerEvents }; });
+    const btn = () => page.evaluate(() => { const b = document.getElementById('mb-refresh-btn'); return { spinning: b.classList.contains('pc-scanning'), title: b.dataset.tip, pe: getComputedStyle(b).pointerEvents }; });
     const busy = await btn();
     await scansDone(page);
     const done = await btn();
