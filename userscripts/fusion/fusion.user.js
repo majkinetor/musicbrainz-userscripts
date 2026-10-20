@@ -3590,9 +3590,13 @@ function fsStyle() {
         + '.fs-matchmsg{font-size:10.5px;font-weight:600;text-transform:none;letter-spacing:0;white-space:nowrap;padding:2px 8px;border-radius:9px;cursor:help}'
         + '.fs-matchmsg-none{background:rgba(168,112,42,.13);color:var(--mbu-warn)}'
         + '.fs-matchmsg-ok{background:rgba(28,155,99,.13);color:var(--mbu-ok)}'
-        + '.fs-tierlegend{display:inline-flex;align-items:center;gap:9px;font-size:10px;color:var(--fs-muted)}'
-        + '.fs-tierkey{display:inline-flex;align-items:center;gap:4px;cursor:help}'
-        + '.fs-tierkey i{width:9px;height:9px;border-radius:2px;display:inline-block}'
+        + '.fs-cutwrap{display:inline-flex;align-items:center;gap:6px;color:var(--mbu-text);font-size:12px}'
+        + '.fs-cutoff{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 9px;cursor:pointer;font:12px Arial;background:var(--mbu-bg);color:var(--mbu-text);user-select:none}'
+        + '.fs-cutoff-dot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}'
+        + '.fs-cutoff-caret{color:var(--mbu-text-weak);font-size:10px}'
+        + '.fs-cutoff-menu{position:fixed;z-index:2147483646;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font:13px Arial}'
+        + '.fs-cutoff-menu .mi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:var(--mbu-text)}'
+        + '.fs-cutoff-menu .mi:hover,.fs-cutoff-menu .mi.sel{background:var(--mbu-bg-hover)}'
         + '.fs-toLog{cursor:pointer} .fs-toLog:hover{text-decoration:underline}'
         + '.fs-clearset .fs-btn{padding:2px 8px}'
         + '.fs-detbtn{font-size:12px;line-height:1;color:var(--fs-muted);border:1px solid var(--fs-border);border-radius:4px;padding:3px 6px;cursor:pointer;white-space:nowrap;background:var(--mbu-bg);flex-shrink:0}'
@@ -4858,16 +4862,6 @@ function _fsEscHandler(e) {
 function buildShell() {
     document.getElementById('fs-overlay')?.remove();
     const overlay = el('div', 'fs-overlay'); overlay.id = 'fs-overlay';
-    const CUTOFF_HELP = {
-        strict: 'Strict\nGroups only on a shared identifier, an ISRC or an AcoustID. The fewest, safest matches.',
-        normal: 'Normal\nA shared identifier, or the title and the artist with a close length.\nA length missing on either side doesn’t block the match (it can’t back it up); two known lengths that disagree do.',
-        loose: 'Loose\nA shared identifier, or the title with a close length or the same artist. The most matches, and the most to review.',
-    };
-    // #529 (majkinetor): "show color in the cutoff combo for reference" — the
-    // card rows are tinted by tier and nothing else decoded those colours.
-    // Native <option> styling is patchy across browsers, so the swatch is drawn
-    // as a coloured square in a sibling strip that is always visible, and the
-    // options carry the colour too where the browser honours it.
     // the cutoff's tip is the levels' table, the chosen one marked and the looser ones dimmed
     // (majkinetor: "add cutoff table with meanings")
     const CUTOFF_MEANS = { strict: 'a shared ISRC or AcoustID', normal: 'or the title and the artist, with a close length', loose: 'or the title, with a close length or the same artist' };
@@ -4876,20 +4870,16 @@ function buildShell() {
         return 'How strict Match is: it groups recordings on\n'
             + MATCH_CUTOFFS.map((c, i) => '{' + TIER_COLORS[c] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + c[0].toUpperCase() + c.slice(1) + ': ' + CUTOFF_MEANS[c]).join('\n');
     };
-    const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '')
-        + ' style="background:' + TIER_COLORS[c] + '22"'
-        + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
-    const tierKey = MATCH_CUTOFFS.concat('manual').map(c => '<span class="fs-tierkey" data-tip="'
-        + escapeHtml(c === 'manual' ? 'Grouped by hand\nNo cutoff forms it by itself.' : (CUTOFF_HELP[c] || ''))
-        + '"><i style="background:' + TIER_COLORS[c] + '"></i>' + c + '</span>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
         + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
         + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
         + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" data-tip="Add recordings to the pool\nPaste: a recording’s, release’s or release group’s MBID, or its MusicBrainz URL, adds its recordings at once">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
-        + '<span>Cutoff <select id="fs-cutoff" data-tip="' + escapeHtml(cutoffTip()) + '">' + cutoffOpts + '</select></span>'
-        + '<span class="fs-tierlegend" data-tip="Each group card’s tint\nThe strictest cutoff at which it still holds together">' + tierKey + '</span></div>'
+        // the cutoff as Apollo's: a chip with the level's dot, a menu of the levels, their table in the tip; the
+        // colour legend beside it went (majkinetor: "make fusion cutoff resemble the apollo's and remove [ ] strict …")
+        + '<label class="fs-cutwrap" id="fs-cutwrap"><b>Cutoff</b><span class="fs-cutoff" id="fs-cutoff" tabindex="0" role="button">'
+        + '<span class="fs-cutoff-dot"></span><span class="fs-cutoff-lbl"></span><span class="fs-cutoff-caret">▾</span></span></label></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button></div>'
 
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool."><span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
@@ -4948,7 +4938,32 @@ function buildShell() {
     const poolFilter = document.getElementById('fs-pool-filter');
     poolFilter.addEventListener('input', () => { STATE.poolFilter = poolFilter.value.trim(); renderPool(); });
     poolFilter.addEventListener('keydown', e => { if (e.key === 'Escape' && poolFilter.value) { e.stopPropagation(); poolFilter.value = ''; STATE.poolFilter = ''; renderPool(); } });
-    document.getElementById('fs-cutoff').addEventListener('change', e => { SETTINGS.matchCutoff = e.target.value; saveSettings(); e.target.dataset.tip = cutoffTip(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff); });
+    {
+        const chip = document.getElementById('fs-cutoff'), wrap = document.getElementById('fs-cutwrap');
+        const paint = () => {
+            const c = SETTINGS.matchCutoff;
+            chip.querySelector('.fs-cutoff-dot').style.background = TIER_COLORS[c] || '';
+            chip.querySelector('.fs-cutoff-lbl').textContent = c;
+            wrap.dataset.tip = cutoffTip();
+        };
+        paint();
+        const open = () => {
+            document.querySelectorAll('.fs-cutoff-menu').forEach(m => m.remove());
+            const m = document.createElement('div'); m.className = 'fs-cutoff-menu';
+            m.innerHTML = MATCH_CUTOFFS.map(c => '<div class="mi' + (c === SETTINGS.matchCutoff ? ' sel' : '') + '" data-v="' + c + '"><span class="fs-cutoff-dot" style="background:' + TIER_COLORS[c] + '"></span>' + c + '</div>').join('');
+            document.body.appendChild(m);
+            const r = chip.getBoundingClientRect(); m.style.left = r.left + 'px'; m.style.top = (r.bottom + 3) + 'px';
+            const off = e => { if (!m.contains(e.target) && !chip.contains(e.target)) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+            m.querySelectorAll('.mi').forEach(it => it.onmousedown = e => {
+                e.preventDefault(); m.remove(); document.removeEventListener('mousedown', off, true);
+                if (SETTINGS.matchCutoff === it.dataset.v) return;
+                SETTINGS.matchCutoff = it.dataset.v; saveSettings(); paint(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff);
+            });
+            setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+        };
+        chip.onclick = () => (document.querySelector('.fs-cutoff-menu') ? document.querySelectorAll('.fs-cutoff-menu').forEach(m => m.remove()) : open());
+        chip.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.onclick(); } };
+    }
     wireWindowChrome(document.getElementById('fs-cons'), document.getElementById('fs-hdr'), document.getElementById('fs-max'));
     wireDelegatedEvents();
 }

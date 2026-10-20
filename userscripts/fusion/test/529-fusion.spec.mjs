@@ -941,8 +941,10 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
      'the signal legend and its presence dots are gone');
 
   // #529: "For cutoff, add tooltip description for each level."
-  const cutoffTips = await page.evaluate(() => [...document.querySelectorAll('#fs-cutoff option')].map(o => ({ v: o.value, len: (o.title || '').length })));
-  check(cutoffTips.length === 3 && cutoffTips.every(o => o.len > 30), 'every cutoff level carries its own explanatory tooltip (' + JSON.stringify(cutoffTips.map(o => o.v)) + ')');
+  // then: "make fusion cutoff resemble the apollo's": a chip whose tip is the levels' table, each with its meaning
+  const cutoffTip = await page.evaluate(() => document.getElementById('fs-cutwrap')?.dataset.tip || '');
+  check(['Strict', 'Normal', 'Loose'].every(l => new RegExp('^\\{#[0-9a-f]+[^}]*\\} ' + l + ': .{10,}', 'm').test(cutoffTip)), 'the cutoff tip explains every level (' + cutoffTip + ')');
+  check(await page.evaluate(() => !document.querySelector('.fs-tierlegend, select#fs-cutoff')), 'no colour legend, no dropdown: Apollo’s chip');
 
   // #529: "Lets also have an option to run match automatically."
   check(await page.evaluate(() => 'autoMatchOnOpen' in window.__fusion.SETTINGS_DEFAULTS), 'there is an auto-match-on-open setting');
