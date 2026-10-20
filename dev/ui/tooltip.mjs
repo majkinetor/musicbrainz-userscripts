@@ -38,7 +38,7 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 9;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 10;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
@@ -81,8 +81,6 @@ const CSS = [
     '#mbu-tip .mbu-tip-off{opacity:.45}',
     '#mbu-tip .mbu-tip-sym{letter-spacing:.2px}',
     // the mouse small and grey, only the pressed button in the accent (majkinetor: 6 of six mocks)
-    '#mbu-tip .mbu-tip-alts{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px}',
-    "#mbu-tip .mbu-tip-rows>.mbu-tip-alts+span{align-self:center}",   // its text in the middle of the keys (majkinetor)
     '#mbu-tip .mbu-tip-mouse{display:block;flex:none;position:relative}',
     // a mouse that leads its label gives the row its baseline (its bottom edge): down to sit on the line
     '#mbu-tip .mbu-tip-sr+.mbu-tip-mouse{top:3px}',
@@ -137,10 +135,9 @@ function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 // button it takes filled in (×2 for a double click) — with the words kept for a screen reader;
 // any other label (Esc, Ctrl+V, Hover) is a key chip with its text.
 function mbuTipKey(label) {
-    // two ways to do the same, "Middle-click / Alt+click": each drawn on its own line, so the
-    // key column stays narrow (majkinetor: "use multiple rows … not / as it moves everything right")
+    // two ways to do the same, "Middle-click / Alt+click": each drawn, a grey slash between
     var alts = String(label).split(/\s+\/\s+/);
-    if (alts.length > 1) return '<span class="mbu-tip-alts">' + alts.map(mbuTipKey).join('') + '</span>';
+    if (alts.length > 1) return '<span class="mbu-tip-kk">' + alts.map(mbuTipKey).join('<span class="mbu-tip-kx">/</span>') + '</span>';
     var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
     if (!m) return /^(?:(?:ctrl|alt|shift|cmd|meta)\s*\+\s*)+\S/i.test(label) ? mbuTipKbd(label) : '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + '</span>';
     var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];
