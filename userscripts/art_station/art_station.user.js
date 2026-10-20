@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.101432
+// @version      2026.10.20.110818
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1338,10 +1338,10 @@
     if (ones.length > 1) { stores.splice(0, stores.length, ...stores.filter(g => g.xs.length > 1), { p: '', one: true, xs: ones.map(g => g.xs[0]).sort((a, b) => sz(b) - sz(a)) }); }
     stores.sort((a, b) => area(b) - area(a));
     return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
-      + stores.map(g => { const k = g.one ? 0 : g.xs.filter(x => !x._mcDup).length;   // the shared row has no take all in: one of them is taken in
+      + stores.map(g => { const k = g.xs.filter(x => !x._mcDup).length;   // the shared row takes in each store's one
         return sec(g.xs, `More images · ${g.one ? 'one from each store' : esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
         !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled title="checking for duplicates…">＋ take all in</button>`
-          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}" title="Take in every ${esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
+          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}"${g.one ? ' data-one="1"' : ''} title="Take in ${g.one ? "each store's" : "every " + esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -1626,9 +1626,11 @@
     });
     root.querySelectorAll('.as-more-all').forEach(b => b.onclick = e => {
       e.stopPropagation();
-      const xs = MODEL.filter(it => it._del && it._mcOffer && !it._mcDup && (it._provider || 'Other') === b.dataset.prov).sort((a, c) => a.order - c.order);
+      // the shared row's: the images of the stores that give one each
+      const per = new Map(); MODEL.forEach(it => { if (it._del && it._mcOffer) { const p = it._provider || 'Other'; per.set(p, (per.get(p) || 0) + 1); } });
+      const xs = MODEL.filter(it => it._del && it._mcOffer && !it._mcDup && (b.dataset.one ? per.get(it._provider || 'Other') === 1 : (it._provider || 'Other') === b.dataset.prov)).sort((a, c) => a.order - c.order);
       takeIn(xs);
-      asLog.info(`Mission Control: took in every ${b.dataset.prov} image (${xs.length})`);
+      asLog.info(`Mission Control: took in every ${b.dataset.one ? "store's one" : b.dataset.prov} image (${xs.length})`);
       render();
     });
     // #787: the hover ✕ marks one cover for removal; it goes under the gallery, where ↺ keep brings it back
@@ -4150,8 +4152,13 @@
   /* #668 the commit dialog's operations went to two columns, which need its new wider
      default. A size saved before that (#595) would keep reopening it in one cramped
      column, so ("ignore any saved size", majkinetor) a saved size without the `m`
-     mark is ignored and the default applies; resizes from now on are remembered. */
-  const DLG_MIG = 668;
+     mark is ignored and the default applies; resizes from now on are remembered.
+     The mark went to 669 when Mission Control's frame was found saving its own clamped
+     width (majkinetor: "my enter edit on regular AS was wider before this"): a frame
+     narrower than the saved size restored a smaller width, and the next change of the
+     box's size saved that as if it had been resized by hand. Sizes saved before are
+     ignored once, and the frame now never saves. */
+  const DLG_MIG = 669;
   function rememberDialogSize(box, kind) {
     let saved = asDlgSizes()[kind];
     if (saved && saved.m !== DLG_MIG) { asLog.debug(`Dialog ${kind}: ignoring a size saved before #668 (${saved.w}x${saved.h})`); saved = null; }
@@ -4159,6 +4166,10 @@
       box.style.width = Math.min(saved.w, Math.round(window.innerWidth * 0.94)) + 'px';
       box.style.height = Math.min(saved.h, Math.round(window.innerHeight * 0.88)) + 'px';
     }
+    // Mission Control's frame is narrower than the page: it uses a saved size but never saves one
+    if (MC_FRAME) return;
+    // only a size the resizer set is saved, never the one restored (or clamped) above
+    const set = { w: parseFloat(box.style.width) || 0, h: parseFloat(box.style.height) || 0 };
     // The observer fires once on observe() with the CURRENT size; that would
     // write back whatever was just restored, which is harmless, but it would
     // also persist the default size for a dialog nobody ever resized. Skip the
@@ -4175,7 +4186,8 @@
         // Reading back the resizer's own inline values needs no box-model
         // arithmetic and cannot drift if the padding or box-sizing changes.
         const w = parseFloat(box.style.width), h = parseFloat(box.style.height);
-        if (!(w > 0) || !(h > 0)) return;
+        if (!(w > 0) || !(h > 0) || (w === set.w && h === set.h)) return;
+        set.w = w; set.h = h;
         const all = asDlgSizes();
         all[kind] = { w: Math.round(w), h: Math.round(h), m: DLG_MIG };
         gmSave(AS_DLG_SIZE_KEY, JSON.stringify(all));

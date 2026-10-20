@@ -1,6 +1,6 @@
 // #784: in Mission Control's frame, the stores that give one image each (a digital release: every store has its
-// front) share one row of the stores' other images, the largest first, without take all in (one of them is taken
-// in); a store with more images keeps a row of its own. The images aren't faded, so they compare, take in shows on
+// front) share one row of the stores' other images, the largest first, with a take all in of its own; a store with
+// more images keeps a row of its own. The images aren't faded, so they compare, take in shows on
 // hover, and full screen goes through the row of the image it shows. Setup as in 772-mc-extras: drawn stripe patterns, given a store by the test
 // hook; every POST is aborted at the network.
 import { test, check, until, requireLogin, idle, SANDBOX } from '../../../dev/test/harness.mjs';
@@ -62,7 +62,7 @@ test('#784: the stores with one image each share a row of the other images', { t
   check(/Discogs/.test(rows[1].t) && rows[1].cards === 'd1,d2', `Discogs keeps its own row (${JSON.stringify(rows[1])})`);
   await until(() => frame.evaluate(() => !!document.querySelector('.as-sec-more .as-more-all:not([disabled])')));
   const alls = await frame.evaluate(() => [...document.querySelectorAll('.as-sec-more')].map(h => !!h.querySelector('.as-more-all')).join());
-  check(alls === 'false,true', `take all in only on Discogs' row (${alls})`);
+  check(alls === 'true,true', `take all in on both rows, the shared one too (${alls})`);
   const card = frame.locator('.as-sec-more + .as-grid .as-card').first();
   const look = () => card.evaluate(c => ({ img: getComputedStyle(c.querySelector('.as-thumb img')).opacity, take: getComputedStyle(c.querySelector('.as-undo')).opacity }));
   await page.mouse.move(5, 5);
@@ -85,4 +85,12 @@ test('#784: the stores with one image each share a row of the other images', { t
     return window.__asTest.mc.model().filter(x => x._tag && x._mcOffer && !x._del).map(x => x._tag).sort().join();
   });
   check(took === 'q1', `take in takes in that one (${took})`);
+  // q1 back out, then the shared row's take all in takes in both, and nothing of Discogs'
+  const all = await frame.evaluate(async () => {
+    const mc = window.__asTest.mc; mc.model().find(x => x._tag === 'q1')._del = true; mc.render();
+    document.querySelector('.as-more-all[data-one]').click();
+    await new Promise(r => setTimeout(r, 300));
+    return window.__asTest.mc.model().filter(x => x._tag && x._mcOffer && !x._del).map(x => x._tag).sort().join();
+  });
+  check(all === 'q1,t1', `the shared row's take all in takes in its images only (${all})`);
 });
