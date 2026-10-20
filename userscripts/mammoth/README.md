@@ -17,10 +17,10 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 
 - **＋** saves the current text. In **History**, ★ moves a note to the saved ones.
 - ★ on a saved note pins it as a **button** under the field.
-- Sort **manually** (drag ⠿), by **most used** or by **recent**. A search box narrows long lists.
-- Click applies a note with your default action (replace or append); right-click does the other. Appending skips a line that's already there.
+- Sort **manually** (drag ⠿), by **most used** or by **recent**.
+- Click applies a note, replacing or appending ([Shortcuts](#shortcuts)); appending skips a line that's already there.
 
-Drag the separator to resize the panel. The panel starts minimized to an icon: hover to peek, click to pin, and its ⤢ button restores it (– minimizes it again).
+The panel starts minimized to an icon: hover to peek, click to pin, **⤢** restores it, **–** minimizes it.
 
 > [!TIP]
 > With *Scope per resource* on, each kind of edit note (release, artist, recording…) keeps its own saved notes and history.
@@ -40,7 +40,7 @@ In the pin's panel, **＋** saves the current value and **✕** clears the field
 | 🗑   | delete                                                 |
 | ⠿   | drag to reorder                                        |
 
-Label and Artist save the selected entity's MBID, so a recalled value is the real entity, not a new search.
+Label and Artist recall the entity itself, by its MBID, not a new search.
 
 <img src="./screenshots/big-buttons.png" width=600 />
 
@@ -58,10 +58,10 @@ Put a 🦣 on any field of any MusicBrainz page: **⚙ → Babies → ＋ Add fi
 | **lvl**      | where the bar attaches: `0` floats under the field, `N` goes after its Nth ancestor    |
 | **↵**        | submit the field's form after a recall, like pressing Enter (tags, header search)      |
 
-Changes apply live. Works on `<input>`, `<select>` and `<textarea>`.
+Works on `<input>`, `<select>` and `<textarea>`.
 
 > [!TIP]
-> On an entity autocomplete (instrument, artist…), save the value with its MBID appended, e.g. `handclaps b8d84cec-…`. Recalling it then selects that entity directly.
+> On an entity autocomplete (instrument, artist…), save the value with its MBID appended (`handclaps b8d84cec-…`) and recalling it selects that entity.
 
 **`{ } JSON`** switches the list to editable JSON, which is also the export (copy) and import (paste + **Apply**):
 
@@ -117,4 +117,4 @@ In a baby field, **Ctrl + ,** opens its panel with the filter focused; ↑ / ↓
 
 ## Notes
 
-Mammoth adds its panel to every edit-note field on the page, including the ones other userscripts add, such as their own edit windows. How another script hosts it, and adds a baby to its own fields, is in [DEVELOP.md](DEVELOP.md).
+Mammoth's panel joins every edit-note field, other userscripts' included. How a script hosts it or adds a baby to its fields is in [DEVELOP.md](DEVELOP.md).
