@@ -2,7 +2,7 @@
 
 [![checks](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/checks.yml?query=branch%3Amain) [![suite](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmajkinetor%2Fmusicbrainz-userscripts%2Ftest-history%2Fsuite.json&logo=github)](https://github.com/majkinetor/musicbrainz-userscripts/actions/workflows/suite.yml)
 
-This repository contains tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) to be used with [MusicBrainz](https://musicbrainz.org).
+Tools ([userscripts](https://musicbrainz.org/doc/Guides/Userscripts), [picard plugins](https://picard-docs.musicbrainz.org/en/latest/extending/plugins.html) and [shell scripts](./scripts)) for [MusicBrainz](https://musicbrainz.org).
 
 [Statistics](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/dev/script-metrics/out/METRICS.md)
 
