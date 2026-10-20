@@ -38,7 +38,7 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 4;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 5;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
@@ -70,8 +70,9 @@ const CSS = [
     '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}',
     '#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}',
     '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}',
-    '#mbu-tip .mbu-tip-k{display:inline-block;padding:0 4px;border:1px solid color-mix(in srgb,var(--mbu-border,#cfc6e6) 60%,transparent);border-radius:4px;',
-    'background:none;color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
+    // a key is bold accent text, no box (majkinetor picked B of six mocks)
+    '#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;',
+    'background:none;color:var(--mbu-accent-text,#5f3ec0);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
     '#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}',
     '#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}',
     '#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}',
@@ -79,8 +80,10 @@ const CSS = [
     '#mbu-tip .mbu-tip-dl.mbu-tip-on::after{content:"◂";margin-left:-2px;font-size:11px}',
     '#mbu-tip .mbu-tip-off{opacity:.45}',
     '#mbu-tip .mbu-tip-sym{letter-spacing:.2px}',
+    // the mouse small and grey, only the pressed button in the accent (majkinetor: 6 of six mocks)
     '#mbu-tip .mbu-tip-mouse{display:block;flex:none}',
-    '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif)}',
+    '#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}',
+    '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}',
     '#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);',
     'color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
@@ -136,7 +139,7 @@ function mbuTipKey(label) {
     var btn = (m[2] || '').toLowerCase(), act = m[3].toLowerCase();
     var wheel = btn === 'middle' || act === 'wheel' || act === 'scroll';
     var fill = wheel ? '' : btn === 'right' ? 'M6 1C8.8 1 11 3.2 11 6v1H6z' : 'M6 1C3.2 1 1 3.2 1 6v1h5z';
-    var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="14" height="19" aria-hidden="true">'
+    var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="10" height="13" aria-hidden="true">'
         + (fill ? '<path d="' + fill + '" fill="currentColor"/>' : '')
         + '<rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="currentColor" stroke-width="1.3"/>'
         + '<path d="M1 7h10' + (wheel ? '' : 'M6 1v6') + '" stroke="currentColor" stroke-width="1.1"/>'
@@ -144,18 +147,18 @@ function mbuTipKey(label) {
         + '</svg>';
     var extra = btn === 'double' ? '×2' : act === 'drag' ? 'drag' : (act === 'wheel' || act === 'scroll') ? '↕' : '';
     return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + '</span>'
-        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join(' ') + '</kbd>' : '')
+        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join('+') + '</kbd>' : '')
         + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + '</span>' : '') + '</span>';
 }
 
 // Shift ⇧ and Cmd ⌘; Ctrl and Alt stay words (majkinetor didn't know ⌥: Windows has no such key cap)
 function mbuTipMod(k) { return { ctrl: 'Ctrl', alt: 'Alt', shift: '⇧', cmd: '⌘', meta: '⌘' }[String(k).toLowerCase()] || k; }
-// a shortcut, Ctrl+Shift+F → one key chip "Ctrl ⇧ F", its words kept for a screen reader
+// a shortcut, Ctrl+Shift+F → one key "Ctrl+⇧+F", its words kept for a screen reader
 function mbuTipKbd(combo) {
     var parts = String(combo).split(/\s*\+\s*/);
     var key = parts.pop();
     return '<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">' + mbuTipEsc(combo) + '</span><span aria-hidden="true">'
-        + parts.concat('').map(mbuTipMod).join(' ') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
+        + parts.concat('').map(mbuTipMod).join('+') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
 }
 
 // Plain text → the tooltip's HTML (see the header for what is read out of it).
