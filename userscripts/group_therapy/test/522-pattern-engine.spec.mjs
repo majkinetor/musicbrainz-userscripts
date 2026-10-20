@@ -76,6 +76,23 @@ test('the text parser splits credit lines into roles and entities', { tag: ['@un
     { role: 'Label', entity: 'AT&T Records' },
   ], 'R: E[&] — an un-spaced "&" inside a real name is not split (needs surrounding whitespace)');
 
+  // a split list needn't start with , or &: any bracket that isn't a slice lists split words
+  eq(X('R: E[and]', 'Lyrics: Ann Lee and Bo Diaz'), [
+    { role: 'Lyrics', entity: 'Ann Lee' }, { role: 'Lyrics', entity: 'Bo Diaz' },
+  ], 'R: E[and] — a word alone splits');
+  eq(X('R: E[ and ]', 'Lyrics: Ann Lee AND Bo Diaz'), [
+    { role: 'Lyrics', entity: 'Ann Lee' }, { role: 'Lyrics', entity: 'Bo Diaz' },
+  ], 'R: E[ and ] — spaces inside the bracket are ignored, case too');
+  eq(X('R: E[/]', 'Label: Shady / Aftermath'), [
+    { role: 'Label', entity: 'Shady' }, { role: 'Label', entity: 'Aftermath' },
+  ], 'R: E[/] — " / " splits');
+  eq(X('R: E[/]', 'Band: AC/DC'), [
+    { role: 'Band', entity: 'AC/DC' },
+  ], 'R: E[/] — "/" with no spaces stays whole');
+  eq(X('R: E[e ,]', 'Testi: Mimmo Epifani, Ann Lee e Bo Diaz'), [
+    { role: 'Testi', entity: 'Mimmo Epifani' }, { role: 'Testi', entity: 'Ann Lee' }, { role: 'Testi', entity: 'Bo Diaz' },
+  ], 'R: E[e ,] — the comma can come later in the list');
+
   // dangling edge ws/sep tokens (re-ported #522 fix) — a trailing space or
   // separator with nothing real past it must not make the pattern unmatchable.
   eq(P('R: E ', 'Mastering: Nick Robbins'), { role: 'Mastering', entity: 'Nick Robbins' }, 'trailing space after the last field still matches');

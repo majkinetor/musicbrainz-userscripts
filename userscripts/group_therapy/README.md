@@ -107,7 +107,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 | `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
 | `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
-`R` is the role, `E` the entity: an artist, label or place, decided per row. `[,]` splits on commas (`[, and]` also on "and", `[&]` on "&"); a `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
+`R` is the role, `E` the entity: an artist, label or place, decided per row. A bracket after either splits it into rows: `[,]` on commas, `[&]` on " & ", `[and]` on the word "and", `[, and /]` on all three. A word splits only with spaces around it, so `AC/DC` stays whole. A `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
 
 <img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
 
