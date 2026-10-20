@@ -90,7 +90,8 @@ test.describe('First Contact handoff', () => {
     const badges = await page.evaluate(() => [...document.querySelectorAll('.tc-mirror .tc-badge.plat')].map(b => b.textContent.trim()));
     check(badges.length >= 4 && badges.every(t => t === 'dz'), `the badge says dz (${JSON.stringify(badges)})`);
     const offer = await page.evaluate(() => { const a = document.querySelector('.tc-mirror .tc-tic.plat-offer'); return a ? a.dataset.tip : null; });
-    check(offer && /Create this artist with its Deezer link/.test(offer), `the 🔗 offer on the unmatched row: ${offer}`);
+    // then (majkinetor's "a"): what a click does, the bare link, the two clicks
+    check(offer && /^Create this artist with its Deezer link\n`deezer\.com\/[^`]+`\nClick: create it\nRight-click: create it silently/.test(offer), `the 🔗 offer on the unmatched row: ${offer}`);
 
     const platLookups = lookups.filter(rs => rs.some(r => /deezer\.com\/artist/.test(r)));
     console.log('lookups', JSON.stringify(platLookups));

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.120000
+// @version      2026.10.20.131800
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2952,11 +2952,15 @@ Click: open the label`;
     }
   }
   let _lastPlatCheck = '';
+  // a link offer's tip: what a click does, the link, a warning, the two clicks (majkinetor's pick, "a")
+  function linkOfferTip(what, url, warn, act) {
+    return `${what}\n\`${String(url).replace(/^https?:\/\/(www\.)?/, '')}\`${warn ? '\n⚠ ' + warn : ''}`
+      + `\nClick: ${act}\nRight-click: ${act} silently, in a background tab`;
+  }
   function platAddTooltip(s) {
-    const p = platformOf(s._platUrl) || { name: 'platform' }, conf = s._platConflict;
-    if (!(s.committed && s.gid)) return `Create this artist with its ${p.name} link (${s._platUrl})`;
-    return conf ? `${p.name}: ${s._platUrl} is linked to ${conf.name}, not to this artist — click to add it here anyway`
-      : `${p.name}: this artist doesn't have ${s._platUrl} yet — click to add it`;
+    const p = platformOf(s._platUrl) || { name: 'platform' }, conf = s._platConflict, who = s.name || 'this artist';
+    if (!(s.committed && s.gid)) return linkOfferTip(`Create this artist with its ${p.name} link`, s._platUrl, '', 'create it');
+    return linkOfferTip(`Add the ${p.name} link to ${who}${conf ? ' anyway' : ''}`, s._platUrl, conf ? `It is linked to ${conf.name} already` : '', 'add it');
   }
   // add the slot's platform link to its artist (an edit of the artist), or create the artist with it
   function addOrCreatePlatformLink(slot, background) {
@@ -3138,7 +3142,7 @@ Click: open the label`;
       let done = 0, lastRender = 0;
       for (const [s, durl] of jobs) {
         await tagDiscogsAddable(s, durl);
-        if (firstCheck) Log.cat('Links').debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s), s._discByPos ? '(matched by position)' : '');
+        if (firstCheck) Log.cat('Links').debug('Discogs:', (s.name || s.gid || 'slot'), '—', s._discogsPending ? 'pending (will re-check)' : !s._discogsAddable ? 'already linked' : discAddTooltip(s).split('\n')[0], s._discByPos ? '(matched by position)' : '');
         done++;
         // update rows + the progress text together, throttled — set the text AFTER
         // rerender so refreshStatus can't blank it
@@ -6819,10 +6823,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // The tooltip text for an addable slot's link/⚠ icon — shared so the log shows
   // the exact same message (a mismatch/conflict reads differently from a plain add).
   function discAddTooltip(s) {
-    const mism = s._discogsMismatch, conf = s._discogsConflict;
-    return mism ? `Discogs mismatch: this artist links ${mism}, the release credits ${s._discogsUrl} — click to add the release's link anyway`
-         : conf ? `Discogs links a different MB artist: ${conf.name} — click to add it to ${s.name || 'this artist'} anyway`
-                : (s.gid ? 'Add the Discogs link to this artist' : 'Create this artist with its Discogs link');
+    const mism = s._discogsMismatch, conf = s._discogsConflict, who = s.name || 'this artist';
+    if (!s.gid) return linkOfferTip('Create this artist with its Discogs link', s._discogsUrl, '', 'create it');
+    return linkOfferTip(`Add the ${mism ? 'release’s ' : ''}Discogs link to ${who}${mism || conf ? ' anyway' : ''}`, s._discogsUrl,
+      mism ? `${who} links another: \`${String(mism).replace(/^https?:\/\/(www\.)?/, '')}\`` : conf ? `It is linked to ${conf.name} already` : '', 'add it');
   }
   function focusNextMissingDiscogs() {
     const list = [];
@@ -7743,7 +7747,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const warnCls = conf ? 'discogs-conflict' : 'discogs-mismatch', warnSvg = conf ? DISCOGS_WARN_SVG : DISCOGS_MISMATCH_SVG;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? warnCls : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? warnSvg : DISCOGS_LINK_SVG;
       ic.dataset.tip = discAddTooltip(s);
-      ic.dataset.tip += '\nRight-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreateDiscogsLink(s, true); };   // #273 background
@@ -7751,7 +7754,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // #651: the same offer for First Contact's platform link
       const conf = s._platConflict;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + (conf ? 'discogs-conflict' : 'discogs-add') + ' plat-offer'; ic.href = '#'; ic.innerHTML = conf ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
-      ic.dataset.tip = platAddTooltip(s) + '\nRight-click: do it silently in a background tab';
+      ic.dataset.tip = platAddTooltip(s);
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreatePlatformLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreatePlatformLink(s, true); };
