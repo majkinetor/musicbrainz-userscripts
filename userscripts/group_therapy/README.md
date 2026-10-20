@@ -98,16 +98,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 
 ## Text parser
 
-**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, with a pattern like [Apollo's track parser](../apollo_editor/README.md#pattern-parser):
-
-| Pattern       | Line                                                                      |
-| ------------- | ------------------------------------------------------------------------- |
-| `R: E`        | `Mastering: Nick Robbins`                                                 |
-| `E - R`       | `Nick Robbins - Mastering`                                                |
-| `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
-| `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
-
-`R` is the role, `E` the entity: an artist, label or place, decided per row. A bracket after either splits it into rows: `[,]` on commas, `[&]` on " & ", `[and]` on the word "and", `[, and /]` on all three. A word splits only with spaces around it, so `AC/DC` stays whole. Case doesn't matter, so `R by E` reads `PRODUCED BY JERRY ROSS`. A `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
+**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns).
 
 <img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
 
@@ -116,29 +107,51 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 - Instruments and vocal types resolve to the *instrument* or *vocal* role plus that attribute: *Flute*, *Lead Vocals*, *Backing Vocals* → *background vocals*. A leading *Guest*, *Additional*, *Solo*, *Co-*, *Executive*, *Assistant* or *Associate* is added as an attribute when the role allows it: *Guest Vocals*, *Co-Producer*, *Executive Producer*.
 - Row colours: plain is ready, amber is matched but unresolved, red didn't match.
 - **search** on a row opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click: in the background). A pick resolves every row with the same name; a right-click only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
-- Each line can have its own **pattern**, its text can be edited in place, and **✕** removes it. **🔒 Freeze matched** pins the current pattern on the lines it already matches, like in Apollo.
+- A line's text can be edited in place, and **✕** removes it.
 - **Scope** sends the credits to the release (default) or to recordings chosen with a [track selector](#track-selector); the roles offered follow the scope.
 - **Works**: a work role going to tracks goes on their works. *create none* (default) skips a track without one; *create needed* creates it, named after the recording, so match existing works first with **◎ Match works…** or it makes duplicates.
 - **Apply** stages the rows. After **Load annotation**, **Apply & clear annotation** also opens the annotation editor, emptied.
 
 The text and the resolutions last until the page reloads.
 
-**Credits that name their tracks**: with **Tracks: auto** (the default), a clause like `(tracks 2,6,9)`, `[tracks 1-3]`, `on tracks 2 and 6` or just `(A1, B2)` sends that row to those tracks, and every other row follows Scope. The clause can follow the role or the name (`Lyricist: Mimmo Epifani (tracks 1-3 5-11)`; without a comma, so a pattern splitting names on commas leaves the list whole); after a name it must say *track*, since `John Smith (2)` names a person. A clause counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
-
 > [!NOTE]
 > Only single-line credits are parsed; grouped multi-line blocks are not.
 
-### Patterns in the text
+### Patterns
 
-A pattern in `{{…}}` in the pasted text lets credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them.
+A pattern works like [Apollo's track parser](../apollo_editor/README.md#pattern-parser): `R` is the role, `E` the entity (an artist, label or place, decided per row), and everything else is text the line must contain. Case doesn't matter, so `R by E` reads `PRODUCED BY JERRY ROSS`.
 
-| Line                                 | Pattern                    |
-| ------------------------------------ | -------------------------- |
-| `{{E - R[,]}}`                       | for the lines below it     |
-| `{{}}`                               | the parser's own, below it |
-| `Nick Robbins - Mastering {{E - R}}` | for this line              |
+| Pattern       | Line                                                                      |
+| ------------- | ------------------------------------------------------------------------- |
+| `R: E`        | `Mastering: Nick Robbins`                                                 |
+| `E - R`       | `Nick Robbins - Mastering`                                                |
+| `R by E`      | `Produced by Jerry Ross`                                                  |
+| `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
+| `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
-On a line with text, `{{…}}` can sit anywhere: `Nick Robbins - Mastering {{E - R}} (Personnel)` reads as `Nick Robbins - Mastering (Personnel)`. A pattern typed in a line's own box still wins, and **🔒 Freeze matched** leaves these lines alone.
+A bracket after `R` or `E` splits it into rows: `[,]` on commas, `[&]` on " & ", `[and]` on the word "and", `[, and /]` on all three. A word splits only with spaces around it, so `AC/DC` stays whole. A `;` separates several credits on one line.
+
+**Where the pattern comes from**, strongest first:
+
+| Source                               | Applies to         |
+| ------------------------------------ | ------------------ |
+| a line's own pattern box             | that line          |
+| `Nick Robbins - Mastering {{E - R}}` | that line          |
+| a line of only `{{E - R[,]}}`        | the lines below it |
+| the pattern box at the top           | every other line   |
+
+`{{}}` alone on a line ends a block. `{{…}}` can sit anywhere in a line and is cut out of its text, so credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them. **🔒 Freeze matched** pins the top pattern on the lines it matches, like in Apollo, and leaves lines with their own pattern alone.
+
+**Tracks**: with **Tracks: auto** (the default), a clause naming tracks sends that row to those tracks; every other row follows Scope. Write the numbers without commas, so `[,]` leaves the list whole:
+
+| Clause              | After      |
+| ------------------- | ---------- |
+| `(tracks 2 6 9)`    | role, name |
+| `[tracks 1-3]`      | role, name |
+| `on tracks 2 and 6` | role, name |
+| `(A1 B2)`           | role       |
+
+`Lyricist: Mimmo Epifani (tracks 1-3 5-11)` credits tracks 1–3 and 5–11. After a name the clause must say *tracks*. It counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
 
 ### Track selector
 
