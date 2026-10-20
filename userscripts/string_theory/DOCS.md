@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 23:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 23:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1455,7 +1455,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 
 The text and the resolutions last until the page reloads.
 
-**Credits that name their tracks**: with **Tracks: auto** (the default), a clause like `(tracks 2,6,9)`, `[tracks 1-3]`, `on tracks 2 and 6` or just `(A1, B2)` sends that row to those tracks, and every other row follows Scope. The clause can follow the role or the name (`Lyricist: Mimmo Epifani (tracks 1-3, 5-11)`); after a name it must say *track*, since `John Smith (2)` names a person. A clause counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
+**Credits that name their tracks**: with **Tracks: auto** (the default), a clause like `(tracks 2,6,9)`, `[tracks 1-3]`, `on tracks 2 and 6` or just `(A1, B2)` sends that row to those tracks, and every other row follows Scope. The clause can follow the role or the name (`Lyricist: Mimmo Epifani (tracks 1-3 5-11)`; without a comma, so a pattern splitting names on commas leaves the list whole); after a name it must say *track*, since `John Smith (2)` names a person. A clause counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
 
 > [!NOTE]
 > Only single-line credits are parsed; grouped multi-line blocks are not.
