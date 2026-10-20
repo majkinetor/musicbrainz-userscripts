@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 10:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 10:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1867,9 +1867,9 @@ On a phone it fills the screen in one column: the steps scroll sideways under th
 | Merge suggestions        | [Fusion](../fusion/README.md)                 | duplicate recordings in the release group              |
 | Credits                  | [Credit Hoarder](../credit_hoarder/README.md) | per-track credits                                      |
 
-Platforms, Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** (the default) waits for its button in the Tracks header (**Compare**, **Fetch RG**, **Fetch credits**), **Off** leaves it out.
+Platforms, Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button in the Tracks header (**Compare**, **Fetch RG**, **Fetch credits**), **Off** leaves it out. Platforms starts on Auto, Fusion and Credit Hoarder on Ask.
 
-Click a step in the header to switch its script off: it isn't asked, its card and column go, and Execute leaves it out. Click it again to switch it back on; Fusion and Credit Hoarder get back the switch they had. This is remembered for the next release. The format icon left of the release title shows or hides the Execution order.
+Click a step in the header to switch its script off for this page: it isn't asked, its card and column go, and Execute leaves it out. Right-click it to switch it off for good, remembered for the next release. Click it again to switch it back on; Fusion and Credit Hoarder get back the switch they had. The format icon left of the release title shows or hides the Execution order.
 
 The album links you select in the Release and entity links card are passed on to ISRC Scout before they are added, so the tracks get their links from those albums too.
 
@@ -1920,7 +1920,7 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 
 ### Compare with the platforms
 
-**Compare**, in the Platforms column of Tracks, reads the release on its platforms with [First Contact](../first_contact/README.md#consolidate), as [Consolidate](#consolidate-a-new-release) does for an album MusicBrainz doesn't have yet. Set its step to **Auto** to compare on every probe.
+**Compare**, in the Platforms column of Tracks, reads the release on its platforms with [First Contact](../first_contact/README.md#consolidate), as [Consolidate](#consolidate-a-new-release) does for an album MusicBrainz doesn't have yet. Its step is **Auto** by default, so it compares on every probe; set it to **Ask** to compare only on the button.
 
 1. It reads the platforms Platform Check has for the release: the links it already has and the ones found with its barcode, and those without a barcode that have as many tracks. A link with another barcode, track count or format is another release, and is left out. So is one without a barcode whose tracklist is another album's (see [Release and entity links](#release-and-entity-links)); a platform the probe read for that isn't read again. Spotify can be read on its own page only, so its link counts but its data isn't compared.
 2. For each field, the value most platforms give wins, as in a consolidation.

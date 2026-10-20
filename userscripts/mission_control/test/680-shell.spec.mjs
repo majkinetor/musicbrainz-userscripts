@@ -112,22 +112,34 @@ test('#680: MC shell — launcher, track matrix, sidebars, modes', { tag: ['@san
   await page.click('#mc-root .mc-hdr .mc-fmt');
   check(await page.locator('#mc-root .mc-side.left').isHidden(), 'and another click on the icon hides it');
   await page.click('#mc-root .mc-hdr .mc-fmt');
-  // #753: a step switches its provider off and on; one without a mode (PC) is stored in `disabled`
+  // #753: a step switches its provider off and on. A click: off for this page, nothing saved; a right-click:
+  // off for good, one without a mode (PC) stored in `disabled`
   const pcOff = () => page.evaluate(() => ({ step: document.querySelector('#mc-root .mc-step[data-step="pc"]').classList.contains('off'), stage: !!document.querySelector('#mc-root .mc-stage.off[data-p="pc"]'), off: window.__mcTest.settings().disabled }));
   await page.click('#mc-root .mc-step[data-step="pc"]');
   let pcs = await pcOff();
-  check(pcs.step && pcs.stage && JSON.stringify(pcs.off) === '["pc"]', `a click on PC's step switches it off (${JSON.stringify(pcs)})`);
+  check(pcs.step && pcs.stage && JSON.stringify(pcs.off) === '[]', `a click on PC's step switches it off for this page, not saved (${JSON.stringify(pcs)})`);
   check(await page.locator('#mc-root .mc-side.left').isVisible(), 'and leaves the sidebar alone');
   await page.click('#mc-root .mc-step[data-step="pc"]');
   pcs = await pcOff();
   check(!pcs.step && !pcs.stage && JSON.stringify(pcs.off) === '[]', `another switches it on (${JSON.stringify(pcs)})`);
-  // one with a mode (Fusion) goes to Off, and back to the mode it had
+  await page.click('#mc-root .mc-step[data-step="pc"]', { button: 'right' });
+  pcs = await pcOff();
+  check(pcs.step && pcs.stage && JSON.stringify(pcs.off) === '["pc"]', `a right-click switches it off for good (${JSON.stringify(pcs)})`);
+  await page.click('#mc-root .mc-step[data-step="pc"]');
+  pcs = await pcOff();
+  check(!pcs.step && !pcs.stage && JSON.stringify(pcs.off) === '[]', `a click switches it on again (${JSON.stringify(pcs)})`);
+  // one with a mode (Fusion): a click leaves its mode as saved, a right-click sets it Off, and back to the mode it had
   const fxMode = () => page.evaluate(() => window.__mcTest.settings().fusion);
+  const fxStepOff = () => page.locator('#mc-root .mc-step.off[data-step="fusion"]').count();
   const fxWas = await fxMode();
   await page.click('#mc-root .mc-step[data-step="fusion"]');
-  check(await fxMode() === 'off', "a click on Fusion's step sets it Off");
+  check(await fxMode() === fxWas && await fxStepOff() === 1, "a click on Fusion's step switches it off, its saved mode kept");
   await page.click('#mc-root .mc-step[data-step="fusion"]');
-  check(await fxMode() === fxWas, `another gives it back its mode (${fxWas})`);
+  check(await fxStepOff() === 0, 'another switches it on');
+  await page.click('#mc-root .mc-step[data-step="fusion"]', { button: 'right' });
+  check(await fxMode() === 'off', "a right-click on Fusion's step sets it Off");
+  await page.click('#mc-root .mc-step[data-step="fusion"]');
+  check(await fxMode() === fxWas, `a click gives it back its mode (${fxWas})`);
   await page.click('#mc-root .mc-seg[data-mode="ch"] button[data-v="off"]');
   check(!(await heads()).some(h => h.includes('Credits')), 'credits column gone with CH off');
   check(await page.locator('#mc-root .mc-stage.off[data-p="ch"]').count() === 1, 'CH step marked off');

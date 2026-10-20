@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.103420
+// @version      2026.10.20.105215
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -42,7 +42,7 @@ Log.cat('System').info(mbuStartupInfo('Mission Control'));
 // consExec: …and Execute once that probe has finished, after a countdown a click cancels (#776)
 // disabled: the providers without a mode (PC, IS, AS) switched off with their step in the header (#753)
 // platforms: the comparison with the platforms (#782), First Contact's reads: as fusion and ch
-const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'ask', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, v: 2 };
+const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, v: 3 };
 // a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion', 'fc']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
@@ -61,6 +61,12 @@ function loadSettings() {
         if (s.reloadAfter === false) delete s.reloadAfter;
         s.v = 2;
         Log.cat('Settings').info('settings v2: probe on open and reload after Execute now default on');
+    }
+    // v3 made the Platforms step (First Contact's comparison) Auto by default; an 'ask' saved before is the old default
+    if (!(s.v >= 3)) {
+        if (s.platforms === 'ask') delete s.platforms;
+        s.v = 3;
+        Log.cat('Settings').info('settings v3: the Platforms step now compares on every probe by default');
     }
     return Object.assign({}, DEFAULTS, s);
 }
@@ -847,13 +853,30 @@ function mcStyle() {
     document.head.appendChild(s);
 }
 
-function modeOf(p) { return p.mode ? S[p.mode] : (S.disabled || []).includes(p.id) ? 'off' : 'auto'; }
+// a step switched off by a click is off for this page only, not saved
+const PAGE_OFF = new Set();
+function modeOf(p) { return PAGE_OFF.has(p.id) ? 'off' : p.mode ? S[p.mode] : (S.disabled || []).includes(p.id) ? 'off' : 'auto'; }
+// the mode of Fusion, CH or Platforms (a settings key), 'off' while its step is off for this page
+const modeNow = key => modeOf(PROVIDERS.find(p => p.mode === key));
 // #753: a step in the header switches its provider off (not probed, its column, card and Execute
-// left out) and on again: Fusion and CH back to the mode they had, the others to Auto
+// left out) and on again. A click switches it off for this page; a right-click (keep) switches it off
+// for good, as a setting. Either switches it on again: Fusion and CH back to the mode they had, the others to Auto
 const onMode = {};
-function toggleProvider(id) {
+function toggleProvider(id, keep) {
     const p = PROVIDERS.find(x => x.id === id); if (!p) return;
+    if (PAGE_OFF.has(id)) {
+        PAGE_OFF.delete(id);
+        // a right-click keeps it off, now for good; a click switches it on, and the setting too when that is off
+        if (!keep && modeOf(p) !== 'off') { Log.cat('UI').info(id + ' on again'); if (ui) rebuildBody(); return; }
+        if (keep && modeOf(p) === 'off') { if (ui) rebuildBody(); return; }
+    }
     const on = modeOf(p) === 'off';
+    if (!on && !keep) {
+        PAGE_OFF.add(id);
+        Log.cat('UI').info(id + ' off for this page');
+        if (ui) rebuildBody();
+        return;
+    }
     if (p.mode) {
         if (!on) onMode[id] = S[p.mode];
         setMode(p.mode, on ? onMode[id] || DEFAULTS[p.mode] : 'off');
@@ -1055,7 +1078,7 @@ function paintSteps() {
         const n = ui.querySelector('.mc-step[data-step="' + p.id + '"]'); if (!n) return;
         const [cls, words, mark] = stepState(p);
         n.className = 'mc-step ' + cls;
-        n.title = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? '. Click to switch it on' : '. Click to switch it off');
+        n.title = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '. Click to switch it on' : '. Click: off for this page · right-click: off for good');
         n.querySelector('i').textContent = words;
         const sup = n.querySelector('sup'); sup.hidden = !mark; sup.textContent = mark;
         // the provider's card shows the same state: a stripe on its edge, a tint and a word in its header (#680)
@@ -1105,9 +1128,9 @@ function colHead(c) {
     const p = PROVIDERS.find(x => x.id === c.p);
     if (!p.mode) return esc(c.head);
     const r = results[p.id];
-    const ask = S[p.mode] === 'ask' && found[p.id] && (!r || r.state !== 'busy');
+    const ask = modeOf(p) === 'ask' && found[p.id] && (!r || r.state !== 'busy');
     return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" title="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
-        : '<span class="mc-mode">' + S[p.mode] + '</span>');
+        : '<span class="mc-mode">' + modeOf(p) + '</span>');
 }
 function trackFinding(pid, rec) {
     const r = results[pid];
@@ -1203,7 +1226,7 @@ function pfSet(i, what, val, from) {
 }
 // what Platform Check gets: { medium, position, title?, recording?, ms?, was, from }
 function pfChanges() {
-    if (S.platforms === 'off' || !results.fc || results.fc.state !== 'done') return [];
+    if (modeNow('platforms') === 'off' || !results.fc || results.fc.state !== 'done') return [];
     return Object.entries(CMP.picks).map(([i, p]) => {
         const t = rel.tracks[+i];
         if (!t) return null;
@@ -1262,7 +1285,7 @@ async function fxAutoCheck() {
     const gen = ++fxCheckGen;
     fxBusy.clear();
     const r = results.fusion;
-    if (S.fusion === 'off' || !fxCan('check') || !r || !r.findings) return;
+    if (modeNow('fusion') === 'off' || !fxCan('check') || !r || !r.findings) return;
     const covered = new Set(), queue = [];
     for (const x of r.findings) {
         const ck = x.checked || {};
@@ -1292,8 +1315,8 @@ async function fxAutoCheck() {
 // the Tracks header's Expand all / Collapse all opens or folds every Fusion comparison
 const fxOpenable = () => {
     const r = results.fusion, f = results.fc;
-    return (S.fusion !== 'off' && r && r.findings ? rel.tracks.map(t => trackFinding('fusion', t.rec)).filter(x => x && FX_SHOWN[x.state]).map(x => x.key) : [])
-        .concat(S.platforms !== 'off' && f && f.findings ? rel.tracks.map(t => trackFinding('fc', t.rec)).filter(x => x && (pfDiffers(x) || CMP.picks[pfIndex(x)])).map(x => x.key) : []);
+    return (modeNow('fusion') !== 'off' && r && r.findings ? rel.tracks.map(t => trackFinding('fusion', t.rec)).filter(x => x && FX_SHOWN[x.state]).map(x => x.key) : [])
+        .concat(modeNow('platforms') !== 'off' && f && f.findings ? rel.tracks.map(t => trackFinding('fc', t.rec)).filter(x => x && (pfDiffers(x) || CMP.picks[pfIndex(x)])).map(x => x.key) : []);
 };
 function fxAllBtn() {
     const ks = fxOpenable();
@@ -1344,7 +1367,7 @@ function trackPicks(t) {
         const x = c.pick && trackFinding(c.p, t.rec);
         if (x && PICKABLE[x.state] && picked[c.p].has(x.key)) n++;
     });
-    if (S.platforms !== 'off' && CMP.picks[rel.tracks.indexOf(t)]) n++;   // #782: a title or length taken in
+    if (modeNow('platforms') !== 'off' && CMP.picks[rel.tracks.indexOf(t)]) n++;   // #782: a title or length taken in
     return n;
 }
 function paintMatrix() {
@@ -1373,7 +1396,7 @@ function paintMatrix() {
     // are the header's (#, Title, Len, then each provider's)
     const heads = ['n', 'ttl', 'len'].concat([...ui.querySelectorAll('.mc-tbl th[data-colh]')].map(th => th.dataset.colh));
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-pf]').forEach(tr => {
-        const n = tr.dataset.pf, t = rel.tracks[+n], x = S.platforms !== 'off' && t ? trackFinding('fc', t.rec) : null;
+        const n = tr.dataset.pf, t = rel.tracks[+n], x = modeNow('platforms') !== 'off' && t ? trackFinding('fc', t.rec) : null;
         const show = !!(x && fxOpen.has(x.key)), old = [...ui.querySelectorAll('.mc-tbl tr.mc-pfr[data-pfr="' + n + '"]')];
         const trk = ui.querySelector('.mc-tbl tbody tr[data-i="' + n + '"]');
         if (trk) trk.classList.toggle('pfopen', show);
@@ -1384,7 +1407,7 @@ function paintMatrix() {
     // #790: a slot stays while its track's comparison is open, so Fusion's card in it isn't rebuilt on every paint
     let mount = false;
     ui.querySelectorAll('.mc-tbl tr.mc-fxd[data-fx]').forEach(tr => {
-        const t = rel.tracks[+tr.dataset.fx], x = S.fusion !== 'off' && t ? trackFinding('fusion', t.rec) : null;
+        const t = rel.tracks[+tr.dataset.fx], x = modeNow('fusion') !== 'off' && t ? trackFinding('fusion', t.rec) : null;
         const show = !!(x && FX_SHOWN[x.state] && fxOpen.has(x.key)), td = tr.firstElementChild, slot = td.firstElementChild;
         tr.hidden = !show;
         if (!show) { if (slot) td.textContent = ''; return; }
@@ -1428,7 +1451,7 @@ function releaseCards() {
             + '<div class="mc-card-body" data-card="' + id + '"></div></section>';
     };
     row.innerHTML = mbuHtml(card('pc', 'Release and entity links') + card('as', 'Cover art'));
-    if (S.ch !== 'off') row.append(releaseCredits());
+    if (modeNow('ch') !== 'off') row.append(releaseCredits());
     row._cards = [...row.children];
     let w = 0;
     new ResizeObserver(() => { if (row.clientWidth !== w) { w = row.clientWidth; layoutCards(row); } }).observe(row);
@@ -1617,8 +1640,9 @@ function paintCards() {
         // an artist or label row: its name, its disambiguation (weak, as MusicBrainz shows it), the platform
         const entName = x => {
             const e = x.entity, n = x.name || x.key;
-            if (!e || !e.disambiguation || !n.startsWith(e.name + ' · ')) return esc(n);
-            return esc(e.name) + ' <span class="weak">(' + esc(e.disambiguation) + ')</span>' + esc(n.slice(e.name.length));
+            if (!e || !e.mbid || !n.startsWith(e.name + ' · ')) return esc(n);
+            return '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + e.type + '/' + e.mbid) + '" title="' + esc('Open this ' + e.type + ' on MusicBrainz') + '">' + esc(e.name) + '</a>'
+                + (e.disambiguation ? ' <span class="weak">(' + esc(e.disambiguation) + ')</span>' : '') + esc(n.slice(e.name.length));
         };
         const line = (x, lane) => {
             const pick = !!PICKABLE[x.state];
@@ -1775,8 +1799,8 @@ function paintInspector() {
     box.innerHTML = mbuHtml('<div class="mc-mini">Recording<a class="n" target="_blank" href="/recording/' + esc(t.rec) + '">' + esc((t.rec || '').slice(0, 8)) + '</a></div>'
         + '<div class="mc-mini">Length<span class="n">' + esc(t.len || '?') + '</span></div><div style="height:10px"></div>'
         + blk('ISRCs', 'is', isrcBody) + blk('Recording links', 'is', linksBody)
-        + (S.fusion !== 'off' ? blk('Fusion matches', 'fusion', fusionBody) : '') + (S.ch !== 'off' ? blk('Credits', 'ch', chBody) : '')
-        + (S.platforms !== 'off' ? blk('Platforms', 'fc', platBody) : ''));
+        + (modeNow('fusion') !== 'off' ? blk('Fusion matches', 'fusion', fusionBody) : '') + (modeNow('ch') !== 'off' ? blk('Credits', 'ch', chBody) : '')
+        + (modeNow('platforms') !== 'off' ? blk('Platforms', 'fc', platBody) : ''));
 }
 
 
@@ -1964,6 +1988,8 @@ function onPickUp() {
 }
 // a found track link is an <a> (a click opens it): right-click takes it in or leaves it out
 function onContextMenu(e) {
+    const stp = e.target.closest('.mc-step');
+    if (stp && !e.target.closest('[data-act]')) { e.preventDefault(); toggleProvider(stp.dataset.step, true); return; }
     const pk = e.target.closest('a.mc-lnk.mc-pick');
     if (!pk) return;
     e.preventDefault();

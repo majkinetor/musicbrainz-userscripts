@@ -6,7 +6,7 @@
 // Platform Check. Stand-ins for Platform Check and First Contact give fixed answers, as in 782-compare. Read only.
 import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'Mission Control' } });
+test.use({ gm: { name: 'Mission Control', values: { 'mc.settings': JSON.stringify({ v: 3, platforms: 'ask' }) } } });   // the Platforms step on Ask: the spec presses Compare
 
 const RELEASE = '9d290316-dcd3-4d7e-a62b-392ab2396f27';   // "Rushing Pictures": 5 tracks, no barcode
 const BC = '4006381333931';
