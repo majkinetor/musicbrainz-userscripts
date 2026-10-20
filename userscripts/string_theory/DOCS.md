@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 10:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 10:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1912,7 +1912,7 @@ A release without a barcode gets a **Barcode** row at the top of *Release* for e
 
 The catalog numbers the platforms give, for a label the release has without one, sit beside the barcode of their group. A group with a barcode is one release, so it shows one per label; a platform in it that gives none just didn't say. The group without a barcode can show several, since its platforms may be different releases. Click one to take it in or leave it out; **take all in** never takes a catalog number. Only the one in the release's own group starts taken in, and only from a platform with the release's track count and medium (a CD with the digital release's barcode doesn't count), and a label takes one, so taking another in leaves the first out.
 
-**Artists** and **Labels** list the pages the matched albums name for them. A page MusicBrainz has on another artist or label is withheld, and its row names that one, with its disambiguation and a link, so you can tell the wrong one from a duplicate. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
+**Artists** and **Labels** list the pages the matched albums name for them. A page MusicBrainz has on another artist or label is withheld, and its row names that one, with its disambiguation and a link, beside the release's own artist and its disambiguation, so you can tell the wrong one from a duplicate. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
 
 After [Compare with the platforms](#compare-with-the-platforms), *Release* also has a row for the **Release event** and one for the **Track lengths**, when the release lacks them.
 

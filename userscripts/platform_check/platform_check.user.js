@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.20.102844
+// @version      2026.10.20.103420
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -7708,7 +7708,7 @@ function pcLinkRows(mb, byProvider) {
     const add = (type, p, { mb: m, plat, by }) => {
         const key = `${type}:${m.mbid}`;
         let r = rows.get(key);
-        if (!r) rows.set(key, r = { type, mbid: m.mbid, name: m.name, cells: {} });
+        if (!r) rows.set(key, r = { type, mbid: m.mbid, name: m.name, disambiguation: m.disambiguation || '', cells: {} });
         const cell = r.cells[p] || (r.cells[p] = []);
         if (!cell.some(x => pcSameUrl(x.url, plat.url))) cell.push({ url: plat.url, name: plat.name, uncertain: !!plat.uncertain, by });
     };
@@ -7761,7 +7761,8 @@ function pcMbCredits(doc, mbTracks) {
             // same-named artist there was paired first and shown ⚠)
             if (a.closest('.ars, dl.ars, div.ars, .release-rels, #mb-pc-panel, td.title')) continue;
             const m = (a.getAttribute('href') || '').match(/\/artist\/([0-9a-f-]{36})(?:[/?#]|$)/);
-            if (m && !out.some(x => x.mbid === m[1])) out.push({ mbid: m[1], name: a.textContent.trim(), alt: (a.getAttribute('title') || '').trim() });
+            const alt = (a.getAttribute('title') || '').trim();
+            if (m && !out.some(x => x.mbid === m[1])) out.push({ mbid: m[1], name: a.textContent.trim(), alt, disambiguation: (alt.match(/^(?:.* – )?[^()]*\((.+)\)$/) || [])[1] || '' });
         }
         return out;
     };
@@ -9048,7 +9049,7 @@ async function pcMcEntityFindings() {
         // majkinetor: 'Matched by position not name should be more prominent as it is easy to miss': Mission
         // Control draws a reason listed in mismatch in amber, bold
         const stress = why && asked && c.state !== 'other' && pcCellStressed(c) ? [why] : undefined;
-        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, mismatch: stress, entity: { type: r.type, mbid: r.mbid, name: r.name },
+        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, mismatch: stress, entity: { type: r.type, mbid: r.mbid, name: r.name, disambiguation: r.disambiguation || '' },
             others: c.state === 'other' ? (c.who || []).filter(w => w.mbid).map(w => ({ type: w.type, mbid: w.mbid, name: w.name || '', disambiguation: w.disambiguation || '' })) : undefined });
     }
     _pcMcEnt = out;
