@@ -116,7 +116,7 @@ export const TOKENS = {
     'z-modal-panel': '2147483001',
     // The tooltip (dev/ui/tooltip.mjs) explains whatever is under the pointer, a modal's
     // buttons included, so it sits over everything.
-    'z-tip': '2147483600',
+    'z-tip': '2147483647',   // the top: a tip names what is under the pointer, so nothing covers it
 };
 
 /** The `:root{…}` rule as a single CSS string. */

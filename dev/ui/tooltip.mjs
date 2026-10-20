@@ -38,12 +38,12 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 11;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 13;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
 const CSS = [
-    '#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;',
+    '#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483647);box-sizing:border-box;',
     'max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;',
     'background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);',
     'border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;',
@@ -56,6 +56,8 @@ const CSS = [
     '#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}',
     '#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}',
     '#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}',
+    // a table of levels (a cutoff's) gets the room to keep each meaning on one line (majkinetor: "Fusion tooltip reflows")
+    '#mbu-tip:has(.mbu-tip-dl){max-width:min(480px,calc(100vw - 16px))}',
     // the arrow: a square turned 45°, two of its borders showing, at --mbu-tip-ax
     '#mbu-tip::before{content:"";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;',
     'background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}',
@@ -357,6 +359,11 @@ function mbuTipEl() {
         t.setAttribute('role', 'tooltip');
         (document.body || document.documentElement).appendChild(t);
     }
+    // Falcon's panel, Group Therapy's menus and others sit at the top z-index too; at an equal one
+    // the later element is drawn over, so the tip moves to the end of the page when it is not there
+    // (majkinetor, with a screenshot: Falcon's panel over a tip)
+    var host = t.parentNode;
+    if (host && host.lastElementChild !== t) host.appendChild(t);
     return t;
 }
 
