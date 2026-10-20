@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.19
+// @version      2026.10.20.102844
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8889,6 +8889,13 @@ function pcMcFindingOwn(p) {
 // when it is sure: the barcode pasted by hand, or one a link the release already has reports, whose
 // track count and medium are the release's. The rest are unsure (another medium, more than one
 // such barcode) or withheld (a wrong check digit). At most one is new.
+// "consolidated by Mission Control from …": the platforms a value came from (Mission Control sends their keys),
+// else those of the whole comparison
+function pcConsFrom(keys) {
+    const ns = Array.isArray(keys) && keys.length ? keys.map(k => PROVIDER_NAME[k] || k) : _pcMcCons?.from || [];
+    return 'consolidated by Mission Control from ' + (ns.join(', ') || 'the platforms');
+}
+const pcConsKeys = keys => (Array.isArray(keys) && keys.length ? { consFrom: keys.slice() } : {});
 function pcMcBarcodeFindings() {
     if (MB_OWN_BARCODE) return [];
     const pasted = pcPastedBarcode();
@@ -8905,11 +8912,12 @@ function pcMcBarcodeFindings() {
     // #727: a consolidation's barcode is taken in (a pasted one still wins); the others are unsure beside it
     const cb = String(_pcMcCons?.barcode || '').replace(/\D/g, '');
     if (cb && pcGtinValid(cb) && !pasted) {
-        const why = 'consolidated by Mission Control from ' + ((_pcMcCons.from || []).join(', ') || 'the platforms');
+        const why = pcConsFrom(_pcMcCons.barcodeFrom);
         let f = out.find(x => normBarcode(x.code) === normBarcode(cb));
         if (f) { f.state = 'new'; f.why = [why, f.why].filter(Boolean).join(' · '); f.mismatch = undefined; }
         else out.unshift(f = { key: `barcode:${cb}`, kind: 'barcode', name: 'Barcode', code: cb, state: 'new', why, platforms: [] });
         f.cons = true;
+        Object.assign(f, pcConsKeys(_pcMcCons.barcodeFrom));
         out.forEach(x => { if (x !== f && x.state === 'new') { x.state = 'unsure'; x.why += ' · not the consolidation\'s'; } });
         return out;
     }
@@ -8981,9 +8989,9 @@ async function pcMcLabelFindings() {
     const want = (_pcMcCons?.labels || []).filter(l => l && (l.name || l.mbid));
     if (!want.length) return (_pcMcLab = []);
     const rows = pcPageLabels().filter(r => r.mbid), out = [];
-    const from = 'consolidated by Mission Control from ' + ((_pcMcCons.from || []).join(', ') || 'the platforms');
     const catnoOn = (r, l) => {
-        const f = { key: `catno:${r.mbid}:${l.catno}`, kind: 'catno', name: 'Cat. no.', code: l.catno, label: { mbid: r.mbid, name: r.name }, cons: true };
+        const from = pcConsFrom(l.from);
+        const f = { key: `catno:${r.mbid}:${l.catno}`, kind: 'catno', name: 'Cat. no.', code: l.catno, label: { mbid: r.mbid, name: r.name }, cons: true, ...pcConsKeys(l.from) };
         if (r.catno && pcCatnoNorm(r.catno) === pcCatnoNorm(l.catno)) return out.push({ ...f, state: 'linked' });
         if (r.catno) return appendLog('System', `Mission Control: ${r.name} has catalog number ${r.catno} here, the consolidation ${l.catno} — left as it is`, 'warn');
         out.push({ ...f, state: 'new', why: [from, l.name && l.name !== r.name ? `as "${l.name}"` : ''].filter(Boolean).join(' · ') });
@@ -8997,8 +9005,8 @@ async function pcMcLabelFindings() {
         if (r) { if (l.catno) catnoOn(r, l); continue; }
         if (out.some(f => f.kind === 'label' && f.label.mbid === m.mbid)) continue;
         const via = m.via === 'link' ? `found by its link ${l.url}` : m.via === 'name' ? 'found by its name only' : '';
-        out.push({ key: `label:${m.mbid}:${l.catno || ''}`, kind: 'label', name: 'Label', code: l.catno || '', label: { mbid: m.mbid, name: m.name || l.name }, cons: true,
-            state: m.via === 'name' ? 'unsure' : 'new', why: [from, via, l.name && m.name && l.name !== m.name ? `as "${l.name}"` : ''].filter(Boolean).join(' · ') });
+        out.push({ key: `label:${m.mbid}:${l.catno || ''}`, kind: 'label', name: 'Label', code: l.catno || '', label: { mbid: m.mbid, name: m.name || l.name }, cons: true, ...pcConsKeys(l.from),
+            state: m.via === 'name' ? 'unsure' : 'new', why: [pcConsFrom(l.from), via, l.name && m.name && l.name !== m.name ? `as "${l.name}"` : ''].filter(Boolean).join(' · ') });
     }
     return (_pcMcLab = out);
 }
@@ -9008,14 +9016,13 @@ async function pcMcLabelFindings() {
 function pcMcFieldFindings() {
     const c = _pcMcCons;
     if (!c) return [];
-    const from = 'consolidated by Mission Control from ' + ((c.from || []).join(', ') || 'the platforms');
     const out = [], e = c.event;
     if (e && e.date && e.date.year) {
         const d = [e.date.year, e.date.month, e.date.day].filter(Boolean).map((x, i) => i ? String(x).padStart(2, '0') : String(x)).join('-');
-        out.push({ key: `event:${d}:${e.country || ''}`, kind: 'event', name: 'Release event', code: d + (e.country ? ` ${e.countryName || e.country}` : ''), event: { date: e.date, country: e.country || null }, state: 'new', cons: true, why: [from, e.why].filter(Boolean).join(' · ') });
+        out.push({ key: `event:${d}:${e.country || ''}`, kind: 'event', name: 'Release event', code: d + (e.country ? ` ${e.countryName || e.country}` : ''), event: { date: e.date, country: e.country || null }, state: 'new', cons: true, ...pcConsKeys(e.from), why: [pcConsFrom(e.from), e.why].filter(Boolean).join(' · ') });
     }
     const ls = (Array.isArray(c.lengths) ? c.lengths : []).filter(l => l && l.medium > 0 && l.position > 0 && l.ms > 0);
-    if (ls.length) out.push({ key: `lengths:${ls.length}`, kind: 'lengths', name: 'Track lengths', code: `${ls.length} track${ls.length === 1 ? '' : 's'}`, lengths: ls, state: 'new', cons: true, why: from });
+    if (ls.length) out.push({ key: `lengths:${ls.length}`, kind: 'lengths', name: 'Track lengths', code: `${ls.length} track${ls.length === 1 ? '' : 's'}`, lengths: ls, state: 'new', cons: true, ...pcConsKeys(c.lengthsFrom), why: pcConsFrom(c.lengthsFrom) });
     return out;
 }
 // The Artists & labels links (#671) as MC findings, one per link: key `ent:<type>:<mbid>:<url>`,
@@ -9033,14 +9040,16 @@ async function pcMcEntityFindings() {
     }
     const out = [];
     for (const r of rows) for (const [p, cell] of Object.entries(r.cells)) for (const c of pcMarkCell(r, cell, linked)) {
-        const who = (c.who || []).map(w => `${w.type} ${w.name || w.mbid}`).join(', ');
+        const who = (c.who || []).map(w => `${w.type} ${w.name || w.mbid}${w.disambiguation ? ` (${w.disambiguation})` : ''}`).join(', ');
+        const same = c.state === 'other' && (c.who || []).some(w => pcNameKey(w.name) === pcNameKey(r.name));
         const state = c.state === 'linked' ? 'linked' : c.state === 'other' ? 'withheld' : !asked ? 'unsure' : c.state === 'unsure' ? 'unsure' : 'new';
-        const why = c.state === 'other' ? `already linked to ${who}` : !asked ? 'MusicBrainz couldn\'t be asked whether it has this link'
+        const why = c.state === 'other' ? `already linked to ${who}${same ? ' · same name: a duplicate to merge, or the wrong one credited' : ''}` : !asked ? 'MusicBrainz couldn\'t be asked whether it has this link'
             : pcCellWhy(c);
         // majkinetor: 'Matched by position not name should be more prominent as it is easy to miss': Mission
         // Control draws a reason listed in mismatch in amber, bold
         const stress = why && asked && c.state !== 'other' && pcCellStressed(c) ? [why] : undefined;
-        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, mismatch: stress, entity: { type: r.type, mbid: r.mbid, name: r.name } });
+        out.push({ key: `ent:${r.type}:${r.mbid}:${c.url}`, name: `${r.name} · ${PROVIDER_NAME[p]}`, icon: p, url: c.url, state, why: why || undefined, mismatch: stress, entity: { type: r.type, mbid: r.mbid, name: r.name },
+            others: c.state === 'other' ? (c.who || []).filter(w => w.mbid).map(w => ({ type: w.type, mbid: w.mbid, name: w.name || '', disambiguation: w.disambiguation || '' })) : undefined });
     }
     _pcMcEnt = out;
     appendLog('System', `Mission Control: ${out.length} artist/label link(s) from ${rows.length} artist(s)/label(s)`);

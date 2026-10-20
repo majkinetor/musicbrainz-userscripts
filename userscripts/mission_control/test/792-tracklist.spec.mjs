@@ -1,7 +1,7 @@
 // #792: a platform Platform Check takes on its track count alone (no barcode) is no selected album link until
 // First Contact has read it, on every probe, and stays unselected without First Contact. Read, it is left out when
-// its tracklist is another release's: fewer than half the titles and fewer than half the lengths match the
-// release's. A transliterated tracklist (other titles, the same lengths) is selected, and a platform with the
+// its tracklist is another release's: fewer than half the lengths match the release's, even with every title the
+// same (another version of the album). A transliterated tracklist (other titles, the same lengths) is selected, and a platform with the
 // release's barcode is never held. Compare reuses those reads and leaves the other release out of what it hands
 // Platform Check. Stand-ins for Platform Check and First Contact give fixed answers, as in 782-compare. Read only.
 import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
@@ -37,11 +37,11 @@ async function setup(page, inject) {
       setTimeout(() => send('mc:findings', { id: 'pc', run: d.run, release, findings: fs, barcode: bc }), 50);
     });
     send('mc:provider', { id: 'pc', name: 'Platform Check', version: 1, release, capabilities: ['probe', 'apply'] });
-    // Amazon: another album (other titles, lengths far off); YouTube Music: the titles transliterated, the
+    // Amazon: another version (the same titles, lengths far off); YouTube Music: the titles transliterated, the
     // lengths the same; Qobuz: the release's barcode, though its titles and lengths are another's
     const other = ['PITORESUKU', 'OOTONOMII', 'OYASUMI', 'KEKKYOKU', 'SAIGO'];
     const tracks = k => titles.map((t, i) => ({
-      title: k === 'amazonmusic' || k === 'qobuz' ? other[i] : k === 'ytmusic' ? 'ラッシング ' + (i + 1) : t,
+      title: k === 'qobuz' ? other[i] : k === 'ytmusic' ? 'ラッシング ' + (i + 1) : t,
       lengthMs: k === 'amazonmusic' || k === 'qobuz' ? lens[i] - 60000 - i * 7000 : lens[i] + (k === 'ytmusic' ? 600 : 0),
       credit: [{ name: 'Mind.In.A.Box', join: '' }] }));
     const relOf = k => ({ title: 'Rushing Pictures', credit: [{ name: 'Mind.In.A.Box', join: '' }], types: ['EP'], date: { year: 2008 }, barcode: k === 'deezer' || k === 'qobuz' ? bc : null,
@@ -84,7 +84,7 @@ test('#792: a platform taken on its track count is unselected until First Contac
   p = await until(() => picked(page), x => x.includes('ytmusic'));
   check(p.includes('ytmusic') && !p.includes('amazonmusic'), `read, YouTube Music (the same lengths) is selected, Amazon not (${p})`);
   const w = await why(page, 'amazonmusic');
-  check(/another tracklist: 0 of 5 titles, 0 of 5 lengths match/.test(w) && !/until First Contact/.test(w), `Amazon's row says why (${w})`);
+  check(/another tracklist: 5 of 5 titles, 0 of 5 lengths match/.test(w) && !/until First Contact/.test(w), `Amazon's row says why (${w})`);
   check(!/tracklist|First Contact/.test(await why(page, 'ytmusic')), 'YouTube Music\'s row has no note left');
 });
 

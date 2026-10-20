@@ -82,8 +82,9 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   const cons = await page.evaluate(() => window.__pcProbes[1]);
   console.log(JSON.stringify(cons));
   check(cons && cons.barcode === BC, 'the barcode goes to Platform Check');
-  check(cons && JSON.stringify(cons.labels) === JSON.stringify([{ name: 'Artoffact', mbid: null, catno: 'AOF 782', url: null }]), `so do the label and its catalog number (${JSON.stringify(cons && cons.labels)})`);
+  check(cons && JSON.stringify(cons.labels) === JSON.stringify([{ name: 'Artoffact', mbid: null, catno: 'AOF 782', url: null, from: ['deezer', 'qobuz'] }]), `so do the label and its catalog number (${JSON.stringify(cons && cons.labels)})`);
   check(cons && cons.urls.map(u => u.key).sort().join() === 'deezer,qobuz,spotify', 'and the links taken');
+  check(cons && JSON.stringify(cons.barcodeFrom) === '["deezer","qobuz"]' && JSON.stringify(cons.lengthsFrom) === '["deezer","qobuz"]' && JSON.stringify(cons.event.from) === '["deezer","qobuz"]', `each value names its own platforms (${JSON.stringify(cons && [cons.barcodeFrom, cons.lengthsFrom, cons.event && cons.event.from])})`);
   check(cons && cons.event && cons.event.date.year === 2008 && cons.event.date.day === 29 && cons.event.country === 'XW', `a release event, as the release has none (${JSON.stringify(cons && cons.event)})`);
   check(cons && cons.lengths && cons.lengths.length === 5 && cons.lengths[0].medium === 1 && cons.lengths[4].position === 5 && cons.lengths[2].ms === LENS[2], 'and every track\'s length, as none has one');
   check(cons && JSON.stringify(cons.from) === '["Deezer","Qobuz"]', `naming the platforms read (${cons && cons.from})`);
