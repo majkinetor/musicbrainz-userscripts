@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 23:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 23:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1439,7 +1439,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 | `E[,] - R[,]` | `Cameron Allen - Flute, Tenor Saxophone` → one row per role               |
 | `R: E[&]`     | `Graphic Design: Ricardo H Fernandes & Yacine Blaeich` → one row per name |
 
-`R` is the role, `E` the entity: an artist, label or place, decided per row. A bracket after either splits it into rows: `[,]` on commas, `[&]` on " & ", `[and]` on the word "and", `[, and /]` on all three. A word splits only with spaces around it, so `AC/DC` stays whole. A `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
+`R` is the role, `E` the entity: an artist, label or place, decided per row. A bracket after either splits it into rows: `[,]` on commas, `[&]` on " & ", `[and]` on the word "and", `[, and /]` on all three. A word splits only with spaces around it, so `AC/DC` stays whole. Case doesn't matter, so `R by E` reads `PRODUCED BY JERRY ROSS`. A `;` separates several credits on one line. The text can carry its own [patterns](#patterns-in-the-text).
 
 <img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
 
@@ -1470,7 +1470,7 @@ A pattern in `{{…}}` in the pasted text lets credits printed in several shapes
 | `{{}}`                               | the parser's own, below it |
 | `Nick Robbins - Mastering {{E - R}}` | for this line              |
 
-A pattern typed in a line's own box still wins, and **🔒 Freeze matched** leaves these lines alone.
+On a line with text, `{{…}}` can sit anywhere: `Nick Robbins - Mastering {{E - R}} (Personnel)` reads as `Nick Robbins - Mastering (Personnel)`. A pattern typed in a line's own box still wins, and **🔒 Freeze matched** leaves these lines alone.
 
 #### Track selector
 

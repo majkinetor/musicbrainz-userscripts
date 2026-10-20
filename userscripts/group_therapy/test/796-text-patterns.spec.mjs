@@ -1,6 +1,6 @@
 // #796 a pattern written into the pasted text: a `{{E - R}}` line sets the pattern for
-// the lines after it, `{{}}` goes back to the parser's own, and `{{…}}` at a line's end
-// sets it for that line. Art Station's AI scan asks for these, so one paste can carry
+// the lines after it, `{{}}` goes back to the parser's own, and `{{…}}` anywhere else in
+// a line sets it for that line. Art Station's AI scan asks for these, so one paste can carry
 // credits printed in several shapes.
 import { test, check, frames, loadFunctions } from '../../../dev/test/harness.mjs';
 import { blockEdits, openRelEditor } from './gt.mjs';
@@ -16,7 +16,8 @@ test('{{…}} reads as a block or a line pattern, and nothing else does', { tag:
   check(j(txpDirective('Nick Robbins - Mastering {{E - R}}')) === j({ text: 'Nick Robbins - Mastering', inline: 'E - R' }), 'a trailing {{…}} is the line\'s pattern, cut off the text');
   check(txpDirective('Mastering: Nick Robbins') === null, 'a plain credit has none');
   check(txpDirective('Guitar [tracks 1-3]: Alice') === null, 'brackets are not braces');
-  check(txpDirective('Bass: Bob {{E - R}} extra') === null, 'only at the line\'s end');
+  check(j(txpDirective('Ron Paz - Percussion {{E - R}} (PERSONNEL)')) === j({ text: 'Ron Paz - Percussion (PERSONNEL)', inline: 'E - R' }), 'a mid-line {{…}} is the line\'s pattern too, cut out of the text');
+  check(j(txpDirective('{{R: E}} Bass: Bob')) === j({ text: 'Bass: Bob', inline: 'R: E' }), 'a leading {{…}} on a line with text is the line\'s pattern, not a block');
 });
 
 test('the parser follows the text\'s patterns, and a hand-set one still wins', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {

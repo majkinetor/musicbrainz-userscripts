@@ -22,7 +22,10 @@ test('the text parser splits credit lines into roles and entities', { tag: ['@un
   // the FIRST colon, not the last — the #522 field-followed-by-literal fix.
   eq(P('R: E', 'Special Thanks to: Gilbert Zvamaida'), { role: 'Special Thanks to', entity: 'Gilbert Zvamaida' }, 'R: E — role text itself can contain other words freely, stops at first colon');
 
-  eq(P('E - R', 'Cameron Allen - Flute'), { entity: 'Cameron Allen', role: 'Flute' }, 'E - R — basic entity-dash-role');
+  // a pattern's literal words ignore case: liner notes are often all caps
+  eq(P('R by E', 'PRODUCED BY JERRY ROSS'), { role: 'PRODUCED', entity: 'JERRY ROSS' }, 'R by E — the literal "by" matches "BY"');
+
+  eq(P('E - R', 'Cameron Allen - Flute'),{ entity: 'Cameron Allen', role: 'Flute' }, 'E - R — basic entity-dash-role');
 
   // #522: E - R[,] splits one line's role text into multiple rows, one entity.
   eq(X('E - R[,]', 'Cameron Allen - Flute, Tenor Saxophone'), [

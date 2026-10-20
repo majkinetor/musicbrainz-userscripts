@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.20.215058
+// @version      2026.10.20.232454
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4550,7 +4550,7 @@
       }
     }
     re += '\\s*$';
-    const rx = new RegExp(re), order = fieldSegs.map(s => s.field);
+    const rx = new RegExp(re, 'i'), order = fieldSegs.map(s => s.field);
     return { fields, splitSpecs, exec(line) {
       const m = rx.exec(String(line).trim()); if (!m) return null;
       const out = {}; order.forEach((f, i) => { out[f] = (m[i + 1] || '').trim(); });
@@ -4821,16 +4821,18 @@
     '|©|\\(c\\)|copyright)';
   // #796 a pattern written into the pasted text itself, in {{…}} (never seen in liner
   // notes, and no pattern uses braces): a line that is only `{{E - R}}` sets the pattern
-  // for the lines after it (`{{}}` goes back to the parser's own), and `{{…}}` at a
-  // line's end sets it for that line. So an AI, or a user, can hand over credits that
-  // need several patterns as one paste.
+  // for the lines after it (`{{}}` goes back to the parser's own), and `{{…}}` anywhere
+  // else in a line sets it for that line (an AI puts it mid-line, before a trailing
+  // "(PERSONNEL)"). So an AI, or a user, can hand over credits that need several
+  // patterns as one paste.
   function txpDirective(raw) {
     const s = String(raw || '');
     let m = /^\s*\{\{([^{}]*)\}\}\s*$/.exec(s);
     if (m) return { block: m[1].trim() };
-    m = /^(.*?)\s*\{\{([^{}]*)\}\}\s*$/.exec(s);
-    if (m) return { text: m[1], inline: m[2].trim() };
-    return null;
+    m = /\{\{([^{}]*)\}\}/.exec(s);
+    if (!m) return null;
+    const before = s.slice(0, m.index).trimEnd(), after = s.slice(m.index + m[0].length).trimStart();
+    return { text: before + (before && after ? ' ' : '') + after, inline: m[1].trim() };
   }
   function txpParseCopyrightLine(line) {
     const s = String(line).trim();
