@@ -18,18 +18,17 @@ A merge assistant for MusicBrainz recordings: gather candidates, let Match group
 
 ## Pool and groups
 
-Every candidate starts in the **Pool**. A recording's disambiguation follows its title in brackets, as on MusicBrainz, here and in the groups; a release's follows the release's title. A live recording (its performance of the work is marked live) has a **live** tag, and a recording with a place it was recorded at shows it after an @ (before the disambiguation), with the date in its tooltip. Put it in a group by dragging it, by double-clicking it (it joins the *current* group, the one whose header you clicked last), or by selecting it and clicking a group.
+Every candidate starts in the **Pool**. A live recording has a **live** tag; the place a recording was made shows after **@**, the date in its tooltip. Drag a candidate into a group, double-click it for the *current* group (whose header you clicked last), or select it and click a group.
 
-**Sort** above the pool lists it as the recordings came in (**Added**), by **Title**, or by **Artist** and then title. Title ignores a bracketed part such as *(remastered)*, so the versions of one song sit together. A title that repeats (the same artist too, under Artist) is tinted, each run in a different colour from the next; a title on its own stays plain. Fusion remembers the choice, and Match doesn't depend on it.
+**Sort** the pool by **Added**, **Title** (ignoring a bracketed part such as *(remastered)*) or **Artist** then title. A repeated title is tinted, each run in its own colour. Match doesn't depend on the sort.
 
 In a group:
 
-- the **target**, the recording that survives, sits on top with a gold ★; click another row's ☆ to change it;
+- the **target**, the recording that survives, is on top with a gold ★; another row's ☆ makes it the target;
 - ↩ returns a recording to the pool, ✕ drops it altogether;
 - 🗑 deletes the group and returns its members to the pool; **Clear board** does it for every group;
-- an ISRC or AcoustID that two or more members share is tinted, one colour per shared value, so you can see which rows agree;
-- an AcoustID opens its page on acoustid.org, where a wrongly linked recording can be fixed;
-- ↻ asks acoustid.org again for the group's AcoustIDs, once you've fixed a link there, and updates its chips and tints; the members stay where they are;
+- a shared ISRC or AcoustID is tinted, one colour per value;
+- an AcoustID opens acoustid.org, where a wrong link can be fixed; ↻ then reloads the group's AcoustIDs, keeping its members;
 - a length outside the tolerance is flagged amber, with the spread next to the title;
 - a warning next to the title says when the members can't be one recording, or may not be: *live + studio*, *N places* (recorded at different places, or at one place on different dates), or *disamb.* (their disambiguations differ);
 - a recording without a disambiguation shows its release's, tagged *album*, when another member's release is in the same release group; the *disamb.* warning compares it too.
@@ -45,7 +44,7 @@ Fusion opens with a pool already filled from the page you launched it on:
 | Recording           | that recording                                                         |
 | Artist → Recordings | the artist's entire catalogue, not just the visible page (up to 2000)  |
 
-On any page, pasting a recording, release or release-group MBID or URL into the input adds it (a release adds all of its recordings).
+Paste a recording, release or release-group MBID or URL into the input to add it.
 
 ## Match
 
@@ -64,24 +63,22 @@ Match never groups:
 - a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
 - a recording that has an open edit;
 - a live recording with a studio one, or two recordings made at different places, or at one place on different dates (not even with a shared ISRC or AcoustID);
-- lengths more than 30 s apart;
-- two recordings with ISRCs from one batch (the same registrant and year) but none in common, such as *QZTRX2699407* and *QZTRX2699409*: those are different tracks.
+- lengths further apart than the setting (30 s);
+- two recordings with ISRCs from one batch (the same registrant and year) but none in common, such as *QZTRX2699407* and *QZTRX2699409*: those are different tracks;
 - two recordings that share only an AcoustID when their titles differ, such as *Feel What You Feel* and *Suspended Space*: AcoustIDs are submitted by users and sometimes land on the wrong recording.
 
-A group's chips show which signals hold for **every** member; one that holds for only some of them is shown as partial.
+A group's chips show the signals that hold for **every** member; one that holds for some is partial.
 
 > [!NOTE]
 > This follows MusicBrainz's [How To Merge Recordings](https://musicbrainz.org/doc/How_To_Merge_Recordings): match the acoustic content, not incidental metadata. The signals are a heuristic, so glance at each group before merging.
 
 ## Merging
 
-**Merge ↗** on a group, or **Merge All** in the footer, submits the merge without opening MusicBrainz's merge page. Merge All submits the groups one at a time.
+**Merge ↗** on a group, or **Merge All** for each group in turn, submits without opening MusicBrainz's merge page.
 
 Each merge gets an edit note listing what matched ("Same ISRC …", "Length difference 5s (3:59 – 4:04)"). ✎ in a group's title replaces it with your own text; Fusion's attribution line is always appended.
 
-It is an ordinary edit on your account, and it always goes to a vote, even an auto-editor's: MusicBrainz never applies a [destructive edit](https://musicbrainz.org/doc/Destructive_Edit) right away.
-
-A group whose merge MusicBrainz refuses is marked failed, not done.
+A merge always goes to a vote, even an auto-editor's, as a [destructive edit](https://musicbrainz.org/doc/Destructive_Edit). A refused merge is marked failed.
 
 ## Settings
 
