@@ -64,10 +64,14 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({
     await page.goto(TEST_MB + '/', { waitUntil: 'domcontentloaded' });
     await requireLogin(page);
     await idle(page);
+    // a stall is the thread held for 2s or more: the freeze this guards was the CPU pinned, with no
+    // end. Three MusicBrainz edit pages loading at once in same-origin iframes hold the panel's
+    // thread on their own, up to half a second with no Falcon on the page (measured 2026-10-20),
+    // and the earlier 400ms bar failed on that alone
     await page.evaluate(() => {
       window.__stalls = [];
       let last = performance.now();
-      setInterval(() => { const n = performance.now(); const late = Math.round(n - last - 200); last = n; if (late > 400) window.__stalls.push(late); }, 200);
+      setInterval(() => { const n = performance.now(); const late = Math.round(n - last - 200); last = n; if (late > 2000) window.__stalls.push(late); }, 200);
     });
     await page.addScriptTag({ content: code });
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
@@ -109,7 +113,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({
 
     ck(finished, `all ${RECS.length} items finish`);
     ck(Array.isArray(q) && q.every(x => x.s === 'done'), `every item commits for real against the sandbox (${JSON.stringify((q || []).map(x => x.s))})`);
-    ck(Array.isArray(stalls) && stalls.length === 0, `the UI thread was never blocked (stalls over 400ms: ${JSON.stringify(stalls)})`);
+    ck(Array.isArray(stalls) && stalls.length === 0, `the UI thread was never blocked (stalls over 2s: ${JSON.stringify(stalls)})`);
     ck(prodHits === 0, `nothing reached PRODUCTION musicbrainz.org while working on the sandbox (${prodHits} request(s))`);
 
     // The actual point: read the entities back and require the relationships to be
@@ -133,7 +137,7 @@ test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({
       if (!types || types.length !== 2) shortfalls.push({ mbid: RECS[i], got: types });
     }
     console.log('shortfalls:', JSON.stringify(shortfalls));
-    ck(shortfalls.length === 0, `all ${RECS.length} entities really carry BOTH relationship types afterwards, confirmed through the web service (${RECS.length - shortfalls.length}/${RECS.length})`);
+    ck(shortfalls.length === 0, `all ${RECS.length} entities really carry BOTH relationship types afterwards, confirmed through the web service (${RECS.length - shortfalls.length}/${RECS.length}: ${JSON.stringify(shortfalls)})`);
 
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   } finally {

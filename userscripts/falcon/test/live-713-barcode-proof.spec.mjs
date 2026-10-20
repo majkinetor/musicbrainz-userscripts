@@ -14,7 +14,7 @@ const HOST = 'https://test.musicbrainz.org';
 const RELEASE = 'aa3cbe43-46f7-4527-be62-66f71aa2e315';   // sandbox copy of "Never Ever Ever" (dev/test/sandbox-copies.json); no other spec uses it
 const BARCODE = '826194657451';                           // its own barcode
 
-test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
+test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
@@ -95,5 +95,6 @@ test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@san
   await page.waitForTimeout(10000);   // as long as an edit can take to show
   await goto(page, `${HOST}/release/${RELEASE}/open_edits`);
   check(!(await page.locator('a[href*="/accept-edit/"]').count()), 'and no edit was made');
-  check(await barcode() === BARCODE, 'the release keeps its barcode');
+  const kept = await barcode();
+  check(kept === BARCODE, `the release keeps its barcode (${JSON.stringify(kept)})`);
 });
