@@ -1565,8 +1565,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         mbuTipStart.done = true;
         if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
         var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
-        document.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
-        document.addEventListener('mouseover', function (e) {
+        window.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+        window.addEventListener('mouseover', function (e) {
             _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
             if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
             var f = mbuTipFind(e.target);
@@ -1581,7 +1581,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
             }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
         }, true);
-        document.addEventListener('mouseout', function (e) {
+        window.addEventListener('mouseout', function (e) {
             var to = e.relatedTarget;
             var q = _mbuTip.quiet;
             if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
@@ -1592,7 +1592,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
             if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
         }, true);
-        document.addEventListener('mousedown', function (e) {
+        window.addEventListener('mousedown', function (e) {
             if (inTip(e.target)) return;
             clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
             var f = mbuTipFind(e.target);

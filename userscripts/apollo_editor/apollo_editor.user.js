@@ -3963,7 +3963,7 @@ Click: open the label`;
     window.addEventListener('mouseover', e => {
       const h = apolloEnabled() && titleOf(e.target); if (!h || h.b.contains(e.relatedTarget)) return;
       e.stopPropagation();
-      h.b.dataset.tip = 'Guess case\nRight-click: its options';
+      h.b.dataset.tip = 'Guess case\nRight-click: its options'; h.b.removeAttribute('title');
       if (e.buttons !== 0 || !h.i.value) return;
       const g = gcGuess(h.i.value, 'release');
       if (g !== h.i.value) { prev = { i: h.i, orig: h.i.value }; h.i.value = g; h.i.classList.add('preview'); }
@@ -5704,8 +5704,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       mbuTipStart.done = true;
       if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
       var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
-      document.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
-      document.addEventListener('mouseover', function (e) {
+      window.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+      window.addEventListener('mouseover', function (e) {
           _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
           if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
           var f = mbuTipFind(e.target);
@@ -5720,7 +5720,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
           }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
       }, true);
-      document.addEventListener('mouseout', function (e) {
+      window.addEventListener('mouseout', function (e) {
           var to = e.relatedTarget;
           var q = _mbuTip.quiet;
           if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
@@ -5731,7 +5731,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
           if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
       }, true);
-      document.addEventListener('mousedown', function (e) {
+      window.addEventListener('mousedown', function (e) {
           if (inTip(e.target)) return;
           clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
           var f = mbuTipFind(e.target);
@@ -14285,7 +14285,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Re-applied each tick via applyReleaseInfo, so React re-renders that drop the title get it back.
   function annotateLinkEditHints() {
     const ext = document.getElementById('external-links-editor'); if (!ext) return;
-    const URL_HINT = 'Right-click to edit the URL', TYPE_HINT = 'Right-click to edit the relationship type';
+    const URL_HINT = 'Right-click: edit the URL', TYPE_HINT = 'Right-click: edit the relationship type';
     ext.querySelectorAll('tr.external-link-item > td:first-child').forEach(td => { if (td.dataset.tip !== URL_HINT) td.dataset.tip = URL_HINT; });
     ext.querySelectorAll('tr.relationship-item .relationship-name, tr.relationship-item select.link-type').forEach(el => { if (el.dataset.tip !== TYPE_HINT) el.dataset.tip = TYPE_HINT; });
   }

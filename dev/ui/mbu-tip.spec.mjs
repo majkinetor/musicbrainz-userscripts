@@ -55,6 +55,15 @@ test('hovering shows the tip after a moment, styled, and leaving hides it', { ta
   check(await until(() => shown(page), h => !h) === '', 'leaving hides it');
 });
 
+// majkinetor: Apollo's release-title Aa still showed MusicBrainz's "Guess case", because Apollo
+// stops the page's mouseover at the window, before a document listener hears it
+test('a page that stops mouseover at the window still gets its tip; a lone key line is a key row', { tag: ['@unit'] }, async ({ page }) => {
+  check(/mbu-tip-k">Right-click<\/span><span>edit the URL/.test(mbuTipText('Right-click: edit the URL')), 'a lone "Right-click: …" is a key row');
+  await page.evaluate(() => window.addEventListener('mouseover', e => e.stopPropagation(), true));
+  await page.hover('#plain');
+  check(/Copy the log/.test(await until(() => shown(page), h => !!h)), 'the tip shows');
+});
+
 test('a click, Esc and a scroll close it; typing in a field does too', { tag: ['@unit'] }, async ({ page }) => {
   await page.hover('#plain'); await until(() => shown(page), h => !!h);
   await page.mouse.down(); await page.mouse.up();
