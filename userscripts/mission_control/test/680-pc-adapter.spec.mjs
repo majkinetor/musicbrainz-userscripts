@@ -26,7 +26,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
 
   await page.click('#mc-launch');
   await page.waitForSelector('#mc-root');
-  check(/connected/.test(await page.locator('#mc-root .mc-step[data-step="pc"]').getAttribute('title')), 'PC step reads connected');
+  check(/connected/.test(await page.locator('#mc-root .mc-step[data-step="pc"]').getAttribute('data-tip')), 'PC step reads connected');
 
   // the header pulses while the probe is out (seen at any point), and stops once it's answered
   await page.evaluate(() => { const h = document.querySelector('#mc-root .mc-hdr'); window.__busySeen = h.classList.contains('mc-busy'); new MutationObserver(() => { if (h.classList.contains('mc-busy')) window.__busySeen = true; }).observe(h, { attributes: true }); });

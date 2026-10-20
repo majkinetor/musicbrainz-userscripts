@@ -593,7 +593,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
   check(maxRest.g === '⛶', 'maximize button uses Group Therapy\'s ⛶ glyph (' + maxRest.g + ')');
   check(maxRest.border === 'none', 'and Group Therapy\'s borderless styling');
   await page.click('#fs-max');
-  const maxOn = await until(() => page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, t: b.title, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; }), m => m.on);
+  const maxOn = await until(() => page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, t: b.dataset.tip, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; }), m => m.on);
   check(maxOn.on && maxOn.g === '❐' && maxOn.t === 'Restore', 'maximizing flips it to ❐ / "Restore" like GT (' + JSON.stringify(maxOn) + ')');
   await page.click('#fs-max');
   const maxOff = await until(() => page.evaluate(() => { const b = document.getElementById('fs-max'); return { g: b.textContent, on: document.getElementById('fs-cons').classList.contains('fs-maximized') }; }), m => !m.on);
@@ -706,7 +706,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
       const g = F.createGroupWithMember('s1'); F.addToGroup('s2', g.id); F.addToGroup('s3', g.id);
       F.renderAll();
       const card = document.querySelector('.fs-gcard[data-gid="' + g.id + '"]');
-      const chips = [...card.querySelectorAll('.fs-sig span')].map(x => ({ t: x.textContent, cls: x.className, title: x.title }));
+      const chips = [...card.querySelectorAll('.fs-sig span')].map(x => ({ t: x.textContent, cls: x.className, title: x.dataset.tip }));
       const note = F.buildEditNote(g);
       const res = { signals: g.signals, signalsAll: g.signalsAll, chips, note };
       F.deleteGroup(g.id); ['s1','s2','s3'].forEach(x => F.STATE.recordings.delete(x));
@@ -956,7 +956,7 @@ test('Fusion end to end: matching engine, UI, and real merges on the sandbox', {
       const F = window.__fusion;
       F.setNetTrouble('offline', 'Failed to fetch');
       const el = document.getElementById('fs-netbanner');
-      const shown = { visible: el.style.display !== 'none', text: el.textContent, title: el.title, err: el.className.indexOf('fs-netbanner-err') !== -1 };
+      const shown = { visible: el.style.display !== 'none', text: el.textContent, title: el.dataset.tip, err: el.className.indexOf('fs-netbanner-err') !== -1 };
       F.clearNetTrouble();
       return { shown, hiddenAfter: el.style.display === 'none' };
   });

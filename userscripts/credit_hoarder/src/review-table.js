@@ -37,7 +37,7 @@ function makeLevelDot(level, title) {
     dot.className = 'ch-level-dot';
     dot.style.cssText = 'width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.2);' +
         `background:${level == null ? 'var(--mbu-border-strong)' : MATCH_LEVELS[level].color};`;
-    dot.title = title || (level == null ? 'Picked by you' : `${MATCH_LEVELS[level].label}: ${MATCH_LEVELS[level].hint}`);
+    dot.dataset.tip = title || (level == null ? 'Picked by you' : `${MATCH_LEVELS[level].label}: ${MATCH_LEVELS[level].hint}`);
     return dot;
 }
 
@@ -284,7 +284,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             if (!cfg) return null;
             const span = document.createElement('span');
             span.textContent = cfg.text;
-            span.title = fromCache && via !== 'cache'
+            span.dataset.tip = fromCache && via !== 'cache'
                 ? `Resolved via ${via}, served from cache`
                 : `Resolved via ${via}`;
             span.style.cssText = `font-size:0.68rem;background:var(--mbu-bg-raised);color:${cfg.color};` +
@@ -428,7 +428,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // re-resolved from the live MB API.
             const refreshBtn = document.createElement('button');
             refreshBtn.textContent = '🔄 Refresh from MB';
-            refreshBtn.title = 'Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache';
+            refreshBtn.dataset.tip = 'Resolve every entity again\nFrom MusicBrainz’s API, past the cache in this browser';
             refreshBtn.style.cssText = 'font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid var(--mbu-warn);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-warn);flex-shrink:0;';
             refreshBtn.addEventListener('click', () => {
                 refreshBtn.disabled = true;
@@ -457,7 +457,6 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         function buildCutoffChip() {
             const wrap = document.createElement('span');
             wrap.className = 'ch-cutoff';
-            wrap.title = 'Lowest match confidence still selected automatically; a match below it is offered first on its row';
             wrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--mbu-text);flex-shrink:0;';
             const lbl = document.createElement('b');
             lbl.textContent = 'Cutoff';
@@ -466,6 +465,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             chip.className = 'ch-cutoff-chip';
             chip.style.cssText = 'display:inline-flex;align-items:center;gap:0.35rem;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 10px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font:inherit;';
             const paint = () => {
+                // the tip is the levels' table, the chosen one marked and the ones below it dimmed
+                wrap.dataset.tip = 'The lowest match confidence picked automatically\n'
+                    + MATCH_LEVELS.map((lv, i) => `{${lv.color}${i === cutoff ? ' on' : i > cutoff ? ' off' : ''}} ${lv.label}: ${lv.hint}`).join('\n')
+                    + '\nA match below it is offered first on its row, not picked.';
                 chip.replaceChildren(makeLevelDot(cutoff), document.createTextNode(MATCH_LEVELS[cutoff].label));
                 const caret = document.createElement('span');
                 caret.textContent = '▾';
@@ -704,7 +707,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     const span = document.createElement('span');
                     span.className = 'discogs-src-badge';
                     span.style.cssText = 'display:inline-flex;vertical-align:middle;margin:0 2px;' + (url ? 'cursor:pointer;' : 'filter:grayscale(1);opacity:0.45;');
-                    span.title = url ? `${nm} — click to open ${url}` : `${nm} — name-only credit (no link)`;
+                    span.dataset.tip = url ? `${nm}\nClick: open ${url}` : `${nm}\nA credit by name only, with no link`;
                     span.innerHTML = sourceBadgeIcon(nm);
                     if (url) span.addEventListener('click', () => window.open(url, '_blank', 'noopener,noreferrer'));
                     tdSrc.appendChild(span);
@@ -751,7 +754,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // so seeing the full title gives the context to pick the right MB
             // entity. Multiple titles when the same name remixes several tracks.
             const _srcTitles = [...new Set((r._roles || []).map(x => x.trackTitle).filter(Boolean))];
-            if (_srcTitles.length) dlA.title = _srcTitles.join('\n');
+            if (_srcTitles.length) dlA.dataset.tip = _srcTitles.join('\n');
             nameWrap.appendChild(dlA);
             // #605 ⋔ — same glyph as Apollo's split. Only on artist rows whose name
             // holds a separator (& / and / feat. / , …), never on a part row.
@@ -761,7 +764,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 sp.type = 'button';
                 sp.className = 'discogs-split-btn';
                 sp.textContent = '⋔';
-                sp.title = `Split into separate artists: ${splitParts.join(' · ')}\nEach gets this row's roles.`;
+                sp.dataset.tip = `Split into separate artists\n${splitParts.map(p => '- ' + p).join('\n')}\nEach gets this row's roles.`;
                 sp.style.cssText = 'margin-left:0.35rem;padding:0 0.35rem;min-width:1.4rem;cursor:pointer;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg-raised);color:var(--mbu-accent-text);font-size:16px;font-weight:bold;line-height:1.2;vertical-align:middle;';
                 sp.addEventListener('click', () => splitRow(r, tr, splitParts, sp));
                 nameWrap.appendChild(sp);
@@ -769,7 +772,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             if (r.entity?._splitOf) {
                 const sb = document.createElement('span');
                 sb.textContent = 'split';
-                sb.title = `Split from "${r.entity._splitFrom}" — gets that credit's roles`;
+                sb.dataset.tip = `Split from “${r.entity._splitFrom}”\nIt gets that credit's roles.`;
                 sb.style.cssText = 'display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;line-height:1.4;cursor:help;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);border:1px solid var(--mbu-border);';
                 nameWrap.appendChild(sb);
             }
@@ -787,14 +790,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             if (!hasDiscogsUrl && !placeholderUrl && srcName !== 'Titles' && !r.entity?._splitOf) {
                 const noUrl = document.createElement('span');
                 noUrl.textContent = 'no profile';
-                noUrl.title = `No ${srcName} artist page — name lookup unavailable, search MB manually`;
+                noUrl.dataset.tip = `No ${srcName} artist page\nNo lookup by name: search MusicBrainz yourself.`;
                 noUrl.style.cssText = BADGE_BASE + 'background:var(--mbu-error-bg);color:var(--mbu-error);border:1px solid var(--mbu-error);';
                 nameWrap.appendChild(noUrl);
             }
             if (nameMismatch) {
                 const w = document.createElement('span');
                 w.textContent = 'name differs';
-                w.title = 'MB entity name differs from the Discogs display name — double-check this is the right match';
+                w.dataset.tip = 'The MusicBrainz name differs from Discogs’s\nCheck this is the right match.';
                 w.style.cssText = BADGE_BASE + 'background:var(--mbu-warn-bg);color:var(--mbu-warn);border:1px solid var(--mbu-warn);';
                 nameWrap.appendChild(w);
             }
@@ -849,7 +852,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 const rolesLine = document.createElement('div');
                 rolesLine.style.cssText = 'font-size:0.75rem;color:var(--mbu-text-weak);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
-                rolesLine.title = chips.map(c => c.displayText).join(', ');
+                rolesLine.dataset.tip = chips.map(c => c.displayText).join(', ');
                 chips.forEach((chip, i) => {
                     if (i > 0) rolesLine.appendChild(document.createTextNode(', '));
                     const span = document.createElement('span');
@@ -887,7 +890,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const CRED_BG_DIFFERENT = 'var(--mbu-warn-bg)';   // soft yellow in light, a warm dark tint on dark
             credInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid var(--mbu-border);border-radius:3px;background:' + CRED_BG_SAME + ';';
             credInput.placeholder = displayName;
-            credInput.title = `Override the credited name dispatched with every rel for this entity.\nLeave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
+            credInput.dataset.tip = `The credited name, on every relationship of this entity\nEmpty: the default, the ${srcName} name, or MusicBrainz’s most frequent credit when known.`;
             function refreshCredBg() {
                 const value = (credInput.value || '').trim();
                 const same = (value === '' || value === displayName);
@@ -950,12 +953,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             const mbBtn = document.createElement('button');
             mbBtn.type = 'button';
             mbBtn.textContent = 'MB';
-            mbBtn.title = 'Set Credited as to the MB entity name';
+            mbBtn.dataset.tip = 'Credit it as the MusicBrainz name';
             mbBtn.style.cssText = CRED_BTN_STYLE;
             const dBtn = document.createElement('button');
             dBtn.type = 'button';
             dBtn.textContent = srcName.charAt(0);   // D / T / Q — the import source
-            dBtn.title = `Set Credited as to the ${srcName} name`;
+            dBtn.dataset.tip = `Credit it as the ${srcName} name`;
             dBtn.style.cssText = CRED_BTN_STYLE;
             function currentMbName() {
                 return rowState.get(_entityKey)?.mbName || r.mbName || null;
@@ -1003,6 +1006,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             searchRow.style.cssText = 'display:flex;gap:0.3rem;';
             const searchInput = noPasswordManagers(document.createElement('input'));
             searchInput.value = displayName;
+            searchInput.dataset.tip = 'Search MusicBrainz by name\nPaste: an MBID, or its MusicBrainz URL, picks that entity at once';
             searchInput.style.cssText = 'flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid var(--mbu-border);border-radius:3px;';
             rowSearchInputs.set(_entityKey, searchInput);   // #139: header "N unresolved" jumps here
             const searchBtn = document.createElement('button');
@@ -1010,7 +1014,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
             // Flat stroke magnifier (#118) \u2014 replaces the glossy \uD83D\uDD0D emoji on a
             // beveled default button. currentColor so it inherits the muted grey.
             searchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>';
-            searchBtn.title = 'Search MusicBrainz';
+            searchBtn.dataset.tip = 'Search MusicBrainz';
             searchBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:var(--mbu-text-dim);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:3px;';
             // Per #77 iter 3: search icon on the LEFT of the input.
             searchRow.appendChild(searchBtn);
@@ -1048,7 +1052,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 trigger.href = '#';
                 trigger.textContent = 'MB roles ▾';
                 trigger.style.cssText = 'color:var(--mbu-info);text-decoration:none;cursor:pointer;white-space:nowrap;';
-                trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
+                trigger.dataset.tip = "This artist's relationship types on MusicBrainz\nRead them, to compare with the Discogs role.";
                 trigger.addEventListener('click', async (ev) => {
                     ev.preventDefault();
                     let mbid = (String(explicitMbid || '').match(/[a-f0-9-]{36}/i) || [])[0];
@@ -1074,7 +1078,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     wrap.style.alignItems = 'flex-start';
                     wrap.style.overflow = 'visible';
                     wrap.appendChild(label);
-                    wrap.title = types.join(', ');
+                    wrap.dataset.tip = types.join(', ');
                     const chipsBox = document.createElement('span');
                     chipsBox.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.25rem;min-width:0;';
                     wrap.appendChild(chipsBox);
@@ -1128,7 +1132,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // get the live row back instead of waiting out the safety timeout.
                 const x = document.createElement('button');
                 x.textContent = '✕';
-                x.title = 'Cancel — stop waiting and restore the row';
+                x.dataset.tip = 'Cancel\nStop waiting and restore the row';
                 x.style.cssText = 'margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:var(--mbu-info);padding:0 0.2rem;';
                 x.addEventListener('click', () => cancelCreating());
                 ph.appendChild(x);
@@ -1190,9 +1194,9 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 ab.type = 'button';
                 ab.className = 'discogs-add-alias';
                 ab.textContent = '+ alias';
-                ab.title = `Add "${displayName}" as an alias of ${a.name}
-• click: open MusicBrainz's add-alias form, pre-filled (you submit it)
-• right-click: submit it in the background (no alias type)`;
+                ab.dataset.tip = `Add “${displayName}” as an alias of ${a.name}
+Click: open MusicBrainz's add-alias form, filled in, for you to submit
+Right-click: submit it in the background, with no alias type`;
                 ab.style.cssText = 'font-size:0.72rem;cursor:pointer;padding:0 0.4rem;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-accent-text);white-space:nowrap;flex:0 0 auto;';
                 const note = buildCreateNote(`Added "${displayName}" as an alias — the ${srcName} credit${discogsHref ? ' (' + discogsHref + ')' : ''} —`);
                 ab.addEventListener('click', async (ev) => {
@@ -1202,7 +1206,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     try { res = await openAddAliasForm(a.id, displayName, note); } catch (e) { log.warn(`+ alias: opening the form for "${displayName}" failed — ${e && e.message || e}`); return; }
                     if (res && res.already) {   // carried by now — no form, no duplicate
                         ab.textContent = '✓ has alias'; ab.disabled = true;
-                        ab.title = `${a.name} already carries "${displayName}" — nothing to add`;
+                        ab.dataset.tip = `${a.name} already has “${displayName}”\nNothing to add`;
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
                         aliasLanded(a);
                         return;
@@ -1222,7 +1226,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         window.removeEventListener('focus', onReturn);
                         ab._aliasWatch = null;
                         ab.textContent = '✓ alias'; ab.disabled = true;
-                        ab.title = `"${displayName}" is now an alias of ${a.name}`;
+                        ab.dataset.tip = `“${displayName}” is now an alias of ${a.name}`;
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
                         a.aliases = [...(a.aliases || []), displayName];
                         log.info(`+ alias: "${displayName}" is now an alias of ${a.name} (added through the form)`);
@@ -1240,13 +1244,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     try {
                         const res = await submitAliasBackground(a.id, displayName, note);
                         ab.textContent = res && res.already ? '✓ has alias' : '✓ alias';
-                        ab.title = res && res.already ? `${a.name} already carries "${displayName}" — nothing submitted` : `"${displayName}" submitted as an alias of ${a.name}`;
+                        ab.dataset.tip = res && res.already ? `${a.name} already has “${displayName}”\nNothing submitted` : `“${displayName}” submitted as an alias of ${a.name}`;
                         ab.style.color = 'var(--mbu-ok)'; ab.style.borderColor = 'var(--mbu-ok)';
                         a.aliases = [...(a.aliases || []), displayName];   // don't offer it again this session
                         aliasLanded(a);
                         if (!(res && res.already)) log.info(`+ alias: "${displayName}" submitted as an alias of <a href="${location.origin}/artist/${a.id}/aliases" target="_blank" rel="noopener noreferrer nofollow">${a.name}</a>`);
                     } catch (e) {
-                        ab.disabled = false; ab.textContent = '✗ alias'; ab.title = `Adding the alias failed: ${e.message} — right-click to retry, click to open the form`;
+                        ab.disabled = false; ab.textContent = '✗ alias'; ab.dataset.tip = `⚠ Adding the alias failed: ${e.message}\nClick: open the form\nRight-click: try again`;
                         ab.style.color = 'var(--mbu-error)'; ab.style.borderColor = 'var(--mbu-error)';
                         log.warn(`+ alias: "${displayName}" → ${a.name} failed — ${e.message}`);
                     }
@@ -1307,7 +1311,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Allow un-confirming
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
-                undoBtn.title = 'Clear selection';
+                undoBtn.dataset.tip = 'Clear selection';
                 undoBtn.className = 'discogs-clear-btn';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(makeLevelDot(null));   // #771: your pick
@@ -1379,7 +1383,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     const linkSlot = document.createElement('span');
                     linkSlot.style.cssText = 'display:inline-flex;align-items:center;font-size:0.8rem;color:var(--mbu-text-weak);';
                     linkSlot.textContent = '…';
-                    linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
+                    linkSlot.dataset.tip = `Checking whether MusicBrainz already links this ${srcName} URL…`;
                     tdAction.appendChild(linkSlot);
 
                     // Query whether this specific Discogs URL is already linked in MB.
@@ -1428,12 +1432,12 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                         updateLinksBadge();
                         if (result === 'linked') {
                             linkSlot.textContent = '\u2713';
-                            linkSlot.title = srcName + ' URL already linked to this MB ' + entityType;
+                            linkSlot.dataset.tip = 'This MusicBrainz ' + entityType + ' already links the ' + srcName + ' URL';
                             linkSlot.style.color = 'var(--mbu-ok)';
                             linkSlot.style.fontWeight = 'bold';
                         } else if (result === 'other') {
                             linkSlot.textContent = '\u26a0\ufe0f';
-                            linkSlot.title = `${srcName} URL is linked to a DIFFERENT MB ${entityType}`;
+                            linkSlot.dataset.tip = `⚠ A different MusicBrainz ${entityType} links this ${srcName} URL`;
                             linkSlot.style.color = 'var(--mbu-warn)';
                         } else {
                             linkSlot.textContent = '';
@@ -1442,7 +1446,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                             // #408: on a consolidated row, show how many source links this will add.
                             const _addCount = (r._mergeUrls && r._mergeUrls.length) ? r._mergeUrls.filter(u => sourceUrlLinkTypeId(u, entityType)).length : 0;
                             addLinkBtn.textContent = '\ud83d\udd17' + (_addCount > 1 ? ' ' + _addCount : '');
-                            addLinkBtn.title = (_addCount > 1 ? `Add ${_addCount} source links to MB ${entityType}` : `Add ${srcName} link to MB ${entityType}`) + `  ·  right-click: add ${_addCount > 1 ? 'them' : 'it'} silently in the background`;
+                            addLinkBtn.dataset.tip = (_addCount > 1 ? `Add ${_addCount} source links to the MusicBrainz ${entityType}` : `Add the ${srcName} link to the MusicBrainz ${entityType}`) + `\nRight-click: add ${_addCount > 1 ? 'them' : 'it'} silently in the background`;
                             addLinkBtn.style.cssText = ACTION_CHIP_STYLE + 'color:var(--mbu-warn);'; // Discogs orange accent
                             // #273: left-click = foreground (focus-return recheck); right-click =
                             // background via GM_openInTab + auto-submit, rechecked on `edit-committed`.
@@ -1481,7 +1485,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                     DISCOGS_CHANNEL.addEventListener('message', onCommitted);
                                     linkSlot.innerHTML = '';
                                     linkSlot.textContent = '…';
-                                    linkSlot.title = `Adding ${srcName} link in the background…`;
+                                    linkSlot.dataset.tip = `Adding the ${srcName} link in the background…`;
                                     linkSlot.style.color = 'var(--mbu-text-dim)';
                                     linkSlot.style.fontStyle = 'italic';
                                     return;
@@ -1510,7 +1514,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                                 // tooltip \u2014 re-verified when the tab
                                 // regains focus.
                                 linkSlot.textContent = '\u2026';
-                                linkSlot.title = `Verifying ${srcName} link on return to this tab\u2026`;
+                                linkSlot.dataset.tip = `The ${srcName} link is checked when you come back to this tab…`;
                                 linkSlot.style.color = 'var(--mbu-text-dim)';
                                 linkSlot.style.fontStyle = 'italic';
                                 const onReturn = () => {
@@ -1712,10 +1716,10 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // accessibility.
                 const createBtn = document.createElement('button');
                 createBtn.textContent = '+';
-                createBtn.title = (discogsHref
-                    ? `Create in MB with default ${srcName} name + URL`
-                    : 'Create in MB with the credited name')
-                    + '  ·  right-click: create silently in a background tab (auto-submitted)';
+                createBtn.dataset.tip = (discogsHref
+                    ? `Create it on MusicBrainz with the ${srcName} name and URL`
+                    : 'Create it on MusicBrainz with the credited name')
+                    + '\nRight-click: create it silently in a background tab, submitted for you';
                 createBtn.style.cssText = ACTION_CHIP_STYLE + 'color:var(--mbu-ok);font-size:1.15rem;font-weight:600;'; // bigger, bolder plus
                 createBtn.addEventListener('click', () => openCreateTab());
                 // #273: right-click creates in the background and auto-commits.
@@ -1723,8 +1727,8 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
 
                 const createAdvBtn = document.createElement('button');
                 createAdvBtn.textContent = '▾';
-                createAdvBtn.title = 'Create in MB with editable name + disambiguation'
-                    + (srcName === 'Discogs' && discogsHref ? ', pre-filled from the Discogs profile' : '');
+                createAdvBtn.dataset.tip = 'Create it on MusicBrainz, with the name and disambiguation to edit first'
+                    + (srcName === 'Discogs' && discogsHref ? '\nFilled in from the Discogs profile' : '');
                 createAdvBtn.style.cssText = ACTION_CHIP_STYLE + 'color:var(--mbu-text-dim);'; // muted
 
                 createAdvBtn.addEventListener('click', () => openAdvancedCreatePopup());
@@ -1833,7 +1837,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                     cancelBtn.style.cssText = 'padding:0.4rem 1rem;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-bg-raised);color:var(--mbu-text);font-size:0.88rem;';
                     const submitBtn = document.createElement('button');
                     submitBtn.textContent = 'Create ↗';
-                    submitBtn.title = 'Open the create page, for you to review  ·  right-click: create silently in a background tab (auto-submitted)';
+                    submitBtn.dataset.tip = 'Open the create page, for you to review\nRight-click: create it silently in a background tab, submitted for you';
                     submitBtn.style.cssText = 'padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:var(--mbu-ok);color:var(--mbu-text-on-accent);border:none;border-radius:0.25rem;font-size:0.9rem;';
                     btnRow.appendChild(cancelBtn);
                     btnRow.appendChild(submitBtn);
@@ -1902,7 +1906,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Per #77 iter 3: select icon on the LEFT of the candidate row.
                 const selBtn = document.createElement('button');
                 selBtn.textContent = '✓';
-                selBtn.title = 'Select this candidate as the MB match';
+                selBtn.dataset.tip = 'Pick this candidate as the match';
                 selBtn.style.cssText = 'font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-ok-bg);color:var(--mbu-ok);font-weight:600;flex-shrink:0;';
                 selBtn.addEventListener('click', () => setRowResolved(a));
                 row.appendChild(selBtn);
@@ -1926,7 +1930,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 if (below) {
                     const pill = document.createElement('span');
                     pill.textContent = `below cutoff: ${VIA_STYLES[below.via]?.text || below.via}`;
-                    pill.title = `Matched automatically (${MATCH_LEVELS[below.level].label}: ${MATCH_LEVELS[below.level].hint}), below the cutoff (${MATCH_LEVELS[cutoff].label}), so not selected. ✓ selects it.`;
+                    pill.dataset.tip = `Matched below the cutoff, so not picked\n${MATCH_LEVELS[below.level].label}: ${MATCH_LEVELS[below.level].hint}\nThe cutoff is ${MATCH_LEVELS[cutoff].label}. ✓ picks it.`;
                     pill.style.cssText = 'font-size:0.68rem;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:8px;padding:0 0.35rem;margin-left:0.35rem;white-space:nowrap;';
                     info.appendChild(pill);
                 }
@@ -2035,7 +2039,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 selA.style.whiteSpace = 'nowrap'; selA.style.flex = '0 0 auto';   // #132: name never collapses to a 1-char vertical column when MB-roles chips expand
                 const undoBtn = document.createElement('button');
                 undoBtn.textContent = '\u2715';
-                undoBtn.title = 'Clear selection';
+                undoBtn.dataset.tip = 'Clear selection';
                 undoBtn.className = 'discogs-clear-btn';
                 undoBtn.addEventListener('click', () => setRowUnresolved());
                 selRow.appendChild(makeLevelDot(matchLevelOf(r.logEntry?.via)));   // #771
@@ -2082,7 +2086,7 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
         linksNote = document.createElement('span');
         linksNote.className = 'discogs-issue-note discogs-links-note';
         linksNote.style.cssText = 'font-size:0.85rem;color:var(--mbu-warn);display:none;';
-        linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet — click to jump to the next one; use its 🔗 chip to add the link`;
+        linksNote.dataset.tip = `Matches whose ${importSourceName} URL MusicBrainz doesn’t link yet\nClick: go to the next one\nIts 🔗 chip adds the link.`;
         linksNote.addEventListener('click', jumpNextLink);
         updateLinksBadge();
 
@@ -2136,14 +2140,14 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 importBtn.style.color = 'var(--mbu-text-on-accent)';
                 issueNote.textContent = '';
                 issueNote.classList.remove('clickable');
-                issueNote.removeAttribute('title');
+                issueNote.removeAttribute('data-tip');
             } else {
                 importBtn.innerHTML = `Start import anyway${selLabel} \u2192`;   // #272: icon shown in the toolbar
                 importBtn.style.background = 'var(--mbu-warn)';
                 importBtn.style.color = 'var(--mbu-text-on-accent)';
                 issueNote.textContent = `\u26a0 ${unresolved} unresolved`;
                 issueNote.classList.add('clickable');
-                issueNote.title = 'Jump to the next unresolved entity \u2014 click again to cycle through them; these will be skipped on import';
+                issueNote.dataset.tip = 'Entities not resolved: skipped on import\nClick: go to the next one (again: the one after)';
             }
         }
         updateImportBtn();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.20.114555
+// @version      2026.10.20.122638
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -131,8 +131,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.20.114555 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.20.102033\n  · Art Station v2026.10.20.110818\n  · Credit Hoarder v2026.10.17.232714\n  · Falcon v2026.10.19.154206\n  · First Contact v2026.10.19\n  · Fusion v2026.10.19.164228\n  · Group Therapy v2026.10.17.231850\n  · ISRC Scout v2026.10.19\n  · Mammoth v2026.10.17.231850\n  · Mission Control v2026.10.20.110252\n  · Platform Check v2026.10.20.110047");
+  console.log('%c String Theory %c v2026.10.20.122638 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.20.120000\n  · Art Station v2026.10.20.120000\n  · Credit Hoarder v2026.10.20.122636\n  · Falcon v2026.10.20.120000\n  · First Contact v2026.10.20.120000\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.20.120000\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.120000\n  · Platform Check v2026.10.20.120000");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -140,7 +140,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.20.102033"],["art_station","Art Station","2026.10.20.110818"],["credit_hoarder","Credit Hoarder","2026.10.17.232714"],["falcon","Falcon","2026.10.19.154206"],["first_contact","First Contact","2026.10.19"],["fusion","Fusion","2026.10.19.164228"],["group_therapy","Group Therapy","2026.10.17.231850"],["isrc_scout","ISRC Scout","2026.10.19"],["mammoth","Mammoth","2026.10.17.231850"],["mission_control","Mission Control","2026.10.20.110252"],["platform_check","Platform Check","2026.10.20.110047"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.20.120000"],["art_station","Art Station","2026.10.20.120000"],["credit_hoarder","Credit Hoarder","2026.10.20.122636"],["falcon","Falcon","2026.10.20.120000"],["first_contact","First Contact","2026.10.20.120000"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.20.120000"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.120000"],["platform_check","Platform Check","2026.10.20.120000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -1639,7 +1639,7 @@ return { mbuGuessCase };
 function __st_TOKENS(GM_info) {
 'use strict';
 // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
 // </ST-TOKENS>
 return { MBU_TOKENS };
 }
@@ -1657,7 +1657,7 @@ function mbuHelpHref(name) {
 }
 function mbuHelpHtml(name, label) {
     return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-        + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+        + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
 }
 function mbuHelpEl(name, label) {
     var a = document.createElement('a');
@@ -1665,7 +1665,7 @@ function mbuHelpEl(name, label) {
     a.href = mbuHelpHref(name);
     a.target = '_blank';
     a.rel = 'noopener';
-    a.title = 'open the README in a new tab';
+    a.dataset.tip = 'Open the README in a new tab';
     a.textContent = label || '? Help';
     return a;
 }
@@ -1863,12 +1863,12 @@ function mbuCfgHeader(o) {
     var html = '<div class="mbu-cfg-h">';
     if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
     html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-    if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
     html += '<span class="mbu-cfg-sp"></span>';
     if (o.log) {
         html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
             + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-            + ' title="Open the activity log">Log</button>';
+            + ' data-tip="Open the activity log">Log</button>';
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
@@ -2220,18 +2220,18 @@ function mbuLog(o) {
         root.classList.add('mbu-logpop');
         root.dataset.mbuLv = vid;
         root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-            + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-            + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
-            + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-            + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-            + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+            + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+            + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
             + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
         if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
         var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
         var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -2384,14 +2384,14 @@ function mbuLog(o) {
         win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
         var minBtn = pop.querySelector('.mbu-logpop-min');
         var setMin = function (m) {
-            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
             if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
             else Object.assign(pop.style, restore);
         };
         var fullBtn = pop.querySelector('.mbu-logpop-full');
         var setFull = function (f) {
             pop.classList.toggle('full', f);
-            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
         };
         minBtn.onclick = function () {
             var m = pop.classList.toggle('min');
@@ -2819,9 +2819,404 @@ try {
     if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
     if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
     if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+    if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
+
+// Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+function mbuTipV() { return 6; }
+function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;background:none;color:var(--mbu-text-weak,#888);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}#mbu-tip .mbu-tip-on{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip .mbu-tip-dl.mbu-tip-on::after{content:\"◂\";margin-left:-2px;font-size:11px}#mbu-tip .mbu-tip-off{opacity:.45}#mbu-tip .mbu-tip-sym{letter-spacing:.2px}#mbu-tip .mbu-tip-mouse{display:block;flex:none}#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+function mbuTipEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+}
+function mbuTipLabel(line) {
+    var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+    if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+    return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+}
+function mbuTipIsKey(label) {
+    return /click|drag|wheel|scroll|hover|double|press|paste|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+}
+function mbuTipInline(s) {
+    return mbuTipEsc(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, function (m, k) { return mbuTipKbd(k); })
+        .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+}
+function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function mbuTipMod(k) { return { ctrl: 'Ctrl', alt: 'Alt', shift: '⇧', cmd: '⌘', meta: '⌘' }[String(k).toLowerCase()] || k; }
+function mbuTipKbd(combo) {
+    var parts = String(combo).split(/\s*\+\s*/);
+    var key = parts.pop();
+    return '<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">' + mbuTipEsc(combo) + '</span><span aria-hidden="true">'
+        + parts.concat('').map(mbuTipMod).join('+') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
+}
+function mbuTipKey(label) {
+    var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
+    if (!m) return /^(?:(?:ctrl|alt|shift|cmd|meta)\s*\+\s*)+\S/i.test(label) ? mbuTipKbd(label) : '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + '</span>';
+    var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];
+    var btn = (m[2] || '').toLowerCase(), act = m[3].toLowerCase();
+    var wheel = btn === 'middle' || act === 'wheel' || act === 'scroll';
+    var fill = wheel ? '' : btn === 'right' ? 'M6 1C8.8 1 11 3.2 11 6v1H6z' : 'M6 1C3.2 1 1 3.2 1 6v1h5z';
+    var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="10" height="13" aria-hidden="true">'
+        + (fill ? '<path d="' + fill + '" fill="currentColor"/>' : '')
+        + '<rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="currentColor" stroke-width="1.3"/>'
+        + '<path d="M1 7h10' + (wheel ? '' : 'M6 1v6') + '" stroke="currentColor" stroke-width="1.1"/>'
+        + (wheel ? '<rect x="5" y="2.6" width="2" height="3.4" rx="1" fill="currentColor"/>' : '')
+        + '</svg>';
+    var extra = btn === 'double' ? '×2' : act === 'drag' ? 'drag' : (act === 'wheel' || act === 'scroll') ? '↕' : '';
+    return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + '</span>'
+        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join('+') + '</kbd>' : '')
+        + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + '</span>' : '') + '</span>';
+}
+function mbuTipText(src) {
+    var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+    if (!raw) return '';
+    var lines = [];
+    // the shapes the old title texts took, read as the rows they mean:
+    //   "… — click to open it"              → "…" + "Click: open it"
+    //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+    //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+    raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+        .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+    raw.split('\n').forEach(function (line) {
+        line = line.replace(/\s+$/, '');
+        // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+        var parts = line.split(/\s+·\s+/), out = [parts[0]];
+        for (var i = 1; i < parts.length; i++) {
+            if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+        }
+        out.forEach(function (seg) {
+            if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+            var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+            bits.forEach(function (b) { lines.push(b); });
+        });
+    });
+    // blocks: lead / paragraph / rows / bullets
+    var blocks = [], rowRun = [];
+    var flushRows = function () {
+        if (!rowRun.length) return;
+        var keyed = rowRun.filter(function (r) { return r.key; }).length;
+        if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+        else blocks.push({ t: 'p', s: rowRun[0].line });
+        rowRun = [];
+    };
+    lines.forEach(function (line, n) {
+        if (!line.trim()) { flushRows(); return; }
+        var b = /^\s*[-•]\s+(.*)$/.exec(line);
+        if (b) {
+            flushRows();
+            var last = blocks[blocks.length - 1];
+            if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+            return;
+        }
+        // a level row, "{#2f6fd6} Exact: …": a dot in the colour before the label; "{#… on}" marks the
+        // chosen level, "{#… off}" dims one past it (a cutoff's table)
+        var lv = /^\{(#[0-9a-f]{3,8})(?: (on|off))?\}\s*(\S[\s\S]*)$/i.exec(line);
+        if (lv) {
+            var ll = mbuTipLabel(lv[3]) || { label: lv[3], text: '' };
+            rowRun.push({ label: ll.label, text: ll.text, dot: lv[1], st: lv[2] ? lv[2].toLowerCase() : '', line: line });
+            return;
+        }
+        var l = mbuTipLabel(line);
+        // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+        if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+        flushRows();
+        blocks.push({ t: 'p', s: line });
+    });
+    flushRows();
+    // one long paragraph: its first sentence becomes the lead
+    if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+        var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+        if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+    }
+    var lead = blocks.length > 1 && blocks[0].t === 'p';
+    var rowsHtml = function (bl) {
+        return bl.rows.map(function (r) {
+            if (r.dot) {
+                var c = r.st ? ' mbu-tip-' + r.st : '';
+                return '<span class="mbu-tip-dl' + c + '"><i style="background:' + r.dot + '"></i>' + mbuTipEsc(mbuTipCap(r.label)) + '</span>'
+                    + '<span class="mbu-tip-dt' + c + '">' + mbuTipInline(r.text) + '</span>';
+            }
+            return (r.key ? mbuTipKey(r.label) : '<span class="mbu-tip-o">' + mbuTipEsc(mbuTipCap(r.label)) + '</span>') + '<span>' + mbuTipInline(r.text) + '</span>';
+        }).join('');
+    };
+    var html = function (bl, i, span) {
+        var sp = span ? ' mbu-tip-span' : '';
+        if (bl.t === 'ul') return '<ul class="mbu-tip-ul' + sp + '">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+        if (bl.t === 'rows') return span ? rowsHtml(bl) : '<div class="mbu-tip-rows">' + rowsHtml(bl) + '</div>';
+        var warn = /^⚠/.test(bl.s);
+        return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + sp + '">' + mbuTipInline(bl.s) + '</div>';
+    };
+    // rows with a note between them stay one grid, the note under the row before it, so their labels line up
+    var first = -1, last = -1;
+    blocks.forEach(function (bl, i) { if (bl.t === 'rows') { if (first < 0) first = i; last = i; } });
+    var out = '';
+    for (var i = 0; i < blocks.length; i++) {
+        if (i === first && last > first) {
+            out += '<div class="mbu-tip-rows">';
+            for (; i <= last; i++) out += html(blocks[i], i, true);
+            out += '</div>';
+            i = last;
+        } else out += html(blocks[i], i, false);
+    }
+    return out;
+}
+function mbuTipCard(o) {
+    o = o || {};
+    var h = '';
+    if (o.head || o.title || o.aside) {
+        h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+            + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+    }
+    if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+    if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+    return h;
+}
+function mbuTipS() {
+    return mbuTipS.s || (mbuTipS.s = {
+        me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+        cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+    });
+}
+function mbuTip(el, content, opts) {
+    if (!el) return el;
+    var _mbuTip = mbuTipS();
+    mbuTipStart();
+    opts = opts || {};
+    if (typeof content === 'function') {
+        if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+        el.setAttribute('data-mbu-tip-own', '');
+        el.removeAttribute('title');
+        return el;
+    }
+    if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+    if (opts.place) el.setAttribute('data-tip-place', opts.place);
+    if (opts.wide) el.setAttribute('data-tip-wide', '');
+    el.removeAttribute('title');
+    if (_mbuTip.cur === el) mbuTipRender();
+    return el;
+}
+function mbuTipOn(selector, fn, opts) {
+    mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+    mbuTipStart();
+}
+function mbuTipShowFor(el, content, opts) {
+    if (!el || content == null || content === '') { mbuTipHide(true); return; }
+    mbuTipStart();
+    var o = opts || {};
+    var fn = typeof content === 'function' ? content : function () { return content; };
+    var S = mbuTipS();
+    if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+    mbuTipShow({ el: el, fn: fn, opts: o });
+}
+function mbuTipHtml(s) {
+    if (mbuTipHtml.tt === undefined) {
+        mbuTipHtml.tt = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings */ }
+    }
+    return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+}
+function mbuTipCss() {
+    var s = document.getElementById('mbu-tip-css');
+    if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+    if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+    s.setAttribute('data-v', String(mbuTipV()));
+    s.textContent = mbuTipCssText();
+}
+function mbuTipEl() {
+    var t = document.getElementById('mbu-tip');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'mbu-tip';
+        t.setAttribute('role', 'tooltip');
+        (document.body || document.documentElement).appendChild(t);
+    }
+    return t;
+}
+function mbuTipFind(node) {
+    var _mbuTip = mbuTipS();
+    var tip = document.getElementById('mbu-tip');
+    for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+        if (el === tip) return null;
+        var reg = _mbuTip.els && _mbuTip.els.get(el);
+        if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+        for (var i = 0; i < _mbuTip.prov.length; i++) {
+            var p = _mbuTip.prov[i];
+            try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+        }
+        if (!_mbuTip.lead) continue;
+        if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+        if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+        // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+        if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+            var root = null;
+            try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+            if (root) {
+                el.setAttribute('data-tip', el.getAttribute('title'));
+                el.removeAttribute('title');
+                return { el: el, opts: {} };
+            }
+        }
+    }
+    return null;
+}
+function mbuTipRender() {
+    var _mbuTip = mbuTipS();
+    var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+    if (!a) return false;
+    if (o.fn) {
+        try { c = o.fn(a); } catch (e) { c = null; }
+        if (c == null || c === '') return false;
+        if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+        else { t.textContent = ''; t.appendChild(c); }
+    } else {
+        var s = a.getAttribute('data-tip');
+        if (!s) return false;
+        var h = mbuTipText(s);
+        t.innerHTML = mbuTipHtml(h);
+        // an element with nothing to read of its own is named by its tip
+        if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+            a.setAttribute('aria-label', s.split('\n')[0]);
+        }
+    }
+    t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+    t.setAttribute('data-owner', _mbuTip.me);
+    mbuTipPlace(t, a, o.place);
+    return true;
+}
+function mbuTipPlace(t, a, place) {
+    var _mbuTip = mbuTipS();
+    var r = a.getBoundingClientRect();
+    if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+    t.style.left = '0px'; t.style.top = '0px';
+    var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+    var below = place !== 'above';
+    if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+    else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+    var top = below ? r.bottom + gap : r.top - gap - h;
+    // a wide element (a row, a long field): the arrow points where the pointer is
+    var cx = r.left + r.width / 2;
+    if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+    var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+    t.style.left = left + 'px';
+    t.style.top = Math.max(m, Math.round(top)) + 'px';
+    t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+    t.classList.toggle('mbu-tip-up', !below);
+}
+function mbuTipShow(found) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+    if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+    mbuTipCss();
+    _mbuTip.cur = found.el;
+    _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+    if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+    var t = mbuTipEl();
+    found.el.setAttribute('aria-describedby', 'mbu-tip');
+    // next frame, so the transition runs from the hidden state
+    requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+    // the element can go (a re-render) or change its text while the tip is up
+    clearInterval(_mbuTip.liveT);
+    _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+    try {
+        if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+        _mbuTip.obs.disconnect();
+        if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+    } catch (e) { /* no observer: the text is read again on the next hover */ }
+}
+function mbuTipHide(now) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+    _mbuTip.pend = null;
+    var hide = function () {
+        var a = _mbuTip.cur;
+        if (!a) return;
+        _mbuTip.cur = null;
+        clearInterval(_mbuTip.liveT);
+        try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+        if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+        var t = document.getElementById('mbu-tip');
+        if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+        _mbuTip.warm = Date.now();
+    };
+    if (now) hide();
+    else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+}
+function mbuTipStart() {
+    if (mbuTipStart.done || typeof document === 'undefined') return;
+    var _mbuTip = mbuTipS();
+    var root = document.documentElement;
+    if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+    mbuTipStart.done = true;
+    if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+    var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+    window.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+    window.addEventListener('mouseover', function (e) {
+        _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+        if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+        var f = mbuTipFind(e.target);
+        if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+        if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+        if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+        clearTimeout(_mbuTip.showT);
+        _mbuTip.pend = f;
+        var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+        _mbuTip.showT = setTimeout(function () {
+            _mbuTip.pend = null;
+            if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+        }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+    }, true);
+    window.addEventListener('mouseout', function (e) {
+        var to = e.relatedTarget;
+        var q = _mbuTip.quiet;
+        if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+        var p = _mbuTip.pend;
+        if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+        var a = _mbuTip.cur;
+        if (!a) return;
+        if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+        if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+    }, true);
+    window.addEventListener('mousedown', function (e) {
+        if (inTip(e.target)) return;
+        clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+        var f = mbuTipFind(e.target);
+        _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+        if (_mbuTip.cur) mbuTipHide(true);
+    }, true);
+    document.addEventListener('keydown', function (e) {
+        if (!_mbuTip.cur) return;
+        var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+        // typing closes a plain tip, as it does the browser's; modifiers alone don't
+        if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+        mbuTipHide(true);
+        if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+    }, true);
+    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+    window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+    document.addEventListener('focusin', function (e) {
+        var el = e.target, vis = false;
+        try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+        if (!vis) return;
+        var f = mbuTipFind(el);
+        if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+    }, true);
+    document.addEventListener('focusout', function (e) {
+        if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+    }, true);
+}
+mbuTipStart();
 // </ST-UI>
-return { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs };
+return { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart };
 }
 
 // <ST-ARCHIVE> — generated by dev/archive/sync-archive.mjs from dev/archive/wayback.mjs — DO NOT EDIT
@@ -2927,7 +3322,7 @@ function mbaKeysHtml(off) {
     // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
     // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
     const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
-    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" data-tip="archive.org keys: optional, shared by First Contact and Apollo Editor\nWith them the save uses Save Page Now 2: higher limits, and a screenshot of the page, the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music).\nWithout them the save is anonymous.">`
         + `<div class="mbu-ia-h">archive.org keys <span class="mbu-ia-st">${mbaKeysState(k.iaKey, k.iaSecret)}</span> <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
         + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
         + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;
@@ -3460,7 +3855,7 @@ return { ST_ICONS, stIcon, stColor };
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*/edit_annotation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.20.102033","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.20.102033","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -3479,7 +3874,7 @@ var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, m
 var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmGuessSortName } = __st_MATCH(GM_info);   // ST-MATCH, written once at the top of the bundle (#786)
 var { mbuGuessCase } = __st_GUESSCASE(GM_info);   // ST-GUESSCASE, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss } = __st_ARCHIVE(GM_info);   // ST-ARCHIVE, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('apollo_editor', 'Apollo Editor')) return;
@@ -3819,7 +4214,7 @@ var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, m
           if (hits && hits.length === 1) {
             const ent = await fetchEntity(hits[0].gid, 'label');
             if (ent && ent.gid) {
-              try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link: ${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
+              try { set(ent, { status: p.abbr === 'disc' ? 'disc' : 'plat', abbr: p.abbr, title: `matched by its ${p.name} link\n${url}` }); Log.cat('Label').info(name, '→', ent.name, '(' + ent.gid + ') — via', p.name, 'link', url); continue; }
               catch (e) { Log.cat('Label').warn('label set failed', name, e.message); }
             }
           } else Log.cat('Label').debug(name, '—', p.name, 'link', url, hits == null ? 'lookup unavailable' : hits.length ? hits.length + ' labels have it' : 'not in MusicBrainz', '→ the name');
@@ -4127,12 +4522,12 @@ var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, m
   function riBadges(td) {
     td.querySelectorAll('.tc-ri-art .tc-ri-rb').forEach(rb => {
       const i = +rb.dataset.ri, p = _riArt[i]; rb.textContent = '';
-      if (_riMatching && p && !p.committed && p.creditedAs) { rb.innerHTML = `<span class="tc-ri-spin" title="${esc(RI_BUSY_TIP)}"></span>`; return; }
+      if (_riMatching && p && !p.committed && p.creditedAs) { rb.innerHTML = `<span class="tc-ri-spin" data-tip="${esc(RI_BUSY_TIP)}"></span>`; return; }
       const txt = p && badgeText(p); if (!txt) return;
       const chip = rb;
       const b = document.createElement('span'); b.className = 'tc-badge ' + p.status; b.dataset.ri = i; b.textContent = txt;
       if (p.status === 'low' && p.entity) {
-        b.classList.add('tc-ri-pick'); b.title = `uncertain: click to link ${p.entity.name}`;
+        b.classList.add('tc-ri-pick'); b.dataset.tip = `Uncertain\nClick: link ${p.entity.name}`;
         b.onclick = () => riPick(i, p.entity, 'picked (the uncertain candidate)');
       }
       chip.appendChild(b);
@@ -4170,7 +4565,7 @@ var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, m
       const show = riWant() && cur && cur.gid;
       if (!show && riWant() && _riLabBusy.has(lf)) {
         if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
-        if (b.dataset.t !== 'busy') { b.dataset.t = 'busy'; b.dataset.gid = ''; b.innerHTML = `<span class="tc-ri-spin" title="${esc(RI_BUSY_TIP)}"></span>`; }
+        if (b.dataset.t !== 'busy') { b.dataset.t = 'busy'; b.dataset.gid = ''; b.innerHTML = `<span class="tc-ri-spin" data-tip="${esc(RI_BUSY_TIP)}"></span>`; }
         return;
       }
       if (!show) { if (b) b.remove(); inp.style.removeProperty('padding-right'); riLabelDisamb(inp, host, null, null); return; }
@@ -4179,10 +4574,10 @@ var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, m
       const txt = st.abbr || ({ disc: 'disc', high: 'name', alias: 'alias' })[st.status] || st.status;
       if (!b) { b = document.createElement('span'); b.className = 'tc-ri-lab mbu-ui'; host.appendChild(b); }
       // click opens the label in a new tab; the tooltip names it with its disambiguation
-      const tip = `${cur.name || ''}${cur.comment ? ' (' + cur.comment + ')' : ''}${st.title ? ' — ' + st.title : ''}
-click to open the label`;
+      const tip = `${cur.name || ''}${cur.comment ? ' (' + cur.comment + ')' : ''}${st.title ? '\n' + st.title.charAt(0).toUpperCase() + st.title.slice(1) : ''}
+Click: open the label`;
       const key = st.status + txt + cur.gid + tip;
-      if (b.dataset.t !== key) { b.dataset.t = key; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" title="${esc(tip)}" style="cursor:pointer">${esc(txt)}</span>`; }
+      if (b.dataset.t !== key) { b.dataset.t = key; b.innerHTML = `<span class="tc-badge ${esc(st.status)}" data-tip="${esc(tip)}" style="cursor:pointer">${esc(txt)}</span>`; }
       b.dataset.gid = cur.gid;
       if (!b._wired) {
         b._wired = true;
@@ -4246,7 +4641,7 @@ click to open the label`;
     if (!riWant() || !_rgAuto || gid !== _rgAuto.gid) { if (b) { b.remove(); inp.style.removeProperty('padding-right'); } return; }
     if (!b) {
       b = document.createElement('span'); b.className = 'tc-ri-lab tc-ri-rgb mbu-ui'; host.appendChild(b);
-      b.innerHTML = `<span class="tc-badge high" title="${esc(_rgAuto.title + ' — picked by Apollo: the only suggested release group with this title' + (_rgAuto.loose ? ' (ignoring punctuation and case)' : '') + ' and artist\nclick to open the release group')}" style="cursor:pointer">auto</span>`;
+      b.innerHTML = `<span class="tc-badge high" data-tip="${esc(_rgAuto.title + '\nPicked by Apollo: the only suggested release group with this title' + (_rgAuto.loose ? ' (ignoring punctuation and case)' : '') + ' and artist\nClick: open the release group')}" style="cursor:pointer">auto</span>`;
       b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
       b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); window.open(`${ORIGIN}/release-group/${_rgAuto.gid}`, '_blank', 'noopener'); });
     }
@@ -4314,7 +4709,7 @@ click to open the label`;
     if (!inp._tcLabWired) { inp._tcLabWired = true; wireLabelPicker(inp, host); }
     if (!host.querySelector(':scope > .tc-ri-labmk')) {
       const mk = document.createElement('button'); mk.type = 'button'; mk.className = 'tc-ri-labmk mbu-ui'; mk.textContent = '＋';
-      mk.title = 'create this label on MusicBrainz  ·  right-click: create silently in a background tab';
+      mk.dataset.tip = 'Create this label on MusicBrainz\nRight-click: create it silently in a background tab';
       const go = bg => { const n = inp.value.trim(); if (n) createLabel(n, inp._tcLabLf, bg); else inp.focus(); };
       mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); e.stopPropagation(); go(false); };
       mk.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); go(true); };
@@ -4328,7 +4723,7 @@ click to open the label`;
     const txt = riWant() && cur && cur.gid && cur.comment ? cur.comment : '';
     if (!txt || !_nmMeasCtx) { if (d) d.remove(); return; }
     if (!d) { d = document.createElement('span'); d.className = 'tc-ri-labdis mbu-ui'; host.appendChild(d); }
-    if (d.title !== txt) { d.title = txt; d.textContent = '(' + txt + ')'; }
+    if (d.dataset.tip !== txt) { d.dataset.tip = txt; d.textContent = '(' + txt + ')'; }
     const cs = getComputedStyle(inp);
     _nmMeasCtx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const left = Math.ceil(inp.offsetLeft + parseFloat(cs.borderLeftWidth || 0) + parseFloat(cs.paddingLeft || 0) + _nmMeasCtx.measureText(inp.value).width + 6) + 'px';
@@ -4336,7 +4731,13 @@ click to open the label`;
     if (d.style.left !== left) d.style.left = left;
     if (d.style.right !== right) d.style.right = right;
   }
+  // a field that takes a pasted MBID says so in its tip (majkinetor: "Add to all fields that accept mbid a note about it")
+  function mbidTip(inp, lead, what) {
+    const t = inp.dataset.tip || lead;
+    if (!/^Paste:/m.test(t)) inp.dataset.tip = t + '\nPaste: an MBID, or its MusicBrainz URL, ' + what;
+  }
   function wireLabelPicker(inp, host) {
+    mbidTip(inp, 'Search labels by name', 'sets that label at once');
     let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8;
     const live = () => inp._tcLabOn && inp.isConnected;
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
@@ -4349,7 +4750,7 @@ click to open the label`;
       ensure(); list = res; hi = -1;
       pop.innerHTML = res.length ? res.map((c, i) => {
         const aka = aliasStr(c), meta = labelMeta(c);
-        return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}" title="click to set this label"><a class="tic" href="${ORIGIN}/label/${esc(c.gid)}" target="_blank" rel="noopener" title="open label page">${LABEL_SVG}</a><span class="nm">${esc(c.name)}</span>${aka ? `<span class="tc-aka">${esc(aka)}</span>` : ''}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${meta ? `<span class="tc-acmeta">${esc(meta)}</span>` : ''}</div>`;
+        return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}" data-tip="Click: set this label"><a class="tic" href="${ORIGIN}/label/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the label's page">${LABEL_SVG}</a><span class="nm">${esc(c.name)}</span>${aka ? `<span class="tc-aka">${esc(aka)}</span>` : ''}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${meta ? `<span class="tc-acmeta">${esc(meta)}</span>` : ''}</div>`;
       }).join('') : '<div class="tc-acrow none">no matches — use ＋ to create</div>';
       pop.querySelectorAll('.tc-acrow[data-i]').forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(res[+row.dataset.i]); }; });
       // the icon opens the label in a new tab: its mousedown stays off the row (no pick) and off the input (the popup stays)
@@ -6036,7 +6437,7 @@ click to open the label`;
     window.addEventListener('mouseover', e => {
       const h = apolloEnabled() && titleOf(e.target); if (!h || h.b.contains(e.relatedTarget)) return;
       e.stopPropagation();
-      h.b.title = 'Guess case\n(right-click: guess case options)';
+      h.b.dataset.tip = 'Guess case\nRight-click: its options'; h.b.removeAttribute('title');
       if (e.buttons !== 0 || !h.i.value) return;
       const g = gcGuess(h.i.value, 'release');
       if (g !== h.i.value) { prev = { i: h.i, orig: h.i.value }; h.i.value = g; h.i.classList.add('preview'); }
@@ -6089,7 +6490,7 @@ click to open the label`;
     const autoMode = () => { let lang = null; try { lang = u(release().languageID); } catch (e) { /* no release yet */ } return mbuGuessCase.modeFor(lang); };
     sel.append(new Option('Auto (' + autoMode() + ')', 'auto'), ...mbuGuessCase.modes.map(m => new Option(m, m)));
     sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
-    sel.title = "Guess case mode. Auto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence whatever the language.";
+    sel.dataset.tip = "Guess case mode\nAuto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence, whatever the language.";
     sel.onfocus = () => { sel.options[0].text = 'Auto (' + autoMode() + ')'; sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto'; };
     sel.onchange = () => { SETTINGS.gcMode = sel.value; saveSettings(); Log.cat('Tool').info('guess case mode', sel.value); gcOptionsChanged(); };
     return sel;
@@ -6100,13 +6501,13 @@ click to open the label`;
     box.appendChild(gcModeSelect());
     // the two options as toggles, drawn as S&R's RE: ABC keeps capitals, IV writes roman numerals in capitals
     const gcVal = key => (key === 'gcKeepUC' ? SETTINGS[key] !== false : !!SETTINGS[key]);
-    const mkTog = (text, key, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-srbtn tc-gc-tg' + (key === 'gcRoman' ? ' rn' : ''); b.textContent = text; b.title = title; b.dataset.gcKey = key; const show = () => { b.classList.toggle('on', gcVal(key)); b.setAttribute('aria-pressed', String(gcVal(key))); }; show(); b.onclick = () => { SETTINGS[key] = !gcVal(key); saveSettings(); Log.cat('Tool').info('guess case', key, SETTINGS[key]); gcOptionsChanged(); }; return b; };
+    const mkTog = (text, key, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-srbtn tc-gc-tg' + (key === 'gcRoman' ? ' rn' : ''); b.textContent = text; b.dataset.tip = title; b.dataset.gcKey = key; const show = () => { b.classList.toggle('on', gcVal(key)); b.setAttribute('aria-pressed', String(gcVal(key))); }; show(); b.onclick = () => { SETTINGS[key] = !gcVal(key); saveSettings(); Log.cat('Tool').info('guess case', key, SETTINGS[key]); gcOptionsChanged(); }; return b; };
     box.appendChild(mkTog('ABC', 'gcKeepUC', 'Keep uppercased: a word written in capitals (or with a capital inside, as KoRn) stays as it is'));
     box.appendChild(mkTog('IV', 'gcRoman', 'Roman numerals: in capitals, part ii → Part II'));
-    const sl = document.createElement('label'); sl.title = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts: Love story / история любви → Love Story / История любви. Empty: never split.";
+    const sl = document.createElement('label'); sl.dataset.tip = "In Auto, the parts of a title split by this are guessed on their own when they are in different scripts\nLove story / история любви → Love Story / История любви\nEmpty: never split";
     const si = document.createElement('input'); si.type = 'text'; si.className = 'tc-gc-sep'; si.dataset.gcSep = '1'; si.maxLength = 5; si.spellcheck = false; si.value = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep;
     si.onchange = () => { SETTINGS.gcSep = si.value.trim(); saveSettings(); Log.cat('Tool').info('guess case separator', JSON.stringify(SETTINGS.gcSep)); gcOptionsChanged(); };
-    si.title = 'Separator. ' + sl.title; si.setAttribute('aria-label', 'Separator');
+    si.dataset.tip = 'Separator\n' + sl.dataset.tip; si.setAttribute('aria-label', 'Separator');
     sl.append(si);   // no caption: the tooltip names it
     box.appendChild(sl);
     return box;
@@ -6480,25 +6881,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-mirror td.c-act{vertical-align:top;padding:0}
     .tc-mirror th.c-badge{text-align:center}   /* #654: over its centred pills */
     .tc-mirror .tc-badge[data-slot]{cursor:help}
-    /* #654: the match card, a badge's rich tooltip */
-    #tc-mtip{position:absolute;z-index:var(--mbu-z-pop);width:380px;max-width:94vw;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:9px;box-shadow:var(--mbu-shadow-lg);font:13px/1.4 var(--mbu-font);overflow:hidden}
-    #tc-mtip .tc-mt-h{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised)}
-    #tc-mtip .tc-mt-st{margin-left:auto;font-size:11px;color:var(--mbu-text-weak);white-space:nowrap}
-    #tc-mtip .tc-mt-bd{padding:8px 11px;display:flex;flex-direction:column;gap:6px}
-    #tc-mtip a{color:var(--mbu-accent-text)}
-    #tc-mtip .tc-mt-who a{font-weight:600;text-decoration:none}
-    #tc-mtip .tc-mt-meta{display:block;font-size:11px;color:var(--mbu-text-weak)}
-    #tc-mtip .tc-mt-dim{color:var(--mbu-text-weak)}
-    #tc-mtip .tc-mt-means{color:var(--mbu-text-dim);font-size:12px}
-    #tc-mtip .tc-mt-why{color:var(--mbu-text-dim)}
-    #tc-mtip .tc-mt-alt{font-size:12px;color:var(--mbu-text-dim)}
-    #tc-mtip .tc-mt-tbl{border-collapse:collapse;width:100%;font-size:12px}
-    #tc-mtip .tc-mt-tbl td{padding:2px 4px;border-top:1px solid var(--mbu-divider);vertical-align:top}
-    #tc-mtip .tc-mt-tbl td.ok{color:var(--mbu-ok);font-weight:bold;width:14px}
-    #tc-mtip .tc-mt-tbl td.no{color:var(--mbu-error);font-weight:bold;width:14px}
-    #tc-mtip .tc-mt-tbl td.w{color:var(--mbu-text-weak);text-align:right}
-    #tc-mtip .tc-mt-ft{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft);font-size:11px;color:var(--mbu-text-weak)}
-    #tc-mtip .tc-mt-ft .k{margin-left:auto}
+    /* #654: the match card, a badge's rich tooltip: the shared tooltip's card (mbuTipCard), with what's inside it here */
+    #mbu-tip .tc-mt-who a{font-weight:600;text-decoration:none}
+    #mbu-tip .tc-mt-meta{display:block;font-size:11px;color:var(--mbu-text-weak)}
+    #mbu-tip .tc-mt-dim{color:var(--mbu-text-weak)}
+    #mbu-tip .tc-mt-means{color:var(--mbu-text-dim);font-size:12px}
+    #mbu-tip .tc-mt-why{color:var(--mbu-text-dim)}
+    #mbu-tip .tc-mt-alt{font-size:12px;color:var(--mbu-text-dim)}
+    #mbu-tip .tc-mt-tbl{border-collapse:collapse;width:100%;font-size:12px}
+    #mbu-tip .tc-mt-tbl td{padding:2px 4px;border-top:1px solid var(--mbu-divider);vertical-align:top}
+    #mbu-tip .tc-mt-tbl td.ok{color:var(--mbu-ok);font-weight:bold;width:14px}
+    #mbu-tip .tc-mt-tbl td.no{color:var(--mbu-error);font-weight:bold;width:14px}
+    #mbu-tip .tc-mt-tbl td.w{color:var(--mbu-text-weak);text-align:right}
     .tc-trackacts{height:28px;display:flex;align-items:center;justify-content:center;gap:0;visibility:hidden}
     .tc-mirror tr:hover .tc-trackacts{visibility:visible}
     .tc-trackacts button{cursor:pointer;border:none;border-radius:4px;width:22px;padding:2px 0;background:none;font-size:16px;line-height:1}
@@ -7045,35 +7439,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       </div>
       <div class="tc-tab-pane" data-pane="general">
         <div class="tc-s-group tc-s-top">
-          <label title="Tidy the Release information tab: remove the help bubble, clean up the external links and use the right column. Apollo's corner icon still toggles it anytime."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
-          <label title="Replace the native Tracklist editor with the Apollo table on page load. Apollo's corner icon still toggles it anytime."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
-          <label title="Replace the native Recordings editor with the Apollo table on page load. Apollo's corner icon still toggles it anytime."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
-          <label title="On the Add-release Duplicates tab, add a Similarity column scoring how closely each existing release matches the one you are entering (by track-title overlap), coloured red→green — so you can pick the right release to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
-          <label title="Edit the annotation as Markdown with a live preview, in the release editor's Additional information and on the standalone Edit annotation page."><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
-          <label title="Hide the native step-tab row and footer; show a compact step switcher, wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
-          <label title="Zen editing: hide everything above the Apollo nav bar (the site header, release title and entity tabs) and the page footer — leaving just the editor. The release title / artist (with version count) move into the nav bar. Needs the compact nav."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
-          <label title="When another site seeds the Add/Edit-release form, MusicBrainz shows a confirmation page before the editor — automatically click its submit button to skip that step (integrates chaban's auto-confirm script). Add ?skip_confirmation to a seed URL to bypass it once."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
+          <label data-tip="Tidy the Release information tab\nNo help bubble, tidier external links, and the right column put to use.\nApollo's corner icon turns it off and on at any time."><input type="checkbox" id="tc-s-replri"> <span>Modify Release information</span></label>
+          <label data-tip="Apollo's table in place of the Tracklist editor\nFrom the page load. Apollo's corner icon turns it off and on at any time."><input type="checkbox" id="tc-s-repltl"> <span>Modify Tracklist</span></label>
+          <label data-tip="Apollo's table in place of the Recordings editor\nFrom the page load. Apollo's corner icon turns it off and on at any time."><input type="checkbox" id="tc-s-replrec"> <span>Modify Recordings</span></label>
+          <label data-tip="A Similarity column on the Duplicates tab\nHow closely each existing release matches the one you are entering, by the track titles they share, coloured red → green, so you can pick the right one to base yours on."><input type="checkbox" id="tc-s-moddupes"> <span>Modify Duplicates</span></label>
+          <label data-tip="Edit the annotation as Markdown, with a live preview\nIn the release editor's Additional information, and on the Edit annotation page"><input type="checkbox" id="tc-s-modanno"> <span>Modify annotations with Markdown</span></label>
+          <label data-tip="A compact header and footer\nThe step tabs and the footer give way to a small step switcher, the wizard buttons by the title, and Add medium at the table's right."><input type="checkbox" id="tc-s-compactnav"> <span>Modify header and footer</span></label>
+          <label data-tip="Zen: just the editor\nEverything above Apollo's nav bar (the site header, the release title, the entity tabs) and the page footer are hidden; the title and artist, with the version count, move into the nav bar.\nIt needs the compact header."><input type="checkbox" id="tc-s-zen"> <span>Zen editing</span></label>
+          <label data-tip="Skip the confirmation page of a seeded release\nWhen another site seeds the release form, MusicBrainz asks first; Apollo clicks its submit button for you (chaban's auto-confirm script, built in).\nOnce, without this: add \`?skip_confirmation\` to the seed URL."><input type="checkbox" id="tc-s-autoconfirm"> <span>Auto confirm release submissions</span></label>
           <div class="tc-s-sub tc-s-gap">Archive</div>
-          <label title="At Enter edit, ask the Internet Archive's Wayback Machine to save the release's external links. This sends those URLs to archive.org. The archive menu by each link on the release's page finds the snapshots. First Contact archives the album page of its own import itself."><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
+          <label data-tip="Save the external links on the Wayback Machine at Enter edit\nThe archive menu by each link on the release's page finds the snapshots. First Contact saves the album page of its own import itself.\n⚠ This sends those URLs to archive.org"><input type="checkbox" id="tc-s-archive"> <span>Archive links on the Internet Archive</span></label>
           ${mbaKeysHtml(SETTINGS.archive === false)}
-          <label title="On release, release group, artist and label pages: a faint clock by each external link opens a menu with its snapshots on the Wayback Machine, its screenshot, all its snapshots, and Save it now. Nothing is sent to archive.org until you pick one."><input type="checkbox" id="tc-s-archivemenu"> <span>Archive menu on external links</span></label>
+          <label data-tip="A Wayback Machine menu by each external link\nOn release, release group, artist and label pages, a faint clock opens the link's snapshots, its screenshot, all its snapshots, and Save it now.\nNothing goes to archive.org until you pick one."><input type="checkbox" id="tc-s-archivemenu"> <span>Archive menu on external links</span></label>
         </div>
       </div>
       <div class="tc-tab-pane" data-pane="matching" hidden>
         <div class="tc-s-group">
           <div class="tc-s-sub">Auto-match on start</div>
           <div class="tc-s-group">
-            <div class="tc-s-row" style="gap:6px 14px;flex-wrap:wrap"><label class="tc-s-rad" title="Tracklist tab: match track artists to MusicBrainz on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" title="Recordings tab: auto-match unset recordings on load. Off: use the Match button."><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" title="Release-info Label field: when the seeded/typed label name has exactly one exact MusicBrainz match, select it automatically on load. An ambiguous name (e.g. Columbia) is linked when the similar releases on the Duplicates tab credit exactly one label of that name, else left for you to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" title="Release-info Artist field: when the seeded/typed release artist has exactly one exact MusicBrainz match, select it automatically on load. Ambiguous names are left for you to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" title="Release-info Release group field: when exactly one of the existing release groups MusicBrainz suggests has the release's title and artist, select it instead of adding a new one. Marked with an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
-            <label title="When the release has a Discogs link, match each track artist by its Discogs URL (a strong, human-verified signal) before the name search. A single linked MusicBrainz artist is used directly; several are offered as candidates."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
-            <label title="When the release has no language or script, fill them in from the release and track titles. A field a seed or you set is never touched, nor one you change after Apollo filled it. Everything found is offered at the top of the field's list. The language needs three titles or more and 80% confidence from lande, Harmony's detector (50 languages); when it isn't sure, a script that implies its language (Japanese, Korean, Greek…) names one."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
+            <div class="tc-s-row" style="gap:6px 14px;flex-wrap:wrap"><label class="tc-s-rad" data-tip="Match the track artists on load, on the Tracklist\nOff: with the Match button"><input type="checkbox" id="tc-s-automatch"> Tracklist</label><label class="tc-s-rad" data-tip="Match the recordings not set on load, on Recordings\nOff: with the Match button"><input type="checkbox" id="tc-s-automatchrec"> Recordings</label><label class="tc-s-rad" data-tip="Label: pick it on load when the name is certain\nWhen the label name, seeded or typed, matches exactly one MusicBrainz label. A name many labels have (Columbia) is picked when the similar releases on the Duplicates tab credit just one of them; otherwise it's yours to pick."><input type="checkbox" id="tc-s-automatchlabel"> Label</label><label class="tc-s-rad" data-tip="Artist: pick it on load when the name is certain\nWhen the release artist, seeded or typed, matches exactly one MusicBrainz artist. A name many artists have is yours to pick."><input type="checkbox" id="tc-s-automatchartist"> Artist</label><label class="tc-s-rad" data-tip="Release group: pick an existing one on load\nWhen exactly one release group MusicBrainz suggests has the release's title and artist, instead of adding a new one. It shows an auto badge."><input type="checkbox" id="tc-s-automatchrg"> Release group</label></div>
+            <label data-tip="Match track artists by their Discogs links first\nWhen the release has a Discogs link, before the search by name: a sure sign, checked by people. One linked MusicBrainz artist is picked; several are offered."><input type="checkbox" id="tc-s-discogsmatch"> <span>Discogs artist link matching</span></label>
+            <label data-tip="Fill in a missing language and script from the titles\nOnly when the release has none: a field a seed or you set is never touched, nor one you change after Apollo filled it. What was found is offered at the top of the field's list.\nThe language needs three titles or more, and 80% confidence from lande, Harmony's detector of 50 languages; when it isn't sure, a script that implies a language (Japanese, Korean, Greek, …) names it."><input type="checkbox" id="tc-s-langscript"> <span>Detect language and script</span></label>
           </div>
           <div class="tc-s-sub">Recording</div>
           <div class="tc-s-group">
-            <div class="tc-s-row lentol" title="A length difference up to this many seconds counts as a match (not a length mismatch)."><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
-            <div class="tc-s-row lentol" title="Allow up to this many differing characters in the title (edit distance) and still count it as a match. 0 = exact."><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
-            <label title="Treat a case / accent / spacing-only difference in title or artist as a match (recommended)."><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
-            <label title="Ignore punctuation &amp; symbols in titles/artists (&amp; → and, brackets, quotes, dashes, dots…)."><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
-            <div class="tc-s-row" style="gap:8px"><label title="Highlight the exact differing characters in a mismatching title (instead of the whole field), and shade a length mismatch by how large the gap is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" title="Highlight colour — the differing characters and the length-mismatch shading"></div>
+            <div class="tc-s-row lentol" data-tip="Lengths this many seconds apart still match"><span>Length tolerance</span><input type="number" id="tc-s-lentol" min="0" max="60" step="1"> <span>seconds</span></div>
+            <div class="tc-s-row lentol" data-tip="Titles this many characters apart still match\nThe edit distance. 0: exact"><span>Title tolerance</span><input type="number" id="tc-s-titletol" min="0" max="20" step="1"> <span>characters</span></div>
+            <label data-tip="Titles and artists that differ only in case, accents or spacing match\nRecommended"><input type="checkbox" id="tc-s-ignorecase"> <span>Ignore casing</span></label>
+            <label data-tip="Ignore punctuation and symbols in titles and artists\n&amp; → and, brackets, quotes, dashes, dots, …"><input type="checkbox" id="tc-s-ignorepunct"> <span>Ignore punctuation</span></label>
+            <div class="tc-s-row" style="gap:8px"><label data-tip="Highlight the very characters that differ\nIn a title that doesn't match, instead of the whole field; a length that doesn't match is shaded by how far off it is."><input type="checkbox" id="tc-s-detailhl"> <span>Enable detailed highlighting</span></label><input type="color" id="tc-s-hlcolor" data-tip="The highlight colour\nFor the characters that differ, and the shading of a length"></div>
           </div>
         </div>
       </div>
@@ -7081,10 +7475,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         <div class="tc-s-group">
           <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
           <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
-          <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" title="vertical column separators"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" title="horizontal lines between tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
-          <div class="tc-s-row" title="In the detailed-highlight diff, enlarge a differing punctuation / confusable / invisible character (straight vs curly quote, hyphen vs dash, no-break space…) by this many pixels so look-alikes are obvious. 0 = no enlargement (hover tooltip still names the character)."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = no enlargement)</span></div>
-          <label title="Moving between tracklist cells with ↑ / ↓ / Enter keeps the text caret at the same column (clamped to the field's length) so you can fix casing or edit in place. Off: select the whole field on arrival (so the next keystroke overwrites it)."><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
-          <label title="When you hover an artist in the tracklist, highlight every other slot where that same artist appears (#284). Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
+          <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" data-tip="Lines between the columns"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" data-tip="Lines between the tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
+          <div class="tc-s-row" data-tip="Enlarge look-alike characters that differ\nPunctuation, confusable and invisible characters (a straight or curly quote, a hyphen or dash, a no-break space, …) grow by this many pixels in the highlight, so they stand out. 0: not enlarged; hovering one still names it."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = no enlargement)</span></div>
+          <label data-tip="Keep the caret's column when moving between cells\nWith ↑, ↓ and Enter, so you can fix the casing or edit in place.\nOff: the whole field is selected, and the next key replaces it"><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
+          <label data-tip="Highlight an artist everywhere on hover\nEvery other place the artist hovered in the tracklist appears. Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
         </div>
       </div>`;
     document.body.appendChild(s);
@@ -7177,7 +7571,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // the always-visible total in the toolbar (left of Match) — shows the release-wide unresolved count / progress;
   // when there are unresolved artists the badge is clickable and jumps to the first one
-  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.title = n > 0 ? 'jump to the first unresolved artist' : ''; }); };
+  const setGlobalStat = n => { document.querySelectorAll('.tc-globalstat').forEach(e => { e.textContent = n ? statusText(n) : ''; e.classList.toggle('tc-unres', n > 0); e.onclick = n > 0 ? focusFirstUnresolved : null; e.style.cursor = n > 0 ? 'pointer' : ''; e.dataset.tip = n > 0 ? 'Go to the first artist not resolved' : ''; }); };
   // #227: persistent missing-Discogs-links badge. Stays until every link is
   // added; each click steps to the NEXT track missing one and focuses its credit.
   let _discNavIdx = -1;
@@ -7211,7 +7605,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         e.classList.add('tc-disc-pend');
         e.textContent = '🔗 Discogs ⟳';
         e.style.cursor = 'pointer';
-        e.title = 'Couldn’t reach Discogs (rate-limited) — click to retry';
+        e.dataset.tip = '⚠ Couldn’t reach Discogs: too many requests\nClick: try again';
         e.onclick = () => tagDiscogsForAll();
       });
       return;
@@ -7226,33 +7620,33 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const n = miss + mism;
     document.querySelectorAll('.tc-discstat').forEach(e => {
       e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend');
-      e.onclick = null; e.style.cursor = ''; e.title = '';
+      e.onclick = null; e.style.cursor = ''; e.dataset.tip = '';
       if (n) {
         // links to add / mismatches → teal action badge, click steps to the next
         e.textContent = `🔗 ${n} link${n === 1 ? '' : 's'}` + (pend ? ` · ${pend}?` : '');
         e.classList.add('tc-disc-badge');
         e.onclick = focusNextMissingDiscogs; e.style.cursor = 'pointer';
-        e.title = `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'}` + (pend ? `, ${pend} unchecked` : '') + ' — click to step to the next';
+        e.dataset.tip = `${miss} missing, ${mism} mismatched Discogs link${n === 1 ? '' : 's'}` + (pend ? `, ${pend} not checked` : '') + '\nClick: go to the next';
       } else if (pend) {
         // every job ran but some lookups couldn't complete (rate-limited / cold) →
         // say so honestly and let a click retry, rather than reading as "all OK"
         e.textContent = `🔗 ${pend} unchecked`;
         e.classList.add('tc-disc-pend');
         e.onclick = () => tagDiscogsForAll(); e.style.cursor = 'pointer';
-        e.title = `${pend} Discogs link${pend === 1 ? '' : 's'} couldn't be checked (rate-limited) — click to retry`;
+        e.dataset.tip = `${pend} Discogs link${pend === 1 ? '' : 's'} not checked: too many requests\nClick: try again`;
       } else if (checked) {
         // the check ran and every Discogs artist credit is already linked in MB —
         // a positive confirmation so a blank badge no longer means "did it run?"
         e.textContent = '✓ Discogs links OK';
         e.classList.add('tc-disc-ok');
-        e.title = 'every Discogs artist credit on this release is already linked in MusicBrainz';
+        e.dataset.tip = 'Every Discogs artist credit on this release is already linked on MusicBrainz';
       } else {
         e.textContent = '';   // no Discogs link on the release / not checked yet
       }
     });
   };
   // transient progress text in the same slot, while the check runs (not a pill)
-  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend'); e.onclick = null; e.style.cursor = ''; e.title = ''; });
+  const setDiscProgress = (t) => document.querySelectorAll('.tc-discstat').forEach(e => { e.textContent = t || ''; e.classList.remove('tc-disc-badge', 'tc-disc-ok', 'tc-disc-pend'); e.onclick = null; e.style.cursor = ''; e.dataset.tip = ''; });
   // transient action feedback (a pick propagated, S&R count, …) — lives in the toolbar so it never
   // overwrites a medium's unresolved badge; auto-clears
   // majkinetor: "it doesn't seem like a good idea to show messages in the toolbar as it moves
@@ -7315,7 +7709,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const ack = (b, live) => {
       if (!b || !live) return;
       (b.querySelector('.tc-rec-am-lbl') || b).textContent = '⏳ Stopping…';
-      b.title = 'Stopping once the request in flight comes back — everything matched so far is kept';
+      b.dataset.tip = 'Stopping once the request on its way comes back\nWhat matched so far stays.';
     };
     ack(document.querySelector('#tc-bar [data-act="match"], #tc-hdr [data-act="match"]'), _matching);
     ack(document.querySelector('#tc-recwrap .tc-rec-am'), _autoMatching);
@@ -7340,7 +7734,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     b.disabled = false;
     b.classList.toggle('tc-stopping', on);
     b.textContent = on ? '■ Stop' : '⚡ Match';
-    b.title = on ? 'Stop matching — what has already been matched is kept' : 'search MusicBrainz for the unmatched artists';
+    b.dataset.tip = on ? 'Stop matching\nWhat matched so far stays.' : 'Search MusicBrainz for the artists not matched';
   }
   // re-fill every active tbody (per-medium sections in mirror mode, or the single panel table)
   const rerender = () => { const restore = keepScroll(); _hlCur = null; renderRiArtist(true); if (ACTIVE.sections) ACTIVE.sections.forEach(s => fillRows(s.tbody, s.mi)); else if (ACTIVE.tbody) fillRows(ACTIVE.tbody); refreshStatus(); restore(); };   // #685: re-filling the rows mustn't scroll the view
@@ -7408,7 +7802,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // the artist-selection-mode switch (all | one, radios under a sliding thumb) — live in the toolbar; value is SETTINGS.applyMode ('all' | 'single')
   let _amSeq = 0;
-  const amRadios = () => { const n = 'tc-am-' + (++_amSeq); return `<span class="tc-applymode" role="radiogroup" title="when you pick an artist, apply it to…"><span class="tc-am-thumb"></span><label title="all matching tracks"><input type="radio" name="${n}" value="all">all</label><label title="single track"><input type="radio" name="${n}" value="single">one</label></span>`; };
+  const amRadios = () => { const n = 'tc-am-' + (++_amSeq); return `<span class="tc-applymode" role="radiogroup" data-tip="When you pick an artist, it goes to…"><span class="tc-am-thumb"></span><label data-tip="Every track it matches"><input type="radio" name="${n}" value="all">all</label><label data-tip="This track only"><input type="radio" name="${n}" value="single">one</label></span>`; };
   function syncApplyMode() { const v = SETTINGS.applyMode || 'all'; document.querySelectorAll('.tc-applymode input').forEach(r => { r.checked = r.value === v; }); }
   function wireApplyMode(root) {
     const am = (root || document).querySelector('.tc-applymode'); if (!am) return;
@@ -7426,7 +7820,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // #329), and native MB leaves these controls enabled there too.
     const opts = document.createElement('span'); opts.className = 'tc-medopts';
     const mkOpt = (label, prop, help) => {
-      const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.title = help;
+      const lbl = document.createElement('label'); lbl.className = 'tc-medopt'; lbl.dataset.tip = help;
       const cb = document.createElement('input'); cb.type = 'checkbox';
       try { cb.checked = typeof med[prop] === 'function' && !!med[prop](); } catch (e) {}
       cb.onchange = () => {
@@ -7512,7 +7906,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (canAdd || opts) {
       const addrow = document.createElement('div'); addrow.className = 'tc-addrow';
       if (canAdd) {
-        addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" title="add blank tracks">＋</button>`;
+        addrow.innerHTML = `Add <input type="number" class="tc-addn" min="1" value="1"> track(s) <button class="tc-addbtn" data-tip="Add empty tracks">＋</button>`;
         const addn = addrow.querySelector('.tc-addn'), addbtn = addrow.querySelector('.tc-addbtn');
         addbtn.onclick = () => addTracks(target, Math.max(1, parseInt(addn.value, 10) || 1));
       }
@@ -7755,15 +8149,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // content-sizing the matched field leaves a short name with almost no click target, so clicking
     // anywhere in the rest of the bar (the empty space / alias) focuses it to open the search. #128
     search.onmousedown = e => { if (e.target === inp || e.target.closest('.tc-joinwrap, .mk')) return; e.preventDefault(); inp.focus(); };
-    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.title = aka; search.insertBefore(al, ref); }
+    if (aka) { const al = document.createElement('span'); al.className = 'tc-bar-aka'; al.textContent = aka; al.dataset.tip = aka; search.insertBefore(al, ref); }
     // artist disambiguation, like native MB's credit editor — grey, after the alias.
     // Sourced from the cache (filled by the same gid alias fetch); shows even for
     // special-purpose artists like [unknown], whose alias is suppressed. #195
     const dis = slot.committed ? (getDisamb(slot.gid) || (slot.entity && slot.entity.comment) || '') : '';   // #450 entity fallback (created/pasted picks)
-    if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.title = dis; search.insertBefore(ds, ref); }
+    if (dis) { const ds = document.createElement('span'); ds.className = 'tc-bar-disamb'; ds.textContent = '(' + dis + ')'; ds.dataset.tip = dis; search.insertBefore(ds, ref); }
     // #580: always built. On an unresolved slot it shows outright; on a resolved
     // one the .tc-search.matched rules keep it hidden until the slot has focus.
-    const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.title = 'create this artist on MusicBrainz  ·  right-click: create silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref);
+    const mk = document.createElement('button'); mk.className = 'mk'; mk.textContent = '＋'; mk.dataset.tip = 'Create this artist on MusicBrainz\nRight-click: create it silently in a background tab'; mk.onmousedown = e => { if (e.button === 2) return; e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null); }; mk.oncontextmenu = e => { e.preventDefault(); createArtist(inp.value.trim() || slot.creditedAs, slot, slot._discogsUrl || null, true); }; search.insertBefore(mk, ref);
   }
   // #626: what a `pos` match rests on, on hover
   /* ── #654: the match card — a badge's rich tooltip ─────────────────────────────
@@ -7857,48 +8251,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const body = (s.gid ? mtEntityHtml(s.entity, s.gid, s.name) : '')
       + (ev || `<div class="tc-mt-means">${esc(st.means)}</div>`)
       + (alts.length ? `<div class="tc-mt-alt">Also considered: ${alts.map(c => `${mtArtistLink(c.gid || c.id, c.name)}${c.comment ? ` <span class="tc-mt-dim">(${esc(c.comment)})</span>` : ''}`).join(', ')}</div>` : '');
-    return `<div class="tc-mt-h"><span class="tc-badge ${esc(s.status)}">${esc(badgeText(s))}</span><b>${esc(st.name)}</b><span class="tc-mt-st">${st.n ? 'stage ' + st.n + ' · ' : ''}${auto}</span></div>`
-      + `<div class="tc-mt-bd">${body}</div>`
-      + `<div class="tc-mt-ft"><span>${at ? (s.status === 'user' ? 'picked ' : 'matched ') + mtClock(at) : ''}</span><span class="k">click the artist to change</span></div>`;
+    return mbuTipCard({ head: `<span class="tc-badge ${esc(s.status)}">${esc(badgeText(s))}</span>`, title: st.name, aside: (st.n ? 'stage ' + st.n + ' · ' : '') + auto,
+      body, foot: at ? (s.status === 'user' ? 'picked ' : 'matched ') + mtClock(at) : '', footAside: 'click the artist to change' });
   }
-  let _mtCard = null, _mtShowT = 0, _mtHideT = 0, _mtFor = null;
-  function closeMatchCard() { clearTimeout(_mtShowT); clearTimeout(_mtHideT); if (_mtCard) { _mtCard.remove(); _mtCard = null; _mtFor = null; } }
-  function openMatchCard(badge, slot) {
-    closeMatchCard();
-    const c = document.createElement('div'); c.id = 'tc-mtip'; c.className = 'mbu-ui'; c.setAttribute('role', 'tooltip');
-    c.innerHTML = matchCardHtml(slot);
-    document.body.appendChild(c);
-    const b = badge.getBoundingClientRect(), w = c.offsetWidth, h = c.offsetHeight;
-    let left = Math.min(b.right - w, window.innerWidth - w - 8); left = Math.max(8, left);
-    let top = b.bottom + 6; if (top + h > window.innerHeight - 8 && b.top - h - 6 > 8) top = b.top - h - 6;
-    c.style.left = (left + window.scrollX) + 'px'; c.style.top = (top + window.scrollY) + 'px';
-    c.addEventListener('mouseenter', () => clearTimeout(_mtHideT));
-    c.addEventListener('mouseleave', () => { _mtHideT = setTimeout(closeMatchCard, 250); });
-    _mtCard = c; _mtFor = badge;
-    Log.cat('Artist').debug('match card: ' + slot.status + ' for "' + slot.creditedAs + '"' + (slot._why ? '' : ' (no match record: linked before this session or picked)'));
+  // one provider for every badge, now and after any re-render. The shared tooltip (dev/ui/tooltip.mjs)
+  // opens the card after half a second, keeps it while the pointer is on it, and closes it on Esc.
+  function matchCardSlot(badge) {
+    if (badge.dataset.ri != null) return _riArt[+badge.dataset.ri] || null;   // #652
+    const row = badge.closest('tr[data-tk]'); if (!row || !MODEL) return null;
+    const t = MODEL.tracks.find(x => x.mi + ':' + x.ti === row.dataset.tk);
+    return (t && t.slots[+badge.dataset.slot]) || null;
   }
-  // one listener for every badge, now and after any re-render
   function wireMatchCards() {
     if (wireMatchCards.done) return; wireMatchCards.done = true;
-    document.addEventListener('mouseover', e => {
-      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]');
-      if (!badge || badge === _mtFor) return;
-      clearTimeout(_mtShowT); clearTimeout(_mtHideT);
-      _mtShowT = setTimeout(() => {
-        if (!badge.isConnected || !badge.matches(':hover')) return;
-        if (badge.dataset.ri != null) { const ps = _riArt[+badge.dataset.ri]; if (ps) openMatchCard(badge, ps); return; }   // #652
-        const row = badge.closest('tr[data-tk]'); if (!row || !MODEL) return;
-        const t = MODEL.tracks.find(x => x.mi + ':' + x.ti === row.dataset.tk);
-        const slot = t && t.slots[+badge.dataset.slot]; if (slot) openMatchCard(badge, slot);
-      }, 500);
-    });
-    document.addEventListener('mouseout', e => {
-      const badge = e.target.closest && e.target.closest('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]');
-      if (!badge || (e.relatedTarget && badge.contains(e.relatedTarget))) return;
-      clearTimeout(_mtShowT);
-      if (_mtFor === badge) _mtHideT = setTimeout(closeMatchCard, 250);
-    });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && _mtCard) closeMatchCard(); }, true);
+    mbuTipOn('.tc-mirror .tc-badge[data-slot]:not([data-ri]), .tc-ri-rb .tc-badge[data-ri]', badge => {
+      const slot = matchCardSlot(badge); if (!slot) return null;
+      Log.cat('Artist').debug('match card: ' + slot.status + ' for "' + slot.creditedAs + '"' + (slot._why ? '' : ' (no match record: linked before this session or picked)'));
+      return matchCardHtml(slot);
+    }, { interactive: true, card: true, delay: 500 });
   }
   function posBadgeTitle(s) {
     if (s.status !== 'pos' || !s._pos) return '';
@@ -7917,8 +8287,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const row = cell.closest('tr');
     const actCell = (row && row.querySelector('td.c-act')) || cell;
     // both slots always rendered, so ✕ never moves when ↺ comes and goes
-    actCell.innerHTML = `<div class="tc-trackacts"><button class="trev${changed ? '' : ' void'}" title="revert this track"${changed ? '' : ' tabindex="-1" aria-hidden="true"'}>↺</button>`
-      + `<button class="rm${locked ? ' void' : ''}" title="remove track"${locked ? ' tabindex="-1" aria-hidden="true"' : ''}>✕</button></div>`;
+    actCell.innerHTML = `<div class="tc-trackacts"><button class="trev${changed ? '' : ' void'}" data-tip="Revert this track"${changed ? '' : ' tabindex="-1" aria-hidden="true"'}>↺</button>`
+      + `<button class="rm${locked ? ' void' : ''}" data-tip="Remove the track"${locked ? ' tabindex="-1" aria-hidden="true"' : ''}>✕</button></div>`;
     const trev = actCell.querySelector('.trev:not(.void)'); if (trev) trev.onclick = () => revertTrack(track);
     const rm = actCell.querySelector('.rm:not(.void)'); if (rm) rm.onclick = () => { removeTrack(track); rebuild(); };
     if (row) row.classList.toggle('tc-changed', changed);   // mark the row (left border)
@@ -7926,7 +8296,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // join phrase: editable text that grows right-to-left, plus a ▾ that opens the presets list
   function joinControl(entry, slot, refreshBadges) {
     const wrap = document.createElement('span'); wrap.className = 'tc-joinwrap';
-    const inp = noPw(document.createElement('input')); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.title = 'join phrase to the next artist (editable; ▾ for presets)';
+    const inp = noPw(document.createElement('input')); inp.className = 'tc-join'; inp.value = slot.joinPhrase || ''; inp.dataset.tip = 'The join phrase to the next artist\nType one, or pick a common one from ▾';
     const fit = () => { inp.size = Math.max(2, inp.value.length || 2); }; fit();
     // #208: flag a join phrase missing a space on either side (␣) or missing
     // entirely (␣?␣). Every rendered join control sits BETWEEN two artists
@@ -7951,7 +8321,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const commit = () => { editCredit(entry, () => { slot.joinPhrase = inp.value; }, 'join phrase', false); markJoin(); if (refreshBadges) refreshBadges(); };
     inp.oninput = () => { fit(); markJoin(); if (inp.value.trim()) open(inp.value); else close(); };   // #419: typing filters the presets live
     inp.onchange = () => { commit(); };
-    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.title = 'common join phrases (type to filter · ↑↓ + Enter)';
+    const arrow = document.createElement('button'); arrow.className = 'tc-joinarrow'; arrow.textContent = '▾'; arrow.dataset.tip = 'Common join phrases\nType: filter them\n↑↓ + Enter: pick one';
     // #419: keyboard-first presets — typing filters ("fe" → feat. / featuring), ArrowDown
     // opens/moves, Enter picks the highlighted row, Esc closes; same keys on the ▾ button.
     let pop = null, items = [], hi = -1;
@@ -7996,6 +8366,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // attach the type-to-search autocomplete to an existing <input>
   function wireAutocomplete(inp, slot, refresh) {
+    mbidTip(inp, 'Search artists by name', 'sets that artist at once');
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
@@ -8017,9 +8388,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       list = arr;
       const of = lead.length ? slot._pos.of : 0;
       const sec = (i) => !lead.length ? '' : i === 0 ? '<div class="tc-acsec">On other editions at this position</div>' : i === lead.length ? '<div class="tc-acsec">Search</div>' : '';
-      const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" title="credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
-      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" title="open artist page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
-      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.title = 'click to set · Ctrl-click to set on all unresolved tracks'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
+      const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" data-tip="Credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
+      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the artist's page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.dataset.tip = 'Click: set it\nCtrl+click: set it on every track not resolved'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
       // #689: the type icon opens the artist in a new tab, like the one beside a resolved field — its
       // mousedown stays off the row (no pick) and off the input (focus, so the popup stays open)
       pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
@@ -8104,9 +8475,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (splitArtistText(s.creditedAs || s.name || s.query || '').length > 1) line.classList.add('tc-can-split');
     // credited-as: shown empty when it's exactly the artist name (the name is the placeholder); only a real override shows
     const same = s.name && s.creditedAs === s.name;
-    const cred = noPw(document.createElement('input')); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.title = 'credited-as override (blank = same as the artist name)';
+    const cred = noPw(document.createElement('input')); cred.className = 'tc-cred'; cred.value = (s.creditedAs && !same) ? s.creditedAs : ''; cred.placeholder = s.name || 'credit…'; cred.dataset.tip = 'Credited as\nEmpty: the artist’s name';
     // #228: a hover × on the left of the field clears the credited-as override
-    const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.title = 'clear the credited-as override  ·  right-click: clear every credited-as on the tracklist';
+    const credClr = document.createElement('button'); credClr.type = 'button'; credClr.className = 'tc-cred-clr'; credClr.textContent = '×'; credClr.dataset.tip = 'Clear the credited-as name\nRight-click: clear every credited-as on the tracklist';
     const updCredClr = () => line.classList.toggle('tc-has-cred', !!cred.value.trim());
     credClr.onmousedown = e => e.preventDefault();
     credClr.onclick = () => { if (!cred.value) return; cred.value = ''; cred.onchange(); updCredClr(); };
@@ -8133,8 +8504,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // different Discogs page) → amber circle-! ; conflict wins the icon when both are flagged.
       const warnCls = conf ? 'discogs-conflict' : 'discogs-mismatch', warnSvg = conf ? DISCOGS_WARN_SVG : DISCOGS_MISMATCH_SVG;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + ((conf || mism) ? warnCls : 'discogs-add'); ic.href = '#'; ic.innerHTML = (conf || mism) ? warnSvg : DISCOGS_LINK_SVG;
-      ic.title = discAddTooltip(s);
-      ic.title += '  ·  right-click: do it silently in a background tab';
+      ic.dataset.tip = discAddTooltip(s);
+      ic.dataset.tip += '\nRight-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreateDiscogsLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreateDiscogsLink(s, true); };   // #273 background
@@ -8142,7 +8513,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // #651: the same offer for First Contact's platform link
       const conf = s._platConflict;
       ic = document.createElement('a'); ic.className = 'tc-tic ' + (conf ? 'discogs-conflict' : 'discogs-add') + ' plat-offer'; ic.href = '#'; ic.innerHTML = conf ? DISCOGS_WARN_SVG : DISCOGS_LINK_SVG;
-      ic.title = platAddTooltip(s) + '  ·  right-click: do it silently in a background tab';
+      ic.dataset.tip = platAddTooltip(s) + '\nRight-click: do it silently in a background tab';
       ic.onmousedown = e => e.preventDefault();
       ic.onclick = e => { e.preventDefault(); addOrCreatePlatformLink(s); };
       ic.oncontextmenu = e => { e.preventDefault(); addOrCreatePlatformLink(s, true); };
@@ -8150,24 +8521,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // unresolved slot whose Discogs URL already belongs to an MB artist — info only (pick that artist)
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._discogsConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
-      ic.title = `Discogs links this URL to ${s._discogsConflict.name} — pick that artist`;
+      ic.dataset.tip = `⚠ Discogs links this URL to ${s._discogsConflict.name}\nPick that artist`;
     } else if (s._platConflict && !(s.committed && s.gid)) {
       // #651: an unmatched slot whose platform link belongs to an MB artist — info only (pick that artist)
       const p = platformOf(s._platUrl) || { name: 'platform' };
       ic = document.createElement('a'); ic.className = 'tc-tic discogs-conflict plat-offer'; ic.innerHTML = DISCOGS_WARN_SVG;
       ic.href = `${ORIGIN}/artist/${s._platConflict.gid}`; ic.target = '_blank'; ic.rel = 'noopener';
-      ic.title = `${p.name}: ${s._platUrl} is linked to ${s._platConflict.name} — pick that artist`;
+      ic.dataset.tip = `⚠ ${p.name}: ${s._platUrl} is linked to ${s._platConflict.name}\nPick that artist`;
     } else {
       ic = document.createElement(s.gid ? 'a' : 'span'); ic.className = 'tc-tic ' + (s.gid ? 'link' : 'dim'); ic.innerHTML = typeSvg(s.entity);
-      if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.title = 'open artist page'; } else ic.title = 'no artist linked yet';
+      if (s.gid) { ic.href = `${ORIGIN}/artist/${s.gid}`; ic.target = '_blank'; ic.rel = 'noopener'; ic.dataset.tip = 'Open the artist’s page'; } else ic.dataset.tip = 'No artist linked yet';
     }
     line.appendChild(ic);
     const search = document.createElement('span'); search.className = 'tc-search';
-    const inp = noPw(document.createElement('input')); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.title = inp.value;
+    const inp = noPw(document.createElement('input')); inp.className = 'nm'; inp.value = s.committed ? (s.name || s.creditedAs) : (s.query || s.creditedAs || ''); inp.placeholder = 'search artist…'; inp.dataset.tip = inp.value;
     search.appendChild(inp);
     // #228: hover × right after the name clears the field (and unsets a matched
     // artist — the input handler un-links on an empty value)
-    const nmClr = document.createElement('button'); nmClr.type = 'button'; nmClr.className = 'tc-nm-clr'; nmClr.textContent = '×'; nmClr.title = 'clear / unset the artist';
+    const nmClr = document.createElement('button'); nmClr.type = 'button'; nmClr.className = 'tc-nm-clr'; nmClr.textContent = '×'; nmClr.dataset.tip = 'Clear the artist';
     // size the input to its text (so the clear × hugs the name when not editing — #284 follow-up);
     // `size` is in characters, close enough. Min 2 keeps a clicked-but-empty field usable.
     const updNmClr = () => { const v = inp.value.trim(); search.classList.toggle('tc-has-nm', !!v); fitNmWidth(inp); };
@@ -8183,12 +8554,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wireAutocomplete(inp, s, () => { adorn(search, s, inp); applyPend(); refreshBadges(); refreshStatus(); });
     // fixed-width actions area (keeps all search boxes the same width); both reveal on row hover
     const acts = document.createElement('span'); acts.className = 'tc-acts';
-    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.title = 'add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
+    const add = document.createElement('button'); add.className = 'tc-enter'; add.textContent = '↵'; add.dataset.tip = 'Add another artist to this credit'; add.onclick = () => addSlotAfter(entry, idx); acts.appendChild(add);
     // ⋔ split: only when this credit looks like several artists (& / feat. / , …)
-    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.title = 'split into separate artists (& / feat. …) and match'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
+    { const sp = document.createElement('button'); sp.className = 'tc-splitb'; sp.textContent = '⋔'; sp.dataset.tip = 'Split into separate artists, and match them\nAt &, feat. and the like'; sp.onclick = () => splitSlot(entry, idx); acts.appendChild(sp); }
     if (entry.slots.length > 1) {
-      const g = document.createElement('span'); g.className = 'tc-slotgrab'; g.textContent = '⠿'; g.draggable = true; g.title = 'drag to reorder this artist within the credit'; acts.appendChild(g);   // #150
-      const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.title = 'remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x);
+      const g = document.createElement('span'); g.className = 'tc-slotgrab'; g.textContent = '⠿'; g.draggable = true; g.dataset.tip = 'Drag: move this artist within the credit'; acts.appendChild(g);   // #150
+      const x = document.createElement('button'); x.className = 'tc-slotx'; x.textContent = '✕'; x.dataset.tip = 'Remove this artist'; x.onclick = () => removeSlot(entry, idx); acts.appendChild(x);
     }
     line.appendChild(acts);
     if (entry.slots.length > 1) wireSlotDrag(line, entry, idx);   // #150
@@ -8273,7 +8644,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (kind !== 'audio') tr.classList.add(kind === 'pregap' ? 'tc-row-pregap' : 'tc-row-data');
       // #376 mirror MB's native "modification pending" mark (span.mp): flag recordings that have open edits
       const ps = recPendingState(t.mi, t.ti);
-      if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; }
+      if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.dataset.tip = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; }
       const locked = mediumLocked(t.mi);   // disc-ID medium: no reorder handle (#125)
       const lenLocked = trackLenLocked(t); // disc-ID medium: audio-track length fixed by the TOC (#329)
       /* #586 (chaban-mb: "is it intentional within the data section tracks cannot
@@ -8296,15 +8667,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
          last track it is inert and permanently invisible, so the column lines up. */
       const dtBtn = locked || kind === 'pregap' ? ''
         : kind === 'data'
-          ? '<button type="button" class="tc-dtmv up" title="Move this track — and any data track above it — back into the audio section">⤒</button>'
+          ? '<button type="button" class="tc-dtmv up" data-tip="Move this track back into the audio section\nWith any data track above it">⤒</button>'
           : lastOfMedium
             ? '<button type="button" class="tc-dtmv down void" tabindex="-1" aria-hidden="true">⤓</button>'   // the glyph, hidden: an EMPTY button is ~6px and still misaligns the handle
-            : '<button type="button" class="tc-dtmv down" title="Move this track and everything below it on this medium into the data-track section">⤓</button>';
-      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" title="drag to reorder within this medium">⠿</span>' : ''}${dtBtn}</td>
-        <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" title="track number"></td>
-        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" title="Hidden pregap track (position 0)">pregap</span>' : ''}${trackRecIsVideo(t) ? VIDEO_MARK_PRE : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
+            : '<button type="button" class="tc-dtmv down" data-tip="Move this track into the data-track section\nWith everything below it on this medium">⤓</button>';
+      tr.innerHTML = `<td class="c-mv">${canDrag ? '<span class="tc-drag" draggable="true" data-tip="Drag: move it within this medium">⠿</span>' : ''}${dtBtn}</td>
+        <td class="c-num"><input class="t-num" ${NOPW_ATTRS} value="${esc(t.number)}" data-tip="The track number"></td>
+        <td class="c-title"><div class="t-wrap">${kind === 'pregap' ? '<span class="tc-trkkind" data-tip="A hidden pregap track, at position 0">pregap</span>' : ''}${trackRecIsVideo(t) ? VIDEO_MARK_PRE : ''}<input class="t-title" ${NOPW_ATTRS} value="${esc(t.title)}" placeholder="title…"></div></td>
         <td class="c-art"></td>
-        <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" title="Length is fixed by this medium’s Disc ID"' : ''}></td>
+        <td class="c-len"><input class="t-len" ${NOPW_ATTRS} value="${esc(t.length)}"${lenLocked ? ' readonly tabindex="-1" data-tip="The length is fixed by this medium’s disc ID"' : ''}></td>
         <td class="c-badge"></td>
         <td class="c-act"></td>`;
       const badgeCell = tr.querySelector('.c-badge'); const refreshBadges = () => renderBadgeCell(badgeCell, t);
@@ -8345,8 +8716,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         paintDisp(t.title);
       }
       if (diff) {
-        tin.classList.add('diff'); tin.title = 'Guess case → ' + t.guessTitle;
-        const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.title = 'Guess case → ' + t.guessTitle + '\n(right-click: guess case all tracks)';
+        tin.classList.add('diff'); tin.dataset.tip = 'Guess case would make it\n' + t.guessTitle;
+        const gb = document.createElement('button'); gb.className = 't-gc'; gb.textContent = 'Aa'; gb.dataset.tip = 'Guess case\n→ ' + t.guessTitle + '\nRight-click: guess case every track';
         const wrap = tr.querySelector('.t-wrap');
         // like MB's integrated guess case: hovering the title cell previews the guessed name
         // (highlighted), leaving restores it, clicking Aa applies it. Never preview while editing.
@@ -8362,9 +8733,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // featured-artist split: flag titles carrying "feat./ft./featuring" and offer the split inline,
       // mirroring [Aa] — click ⋔ splits this track, right-click splits all (#124)
       if (FEAT_RE.test(t.title)) {
-        tin.classList.add('hasfeat'); if (!tin.title) tin.title = 'Title has a featured artist';
+        tin.classList.add('hasfeat'); if (!tin.dataset.tip) tin.dataset.tip = 'The title has a featured artist';
         const fb = document.createElement('button'); fb.className = 't-feat'; fb.textContent = '⋔';
-        fb.title = 'Split featured artist out of the title into the artist credit\n(right-click: split all tracks)';
+        fb.dataset.tip = 'Move the featured artist from the title to the artist credit\nRight-click: every track';
         fb.onclick = () => guessFeatTrack(t);
         fb.oncontextmenu = e => { e.preventDefault(); guessFeatAll(); };
         tActions(tr.querySelector('.t-wrap')).appendChild(fb);
@@ -8745,22 +9116,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       ? `<select class="tc-tpp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-tpp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" title="Maximize / restore">⛶</button><button type="button" class="tc-tpp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" data-tip="Maximize or restore">⛶</button><button type="button" class="tc-tpp-x" data-tip="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
-        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" title="# pos · T title · A artist · L length · M medium · _ skip · \$X explicit · X[a-b] slice · X[a:.] up to a char · X[~a:.] from the LAST occurrence"><button type="button" class="tc-tpp-piclr" title="Clear pattern" tabindex="-1">✕</button></span>
-        <button type="button" class="tc-tpp-freeze" title="Lock this pattern onto every still-«default» row that already matches it, so a later pattern change won't affect them — then try a new pattern on what's left">🔒 Freeze matched</button>
+        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" data-tip="The pattern\n- \`#\` position, \`T\` title, \`A\` artist, \`L\` length, \`M\` medium, \`_\` skip\n- \`\$X\` explicit\n- \`X[a-b]\` a slice\n- \`X[a:.]\` up to a character\n- \`X[~a:.]\` from its last occurrence"><button type="button" class="tc-tpp-piclr" data-tip="Clear the pattern" tabindex="-1">✕</button></span>
+        <button type="button" class="tc-tpp-freeze" data-tip="Freeze what matched\nThis pattern sticks to every row on the default pattern that matches it, so changing the pattern later leaves them be; try a new one on what is left.">🔒 Freeze matched</button>
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
-        <button type="button" class="tc-tpp-split" title="Which separator a text field splits on when it repeats (A - T on 'a - b - c')">split: <b>first</b></button>
+        <button type="button" class="tc-tpp-split" data-tip="Which separator a field splits on when it repeats\n\`A - T\` on \`a - b - c\`">split: <b>first</b></button>
       </div>
       <div class="tc-tpp-body">
         <div class="tc-tpp-src">
-          <button type="button" class="tc-tpp-srctgl" title="Show / hide the paste box">▾ Paste tracklist</button>
+          <button type="button" class="tc-tpp-srctgl" data-tip="Show or hide the paste box">▾ Paste tracklist</button>
           <textarea class="tc-tpp-ta" spellcheck="false" placeholder="Paste the tracklist — one track per line"></textarea>
         </div>
         <div class="tc-tpp-tblwrap"><table class="tc-tpp-tbl"><thead><tr><th></th><th>pattern</th><th>raw</th><th>#</th><th>artist</th><th>title</th><th>length</th></tr></thead><tbody></tbody></table></div>
       </div>
-      <div class="tc-tpp-ft"><span class="tc-tpp-cnt"></span><span class="tc-tpp-acts"><button type="button" class="tc-tpp-ok" disabled>Apply</button><button type="button" class="tc-tpp-menu" title="Apply options" disabled>▾</button></span></div>`;
+      <div class="tc-tpp-ft"><span class="tc-tpp-cnt"></span><span class="tc-tpp-acts"><button type="button" class="tc-tpp-ok" disabled>Apply</button><button type="button" class="tc-tpp-menu" data-tip="Apply: the options" disabled>▾</button></span></div>`;
     document.body.appendChild(p);
     const $ = s => p.querySelector(s);
     const ta = $('.tc-tpp-ta'), tbody = $('.tc-tpp-tbl tbody'), patIn = $('.tc-tpp-pi');
@@ -8789,14 +9160,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const ti = r.raw.trim() === '' ? -1 : k++;
         // dimmed: a row with no track to land on (a disc-ID-locked medium can't grow)
         const tr = document.createElement('tr'); tr.className = 'tc-tpp-tr' + (locked && ti >= nT ? ' notrk' : '');
-        const cell = v => `<td class="tc-tpp-c" title="${esc(v || '')}">${esc(v || '')}</td>`;
-        tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" title="${state === 'none' ? 'no match — adjust the pattern' : state === 'over' ? 'matched via a per-row pattern' : 'matched'}"></span></td>`
-          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" ${NOPW_ATTRS} spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" title="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
-          + `<td class="tc-tpp-raw" contenteditable="plaintext-only" spellcheck="false" title="Click to edit this line — the change goes back to the pasted text">${esc(r.raw)}</td>`
+        const cell = v => `<td class="tc-tpp-c" data-tip="${esc(v || '')}">${esc(v || '')}</td>`;
+        tr.innerHTML = `<td class="tc-tpp-dot"><span style="background:${DOT[state]}" data-tip="${state === 'none' ? 'No match: adjust the pattern' : state === 'over' ? 'Matched by its own pattern' : 'Matched'}"></span></td>`
+          + `<td class="tc-tpp-pcell"><span class="tc-tpp-ovwrap${r.override ? ' has' : ''}"><input class="tc-tpp-ov" ${NOPW_ATTRS} spellcheck="false" placeholder="«default»" value="${esc(r.override || '')}"><button type="button" class="tc-tpp-ovclr" data-tip="Clear this row’s pattern" tabindex="-1">✕</button></span></td>`
+          + `<td class="tc-tpp-raw" contenteditable="plaintext-only" spellcheck="false" data-tip="Click: edit this line\nThe change goes back into the pasted text.">${esc(r.raw)}</td>`
           + cell(parsed && parsed.pos) + cell(parsed && parsed.artist) + cell(parsed && parsed.title) + cell(parsed && parsed.length);
         const ov = tr.querySelector('.tc-tpp-ov'), ovwrap = tr.querySelector('.tc-tpp-ovwrap');
         // re-parse just this row in place (a full render() would steal the focus from the cell being typed in)
-        const refreshRow = () => { const pr = parseRow(r); const st = !pr ? 'none' : (r.override && r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].title = v || ''; }); refreshFoot(); };
+        const refreshRow = () => { const pr = parseRow(r); const st = !pr ? 'none' : (r.override && r.override.trim() ? 'over' : 'exact'); tr.querySelector('.tc-tpp-dot span').style.background = DOT[st]; const cells = tr.querySelectorAll('.tc-tpp-c'); [pr && pr.pos, pr && pr.artist, pr && pr.title, pr && pr.length].forEach((v, k) => { cells[k].textContent = v || ''; cells[k].dataset.tip = v || ''; }); refreshFoot(); };
         ov.oninput = () => { r.override = ov.value; ovwrap.classList.toggle('has', !!ov.value); refreshRow(); };
         // #732: edit the raw line in place; it's written back to the same line of the paste box
         const rawTd = tr.querySelector('.tc-tpp-raw');
@@ -8901,7 +9272,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
      * that span to a field for THAT row, writing a slice into its pattern cell (T[a-b], …). */
     const FIELD_CHIPS = [['#', 'pos'], ['A', 'artist'], ['T', 'title'], ['L', 'length']];
     const chipBar = document.createElement('div'); chipBar.className = 'tc-tpp-chipbar'; chipBar.style.display = 'none';
-    chipBar.innerHTML = FIELD_CHIPS.map(([g, f]) => `<button type="button" data-f="${f}" data-g="${g}" title="Bind the selection to ${f}">${g}</button>`).join('') + '<button type="button" data-clr="1" title="Clear this row’s pattern">✕</button>';
+    chipBar.innerHTML = FIELD_CHIPS.map(([g, f]) => `<button type="button" data-f="${f}" data-g="${g}" data-tip="Bind the selection to ${f}">${g}</button>`).join('') + '<button type="button" data-clr="1" data-tip="Clear this row’s pattern">✕</button>';
     document.body.appendChild(chipBar);   // on body, not the modal — the modal's transform would otherwise re-base position:fixed (#456)
     let _selCtx = null;   // { rowIdx, a, b } — 1-based inclusive char range in the raw text
     const hideChips = () => { chipBar.style.display = 'none'; _selCtx = null; };
@@ -8950,8 +9321,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     $('.tc-tpp-max').onclick = () => {
       const btn = $('.tc-tpp-max');
       if (!_maxed) { _prevBox = { left: p.style.left, top: p.style.top, width: p.style.width, height: p.style.height, transform: p.style.transform };
-        p.style.transform = 'none'; p.style.left = '2vw'; p.style.top = '2vh'; p.style.width = '96vw'; p.style.height = '94vh'; _maxed = true; btn.textContent = '❐'; btn.title = 'Restore'; }
-      else { Object.assign(p.style, _prevBox); _maxed = false; btn.textContent = '⛶'; btn.title = 'Maximize / restore'; }
+        p.style.transform = 'none'; p.style.left = '2vw'; p.style.top = '2vh'; p.style.width = '96vw'; p.style.height = '94vh'; _maxed = true; btn.textContent = '❐'; btn.dataset.tip = 'Restore'; }
+      else { Object.assign(p.style, _prevBox); _maxed = false; btn.textContent = '⛶'; btn.dataset.tip = 'Maximize or restore'; }
     };
     const medEl = $('.tc-tpp-med'); if (medEl) medEl.onchange = () => { curMi = parseInt(medEl.value, 10) || 0; render(); };
     p.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); if (!$('.tc-tpp-ok').disabled) apply('all'); } };
@@ -9061,13 +9432,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       ? `<select class="tc-lp-med">${mediums().map((m, i) => `<option value="${i}"${i === curMi ? ' selected' : ''}>Medium ${i + 1}</option>`).join('')}</select>`
       : `<span class="tc-lp-med1">Medium ${curMi + 1}</span>`;
     p.innerHTML = `
-      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" title="Back to the source chooser" style="display:none">‹ Sources</button><span class="tc-lp-t">Length parser</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" title="Close (Esc)">✕</button></div>
+      <div class="tc-lp-hd"><button type="button" class="tc-lp-back" data-tip="Back to the sources" style="display:none">‹ Sources</button><span class="tc-lp-t">Length parser</span><span class="tc-lp-err" style="display:none"></span>${medSel}<button type="button" class="tc-lp-x" data-tip="Close (Esc)">✕</button></div>
       <div class="tc-lp-body">
         <div class="tc-lp-left">
           <textarea class="tc-lp-ta" placeholder="Paste a tracklist here — any text with durations (5:50, 1′23″, 1:02:03). Track numbers, titles and other noise are ignored."></textarea>
           <div class="tc-lp-choose">
             <div class="tc-lp-crow"><button type="button" class="tc-lp-cbtn" data-o="text">Enter text</button><button type="button" class="tc-lp-cbtn" data-o="clip">Paste from clipboard</button></div>
-            <div class="tc-lp-clbl" title="Copy a link to a page with the tracklist, then press Ctrl+V anywhere in this window">Parse from external link — or paste one (Ctrl+V)</div>
+            <div class="tc-lp-clbl" data-tip="Copy a link to a page with the tracklist\nCtrl+V: paste it anywhere in this window">Parse from external link — or paste one (Ctrl+V)</div>
             <div class="tc-lp-favs"><span class="tc-lp-favload">…</span></div>
           </div>
         </div>
@@ -9102,10 +9473,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     lpExternalLinks().then(urls => {
       const favs = chooser.querySelector('.tc-lp-favs');
       if (!urls.length) { favs.innerHTML = `<span class="tc-lp-nofav">no external links on this release</span>`; return; }
-      favs.innerHTML = urls.map(x => { let h = ''; try { h = new URL(x).hostname.replace(/^www\./, ''); } catch (e) {} return `<img class="tc-lp-fav" src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(h)}" title="Read track lengths from ${esc(x)}" data-u="${esc(x)}" data-h="${esc(h)}" alt="${esc(h)}" referrerpolicy="no-referrer">`; }).join('');
+      favs.innerHTML = urls.map(x => { let h = ''; try { h = new URL(x).hostname.replace(/^www\./, ''); } catch (e) {} return `<img class="tc-lp-fav" src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(h)}" data-tip="Read track lengths from ${esc(x)}" data-u="${esc(x)}" data-h="${esc(h)}" alt="${esc(h)}" referrerpolicy="no-referrer">`; }).join('');
       favs.querySelectorAll('.tc-lp-fav').forEach(im => {
         im.onclick = () => fetchLink(im.dataset.u);
-        im.onerror = () => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-favtxt'; b.textContent = im.dataset.h || 'link'; b.title = im.title; b.onclick = () => fetchLink(im.dataset.u); im.replaceWith(b); };   // favicon blocked/offline → clickable hostname chip
+        im.onerror = () => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-lp-favtxt'; b.textContent = im.dataset.h || 'link'; b.dataset.tip = im.dataset.tip || ''; b.onclick = () => fetchLink(im.dataset.u); im.replaceWith(b); };   // favicon blocked/offline → clickable hostname chip
       });
     });
     async function fetchLink(url) {
@@ -9154,15 +9525,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const nT = tracks().length; listEl.innerHTML = '';
       items.forEach((it, i) => {
         const row = document.createElement('div'); row.className = 'tc-lp-row';
-        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" title="${esc(i < nT ? (trackTitle(i) || '') : 'no track — ignored')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
+        row.innerHTML = `<span class="tc-lp-tk${i < nT ? '' : ' none'}" data-tip="${esc(i < nT ? (trackTitle(i) || '') : 'No track: left out')}">${i < nT ? (i + 1) + '. ' + esc(trackTitle(i) || '—') : '— (no track)'}</span>`;
         const inp = noPw(document.createElement('input')); inp.type = 'text'; inp.className = 'tc-lp-val' + (lpBad(it.value) ? ' bad' : ''); inp.value = it.value;
         inp.placeholder = '—';   // #621 an empty row is allowed: that track keeps its current length
-        const tip = () => { inp.title = lpEmpty(inp.value) ? 'empty — this track keeps its current length' : (it.raw ? ('detected: ' + it.raw) : ''); };
+        const tip = () => { inp.dataset.tip = lpEmpty(inp.value) ? 'Empty: this track keeps its length' : (it.raw ? ('Read from\n' + it.raw) : ''); };
         tip();
         inp.oninput = () => { it.value = inp.value; inp.classList.toggle('bad', lpBad(inp.value)); tip(); refreshFoot(); };   // clears the red the moment it's valid (or emptied)
-        const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.title = 'insert a length below (rows shift down)';
+        const add = document.createElement('button'); add.type = 'button'; add.className = 'tc-lp-add'; add.textContent = '+'; add.dataset.tip = 'Insert a length below\nThe rows below move down.';
         add.onclick = () => { items.splice(i + 1, 0, { value: '', raw: '' }); render(); listEl.querySelectorAll('.tc-lp-val')[i + 1]?.focus(); };
-        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.textContent = '✕'; del.title = 'delete (rows below shift up)';
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'tc-lp-del'; del.textContent = '✕'; del.dataset.tip = 'Delete\nThe rows below move up.';
         del.onclick = () => { items.splice(i, 1); render(); };
         row.append(inp, add, del);
         listEl.appendChild(row);
@@ -9241,14 +9612,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function bindActions(host) {
     host.querySelectorAll('[data-act]').forEach(b => {
       const a = b.dataset.act;
-      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolsmenu') openToolsMenu(b); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'unselect every track artist, keeping the credited-as text (titles and lengths kept)', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
+      b.onclick = () => { if (a === 'menu') openToolsMenu(b); else if (a === 'tool') runActiveTool(); else if (a === 'toolsmenu') openToolsMenu(b); else if (a === 'toolscfg') openToolsConfig(b); else if (a === 'gear') openSettings(b); else if (a === 'revertmenu') openMiniMenu(b, [{ label: '↺ Revert all', title: 'Revert every track to its page-load state', onClick: revertAll }, { label: '✕ Clear all', title: 'Unselect every track artist\nThe credited-as text, titles and lengths stay.', onClick: clearAllTracks }]); else if (a === 'close') { host.remove(); ACTIVE = {}; } else runAction(a); };
     });
   }
   // a small one-off dropdown (e.g. the ▾ next to "Revert all"); items: {label, title?, onClick}
   function openMiniMenu(anchor, items) {
     document.querySelectorAll('.tc-menu.tc-mini').forEach(m => m.remove());
     const m = document.createElement('div'); m.className = 'tc-menu tc-mini';
-    m.innerHTML = items.map((it, i) => `<div class="tc-mi" data-i="${i}"${it.title ? ` title="${esc(it.title)}"` : ''}>${esc(it.label)}</div>`).join('');
+    m.innerHTML = items.map((it, i) => `<div class="tc-mi" data-i="${i}"${it.title ? ` data-tip="${esc(it.title)}"` : ''}>${esc(it.label)}</div>`).join('');
     document.body.appendChild(m);
     const r = anchor.getBoundingClientRect(); const w = m.offsetWidth, h = m.offsetHeight;
     // right-align the menu to the anchor (opens leftward) and clamp on-screen, so it never runs off the edge
@@ -9451,7 +9822,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     b.className = 'tc-toolbtn' + (m.instant ? ' instant' : '');
     b.dataset.act = t.act;
     b.innerHTML = (t.icon ? `<span class="tc-tbic">${iconHtml(m.icon)}</span>` : '') + (t.text ? `<span class="tc-tblab">${esc(m.label)}</span>` : '');
-    if (!t.text) b.title = m.label;
+    if (!t.text) b.dataset.tip = m.label;
     b.onclick = () => pickTool(t.act);
     return b;
   }
@@ -9512,9 +9883,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const openOnDown = e => { if (e.key === 'ArrowDown' && !_srPop) { e.preventDefault(); openSrTemplates(find, find, rep, re); } };   // popup anchors to the search field (left-aligned)
       find.addEventListener('keydown', openOnDown); rep.addEventListener('keydown', openOnDown);
       const re = document.createElement('button'); re.type = 'button'; re.className = 'tc-srbtn tc-sr-re' + (srRegexOn() ? ' on' : ''); re.textContent = 'RE';
-      re.title = 'Use regular expressions (search is a regex; $1, $<name> work in replace)';
+      re.dataset.tip = 'Regular expressions\nThe search is a regex; `$1` and `$<name>` work in the replacement.';
       re.onclick = () => { SETTINGS.srRegex = !srRegexOn(); saveSettings(); re.classList.toggle('on', srRegexOn()); find.placeholder = srRegexOn() ? 'search (regex)' : 'search'; run(); };
-      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.title = 'Saved patterns, chains & recent (or press ↓ in the search field)';
+      const star = document.createElement('button'); star.type = 'button'; star.className = 'tc-srbtn tc-sr-star'; star.textContent = '★'; star.dataset.tip = 'Saved patterns, chains and recent ones\n↓: the same, in the search field';
       // #409: in chain mode `find` is hidden (display:none → a 0,0 rect that flung the popup to the
       // corner). Anchor to whatever's actually visible — the chain chip, else the ★ button.
       star.onclick = () => { const b = star.closest('.tc-sro'); const anchor = (find.offsetParent !== null) ? find : ((b && b.querySelector('.tc-sr-chainchip')) || star); openSrTemplates(anchor, find, rep, re); };
@@ -9522,7 +9893,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (_srChain) srShowChain(_srChain);   // #409: restore the chain chip if a chain was active
     } else if (act === 'cols') {
       const box = document.createElement('span'); box.className = 'tc-colso';
-      const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.title = title; b.onclick = fn; return b; };
+      const mk = (label, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-colbtn'; b.textContent = label; b.dataset.tip = title; b.onclick = fn; return b; };
       box.append(
         mk('Fit', 'size #, Title and Length to their content (Artist absorbs the slack)', colsFit),
         mk('Centered', 'balance Title and Artist to equal width', colsBalanced),
@@ -9537,7 +9908,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = all.length > 1 ? 'into first ticked:' : 'only one medium';
       box.appendChild(lab);
       all.forEach((m, i) => {
-        const l = document.createElement('label'); l.title = medLabel(m, i);
+        const l = document.createElement('label'); l.dataset.tip = medLabel(m, i);
         const c = document.createElement('input'); c.type = 'checkbox'; c.checked = _mergeSel.has(i);
         c.onchange = () => { if (c.checked) _mergeSel.add(i); else _mergeSel.delete(i); };
         l.append(c, document.createTextNode(String(i + 1))); box.appendChild(l);
@@ -9548,7 +9919,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const box = document.createElement('span'); box.className = 'tc-medo tc-spo';
       const all = mediums(); let mi = toolMedium(); if (!all[mi]) mi = 0;
       if (all.length > 1) {
-        const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
+        const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.dataset.tip = 'Which medium';
         all.forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); o.title = medLabel(m, i); sel.appendChild(o); });
         sel.value = String(mi); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; _splitAt = null; renderToolbar(); };
         box.appendChild(sel);
@@ -9557,7 +9928,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // MB lazy-loads a collapsed medium's tracks — load it, then rebuild these params with its tracks
       if (m && !medLoaded(m) && !_splitLoading) { _splitLoading = true; loadMediums([m]).then(() => { _splitLoading = false; renderToolbar(); }); }
       const lab = document.createElement('span'); lab.className = 'tc-mmo-lab'; lab.textContent = m && !medLoaded(m) ? 'loading medium…' : 'new medium from #';
-      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat'; at.title = 'the first track of the new medium';
+      const at = document.createElement('select'); at.className = 'tc-medsel tc-spat'; at.dataset.tip = 'The first track of the new medium';
       tr.forEach((t, i) => { if (i === 0) return; const o = document.createElement('option'); o.value = String(i); o.textContent = String(u(t.number) || i + 1); o.title = u(t.name) || ''; at.appendChild(o); });
       if (_splitAt == null || _splitAt <= 0 || _splitAt >= tr.length) _splitAt = Math.floor(tr.length / 2) || null;
       if (_splitAt != null) at.value = String(_splitAt);
@@ -9566,7 +9937,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       box.append(lab, at); host.appendChild(box);
     } else if (MEDIUM_TOOLS.has(act) && mediums().length > 1) {
       const box = document.createElement('span'); box.className = 'tc-medo';
-      const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.title = 'which medium';
+      const sel = document.createElement('select'); sel.className = 'tc-medsel'; sel.dataset.tip = 'Which medium';
       mediums().forEach((m, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = 'Medium ' + (i + 1); sel.appendChild(o); });
       sel.value = String(toolMedium()); sel.onchange = () => { _toolMedium = parseInt(sel.value, 10) || 0; };
       // #280: no Run button — pick the medium here, then click the tool's icon/name to run it
@@ -9587,7 +9958,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     grp.addEventListener('click', e => { if (e.target === grp && grp.classList.contains('tc-collapsed')) triggerTool(act); });
     grp.addEventListener('contextmenu', e => { if (e.target === grp) name.oncontextmenu(e); });
     // collapsed: drop the title so the native tooltip can't pop up over the flyout
-    const setTitle = () => { name.title = grp.classList.contains('tc-collapsed') ? '' : TOOL[act].label + ' — click to run, right-click to collapse parameters'; };
+    const setTitle = () => { name.dataset.tip = grp.classList.contains('tc-collapsed') ? '' : TOOL[act].label + '\nClick: run it\nRight-click: fold its parameters'; };
     // #280: right-click the name collapses/expands its params (state remembered);
     // collapsed params fly out on hover/focus. Toggle in place so typed S&R text survives.
     name.oncontextmenu = (e) => {
@@ -9650,10 +10021,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const m = TD(t.act);
         const row = document.createElement('div'); row.className = 'tc-tc-row' + (t.onBar ? '' : ' off'); row.dataset.act = t.act; row.draggable = true;
         row.innerHTML =
-          '<span class="tc-tc-grab" title="drag to reorder">⠿</span>'
-          + `<label class="tc-tc-onbar" title="show on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
+          '<span class="tc-tc-grab" data-tip="Drag: move it">⠿</span>'
+          + `<label class="tc-tc-onbar" data-tip="Show it on the toolbar"><input type="checkbox" class="cb-onbar"${t.onBar ? ' checked' : ''}></label>`
           + `<span class="tc-tc-ic">${iconHtml(m.icon)}</span><span class="tc-tc-lab">${esc(m.label)}</span>`
-          + `<span class="tc-tc-dens" title="what shows on the button — icon and/or text"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" title="show the icon">${iconHtml(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" title="show the text">T</button></span>`;
+          + `<span class="tc-tc-dens" data-tip="What the button shows\nIts icon, its text, or both"><button type="button" class="tc-tc-seg cb-icon${t.icon ? ' on' : ''}" data-tip="Show the icon">${iconHtml(m.icon)}</button><button type="button" class="tc-tc-seg cb-text${t.text ? ' on' : ''}" data-tip="Show the text">T</button></span>`;
         list.appendChild(row);
       });
       list.querySelectorAll('.tc-tc-row').forEach(row => {
@@ -9812,11 +10183,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!chip) {
       chip = document.createElement('span'); chip.className = 'tc-sr-chainchip';
       const lbl = document.createElement('span'); lbl.className = 'tc-sr-chainlbl';
-      const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-sr-chainx'; x.textContent = '✕'; x.title = 'Exit chain — back to search / replace'; x.onclick = srExitChain;
+      const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-sr-chainx'; x.textContent = '✕'; x.dataset.tip = 'Leave the chain\nBack to search and replace'; x.onclick = srExitChain;
       chip.append(lbl, x); box.insertBefore(chip, box.firstChild);
     }
     chip.querySelector('.tc-sr-chainlbl').textContent = '⛓ ' + name;
-    chip.title = 'S&R chain "' + name + '" (read-only — several patterns)';
+    chip.dataset.tip = 'Search and replace chain “' + name + '”\nSeveral patterns; read-only';
   }
   function srExitChain() {
     _srChain = null;
@@ -9920,7 +10291,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const hd = document.createElement('div'); hd.className = 'tc-srtpl-hd';
       const back = document.createElement('button'); back.type = 'button'; back.className = 'tc-srtpl-savebtn'; back.textContent = '‹ Back'; back.onclick = () => render();
       const ttl = document.createElement('span'); ttl.className = 'tc-srtpl-hdt'; ttl.textContent = 'Import / Export';
-      const imp = document.createElement('button'); imp.type = 'button'; imp.className = 'tc-srtpl-saveok tc-srtpl-impok'; imp.textContent = '✓ Import'; imp.title = 'Replace your saved patterns & chains with the JSON below';
+      const imp = document.createElement('button'); imp.type = 'button'; imp.className = 'tc-srtpl-saveok tc-srtpl-impok'; imp.textContent = '✓ Import'; imp.dataset.tip = 'Replace your saved patterns and chains with the JSON below';
       hd.append(back, ttl, imp); pop.appendChild(hd);
       const ta = document.createElement('textarea'); ta.className = 'tc-srtpl-io'; ta.spellcheck = false;
       ta.value = JSON.stringify({ templates: srTemplates().filter(t => t.name && t.name[0] !== '_'), default: srDefaultName() }, null, 2);
@@ -9943,17 +10314,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     };
     const mkRow = (cells, onClick, extras) => {
       const row = document.createElement('div'); row.className = 'tc-srtpl-row' + (extras && extras.isDefault ? ' tc-srtpl-defrow' : '');
-      cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.title = c.txt; row.appendChild(s); });
+      cells.forEach(c => { const s = document.createElement('span'); s.className = c.cls; s.textContent = c.txt; s.dataset.tip = c.txt; row.appendChild(s); });
       const rec = document.createElement('span'); rec.className = 'tc-srtpl-re'; rec.textContent = extras && extras.re ? 'RE' : ''; row.appendChild(rec);
       const tail = document.createElement('span'); tail.className = 'tc-srtpl-tail';
       // #410: mark this pattern/chain as the default (runs on Tracklist open). Filled ◉ + always
       // visible when it IS the default; a faint ○ on hover otherwise.
-      if (extras && extras.onDefault) { const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-srtpl-def' + (extras.isDefault ? ' on' : ''); d.textContent = extras.isDefault ? '◉' : '○'; d.title = extras.isDefault ? 'Default — runs on Tracklist open · click to unset' : 'Set as default — runs on Tracklist open'; d.onclick = e => { e.stopPropagation(); extras.onDefault(); }; tail.appendChild(d); }
+      if (extras && extras.onDefault) { const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-srtpl-def' + (extras.isDefault ? ' on' : ''); d.textContent = extras.isDefault ? '◉' : '○'; d.dataset.tip = extras.isDefault ? 'The default: runs when the Tracklist opens\nClick: unset' : 'Make it the default\nThe default runs when the Tracklist opens.'; d.onclick = e => { e.stopPropagation(); extras.onDefault(); }; tail.appendChild(d); }
       // #409: hover action — add this (non-chain) pattern to a chain
-      if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.title = 'Add / remove this pattern in a chain'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
+      if (extras && extras.onAddChain) { const c = document.createElement('button'); c.type = 'button'; c.className = 'tc-srtpl-chainadd'; c.textContent = '⛓'; c.dataset.tip = 'Add this pattern to a chain, or take it out'; c.onclick = e => { e.stopPropagation(); extras.onAddChain(c); }; tail.appendChild(c); }
       // #409: hover action — rename this pattern / chain in place
-      if (extras && extras.onRename) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'tc-srtpl-rename'; ed.textContent = '✎'; ed.title = 'Rename'; ed.onclick = e => { e.stopPropagation(); startRename(row, extras.renameValue, extras.onRename); }; tail.appendChild(ed); }
-      if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.title = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
+      if (extras && extras.onRename) { const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'tc-srtpl-rename'; ed.textContent = '✎'; ed.dataset.tip = 'Rename'; ed.onclick = e => { e.stopPropagation(); startRename(row, extras.renameValue, extras.onRename); }; tail.appendChild(ed); }
+      if (extras && extras.onRemove) { const x = document.createElement('button'); x.type = 'button'; x.className = 'tc-srtpl-x'; x.textContent = '✕'; x.dataset.tip = 'Remove'; x.onclick = e => { e.stopPropagation(); extras.onRemove(); }; tail.appendChild(x); }
       row.appendChild(tail);
       row.onclick = onClick; row.onmousemove = () => { sel = navRows.indexOf(row); highlight(); };
       navRows.push(row); return row;
@@ -9996,12 +10367,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'tc-srtpl-savebtn'; saveBtn.textContent = '＋ Save current';
       const wrap = document.createElement('span'); wrap.className = 'tc-srtpl-savewrap'; wrap.style.display = 'none';
       const nm = noPw(document.createElement('input')); nm.type = 'text'; nm.className = 'tc-srtpl-name'; nm.placeholder = 'name this pattern';
-      const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.title = 'Save';
+      const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tc-srtpl-saveok'; ok.textContent = '✓'; ok.dataset.tip = 'Save';
       // #409: "Add chain" button next to "Save current", each unrolling its own name field
-      const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.title = 'Create a chain that runs several saved patterns in one click';
+      const chainBtn = document.createElement('button'); chainBtn.type = 'button'; chainBtn.className = 'tc-srtpl-savebtn tc-srtpl-chainbtn'; chainBtn.textContent = '＋ Add chain'; chainBtn.dataset.tip = 'Create a chain that runs several saved patterns in one click';
       const cwrap = document.createElement('span'); cwrap.className = 'tc-srtpl-savewrap'; cwrap.style.display = 'none';
       const cnm = noPw(document.createElement('input')); cnm.type = 'text'; cnm.className = 'tc-srtpl-name'; cnm.placeholder = 'name this chain';
-      const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.title = 'Create chain';
+      const cok = document.createElement('button'); cok.type = 'button'; cok.className = 'tc-srtpl-saveok'; cok.textContent = '✓'; cok.dataset.tip = 'Create the chain';
       const resetHd = () => { saveBtn.style.display = ''; chainBtn.style.display = ''; wrap.style.display = 'none'; cwrap.style.display = 'none'; };
       const doSave = () => { if (srSaveTemplate(nm.value, findEl.value, repEl.value)) render(); };
       const doAddChain = () => { if (srAddChain(cnm.value)) render(); else toast('Name is empty or already used'); };
@@ -10011,7 +10382,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       saveBtn.onclick = () => { if (!findEl.value.trim()) { toast('Type a search first, then save it'); return; } saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; wrap.style.display = ''; nm.value = ''; setTimeout(() => nm.focus(), 0); };
       chainBtn.onclick = () => { saveBtn.style.display = 'none'; chainBtn.style.display = 'none'; cwrap.style.display = ''; cnm.value = ''; setTimeout(() => cnm.focus(), 0); };
       // #409 redesign: Import/Export button, pushed to the right edge of the header.
-      const ioBtn = document.createElement('button'); ioBtn.type = 'button'; ioBtn.className = 'tc-srtpl-iobtn'; ioBtn.textContent = 'Import/Export'; ioBtn.title = 'Import or export your saved patterns & chains as JSON (history is not included)';
+      const ioBtn = document.createElement('button'); ioBtn.type = 'button'; ioBtn.className = 'tc-srtpl-iobtn'; ioBtn.textContent = 'Import/Export'; ioBtn.dataset.tip = 'Import or export your saved patterns and chains as JSON\nWithout the history';
       ioBtn.onclick = () => showImportExport();
       wrap.append(nm, ok); cwrap.append(cnm, cok); hd.append(saveBtn, chainBtn, wrap, cwrap, ioBtn); pop.appendChild(hd);
       // #409: Chains first — click to run all their member patterns in order; ✕ removes the chain
@@ -10062,15 +10433,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     document.addEventListener('keydown', _srPopKey, true);
   }
 
-  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" title="more tools &amp; customize">Tools ▾</span><span class="tc-toolbtns"></span></div>`
-    + `<span class="tc-discstat"></span><span class="tc-globalstat"></span><span class="tc-am-lbl"><b>Change:</b> ${amRadios()}</span><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" title="search MusicBrainz for the unmatched artists">⚡ Match</button>`
-    + `<button class="tc-btn tc-caret" data-act="revertmenu" title="revert / clear all">▾</button>`;   // gear moved to the Apollo launcher
+  const BAR = `<div class="tc-tools"><span class="tc-toolslabel" data-act="toolsmenu" data-tip="More tools, and the toolbar's setup">Tools ▾</span><span class="tc-toolbtns"></span></div>`
+    + `<span class="tc-discstat"></span><span class="tc-globalstat"></span><span class="tc-am-lbl"><b>Change:</b> ${amRadios()}</span><span class="tc-tbsep"></span><button class="tc-btn primary" data-act="match" data-tip="Search MusicBrainz for the artists not matched">⚡ Match</button>`
+    + `<button class="tc-btn tc-caret" data-act="revertmenu" data-tip="Revert or clear it all">▾</button>`;   // gear moved to the Apollo launcher
 
   /* ── floating window (kept for tests; the in-page table is the real UI) ── */
   function openPanel() {
     style(); const ex = document.getElementById('tc-panel'); if (ex) ex.remove(); const l = document.getElementById('tc-launch'); if (l) { l.remove(); mbRestackCorner('br'); }
     const p = document.createElement('div'); p.id = 'tc-panel';
-    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Apollo Editor</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" title="close">✕</button></div>
+    p.innerHTML = `<div id="tc-hdr">${ICON}<b>Apollo Editor</b><span class="sp"></span>${BAR}<button class="tc-icon" data-act="close" data-tip="Close">✕</button></div>
       <div id="tc-body"></div>`;
     document.body.appendChild(p);
     const tbody = mountTable(p.querySelector('#tc-body'));
@@ -10121,7 +10492,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // Tooltip says so; the contextmenu listener is guarded so it's added once per button.
       const expBtn = fs.querySelector('button.icon.expand-medium');
       if (expBtn) {
-        expBtn.title = 'Left click: expand this medium · Right click: expand all media';
+        expBtn.dataset.tip = 'Click: expand this medium\nRight-click: expand every medium';
         if (!expBtn._tcExpAll) { expBtn._tcExpAll = true; expBtn.addEventListener('contextmenu', e => { e.preventDefault(); expandAllTracklistMediums(); }); }
       }
     });
@@ -10280,7 +10651,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const b = document.getElementById('tc-launch'); if (!b) return;
     const on = apolloEnabled();
     mbuCls(b, 'on', on);
-    mbuAttr(b, 'title', (on ? 'Apollo Editor is on · click: show the original editor' : 'Apollo Editor is off · click: turn it on') + ' (every tab, stays until you switch back)\nRight-click: settings');
+    mbuAttr(b, 'data-tip', (on ? 'Apollo Editor is on\nClick: show MusicBrainz’s own editor' : 'Apollo Editor is off\nClick: turn it on') + '\nOn every tab, until you switch back.\nRight-click: settings');
   }
   // show/hide each visible managed tab's mirror per its want
   function applyView() {
@@ -10401,7 +10772,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         b.innerHTML = '<span class="tc-badge auto">auto</span>'; host.appendChild(b);
         if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       }
-      b.firstChild.title = st.why || '';
+      b.firstChild.dataset.tip = st.why || '';
       // level with the field's right end, wherever the cell's edge is
       const pin = document.documentElement.querySelector('.mmthf-pin') ? 48 : 28;
       b.style.right = Math.max(0, host.clientWidth - (sel.offsetLeft + sel.offsetWidth)) + pin + 'px';
@@ -10504,7 +10875,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const og = document.createElement('optgroup'); og.className = 'tc-ls-found'; og.label = 'Detected by Apollo';
         for (const c of list) {
           const src = lsOption(sel, c.name); if (!src) { Log.cat('Language').debug('MusicBrainz has no', k, JSON.stringify(c.name)); continue; }
-          const o = document.createElement('option'); o.value = src.value; o.textContent = src.textContent.trim(); o.title = c.why; og.appendChild(o);   // MB's own name for it, in its language
+          const o = document.createElement('option'); o.value = src.value; o.textContent = src.textContent.trim(); o.title = c.why;   // an <option> keeps the native title: the browser draws the list, no page tooltip reaches it og.appendChild(o);   // MB's own name for it, in its language
         }
         if (og.children.length) sel.insertBefore(og, sel.options[0] && !sel.options[0].value ? sel.options[0].nextSibling : sel.firstChild);
       }
@@ -10625,7 +10996,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function paintDupCell(td, tr, gid, sim, candTracks) {
     if (sim == null) {
       td.textContent = '?'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)' + (gid ? ';cursor:pointer' : '');
-      td.title = 'no track overlap could be computed (tracklist unavailable, or no tracks entered yet)';
+      td.dataset.tip = 'No tracks to compare\nThe tracklist isn’t there, or has no tracks yet.';
       if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
       return;
     }
@@ -10637,8 +11008,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const trackMiss = myTracks > 0 && !isNaN(candTracks) && candTracks !== myTracks;
     td.innerHTML = pct + '%' + (trackMiss ? ' <span class="tc-dup-tm">⚠ tracks</span>' : '');
     td.style.cssText = 'background:' + dupColor(pct) + ';color:#fff;font-weight:700;text-align:center;border-radius:3px;padding:1px 6px' + (gid ? ';cursor:pointer' : '');
-    td.title = 'track-overlap similarity to the release you are entering' + (gid ? ' — click for a track-by-track comparison' : '');
-    if (trackMiss) td.title += ` — track count differs: you entered ${myTracks}, this release has ${candTracks}`;
+    td.dataset.tip = 'How alike its tracks are to the release you are entering' + (gid ? '\nClick: compare them track by track' : '');
+    if (trackMiss) td.dataset.tip += `\n⚠ The track count differs: you entered ${myTracks}, this release has ${candTracks}`;
     if (gid) td.onclick = () => toggleDupDetail(tr, gid, td);
   }
   // 0% → Apollo red, 50% → amber, 100% → Apollo's match green (#1f8a4c) — uses the
@@ -10663,7 +11034,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (tr.querySelector('.tc-dup-sim')) return;          // already scored this (KO-rendered) row
       const gid = (tr.querySelector('input[name="base-release"]') || {}).value || null;
       const td = document.createElement('td'); td.className = 'tc-dup-sim';
-      td.textContent = '…'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)'; td.title = 'computing track-by-track similarity…';
+      td.textContent = '…'; td.style.cssText = 'text-align:center;color:var(--mbu-text-weak)'; td.dataset.tip = 'Comparing the tracks…';
       tr.insertBefore(td, tr.children[dupSimIndex(tr)] || null);   // right after the Release column
       if (gid) enqueueDupScore(gid, td, tr); else td.textContent = '—';   // neutral until the tracklist is fetched (never a metadata-only guess)
     });
@@ -10803,7 +11174,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function seededAcHtml(names, whole) {
     const h = names.map(n => (n.gid
       ? `<a href="${ORIGIN}/artist/${n.gid}" target="_blank" rel="noopener">${esc(n.name)}</a>`
-      : `<span class="tc-dd-unres" title="not matched to a MusicBrainz artist yet">${esc(n.name)}</span>`) + esc(n.join)).join('');
+      : `<span class="tc-dd-unres" data-tip="Not matched to a MusicBrainz artist yet">${esc(n.name)}</span>`) + esc(n.join)).join('');
     return whole ? `<span class="tc-dh">${h}</span>` : h;
   }
   function buildDupDetail(media, entered) {
@@ -10872,7 +11243,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     dupStyle();
     if (thead && !thead.querySelector('.tc-dup-th')) {
       const th = document.createElement('th'); th.className = 'tc-dup-th'; th.textContent = 'Similarity';
-      th.title = 'How closely each existing release matches the one you are entering — click a score for a track-by-track comparison.';
+      th.dataset.tip = 'How closely each existing release matches the one you are entering\nClick a score: compare track by track';
       const row0 = tbody && [...tbody.querySelectorAll(':scope > tr')].find(tr => !tr.classList.contains('tc-dup-detail'));
       thead.insertBefore(th, thead.children[dupSimIndex(row0)] || null);
     }
@@ -11125,7 +11496,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!cf) { out += esc(ch); continue; }
       // invisibles carry a persistent highlight (like the join ␣) so they're obvious at any size
       const cls = 'tc-cf' + (cf.vis ? ' tc-cf-inv' : '');
-      out += '<span class="' + cls + '"' + st + ' title="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>';
+      out += '<span class="' + cls + '"' + st + ' data-tip="' + esc(cf.n + ' (U+' + cf.c + ')') + '">' + esc(cf.vis || ch) + '</span>';
     }
     return out;
   }
@@ -11208,8 +11579,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const j = String(join == null ? '' : join);
     if (!dhMark()) return esc(j);                // #443: gated by detailed highlighting, not the px size
     if (isLast) return dhRun(j);                 // trailing artist — empty join is fine
-    if (j === '') return '<span class="tc-jp" title="missing join phrase — no separator between these artists">␣?␣</span>';
-    const mk = side => '<span class="tc-jp" title="missing ' + side + ' space around the join phrase">␣</span>';
+    if (j === '') return '<span class="tc-jp" data-tip="A join phrase is missing\nNothing separates these artists.">␣?␣</span>';
+    const mk = side => '<span class="tc-jp" data-tip="A space is missing ' + (side === 'leading' ? 'before' : side === 'trailing' ? 'after' : side) + ' the join phrase">␣</span>';
     const need = joinNeed(j);
     if (isCjk(j) || isCjk(prevName) || isCjk(nextName)) { need.lead = false; need.trail = false; }   // CJK: no space convention
     return (need.lead ? mk('leading') : '') + dhRun(j) + (need.trail ? mk('trailing') : '');
@@ -11495,11 +11866,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wrap.innerHTML =
       '<div class="tc-rec-tb">' +
         '<span class="tc-rec-amstatus"></span>' +   // flexible filler: its text changes absorb here, never reflowing the bar
-        '<label class="tc-rec-tbl" title="Auto-match only links a recording when its confidence is at or above this level; anything lower is left unmatched."><b>Cutoff</b> <span class="tc-cutoff" tabindex="0"><span class="tc-cutoff-dot"></span><span class="tc-cutoff-lbl"></span><span class="tc-cutoff-caret">▾</span></span></label>' +
+        '<label class="tc-rec-tbl"><b>Cutoff</b> <span class="tc-cutoff" tabindex="0"><span class="tc-cutoff-dot"></span><span class="tc-cutoff-lbl"></span><span class="tc-cutoff-caret">▾</span></span></label>' +
         '<span class="tc-recwarn"></span>' +
         '<span class="tc-tbsep"></span>' +
-        '<button class="tc-rec-am tc-btn primary" type="button" title="auto-match unset recordings to MusicBrainz suggestions"><span class="tc-spin"></span><span class="tc-rec-am-lbl">⚡ Match</span></button>' +
-        '<button class="tc-rec-revcaret" type="button" title="revert / clear all">▾</button>' +
+        '<button class="tc-rec-am tc-btn primary" type="button" data-tip="Match the recordings not set to MusicBrainz’s suggestions"><span class="tc-spin"></span><span class="tc-rec-am-lbl">⚡ Match</span></button>' +
+        '<button class="tc-rec-revcaret" type="button" data-tip="Revert or clear it all">▾</button>' +
         '' +   /* gear moved to the Apollo launcher */
       '</div>' +
       '<table class="tc-rectbl ' + (SETTINGS.layout || 'normal') + (SETTINGS.altRows ? ' alt' : '') + (SETTINGS.gridCols ? ' gridcols' : '') + (SETTINGS.gridRows !== false ? ' gridrows' : '') + '">' +
@@ -11523,7 +11894,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         amBtn.classList.add('busy');
         const lbl = amBtn.querySelector('.tc-rec-am-lbl');
         if (lbl) lbl.textContent = _matchStop ? '⏳ Stopping…' : '■ Stop';
-        amBtn.title = 'Stop matching — the recordings already linked are kept';
+        amBtn.dataset.tip = 'Stop matching\nThe recordings already linked stay.';
       }
     }
     // #582 — restore the last pass's verdict; the shell above was rebuilt from
@@ -11531,8 +11902,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const amStatus = wrap.querySelector('.tc-rec-amstatus');
     if (amStatus && _recLastStatus && !_autoMatching) amStatus.textContent = _recLastStatus;
     const revCaret = wrap.querySelector('.tc-rec-revcaret'); if (revCaret) revCaret.onclick = () => openMiniMenu(revCaret, [
-      { label: '↺ Revert all', title: 'revert every recording to its page-load state', onClick: revertAllRecordings },
-      { label: '✕ Clear all', title: 'set every track to a new recording', onClick: clearAllRecordings },
+      { label: '↺ Revert all', title: 'Revert every recording to its page-load state', onClick: revertAllRecordings },
+      { label: '✕ Clear all', title: 'Set every track to a new recording', onClick: clearAllRecordings },
     ]);
     wireRecCellContextMenu(wrap);
     renderRecBody(wrap);
@@ -11767,7 +12138,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const host = wrap.querySelector('.tc-cutoff'); if (!host) return;
     const dotEl = host.querySelector('.tc-cutoff-dot'), lblEl = host.querySelector('.tc-cutoff-lbl');
     const OPTS = [['exact', 'exact'], ['tolerance', 'tolerance'], ['near', 'near'], ['low', 'low'], ['vlow', 'very low']];
-    const paint = () => { const v = SETTINGS.recCutoff || 'near'; const o = OPTS.find(x => x[0] === v) || OPTS[2]; dotEl.style.background = CONF_COLOR[v]; lblEl.textContent = o[1]; };
+    // the tip is the levels' table, the chosen one marked and the ones below it dimmed (majkinetor: "add cutoff table with meanings")
+    const MEANS = { exact: 'every field the same', tolerance: 'within the tolerances in the settings', near: 'one field differs, or lengths 3–15 s apart', low: 'two fields differ, or lengths over 15 s apart', vlow: 'all three differ' };
+    const lab = wrap.querySelector('.tc-rec-tbl');
+    const paint = () => {
+      const v = SETTINGS.recCutoff || 'near'; const o = OPTS.find(x => x[0] === v) || OPTS[2]; dotEl.style.background = CONF_COLOR[v]; lblEl.textContent = o[1];
+      const cur = OPTS.indexOf(o);
+      if (lab) lab.dataset.tip = 'Match links a recording only at this confidence or above\n'
+        + OPTS.map((x, i) => '{' + CONF_COLOR[x[0]] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + x[1] + ': ' + MEANS[x[0]]).join('\n')
+        + '\nAnything lower is left unmatched.';
+    };
     paint();
     host.onclick = () => {
       document.querySelectorAll('.tc-cutoff-menu').forEach(m => m.remove());
@@ -11803,7 +12183,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     openRecPicker(row, (tr && tr.querySelector('.tc-recname')) || wrap.querySelector('.tc-recwarn'));
   }
   // #303 — recording video marker (mirrors the native recordings table's <span class="video">)
-  const VIDEO_MARK = '<span class="tc-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
+  const VIDEO_MARK = '<span class="tc-rec-video" data-tip="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
   /* #584 (majkinetor): "In recordings editor the video icons are displayed after
      the titles. While in the original editor they shown before titles. The latter
      makes it easier to scan and notice videos in the list (because titles rarely
@@ -11825,7 +12205,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (warn) {
       warn.textContent = unset ? '⚠ ' + unset + ' without a recording' : '';
       warn.onclick = (unset && firstUnset) ? () => openFirstUnsetPicker(firstUnset) : null;   // #139 follow-up: jump to the first unset track's picker
-      warn.title = unset ? 'jump to the first track without a recording' : '';
+      warn.dataset.tip = unset ? 'Go to the first track without a recording' : '';
     }
     tb.innerHTML = '';
     // #149: iterate ALL mediums so collapsed ones still appear (with an expand
@@ -11839,7 +12219,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const td = document.createElement('td'); td.colSpan = 8;
           const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tc-recmed-exp';
           btn.textContent = '▸ Medium ' + (mi + 1) + ' — left click to expand, right click to expand all';
-          btn.title = 'Left click: load this medium · Right click: load all collapsed media';
+          btn.dataset.tip = 'Click: load this medium\nRight-click: load every folded medium';
           btn.onclick = () => expandRecMedium(mi, btn);
           btn.oncontextmenu = (e) => { e.preventDefault(); expandAllRecMediums(btn); };
           td.appendChild(btn); mr.appendChild(td);
@@ -11933,7 +12313,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (sh) { recLenCls = 'tc-dh-len'; recLenStyle = ' style="background:' + sh.bg + ';color:' + sh.fg + '"'; }
       }
       const tr = document.createElement('tr'); tr.className = 'tc-recrow' + (changed ? ' tc-recchanged' : ''); tr.dataset.mi = r.mi; tr.dataset.ti = r.ti;
-      { const ps = recPendingState(r.mi, r.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.title = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }   // #376
+      { const ps = recPendingState(r.mi, r.ti); if (ps && (ps.rec || ps.art)) { if (ps.rec) tr.classList.add('tc-rec-pending'); if (ps.art) tr.classList.add('tc-art-pending'); tr.dataset.tip = ps.rec && ps.art ? 'Recording and artist have pending edits' : ps.rec ? 'This recording has pending edits' : 'This recording’s artist has pending edits'; } }   // #376
       tr.innerHTML =
         '<td class="c-n">' + esc(String(r.number == null ? '' : r.number)) + '</td>' +
         '<td class="tc-tkt">' + trackTitleHtml + '</td>' +
@@ -11944,36 +12324,36 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         '<td class="tc-recartist ' + aCls + '">' + recArtistCell + '</td>' +
         '<td class="c-len ' + recLenCls + '"' + recLenStyle + '>' + fmtMs(r.recLen) + '</td>';
       const dot = tr.querySelector('.tc-dot');
-      if (r.conf) { dot.style.background = r.conf.color; dot.title = r.conf.label + ' — differs: ' + r.conf.diffs.join(', '); }
-      else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.title = r.exact ? 'Exact match' : 'Tolerance match' + (r.tolDiffs && r.tolDiffs.length ? ' (' + r.tolDiffs.join(', ') + ')' : ''); }
+      if (r.conf) { dot.style.background = r.conf.color; dot.dataset.tip = r.conf.label + '\nDiffers: ' + r.conf.diffs.join(', '); }
+      else if (r.recGid) { dot.style.background = r.exact ? CONF_COLOR.exact : CONF_COLOR.tolerance; dot.dataset.tip = r.exact ? 'An exact match' : 'A match within the tolerances' + (r.tolDiffs && r.tolDiffs.length ? '\nDiffers: ' + r.tolDiffs.join(', ') : ''); }
       else dot.style.visibility = 'hidden';
       const nameCell = tr.querySelector('.tc-recname');
       nameCell.classList.add('tc-clickable');
-      nameCell.title = 'change recording — suggestions / search' + (tElig ? '  ·  right-click: copy track title to recording (Ctrl: row · Alt: column · Ctrl+Alt: whole recording side)' : '');
+      nameCell.dataset.tip = 'Change the recording\nSuggestions, or a search' + (tElig ? '\nRight-click: copy the track title to the recording\nCtrl+right-click: the row\nAlt+right-click: the column\nCtrl+Alt+right-click: the whole recording side' : '');
       nameCell.onclick = () => openRecPicker(r, nameCell);
-      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.title = 'right-click: copy track artist to recording (Ctrl: row · Alt: column · Ctrl+Alt: whole recording side)'; }
+      if (aElig) { const artCell = tr.querySelector('.tc-recartist'); if (artCell) artCell.dataset.tip = 'Right-click: copy the track artist to the recording\nCtrl+right-click: the row\nAlt+right-click: the column\nCtrl+Alt+right-click: the whole recording side'; }
       // #583 — ＋ "new recording", the picker's action lifted onto the row. It
       // holds the first position on the right so it sits at the same x on every
       // row; ↺ (which only appears when the row changed) tucks in beside it.
       if (!r.isNew) {
         const nw = document.createElement('button'); nw.className = 'tc-rec-new-btn'; nw.textContent = '＋';
-        nw.title = 'unset this recording — the track will create a NEW recording on submit';
+        nw.dataset.tip = 'Unset this recording\nThe track gets a new recording on submit.';
         nw.onclick = e => { e.stopPropagation(); newRecordingFor(r); };
         nameCell.appendChild(nw);
       }
       if (changed) {   // per-row revert ↺ (single), shown on hover when changed
-        const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.title = 'revert to the original recording';
+        const rev = document.createElement('button'); rev.className = 'tc-rec-rev'; rev.textContent = '↺'; rev.dataset.tip = 'Back to the original recording';
         rev.onclick = e => { e.stopPropagation(); revertRecording(r); };
         nameCell.appendChild(rev);
       }
       // #348: hint the track-title / track-artist cells' right-click when the recording's value differs
       const tkt = tr.querySelector('.tc-tkt');
       if (tkt && !r.isNew && r.recName != null && r.recName !== '' && (r.title || '') !== r.recName) {
-        tkt.title = 'right-click: set track title to the recording title “' + r.recName + '” (Alt: whole column · Ctrl+Alt: whole track side)';
+        tkt.dataset.tip = 'Right-click: set the track title to the recording’s, “' + r.recName + '”\nAlt+right-click: the whole column\nCtrl+Alt+right-click: the whole track side';
       }
       const tka = tr.querySelector('.tc-tka');
       if (tka && !r.isNew && r.recArtist != null && r.recArtist !== '' && (r.trackArtist || '') !== r.recArtist) {
-        tka.title = 'right-click: set track artist to the recording artist “' + r.recArtist + '” (Alt: whole column · Ctrl+Alt: whole track side)';
+        tka.dataset.tip = 'Right-click: set the track artist to the recording’s, “' + r.recArtist + '”\nAlt+right-click: the whole column\nCtrl+Alt+right-click: the whole track side';
       }
       return tr;
   }
@@ -12193,7 +12573,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       b.disabled = false;
       const lbl = b.querySelector('.tc-rec-am-lbl');
       if (lbl) lbl.textContent = on ? '■ Stop' : '⚡ Match';
-      b.title = on ? 'Stop matching — the recordings already linked are kept'
+      b.dataset.tip = on ? 'Stop matching\nThe recordings already linked stay.'
                    : 'auto-match unset recordings to MusicBrainz suggestions';
       const st = document.querySelector('#tc-recwrap .tc-rec-amstatus');
       if (st) st.classList.toggle('busy', on);
@@ -12809,7 +13189,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (g.count > 1) {   // multiple releases in this RG → link the RG title with a count
         const label = esc(g.rgName || g.name);
         const a = g.rgGid ? '<a href="' + ORIGIN + '/release-group/' + esc(g.rgGid) + '" target="_blank" rel="noopener">' + label + '</a>' : label;
-        return a + ' <span class="tc-rpk-rgx" title="' + g.count + ' releases in this release group">×' + g.count + '</span>';
+        return a + ' <span class="tc-rpk-rgx" data-tip="' + g.count + ' releases in this release group">×' + g.count + '</span>';
       }
       return g.gid ? '<a href="' + ORIGIN + '/release/' + esc(g.gid) + '" target="_blank" rel="noopener">' + esc(g.name) + '</a>' : esc(g.name);
     }).join(', ');
@@ -12848,7 +13228,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       : esc(data.name || '');
     const artistHtml = (data.ac && data.ac.length) ? acLinksWs(data.ac, true) : esc(data.artist || '');
     return '<div class="tc-rpk-row' + resultConfClass(data, ctx) + '" data-gid="' + esc(data.gid) + '">' +
-      '<div class="tc-rpk-main">' + (data._isrc ? '<span class="tc-badge isrc tc-rpk-isrcm" title="has the ISRC First Contact read for this track,  ' + esc(data._isrc) + '">ISRC</span> ' : '') + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
+      '<div class="tc-rpk-main">' + (data._isrc ? '<span class="tc-badge isrc tc-rpk-isrcm" data-tip="Has the ISRC First Contact read for this track\n' + esc(data._isrc) + '">ISRC</span> ' : '') + (data.video ? VIDEO_MARK_PRE : '') +   // #584 — leading, same as the table
         '<span class="tc-rpk-name' + (dT ? ' tc-rpk-fdiff' : '') + '">' + titleHtml + '</span>' +
         (data.comment ? ' <span class="tc-rpk-cmt">(' + esc(data.comment) + ')</span>' : '') +
         '<span class="tc-rpk-len' + (dL ? ' tc-rpk-fdiff' : '') + '">' + (data.length ? fmtMs(data.length) : '') + '</span></div>' +
@@ -12900,9 +13280,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       (showCopyT || showCopyA ? '<div class="tc-rpk-copy">' +
         (showCopyT ? '<label><input type="checkbox" class="tc-rpk-ct"' + (entry.copyTitle ? ' checked' : '') + '> copy track <b>title</b> to the recording (on submit)</label>' : '') +
         (showCopyA ? '<label><input type="checkbox" class="tc-rpk-ca"' + (entry.copyArtist ? ' checked' : '') + '> copy track <b>artist</b> to the recording (on submit)</label>' : '') + '</div>' : '') +
-      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" title="＋ new recording — create a brand-new recording for this track">＋</button></div>' +
-      '<div class="tc-rpk-sec tc-rpk-suggsec" title="click to collapse / expand"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty tc-rpk-busy">finding suggestions…</div></div>' +
-      '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" title="relaxed search — show all recordings with this title, ignoring artist &amp; length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
+      '<div class="tc-rpk-qwrap"><input class="tc-rpk-q" type="text" ' + NOPW_ATTRS + ' placeholder="search by name, or paste a recording MBID / URL / ISRC…"><button class="tc-rpk-qnew" type="button" data-tip="A new recording for this track">＋</button></div>' +
+      '<div class="tc-rpk-sec tc-rpk-suggsec" data-tip="Click: fold or unfold"><span>suggestions<span class="tc-rpk-suggn"></span> <span class="tc-rpk-caret">▾</span></span></div><div class="tc-rpk-list tc-rpk-sugg"><div class="tc-rpk-empty tc-rpk-busy">finding suggestions…</div></div>' +
+      '<div class="tc-rpk-sec">search results<button class="tc-rpk-relax" type="button" data-tip="A looser search\nEvery recording with this title, whatever the artist and length">show all</button></div><div class="tc-rpk-list tc-rpk-res"><div class="tc-rpk-empty">type to search…</div></div>';
     const newBtn = pop.querySelector('.tc-rpk-qnew'); if (newBtn) newBtn.onclick = () => pickNewRecording(entry);
     const ctEl = pop.querySelector('.tc-rpk-ct'); if (ctEl) ctEl.onchange = () => { setCopy('title', entry, ctEl.checked); rerenderRec(); };
     const caEl = pop.querySelector('.tc-rpk-ca'); if (caEl) caEl.onchange = () => { setCopy('artist', entry, caEl.checked); rerenderRec(); };
@@ -12989,7 +13369,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       setTimeout(poll, 250);
     }
     q.value = u(ko.name) || '';
-    q.title = 'free-form — raw MB query, e.g. isrc:USXXX… or artist:"…"';
+    q.dataset.tip = 'Free form: a MusicBrainz query as it is\nLike `isrc:USXXX…` or `artist:"…"`\nPaste: an MBID, or its MusicBrainz URL, links that recording at once';
     // auto-query for THIS track. Narrow = title + artist + a ±10s length window (precise). Relaxed
     // ("show all") = title only, ignoring artist & length — for classical, covers, re-recordings. #119
     // the relaxed/narrow choice is remembered (SETTINGS) so it carries across picker opens and reloads.
@@ -13047,7 +13427,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const paintRelax = () => {
       if (!relaxBtn) return;
       relaxBtn.classList.toggle('on', relax); relaxBtn.textContent = relax ? 'narrow' : 'show all';
-      relaxBtn.title = relax ? 'back to a precise search (title + artist + ±10s length)' : 'relaxed search — show all recordings with this title, ignoring artist & length';
+      relaxBtn.dataset.tip = relax ? 'Back to the precise search\nThe title, the artist, and the length ±10 s' : 'A looser search\nEvery recording with this title, whatever the artist and length';
     };
     paintRelax();
     if (relaxBtn) relaxBtn.onclick = () => {
@@ -13103,7 +13483,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     { key: 'duplicates-tab', label: 'Duplicates', title: 'Release duplicates' },   // Add-release only; hidden when its native tab is absent
     { key: 'tracklist', label: 'Tracklist', title: 'Tracklist' },
     { key: 'recordings', label: 'Recordings', title: 'Recordings' },
-    { key: 'edit-note', diff: true, title: 'Edit note — review changes & add an edit note' }
+    { key: 'edit-note', diff: true, title: 'Edit note\nReview the changes and add an edit note' }
   ];
   // only the submit button is kept (Cancel/Prev/Next are reachable via the entity tabs / step switcher);
   // it shows ONLY when there are pending changes. Both forms are mirrored — whichever MB renders.
@@ -13217,7 +13597,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const steps = document.createElement('div'); steps.className = 'tc-nav-steps'; steps.id = 'tc-nav-steps';
     STEP_DEFS.forEach(d => {
       const b = document.createElement('button'); b.className = 'tc-nav-step' + (d.diff ? ' tc-nav-diff' : ''); b.dataset.step = d.key; b.dataset.baseTitle = d.title;
-      b.innerHTML = d.diff ? DIFF_ICON : d.label; b.title = d.title;
+      b.innerHTML = d.diff ? DIFF_ICON : d.label; b.dataset.tip = d.title;
       b.onclick = () => { const l = stepLink(d.key); if (l) l.click(); setTimeout(syncNav, 40); };
       steps.appendChild(b);
     });
@@ -13269,7 +13649,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (va) { const m = (va.textContent.match(/(\d+)/) || [])[1]; ver = ' <a href="' + esc(va.href) + '" target="_blank" rel="noopener" class="tc-nav-title-ver">(' + (m ? m + ' versions' : 'all versions') + ')</a>'; }
     el.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + album + '</span></div>'
                  + '<div class="tc-nav-title-artist">' + artist + ver + '</div>';
-    el.querySelectorAll('.tc-nav-title-album, .tc-nav-title-artist').forEach(d => { d.title = d.textContent.trim(); });   // the whole text, when it's cut to …
+    el.querySelectorAll('.tc-nav-title-album, .tc-nav-title-artist').forEach(d => { d.dataset.tip = d.textContent.trim(); });   // the whole text, when it's cut to …
   }
   // keep the proxies in sync with the native state each tick
   function syncNav() {
@@ -13284,7 +13664,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const panel = document.getElementById(b.dataset.step);   // MB sets error-tab for some errors but not link errors — also scan the panel for a visible field-error
       const err = !!((li && li.classList.contains('error-tab')) || (panel && panel.querySelector('.field-error[data-visible="1"]')));
       mbuProp(b, 'disabled', dis); mbuCls(b, 'tc-nav-disabled', dis); mbuCls(b, 'tc-nav-warn', err);
-      mbuProp(b, 'title', (dis && link && link.title) ? link.title : (b.dataset.baseTitle || b.title));   // disabled → MB's "enter all track info…" hint
+      mbuAttr(b, 'data-tip', (dis && link && link.title) ? link.title : (b.dataset.baseTitle || ''));   // disabled → MB's "enter all track info…" hint
     });
     const f = navFooterEl();
     const changed = hasChanges();   // the submit button appears only when there are pending changes
@@ -13324,7 +13704,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const want = navOn() && document.getElementById('tc-mirror-wrap') && nat;
     if (!want) { const p = document.getElementById('tc-addmed'); if (p) p.remove(); return; }
     if (document.getElementById('tc-addmed')) return;          // proxy already placed (the add-row may rebuild → re-add then)
-    const btn = document.createElement('button'); btn.id = 'tc-addmed'; btn.className = 'tc-addmed'; btn.title = 'add a new medium'; btn.textContent = '＋ Add medium';
+    const btn = document.createElement('button'); btn.id = 'tc-addmed'; btn.className = 'tc-addmed'; btn.dataset.tip = 'Add a new medium'; btn.textContent = '＋ Add medium';
     btn.onclick = () => { const n = nativeAddMediumBtn(); if (n) n.click(); };
     const rows = document.querySelectorAll('.tc-medsec .tc-addrow'); const host = rows[rows.length - 1];
     if (host) host.appendChild(btn);                            // far right of the last medium's add-tracks row
@@ -13441,7 +13821,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (li.querySelector('.tc-wb')) return;
         const a = li.querySelector('a[href^="http"]');
         if (!a || /(^|\.)(musicbrainz|metabrainz|archive)\.org$/i.test(a.hostname)) return;
-        const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-wb'; b.title = 'Internet Archive'; b.innerHTML = WB_CLOCK;
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-wb'; b.dataset.tip = 'Internet Archive'; b.innerHTML = WB_CLOCK;
         b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openArchiveMenu(b, a.href); });
         li.appendChild(b);
       });
@@ -13869,7 +14249,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     box.style.display = 'none';   // hidden until the cover actually loads — no "FRONT COVER" flash on coverless releases
     box.innerHTML = '<div class="tc-ri-cover-h">Front cover</div>';
     const a = document.createElement('a');
-    a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Cover art (Cover Art Archive)';
+    a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Cover art (Cover Art Archive)';
     const img = document.createElement('img');
     img.alt = 'Front cover'; img.referrerPolicy = 'no-referrer';   // not lazy: a hidden (display:none) box would never load a lazy image
     // reveal only once the image loads. On error the box stays hidden — but is KEPT
@@ -14124,7 +14504,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!bar) {
       fs.style.position = fs.style.position || 'relative';
       bar = document.createElement('div'); bar.id = 'tc-ri-toolbar';
-      bar.innerHTML = '<span id="tc-ri-check-status"></span><button id="tc-ri-check" type="button" title="Check every external link for a dead/404 status. Dead links are faded and each of their relationship types is marked “This relationship has ended”."><span class="tc-spin"></span>⟳ Check links</button>';
+      bar.innerHTML = '<span id="tc-ri-check-status"></span><button id="tc-ri-check" type="button" data-tip="Check every external link for a dead page\nA dead link is faded, and each of its relationship types is marked “This relationship has ended”."><span class="tc-spin"></span>⟳ Check links</button>';
       bar.querySelector('#tc-ri-check').onclick = () => checkAllLinks(true);
       fs.appendChild(bar);
     }
@@ -14439,15 +14819,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const wrap = document.createElement('div'); wrap.id = 'tc-anno-wrap';
     const bar = document.createElement('div'); bar.id = 'tc-anno-bar';
     bar.innerHTML =
-      '<button type="button" id="tc-anno-preview-btn" title="Toggle a live split preview — editor on the left, rendered annotation on the right">👁 Preview</button>' +
-      '<button type="button" id="tc-anno-clear" title="Clear the annotation">✕ Clear</button>' +
+      '<button type="button" id="tc-anno-preview-btn" data-tip="A live preview, side by side\nThe editor on the left, the annotation on the right">👁 Preview</button>' +
+      '<button type="button" id="tc-anno-clear" data-tip="Clear the annotation">✕ Clear</button>' +
       '<span class="tc-anno-sp tc-anno-sp1"></span>' +
-      '<button type="button" id="tc-anno-join" class="tc-anno-icon" title="Join lines — merge the selected lines into one, dropping the hard line breaks so the text reflows. With nothing selected, joins the paragraph at the cursor." aria-label="Join lines">' + ANNO_JOIN_ICON + '</button>' +
-      '<button type="button" id="tc-anno-md" class="tc-anno-icon" title="">' + ANNO_MD_LOGO + '</button>' +
-      '<button type="button" id="tc-anno-help" class="tc-anno-icon" title="Annotation syntax help" aria-label="Syntax help">?</button>' +
+      '<button type="button" id="tc-anno-join" class="tc-anno-icon" data-tip="Join lines\nThe selected lines become one, without their line breaks, so the text flows again. With nothing selected, the paragraph at the cursor." aria-label="Join lines">' + ANNO_JOIN_ICON + '</button>' +
+      '<button type="button" id="tc-anno-md" class="tc-anno-icon" data-tip="">' + ANNO_MD_LOGO + '</button>' +
+      '<button type="button" id="tc-anno-help" class="tc-anno-icon" data-tip="Annotation syntax help" aria-label="Syntax help">?</button>' +
       '<span class="tc-anno-sp tc-anno-sp2"></span>' +
-      '<button type="button" id="tc-anno-max" class="tc-anno-icon" title="Maximize the editor (Esc to restore)" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
-      (mbid ? '<button type="button" id="tc-anno-history-btn" title="Browse this annotation\'s previous versions and display any one">🕘 History</button>' : '');
+      '<button type="button" id="tc-anno-max" class="tc-anno-icon" data-tip="Maximize the editor\nEsc: restore it" aria-label="Maximize">' + ANNO_MAX_ICON + '</button>' +
+      (mbid ? '<button type="button" id="tc-anno-history-btn" data-tip="This annotation\'s earlier versions\nShow any one of them">🕘 History</button>' : '');
     const body = document.createElement('div'); body.id = 'tc-anno-body';
     const editPane = document.createElement('div'); editPane.id = 'tc-anno-edit';
     const md = document.createElement('textarea'); md.id = 'tc-anno-mdinput'; md.spellcheck = false;   // the Markdown editing surface
@@ -14504,7 +14884,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       bar.classList.toggle('tc-anno-hist-on', view === 'history');
       const mdBtn = $('tc-anno-md');
       mdBtn.innerHTML = surface === 'md' ? ANNO_MD_LOGO : ANNO_MB_LOGO;
-      mdBtn.title = surface === 'md' ? 'Editing as Markdown — click to edit the raw MusicBrainz markup' : 'Editing raw MusicBrainz markup — click to edit as Markdown';
+      mdBtn.dataset.tip = surface === 'md' ? 'Editing as Markdown\nClick: edit MusicBrainz’s own markup' : 'Editing MusicBrainz’s own markup\nClick: edit as Markdown';
       renderPreview();
     };
 
@@ -14549,7 +14929,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // Join lines: reflow the selected lines (or the caret's paragraph) into one — works on whichever surface is active
     $('tc-anno-join').onclick = () => { const el = activeEl(); const r = annoJoinBlock(el.value, el.selectionStart, el.selectionEnd); editTa(el, r.value, r.selStart, r.selEnd); el.focus(); };
     // maximize / restore the editor (fills the viewport)
-    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.title = on ? 'Restore the editor (Esc)' : 'Maximize the editor (Esc to restore)'; renderPreview(); };
+    const setMax = on => { wrap.classList.toggle('tc-anno-max', on); document.body.classList.toggle('tc-anno-max-open', on); if (on) wrap.style.height = ''; else if (wrap._tcFill) wrap._tcFill(); const b = $('tc-anno-max'); b.innerHTML = on ? ANNO_MIN_ICON : ANNO_MAX_ICON; b.dataset.tip = on ? 'Restore the editor (Esc)' : 'Maximize the editor\nEsc: restore it'; renderPreview(); };
     $('tc-anno-max').onclick = () => setMax(!wrap.classList.contains('tc-anno-max'));
     wrap.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('tc-anno-max')) { setMax(false); activeEl().focus(); } });
 
@@ -14585,8 +14965,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         card.innerHTML = (v.avatar ? `<img class="tc-hist-av" src="${_annoEsc(v.avatar)}" alt="">` : '<span class="tc-hist-av tc-hist-av0"></span>') +
           `<span class="tc-hist-meta"><span class="tc-hist-editor">${_annoEsc(v.editor)}</span><span class="tc-hist-date">${_annoEsc(v.date)}</span>` +
           (idx === 0 ? '<span class="tc-hist-cl tc-hist-cur">current</span>' : '') +
-          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" title="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>' +
-          `<button type="button" class="tc-hist-revert" title="${idx === 0 ? 'Revert the editor to the saved version (discard unsaved changes made this session)' : 'Revert the editor to this version (reconstructed from the rendered version — review before submitting)'}">↶</button>`;
+          (v.changelog ? `<span class="tc-hist-cl tc-hist-clmsg" data-tip="${_annoEsc(v.changelog)}">“${_annoEsc(v.changelog)}”</span>` : '') + '</span>' +
+          `<button type="button" class="tc-hist-revert" data-tip="${idx === 0 ? 'Back to the saved version\nThe changes of this session not saved are dropped.' : 'Back to this version\n⚠ Rebuilt from the rendered page: check it before you submit'}">↶</button>`;
         card.onclick = async (e) => {
           if (e.target.closest('.tc-hist-revert')) return;
           list.querySelectorAll('.tc-hist-card').forEach(c => c.classList.remove('on')); card.classList.add('on');
@@ -14735,7 +15115,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const idx = [...document.querySelectorAll(sel)].indexOf(btn);   // the clicked row's position = its array index
       const keep = idx >= 0 ? list[idx] : list[0];
       const noun = isEvent ? 'release event' : 'label';
-      openMiniMenu(btn, [{ label: `Remove all but this one (${n})`, title: `Remove the other ${n} ${noun}${n > 1 ? 's' : ''}, keeping this row`, onClick: () => {
+      openMiniMenu(btn, [{ label: `Remove all but this one (${n})`, title: `Remove the other ${n} ${noun}${n > 1 ? 's' : ''}\nThis row stays.`, onClick: () => {
         for (const it of (arr() || []).slice()) { if (it !== keep) { try { arr.remove(it); } catch (x) {} } }
       } }]);
     }, true);
@@ -14744,9 +15124,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Re-applied each tick via applyReleaseInfo, so React re-renders that drop the title get it back.
   function annotateLinkEditHints() {
     const ext = document.getElementById('external-links-editor'); if (!ext) return;
-    const URL_HINT = 'Right-click to edit the URL', TYPE_HINT = 'Right-click to edit the relationship type';
-    ext.querySelectorAll('tr.external-link-item > td:first-child').forEach(td => { if (td.title !== URL_HINT) td.title = URL_HINT; });
-    ext.querySelectorAll('tr.relationship-item .relationship-name, tr.relationship-item select.link-type').forEach(el => { if (el.title !== TYPE_HINT) el.title = TYPE_HINT; });
+    const URL_HINT = 'Right-click: edit the URL', TYPE_HINT = 'Right-click: edit the relationship type';
+    ext.querySelectorAll('tr.external-link-item > td:first-child').forEach(td => { if (td.dataset.tip !== URL_HINT) td.dataset.tip = URL_HINT; });
+    ext.querySelectorAll('tr.relationship-item .relationship-name, tr.relationship-item select.link-type').forEach(el => { if (el.dataset.tip !== TYPE_HINT) el.dataset.tip = TYPE_HINT; });
   }
   // MB indents hierarchical link-type options with leading spaces ("  purchase for download"); the <select>
   // shows the selected option *with* that indent, pushing the text right of the URL. Trim it (display only —
@@ -14762,12 +15142,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // the attribute checkbox (e.g. "video") shows compactly with its caption hidden — surface the caption as a tooltip
       ext.querySelectorAll('tr.relationship-item .attribute-container label').forEach(l => {
         const cap = (l.textContent || '').trim(); if (!cap) return;
-        if (l.title !== cap) l.title = cap;
-        const cb = l.querySelector('input'); if (cb && cb.title !== cap) cb.title = cap;
+        if (l.dataset.tip !== cap) l.dataset.tip = cap;
+        const cb = l.querySelector('input'); if (cb && cb.dataset.tip !== cap) cb.dataset.tip = cap;
       });
       // the error text is collapsed to a "!" badge — surface the full message as its tooltip
       ext.querySelectorAll('tr.relationship-item .error.field-error').forEach(e => {
-        const t = (e.textContent || '').trim(); if (t && e.title !== t) e.title = t;
+        const t = (e.textContent || '').trim(); if (t && e.dataset.tip !== t) e.dataset.tip = t;
       });
       remarkDeadLinks();   // re-apply dead-link fading after a re-render
       ensureCheckToolbar();   // keep the Check-links button present + hidden when there are no links
@@ -14900,7 +15280,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/add-cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/event-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-event-art.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.20.110818","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.20.110818","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -14913,7 +15293,7 @@ var { MBP_COVER_TYPES, mbpCoverTypeId, mbpReleaseLinkList, mbpReleaseJsonLinks, 
 var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('art_station', 'Art Station')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
@@ -15589,7 +15969,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (!it._rmOpen) return '';
     const d = Math.ceil((it._rmOpen.until - Date.now()) / 86400000);
     const left = isNaN(d) ? '' : d <= 0 ? ' · closing' : ` · ${d} day${d === 1 ? '' : 's'}`;
-    return `<a class="as-rmopen" href="/edit/${esc(it._rmOpen.edit)}" target="_blank" rel="noopener" title="Edit #${esc(it._rmOpen.edit)}: a removal open for votes${isNaN(it._rmOpen.until) ? '' : ', closes ' + esc(new Date(it._rmOpen.until).toLocaleString())}">removal open${left}</a>`;
+    return `<a class="as-rmopen" href="/edit/${esc(it._rmOpen.edit)}" target="_blank" rel="noopener" data-tip="Edit #${esc(it._rmOpen.edit)}: a removal open for votes${isNaN(it._rmOpen.until) ? '' : ', closes ' + esc(new Date(it._rmOpen.until).toLocaleString())}">removal open${left}</a>`;
   };
   function measure(it) {
     if (it.w || (it._new && it._pdf)) return;          // measured already, or a PDF (no pixel dims)
@@ -15761,7 +16141,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       mbRestackCorner('br');
     }
     mbuCls(sw, 'on', !_showOrig);
-    mbuAttr(sw, 'title', (_showOrig ? 'Art Station is off · click: back to the Art Station gallery' : 'Art Station is on · click: show the original MusicBrainz cover-art page') + '\nRight-click: settings');
+    mbuAttr(sw, 'data-tip', (_showOrig ? 'Art Station is off\nClick: back to the Art Station gallery' : 'Art Station is on\nClick: show MusicBrainz’s own cover-art page') + '\nRight-click: settings');
   }
   // setup panel (Apollo-style): script info + help + toggles
   function openSetup() {
@@ -15781,9 +16161,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       + `<label class="as-setup-opt"><input type="checkbox" class="as-setup-followpan"${SETTINGS.followPan ? ' checked' : ''}> Full-screen: pan a zoomed image by moving the mouse (no dragging)</label>`
       // #560 — a big PDF booklet against a slow Internet Archive needs more than
       // the old fixed 5 minutes; the native uploader sets no timeout at all.
-      + `<div class="as-setup-opt as-setup-num" title="How long a single file may take to upload to the Internet Archive before Art Station gives up. Raise it for large PDF booklets, or when the Archive is slow. Max ${UPLOAD_TIMEOUT_MIN_MAX}.">`
+      + `<div class="as-setup-opt as-setup-num" data-tip="How long one file may take to upload\nArt Station gives up on the Internet Archive after this. Raise it for large PDF booklets, or when the Archive is slow. At most ${UPLOAD_TIMEOUT_MIN_MAX}.">`
       + `<label class="as-setup-optlbl">Upload timeout <input type="number" class="as-setup-uptimeout" min="1" max="${UPLOAD_TIMEOUT_MIN_MAX}" step="1" value="${esc(String(Math.round(uploadTimeoutMs() / 60000)))}"> minutes</label></div>`
-      + `<div class="as-setup-opt as-setup-num" title="When a commit finishes with failures, re-run just the failed operations by itself until they succeed or the allowance runs out. Off by default. Stops at whichever limit comes first; progress is shown in the commit window's footer.">`
+      + `<div class="as-setup-opt as-setup-num" data-tip="Repeat what failed\nWhen a commit ends with failures, Art Station runs only those again until they succeed or a limit is reached, whichever comes first. The commit window's footer shows the progress. Off by default.">`
       + `<label class="as-setup-optlbl"><input type="checkbox" class="as-setup-autorepeat"${SETTINGS.autoRepeat ? ' checked' : ''}> Automatically repeat failures up to`
       + ` <input type="number" class="as-setup-ar-min" min="1" max="${AR_MIN_MAX}" step="1" value="${esc(String(arMinutes()))}"> minutes or`
       + ` <input type="number" class="as-setup-ar-times" min="1" max="${AR_TIMES_MAX}" step="1" value="${esc(String(arTimes()))}"> times</label></div>`
@@ -15932,14 +16312,14 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
 
   function bar(n) {
     return `<div class="as-bar">
-      <button class="as-btn as-add" title="Add ${ENT.noun} — file drop zone (goes first)"><span class="as-bi">＋</span><span class="mbu-bt">Add image</span></button>
-      ${IS_EVENT ? '' : `<button class="as-btn as-mh" title="MH Covers — source a cover from covers.musichoarders.xyz (#235)"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
-      <button class="as-btn as-src" title="Source ${ENT.noun} from a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
-      <span class="as-ctl"><span class="mbu-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" title="Thumbnail size — scroll the wheel over the slider, or hold right-click and scroll the wheel anywhere in the gallery"></span>
-      <button class="as-btn as-view" title="Sort & grouping">View ▾</button>
-      ${!canReorder() ? '<span class="as-dragwarn" title="Drag-to-reorder is off — it works only with Sort = Position and Grid view. Click to set view.">⚠</span>' : ''}
+      <button class="as-btn as-add" data-tip="Add ${ENT.noun}\nA drop zone for files, first in the gallery"><span class="as-bi">＋</span><span class="mbu-bt">Add image</span></button>
+      ${IS_EVENT ? '' : `<button class="as-btn as-mh" data-tip="MH Covers\nFind a cover on covers.musichoarders.xyz"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
+      <button class="as-btn as-src" data-tip="Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
+      <span class="as-ctl"><span class="mbu-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" data-tip="Thumbnail size\nWheel: over the slider\nRight-click + wheel: anywhere in the gallery"></span>
+      <button class="as-btn as-view" data-tip="Sort and group">View ▾</button>
+      ${!canReorder() ? '<span class="as-dragwarn" data-tip="Dragging to reorder is off\nIt works only sorted by Position, in the grid view.\nClick: change the view">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
-      <button class="as-btn as-commit" title="Review &amp; apply staged changes as MusicBrainz edits — right-click to skip the &quot;Run&quot; click and start immediately"${n?'':' disabled'}>${commitInner(n)}</button>
+      <button class="as-btn as-commit" data-tip="Review and apply the staged changes as MusicBrainz edits\nRight-click: start at once, without the Run click"${n?'':' disabled'}>${commitInner(n)}</button>
     </div>`;
   }
   const commitInner = n => `<span class="as-bi">✓</span><span class="mbu-bt">Enter edit</span>${n ? ` <span class="as-cnt2">(${n})</span>` : ''}`;
@@ -15950,14 +16330,14 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const sel = MODEL.filter(it => it._sel && !it._del), kept = MODEL.filter(it => it._sel && it._del && !it._mcOffer);   // #787 marked ones can be selected, to keep them
     const all = sel.length + kept.length;
     return `${all ? `<b class="as-selcnt">${all} selected</b>` : '<span class="as-selcnt none">none selected</span>'}
-      <button class="as-ic as-selall" title="Select all ${ITEMS}">✳</button>
-      <button class="as-ic as-selclr" title="Clear selection"${all ? '' : ' disabled'}>✕</button>
-      ${kept.length ? `<button class="as-btn as-bk-keep" title="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
-      ${sel.length ? `<button class="as-btn as-bk-type" title="Set type on the selection">Type ▾</button>
-      <button class="as-btn as-bk-cmt" title="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
-      <button class="as-btn as-bk-dl" title="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
-      <button class="as-btn as-bk-report" title="Postable Markdown / HTML report of the selection"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" title="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="mbu-bt">Delete</span></button>` : ''}`;
+      <button class="as-ic as-selall" data-tip="Select all ${ITEMS}">✳</button>
+      <button class="as-ic as-selclr" data-tip="Clear selection"${all ? '' : ' disabled'}>✕</button>
+      ${kept.length ? `<button class="as-btn as-bk-keep" data-tip="Keep the selected ${ITEMS} marked for removal"><span class="as-bi">↺</span><span class="mbu-bt">Keep${sel.length ? ` (${kept.length})` : ''}</span></button>` : ''}
+      ${sel.length ? `<button class="as-btn as-bk-type" data-tip="Set the type of the selection">Type ▾</button>
+      <button class="as-btn as-bk-cmt" data-tip="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
+      <button class="as-btn as-bk-dl" data-tip="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
+      <button class="as-btn as-bk-report" data-tip="A report of the selection\nMarkdown or HTML, ready to post"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
+      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="mbu-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? ('All ' + ITEMS) : type;
@@ -15972,7 +16352,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   }
   function dropZone() {
     if (!_dropZone) return '';
-    return `<div class="as-dropzone" tabindex="0" title="Drop image / PDF files, a folder or a .zip, or click to browse. Folders and zips upload one level of subfolders deep, up to ${DIR_MAX_FILES} files. Shift-click to browse a folder.">
+    return `<div class="as-dropzone" tabindex="0" data-tip="Drop images, PDFs, a folder or a .zip\nFolders and zips upload one level of subfolders deep, up to ${DIR_MAX_FILES} files.\nClick: browse for files\nShift+click: browse for a folder">
       <div class="as-dz-in">⬇ Drop ${ENT.noun} files, a folder or a .zip here<span>or click to browse · Shift-click for a folder · new ${ITEMS} go first</span></div></div>`;
   }
   function newSection() {
@@ -16007,8 +16387,8 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     return sec(dels.filter(it => !it._mcOffer), 'Marked for removal', 'as-sec-del')
       + stores.map(g => { const k = g.xs.filter(x => !x._mcDup).length;   // the shared row takes in each store's one
         return sec(g.xs, `More images · ${g.one ? 'one from each store' : esc(g.p)}: take in, then drag into place`, 'as-sec-del as-sec-more',
-        !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled title="checking for duplicates…">＋ take all in</button>`
-          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}"${g.one ? ' data-one="1"' : ''} title="Take in ${g.one ? "each store's" : "every " + esc(g.p)} image that isn't a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
+        !k ? '' : _mcChecking ? `<button class="as-btn as-more-all" disabled data-tip="Checking for duplicates…">＋ take all in</button>`
+          : `<button class="as-btn as-more-all" data-prov="${esc(g.p)}"${g.one ? ' data-one="1"' : ''} data-tip="Take in ${g.one ? "each store’s" : "every " + esc(g.p)} image that isn’t a duplicate, after the covers">＋ take all in${k < g.xs.length ? ` (${k})` : ''}</button>`); }).join('');
   }
   // Stable CAA thumbnails are HTTP-cached, so recreating their <img> on each
   // render is cheap and flicker-free. NEW (blob) and PENDING (no CAA thumb yet →
@@ -16046,10 +16426,10 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   function provBadge(it) {
     if (!(it._new && it._provIcon)) return '';
     const tip = `Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `\n${it._provUrl}` : '');   // #249 URL on a second line
-    return `<span class="as-prov" title="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
+    return `<span class="as-prov" data-tip="${esc(tip)}"><img src="${esc(it._provIcon)}" alt=""></span>`;
   }
   // #248 (vzell) tooltip for a locally-uploaded cover — its original file name.
-  const uploadTip = it => (it._new && it._uploadName) ? ` title="${esc(it._uploadName)}"` : '';
+  const uploadTip = it => (it._new && it._uploadName) ? ` data-tip="${esc(it._uploadName)}"` : '';
   // #660 (majkinetor): "When importing all images from streaming provider the point is to keep the
   // best one. Currently, one must select other images and delete them … Lets have an option on new
   // images only to keep just one." On a NEW cover, while there are others: mark every other new
@@ -16058,7 +16438,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   const otherNews = it => MODEL.filter(x => x !== it && x._new && !x._del && !x._sourcing);
   function onlyBtn(it) {
     if (!it._new || it._del || it._sourcing || !otherNews(it).length) return '';
-    return `<button class="as-only" title="Keep only this one: the other ${otherNews(it).length} new ${otherNews(it).length === 1 ? ITEM : ITEMS} are marked for removal (↺ keep undoes it)">✓ only this</button>`;
+    return `<button class="as-only" data-tip="Keep only this one\nThe other ${otherNews(it).length} new ${otherNews(it).length === 1 ? ITEM : ITEMS} are marked for removal; ↺ keep undoes it.">✓ only this</button>`;
   }
   function keepOnly(it) {
     if (!it || !it._new) return;
@@ -16071,16 +16451,16 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   // #784: while the stores' images are compared with the archive (mcExtras), nothing is taken in; a duplicate never is
   var _mcChecking = false;
   function card(it) {
-    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">`
+    if (it._sourcing) return `<div class="as-card new as-sourcing" data-id="${esc(it.id)}" data-tip="${esc(it._srcLabel || 'Sourcing…')}">`
       + `<div class="as-srcing-thumb"><div class="as-spinner"></div><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     return `<div class="as-card${it._del?' del':''}${it._del && !it._mcOffer?' rm':''}${it._rmOpen?' rmopen':''}${it._new?' new':''}${it._sel?' sel':''}${it._pending?' pending':''}" data-id="${esc(it.id)}" ${(!it._del && canReorder())?'draggable="true"':''}>
       <div class="as-thumb"${uploadTip(it)}>${thumbImg(it, SETTINGS.tile > 260 ? 500 : 250)}
         ${it._del && !it._mcOffer ? '<span class="as-newban as-rmban">REMOVE</span>' : it._new ? '<span class="as-newban">NEW</span>' : ''}
-        ${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}
+        ${it._pdf ? '<span class="as-pdfban" data-tip="A PDF: opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}${rmOpenChip(it)}
-        ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" title="Mark this ${ITEM} for removal">✕</button>` : ''}
-        ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>') : ''}
-        ${it._mcDup && it._del ? `<span class="as-mcdup" title="the same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
+        ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" data-tip="Mark this ${ITEM} for removal">✕</button>` : ''}
+        ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled data-tip="Checking for duplicates…"' : ' data-tip="Take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" data-tip="Keep this image">↺ keep</button>') : ''}
+        ${it._mcDup && it._del ? `<span class="as-mcdup" data-tip="The same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
       </div>
       ${foot(it)}
@@ -16096,8 +16476,8 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const firstType = it.types[0] || '';
     // seed with the full list; fitTypePills() trims to what fits and adds "+" if needed
     const typePill = firstType
-      ? `<span class="as-type" title="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
-      : `<span class="as-type as-type-add" title="set type">＋ type</span>`;
+      ? `<span class="as-type" data-tip="${esc(it.types.join(', '))}">${esc(it.types.join(', '))}</span>`
+      : `<span class="as-type as-type-add" data-tip="Set the type">＋ type</span>`;
     /* #592: no flanking rules. The type pill straddles the card's own bottom
        border, which already IS the line these drew — so they doubled it, 1px
        above it, in a different colour, and stopped at x=9 where the corner
@@ -16110,13 +16490,13 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const cmt = it._editcmt
       ? `<input class="as-cmt" value="${esc(it.comment)}" placeholder="comment…" list="as-cmt-presets">`
       : (it.comment
-          ? `<span class="as-cmt-text" title="edit comment">${esc(it.comment)}</span>`
-          : `<button class="as-pencil" title="add a comment">✎</button>`);
+          ? `<span class="as-cmt-text" data-tip="Edit the comment">${esc(it.comment)}</span>`
+          : `<button class="as-pencil" data-tip="Add a comment">✎</button>`);
     // reverse-image search this cover — flat magnifier, hover-revealed, in the comment
     // row. Shown for any cover with a public URL: a published cover, or a new cover
     // sourced from a URL (a purely local dropped file has no URL to search by).
     const search = searchUrlFor(it)
-      ? `<button class="as-fsearch" title="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
+      ? `<button class="as-fsearch" data-tip="Search the web for a higher-resolution copy of this image"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg></button>` : '';
     return `<div class="as-foot">
       <div class="as-foot-row"><span class="as-foot-cmt">${cmt}</span>${search}${dim}</div>
       ${typeRow}
@@ -16126,7 +16506,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   // full comment field beside it. No per-row toolbar actions (selection / delete
   // live on the main toolbar).
   function detailRow(it) {
-    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}" title="${esc(it._srcLabel || 'Sourcing…')}">
+    if (it._sourcing) return `<div class="as-drow new as-sourcing" data-id="${esc(it.id)}" data-tip="${esc(it._srcLabel || 'Sourcing…')}">
       <div class="as-dthumb as-srcing-thumb"><div class="as-spinner"></div></div>
       <div class="as-dmeta"><div class="as-srcing-lbl">${esc(it._srcLabel || 'Sourcing…')}</div></div></div>`;
     if (it._del) return `<div class="as-drow del${it._mcOffer ? '' : ' rm'}" data-id="${esc(it.id)}">
@@ -16138,14 +16518,14 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       </div>
       <div class="as-dmeta as-dmeta-del">
         <div class="as-ddel-lbl">${esc(it.types.join(', ') || 'no type')}${it.comment ? ` — “${esc(it.comment)}”` : ''}</div>
-        ${it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled title="checking for duplicates…"' : ' title="take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" title="keep this image">↺ keep</button>'}
+        ${it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled data-tip="Checking for duplicates…"' : ' data-tip="Take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" data-tip="Keep this image">↺ keep</button>'}
       </div>
     </div>`;
     const types = ALL_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}"${it.types.includes(t) ? ' checked' : ''}> ${esc(t)}</label>`).join('');
     return `<div class="as-drow${it._new ? ' new' : ''}${it._pending ? ' pending' : ''}${it._sel ? ' sel' : ''}" data-id="${esc(it.id)}">
-      <input type="checkbox" class="as-dsel" title="select"${it._sel ? ' checked' : ''}>
+      <input type="checkbox" class="as-dsel" data-tip="Select"${it._sel ? ' checked' : ''}>
       <div class="as-dleft">
-        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${rmOpenChip(it)}${it._pdf ? '<span class="as-pdfban" title="PDF — opens in a new tab">PDF</span>' : ''}</div>
+        <div class="as-dthumb"${uploadTip(it)}>${it._new ? '<span class="as-newban">NEW</span>' : ''}${thumbImg(it, 250)}${provBadge(it)}${rmOpenChip(it)}${it._pdf ? '<span class="as-pdfban" data-tip="A PDF: opens in a new tab">PDF</span>' : ''}</div>
         <div class="as-dcap"><span class="as-dim">${esc(dimText(it))}</span></div>
         ${it._new ? '' : `<div class="as-did">#${esc(it.id)}</div>`}
       </div>
@@ -16566,7 +16946,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   function openTypePopFor(it, anchor, onChange) {
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop';
-    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: set only this type"><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
+    pop.innerHTML = `<div class="as-type-grid">${ALL_TYPES.map(t => `<label data-tip="Right-click: set only this type"><input type="checkbox" value="${esc(t)}"${it.types.includes(t)?' checked':''}> ${esc(t)}</label>`).join('')}</div>`;
     document.body.appendChild(pop);
     placePop(pop, anchor.getBoundingClientRect());
     const close = () => { pop.remove(); document.removeEventListener('mousedown', off); _popJustClosed = true; setTimeout(() => { _popJustClosed = false; }, 0); };
@@ -17283,11 +17663,11 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       n.textContent = total ? ` (${total})` : '';
       // #558: the tooltip has to advertise the right-click shortcut — an invisible
       // one nobody is told about is one nobody uses.
-      src.title = total
-        ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''} (linked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL)`
+      src.dataset.tip = total
+        ? `Source ${ENT.noun} — ${total} source${total > 1 ? 's' : ''}\nLinked platform${l.length === 1 && !m.length ? '' : 's'}, registered providers, or any URL`
           + `\nRight-click: import from all ${total} at once, without opening this panel`
-          + `\nMiddle-click: import from all and keep only the best cover (highest resolution, then smallest file)`
-        : `Source ${ENT.noun} from a linked platform, a registered provider, or any URL`;
+          + `\nMiddle-click: import from all, keeping only the best cover (the highest resolution, then the smallest file)`
+        : `Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL`;
     }).catch(() => {});
   }
   // #558 (majkinetor): "Currently I have to open popup and click import all (or
@@ -17675,7 +18055,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     document.querySelectorAll('.as-pop').forEach(p => p.remove());
     const pop = document.createElement('div'); pop.className = 'as-pop as-src-pop';
     pop.innerHTML = `<div class="as-pop-h as-src-hd"><span class="as-src-htxt">Source ${ENT.noun}</span>`
-      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" title="Import by URL — paste a provider page or direct image URL">By URL</button>`
+      + `<span class="as-src-urlwrap"><button class="as-src-url-btn" type="button" data-tip="Import by URL\nPaste a provider’s page or an image’s own URL">By URL</button>`
       + `<input class="as-src-url-inp" type="text" placeholder="https://… provider page or image URL" autocomplete="off" spellcheck="false"></span></div>`
       + `<div class="as-src-prov as-pop-note">Looking for linked platforms…</div>`
       + `<div class="as-src-custom"></div>`
@@ -18465,14 +18845,14 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       : o.it && o.it._file ? `<img alt="" data-alt="" src="${esc(o.it._file)}">`
       : o.id ? `<img alt="" data-alt="${esc(imgUrl(o.id))}" src="${esc(thumb(o.id, 250))}">` : '<span class="as-cm-thi">🖼</span>';
     ov.innerHTML = `<div class="as-cm-box">
-      <div class="as-cm-h"><span class="as-cm-h-t" title="Each change is applied as a MusicBrainz edit">Apply ${plan.length} change${plan.length===1?'':'s'}</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" title="Your ${ENT.noun} edits on MusicBrainz">🕓 My edits</a><button type="button" class="as-cm-x" title="Close — during a run, cancels it">✕</button></div>
+      <div class="as-cm-h"><span class="as-cm-h-t" data-tip="Each change is applied as a MusicBrainz edit">Apply ${plan.length} change${plan.length===1?'':'s'}</span><a class="as-cm-hist" href="${ART_EDITS_URL}" target="_blank" rel="noopener noreferrer" data-tip="Your ${ENT.noun} edits on MusicBrainz">🕓 My edits</a><button type="button" class="as-cm-x" data-tip="Close\nDuring a run, it cancels the run">✕</button></div>
       <div class="as-cm-prog" hidden><div class="as-cm-prog-track"><div class="as-cm-prog-fill"></div></div><span class="as-cm-prog-txt"></span></div>
       <div class="as-cm-list">${plan.map((o, i) => `<div class="as-cm-op" data-i="${i}"><div class="as-cm-line"><span class="as-cm-st">○</span><span class="as-cm-th">${opThumb(o)}</span><div class="as-cm-main"><div class="as-cm-ttl"><span class="as-cm-lb">${esc(o.label)}</span>${o.id ? ` <span class="as-cm-id">#${esc(o.id)}</span>` : ''}${o.skip ? `<span class="as-cm-skip">${esc(o.skip)}</span>` : ''}</div><span class="as-cm-bar"><span class="as-cm-bfill"></span></span></div></div><div class="as-cm-payload"></div></div>`).join('')}</div>
       <div class="as-cm-nb">
-        <div class="as-cm-ns" role="button" tabindex="0" title="Edit note added to each edit — click to show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span></div>
+        <div class="as-cm-ns" role="button" tabindex="0" data-tip="The edit note added to each edit\nClick: show or hide it"><span class="as-cm-ni">📝</span><b>Note</b><span class="as-cm-nl"></span><span class="as-cm-np"></span><span class="as-cm-nc">▸</span></div>
         <div class="as-cm-nbody"><textarea class="as-cm-note edit-note" rows="2" placeholder="optional edit note shown on each edit"></textarea></div>
       </div>
-      <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" title="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" title="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
+      <div class="as-cm-f"><label class="as-cm-chk"><input type="checkbox" class="as-cm-vote"> Make votable</label><span class="as-sp"></span><button class="as-btn as-cm-cancel">Cancel</button><span class="as-cm-split"><button class="as-btn as-cm-go">Submit edits</button><button type="button" class="as-btn as-cm-more" data-tip="More ways to run">▾</button><div class="as-cm-menu" hidden><button type="button" class="as-cm-mi as-cm-dryrun" data-tip="Show what each edit would send, without submitting anything">👁 Dry run</button></div></span></div>
       <div class="as-cm-ar"></div>
     </div>`;
     document.body.appendChild(ov);
@@ -18905,15 +19285,15 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     let ov = document.getElementById('as-lb');
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
-      ov.innerHTML = `<button class="as-lb-del" title="Mark for removal (Del)">🗑️</button>
-        <div class="as-lb-top"><button class="as-lb-play" title="slideshow (P)">▶ Play</button><button class="as-lb-x" title="close (Esc)">✕</button></div>
-        <button class="as-lb-nav as-lb-prev" title="previous (←)">‹</button>
+      ov.innerHTML = `<button class="as-lb-del" data-tip="Mark for removal (Del)">🗑️</button>
+        <div class="as-lb-top"><button class="as-lb-play" data-tip="Slideshow (P)">▶ Play</button><button class="as-lb-x" data-tip="Close (Esc)">✕</button></div>
+        <button class="as-lb-nav as-lb-prev" data-tip="Previous (←)">‹</button>
         <img class="as-lb-img" alt="">
-        <button class="as-lb-nav as-lb-next" title="next (→)">›</button>
+        <button class="as-lb-nav as-lb-next" data-tip="Next (→)">›</button>
         <div class="as-lb-bar"><div class="as-lb-caprow"><div class="as-lb-cap"></div>
-          <div class="as-lb-dlwrap"><button class="as-lb-dl" title="Download original">⬇ Download</button><button class="as-lb-dlcaret" title="Other sizes">▾</button>
+          <div class="as-lb-dlwrap"><button class="as-lb-dl" data-tip="Download original">⬇ Download</button><button class="as-lb-dlcaret" data-tip="Other sizes">▾</button>
             <div class="as-lb-dlmenu"><button data-sz="original">Original</button><button data-sz="1200">1200 px</button><button data-sz="500">500 px</button><button data-sz="250">250 px</button></div></div>
-          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" title="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" title="Rotate right 90°">↷</button></div></div>
+          <div class="as-lb-rotwrap"><button class="as-lb-rot" data-deg="-90" data-tip="Rotate left 90°">↶</button><button class="as-lb-rot" data-deg="90" data-tip="Rotate right 90°">↷</button></div></div>
           <div class="as-lb-cmtarea"></div></div>`;
       document.body.appendChild(ov);
       ov.querySelector('.as-lb-x').onclick = closeLightbox;
@@ -19057,9 +19437,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const cap = ov.querySelector('.as-lb-cap');
     // type is a clickable chip (same picker as the grid pills) so it can be set full-screen
     // the store it came from, as on the card (#249)
-    const prov = it._new && it._provIcon ? `<span class="as-lb-prov" title="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
+    const prov = it._new && it._provIcon ? `<span class="as-lb-prov" data-tip="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
 ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
-    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" title="set ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
     cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
@@ -19088,10 +19468,10 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       inp.focus();
     } else if (it.comment) {
       // not editing: show the comment as plain centered text (no input box), like the gallery
-      area.innerHTML = `<div class="as-lb-cmt-text" title="edit comment">${esc(it.comment)}</div>`;
+      area.innerHTML = `<div class="as-lb-cmt-text" data-tip="Edit the comment">${esc(it.comment)}</div>`;
       area.querySelector('.as-lb-cmt-text').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
     } else {
-      area.innerHTML = `<button class="as-lb-cmtadd" title="add a comment">✎ comment</button>`;
+      area.innerHTML = `<button class="as-lb-cmtadd" data-tip="Add a comment">✎ comment</button>`;
       area.querySelector('.as-lb-cmtadd').onclick = () => { _lbEditCmt = true; paintCmtArea(ov, byId(_lb)); };
     }
   }
@@ -19308,7 +19688,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     const sel = MODEL.filter(it => it._sel && !it._del); if (!sel.length) return;
     const pop = document.createElement('div'); pop.className = 'as-pop';
     pop.innerHTML = `<div class="as-pop-h">Set type on ${sel.length} ${ITEM}${sel.length===1?'':'s'}</div>`
-      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label title="Right-click: replace with only this type"><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
+      + `<div class="as-type-grid">${ALL_TYPES.map(t => `<label data-tip="Right-click: replace with only this type"><input type="checkbox" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>`
       + `<div class="as-pop-f"><button class="as-btn as-pop-apply">Apply (replace)</button><button class="as-btn as-pop-add">Add</button></div>`;
     document.body.appendChild(pop);
     placePop(pop, btn.getBoundingClientRect());
@@ -19337,7 +19717,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     const pop = document.createElement('div'); pop.className = 'as-pop as-search-pop';
     // latest (main-branch) install link for the companion — never a feature branch
     const COMPANION_URL = 'https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/art_station/as_picker/as_picker.user.js';
-    pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy<button class="as-search-all" type="button" title="Open every engine in its own tab">Open all</button></div>`
+    pop.innerHTML = `<div class="as-pop-h">Search for a higher-res copy<button class="as-search-all" type="button" data-tip="Open every engine in its own tab">Open all</button></div>`
       + IMG_SEARCH_ENGINES.map((e, i) => `<button class="as-btn as-search-eng" data-i="${i}">${esc(e.name)}</button>`).join('')
       + `<div class="as-search-foot">Requires the <a href="${COMPANION_URL}" target="_blank" rel="noopener">Art Station Picker</a> script for click-capture.</div>`;
     document.body.appendChild(pop);
@@ -20173,7 +20553,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 if (__stOff.indexOf("credit_hoarder") < 0 && __stRuns("credit_hoarder", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.metal-archives\\.com(?::\\d+)?/albums/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.17.232714","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.17.232714","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.20.122636","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.20.122636","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -24503,7 +24883,7 @@ ${ourBlock}` : ourBlock;
     const dot = document.createElement("span");
     dot.className = "ch-level-dot";
     dot.style.cssText = `width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.2);background:${level == null ? "var(--mbu-border-strong)" : MATCH_LEVELS[level].color};`;
-    dot.title = title || (level == null ? "Picked by you" : `${MATCH_LEVELS[level].label}: ${MATCH_LEVELS[level].hint}`);
+    dot.dataset.tip = title || (level == null ? "Picked by you" : `${MATCH_LEVELS[level].label}: ${MATCH_LEVELS[level].hint}`);
     return dot;
   }
   function ensureCreatingStyle() {
@@ -24684,7 +25064,7 @@ ${ourBlock}` : ourBlock;
         if (!cfg) return null;
         const span = document.createElement("span");
         span.textContent = cfg.text;
-        span.title = fromCache && via !== "cache" ? `Resolved via ${via}, served from cache` : `Resolved via ${via}`;
+        span.dataset.tip = fromCache && via !== "cache" ? `Resolved via ${via}, served from cache` : `Resolved via ${via}`;
         span.style.cssText = `font-size:0.68rem;background:var(--mbu-bg-raised);color:${cfg.color};padding:0 0.35rem;border-radius:8px;border:1px solid var(--mbu-border);flex-shrink:0;`;
         return span;
       }
@@ -24778,7 +25158,7 @@ ${ourBlock}` : ourBlock;
       if (onRefresh) {
         const refreshBtn = document.createElement("button");
         refreshBtn.textContent = "\u{1F504} Refresh from MB";
-        refreshBtn.title = "Re-resolve every entity via MusicBrainz API, ignoring the local IDB cache";
+        refreshBtn.dataset.tip = "Resolve every entity again\nFrom MusicBrainz\u2019s API, past the cache in this browser";
         refreshBtn.style.cssText = "font-size:0.8rem;cursor:pointer;padding:0.2rem 0.5rem;border:1px solid var(--mbu-warn);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-warn);flex-shrink:0;";
         refreshBtn.addEventListener("click", () => {
           refreshBtn.disabled = true;
@@ -24800,7 +25180,6 @@ ${ourBlock}` : ourBlock;
       function buildCutoffChip() {
         const wrap = document.createElement("span");
         wrap.className = "ch-cutoff";
-        wrap.title = "Lowest match confidence still selected automatically; a match below it is offered first on its row";
         wrap.style.cssText = "display:inline-flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:var(--mbu-text);flex-shrink:0;";
         const lbl = document.createElement("b");
         lbl.textContent = "Cutoff";
@@ -24809,6 +25188,7 @@ ${ourBlock}` : ourBlock;
         chip.className = "ch-cutoff-chip";
         chip.style.cssText = "display:inline-flex;align-items:center;gap:0.35rem;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 10px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font:inherit;";
         const paint = () => {
+          wrap.dataset.tip = "The lowest match confidence picked automatically\n" + MATCH_LEVELS.map((lv, i) => `{${lv.color}${i === cutoff ? " on" : i > cutoff ? " off" : ""}} ${lv.label}: ${lv.hint}`).join("\n") + "\nA match below it is offered first on its row, not picked.";
           chip.replaceChildren(makeLevelDot(cutoff), document.createTextNode(MATCH_LEVELS[cutoff].label));
           const caret = document.createElement("span");
           caret.textContent = "\u25BE";
@@ -25023,7 +25403,9 @@ ${ourBlock}` : ourBlock;
             const span = document.createElement("span");
             span.className = "discogs-src-badge";
             span.style.cssText = "display:inline-flex;vertical-align:middle;margin:0 2px;" + (url ? "cursor:pointer;" : "filter:grayscale(1);opacity:0.45;");
-            span.title = url ? `${nm} \u2014 click to open ${url}` : `${nm} \u2014 name-only credit (no link)`;
+            span.dataset.tip = url ? `${nm}
+Click: open ${url}` : `${nm}
+A credit by name only, with no link`;
             span.innerHTML = sourceBadgeIcon(nm);
             if (url) span.addEventListener("click", () => window.open(url, "_blank", "noopener,noreferrer"));
             tdSrc.appendChild(span);
@@ -25054,7 +25436,7 @@ ${ourBlock}` : ourBlock;
           dlA.style.color = "var(--mbu-text)";
         }
         const _srcTitles = [...new Set((r._roles || []).map((x) => x.trackTitle).filter(Boolean))];
-        if (_srcTitles.length) dlA.title = _srcTitles.join("\n");
+        if (_srcTitles.length) dlA.dataset.tip = _srcTitles.join("\n");
         nameWrap.appendChild(dlA);
         const splitParts = entityType === "artist" && !r.entity?._splitOf ? splitCreditName(displayName || r.entity?.name) : [];
         if (splitParts.length) {
@@ -25062,7 +25444,8 @@ ${ourBlock}` : ourBlock;
           sp.type = "button";
           sp.className = "discogs-split-btn";
           sp.textContent = "\u22D4";
-          sp.title = `Split into separate artists: ${splitParts.join(" \xB7 ")}
+          sp.dataset.tip = `Split into separate artists
+${splitParts.map((p) => "- " + p).join("\n")}
 Each gets this row's roles.`;
           sp.style.cssText = "margin-left:0.35rem;padding:0 0.35rem;min-width:1.4rem;cursor:pointer;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg-raised);color:var(--mbu-accent-text);font-size:16px;font-weight:bold;line-height:1.2;vertical-align:middle;";
           sp.addEventListener("click", () => splitRow(r, tr, splitParts, sp));
@@ -25071,7 +25454,8 @@ Each gets this row's roles.`;
         if (r.entity?._splitOf) {
           const sb = document.createElement("span");
           sb.textContent = "split";
-          sb.title = `Split from "${r.entity._splitFrom}" \u2014 gets that credit's roles`;
+          sb.dataset.tip = `Split from \u201C${r.entity._splitFrom}\u201D
+It gets that credit's roles.`;
           sb.style.cssText = "display:inline-flex;align-items:center;margin-left:0.35rem;padding:0.05rem 0.4rem;font-size:0.65rem;font-weight:600;border-radius:0.7rem;line-height:1.4;cursor:help;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);border:1px solid var(--mbu-border);";
           nameWrap.appendChild(sb);
         }
@@ -25079,14 +25463,15 @@ Each gets this row's roles.`;
         if (!hasDiscogsUrl && !placeholderUrl && srcName !== "Titles" && !r.entity?._splitOf) {
           const noUrl = document.createElement("span");
           noUrl.textContent = "no profile";
-          noUrl.title = `No ${srcName} artist page \u2014 name lookup unavailable, search MB manually`;
+          noUrl.dataset.tip = `No ${srcName} artist page
+No lookup by name: search MusicBrainz yourself.`;
           noUrl.style.cssText = BADGE_BASE + "background:var(--mbu-error-bg);color:var(--mbu-error);border:1px solid var(--mbu-error);";
           nameWrap.appendChild(noUrl);
         }
         if (nameMismatch) {
           const w = document.createElement("span");
           w.textContent = "name differs";
-          w.title = "MB entity name differs from the Discogs display name \u2014 double-check this is the right match";
+          w.dataset.tip = "The MusicBrainz name differs from Discogs\u2019s\nCheck this is the right match.";
           w.style.cssText = BADGE_BASE + "background:var(--mbu-warn-bg);color:var(--mbu-warn);border:1px solid var(--mbu-warn);";
           nameWrap.appendChild(w);
         }
@@ -25125,7 +25510,7 @@ Each gets this row's roles.`;
           });
           const rolesLine = document.createElement("div");
           rolesLine.style.cssText = "font-size:0.75rem;color:var(--mbu-text-weak);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
-          rolesLine.title = chips.map((c) => c.displayText).join(", ");
+          rolesLine.dataset.tip = chips.map((c) => c.displayText).join(", ");
           chips.forEach((chip, i) => {
             if (i > 0) rolesLine.appendChild(document.createTextNode(", "));
             const span = document.createElement("span");
@@ -25146,8 +25531,8 @@ Each gets this row's roles.`;
         const CRED_BG_DIFFERENT = "var(--mbu-warn-bg)";
         credInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.78rem;border:1px solid var(--mbu-border);border-radius:3px;background:" + CRED_BG_SAME + ";";
         credInput.placeholder = displayName;
-        credInput.title = `Override the credited name dispatched with every rel for this entity.
-Leave empty to use the default (${srcName} name, or MB's most-frequent existing credit when known).`;
+        credInput.dataset.tip = `The credited name, on every relationship of this entity
+Empty: the default, the ${srcName} name, or MusicBrainz\u2019s most frequent credit when known.`;
         function refreshCredBg() {
           const value = (credInput.value || "").trim();
           const same = value === "" || value === displayName;
@@ -25188,12 +25573,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         const mbBtn = document.createElement("button");
         mbBtn.type = "button";
         mbBtn.textContent = "MB";
-        mbBtn.title = "Set Credited as to the MB entity name";
+        mbBtn.dataset.tip = "Credit it as the MusicBrainz name";
         mbBtn.style.cssText = CRED_BTN_STYLE;
         const dBtn = document.createElement("button");
         dBtn.type = "button";
         dBtn.textContent = srcName.charAt(0);
-        dBtn.title = `Set Credited as to the ${srcName} name`;
+        dBtn.dataset.tip = `Credit it as the ${srcName} name`;
         dBtn.style.cssText = CRED_BTN_STYLE;
         function currentMbName() {
           return rowState.get(_entityKey)?.mbName || r.mbName || null;
@@ -25231,12 +25616,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         searchRow.style.cssText = "display:flex;gap:0.3rem;";
         const searchInput = noPasswordManagers(document.createElement("input"));
         searchInput.value = displayName;
+        searchInput.dataset.tip = "Search MusicBrainz by name\nPaste: an MBID, or its MusicBrainz URL, picks that entity at once";
         searchInput.style.cssText = "flex:1;padding:0.15rem 0.35rem;font-size:0.82rem;border:1px solid var(--mbu-border);border-radius:3px;";
         rowSearchInputs.set(_entityKey, searchInput);
         const searchBtn = document.createElement("button");
         searchBtn.type = "button";
         searchBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>';
-        searchBtn.title = "Search MusicBrainz";
+        searchBtn.dataset.tip = "Search MusicBrainz";
         searchBtn.style.cssText = "display:inline-flex;align-items:center;justify-content:center;padding:0 0.45rem;cursor:pointer;color:var(--mbu-text-dim);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:3px;";
         searchRow.appendChild(searchBtn);
         searchRow.appendChild(searchInput);
@@ -25253,7 +25639,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           trigger.href = "#";
           trigger.textContent = "MB roles \u25BE";
           trigger.style.cssText = "color:var(--mbu-info);text-decoration:none;cursor:pointer;white-space:nowrap;";
-          trigger.title = "Fetch this artist's existing MB relationship types to compare with the Discogs role";
+          trigger.dataset.tip = "This artist's relationship types on MusicBrainz\nRead them, to compare with the Discogs role.";
           trigger.addEventListener("click", async (ev) => {
             ev.preventDefault();
             let mbid = (String(explicitMbid || "").match(/[a-f0-9-]{36}/i) || [])[0];
@@ -25288,7 +25674,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             wrap.style.alignItems = "flex-start";
             wrap.style.overflow = "visible";
             wrap.appendChild(label);
-            wrap.title = types.join(", ");
+            wrap.dataset.tip = types.join(", ");
             const chipsBox = document.createElement("span");
             chipsBox.style.cssText = "display:flex;flex-wrap:wrap;gap:0.25rem;min-width:0;";
             wrap.appendChild(chipsBox);
@@ -25329,7 +25715,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           ph.appendChild(txt);
           const x = document.createElement("button");
           x.textContent = "\u2715";
-          x.title = "Cancel \u2014 stop waiting and restore the row";
+          x.dataset.tip = "Cancel\nStop waiting and restore the row";
           x.style.cssText = "margin-left:auto;font-size:0.75rem;line-height:1;cursor:pointer;border:none;background:none;color:var(--mbu-info);padding:0 0.2rem;";
           x.addEventListener("click", () => cancelCreating());
           ph.appendChild(x);
@@ -25394,9 +25780,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           ab.type = "button";
           ab.className = "discogs-add-alias";
           ab.textContent = "+ alias";
-          ab.title = `Add "${displayName}" as an alias of ${a.name}
-\u2022 click: open MusicBrainz's add-alias form, pre-filled (you submit it)
-\u2022 right-click: submit it in the background (no alias type)`;
+          ab.dataset.tip = `Add \u201C${displayName}\u201D as an alias of ${a.name}
+Click: open MusicBrainz's add-alias form, filled in, for you to submit
+Right-click: submit it in the background, with no alias type`;
           ab.style.cssText = "font-size:0.72rem;cursor:pointer;padding:0 0.4rem;border:1px solid var(--mbu-accent);border-radius:3px;background:var(--mbu-bg);color:var(--mbu-accent-text);white-space:nowrap;flex:0 0 auto;";
           const note = buildCreateNote(`Added "${displayName}" as an alias \u2014 the ${srcName} credit${discogsHref ? " (" + discogsHref + ")" : ""} \u2014`);
           ab.addEventListener("click", async (ev) => {
@@ -25412,7 +25798,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             if (res && res.already) {
               ab.textContent = "\u2713 has alias";
               ab.disabled = true;
-              ab.title = `${a.name} already carries "${displayName}" \u2014 nothing to add`;
+              ab.dataset.tip = `${a.name} already has \u201C${displayName}\u201D
+Nothing to add`;
               ab.style.color = "var(--mbu-ok)";
               ab.style.borderColor = "var(--mbu-ok)";
               aliasLanded(a);
@@ -25434,7 +25821,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               ab._aliasWatch = null;
               ab.textContent = "\u2713 alias";
               ab.disabled = true;
-              ab.title = `"${displayName}" is now an alias of ${a.name}`;
+              ab.dataset.tip = `\u201C${displayName}\u201D is now an alias of ${a.name}`;
               ab.style.color = "var(--mbu-ok)";
               ab.style.borderColor = "var(--mbu-ok)";
               a.aliases = [...a.aliases || [], displayName];
@@ -25456,7 +25843,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             try {
               const res = await submitAliasBackground(a.id, displayName, note);
               ab.textContent = res && res.already ? "\u2713 has alias" : "\u2713 alias";
-              ab.title = res && res.already ? `${a.name} already carries "${displayName}" \u2014 nothing submitted` : `"${displayName}" submitted as an alias of ${a.name}`;
+              ab.dataset.tip = res && res.already ? `${a.name} already has \u201C${displayName}\u201D
+Nothing submitted` : `\u201C${displayName}\u201D submitted as an alias of ${a.name}`;
               ab.style.color = "var(--mbu-ok)";
               ab.style.borderColor = "var(--mbu-ok)";
               a.aliases = [...a.aliases || [], displayName];
@@ -25465,7 +25853,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             } catch (e2) {
               ab.disabled = false;
               ab.textContent = "\u2717 alias";
-              ab.title = `Adding the alias failed: ${e2.message} \u2014 right-click to retry, click to open the form`;
+              ab.dataset.tip = `\u26A0 Adding the alias failed: ${e2.message}
+Click: open the form
+Right-click: try again`;
               ab.style.color = "var(--mbu-error)";
               ab.style.borderColor = "var(--mbu-error)";
               log.warn(`+ alias: "${displayName}" \u2192 ${a.name} failed \u2014 ${e2.message}`);
@@ -25517,7 +25907,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           selA.style.flex = "0 0 auto";
           const undoBtn = document.createElement("button");
           undoBtn.textContent = "\u2715";
-          undoBtn.title = "Clear selection";
+          undoBtn.dataset.tip = "Clear selection";
           undoBtn.className = "discogs-clear-btn";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(makeLevelDot(null));
@@ -25591,12 +25981,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
               updateLinksBadge();
               if (result === "linked") {
                 linkSlot.textContent = "\u2713";
-                linkSlot.title = srcName + " URL already linked to this MB " + entityType;
+                linkSlot.dataset.tip = "This MusicBrainz " + entityType + " already links the " + srcName + " URL";
                 linkSlot.style.color = "var(--mbu-ok)";
                 linkSlot.style.fontWeight = "bold";
               } else if (result === "other") {
                 linkSlot.textContent = "\u26A0\uFE0F";
-                linkSlot.title = `${srcName} URL is linked to a DIFFERENT MB ${entityType}`;
+                linkSlot.dataset.tip = `\u26A0 A different MusicBrainz ${entityType} links this ${srcName} URL`;
                 linkSlot.style.color = "var(--mbu-warn)";
               } else {
                 linkSlot.textContent = "";
@@ -25604,7 +25994,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                 const addLinkBtn = document.createElement("button");
                 const _addCount = r._mergeUrls && r._mergeUrls.length ? r._mergeUrls.filter((u) => sourceUrlLinkTypeId(u, entityType)).length : 0;
                 addLinkBtn.textContent = "\u{1F517}" + (_addCount > 1 ? " " + _addCount : "");
-                addLinkBtn.title = (_addCount > 1 ? `Add ${_addCount} source links to MB ${entityType}` : `Add ${srcName} link to MB ${entityType}`) + `  \xB7  right-click: add ${_addCount > 1 ? "them" : "it"} silently in the background`;
+                addLinkBtn.dataset.tip = (_addCount > 1 ? `Add ${_addCount} source links to the MusicBrainz ${entityType}` : `Add the ${srcName} link to the MusicBrainz ${entityType}`) + `
+Right-click: add ${_addCount > 1 ? "them" : "it"} silently in the background`;
                 addLinkBtn.style.cssText = ACTION_CHIP_STYLE + "color:var(--mbu-warn);";
                 const openLinkEdit = (background) => {
                   const urls = r._mergeUrls && r._mergeUrls.length ? r._mergeUrls : [discogsHref];
@@ -25635,7 +26026,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                     DISCOGS_CHANNEL.addEventListener("message", onCommitted);
                     linkSlot.innerHTML = "";
                     linkSlot.textContent = "\u2026";
-                    linkSlot.title = `Adding ${srcName} link in the background\u2026`;
+                    linkSlot.dataset.tip = `Adding the ${srcName} link in the background\u2026`;
                     linkSlot.style.color = "var(--mbu-text-dim)";
                     linkSlot.style.fontStyle = "italic";
                     return;
@@ -25653,7 +26044,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
                   }
                   linkSlot.innerHTML = "";
                   linkSlot.textContent = "\u2026";
-                  linkSlot.title = `Verifying ${srcName} link on return to this tab\u2026`;
+                  linkSlot.dataset.tip = `The ${srcName} link is checked when you come back to this tab\u2026`;
                   linkSlot.style.color = "var(--mbu-text-dim)";
                   linkSlot.style.fontStyle = "italic";
                   const onReturn = () => {
@@ -25677,7 +26068,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             const linkSlot = document.createElement("span");
             linkSlot.style.cssText = "display:inline-flex;align-items:center;font-size:0.8rem;color:var(--mbu-text-weak);";
             linkSlot.textContent = "\u2026";
-            linkSlot.title = `Checking whether MB already has this ${srcName} URL linked`;
+            linkSlot.dataset.tip = `Checking whether MusicBrainz already links this ${srcName} URL\u2026`;
             tdAction.appendChild(linkSlot);
             const urlCheckCacheKey = `${selected.id}|${discogsHref}`;
             const urlCheckLsKey = `discogs-urlcheck-${selected.id}-${hashKey(discogsHref)}`;
@@ -25817,7 +26208,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           }
           const createBtn = document.createElement("button");
           createBtn.textContent = "+";
-          createBtn.title = (discogsHref ? `Create in MB with default ${srcName} name + URL` : "Create in MB with the credited name") + "  \xB7  right-click: create silently in a background tab (auto-submitted)";
+          createBtn.dataset.tip = (discogsHref ? `Create it on MusicBrainz with the ${srcName} name and URL` : "Create it on MusicBrainz with the credited name") + "\nRight-click: create it silently in a background tab, submitted for you";
           createBtn.style.cssText = ACTION_CHIP_STYLE + "color:var(--mbu-ok);font-size:1.15rem;font-weight:600;";
           createBtn.addEventListener("click", () => openCreateTab());
           createBtn.addEventListener("contextmenu", (e2) => {
@@ -25826,7 +26217,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           });
           const createAdvBtn = document.createElement("button");
           createAdvBtn.textContent = "\u25BE";
-          createAdvBtn.title = "Create in MB with editable name + disambiguation" + (srcName === "Discogs" && discogsHref ? ", pre-filled from the Discogs profile" : "");
+          createAdvBtn.dataset.tip = "Create it on MusicBrainz, with the name and disambiguation to edit first" + (srcName === "Discogs" && discogsHref ? "\nFilled in from the Discogs profile" : "");
           createAdvBtn.style.cssText = ACTION_CHIP_STYLE + "color:var(--mbu-text-dim);";
           createAdvBtn.addEventListener("click", () => openAdvancedCreatePopup());
           tdAction.appendChild(createBtn);
@@ -25907,7 +26298,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             cancelBtn.style.cssText = "padding:0.4rem 1rem;cursor:pointer;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-bg-raised);color:var(--mbu-text);font-size:0.88rem;";
             const submitBtn = document.createElement("button");
             submitBtn.textContent = "Create \u2197";
-            submitBtn.title = "Open the create page, for you to review  \xB7  right-click: create silently in a background tab (auto-submitted)";
+            submitBtn.dataset.tip = "Open the create page, for you to review\nRight-click: create it silently in a background tab, submitted for you";
             submitBtn.style.cssText = "padding:0.4rem 1.1rem;cursor:pointer;font-weight:bold;background:var(--mbu-ok);color:var(--mbu-text-on-accent);border:none;border-radius:0.25rem;font-size:0.9rem;";
             btnRow2.appendChild(cancelBtn);
             btnRow2.appendChild(submitBtn);
@@ -25967,7 +26358,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           row.style.cssText = "display:flex;align-items:center;gap:0.35rem;padding:0.2rem 0.35rem;border:1px solid var(--mbu-border);border-radius:3px;background:var(--mbu-bg);font-size:0.82rem;";
           const selBtn = document.createElement("button");
           selBtn.textContent = "\u2713";
-          selBtn.title = "Select this candidate as the MB match";
+          selBtn.dataset.tip = "Pick this candidate as the match";
           selBtn.style.cssText = "font-size:0.95rem;line-height:1;cursor:pointer;padding:0.1rem 0.45rem;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:0.25rem;background:var(--mbu-ok-bg);color:var(--mbu-ok);font-weight:600;flex-shrink:0;";
           selBtn.addEventListener("click", () => setRowResolved(a));
           row.appendChild(selBtn);
@@ -25991,7 +26382,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           if (below) {
             const pill = document.createElement("span");
             pill.textContent = `below cutoff: ${VIA_STYLES[below.via]?.text || below.via}`;
-            pill.title = `Matched automatically (${MATCH_LEVELS[below.level].label}: ${MATCH_LEVELS[below.level].hint}), below the cutoff (${MATCH_LEVELS[cutoff].label}), so not selected. \u2713 selects it.`;
+            pill.dataset.tip = `Matched below the cutoff, so not picked
+${MATCH_LEVELS[below.level].label}: ${MATCH_LEVELS[below.level].hint}
+The cutoff is ${MATCH_LEVELS[cutoff].label}. \u2713 picks it.`;
             pill.style.cssText = "font-size:0.68rem;color:var(--mbu-warn);background:var(--mbu-warn-bg);border:1px solid var(--mbu-warn);border-radius:8px;padding:0 0.35rem;margin-left:0.35rem;white-space:nowrap;";
             info.appendChild(pill);
           }
@@ -26086,7 +26479,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           selA.style.flex = "0 0 auto";
           const undoBtn = document.createElement("button");
           undoBtn.textContent = "\u2715";
-          undoBtn.title = "Clear selection";
+          undoBtn.dataset.tip = "Clear selection";
           undoBtn.className = "discogs-clear-btn";
           undoBtn.addEventListener("click", () => setRowUnresolved());
           selRow.appendChild(makeLevelDot(matchLevelOf(r.logEntry?.via)));
@@ -26123,7 +26516,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       linksNote = document.createElement("span");
       linksNote.className = "discogs-issue-note discogs-links-note";
       linksNote.style.cssText = "font-size:0.85rem;color:var(--mbu-warn);display:none;";
-      linksNote.title = `Confirmed matches whose ${importSourceName} URL isn't linked in MB yet \u2014 click to jump to the next one; use its \u{1F517} chip to add the link`;
+      linksNote.dataset.tip = `Matches whose ${importSourceName} URL MusicBrainz doesn\u2019t link yet
+Click: go to the next one
+Its \u{1F517} chip adds the link.`;
       linksNote.addEventListener("click", jumpNextLink);
       updateLinksBadge();
       let _jumpIdx = -1;
@@ -26175,14 +26570,14 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
           importBtn.style.color = "var(--mbu-text-on-accent)";
           issueNote.textContent = "";
           issueNote.classList.remove("clickable");
-          issueNote.removeAttribute("title");
+          issueNote.removeAttribute("data-tip");
         } else {
           importBtn.innerHTML = `Start import anyway${selLabel} \u2192`;
           importBtn.style.background = "var(--mbu-warn)";
           importBtn.style.color = "var(--mbu-text-on-accent)";
           issueNote.textContent = `\u26A0 ${unresolved} unresolved`;
           issueNote.classList.add("clickable");
-          issueNote.title = "Jump to the next unresolved entity \u2014 click again to cycle through them; these will be skipped on import";
+          issueNote.dataset.tip = "Entities not resolved: skipped on import\nClick: go to the next one (again: the one after)";
         }
       }
       updateImportBtn();
@@ -27875,13 +28270,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
   };
   var srcIconByUrl = (url) => SRC_ICON[sourceNameForUrl(url)] || "";
   function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
-    const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+    const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
     const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-act{pointer-events:auto}#mbu-toast .mbu-toast-btn{width:auto;margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;width:auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(860px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{width:auto;font-size:12px;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-hclear:hover,.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x,#mbu-logpop.min .mbu-logpop-full{display:none}#mbu-logpop.min{max-height:none;width:auto!important;height:auto!important}#mbu-logpop.sized{max-height:none}.mbu-logpop-grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;opacity:.6;background:linear-gradient(135deg,transparent 55%,var(--mbu-border-strong) 55%,var(--mbu-border-strong) 62%,transparent 62%,transparent 75%,var(--mbu-border-strong) 75%,var(--mbu-border-strong) 82%,transparent 82%)}.mbu-logpop-grip:hover{opacity:1}#mbu-logpop.min .mbu-logpop-grip,#mbu-logpop.full .mbu-logpop-grip{display:none}#mbu-logpop.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;width:auto!important;height:auto!important;max-height:none;transform:none!important}#mbu-logpop.full .mbu-logpop-h{cursor:default}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-logemb{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--mbu-bg);font:13px var(--mbu-font);color:var(--mbu-text)}.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px}.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex-basis:160px;margin-left:0}.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex-basis:240px}.mbu-logpop-h{flex-wrap:nowrap}.mbu-logpop-h>*{flex-shrink:0;white-space:nowrap}.mbu-logpop-h>.mbu-log-q{flex-shrink:1;min-width:60px}.mbu-logpop-h>.mbu-log-ses{flex-shrink:1;min-width:90px}.mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}.mbu-log-dbg input{margin:0}#mbu-logpop.min .mbu-log-dbg{display:none}.mbu-log-past .mbu-logpop-clear{display:none}#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}.mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;border:1px solid var(--mbu-border);border-radius:5px;cursor:text}#mbu-logpop.min .mbu-log-q{display:none}.mbu-logpop .mbu-log-li.mbu-log-nq{display:none}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-pre .mbu-log-m{white-space:pre;font:12px/1.35 ui-monospace,Consolas,monospace;word-break:normal}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}.mbu-log-list:not(.mbu-log-cats) .mbu-log-c{display:none}.mbu-log-list.mbu-log-cats{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 9px;align-content:start}.mbu-log-cats .mbu-log-li{display:contents}.mbu-log-cats .mbu-log-empty{grid-column:1/-1}.mbu-log-f{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;padding:5px 13px;border-bottom:1px solid var(--mbu-border-soft);font-size:11px}.mbu-log-f[hidden]{display:none}.mbu-log-fg{display:contents}.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}.mbu-logpop .mbu-log-fb{width:auto;font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}.mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}.mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}.mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}.mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug>*{opacity:.85}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :is(table,td,th,div,span,label)[style*=background]{color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:root[data-mbu-theme=dark] :where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color-scheme:dark;--invert-value:none;--invert:none}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input){-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23888%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E") center/13px no-repeat;opacity:.45;box-shadow:none;flex:0 0 auto;vertical-align:middle}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):hover{opacity:1}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23fff%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E")}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}';
     function mbuHelpHref(name) {
       return "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/" + name + "/README.md";
     }
     function mbuHelpHtml(name, label) {
-      return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener" title="open the README in a new tab">' + (label || "? Help") + "</a>";
+      return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener" data-tip="Open the README in a new tab">' + (label || "? Help") + "</a>";
     }
     function mbuHelpEl(name, label) {
       var a = document.createElement("a");
@@ -27889,7 +28284,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       a.href = mbuHelpHref(name);
       a.target = "_blank";
       a.rel = "noopener";
-      a.title = "open the README in a new tab";
+      a.dataset.tip = "Open the README in a new tab";
       a.textContent = label || "? Help";
       return a;
     }
@@ -28102,10 +28497,10 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       var html = '<div class="mbu-cfg-h">';
       if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + "</span>";
       html += '<span class="mbu-cfg-name">' + esc(o.name) + "</span>";
-      if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + "</span>";
+      if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + "</span>";
       html += '<span class="mbu-cfg-sp"></span>';
       if (o.log) {
-        html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? " " + esc(o.logClass) : "") + '"' + (o.logId ? ' id="' + esc(o.logId) + '"' : "") + ' title="Open the activity log">Log</button>';
+        html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? " " + esc(o.logClass) : "") + '"' + (o.logId ? ' id="' + esc(o.logId) + '"' : "") + ' data-tip="Open the activity log">Log</button>';
       }
       html += mbuHelpHtml(o.script);
       return html + "</div>";
@@ -28535,7 +28930,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var vid = String(++vseq);
         root.classList.add("mbu-logpop");
         root.dataset.mbuLv = vid;
-        root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? "<b>" + esc(o.header || "Activity log") + "</b> " : "") + '<span class="mbu-log-badge"></span><input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">' + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : "") + '<span class="mbu-logpop-sp"></span>' + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : "") + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label><button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button><button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">\u29C9 Copy</button>' + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">\u26F6</button><button class="mbu-logpop-min" type="button" title="Minimize">\u2013</button><button class="mbu-logpop-x" type="button" title="Close">\u2715</button>' : "") + '</div><div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style><div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ""));
+        root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? "<b>" + esc(o.header || "Activity log") + "</b> " : "") + '<span class="mbu-log-badge"></span><input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">' + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : "") + '<span class="mbu-logpop-sp"></span>' + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : "") + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label><button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button><button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">\u29C9 Copy</button>' + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">\u26F6</button><button class="mbu-logpop-min" type="button" data-tip="Minimize">\u2013</button><button class="mbu-logpop-x" type="button" data-tip="Close">\u2715</button>' : "") + '</div><div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style><div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ""));
         if (tools) root.querySelector(".mbu-logpop-clear").before(tools);
         var list = root.querySelector(".mbu-log-list"), badge = root.querySelector(".mbu-log-badge");
         var qEl = root.querySelector(".mbu-log-q"), q = "", sel = root.querySelector(".mbu-log-ses");
@@ -28755,7 +29150,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var minBtn = pop.querySelector(".mbu-logpop-min");
         var setMin = function(m) {
           minBtn.textContent = m ? "\u25A2" : "\u2013";
-          minBtn.title = m ? "Restore" : "Minimize";
+          minBtn.dataset.tip = m ? "Restore" : "Minimize";
           if (m) {
             pop.style.left = "14px";
             pop.style.bottom = "14px";
@@ -28768,7 +29163,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         var setFull = function(f) {
           pop.classList.toggle("full", f);
           fullBtn.textContent = f ? "\u2750" : "\u26F6";
-          fullBtn.title = f ? "Restore the size (or double-click the title bar)" : "Full screen (or double-click the title bar)";
+          fullBtn.dataset.tip = (f ? "Restore the size" : "Full screen") + "\nDouble-click: the title bar does the same";
         };
         minBtn.onclick = function() {
           var m = pop.classList.toggle("min");
@@ -29209,8 +29604,509 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
       if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
       if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+      if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
     } catch (e) {
     }
+    function mbuTipV() {
+      return 6;
+    }
+    function mbuTipCssText() {
+      return '#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:"";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;background:none;color:var(--mbu-text-weak,#888);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}#mbu-tip .mbu-tip-on{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip .mbu-tip-dl.mbu-tip-on::after{content:"\u25C2";margin-left:-2px;font-size:11px}#mbu-tip .mbu-tip-off{opacity:.45}#mbu-tip .mbu-tip-sym{letter-spacing:.2px}#mbu-tip .mbu-tip-mouse{display:block;flex:none}#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}';
+    }
+    function mbuTipRoots() {
+      return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu";
+    }
+    function mbuTipEsc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"]/g, function(c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+    function mbuTipLabel(line) {
+      var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+      if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+      return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+    }
+    function mbuTipIsKey(label) {
+      return /click|drag|wheel|scroll|hover|double|press|paste|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+    }
+    function mbuTipInline(s) {
+      return mbuTipEsc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, function(m, k) {
+        return mbuTipKbd(k);
+      }).replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+    }
+    function mbuTipCap(s) {
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+    function mbuTipMod(k) {
+      return { ctrl: "Ctrl", alt: "Alt", shift: "\u21E7", cmd: "\u2318", meta: "\u2318" }[String(k).toLowerCase()] || k;
+    }
+    function mbuTipKbd(combo) {
+      var parts = String(combo).split(/\s*\+\s*/);
+      var key = parts.pop();
+      return '<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">' + mbuTipEsc(combo) + '</span><span aria-hidden="true">' + parts.concat("").map(mbuTipMod).join("+") + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + "</span></kbd>";
+    }
+    function mbuTipKey(label) {
+      var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
+      if (!m) return /^(?:(?:ctrl|alt|shift|cmd|meta)\s*\+\s*)+\S/i.test(label) ? mbuTipKbd(label) : '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + "</span>";
+      var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];
+      var btn = (m[2] || "").toLowerCase(), act = m[3].toLowerCase();
+      var wheel = btn === "middle" || act === "wheel" || act === "scroll";
+      var fill = wheel ? "" : btn === "right" ? "M6 1C8.8 1 11 3.2 11 6v1H6z" : "M6 1C3.2 1 1 3.2 1 6v1h5z";
+      var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="10" height="13" aria-hidden="true">' + (fill ? '<path d="' + fill + '" fill="currentColor"/>' : "") + '<rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M1 7h10' + (wheel ? "" : "M6 1v6") + '" stroke="currentColor" stroke-width="1.1"/>' + (wheel ? '<rect x="5" y="2.6" width="2" height="3.4" rx="1" fill="currentColor"/>' : "") + "</svg>";
+      var extra = btn === "double" ? "\xD72" : act === "drag" ? "drag" : act === "wheel" || act === "scroll" ? "\u2195" : "";
+      return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + "</span>" + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join("+") + "</kbd>" : "") + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + "</span>" : "") + "</span>";
+    }
+    function mbuTipText(src) {
+      var raw = String(src == null ? "" : src).replace(/\r/g, "").replace(/^\s+|\s+$/g, "");
+      if (!raw) return "";
+      var lines = [];
+      raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, "$1+$2").replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function(m2, k, t) {
+        return "\n" + mbuTipCap(k) + ": " + t;
+      }).replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function(m2, k, t) {
+        return "\n" + mbuTipCap(k) + ": " + t;
+      }).replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function(m2, k, t) {
+        return "\n" + mbuTipCap(k) + ": " + t;
+      });
+      raw.split("\n").forEach(function(line) {
+        line = line.replace(/\s+$/, "");
+        var parts = line.split(/\s+·\s+/), out2 = [parts[0]];
+        for (var i2 = 1; i2 < parts.length; i2++) {
+          if (mbuTipLabel(parts[i2])) out2.push(parts[i2]);
+          else out2[out2.length - 1] += " \xB7 " + parts[i2];
+        }
+        out2.forEach(function(seg) {
+          if (!mbuTipLabel(seg)) {
+            lines.push(seg);
+            return;
+          }
+          var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+          bits.forEach(function(b) {
+            lines.push(b);
+          });
+        });
+      });
+      var blocks = [], rowRun = [];
+      var flushRows = function() {
+        if (!rowRun.length) return;
+        var keyed = rowRun.filter(function(r) {
+          return r.key;
+        }).length;
+        if (rowRun.length >= 2 || keyed) blocks.push({ t: "rows", rows: rowRun });
+        else blocks.push({ t: "p", s: rowRun[0].line });
+        rowRun = [];
+      };
+      lines.forEach(function(line, n) {
+        if (!line.trim()) {
+          flushRows();
+          return;
+        }
+        var b = /^\s*[-•]\s+(.*)$/.exec(line);
+        if (b) {
+          flushRows();
+          var last2 = blocks[blocks.length - 1];
+          if (last2 && last2.t === "ul") last2.items.push(b[1]);
+          else blocks.push({ t: "ul", items: [b[1]] });
+          return;
+        }
+        var lv = /^\{(#[0-9a-f]{3,8})(?: (on|off))?\}\s*(\S[\s\S]*)$/i.exec(line);
+        if (lv) {
+          var ll = mbuTipLabel(lv[3]) || { label: lv[3], text: "" };
+          rowRun.push({ label: ll.label, text: ll.text, dot: lv[1], st: lv[2] ? lv[2].toLowerCase() : "", line });
+          return;
+        }
+        var l = mbuTipLabel(line);
+        if (l && (l.key || blocks.length || rowRun.length || lines[n + 1] && mbuTipLabel(lines[n + 1]))) {
+          l.line = line;
+          rowRun.push(l);
+          return;
+        }
+        flushRows();
+        blocks.push({ t: "p", s: line });
+      });
+      flushRows();
+      if (blocks.length === 1 && blocks[0].t === "p" && blocks[0].s.length > 110) {
+        var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+        if (m) blocks = [{ t: "p", s: m[1].replace(/\.$/, "") }, { t: "p", s: m[2] }];
+      }
+      var lead = blocks.length > 1 && blocks[0].t === "p";
+      var rowsHtml = function(bl) {
+        return bl.rows.map(function(r) {
+          if (r.dot) {
+            var c = r.st ? " mbu-tip-" + r.st : "";
+            return '<span class="mbu-tip-dl' + c + '"><i style="background:' + r.dot + '"></i>' + mbuTipEsc(mbuTipCap(r.label)) + '</span><span class="mbu-tip-dt' + c + '">' + mbuTipInline(r.text) + "</span>";
+          }
+          return (r.key ? mbuTipKey(r.label) : '<span class="mbu-tip-o">' + mbuTipEsc(mbuTipCap(r.label)) + "</span>") + "<span>" + mbuTipInline(r.text) + "</span>";
+        }).join("");
+      };
+      var html = function(bl, i2, span) {
+        var sp = span ? " mbu-tip-span" : "";
+        if (bl.t === "ul") return '<ul class="mbu-tip-ul' + sp + '">' + bl.items.map(function(x) {
+          return "<li>" + mbuTipInline(x) + "</li>";
+        }).join("") + "</ul>";
+        if (bl.t === "rows") return span ? rowsHtml(bl) : '<div class="mbu-tip-rows">' + rowsHtml(bl) + "</div>";
+        var warn = /^⚠/.test(bl.s);
+        return '<div class="' + (lead && i2 === 0 ? "mbu-tip-lead" : "mbu-tip-p") + (warn ? " mbu-tip-warn" : "") + sp + '">' + mbuTipInline(bl.s) + "</div>";
+      };
+      var first = -1, last = -1;
+      blocks.forEach(function(bl, i2) {
+        if (bl.t === "rows") {
+          if (first < 0) first = i2;
+          last = i2;
+        }
+      });
+      var out = "";
+      for (var i = 0; i < blocks.length; i++) {
+        if (i === first && last > first) {
+          out += '<div class="mbu-tip-rows">';
+          for (; i <= last; i++) out += html(blocks[i], i, true);
+          out += "</div>";
+          i = last;
+        } else out += html(blocks[i], i, false);
+      }
+      return out;
+    }
+    function mbuTipCard(o) {
+      o = o || {};
+      var h = "";
+      if (o.head || o.title || o.aside) {
+        h += '<div class="mbu-tip-ch">' + (o.head || "") + (o.title ? "<b>" + mbuTipEsc(o.title) + "</b>" : "") + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + "</span>" : "") + "</div>";
+      }
+      if (o.body) h += '<div class="mbu-tip-cb">' + o.body + "</div>";
+      if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || "") + "</span>" + (o.footAside ? "<span>" + o.footAside + "</span>" : "") + "</div>";
+      return h;
+    }
+    function mbuTipS() {
+      return mbuTipS.s || (mbuTipS.s = {
+        me: Math.random().toString(36).slice(2, 10),
+        lead: false,
+        els: typeof WeakMap === "function" ? /* @__PURE__ */ new WeakMap() : null,
+        prov: [],
+        cur: null,
+        curOpts: null,
+        pend: null,
+        showT: 0,
+        hideT: 0,
+        liveT: 0,
+        warm: 0,
+        quiet: null,
+        mx: -1,
+        my: -1,
+        obs: null
+      });
+    }
+    function mbuTip(el, content, opts) {
+      if (!el) return el;
+      var _mbuTip = mbuTipS();
+      mbuTipStart();
+      opts = opts || {};
+      if (typeof content === "function") {
+        if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts });
+        el.setAttribute("data-mbu-tip-own", "");
+        el.removeAttribute("title");
+        return el;
+      }
+      if (content == null || content === "") el.removeAttribute("data-tip");
+      else el.setAttribute("data-tip", String(content));
+      if (opts.place) el.setAttribute("data-tip-place", opts.place);
+      if (opts.wide) el.setAttribute("data-tip-wide", "");
+      el.removeAttribute("title");
+      if (_mbuTip.cur === el) mbuTipRender();
+      return el;
+    }
+    function mbuTipOn(selector, fn, opts) {
+      mbuTipS().prov.push({ sel: selector, fn, opts: opts || {} });
+      mbuTipStart();
+    }
+    function mbuTipShowFor(el, content, opts) {
+      if (!el || content == null || content === "") {
+        mbuTipHide(true);
+        return;
+      }
+      mbuTipStart();
+      var o = opts || {};
+      var fn = typeof content === "function" ? content : function() {
+        return content;
+      };
+      var S = mbuTipS();
+      if (S.cur === el) {
+        S.curOpts.fn = fn;
+        if (!mbuTipRender()) mbuTipHide(true);
+        return;
+      }
+      mbuTipShow({ el, fn, opts: o });
+    }
+    function mbuTipHtml(s) {
+      if (mbuTipHtml.tt === void 0) {
+        mbuTipHtml.tt = null;
+        try {
+          var tt = typeof window !== "undefined" && window.trustedTypes || null;
+          if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy("mbu-tip-" + Math.random().toString(36).slice(2, 8), { createHTML: function(x) {
+            return x;
+          } });
+        } catch (e) {
+        }
+      }
+      return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+    }
+    function mbuTipCss() {
+      var s = document.getElementById("mbu-tip-css");
+      if (s && +s.getAttribute("data-v") >= mbuTipV()) return;
+      if (!s) {
+        s = document.createElement("style");
+        s.id = "mbu-tip-css";
+        (document.head || document.documentElement).appendChild(s);
+      }
+      s.setAttribute("data-v", String(mbuTipV()));
+      s.textContent = mbuTipCssText();
+    }
+    function mbuTipEl() {
+      var t = document.getElementById("mbu-tip");
+      if (!t) {
+        t = document.createElement("div");
+        t.id = "mbu-tip";
+        t.setAttribute("role", "tooltip");
+        (document.body || document.documentElement).appendChild(t);
+      }
+      return t;
+    }
+    function mbuTipFind(node) {
+      var _mbuTip = mbuTipS();
+      var tip = document.getElementById("mbu-tip");
+      for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+        if (el === tip) return null;
+        var reg = _mbuTip.els && _mbuTip.els.get(el);
+        if (reg) return { el, fn: reg.fn, opts: reg.opts };
+        for (var i = 0; i < _mbuTip.prov.length; i++) {
+          var p = _mbuTip.prov[i];
+          try {
+            if (el.matches(p.sel)) return { el, fn: p.fn, opts: p.opts };
+          } catch (e) {
+          }
+        }
+        if (!_mbuTip.lead) continue;
+        if (el.hasAttribute("data-mbu-tip-own")) return null;
+        if (el.hasAttribute("data-tip")) return { el, opts: { place: el.getAttribute("data-tip-place"), wide: el.hasAttribute("data-tip-wide") } };
+        if (el.hasAttribute("title") && el.getAttribute("title") && el.namespaceURI === "http://www.w3.org/1999/xhtml" && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+          var root = null;
+          try {
+            root = el.closest(mbuTipRoots());
+          } catch (e) {
+          }
+          if (root) {
+            el.setAttribute("data-tip", el.getAttribute("title"));
+            el.removeAttribute("title");
+            return { el, opts: {} };
+          }
+        }
+      }
+      return null;
+    }
+    function mbuTipRender() {
+      var _mbuTip = mbuTipS();
+      var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+      if (!a) return false;
+      if (o.fn) {
+        try {
+          c = o.fn(a);
+        } catch (e) {
+          c = null;
+        }
+        if (c == null || c === "") return false;
+        if (typeof c === "string") t.innerHTML = mbuTipHtml(c);
+        else {
+          t.textContent = "";
+          t.appendChild(c);
+        }
+      } else {
+        var s = a.getAttribute("data-tip");
+        if (!s) return false;
+        var h = mbuTipText(s);
+        t.innerHTML = mbuTipHtml(h);
+        if (!a.getAttribute("aria-label") && !/[\p{L}\p{N}]/u.test(a.textContent || "") && !a.querySelector('img[alt]:not([alt=""])')) {
+          a.setAttribute("aria-label", s.split("\n")[0]);
+        }
+      }
+      t.className = "mbu-ui" + (o.card ? " mbu-tip-card" : "") + (o.interactive ? " mbu-tip-act" : "") + (o.wide ? " mbu-tip-wide" : "");
+      t.setAttribute("data-owner", _mbuTip.me);
+      mbuTipPlace(t, a, o.place);
+      return true;
+    }
+    function mbuTipPlace(t, a, place) {
+      var _mbuTip = mbuTipS();
+      var r = a.getBoundingClientRect();
+      if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+      t.style.left = "0px";
+      t.style.top = "0px";
+      var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+      var below = place !== "above";
+      if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+      else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+      var top = below ? r.bottom + gap : r.top - gap - h;
+      var cx = r.left + r.width / 2;
+      if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+      var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+      t.style.left = left + "px";
+      t.style.top = Math.max(m, Math.round(top)) + "px";
+      t.style.setProperty("--mbu-tip-ax", Math.max(12, Math.min(w - 12, Math.round(cx - left))) + "px");
+      t.classList.toggle("mbu-tip-up", !below);
+    }
+    function mbuTipShow(found) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.hideT);
+      clearTimeout(_mbuTip.showT);
+      if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+      mbuTipCss();
+      _mbuTip.cur = found.el;
+      _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+      if (!mbuTipRender()) {
+        _mbuTip.cur = null;
+        return;
+      }
+      var t = mbuTipEl();
+      found.el.setAttribute("aria-describedby", "mbu-tip");
+      requestAnimationFrame(function() {
+        if (_mbuTip.cur === found.el) t.classList.add("mbu-tip-on");
+      });
+      clearInterval(_mbuTip.liveT);
+      _mbuTip.liveT = setInterval(function() {
+        if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true);
+      }, 300);
+      try {
+        if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function() {
+          if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true);
+        });
+        _mbuTip.obs.disconnect();
+        if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ["data-tip"] });
+      } catch (e) {
+      }
+    }
+    function mbuTipHide(now) {
+      var _mbuTip = mbuTipS();
+      clearTimeout(_mbuTip.showT);
+      clearTimeout(_mbuTip.hideT);
+      _mbuTip.pend = null;
+      var hide = function() {
+        var a = _mbuTip.cur;
+        if (!a) return;
+        _mbuTip.cur = null;
+        clearInterval(_mbuTip.liveT);
+        try {
+          if (_mbuTip.obs) _mbuTip.obs.disconnect();
+        } catch (e) {
+        }
+        if (a.getAttribute("aria-describedby") === "mbu-tip") a.removeAttribute("aria-describedby");
+        var t = document.getElementById("mbu-tip");
+        if (t && t.getAttribute("data-owner") === _mbuTip.me) t.classList.remove("mbu-tip-on");
+        _mbuTip.warm = Date.now();
+      };
+      if (now) hide();
+      else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+    }
+    function mbuTipStart() {
+      if (mbuTipStart.done || typeof document === "undefined") return;
+      var _mbuTip = mbuTipS();
+      var root = document.documentElement;
+      if (!root) {
+        document.addEventListener("DOMContentLoaded", mbuTipStart, { once: true });
+        return;
+      }
+      mbuTipStart.done = true;
+      if (!root.hasAttribute("data-mbu-tip")) {
+        root.setAttribute("data-mbu-tip", _mbuTip.me);
+        _mbuTip.lead = true;
+      }
+      var inTip = function(n) {
+        var t = document.getElementById("mbu-tip");
+        return !!(t && n && t.contains(n));
+      };
+      window.addEventListener("mousemove", function(e) {
+        _mbuTip.mx = e.clientX;
+        _mbuTip.my = e.clientY;
+      }, { passive: true, capture: true });
+      window.addEventListener("mouseover", function(e) {
+        _mbuTip.mx = e.clientX;
+        _mbuTip.my = e.clientY;
+        _mbuTip.over = e.target;
+        if (inTip(e.target)) {
+          if (_mbuTip.cur) clearTimeout(_mbuTip.hideT);
+          return;
+        }
+        var f = mbuTipFind(e.target);
+        if (!f) {
+          if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide();
+          return;
+        }
+        if (f.el === _mbuTip.cur) {
+          clearTimeout(_mbuTip.hideT);
+          return;
+        }
+        if (f.el === _mbuTip.quiet || _mbuTip.pend && _mbuTip.pend.el === f.el) return;
+        clearTimeout(_mbuTip.showT);
+        _mbuTip.pend = f;
+        var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+        _mbuTip.showT = setTimeout(function() {
+          _mbuTip.pend = null;
+          if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+        }, warm ? 40 : f.opts.delay != null ? f.opts.delay : 350);
+      }, true);
+      window.addEventListener("mouseout", function(e) {
+        var to = e.relatedTarget;
+        var q = _mbuTip.quiet;
+        if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+        var p = _mbuTip.pend;
+        if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) {
+          clearTimeout(_mbuTip.showT);
+          _mbuTip.pend = null;
+        }
+        var a = _mbuTip.cur;
+        if (!a) return;
+        if (to && (a.contains(to) || _mbuTip.curOpts.interactive && inTip(to))) return;
+        if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+      }, true);
+      window.addEventListener("mousedown", function(e) {
+        if (inTip(e.target)) return;
+        clearTimeout(_mbuTip.showT);
+        _mbuTip.pend = null;
+        var f = mbuTipFind(e.target);
+        _mbuTip.quiet = f ? f.el : null;
+        if (_mbuTip.cur) mbuTipHide(true);
+      }, true);
+      document.addEventListener("keydown", function(e) {
+        if (!_mbuTip.cur) return;
+        var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+        if (e.key !== "Escape") {
+          if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true);
+          return;
+        }
+        mbuTipHide(true);
+        if (interactive) e.stopPropagation();
+      }, true);
+      window.addEventListener("scroll", function(e) {
+        if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true);
+      }, true);
+      window.addEventListener("blur", function() {
+        if (_mbuTip.cur) mbuTipHide(true);
+      });
+      document.addEventListener("focusin", function(e) {
+        var el = e.target, vis = false;
+        try {
+          vis = el.matches(":focus-visible");
+        } catch (x) {
+        }
+        if (!vis) return;
+        var f = mbuTipFind(el);
+        if (f && f.el === el) {
+          clearTimeout(_mbuTip.showT);
+          _mbuTip.showT = setTimeout(function() {
+            if (document.activeElement === el) mbuTipShow(f);
+          }, 150);
+        }
+      }, true);
+      document.addEventListener("focusout", function(e) {
+        if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+      }, true);
+    }
+    mbuTipStart();
     log.info(mbuStartupInfo("Credit Hoarder"));
     const style = document.createElement("style");
     style.innerText = MBU_TOKENS + MBU_UI_CSS + `
@@ -29559,51 +30455,6 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
             text-overflow: ellipsis;
         }
         .discogs-toggle { position: relative; }
-        /* position:fixed so the tooltip escapes .discogs-bar's
-           overflow:hidden (needed there to clip child backgrounds to
-           the bar's rounded corners). Per-hover JS in makeCheckbox
-           sets top/left from the toggle's viewport rect, so the
-           tooltip renders outside any overflow-clipping ancestor.
-           Issue #89. */
-        .discogs-tooltip {
-            display: none;
-            position: fixed;
-            background: #333;
-            color: var(--mbu-text-on-accent);
-            font-size: 0.78rem;
-            line-height: 1.45;
-            padding: 0.45rem 0.65rem;
-            border-radius: 0.3rem;
-            white-space: normal;
-            width: 220px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            pointer-events: none;
-            z-index: 9999;
-            text-align: left;
-        }
-        .discogs-tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: var(--arrow-x, 50%);
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: #333;
-        }
-        /* When the tooltip flipped below the toggle (no room above),
-           flip the arrow to point up from the tooltip's top edge. */
-        .discogs-tooltip.below::after {
-            top: auto;
-            bottom: 100%;
-            border-top-color: transparent;
-            border-bottom-color: #333;
-        }
-        /* Tooltip shown by JS adding .discogs-tooltip-visible after a
-           hover-intent delay (see makeCheckbox). Native browser title=
-           tooltips have a ~1s delay by convention; the custom tooltips
-           used to fire instantly and felt jumpy when sweeping across
-           toggles. */
-        .discogs-tooltip.discogs-tooltip-visible { display: block; }
         /* An input that password managers leave alone is typed "search"; these
            rules put back the look of a plain text box (Chrome draws a clear
            button and its own inner spacing otherwise). See noPasswordManagers.
@@ -29655,7 +30506,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       b._icon = ORIG_ICON[s.name] || SRC_ICON[s.name] || s.name;
       b.innerHTML = b._icon;
       b.dataset.src = s.name;
-      b.title = s.url ? `Import credits from ${s.name}  \xB7  right-click to open the ${s.name} page` : "Import remixer credits derived from the track titles";
+      b.dataset.tip = s.url ? `Import the credits from ${s.name}
+Right-click: open the ${s.name} page` : "Import remixer credits\nRead from the track titles";
       b.addEventListener("click", () => {
         if (importing) {
           if (b.classList.contains("importing")) cancelRun();
@@ -29677,7 +30529,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       warn.className = "discogs-src-probe-failed";
       warn.style.cssText = "font-size:0.8rem;color:var(--mbu-warn);";
       warn.textContent = "could not read this release\u2019s links from MusicBrainz \u2014 reload to retry";
-      warn.title = "The /ws/js/release lookup failed (MusicBrainz was busy or unreachable), so the linked import sources are unknown.";
+      warn.dataset.tip = "\u26A0 The linked import sources are unknown\nMusicBrainz\u2019s /ws/js/release lookup failed: it was busy or unreachable.";
       srcIcons.appendChild(warn);
     }
     const makeAllButton = () => {
@@ -29688,7 +30540,8 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       allBtn._icon = '<span class="discogs-all-glyph">\u269B</span><span class="discogs-all-lbl">All</span>';
       allBtn.innerHTML = allBtn._icon;
       allBtn.dataset.src = "All";
-      allBtn.title = `Import from all ${importSources.length} sources at once \u2014 merged & de-duplicated into one review`;
+      allBtn.dataset.tip = `Import from all ${importSources.length} sources at once
+Merged, without duplicates, into one review`;
       allBtn.addEventListener("click", () => {
         if (importing) {
           if (allBtn.classList.contains("importing")) cancelRun();
@@ -29732,17 +30585,17 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     warnPill.type = "button";
     warnPill.className = "discogs-badge discogs-badge-warn";
     warnPill.style.display = "none";
-    warnPill.title = "Show warnings in the log";
+    warnPill.dataset.tip = "Show warnings in the log";
     const errPill = document.createElement("button");
     errPill.type = "button";
     errPill.className = "discogs-badge discogs-badge-err";
     errPill.style.display = "none";
-    errPill.title = "Show errors in the log";
+    errPill.dataset.tip = "Show errors in the log";
     const unresolvedPill = document.createElement("button");
     unresolvedPill.type = "button";
     unresolvedPill.className = "discogs-badge discogs-badge-unresolved";
     unresolvedPill.style.display = "none";
-    unresolvedPill.title = "Entities not matched on MusicBrainz \u2014 skipped on import";
+    unresolvedPill.dataset.tip = "Entities not matched on MusicBrainz\nSkipped on import";
     msgSlot.append(statusEl, warnPill, errPill, unresolvedPill);
     row1.appendChild(msgSlot);
     const rightGroup = document.createElement("div");
@@ -29754,12 +30607,12 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     logToggleBtn.type = "button";
     logToggleBtn.className = "discogs-logtoggle-btn";
     logToggleBtn.textContent = "Log";
-    logToggleBtn.title = "Show / hide the import log";
+    logToggleBtn.dataset.tip = "Show or hide the import log";
     const logCaretBtn = document.createElement("button");
     logCaretBtn.type = "button";
     logCaretBtn.className = "discogs-log-caret-btn";
     logCaretBtn.textContent = "\u25BE";
-    logCaretBtn.title = "More log actions (copy)";
+    logCaretBtn.dataset.tip = "More for the log: copy it";
     logSplit.append(logToggleBtn, logCaretBtn);
     const docsHref = typeof GM_info !== "undefined" && (GM_info?.script?.homepageURL || GM_info?.script?.homepage) || "https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md";
     const docsLink = document.createElement("a");
@@ -29767,13 +30620,13 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     docsLink.target = "_blank";
     docsLink.rel = "noopener noreferrer nofollow";
     docsLink.textContent = "? Help";
-    docsLink.title = "Open the script's README in a new tab";
+    docsLink.dataset.tip = "Open the README in a new tab";
     docsLink.style.cssText = "flex-shrink:0;font-size:0.82rem;color:var(--mbu-warn);text-decoration:none;padding:0.1rem 0.45rem;border:1px solid var(--mbu-warn);border-radius:0.25rem;background:var(--mbu-bg-raised);";
     const enterEditBtn = document.createElement("button");
     enterEditBtn.type = "button";
     enterEditBtn.className = "discogs-enter-edit";
     enterEditBtn.textContent = "Enter edit";
-    enterEditBtn.title = 'Submit the staged edits to MusicBrainz \u2014 clicks the native "Enter edit" button at the bottom of the page';
+    enterEditBtn.dataset.tip = "Submit the staged edits to MusicBrainz\nThe same as MusicBrainz\u2019s Enter edit button at the bottom of the page";
     enterEditBtn.style.display = "none";
     const findNativeSubmit = () => document.querySelector("button.submit.positive") || [...document.querySelectorAll('button[type="submit"], button.submit')].find((b) => /enter edit/i.test(b.textContent || ""));
     enterEditBtn.addEventListener("click", () => {
@@ -29815,45 +30668,11 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       lbl.appendChild(cb);
       lbl.appendChild(dot);
       lbl.appendChild(document.createTextNode(labelText));
-      if (tooltipText) {
-        const tip = document.createElement("span");
-        tip.className = "discogs-tooltip";
-        tip.textContent = tooltipText;
-        lbl.appendChild(tip);
-        const TIP_W = 220, TIP_MARGIN = 6, EDGE_PAD = 8;
-        const HOVER_DELAY_MS = 1e3;
-        let _showTimer, _hideTimer;
-        lbl.addEventListener("mouseenter", () => {
-          clearTimeout(_showTimer);
-          _showTimer = setTimeout(() => {
-            const r = lbl.getBoundingClientRect();
-            const centerX = r.left + r.width / 2;
-            let x = centerX - TIP_W / 2;
-            x = Math.max(EDGE_PAD, Math.min(x, window.innerWidth - TIP_W - EDGE_PAD));
-            tip.style.left = `${x}px`;
-            tip.style.top = "-9999px";
-            tip.classList.add("discogs-tooltip-visible");
-            const h = tip.offsetHeight;
-            const above = r.top - TIP_MARGIN - h;
-            const fitsAbove = above >= EDGE_PAD;
-            tip.style.top = fitsAbove ? `${above}px` : `${r.bottom + TIP_MARGIN}px`;
-            tip.classList.toggle("below", !fitsAbove);
-            tip.style.setProperty("--arrow-x", `${centerX - x}px`);
-            clearTimeout(_hideTimer);
-            _hideTimer = setTimeout(() => tip.classList.remove("discogs-tooltip-visible"), 4e3);
-          }, HOVER_DELAY_MS);
-        });
-        lbl.addEventListener("mouseleave", () => {
-          clearTimeout(_showTimer);
-          clearTimeout(_hideTimer);
-          tip.classList.remove("discogs-tooltip-visible");
-        });
-      }
+      if (tooltipText) lbl.dataset.tip = tooltipText;
       lbl.addEventListener("click", (e) => {
         e.preventDefault();
         cb.checked = !cb.checked;
         lbl.classList.toggle("active", cb.checked);
-        document.querySelectorAll(".discogs-tooltip-visible").forEach((t) => t.classList.remove("discogs-tooltip-visible"));
       });
       _optsHost.appendChild(lbl);
       return cb;
@@ -29874,7 +30693,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         if (opt.value === initialValue) o.selected = true;
         sel.appendChild(o);
       });
-      if (tooltipText) wrap.title = tooltipText;
+      if (tooltipText) wrap.dataset.tip = tooltipText;
       wrap.appendChild(sel);
       _optsHost.appendChild(wrap);
       return sel;
@@ -29969,7 +30788,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
     optsBtn.type = "button";
     optsBtn.className = "discogs-opts-btn";
     optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">\u25BE</span>';
-    optsBtn.title = "Deduplication and matching options";
+    optsBtn.dataset.tip = "Options: duplicates and matching";
     const optsPanel = document.createElement("div");
     optsPanel.className = "discogs-opts-panel mbu-ui";
     const dedupHd = document.createElement("div");
@@ -30083,7 +30902,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       const b = document.createElement("button");
       b.type = "button";
       b.textContent = label;
-      b.title = title;
+      b.dataset.tip = title;
       b.addEventListener("click", () => fn(b, label));
       return b;
     };
@@ -30164,7 +30983,7 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
       srcButtons.forEach((b) => {
         b.classList.remove("importing");
         b.style.display = "";
-        b.title = b._restoreTitle || b.title;
+        b.dataset.tip = b._restoreTitle || b.dataset.tip;
       });
       progressPct.style.display = "none";
       progressPct.textContent = "0%";
@@ -30187,8 +31006,9 @@ Leave empty to use the default (${srcName} name, or MB's most-frequent existing 
         b.classList.toggle("importing", active);
         b.style.display = active ? "" : "none";
         if (active) {
-          b._restoreTitle = b.title;
-          b.title = `Cancel this ${srcBtn.dataset.src} import and return to the source picker`;
+          b._restoreTitle = b.dataset.tip;
+          b.dataset.tip = `Cancel this ${srcBtn.dataset.src} import
+Back to the sources`;
         }
       });
       progressPct.style.display = "inline";
@@ -30365,7 +31185,7 @@ ${lines}
         srcButtons.forEach((b) => {
           b.classList.remove("importing");
           b.style.display = "";
-          b.title = b._restoreTitle || b.title;
+          b.dataset.tip = b._restoreTitle || b.dataset.tip;
         });
         progressPct.textContent = "100%";
         setTimeout(() => {
@@ -31436,14 +32256,14 @@ ${lines}
 
 // ===== falcon (@run-at document-end) ============================================
 if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$","^https:\\/\\/harmony\\.pulsewidth\\.org\\.uk(?::\\d+)?/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.19.154206","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.19.154206","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.20.120000","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.20.120000","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
   'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { MBP_COVER_TYPES, mbpCoverTypeId, mbpReleaseLinkList, mbpReleaseJsonLinks, mbpReleaseLinks } = __st_MBPAGE(GM_info);   // ST-MBPAGE, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('falcon', 'Falcon')) { falconHandOver(); return; }
@@ -33066,12 +33886,12 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     if (err && err.bad && total) {
       lbl.textContent = `Send ${total} to Falcon (partial)`;
       harmonyBtn.style.opacity = '1';
-      harmonyBtn.title = harmonyErrorSummary(err) + '. Sending anyway — Falcon is idempotent, so a partial import can be topped up later.';
+      harmonyBtn.dataset.tip = '⚠ ' + harmonyErrorSummary(err) + '\nSending anyway: Falcon can run the same import again later to top up a partial one.';
       return;
     }
     lbl.textContent = total ? `Send ${total} to Falcon` : 'No Falcon actions found yet…';
     harmonyBtn.style.opacity = total ? '1' : '.6';
-    harmonyBtn.title = total ? `Opens MusicBrainz with ${total} item(s) queued in Falcon` : 'Waiting for Harmony to render its actions…';
+    harmonyBtn.dataset.tip = total ? `Open MusicBrainz with ${total} item${total === 1 ? '' : 's'} queued in Falcon` : 'Waiting for Harmony to show its actions…';
   }
   /* ── #557: auto send ─────────────────────────────────────────────────────
    * "Let's have another option 'Auto send' in Harmony category. Having both
@@ -33127,7 +33947,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     const lbl = document.getElementById('falcon-harmony-lbl');
     const paint = () => {
       if (lbl) lbl.textContent = `Auto-sending ${total} in ${left}… (click to cancel)`;
-      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.title = 'Falcon will send this batch automatically — click to cancel'; }
+      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.dataset.tip = 'Falcon sends this batch by itself\nClick: cancel'; }
     };
     harmonyLog(`auto send: ${total} item(s) in ${left}s — click the button to cancel`);
     paint();
@@ -33322,7 +34142,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     const paint = () => {
       const lbl = document.getElementById('falcon-harmony-lbl');
       if (lbl) lbl.textContent = `Harmony errored — reloading in ${left}… (click to cancel)`;
-      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.title = why + '. Falcon will load the page again — click to cancel.'; }
+      if (harmonyBtn) { harmonyBtn.style.opacity = '1'; harmonyBtn.dataset.tip = '⚠ ' + why + '\nFalcon loads the page again.\nClick: cancel'; }
     };
     paint();
     _reloadTimer = setInterval(() => {
@@ -35012,7 +35832,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     card.style.opacity = '.55';
     const lbl = card.querySelector('.falcon-worker-lbl');
     if (lbl) lbl.textContent = (lbl.textContent || '') + ' — stopped';
-    card.title = 'This worker hit an issue and was retired — kept visible for inspection. ' + (reason || '');
+    card.dataset.tip = 'This worker hit a problem and was retired\nIt stays here so you can look at it.' + (reason ? '\n⚠ ' + reason : '');
     const banner = card.querySelector('.falcon-worker-errbanner');
     if (banner && reason) { banner.textContent = reason; banner.style.display = 'block'; }
   }
@@ -35026,7 +35846,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     card.innerHTML = `
       <div style="display:flex;align-items:center;gap:4px;padding:3px 6px;background:var(--mbu-bg-raised);color:var(--mbu-text);border-bottom:1px solid var(--mbu-border);font-size:10px">
         <span class="falcon-worker-lbl" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mbu-text-dim)">idle</span>
-        <button type="button" class="falcon-worker-zoom" title="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
+        <button type="button" class="falcon-worker-zoom" data-tip="Maximize this worker" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0 2px">⛶</button>
       </div>
       <div class="falcon-worker-errbanner" style="display:none;padding:4px 6px;background:var(--mbu-error-bg);color:var(--mbu-error);font-size:10px;white-space:pre-wrap;border-bottom:1px solid var(--mbu-error)"></div>
       <div class="falcon-worker-body" style="flex:1;position:relative;"></div>`;
@@ -36021,10 +36841,10 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       if (_zoomedWorker === null) {
         if (isIdle) { card.style.display = 'none'; return; }
         show(cfg.workerSize + 'px', Math.round(cfg.workerSize * 0.8) + 'px');
-        if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.title = 'Maximize this worker'; }
+        if (zoomBtn) { zoomBtn.textContent = '⛶'; zoomBtn.dataset.tip = 'Maximize this worker'; }
       } else if (_zoomedWorker === i) {
         show('100%', '560px');
-        if (zoomBtn) { zoomBtn.textContent = '❐'; zoomBtn.title = 'Restore'; }
+        if (zoomBtn) { zoomBtn.textContent = '❐'; zoomBtn.dataset.tip = 'Restore'; }
       } else {
         hide();
       }
@@ -36335,7 +37155,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
-    launcher.title = `${NAME} — bulk MusicBrainz editor (Ctrl+Alt+F)\nRight-click: settings`;
+    launcher.dataset.tip = `${NAME} — bulk MusicBrainz editor (Ctrl+Alt+F)\nRight-click: settings`;
     launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90';   // lowest priority: furthest from the corner
     // #588: a page Falcon reloaded after a clean run wears a green icon instead
     // of the usual translucent one — majkinetor's ask was to be able to pick
@@ -36359,7 +37179,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       + (done ? 'background:#1f9d6b;color:#fff;box-shadow:0 0 0 2px #9bd3b6,0 2px 10px rgba(31,157,107,.45);'
         : 'background:transparent;box-shadow:none;')
       + `transition:background .15s,transform .1s;opacity:${rest}`;
-    if (done) launcher.title = `${NAME} — ${_closedClean ? 'closed itself' : 'this page was reloaded'} after a clean run (Ctrl+Alt+F for the log)\nRight-click: settings`;
+    if (done) launcher.dataset.tip = `${NAME} — ${_closedClean ? 'closed itself' : 'reloaded this page'} after a clean run\nCtrl+Alt+F: the log\nRight-click: settings`;
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; img.style.cssText = 'width:34px;height:34px;display:block;pointer-events:none'; launcher.appendChild(img);
     launcher.onmouseenter = () => { launcher.style.transform = 'scale(1.08)'; launcher.style.opacity = '1'; };
     launcher.onmouseleave = () => { launcher.style.transform = 'scale(1)'; launcher.style.opacity = rest; };
@@ -36554,21 +37374,21 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
         <button type="button" id="falcon-tab-queue" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Queue</button>
         <button type="button" id="falcon-tab-workers" class="falcon-tab" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit">Workers</button>
         <button type="button" id="falcon-tab-log" class="falcon-tab" style="margin-right:14px;background:none;border:none;color:#fff;cursor:pointer;font:inherit">Log</button>
-        <button type="button" id="falcon-tab-options" class="falcon-tab" title="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">${MBU_CFG_ICON}</button>
-        <button type="button" id="falcon-maximize" title="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
+        <button type="button" id="falcon-tab-options" class="falcon-tab" data-tip="Options" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">${MBU_CFG_ICON}</button>
+        <button type="button" id="falcon-maximize" data-tip="Maximize" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">⛶</button>
         <button type="button" id="falcon-close" style="background:none;border:none;color:#fff;cursor:pointer;font:inherit;font-size:14px">✕</button>
       </div>
       <div id="falcon-body-queue" style="padding:0;overflow:hidden;flex:1;display:flex;flex-direction:column">
         <div id="falcon-queue-toolbar" class="falcon-bar" style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;color:var(--mbu-text);flex:0 0 auto">
-          <button type="button" id="falcon-add-page" title="Add this release's entities to the queue as empty rows to edit" style="padding:2px 8px;cursor:pointer;display:none"><span class="falcon-bi">+</span><span class="falcon-bt">Add from release</span></button>
-          <button type="button" id="falcon-import" title="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
-          <button type="button" id="falcon-export" title="Save the queue — and each item's outcome — to a JSON file" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
+          <button type="button" id="falcon-add-page" data-tip="Add this release's entities to the queue\nAs empty rows, to edit" style="padding:2px 8px;cursor:pointer;display:none"><span class="falcon-bi">+</span><span class="falcon-bt">Add from release</span></button>
+          <button type="button" id="falcon-import" data-tip="Load a queue from a JSON file" style="padding:2px 8px;cursor:pointer"><span class="falcon-bi">↓</span><span class="falcon-bt">Import</span></button>
+          <button type="button" id="falcon-export" data-tip="Save the queue to a JSON file\nWith each item's outcome" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">↑</span><span class="falcon-bt">Export</span></button>
           <input type="file" id="falcon-import-file" accept="application/json,.json" style="display:none" />
         </div>
         <div id="falcon-type-chips" class="falcon-bar" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--mbu-border);font-size:11px;flex:0 0 auto">
           <span id="falcon-type-chips-in" style="display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;min-width:0"></span>
-          <button type="button" id="falcon-remove-selected" disabled title="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
-          <button type="button" id="falcon-view-toggle" style="padding:2px 8px;cursor:pointer" title="Switch between the list and the grid"><span class="falcon-bi">▦</span><span class="falcon-bt">Grid</span></button>
+          <button type="button" id="falcon-remove-selected" disabled data-tip="Remove the selected rows from the queue" style="margin-left:auto;padding:2px 8px;cursor:pointer"><span class="falcon-bi">🗑</span><span class="falcon-bt">Remove selected</span></button>
+          <button type="button" id="falcon-view-toggle" style="padding:2px 8px;cursor:pointer" data-tip="Switch between the list and the grid"><span class="falcon-bi">▦</span><span class="falcon-bt">Grid</span></button>
         </div>
         <div id="falcon-queue-list" style="overflow:auto;flex:1;padding:0 10px"></div>
         <div id="falcon-notepanel" style="display:none;padding:8px 10px;border-top:1px solid var(--mbu-border);background:var(--mbu-bg-sunken);flex:0 0 auto">
@@ -36586,12 +37406,12 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
             </div>
             <span id="falcon-progress-text" style="color:var(--mbu-text-dim);font-size:10px;white-space:nowrap;flex:0 0 auto"></span>
           </div>
-          <button type="button" id="falcon-note-btn" title="Batch edit note &mdash; appended to every edit in this run" style="flex:0 0 auto;padding:4px 10px;cursor:pointer"><span class="falcon-bi">&#9998;</span><span class="falcon-bt">Note</span></button>
+          <button type="button" id="falcon-note-btn" data-tip="Batch edit note\nAdded to every edit in this run" style="flex:0 0 auto;padding:4px 10px;cursor:pointer"><span class="falcon-bi">&#9998;</span><span class="falcon-bt">Note</span></button>
           <div id="falcon-run-split" style="flex:0 0 auto;display:flex;position:relative">
-            <button type="button" id="falcon-run" title="Start processing the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px 0 0 4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
-            <button type="button" id="falcon-run-more" title="More: Retry failed" style="padding:4px 8px;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.25);border-radius:0 4px 4px 0;font-size:10px">▾</button>
+            <button type="button" id="falcon-run" data-tip="Start the queue" style="padding:4px 12px;font-weight:700;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-radius:4px 0 0 4px;justify-content:center"><span class="falcon-bi">▶</span><span class="falcon-bt">Start</span></button>
+            <button type="button" id="falcon-run-more" data-tip="More: retry what failed" style="padding:4px 8px;cursor:pointer;background:#1b2a4a;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.25);border-radius:0 4px 4px 0;font-size:10px">▾</button>
             <div id="falcon-run-menu" style="display:none;position:absolute;right:0;bottom:calc(100% + 4px);z-index:5;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);padding:4px;min-width:150px">
-              <button type="button" id="falcon-retry-failed" disabled title="Re-queue every failed/partial item for another attempt — useful when MusicBrainz was just slow, not when an item is genuinely broken" style="display:flex;width:100%;gap:6px;padding:4px 8px;cursor:pointer;border:none;background:none;text-align:left;color:var(--mbu-text)"><span>↻</span><span>Retry failed</span></button>
+              <button type="button" id="falcon-retry-failed" disabled data-tip="Queue every failed or partial item again\nFor when MusicBrainz was only slow, not when an item is really broken" style="display:flex;width:100%;gap:6px;padding:4px 8px;cursor:pointer;border:none;background:none;text-align:left;color:var(--mbu-text)"><span>↻</span><span>Retry failed</span></button>
             </div>
           </div>
         </div>
@@ -36600,7 +37420,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       <div id="falcon-body-workers" style="position:absolute;left:-100000px;top:0;width:1200px;height:800px;overflow:auto;display:block;padding:8px 10px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--mbu-text-weak)">
           <span style="flex:1">Live worker iframes — each one loads an entity's edit page, fills it, submits, then moves to the next queued item.</span>
-          <label style="display:flex;align-items:center;gap:5px;flex:0 0 auto" title="How large each worker card is drawn — bigger cards make it easier to read what a worker is actually showing">
+          <label style="display:flex;align-items:center;gap:5px;flex:0 0 auto" data-tip="How large each worker card is drawn\nBigger cards make it easier to read what a worker shows.">
             <span>size</span>
             <input type="range" id="falcon-worker-size" min="200" max="900" step="20" style="width:110px" />
             <span id="falcon-worker-size-val" style="width:34px;text-align:right"></span>
@@ -36615,10 +37435,10 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
           <span style="flex:1;font-weight:700;color:var(--mbu-info)">${NAME} <span style="opacity:.6;font-weight:400">v${scriptVersion()}</span></span>
           <a href="${HELP_URL}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none;font-weight:600">? Help</a>
         </div>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="The floating corner icon is optional — the panel is always reachable via Ctrl+Alt+F either way">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="The floating icon in the corner\nWithout it, the panel is still there on Ctrl+Alt+F.">
           <input type="checkbox" id="falcon-opt-hide-launcher" /> <span>Hide ${NAME} icon</span>
         </label>
-        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="If a release already has cover art, skip adding another instead of uploading blind — Harmony offers cover art whether or not the release already has some">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Skip cover art on a release that has some\nHarmony offers cover art whether or not the release already has it.">
           <input type="checkbox" id="falcon-opt-cover-only-if-none" /> <span>Add covers only when there aren't any</span>
         </label>
         <!-- majkinetor: "Group harmony options under 1 section". Three of these
@@ -36627,32 +37447,32 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
              word. The heading carries the context, so the labels drop it. -->
         <fieldset style="border:1px solid var(--mbu-border);border-radius:5px;margin:2px 0 0;padding:6px 10px 8px;display:flex;flex-direction:column;gap:10px">
           <legend style="padding:0 5px;font-weight:600;color:var(--mbu-info);font-size:11px">
-            <a href="https://harmony.pulsewidth.org.uk/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" title="Harmony — the importer these options apply to">Harmony</a>
+            <a href="https://harmony.pulsewidth.org.uk/" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" data-tip="Harmony — the importer these options apply to">Harmony</a>
           </legend>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Ignore the cover art Harmony offers. The URL Harmony gives is whatever the provider's API returns, which is often not the largest that provider will serve, so if you upload covers with ECAU or Art Station instead, this keeps Falcon out of it — links, ISRCs, disambiguations and aliases still come through">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Ignore the cover art Harmony offers\nHarmony's URL is what the provider's API returns, often not the largest the provider serves. If you upload covers with ECAU or Art Station, this keeps Falcon out of it.\nLinks, ISRCs, disambiguations and aliases still come through.">
             <input type="checkbox" id="falcon-opt-skip-harmony-covers" /> <span>Ignore cover art</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Press 'Send to Falcon' for you once a Harmony import finishes and its actions have settled, instead of waiting for you to click it. A short countdown shows on the button first — click it to cancel. With 'Auto start import' below also on, a finished Harmony import carries straight through to a finished Falcon run.">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Press Send to Falcon for you\nOnce a Harmony import finishes and its actions have settled. A short countdown shows on the button first: click it to cancel.\nWith Auto start import on too, a finished Harmony import carries straight through to a finished Falcon run.">
             <input type="checkbox" id="falcon-opt-auto-send-harmony" /> <span>Auto send</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="Start processing the queue immediately after 'Send to Falcon' from Harmony, instead of waiting for you to click Start">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Start the queue at once after Send to Falcon\nInstead of waiting for you to click Start">
             <input type="checkbox" id="falcon-opt-auto-start-harmony" /> <span>Auto start import</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="When a Harmony import finishes with nothing failed, reload the MusicBrainz release page so it shows what Falcon just added instead of the state it had before the run. The run's log survives the reload, and Falcon's corner icon turns green on a page it reloaded so you can tell which tab it was among many.">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Reload the release page after a clean run\nWhen a Harmony import finishes with nothing failed, the MusicBrainz page shows what Falcon added.\nThe run's log survives the reload, and Falcon's corner icon turns green on a page it reloaded, so you can tell which tab it was.">
             <input type="checkbox" id="falcon-opt-reload-after-import" /> <span>Reload release page after import without errors</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="On: 'Send to Falcon' opens MusicBrainz in a new tab (today's behavior). Off: navigates this same Harmony tab to MusicBrainz instead">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Where Send to Falcon opens MusicBrainz\nOn: in a new tab\nOff: in this Harmony tab">
             <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open in new tab</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" title="When a run finishes, hand the release to Picard by itself. The MusicBrainz URL always carries ?tport= with this port, so MusicBrainz's own green tagger button is there to click either way — untick this to import only the releases you choose. Picard must be running with 'Browser integration' enabled, listening on this port (its default is 8000).">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Hand the release to Picard when a run finishes\nMusicBrainz's own green tagger button is there either way (the URL carries ?tport= with this port): turn this off to load only the releases you choose.\n⚠ Picard must run with Browser integration on, listening on this port (8000 by default)">
             <input type="checkbox" id="falcon-opt-picard" /> <span>Automatically send to Picard using port</span>
             <input type="number" id="falcon-opt-picard-port" min="1" max="65535" style="width:62px" />
           </label>
         </fieldset>
-        <label style="display:flex;align-items:center;gap:7px" title="How many entities are processed at once — each worker is its own iframe submitting independently">
+        <label style="display:flex;align-items:center;gap:7px" data-tip="How many entities are worked on at once\nEach worker is its own frame, submitting on its own.">
           <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" style="width:40px" />
         </label>
-        <label style="display:flex;align-items:center;gap:7px" title="Each run keeps its own log, selectable later from the Log tab's history dropdown — older ones beyond this count are dropped">
+        <label style="display:flex;align-items:center;gap:7px" data-tip="How many runs' logs to keep\nPick one in the Log tab's history; older ones are dropped.">
           <span>Keep last</span> <input type="number" id="falcon-opt-log-history-count" min="1" max="100" style="width:48px" /> <span>run logs</span>
         </label>
       </div>`;
@@ -36752,7 +37572,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
         document.querySelectorAll('.falcon-addmenu').forEach(m => m.remove());
         if (ctx.kind === 'series' && !seriesInfo) {
           log('info', 'reading this series from MusicBrainz…');
-          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this series from MusicBrainz — see the Log tab' });
+          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this series from MusicBrainz\nThe Log tab shows the progress' });
           try { seriesInfo = await fetchSeriesMembers(ctx.mbid); }
           catch (e) { log('error', `could not read this series — ${e.message || e}`); setBtnBusy(btn, false); return; }
           finally { setBtnBusy(btn, false); }
@@ -36824,7 +37644,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
           if (isSeries) {
             const picks = Object.keys(want).filter(k => want[k]);
             if (!picks.length) { log('warn', 'nothing selected — tick at least one box'); return; }
-            setBtnBusy(btn, true, { label: 'Reading…', title: 'Building the queue from this series — see the Log tab' });
+            setBtnBusy(btn, true, { label: 'Reading…', title: 'Building the queue from this series\nThe Log tab shows the progress' });
             const waiting = beginWait('this series');
             const tuples = [];
             try {
@@ -36862,7 +37682,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
           if (!picked.length) { log('warn', 'nothing selected — tick at least one box'); return; }
           const label = (rgOnly ? `this release group's ` : `this release's `) + picked.map(k => WANT_LABEL[k] || k).join(' + ');
           log('info', `reading ${label} from MusicBrainz — one request, and a large release can keep it busy for 20-40s…`);
-          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this page’s entities from MusicBrainz — see the Log tab' });
+          setBtnBusy(btn, true, { label: 'Reading…', title: 'Reading this page’s entities from MusicBrainz\nThe Log tab shows the progress' });
           const waiting = beginWait(label);
           let waitMs = 0;
           try {
@@ -37335,10 +38155,10 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       _prevBox = { left: panel.style.left, top: panel.style.top, right: panel.style.right, bottom: panel.style.bottom, width: panel.style.width, height: panel.style.height, maxWidth: panel.style.maxWidth, maxHeight: panel.style.maxHeight, transform: panel.style.transform };
       panel.style.left = '3vw'; panel.style.top = '3vh'; panel.style.right = 'auto'; panel.style.bottom = 'auto'; panel.style.transform = 'none';
       panel.style.width = '94vw'; panel.style.maxWidth = '94vw'; panel.style.height = '94vh'; panel.style.maxHeight = '94vh';
-      _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
+      _maxed = true; if (btn) { btn.textContent = '❐'; btn.dataset.tip = 'Restore'; }
     } else {
       if (_prevBox) Object.assign(panel.style, _prevBox);
-      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.title = 'Maximize'; }
+      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.dataset.tip = 'Maximize'; }
     }
     fitBars();
   }
@@ -37368,7 +38188,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
   function renderLinks(it) {
     const groups = groupedLinks(it);
     const dis = it.status === 'active' ? 'disabled' : '';
-    const add = _newLink === it.id ? `<div class="falcon-ln falcon-ln-new"><input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="paste a link" title="Add a link: paste its url" ${dis} /></div>` : '';
+    const add = _newLink === it.id ? `<div class="falcon-ln falcon-ln-new"><input type="text" class="falcon-link-new" data-id="${it.id}" placeholder="paste a link" data-tip="Add a link: paste its URL" ${dis} /></div>` : '';
     if (!groups.length) return `<div class="falcon-links">${add}</div>`;
     const all = _linksOpen.has(it.id) || groups.length <= LINKS_SHOWN + 1;
     const shown = all ? groups : groups.slice(0, LINKS_SHOWN);
@@ -37380,11 +38200,11 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       // #663 (majkinetor): "Find another way for prefix" — the status mark opens the link; the service name is gone
       const opts = cur => [...new Set([...(cur ? [String(cur)] : []), ...urlTypesFor(it.entityType)])].filter(t => t === String(cur) || !g.types.map(String).includes(t)).map(t => `<option value="${t}"${t === String(cur) ? ' selected' : ''}>${esc(linkTypeName(t))}</option>`).join('');
       const pending = _pendingType && _pendingType.id === it.id && _pendingType.url === g.url;
-      return `<div class="falcon-ln" title="${failed && failed.error ? esc(failed.error) : ''}">
-        <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" title="Edit the link; empty it to remove it" ${dis} />
-        <span class="falcon-lt"><a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" title="Open ${esc(g.url)}${failed && failed.error ? ' — ' + esc(failed.error) : present ? ' — ' + esc(present.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>${g.types.map(t => `<span class="falcon-ltb" title="link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" title="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" title="No type: MusicBrainz guesses it from the url">auto</span>' : ''}</span>
-        <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" title="Add a type to this link" ${dis}>+</button>
-        <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" title="Remove this link from the queue row" ${dis}>✕</button>
+      return `<div class="falcon-ln" data-tip="${failed && failed.error ? esc(failed.error) : ''}">
+        <input type="text" class="falcon-link-url" data-id="${it.id}" data-url="${esc(g.url)}" value="${esc(g.url)}" data-tip="Edit the link\nEmpty it to remove it" ${dis} />
+        <span class="falcon-lt"><a class="falcon-lst" href="${esc(g.url)}" target="_blank" rel="noopener" data-tip="Open ${esc(g.url)}${failed && failed.error ? '&#10;⚠ ' + esc(failed.error) : present ? '&#10;⚠ ' + esc(present.error) : ''}" style="color:${color}">${icon === '·' ? '↗' : icon}</a>${g.types.map(t => `<span class="falcon-ltb" data-tip="The link type: pick another to change it"><select style="width:${Math.round(linkTypeName(t).length * 5.4 + 12)}px" class="falcon-link-type-chg" data-id="${it.id}" data-url="${esc(g.url)}" data-old="${esc(t)}" ${dis}>${opts(t) || `<option selected>${esc(linkTypeName(t))}</option>`}</select><button type="button" class="falcon-link-type-del" data-id="${it.id}" data-url="${esc(g.url)}" data-type="${esc(t)}" data-tip="Remove this type" ${dis}>✕</button></span>`).join('')}${pending ? `<span class="falcon-ltb falcon-ltb-new"><select class="falcon-link-type" data-id="${it.id}" data-url="${esc(g.url)}"><option value="">type…</option>${opts(null)}</select></span>` : ''}${!g.types.length && !pending ? '<span class="falcon-lauto" data-tip="No type: MusicBrainz guesses it from the URL">auto</span>' : ''}</span>
+        <button type="button" class="falcon-link-type-add" data-id="${it.id}" data-url="${esc(g.url)}" data-tip="Add a type to this link" ${dis}>+</button>
+        <button type="button" class="falcon-link-del" data-id="${it.id}" data-url="${esc(g.url)}" data-tip="Remove this link from the queue row" ${dis}>✕</button>
       </div>`;
     }).join('');
     const rest = groups.slice(LINKS_SHOWN);
@@ -37490,16 +38310,16 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
   function fieldHtml(it, col, short) {
     const dis = it.status === 'active' ? 'disabled' : '';
     if (col === 'name') return `<input type="text" class="falcon-rename-input${it.rename ? ' falcon-renamed' : ''}" data-id="${it.id}" data-col="name"
-          title="New name for this entity — leave as-is to keep the current one"
+          data-tip="A new name for this entity\nLeave it as it is to keep the current one"
           placeholder="${esc(it.name || 'new name')}" value="${esc(it.rename || it.name || '')}" ${dis} />`;
     if (col === 'disambig') return `<input type="text" class="falcon-disambiguation-input" data-id="${it.id}" data-col="disambig" placeholder="${short ? 'disambiguation' : 'disambiguation comment'}" value="${esc(it.disambiguation || '')}" ${dis} />`;
-    if (col === 'barcode') return `<input type="text" class="falcon-barcode-input" data-id="${it.id}" data-col="barcode" inputmode="numeric" placeholder="barcode, for a release that has none" title="A barcode for a release that has none; a release with another barcode keeps its own" value="${esc(it.barcode || '')}" ${dis} />`;
+    if (col === 'barcode') return `<input type="text" class="falcon-barcode-input" data-id="${it.id}" data-col="barcode" inputmode="numeric" placeholder="barcode, for a release that has none" data-tip="A barcode, for a release that has none\nA release with a barcode keeps its own." value="${esc(it.barcode || '')}" ${dis} />`;
     // #783: a release event, for a release that has none; track titles and lengths; a recording's own length
-    if (col === 'event') return `<input type="text" class="falcon-event-input" data-id="${it.id}" data-col="event" placeholder="${short ? 'date country' : 'date and country, for a release that has none: 2014-02-20 XW'}" title="A release event for a release that has none: the date (YYYY, YYYY-MM or YYYY-MM-DD), then the country's code (XW for [Worldwide]); a release with an event keeps its own" value="${esc(it.event ? eventText(it.event) : '')}" spellcheck="false" ${dis} />`;
-    if (col === 'tracks') return `<input type="text" class="falcon-tracks-input" data-id="${it.id}" data-col="tracks" placeholder="${short ? 'medium.track "title" length' : 'track titles and lengths: 1.2 "New title" 5:02; 1.3 6:58'}" title="Track titles and lengths, each as medium.track, then a quoted title, then a length, separated by ;\n+rec after the title gives the recording that title too\nA track that changed since these were set keeps what it has" value="${esc(tracksText(it.tracks))}" spellcheck="false" ${dis} />`;
-    if (col === 'length') return `<input type="text" class="falcon-length-input" data-id="${it.id}" data-col="length" inputmode="numeric" placeholder="m:ss" title="The recording's length (m:ss), for a recording without tracks: MusicBrainz takes any other's from its tracks" value="${esc(it.length ? lenText(it.length) : '')}" spellcheck="false" ${dis} />`;
+    if (col === 'event') return `<input type="text" class="falcon-event-input" data-id="${it.id}" data-col="event" placeholder="${short ? 'date country' : 'date and country, for a release that has none: 2014-02-20 XW'}" data-tip="A release event, for a release that has none\nThe date (\`YYYY\`, \`YYYY-MM\` or \`YYYY-MM-DD\`), then the country's code (\`XW\` for [Worldwide]). A release with an event keeps its own." value="${esc(it.event ? eventText(it.event) : '')}" spellcheck="false" ${dis} />`;
+    if (col === 'tracks') return `<input type="text" class="falcon-tracks-input" data-id="${it.id}" data-col="tracks" placeholder="${short ? 'medium.track "title" length' : 'track titles and lengths: 1.2 "New title" 5:02; 1.3 6:58'}" data-tip="Track titles and lengths\nEach as \`medium.track\`, a quoted title, then a length, separated by \`;\`, as in \`1.2 &quot;New title&quot; 5:02\`\n\`+rec\` after the title: the recording gets that title too\nA track that changed since these were set keeps what it has." value="${esc(tracksText(it.tracks))}" spellcheck="false" ${dis} />`;
+    if (col === 'length') return `<input type="text" class="falcon-length-input" data-id="${it.id}" data-col="length" inputmode="numeric" placeholder="m:ss" data-tip="The recording's length (\`m:ss\`)\nFor a recording without tracks: MusicBrainz takes any other's from its tracks." value="${esc(it.length ? lenText(it.length) : '')}" spellcheck="false" ${dis} />`;
     if (col === 'isrc') return `<input type="text" class="falcon-isrc-input" data-id="${it.id}" data-col="isrc" placeholder="${short ? 'ISRCs' : 'ISRCs, comma-separated'}" value="${esc((it.isrcs || []).join(', '))}" ${dis} />`;
-    if (col === 'video') return `<input type="checkbox" class="falcon-video-input mbu-video" data-id="${it.id}" data-col="video" title="Flag this recording as a video (MusicBrainz's Video checkbox)" ${it.video ? 'checked' : ''} ${dis} />`;
+    if (col === 'video') return `<input type="checkbox" class="falcon-video-input mbu-video" data-id="${it.id}" data-col="video" data-tip="This recording is a video\nMusicBrainz's Video checkbox" ${it.video ? 'checked' : ''} ${dis} />`;
     if (col === 'alias') {
       // #535: aliases apply to every entity type. Each alias is one MB edit; the
       // bulk case ("2 translations for all recordings") is meant to arrive as
@@ -37507,10 +38327,10 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       // #663 (majkinetor): "each alias on its own row along with the language … so it behaves like
       // links. Have + to add new". The language box falls back to the toolbar's Alias language.
       const walk = short === 'sub' ? '' : ' data-col="alias"';
-      const rows = (it.aliases || []).map((a, idx) => `<div class="falcon-al" title="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · '))}">
-          <input type="text" class="falcon-alias-nm" data-id="${it.id}" data-idx="${idx}"${idx === 0 ? walk : ''} value="${esc(a.name)}" placeholder="alias${a.primary ? ' ★' : ''}" title="The alias; name@locale sets its language too. Enter adds another" ${dis} />
-          <input type="text" class="falcon-alias-loc" data-id="${it.id}" data-idx="${idx}" value="${esc(a.locale || '')}" placeholder="lang" title="Language (locale) of this alias, e.g. en or sr_Latn; empty for none" spellcheck="false" ${dis} />
-          <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" title="Remove this alias from the queue row" ${dis}>✕</button></div>`).join('');
+      const rows = (it.aliases || []).map((a, idx) => `<div class="falcon-al" data-tip="${esc([a.type, a.primary ? 'primary for locale' : '', a.sortName ? 'sort: ' + a.sortName : ''].filter(Boolean).join(' · '))}">
+          <input type="text" class="falcon-alias-nm" data-id="${it.id}" data-idx="${idx}"${idx === 0 ? walk : ''} value="${esc(a.name)}" placeholder="alias${a.primary ? ' ★' : ''}" data-tip="The alias\n\`name@locale\` sets its language too.\nEnter: add another" ${dis} />
+          <input type="text" class="falcon-alias-loc" data-id="${it.id}" data-idx="${idx}" value="${esc(a.locale || '')}" placeholder="lang" data-tip="The alias's language (locale)\nLike \`en\` or \`sr_Latn\`; empty for none" spellcheck="false" ${dis} />
+          <button type="button" class="falcon-alias-del" data-id="${it.id}" data-idx="${idx}" data-tip="Remove this alias from the queue row" ${dis}>✕</button></div>`).join('');
       return `<div class="falcon-als">${rows}</div>`;
     }
     return '';
@@ -37520,7 +38340,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
   const plusLbl = (it, kind, walk) => {
     const dis = it.status === 'active' ? 'disabled' : '';
     const has = kind === 'alias' ? (it.aliases || []).length : 0;
-    return `<span class="falcon-lbl">${kind === 'alias' ? 'Aliases' : 'Links'}<button type="button" class="falcon-${kind}-plus falcon-lplus" data-id="${it.id}"${kind === 'alias' && !has && walk ? ' data-col="alias"' : ''} title="Add ${kind === 'alias' ? 'an alias' + (cfg.aliasLang ? ' (language ' + esc(cfg.aliasLang) + ', the last one typed)' : '') : 'a link'}" ${dis}>+</button></span>`;
+    return `<span class="falcon-lbl">${kind === 'alias' ? 'Aliases' : 'Links'}<button type="button" class="falcon-${kind}-plus falcon-lplus" data-id="${it.id}"${kind === 'alias' && !has && walk ? ' data-col="alias"' : ''} data-tip="Add ${kind === 'alias' ? 'an alias' + (cfg.aliasLang ? '&#10;In ' + esc(cfg.aliasLang) + ', the language typed last' : '') : 'a link'}" ${dis}>+</button></span>`;
   };
   // `gridSub`: the grid already has the fields on its line, so its sub-row is links + cover only
   function renderRowDetail(it, gridSub) {
@@ -37550,12 +38370,12 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
           <div style="display:flex;align-items:center;gap:6px">
             <input type="text" class="falcon-cover-input" data-id="${it.id}" data-idx="${idx}" placeholder="${c.candidates.length && !c.url ? 'resolving best cover…' : 'cover image URL'}" value="${esc(c.url || '')}" ${it.status === 'active' ? 'disabled' : ''}
               style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:3px" />
-            <select class="falcon-cover-type" data-id="${it.id}" data-idx="${idx}" ${it.status === 'active' ? 'disabled' : ''} title="Cover art type"
+            <select class="falcon-cover-type" data-id="${it.id}" data-idx="${idx}" ${it.status === 'active' ? 'disabled' : ''} data-tip="Cover art type"
               style="font-size:10.5px;padding:2px 4px;border:1px solid var(--mbu-border);border-radius:3px">${COVER_TYPES.map(t => `<option value="${esc(t)}"${(c.type || 'Front') === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
             <input type="text" class="falcon-cover-comment-input" data-id="${it.id}" data-idx="${idx}" placeholder="image comment (optional)" value="${esc(c.comment || '')}" ${it.status === 'active' ? 'disabled' : ''}
               style="flex:1 1 auto;min-width:0;font-size:10.5px;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:3px" />
           </div>
-          ${c.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${c.candidates.map(cand => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-idx="${idx}" data-url="${esc(cand.url)}" title="${esc(cand.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${cand.url === c.url ? 'var(--mbu-accent)' : 'var(--mbu-border)'};background:${cand.url === c.url ? 'var(--mbu-accent-soft)' : 'var(--mbu-bg-raised)'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:${cand.url === c.url ? 'var(--mbu-accent-deep-text)' : 'var(--mbu-text)'}">${esc(cand.provider)}${cand.width ? ` ${cand.width}×${cand.height}` : ''}</button>`).join('')}</div>` : ''}
+          ${c.candidates.length > 1 ? `<div style="display:flex;gap:6px;flex-wrap:wrap">${c.candidates.map(cand => `<button type="button" class="falcon-cover-pick" data-id="${it.id}" data-idx="${idx}" data-url="${esc(cand.url)}" data-tip="${esc(cand.url)}" ${it.status === 'active' ? 'disabled' : ''} style="border:1px solid ${cand.url === c.url ? 'var(--mbu-accent)' : 'var(--mbu-border)'};background:${cand.url === c.url ? 'var(--mbu-accent-soft)' : 'var(--mbu-bg-raised)'};border-radius:10px;padding:1px 8px;font-size:9.5px;cursor:pointer;color:${cand.url === c.url ? 'var(--mbu-accent-deep-text)' : 'var(--mbu-text)'}">${esc(cand.provider)}${cand.width ? ` ${cand.width}×${cand.height}` : ''}</button>`).join('')}</div>` : ''}
         </div>`).join('')}
         ${it.coverExistingCount ? `<div style="color:var(--mbu-warn);font-size:10px">⚠ this release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — Harmony doesn't check before suggesting one, so adding this may create a duplicate</div>` : ''}
       </div>` : '';
@@ -37623,7 +38443,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     wrap.innerHTML = types.map(t => {
       const on = !_disabledTypes.has(t);
       const label = TYPE_BADGE[t] || t.slice(0, 3);
-      return `<button type="button" class="falcon-type-chip" data-type="${esc(t)}" title="${on ? `Click to exclude every ${esc(t)} item from the next run` : `Click to include every ${esc(t)} item in the next run`}"
+      return `<button type="button" class="falcon-type-chip" data-type="${esc(t)}" data-tip="${on ? `Every ${esc(t)} item is in the next run&#10;Click: leave them out` : `Every ${esc(t)} item is left out of the next run&#10;Click: put them back`}"
         style="border:1px solid ${on ? '#1b2a4a' : 'var(--mbu-border)'};background:${on ? '#1b2a4a' : 'var(--mbu-bg-raised)'};color:${on ? '#fff' : 'var(--mbu-text-dim)'};border-radius:12px;padding:2px 10px;font-size:10.5px;cursor:pointer;text-transform:uppercase">${esc(label)} ${counts[t]}</button>`;
     }).join('');
   }
@@ -37655,7 +38475,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     wrap.innerHTML = present.map(s => {
       const on = _statusFilter === s;
       const color = DOT[s];
-      return `<button type="button" class="falcon-status-chip" data-status="${esc(s)}" title="${on ? 'Click to show every item again' : `Click to show only ${esc(s)} items`}"
+      return `<button type="button" class="falcon-status-chip" data-status="${esc(s)}" data-tip="${on ? 'Click: show every item again' : `Click: show only ${esc(s)} items`}"
         style="border:1.5px solid ${color};background:${color};color:#fff;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;white-space:nowrap;flex:0 0 auto;${on ? 'box-shadow:0 0 0 2px #fff' : ''}">${esc(s)} ${counts[s]}</button>`;
     }).join('');
   }
@@ -37664,7 +38484,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
   // expanded state.
   function renderGrid(visible) {
     const head = `<tr>${selHead(true)}<th>Name</th>`
-      + '<th>Disambiguation</th><th>ISRCs</th><th></th><th class="falcon-videohead" title="Video">'
+      + '<th>Disambiguation</th><th>ISRCs</th><th></th><th class="falcon-videohead" data-tip="Video">'
       + '<input type="checkbox" class="mbu-video" checked disabled style="opacity:.6" /></th><th></th><th></th></tr>';
     const rows = visible.map(it => {
       const cols = fieldCols(it), isActive = it.status === 'active';
@@ -37677,18 +38497,18 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
         ? `<tr class="falcon-sub" data-id="${it.id}"><td colspan="10">${renderRowDetail(it, true)}</td></tr>` : '';
       const nLinksTxt = nLinks ? nLinks + (nLinks === 1 ? ' link' : ' links') : '', nAl = (it.aliases || []).length;
       const what = [nLinksTxt, nAl ? nAl + (nAl === 1 ? ' alias' : ' aliases') : '', hasCover ? 'cover art' : ''].filter(Boolean).join(', ');
-      return `<tr class="falcon-row" data-id="${it.id}" style="background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}" title="${it.error ? esc(it.error) : ''}">
+      return `<tr class="falcon-row" data-id="${it.id}" style="background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}" data-tip="${it.error ? esc(it.error) : ''}">
         <td><input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${_selectedIds.has(it.id) ? 'checked' : ''} ${isActive ? 'disabled' : ''} /></td>
-        <td><button type="button" class="falcon-row-expand falcon-xp" data-id="${it.id}" title="${expanded ? 'Hide' : 'Show and edit'} the links and aliases${what ? ' (' + esc(what) + ')' : ''}">${expanded ? '▾' : '▸'}</button></td>
+        <td><button type="button" class="falcon-row-expand falcon-xp" data-id="${it.id}" data-tip="${expanded ? 'Hide' : 'Show and edit'} the links and aliases${what ? '&#10;' + esc(what) : ''}">${expanded ? '▾' : '▸'}</button></td>
         <td style="white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'}"></span>
-          <a class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="Open ${esc(entityLabel(it))} — right-click to select every ${esc(it.entityType)}" style="font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-decoration:none;margin-left:3px">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</a></td>
+          <a class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" data-tip="Open ${esc(entityLabel(it))}&#10;Right-click: select every ${esc(it.entityType)}" style="font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-decoration:none;margin-left:3px">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</a></td>
         <td>${cols.includes('name') ? cell('name') : `<span style="padding:0 7px">${esc(entityLabel(it))}</span>`}</td>
         <td>${cell('disambig')}</td>
         <td>${cell('isrc')}</td>
         <td class="falcon-gsum">${esc(what)}</td>
         <td style="text-align:center">${cell('video')}</td>
         <td class="falcon-row-status" data-id="${it.id}" style="text-transform:uppercase;font-size:9px;white-space:nowrap;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</td>
-        <td style="white-space:nowrap"><button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim)">⇗</button><button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak)">✕</button></td>
+        <td style="white-space:nowrap"><button type="button" class="falcon-row-opentab" data-id="${it.id}" data-tip="Open this entity's edit page in a tab, filled in" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim)">⇗</button><button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} data-tip="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak)">✕</button></td>
       </tr>${sub}`;
     }).join('');
     const colgroup = '<colgroup><col style="width:24px"><col style="width:22px"><col style="width:46px"><col style="width:26%"><col style="width:19%"><col style="width:15%"><col><col style="width:28px"><col style="width:62px"><col style="width:44px"></colgroup>';
@@ -37704,9 +38524,9 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     const selectable = queue.filter(i => i.status !== 'active');
     const all = selectable.length > 0 && selectable.every(i => _selectedIds.has(i.id));
     const open = queue.length > 0 && queue.every(i => _expandedIds.has(i.id));
-    const parts = [`<input type="checkbox" id="falcon-select-all" title="Select all" ${all ? 'checked' : ''} />`,
-      `<button type="button" id="falcon-expand-all" class="falcon-xp" title="${open ? 'Collapse' : 'Expand'} every row">${open ? '▾' : '▸'}</button>`,
-      `<span class="falcon-selcount" id="falcon-select-count" title="Selected rows">${_selectedIds.size || ''}</span>`];
+    const parts = [`<input type="checkbox" id="falcon-select-all" data-tip="Select all" ${all ? 'checked' : ''} />`,
+      `<button type="button" id="falcon-expand-all" class="falcon-xp" data-tip="${open ? 'Collapse' : 'Expand'} every row">${open ? '▾' : '▸'}</button>`,
+      `<span class="falcon-selcount" id="falcon-select-count" data-tip="Selected rows">${_selectedIds.size || ''}</span>`];
     return cells ? parts.map(x => `<th class="falcon-selhead">${x}</th>`).join('') : `<span class="falcon-selhead">${parts.join('')}</span>`;
   }
   // #680: a headless batch (Mission Control's, through falcon:run with `headless` and `tag`)
@@ -37745,7 +38565,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     if (viewBtn) {
       viewBtn.querySelector('.falcon-bi').textContent = grid ? '☰' : '▦';
       viewBtn.querySelector('.falcon-bt').textContent = grid ? 'List' : 'Grid';
-      viewBtn.title = grid ? 'Show the queue as a list, one form per open row' : 'Show the queue as a grid, one line per row';
+      viewBtn.dataset.tip = grid ? 'Show the queue as a list, one form per open row' : 'Show the queue as a grid, one line per row';
     }
     const listRows = grid ? '' : visible.map(it => {
       const expanded = _expandedIds.has(it.id);
@@ -37758,12 +38578,12 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
       const excluded = it.status === 'queued' && _disabledTypes.has(it.entityType);
       return `
       <div class="falcon-row" data-id="${it.id}" style="border-bottom:1px solid var(--mbu-border);color:var(--mbu-text);background:${ROW_BG[it.status] || ''};${excluded ? 'opacity:.45' : ''}">
-        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" title="${it.error ? esc(it.error) : excluded ? 'This type is toggled off above — won\'t be processed until turned back on' : ''}">
+        <div style="display:flex;align-items:center;gap:6px;padding:2px 0" data-tip="${it.error ? esc(it.error) : excluded ? 'This type is turned off above&#10;It is left out until you turn it back on.' : ''}">
           <input type="checkbox" class="falcon-row-check" data-id="${it.id}" ${checked ? 'checked' : ''} ${isActive ? 'disabled' : ''} style="flex:0 0 auto" />
-          <button type="button" class="falcon-row-expand" data-id="${it.id}" title="${groupedLinks(it).length > 1 ? 'Show/hide urls' : it.entityType === 'recording' ? 'Show detail / edit disambiguation & ISRC' : DISAMBIGUATABLE.has(it.entityType) ? 'Show detail / edit disambiguation' + (it.entityType === 'release' ? ' & cover art image' : '') : 'Show url detail'}" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
+          <button type="button" class="falcon-row-expand" data-id="${it.id}" data-tip="${groupedLinks(it).length > 1 ? 'Show or hide the URLs' : it.entityType === 'recording' ? 'Show the details&#10;Edit the disambiguation and ISRCs' : DISAMBIGUATABLE.has(it.entityType) ? 'Show the details&#10;Edit the disambiguation' + (it.entityType === 'release' ? ' and the cover art' : '') : 'Show the URL’s details'}" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto;font-size:15px;line-height:1;width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center">${expanded ? '▾' : '▸'}</button>
           <span style="width:8px;height:8px;border-radius:50%;background:${DOT[it.status] || '#999'};flex:0 0 auto"></span>
-          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" title="Right-click to select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
-          <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" title="${esc(it.entityType)}/${esc(it.mbid)}" style="color:var(--mbu-info);text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
+          <span class="falcon-row-type" data-id="${it.id}" data-type="${esc(it.entityType)}" data-tip="Right-click: select every ${esc(it.entityType)} in the queue" style="width:32px;flex:0 0 auto;font-size:9px;text-transform:uppercase;color:var(--mbu-text-weak);text-align:center;cursor:context-menu">${esc(TYPE_BADGE[it.entityType] || it.entityType.slice(0, 3))}</span>
+          <a href="${MB_ORIGIN}/${entityUrlSegment(it.entityType)}/${it.mbid}" target="_blank" rel="noopener" data-tip="${esc(it.entityType)}/${esc(it.mbid)}" style="color:var(--mbu-info);text-decoration:none;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto">${esc(entityLabel(it))}</a>
           ${(() => {
             // #518 (majkinetor): "When there is 1 link, its shown instead of
             // `1 link, isrc`" — disambiguation/ISRC/cover only ever got
@@ -37790,23 +38610,23 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
               hasCover ? (it.coverExistingCount ? 'cover ⚠' : 'cover') : '',
             ].filter(Boolean).join(' + ');
             const coverTitle = hasCover && it.coverExistingCount
-              ? esc(`already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'} — this may duplicate it`) : '';
+              ? esc(`⚠ This release already has ${it.coverExistingCount} cover image${it.coverExistingCount === 1 ? '' : 's'}\nThis may duplicate it.`) : '';
             // Count distinct URLs, as the grid does — urls[] holds one entry
             // per URL × link type, so a URL with two types counted twice.
             const linkN = groupedLinks(it).length;
-            if (linkN > 1) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${linkN} links${extras ? ' + ' + esc(extras) : ''}</span>`;
-            if (linkN === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:var(--mbu-text-dim)">+ ${esc(extras)}</span>` : ''}</span>`;
+            if (linkN > 1) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-tip="${coverTitle}">${linkN} links${extras ? ' + ' + esc(extras) : ''}</span>`;
+            if (linkN === 1) return `<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-tip="${coverTitle}"><a href="${esc(it.urls[0].url)}" target="_blank" rel="noopener" style="color:var(--mbu-info);text-decoration:none">${esc(it.urls[0].url)}</a>${extras ? ` <span style="color:var(--mbu-text-dim)">+ ${esc(extras)}</span>` : ''}</span>`;
             // #494/#496: release rows never carry a urls[] entry — cover art
             // is their whole payload — so they always land here.
-            if (extras) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${coverTitle}">${esc(extras)}</span>`;
+            if (extras) return `<span style="color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" data-tip="${coverTitle}">${esc(extras)}</span>`;
             // Genuinely empty — an "Add from release" row waiting to be filled
             // in. The spacer holds the status column where it sits on every
             // other row; it deliberately says nothing.
             return '<span style="flex:1"></span>';
           })()}
-          <span class="falcon-row-status" data-id="${it.id}" title="${it.status === 'failed' || it.status === 'partial' ? 'Click to inspect this failure' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</span>
-          <button type="button" class="falcon-row-opentab" data-id="${it.id}" title="Open this entity's edit page in a real tab, pre-filled, to inspect/complete manually" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto">⇗</button>
-          <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} title="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak);flex:0 0 auto">✕</button>
+          <span class="falcon-row-status" data-id="${it.id}" data-tip="${it.status === 'failed' || it.status === 'partial' ? 'Click: see what failed' : ''}" style="text-transform:uppercase;font-size:9px;flex:0 0 auto;${it.status === 'failed' || it.status === 'partial' ? 'color:var(--mbu-error);cursor:pointer;text-decoration:underline' : 'color:var(--mbu-text-weak)'}">${excluded ? 'excluded' : it.status}</span>
+          <button type="button" class="falcon-row-opentab" data-id="${it.id}" data-tip="Open this entity's edit page in a tab, filled in\nTo look at it, or finish it by hand" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-dim);flex:0 0 auto">⇗</button>
+          <button type="button" class="falcon-row-remove" data-id="${it.id}" ${isActive ? 'disabled' : ''} data-tip="Remove from queue" style="border:none;background:none;cursor:pointer;color:var(--mbu-text-weak);flex:0 0 auto">✕</button>
         </div>
         ${expanded ? renderRowDetail(it) : ''}
       </div>`;
@@ -37956,22 +38776,22 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     btn.style.borderColor = has ? 'var(--mbu-accent)' : '';
     btn.style.color = has ? 'var(--mbu-accent-text)' : '';
     btn.style.fontWeight = has ? '700' : '';
-    btn.title = has ? `Batch edit note (on every edit this run): ${batchNote()}`
-                    : 'Batch edit note — appended to every edit in this run';
+    btn.dataset.tip = has ? `Batch edit note, on every edit in this run\n${batchNote()}`
+                    : 'Batch edit note\nAdded to every edit in this run';
   }
   function setBtnBusy(btn, on, opts) {
     if (!btn) return;
     const o = opts || {};
     const bt = btn.querySelector('.falcon-bt'), bi = btn.querySelector('.falcon-bi');
     if (on) {
-      if (btn.dataset.falconIdle == null) btn.dataset.falconIdle = JSON.stringify({ bt: bt ? bt.textContent : '', bi: bi ? bi.textContent : '', title: btn.title });
+      if (btn.dataset.falconIdle == null) btn.dataset.falconIdle = JSON.stringify({ bt: bt ? bt.textContent : '', bi: bi ? bi.textContent : '', title: btn.dataset.tip });
       if (bt && o.label) bt.textContent = o.label;
-      if (o.title) btn.title = o.title;
+      if (o.title) btn.dataset.tip = o.title;
     } else if (btn.dataset.falconIdle != null) {
       let was = {}; try { was = JSON.parse(btn.dataset.falconIdle); } catch (e) { /* fall through to defaults */ }
       if (bt) bt.textContent = was.bt || '';
       if (bi) bi.textContent = was.bi || '';
-      btn.title = was.title || '';
+      btn.dataset.tip = was.title || '';
       delete btn.dataset.falconIdle;
     }
     btn.classList.toggle('falcon-busy', !!on);
@@ -37997,7 +38817,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     const bt = b.querySelector('.falcon-bt'), bi = b.querySelector('.falcon-bi');
     if (bt) bt.textContent = running ? 'Stop' : 'Start';
     if (bi) bi.textContent = running ? '■' : '▶';
-    b.title = running ? 'Stop after the running workers finish their current item' : 'Start processing the queue';
+    b.dataset.tip = running ? 'Stop\nThe running workers finish their current item first.' : 'Start the queue';
     fitBar(b.closest('.falcon-bar'));
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -38209,12 +39029,12 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
 
 // ===== first_contact (@run-at document-start) =====================================
 if (__stOff.indexOf("first_contact") < 0 && __stRuns("first_contact", {"inc":["^https:\\/\\/www\\.deezer\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?bandcamp\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.discogs\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.apple\\.com(?::\\d+)?/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.qobuz\\.com(?::\\d+)?/.*/album/.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/.*$","^https:\\/\\/open\\.spotify\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.youtube\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.youtube\\.com(?::\\d+)?/playlist.*$","^https:\\/\\/volumo\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.hdtracks\\.com(?::\\d+)?/.*$","^https:\\/\\/soundcloud\\.com(?::\\d+)?/.*$","^https:\\/\\/audiomack\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?7digital\\.com(?::\\d+)?/artist/.*$","^https:\\/\\/ototoy\\.jp(?::\\d+)?/_/default/p/.*$","^https:\\/\\/music\\.amazon\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.uk(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.de(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.fr(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.it(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.es(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.ca(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.jp(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.au(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.br(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.mx(?::\\d+)?/.*$","^https:\\/\\/www\\.prestomusic\\.com(?::\\d+)?/classical/products/.*$","^https:\\/\\/www\\.prestomusic\\.com(?::\\d+)?/jazz/products/.*$","^https:\\/\\/music\\.amazon\\.in(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.19","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.19","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 (function () {
 'use strict';
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss } = __st_ARCHIVE(GM_info);   // ST-ARCHIVE, written once at the top of the bundle (#786)
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('first_contact', 'First Contact')) return;
@@ -40877,8 +41697,8 @@ function mountButton(provider, id) {
         more.type = 'button';
         more.className = 'fc-more';
         more.textContent = MBU_CFG_ICON;
-        more.title = 'Settings';
-        more.setAttribute('aria-label', more.title);
+        more.dataset.tip = 'Settings';
+        more.setAttribute('aria-label', more.dataset.tip);
         more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
         const cons = document.createElement('button');
         cons.type = 'button';
@@ -40912,7 +41732,7 @@ function mountButton(provider, id) {
     root.dataset.fcProvider = provider.name;
     root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
     root.classList.toggle('fc-gear-hidden', !!settings().gearHidden);   // majkinetor: ⚙︎ can go, a right-click opens the settings
-    root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
+    root.querySelector('.fc-go').dataset.tip = `Import to MusicBrainz\nOpens the release editor with this ${provider.name} release filled in`;
     showHarmony(root, provider);
     showCons(root, provider);
     root.style.display = '';
@@ -41262,22 +42082,22 @@ function togglePanel(anchor) {
         + '<label>MusicBrainz server <select class="fc-server">'
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
-        + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
-        + `<label class="fc-check" title="Once the release editor has the release, or the album is sent to Harmony, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
-        + `<label class="fc-check" title="A button beside Import that reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor"><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
-        + `<label class="fc-check" title="A button between Import and ⚙︎ that looks this album up on Harmony instead, with every platform that has its barcode; Falcon carries on from there"><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
+        + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
+        + `<label class="fc-check" data-tip="Close the platform's tab once the release editor has the release\nOr once the album is sent to Harmony. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" data-tip="A Consolidate button beside Import\nIt reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor."><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
+        + `<label class="fc-check" data-tip="A Send to Harmony button between Import and ⚙︎\nIt looks this album up on Harmony instead, with every platform that has its barcode. Falcon carries on from there."><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
         + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
-        + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read). This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
+        + `<label class="fc-check" data-tip="Save the album page on the Wayback Machine at every import\nFor Deezer and Apple Music, the album data First Contact read as well.\n⚠ This sends each imported URL to archive.org"><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
         + mbaKeysHtml(!s.archive)
         + '<div class="fc-sec">Button</div>'
-        + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
-        + `<label class="fc-check" title="No ⚙︎ button: right-click any of the buttons for the settings (that works with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
-        + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
+        + `<label class="fc-check" data-tip="Only the icon on the button\nHover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
+        + `<label class="fc-check" data-tip="No ⚙︎ button\nRight-click: any of the buttons opens the settings (with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
+        + `<label class="fc-check" data-tip="A moved button scrolls with the page\nIt stays on its spot on the page (above the cover, say) instead of on the screen. In its corner it always stays on the screen. For ${here} only."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         // majkinetor: "change this to Reset: all | this one"
-        + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
-        + `<button type="button" class="fc-reset-all" title="Back in the corner on every platform">all</button> | `
-        + `<button type="button" class="fc-reset-pos" title="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
+        + `<div class="fc-reset" data-tip="Drag the button to move it\nEach platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
+        + `<button type="button" class="fc-reset-all" data-tip="Back in the corner on every platform">all</button> | `
+        + `<button type="button" class="fc-reset-pos" data-tip="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
         + '</div>');
     document.body.appendChild(panel);
     placePanel(panel, anchor.closest('#fc-root') || anchor);
@@ -41459,17 +42279,17 @@ function showHarmony(root, provider) {
     const none = HARMONY_NONE.has(provider.id);
     b.setAttribute('aria-disabled', String(none));
     b.setAttribute('aria-label', 'Send to Harmony');
-    b.title = harmonyWhy(provider);
+    b.dataset.tip = harmonyWhy(provider);
 }
 function harmonyWhy(provider) {
-    if (HARMONY_NONE.has(provider.id)) return `Send to Harmony: Harmony can't look up ${provider.name}, and ${provider.name} shows no barcode`;
-    if (HARMONY_URLS[provider.id]) return `Send to Harmony: look this ${provider.name} album up on Harmony, with every platform that has its barcode`;
-    return `Send to Harmony: read the barcode here first (Harmony can't look up ${provider.name}), then look it up on Harmony`;
+    if (HARMONY_NONE.has(provider.id)) return `Send to Harmony\nHarmony can't look up ${provider.name}, and ${provider.name} shows no barcode`;
+    if (HARMONY_URLS[provider.id]) return `Send to Harmony\nLooks this ${provider.name} album up on Harmony, with every platform that has its barcode`;
+    return `Send to Harmony\nReads the barcode here first (Harmony can't look up ${provider.name}), then looks it up on Harmony`;
 }
 async function sendToHarmony() {
     if (busy || !current) return;
     const { provider, id } = current;
-    if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony: /, ''), { kind: 'warn' }); return; }
+    if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony\n/, ''), { kind: 'warn' }); return; }
     const direct = HARMONY_URLS[provider.id];
     if (direct) {
         openHarmony(harmonyLookup({ url: direct(id) }));
@@ -41551,7 +42371,7 @@ function showCons(root, provider) {
     if (!b) return;
     b.hidden = !settings().consolidate || provider.consolidate === false;
     b.setAttribute('aria-label', 'Consolidate in Mission Control');
-    b.title = `Consolidate in Mission Control: read this ${provider.name} album, find it on the other platforms, and take the best of each into the release editor`;
+    b.dataset.tip = `Consolidate in Mission Control\nReads this ${provider.name} album, finds it on the other platforms, and takes the best of each into the release editor`;
 }
 async function consolidateCurrent() {
     if (busy || !current) return;
@@ -41858,13 +42678,13 @@ if (mbuTestHooks()) window.__fcTest = { mcRead, splitFeat, creditFromTitle, seed
 
 // ===== fusion (@run-at document-end) ============================================
 if (__stOff.indexOf("fusion") < 0 && __stRuns("fusion", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*/recordings$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.19.164228","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.19.164228","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('fusion', 'Fusion')) return;
 
@@ -41943,7 +42763,7 @@ function clearNetTrouble() { if (_netTrouble) { _netTrouble = null; renderNetBan
 // alongside the loading text, where appearing and vanishing costs no layout.
 function renderNetBanner() {
     const el = document.getElementById('fs-netbanner'); if (!el) return;
-    if (!_netTrouble) { el.style.display = 'none'; el.textContent = ''; el.title = ''; return; }
+    if (!_netTrouble) { el.style.display = 'none'; el.textContent = ''; el.dataset.tip = ''; return; }
     el.style.display = '';
     const long = _netTrouble.kind === 'offline'
         ? 'No connection to MusicBrainz — ' + _netTrouble.detail
@@ -41951,7 +42771,7 @@ function renderNetBanner() {
     // short in the bar, the detail in the tooltip: the header is a single line
     // and a long message would push the scope label out of it.
     el.textContent = '⚠ ' + (_netTrouble.kind === 'offline' ? 'no connection' : 'throttled');
-    el.title = long + ' — click for the log';
+    el.dataset.tip = '⚠ ' + long + '\nClick: the log';
     el.className = 'fs-netbanner' + (_netTrouble.kind === 'offline' ? ' fs-netbanner-err' : '');
 }
 const gateLog = (lv, m) => (lv === 'warn' ? Log.warn : Log.info)(m);
@@ -43319,11 +44139,11 @@ let _notice = null;
 function showNotice(kind, text, short) { _notice = text ? { kind, text, short } : null; renderNotice(); }
 function renderNotice() {
     const host = document.getElementById('fs-matchmsg'); if (!host) return;
-    if (!_notice) { host.textContent = ''; host.style.display = 'none'; host.title = ''; return; }
+    if (!_notice) { host.textContent = ''; host.style.display = 'none'; host.dataset.tip = ''; return; }
     host.style.display = '';
     host.className = 'fs-matchmsg fs-matchmsg-' + _notice.kind;
     host.textContent = _notice.short || _notice.text;
-    host.title = _notice.text;
+    host.dataset.tip = _notice.text;
 }
 let _lastRun = null;
 function renderRunSummary(run) {
@@ -43343,7 +44163,7 @@ function renderRunSummary(run) {
     host.innerHTML = '<details class="fs-runsum-d"' + (r.failed ? ' open' : '') + '>'
         + '<summary>' + escapeHtml(head) + '</summary>'
         + '<ul class="fs-runlist">' + rows + '</ul></details>'
-        + '<span class="fs-runclose" title="dismiss this summary">✕</span>';
+        + '<span class="fs-runclose" data-tip="Dismiss this summary">✕</span>';
 }
 async function mergeAll(concurrency) {
     // Coerce defensively: a stray click Event (or anything non-numeric) landing
@@ -43722,9 +44542,9 @@ function recDis(rec) {
 }
 // #789 (phw): a live recording and where it was recorded, read from its relationships
 const recordedAt = rec => rec.places && rec.places.length ? 'recorded ' + rec.places.map(p => (p.kind === 'area' ? 'in ' : 'at ') + placeText(p)).join(', ') : '';
-function liveBadge(rec) { return rec.live ? '<span class="fs-live" title="Live recording: its performance of the work is marked live">live</span> ' : ''; }
+function liveBadge(rec) { return rec.live ? '<span class="fs-live" data-tip="Live recording: its performance of the work is marked live">live</span> ' : ''; }
 function recPlace(rec) {
-    return rec.places && rec.places.length ? ' <span class="fs-place" title="' + escapeHtml(recordedAt(rec)) + '">@ ' + escapeHtml(rec.places.map(p => p.name).join(', ')) + '</span>' : '';
+    return rec.places && rec.places.length ? ' <span class="fs-place" data-tip="' + escapeHtml(recordedAt(rec)) + '">@ ' + escapeHtml(rec.places.map(p => p.name).join(', ')) + '</span>' : '';
 }
 const recTip = rec => escapeHtml(rec.title + (rec.disambiguation ? ' (' + rec.disambiguation + ')' : '') + (rec.live ? ' — live' : '') + (recordedAt(rec) ? ' — ' + recordedAt(rec) : ''));
 /* #789 (majkinetor): "I remove disamb. on tracks sometimes and put it on album" — so a recording
@@ -43740,20 +44560,20 @@ function albumDisHtml(m, members) {
     const d = memberDis(m, members);
     if (d.from !== 'album') return '';
     const tip = "No disambiguation on the recording; this is its release's: " + relTitle(d.release) + ', in the same release group as another recording here';
-    return ' <span class="fs-reldis" title="' + escapeHtml(tip) + '">(<span class="fs-reltag">album</span>' + escapeHtml(d.text) + ')</span>';
+    return ' <span class="fs-reldis" data-tip="' + escapeHtml(tip) + '">(<span class="fs-reltag">album</span>' + escapeHtml(d.text) + ')</span>';
 }
 // #789: what a group's members disagree on that says they may be different recordings, strongest first
 function settingWarning(members) {
     const live = members.filter(m => m.live === true), studio = members.filter(m => m.live === false);
-    if (live.length && studio.length) return { label: 'live + studio', title: 'Live and studio recordings in one group: never the same recording.\nLive: '
+    if (live.length && studio.length) return { label: 'live + studio', title: 'Live and studio recordings in one group\nThey are never the same recording.\nLive: '
         + live.map(m => m.title + (recordedAt(m) ? ' (' + recordedAt(m) + ')' : '')).join('; ') };
     for (let i = 0; i < members.length; i++) for (let j = i + 1; j < members.length; j++) {
         const c = placeConflict(members[i], members[j]);
-        if (c) return { label: uniq(members.flatMap(m => (m.places || []).map(placeText))).length + ' places', title: 'Recorded at different places or on different dates: ' + c + '.\nCheck they are the same recording before merging.' };
+        if (c) return { label: uniq(members.flatMap(m => (m.places || []).map(placeText))).length + ' places', title: 'Recorded at different places or on different dates\n' + c + '\n⚠ Check they are the same recording before merging' };
     }
     const dis = members.map(m => memberDis(m, members));
-    if (uniq(dis.map(d => d.text)).length > 1) return { label: 'disamb.', title: 'Disambiguations differ:\n'
-        + members.map((m, i) => '  ' + m.title + ' — ' + (dis[i].from ? dis[i].from + ': ' + dis[i].text : 'none')).join('\n') + '\nCheck they are the same recording before merging.' };
+    if (uniq(dis.map(d => d.text)).length > 1) return { label: 'disamb.', title: 'The disambiguations differ\n'
+        + members.map((m, i) => '- ' + m.title + ' — ' + (dis[i].from ? dis[i].from + ': ' + dis[i].text : 'none')).join('\n') + '\n⚠ Check they are the same recording before merging' };
     return null;
 }
 function artistLink(rec) {
@@ -43790,12 +44610,12 @@ function releasesSummary(rec) {
 // #529 (majkinetor): "use the same image for video recording as Apollo" —
 // apollo_editor's #303 VIDEO_MARK, which itself mirrors MB's native recordings-table marker.
 const MERGE_MARK = '<svg class="fs-mergeicon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v6a5 5 0 0 0 5 5h7"/><path d="M18 3v6a5 5 0 0 1-5 5h-2"/><polyline points="15 11 19 14 15 17"/></svg>';
-const VIDEO_MARK = '<span class="fs-rec-video" title="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
+const VIDEO_MARK = '<span class="fs-rec-video" data-tip="This recording is a video"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>';
 // #761 (chaban-mb): "It would be useful to have the AcoustIDs linked to more easily fix the
 // linked recordings when erroneous": an AcoustID opens its page on acoustid.org
 const acidUrl = id => 'https://acoustid.org/track/' + encodeURIComponent(id);
 function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
-function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" title="This recording has pending edits in MusicBrainz — excluded from matching and blocked from merging until they are applied">⏳ pending</span> ' : ''; }
+function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" data-tip="This recording has open edits in MusicBrainz\nLeft out of Match, and not merged until they are applied.">⏳ pending</span> ' : ''; }
 // #529 follow-up: "we should see isrc and accousticid in the card too" — the
 // pool card only showed presence dots; show the actual values (AcoustID
 // truncated, it's a 36-char UUID — full value is in the tooltip).
@@ -43804,8 +44624,8 @@ function idsLine(rec) {
     const acid = (rec.acoustids && rec.acoustids[0]) || null;
     if (!isrc && !acid) return '';
     let out = '<div class="fs-ids">';
-    if (isrc) out += '<span class="fs-idtag" title="' + escapeHtml((rec.isrcs || []).join(', ')) + '">' + escapeHtml(isrc) + '</span>';
-    if (acid) out += '<a class="fs-idtag" href="' + acidUrl(acid) + '" target="_blank" rel="noopener" title="AcoustID ' + escapeHtml(acid) + ' — open on acoustid.org">' + escapeHtml(acid.slice(0, 8)) + '…</a>';
+    if (isrc) out += '<span class="fs-idtag" data-tip="' + escapeHtml((rec.isrcs || []).join(', ')) + '">' + escapeHtml(isrc) + '</span>';
+    if (acid) out += '<a class="fs-idtag" href="' + acidUrl(acid) + '" target="_blank" rel="noopener" data-tip="AcoustID ' + escapeHtml(acid) + '\nClick: open it on acoustid.org">' + escapeHtml(acid.slice(0, 8)) + '…</a>';
     return out + '</div>';
 }
 // A dot per identifier. "not looked up yet" is deliberately a THIRD state, not
@@ -43823,7 +44643,7 @@ function presenceDots(rec) {
             : state === 'on' ? n + ' ' + label + (n > 1 ? 's' : '') + ': ' + list.join(', ')
                 : state === 'unconfirmed' ? 'no ' + label + ' found — ' + why
                     : 'no ' + label + ' on this recording';
-        return '<span class="fs-b fs-b-' + cls + ' fs-b-' + state + '" title="' + escapeHtml(title) + '"></span>';
+        return '<span class="fs-b fs-b-' + cls + ' fs-b-' + state + '" data-tip="' + escapeHtml(title) + '"></span>';
     };
     return '<div class="fs-badges">'
         + dot('isrc', 'ISRC', rec.isrcs, rec.isrcsKnown, rec.isrcSource === 'index',
@@ -43835,10 +44655,10 @@ function poolCardHtml(rec, run) {
     const rs = releasesSummary(rec);
     return '<div class="fs-pcard' + (run == null ? '' : ' fs-run' + run) + '" draggable="true" data-gid="' + rec.gid + '">'
         + '<span class="fs-grip">⠿</span>'
-        + '<div class="fs-info"><div class="fs-t" title="' + recTip(rec) + '">' + pendingBadge(rec) + videoBadge(rec) + liveBadge(rec) + recLink(rec.gid, rec.title) + recPlace(rec) + recDis(rec) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
-        + '<div class="fs-m" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
+        + '<div class="fs-info"><div class="fs-t" data-tip="' + recTip(rec) + '">' + pendingBadge(rec) + videoBadge(rec) + liveBadge(rec) + recLink(rec.gid, rec.title) + recPlace(rec) + recDis(rec) + (rec.artistCredit ? ' <span class="fs-artist">— ' + artistLink(rec) + '</span>' : '') + '</div>'
+        + '<div class="fs-m" data-tip="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + ' · ' + dur(rec.length) + '</div>' + idsLine(rec) + '</div>'
         + presenceDots(rec)
-        + '<span class="fs-rm" data-act="pool-remove" title="remove from pool">✕</span></div>';
+        + '<span class="fs-rm" data-act="pool-remove" data-tip="Remove from the pool">✕</span></div>';
 }
 // The expanded per-recording release table (#529). Columns follow MB's own
 // merge-page table so the two can be read side by side, with a status band
@@ -43855,7 +44675,7 @@ function setPoolCollapsed(on) {
     const body = document.getElementById('fs-body'); if (!body) return;
     body.classList.toggle('fs-poolhidden', !!on);
     const tog = document.getElementById('fs-pooltog');
-    if (tog) tog.title = on ? 'show the pool' : 'collapse the pool to give the groups the full width';
+    if (tog) tog.dataset.tip = on ? 'Show the pool' : 'Fold the pool away\nThe groups get the full width.';
     if (SETTINGS.poolCollapsed !== !!on) { SETTINGS.poolCollapsed = !!on; saveSettings(); }
     renderPoolCount();
 }
@@ -43910,14 +44730,14 @@ function renderDeepBtn() {
     const b = document.getElementById('fs-expandall-deep'); if (!b) return;
     const on = everythingExpanded();
     b.textContent = (on ? '⇱' : '⇲') + ' All details';
-    b.title = on ? 'collapse every group and every release table' : "expand every group AND every recording's release table";
+    b.dataset.tip = on ? 'Collapse every group and every release table' : "Expand every group, and every recording's release table";
     b.disabled = STATE.groups.length === 0;
 }
 function renderCollapseAllBtn() {
     const b = document.getElementById('fs-collapseall'); if (!b) return;
     const collapsed = allGroupsCollapsed();
     b.textContent = collapsed ? '▶ Expand all' : '▼ Collapse all';
-    b.title = collapsed ? 'expand every group card' : 'collapse every group card';
+    b.dataset.tip = collapsed ? 'Expand every group card' : 'Collapse every group card';
     b.disabled = STATE.groups.length === 0;
 }
 // #529: "add an option to load releases in the background for created groups …
@@ -44046,7 +44866,7 @@ function releaseTableHtml(rec) {
     if (!rows.length) return '<div class="fs-reltbl fs-relempty">this recording is not on any release</div>';
     const cell = v => escapeHtml(v == null || v === '' ? '—' : String(v));
     const td = (v, extra) => { const t = v == null || v === '' ? '—' : String(v);
-        return '<td title="' + escapeHtml(t) + '"' + (extra || '') + '>' + escapeHtml(t) + '</td>'; };
+        return '<td data-tip="' + escapeHtml(t) + '"' + (extra || '') + '>' + escapeHtml(t) + '</td>'; };
     let out = '<div class="fs-reltbl"><table>'
         + '<colgroup><col class="c-num"><col class="c-title"><col class="c-len"><col class="c-tart"><col class="c-rel">'
         + '<col class="c-rart"><col class="c-rgt"><col class="c-cd"><col class="c-label"><col class="c-cat"></colgroup>'
@@ -44067,7 +44887,7 @@ function releaseTableHtml(rec) {
             + td(r.trackTitle)
             + '<td>' + (r.trackLength ? dur(r.trackLength) : '—') + '</td>'
             + td(r.trackArtist)
-            + '<td title="' + escapeHtml(relTitle(r)) + '"><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a>' + (r.disambiguation ? ' <span class="fs-dis">(' + escapeHtml(r.disambiguation) + ')</span>' : '') + '</td>'
+            + '<td data-tip="' + escapeHtml(relTitle(r)) + '"><a href="/release/' + r.gid + '" target="_blank" rel="noopener">' + cell(r.title) + '</a>' + (r.disambiguation ? ' <span class="fs-dis">(' + escapeHtml(r.disambiguation) + ')</span>' : '') + '</td>'
             + td(r.artist)
             + td([r.rgType, r.format].filter(Boolean).join(' · '))
             + '<td>' + escapeHtml(cd) + '</td>'
@@ -44105,11 +44925,11 @@ function groupCardHtml(group, embed) {
     const sigChips = Object.keys(sigNames).map(k => {
         const lit = sigAll.includes(k);
         const partial = !lit && (group.signals || []).includes(k);
-        if (k === 'length' && lenOff) return '<span class="warn" title="' + escapeHtml(lenWarnTitle) + '">' + sigNames[k] + '</span>';   // #619
+        if (k === 'length' && lenOff) return '<span class="warn" data-tip="' + escapeHtml(lenWarnTitle) + '">' + sigNames[k] + '</span>';   // #619
         const title = lit ? sigNames[k] + ' matches across every recording in this group'
             : partial ? sigNames[k] + ' matches only some of these recordings, not all'
             : 'no ' + sigNames[k] + ' match';
-        return '<span class="' + (lit ? 'hit' : partial ? 'partial' : '') + '" title="' + title + '">' + sigNames[k] + '</span>';
+        return '<span class="' + (lit ? 'hit' : partial ? 'partial' : '') + '" data-tip="' + title + '">' + sigNames[k] + '</span>';
     }).join('');
     const busy = group.state === 'busy', done = group.state === 'done';
     const tooFew = members.length < 2;
@@ -44164,14 +44984,14 @@ function groupCardHtml(group, embed) {
             const tip = !known ? label + ' not looked up yet'
                 : unconfirmed ? 'no ' + label + ' found, but this comes from the search index, which lags — not confirmed against the recording itself'
                     : 'no ' + label + ' on this recording';
-            return '<span class="fs-isrc"><span class="fs-idnone' + (known && !unconfirmed ? '' : ' fs-idunk') + '" title="' + escapeHtml(tip) + '">' + mark + '</span></span>';
+            return '<span class="fs-isrc"><span class="fs-idnone' + (known && !unconfirmed ? '' : ' fs-idunk') + '" data-tip="' + escapeHtml(tip) + '">' + mark + '</span></span>';
         }
         const tags = vals.map(v => {
             const cls = idColor.get(v) || '';
             const shown = isAcoustid ? escapeHtml(v.slice(0, 8)) + '…' : escapeHtml(v);
             const title = label + ' ' + escapeHtml(v) + (cls ? ' — shared with another recording in this group' : ' — only on this recording') + (isAcoustid ? ' · open on acoustid.org' : '');
-            return isAcoustid ? '<a class="fs-idv fs-idlink ' + cls + '" href="' + acidUrl(v) + '" target="_blank" rel="noopener" title="' + title + '">' + shown + '</a>'
-                : '<span class="fs-idv ' + cls + '" title="' + title + '">' + shown + '</span>';
+            return isAcoustid ? '<a class="fs-idv fs-idlink ' + cls + '" href="' + acidUrl(v) + '" target="_blank" rel="noopener" data-tip="' + title + '">' + shown + '</a>'
+                : '<span class="fs-idv ' + cls + '" data-tip="' + title + '">' + shown + '</span>';
         }).join('');
         return '<span class="fs-isrc">' + tags + '</span>';
     };
@@ -44180,21 +45000,21 @@ function groupCardHtml(group, embed) {
         const isTarget = group.target === m.gid;
         const canPick = !busy && !done;
         const star = isTarget
-            ? '<span class="fs-star fs-star-on" title="merge target — this one is kept">★</span>'
-            : '<span class="fs-star' + (canPick ? '' : ' fs-star-disabled') + '" data-act="' + (canPick ? 'set-target' : '') + '" title="' + (canPick ? 'make this the merge target' : '') + '">☆</span>';
+            ? '<span class="fs-star fs-star-on" data-tip="The merge target\nThis one is kept.">★</span>'
+            : '<span class="fs-star' + (canPick ? '' : ' fs-star-disabled') + '" data-act="' + (canPick ? 'set-target' : '') + '" data-tip="' + (canPick ? 'Make this the merge target' : '') + '">☆</span>';
         const expanded = STATE.expandedReleases.has(m.gid);
         return '<div class="fs-growwrap">'
             + '<div class="fs-grow' + (isTarget ? ' fs-target-row' : '') + '"' + (embed ? '' : ' draggable="true"') + ' data-gid="' + m.gid + '">'
-            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" title="' + (expanded ? 'hide' : 'show') + ' every release this recording appears on">' + (expanded ? '▼' : '▶') + '</span>'
+            + '<span class="fs-exp' + (expanded ? ' fs-exp-on' : '') + '" data-act="toggle-releases" data-tip="' + (expanded ? 'Hide' : 'Show') + ' every release this recording is on">' + (expanded ? '▼' : '▶') + '</span>'
             + star
-            + '<span class="fs-t" title="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
-            + '<span class="fs-artistcol" title="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
-            + '<span class="fs-rel" title="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
+            + '<span class="fs-t" data-tip="' + recTip(m) + '">' + pendingBadge(m) + videoBadge(m) + liveBadge(m) + recLink(m.gid, m.title) + recPlace(m) + recDis(m) + albumDisHtml(m, members) + '</span>'
+            + '<span class="fs-artistcol" data-tip="' + escapeHtml(m.artistCredit || '') + '">' + artistLink(m) + '</span>'
+            + '<span class="fs-rel" data-tip="' + escapeHtml(rs.tooltip) + '">' + escapeHtml(rs.text) + '</span>'
             + (() => { const d = lenOffBy(m); return d == null ? '<span class="fs-len">' + dur(m.length) + '</span>'
-                : '<span class="fs-len fs-len-off" title="' + (d > 0 ? '+' : '−') + secs(d) + 's against the merge target (' + dur(lenRefRec.length) + ') — tolerance ' + secs(lenTol) + 's">' + dur(m.length) + '</span>'; })()   // #619
+                : '<span class="fs-len fs-len-off" data-tip="' + (d > 0 ? '+' : '−') + secs(d) + 's against the merge target (' + dur(lenRefRec.length) + ')\nThe tolerance is ' + secs(lenTol) + 's">' + dur(m.length) + '</span>'; })()   // #619
             + idCell(m, 'isrc')
             + idCell(m, 'acoustid')
-            + (embed ? '' : '<span class="fs-acts"><span data-act="return" title="return to pool">↩</span><span class="fs-rm-x" data-act="remove-both" title="remove from group + pool">✕</span></span>') + '</div>'
+            + (embed ? '' : '<span class="fs-acts"><span data-act="return" data-tip="Back to the pool">↩</span><span class="fs-rm-x" data-act="remove-both" data-tip="Remove from the group and the pool">✕</span></span>') + '</div>'
             + (expanded ? releaseTableHtml(m) : '')
             + '</div>';
     }).join('');
@@ -44205,15 +45025,15 @@ function groupCardHtml(group, embed) {
     // #529 (majkinetor): "add in each card edit button in the title - clicking it
     // should transform entire card into textbox for edit note … If there is edit
     // note, button should be different color."
-    const noteBtn = '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" title="'
-        + (hasNote ? 'Custom edit note set — click to edit' : 'Add a custom edit note for this merge') + '">✎</span>';
+    const noteBtn = '<span class="fs-note-btn' + (hasNote ? ' fs-has-note' : '') + '" data-act="edit-note" data-tip="'
+        + (hasNote ? 'A custom edit note is set\nClick: edit it' : 'Add a custom edit note for this merge') + '">✎</span>';
     if (group.editing) {
         const draft = group.editNote != null ? group.editNote : autoEditNote(group);
         return '<div class="fs-gcard fs-gcard-' + confClass + activeCls + ' fs-editing" data-gid="' + group.id + '">'
             + '<div class="fs-ghdr"><span class="fs-gt">✎ Edit note — ' + escapeHtml(head ? head.title : 'group') + '</span><div class="fs-sp"></div>'
             + '<button class="fs-btn fs-note-save" type="button" data-act="note-save">Save</button>'
             + '<button class="fs-btn fs-note-cancel" type="button" data-act="note-cancel">Cancel</button>'
-            + (hasNote ? '<button class="fs-btn fs-note-clear" type="button" data-act="note-clear" title="revert to the auto-generated note">Reset</button>' : '')
+            + (hasNote ? '<button class="fs-btn fs-note-clear" type="button" data-act="note-clear" data-tip="Back to the generated note">Reset</button>' : '')
             + '</div>'
             + '<div class="fs-note-wrap"><textarea class="fs-note-ta" spellcheck="false" placeholder="Edit note submitted with this merge…">' + escapeHtml(draft) + '</textarea>'
             + '<div class="fs-note-hint">Replaces the auto-generated reason line. Fusion\'s attribution footer is always appended.</div></div></div>';
@@ -44236,7 +45056,7 @@ function groupCardHtml(group, embed) {
         : 'Holds together at the "' + tier + '" cutoff' + (tier === 'loose' ? ' — it would not form at a stricter setting' : ''))
         + (lenOff ? ' — but its lengths differ by up to ' + secs(lenSpread) + 's (tolerance ' + secs(lenTol) + 's)' : '')
         + (setWarn ? '\n' + setWarn.title : '');   // #619: auto or by hand; #789
-    return '<div class="fs-gcard fs-gcard-' + confClass + ' fs-tier-' + tier + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '" title="' + escapeHtml(tierWhy) + '">'
+    return '<div class="fs-gcard fs-gcard-' + confClass + ' fs-tier-' + tier + activeCls + (collapsed ? ' fs-gcard-collapsed' : '') + '" data-gid="' + group.id + '" data-tip="' + escapeHtml(tierWhy) + '">'
         // Three tracks — 1fr | auto | 1fr — so the chip matrix is centred on the
         // CARD, not merely at a fixed offset after the title (#529: "matrix is
         // not in the middle"). Equal side tracks also mean the centre column
@@ -44245,25 +45065,25 @@ function groupCardHtml(group, embed) {
         // matrix aligned.
         + '<div class="fs-ghdr fs-ghdr-grid">'
         + '<div class="fs-ghl">'
-        + '<span class="fs-gnum" title="' + members.length + ' recording' + (members.length === 1 ? '' : 's') + ' in this group">' + members.length + '</span>'
-        + (embed ? '' : '<span class="fs-ctog" data-act="toggle-card" title="' + (collapsed ? 'expand this group' : 'collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>')
-        + '<span class="fs-gt" title="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
-        + (lenOff ? '<span class="fs-lenwarn" title="' + escapeHtml(lenWarnTitle) + '">⚠ ' + secs(lenSpread) + 's</span>' : '')   // #619
-        + (setWarn ? '<span class="fs-setwarn" title="' + escapeHtml(setWarn.title) + '">⚠ ' + escapeHtml(setWarn.label) + '</span>' : '')   // #789
+        + '<span class="fs-gnum" data-tip="' + members.length + ' recording' + (members.length === 1 ? '' : 's') + ' in this group">' + members.length + '</span>'
+        + (embed ? '' : '<span class="fs-ctog" data-act="toggle-card" data-tip="' + (collapsed ? 'Expand this group' : 'Collapse this group') + '">' + (collapsed ? '▶' : '▼') + '</span>')
+        + '<span class="fs-gt" data-tip="' + escapeHtml(head ? head.title : '') + '">' + (head ? recLink(head.gid, head.title) : 'New group') + '</span>'
+        + (lenOff ? '<span class="fs-lenwarn" data-tip="' + escapeHtml(lenWarnTitle) + '">⚠ ' + secs(lenSpread) + 's</span>' : '')   // #619
+        + (setWarn ? '<span class="fs-setwarn" data-tip="' + escapeHtml(setWarn.title) + '">⚠ ' + escapeHtml(setWarn.label) + '</span>' : '')   // #789
         + '</div>'
         + '<div class="fs-sig">' + sigChips + '</div>'
         + '<div class="fs-ghr">'
-        + (collapsed ? '' : '<span class="fs-detbtn' + (groupAllExpanded(group) ? ' fs-detbtn-on' : '') + '" data-act="toggle-all-details" title="'
-            + (groupAllExpanded(group) ? 'hide the release tables for every recording in this group' : 'show the release tables for every recording in this group') + '">'
+        + (collapsed ? '' : '<span class="fs-detbtn' + (groupAllExpanded(group) ? ' fs-detbtn-on' : '') + '" data-act="toggle-all-details" data-tip="'
+            + (groupAllExpanded(group) ? 'Hide the release tables of every recording in this group' : 'Show the release tables of every recording in this group') + '">'
             + '▤' + '</span>')
         // #762: ask acoustid.org again, after fixing a wrong link there
-        + '<span class="fs-acref' + (group.acRefreshing || group.mcChecking ? ' fs-acref-busy' : '') + '" data-act="refresh-acoustid" title="'
-            + (group.mcChecking ? 'checking ISRCs and AcoustIDs…' : group.acRefreshing ? 'checking AcoustIDs…' : 'check the AcoustIDs of this group again on acoustid.org, after fixing a wrong link there') + '">↻</span>'
+        + '<span class="fs-acref' + (group.acRefreshing || group.mcChecking ? ' fs-acref-busy' : '') + '" data-act="refresh-acoustid" data-tip="'
+            + (group.mcChecking ? 'Checking ISRCs and AcoustIDs…' : group.acRefreshing ? 'Checking AcoustIDs…' : 'Check this group’s AcoustIDs again on acoustid.org\nAfter fixing a wrong link there') + '">↻</span>'
         + noteBtn
         + (embed ? (busy || done || group.state === 'error' ? '<span class="fs-mstate ' + stateCls + '">' + stateLabel + '</span>' : '')
-            + '<button class="fs-mcopen" type="button" data-act="mc-open" title="Open in Fusion: Fusion\'s window with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + ICON_URL + '"></button>'
+            + '<button class="fs-mcopen" type="button" data-act="mc-open" data-tip="Open in Fusion\nFusion\'s window, with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + ICON_URL + '"></button>'
             : '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
-            + '<span class="fs-kill" data-act="delete-group" title="delete this group — members return to the pool" ' + (busy ? 'style="display:none"' : '') + '>🗑</span>')
+            + '<span class="fs-kill" data-act="delete-group" data-tip="Delete this group\nIts recordings go back to the pool." ' + (busy ? 'style="display:none"' : '') + '>🗑</span>')
         + '</div></div>'
         + (collapsed ? '' : '<div class="fs-grows">' + rows + '</div>' + errMsg) + '</div>';
 }
@@ -44336,7 +45156,7 @@ function renderGroups() {
     if (recs) {
         const n = STATE.groups.reduce((a, g) => a + g.memberGids.length, 0);
         recs.textContent = n ? n + ' recording' + (n === 1 ? '' : 's') : '';
-        recs.title = n ? n + ' recording(s) staged across ' + STATE.groups.length + ' group(s)' : '';
+        recs.dataset.tip = n ? n + ' recording' + (n === 1 ? '' : 's') + ' staged in ' + STATE.groups.length + ' group' + (STATE.groups.length === 1 ? '' : 's') : '';
     }
     body.innerHTML = STATE.groups.map(groupCardHtml).join('') + '<div class="fs-newgroup" id="fs-newgroup">+ New group — drag a pool recording here, or select one and click here</div>';
     placeLenBadges(body);
@@ -44395,12 +45215,12 @@ function renderFooter() {
     const acidKnown = all.filter(r => r.acoustids != null);
     const withAcid = acidKnown.filter(r => r.acoustids.length).length;
     const idPart = (label, n, known, total) => {
-        if (!known) return '<span class="fs-idstat fs-idstat-none" title="' + label + 's have not been looked up yet">' + label + ' —</span>';
+        if (!known) return '<span class="fs-idstat fs-idstat-none" data-tip="' + label + 's not looked up yet">' + label + ' —</span>';
         const pending = total - known;
         const unconf = label === 'ISRC' ? isrcUnconfirmed : 0;
-        return '<span class="fs-idstat" title="' + n + ' of ' + known + ' checked recording(s) have an ' + label
-            + (pending ? '; ' + pending + ' not looked up yet' : '')
-            + (unconf ? '; ' + unconf + ' reported none by the search index only, which lags — not confirmed against the recording' : '')
+        return '<span class="fs-idstat" data-tip="' + n + ' of ' + known + ' checked recording' + (known === 1 ? ' has' : 's have') + ' an ' + label
+            + (pending ? '\n- ' + pending + ' not looked up yet' : '')
+            + (unconf ? '\n- ' + unconf + ' with none in the search index only, which lags: not checked against the recording' : '')
             + '"><b>' + n + '</b>/' + known + ' ' + label + (pending || unconf ? '*' : '') + '</span>';
     };
     if (sum) sum.innerHTML = '<b>' + STATE.groups.length + '</b> group' + (STATE.groups.length === 1 ? '' : 's') + ' · <b>' + ready + '</b> ready' + (done ? ' · <b>' + done + '</b> merged' : '') + ' · <b>' + STATE.poolOrder.length + '</b> in pool'
@@ -44434,7 +45254,7 @@ function setBgTask(text) {
     const e = document.getElementById('fs-bgtask'); if (!e) return;
     if (_bgLabel) {
         e.innerHTML = '<span class="fs-bgtext">' + escapeHtml(_bgLabel) + '</span>'
-            + '<span class="fs-bgstop" title="stop loading">✕</span>';
+            + '<span class="fs-bgstop" data-tip="Stop loading">✕</span>';
         e.style.display = '';
     } else { e.style.display = 'none'; e.innerHTML = ''; }
 }
@@ -44867,10 +45687,10 @@ function openSettings(anchor) {
     const s = el('div', 'fs-settings'); s.id = 'fs-settings';
     s.innerHTML = mbuCfgHeader({ script: 'fusion', name: 'Fusion', version: VERSION, icon: ICON, log: true })
         + '<label class="fs-opt"><input type="checkbox" id="fs-opt-acoustid"> Look up AcoustIDs (acoustid.org, batched)</label>'
-        + '<label class="fs-opt" title="Run Match by itself as soon as the pool has finished loading, instead of waiting for you to press the button."><input type="checkbox" id="fs-opt-automatch"> Match on open</label>'
-        + '<label class="fs-opt" title="As soon as a group is formed, fetch the full release list for every recording in it, so expanding a row is instant. Costs one request per grouped recording; off by default because seeding already makes a lot of them. Runs in the background, never blocks the UI, and the header stop button halts it."><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
+        + '<label class="fs-opt" data-tip="Run Match once the pool has loaded\nInstead of waiting for you to press it"><input type="checkbox" id="fs-opt-automatch"> Match on open</label>'
+        + '<label class="fs-opt" data-tip="Read the releases of every grouped recording at once\nAs soon as a group forms, so opening a row is instant. It runs in the background, and the stop button in the header halts it.\n⚠ One request per grouped recording: off by default, as seeding already makes many"><input type="checkbox" id="fs-opt-prefetch"> Preload group release details in the background</label>'
         + '<label class="fs-opt">Length tolerance <input type="number" id="fs-opt-tol" min="0" max="60" style="width:48px"> s</label>'
-        + '<label class="fs-opt" title="Match never groups two recordings whose known lengths differ by more than this, whatever else matches. Manual grouping is unaffected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
+        + '<label class="fs-opt" data-tip="Match never groups two recordings whose known lengths differ more than this\nWhatever else matches. Grouping by hand is not affected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600" style="width:56px"> s</label>';
     document.body.appendChild(s);
     const r = anchor.getBoundingClientRect();
     s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
@@ -44905,7 +45725,7 @@ function loadWinState() { try { return JSON.parse(GM_getValue(WINSTATE_KEY, '{}'
 function saveWinState(patch) { try { GM_setValue(WINSTATE_KEY, JSON.stringify(Object.assign(loadWinState(), patch))); } catch (e) {} }
 function applyWinState(cons) {
     const st = loadWinState();
-    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.title = 'Restore'; } return; }
+    if (st.maximized) { cons.classList.add('fs-maximized'); const mb = document.getElementById('fs-max'); if (mb) { mb.textContent = '❐'; mb.dataset.tip = 'Restore'; } return; }
     if (st.left != null && st.top != null) { cons.style.position = 'fixed'; cons.style.left = st.left + 'px'; cons.style.top = st.top + 'px'; cons.style.margin = '0'; }
     if (st.width != null) cons.style.width = st.width + 'px';
     if (st.height != null) cons.style.height = st.height + 'px';
@@ -44916,7 +45736,7 @@ function toggleMaximize(cons, btn) {
     cons.classList.toggle('fs-maximized', nowMax);
     if (nowMax) { cons._savedW = cons.style.width; cons._savedH = cons.style.height; cons.style.width = ''; cons.style.height = ''; }
     else { cons.style.width = cons._savedW || ''; cons.style.height = cons._savedH || ''; }
-    if (btn) { btn.textContent = nowMax ? '❐' : '⛶'; btn.title = nowMax ? 'Restore' : 'Maximize'; }
+    if (btn) { btn.textContent = nowMax ? '❐' : '⛶'; btn.dataset.tip = nowMax ? 'Restore' : 'Maximize'; }
     saveWinState({ maximized: nowMax });
 }
 function wireWindowChrome(cons, hdr, maxBtn) {
@@ -44957,36 +45777,44 @@ function buildShell() {
     document.getElementById('fs-overlay')?.remove();
     const overlay = el('div', 'fs-overlay'); overlay.id = 'fs-overlay';
     const CUTOFF_HELP = {
-        strict: 'Strict — group only on a shared identifier (ISRC or AcoustID). Fewest, safest matches.',
-        normal: 'Normal — a shared identifier, or title AND artist together with a close length. A length that is missing on either side does not block the match (it just can’t corroborate it); two known lengths that disagree do.',
-        loose: 'Loose — a shared identifier, or title with either a close length or a matching artist. Most matches, needs the most review.',
+        strict: 'Strict\nGroups only on a shared identifier, an ISRC or an AcoustID. The fewest, safest matches.',
+        normal: 'Normal\nA shared identifier, or the title and the artist with a close length.\nA length missing on either side doesn’t block the match (it can’t back it up); two known lengths that disagree do.',
+        loose: 'Loose\nA shared identifier, or the title with a close length or the same artist. The most matches, and the most to review.',
     };
     // #529 (majkinetor): "show color in the cutoff combo for reference" — the
     // card rows are tinted by tier and nothing else decoded those colours.
     // Native <option> styling is patchy across browsers, so the swatch is drawn
     // as a coloured square in a sibling strip that is always visible, and the
     // options carry the colour too where the browser honours it.
+    // the cutoff's tip is the levels' table, the chosen one marked and the looser ones dimmed
+    // (majkinetor: "add cutoff table with meanings")
+    const CUTOFF_MEANS = { strict: 'a shared ISRC or AcoustID', normal: 'or the title and the artist, with a close length', loose: 'or the title, with a close length or the same artist' };
+    const cutoffTip = () => {
+        const cur = MATCH_CUTOFFS.indexOf(SETTINGS.matchCutoff);
+        return 'How strict Match is: it groups recordings on\n'
+            + MATCH_CUTOFFS.map((c, i) => '{' + TIER_COLORS[c] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + c[0].toUpperCase() + c.slice(1) + ': ' + CUTOFF_MEANS[c]).join('\n');
+    };
     const cutoffOpts = MATCH_CUTOFFS.map(c => '<option value="' + c + '"' + (SETTINGS.matchCutoff === c ? ' selected' : '')
         + ' style="background:' + TIER_COLORS[c] + '22"'
         + ' title="' + escapeHtml(CUTOFF_HELP[c] || '') + '">' + c[0].toUpperCase() + c.slice(1) + '</option>').join('');
-    const tierKey = MATCH_CUTOFFS.concat('manual').map(c => '<span class="fs-tierkey" title="'
-        + escapeHtml(c === 'manual' ? 'Grouped by hand — no cutoff level forms it automatically' : (CUTOFF_HELP[c] || ''))
+    const tierKey = MATCH_CUTOFFS.concat('manual').map(c => '<span class="fs-tierkey" data-tip="'
+        + escapeHtml(c === 'manual' ? 'Grouped by hand\nNo cutoff forms it by itself.' : (CUTOFF_HELP[c] || ''))
         + '"><i style="background:' + TIER_COLORS[c] + '"></i>' + c + '</span>').join('');
     overlay.innerHTML = '<div class="fs-cons" id="fs-cons">'
-        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" title="open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" title="open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" title="open the activity log">…</div><div class="fs-sp"></div>'
-        + '<button class="fs-cons-x" id="fs-max" type="button" title="Maximize / restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" title="Fusion — options / log / help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" title="Close">✕</button></div>'
+        + '<div class="fs-hdr" id="fs-hdr"><div class="fs-title">' + ICON + ' Fusion — Merge Recordings</div><span class="fs-busy" id="fs-busy" style="display:none" data-tip="Open the activity log"></span><span class="fs-bgtask" id="fs-bgtask" style="display:none" data-tip="Open the activity log"></span><span class="fs-netbanner" id="fs-netbanner" style="display:none"></span><div class="fs-scope" id="fs-scope" data-tip="Open the activity log">…</div><div class="fs-sp"></div>'
+        + '<button class="fs-cons-x" id="fs-max" type="button" data-tip="Maximize or restore">⛶</button><button class="fs-cons-x" id="fs-cfg" type="button" data-tip="Fusion\nOptions, the log, help">' + MBU_CFG_ICON + '</button><button class="fs-cons-x" id="fs-close" type="button" data-tip="Close">✕</button></div>'
         + '<div class="fs-ctrl"><select id="fs-rg-editions" style="display:none;"><option value="">+ Load recordings from RG edition ▾</option></select>'
-        + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" title="Paste an MBID or MusicBrainz URL — it is added automatically">'
+        + '<input type="text" id="fs-add-input" placeholder="paste a recording, release, or release-group MBID|URL…" data-tip="Add recordings to the pool\nPaste: a recording’s, release’s or release group’s MBID, or its MusicBrainz URL, adds its recordings at once">'
         + '<div class="fs-sp"></div><div class="fs-legend">'
-        + '<span>Cutoff <select id="fs-cutoff" title="How strict Match is. Hover an option for what it means.">' + cutoffOpts + '</select></span>'
-        + '<span class="fs-tierlegend" title="Each group card is tinted by the strictest cutoff at which it still holds together">' + tierKey + '</span></div>'
+        + '<span>Cutoff <select id="fs-cutoff" data-tip="' + escapeHtml(cutoffTip()) + '">' + cutoffOpts + '</select></span>'
+        + '<span class="fs-tierlegend" data-tip="Each group card’s tint\nThe strictest cutoff at which it still holds together">' + tierKey + '</span></div>'
         + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button></div>'
 
-        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" title="Filter by title, artist, release, ISRC or AcoustID. Match still considers the whole pool."><span class="fs-pooltog" id="fs-pooltog" title="collapse the pool to give the groups the full width">◀</span></div>'
-        + '<div class="fs-poolsort">Sort <span class="fs-seg" id="fs-pool-sort"><button type="button" data-sort="added" title="in the order they were added">Added</button><button type="button" data-sort="title" title="by title, so the versions of one song sit together">Title</button><button type="button" data-sort="artist" title="by artist, then title">Artist</button></span></div>'
+        + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool."><span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
+        + '<div class="fs-poolsort">Sort <span class="fs-seg" id="fs-pool-sort"><button type="button" data-sort="added" data-tip="In the order they were added">Added</button><button type="button" data-sort="title" data-tip="By title, so the versions of one song sit together">Title</button><button type="button" data-sort="artist" data-tip="By artist, then title">Artist</button></span></div>'
         + '<div class="fs-colbody" id="fs-pool-body"></div></div>'
-        + '<div class="fs-poolrail" id="fs-poolrail" title="show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
-        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" title="expand every group and every release table (or collapse it all again)">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" title="collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" title="dissolve every group — all recordings return to the pool">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" title="remove groups that have already been merged — their recordings leave the board (the merged-away ones no longer exist in MusicBrainz)">merged</button></span></div>'
+        + '<div class="fs-poolrail" id="fs-poolrail" data-tip="Show the pool again"><span class="fs-railarrow">▶</span><span class="fs-raillabel">POOL <span id="fs-rail-cnt">0</span></span></div>'
+        + '<div class="fs-col fs-groups"><div class="fs-colhdr">Groups <span class="fs-cnt" id="fs-groups-cnt">0</span><span class="fs-subcnt" id="fs-groups-recs"></span><button type="button" id="fs-expandall-deep" class="fs-btn" data-tip="Expand every group and every release table\nAgain: collapse it all">⇲ All details</button><button type="button" id="fs-collapseall" class="fs-btn" data-tip="Collapse or expand every group card">▼ Collapse all</button><span class="fs-matchmsg" id="fs-matchmsg" style="display:none"></span><span class="fs-sp"></span><span class="fs-clearset">Clear: <button type="button" id="fs-clearboard" class="fs-btn fs-clearboard-btn" data-tip="Dissolve every group\nAll the recordings go back to the pool.">all</button><button type="button" id="fs-clearmerged" class="fs-btn fs-clearboard-btn" data-tip="Remove the groups already merged\nTheir recordings leave the board; the merged-away ones no longer exist in MusicBrainz.">merged</button></span></div>'
         + '<div class="fs-runsum" id="fs-runsum" style="display:none"></div><div class="fs-colbody" id="fs-groups-body"></div></div></div>'
         + '<div class="fs-ftr"><div class="fs-sum" id="fs-summary"></div><div class="fs-sp"></div>'
         + '<div class="fs-note">Merges submit directly in the background — no MB merge page involved</div>'
@@ -45038,7 +45866,7 @@ function buildShell() {
     const poolFilter = document.getElementById('fs-pool-filter');
     poolFilter.addEventListener('input', () => { STATE.poolFilter = poolFilter.value.trim(); renderPool(); });
     poolFilter.addEventListener('keydown', e => { if (e.key === 'Escape' && poolFilter.value) { e.stopPropagation(); poolFilter.value = ''; STATE.poolFilter = ''; renderPool(); } });
-    document.getElementById('fs-cutoff').addEventListener('change', e => { SETTINGS.matchCutoff = e.target.value; saveSettings(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff); });
+    document.getElementById('fs-cutoff').addEventListener('change', e => { SETTINGS.matchCutoff = e.target.value; saveSettings(); e.target.dataset.tip = cutoffTip(); Log.info('Match cutoff set to ' + SETTINGS.matchCutoff); });
     wireWindowChrome(document.getElementById('fs-cons'), document.getElementById('fs-hdr'), document.getElementById('fs-max'));
     wireDelegatedEvents();
 }
@@ -45109,7 +45937,7 @@ function ensureLauncher() {
     fsStyle();
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
-    btn.title = 'Fusion — merge recordings\nRight-click: settings';   // icon-only: the tooltip carries the name
+    btn.dataset.tip = 'Fusion — merge recordings\nRight-click: settings';   // icon-only: the tooltip carries the name
     btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30';
     btn.onclick = () => openFusion();
     btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
@@ -45358,14 +46186,14 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.17.231850","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.17.231850","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.20.120000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.20.120000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmGuessSortName } = __st_MATCH(GM_info);   // ST-MATCH, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('group_therapy', 'Group Therapy')) return;
@@ -45505,13 +46333,13 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       if (it.input) {
         const wrap = el('div', 'gt-mi-input');
         const inp = el('input', 'gt-mi-in'); inp.type = 'text';
-        inp.placeholder = it.input.placeholder || ''; inp.title = it.input.title || ''; inp.value = it.input.value || '';
+        inp.placeholder = it.input.placeholder || ''; inp.dataset.tip = it.input.title || ''; inp.value = it.input.value || '';
         const info = el('div', 'gt-mi-ininfo', '');
         const upd = () => {
           const res = it.input.onInput(inp.value) || {};
           info.textContent = res.text || '';
           info.style.color = res.ok ? 'var(--mbu-ok)' : 'var(--mbu-warn)';
-          info.title = res.title || '';
+          info.dataset.tip = res.title || '';
         };
         inp.addEventListener('input', upd);
         // A menu whose CONTENT depends on the spec (the ⬇ checklist is built
@@ -45534,7 +46362,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
           // this role to the current selection instead of replacing it (#377)
           lab.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); it.checklist.forEach(en => { if (!en.cb) return; if (ev.shiftKey) { if (en.role === entry.role) en.cb.checked = true; } else en.cb.checked = en.role === entry.role; }); if (it.onToggle) it.onToggle(); });
           lab.appendChild(cb); lab.appendChild(el('span', 'gt-ck-pos', `[${entry.pos}]`)); lab.appendChild(el('span', 'gt-ck-tx', entry.text));
-          if (it.rowBtns) { const acts = el('span', 'gt-ck-acts'); it.rowBtns.forEach(rb => { const b = el('button', 'gt-ck-act', rb.label); b.type = 'button'; b.title = rb.title || ''; b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); rb.run(entry); }); acts.appendChild(b); }); lab.appendChild(acts); }   // #377 [A]/[R] per-row select buttons
+          if (it.rowBtns) { const acts = el('span', 'gt-ck-acts'); it.rowBtns.forEach(rb => { const b = el('button', 'gt-ck-act', rb.label); b.type = 'button'; b.dataset.tip = rb.title || ''; b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); rb.run(entry); }); acts.appendChild(b); }); lab.appendChild(acts); }   // #377 [A]/[R] per-row select buttons
           box.appendChild(lab);
         });
         menuEl.appendChild(box);
@@ -45690,7 +46518,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     if (!target || !target.closest) return null;
     // only the actual relationship (track + release credits) UI — not GT's own overlays, and not
     // stray entity links elsewhere on the page (release title, sidebar, the work-match dialog, …)
-    if (target.closest('.gt-cons-ov, .gt-wm-pop, .gt-pop, .gt-menu, .gt-tip, #mbu-toast')) return null;
+    if (target.closest('.gt-cons-ov, .gt-wm-pop, .gt-pop, .gt-menu, #mbu-tip, #mbu-toast')) return null;
     const phraseTh = target.closest('th.link-phrase');
     if (phraseTh && !target.closest('button')) { const l = phraseTh.querySelector('label'); if (l) { let t = (l.textContent || '').trim().replace(/:\s*$/, ''); if (t) return t; } }
     const link = target.closest('a[href]');
@@ -45750,30 +46578,22 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     }
     return a.map(String).sort((x, y) => x.localeCompare(y, undefined, { numeric: true })).join(', ');
   }
-  let tipEl = null;
-  function showTip(x, y, info, name) {
+  // the count, in the shared tooltip (dev/ui/tooltip.mjs), under the credit hovered
+  function showTip(anchor, info, name) {
     if (!info || (!info.n && !name)) { hideTip(); return; }
-    if (!tipEl) { tipEl = el('div', 'gt-tip'); document.body.appendChild(tipEl); }
-    tipEl.innerHTML = '';
     // we hid MB's native title (the entity's real/sort name, shown when Credited As differs) —
     // so surface it here instead so that info isn't lost.
-    if (name) tipEl.appendChild(el('div', 'gt-tip-name', name));
     const parts = [];
     if (info.n) { parts.push(`${info.n}×`); if (info.tracks && info.tracks.size) parts.push(`track${info.tracks.size > 1 ? 's' : ''} ${ranges(info.tracks)}`); if (info.release) parts.push('release'); }
-    if (parts.length) tipEl.appendChild(el('div', 'gt-tip-stat', parts.join(' · ')));
-    tipEl.style.display = '';
-    const r = tipEl.getBoundingClientRect();
-    tipEl.style.left = Math.min(x + 14, window.innerWidth - r.width - 8) + 'px';
-    tipEl.style.top = Math.min(y + 16, window.innerHeight - r.height - 8) + 'px';
+    mbuTipShowFor(anchor, mbuTipText([name, parts.join(' · ')].filter(Boolean).join('\n')), { place: 'above' });
   }
-  function hideTip() { if (tipEl) tipEl.style.display = 'none'; }
+  function hideTip() { mbuTipHide(true); }
   // MB puts the entity's sort name in the link's `title`, so the browser's native tooltip stacks on
   // top of ours. Temporarily strip it while our count tooltip is up, and restore it on the way out.
   let _hidTitle = null;
   function suppressTitle(target) { const te = target.closest && target.closest('[title]'); if (!te || (_hidTitle && te === _hidTitle.el)) return; restoreTitle(); const v = te.getAttribute('title'); if (v == null) return; _hidTitle = { el: te, val: v }; te.removeAttribute('title'); }
   function restoreTitle() { if (_hidTitle) { try { _hidTitle.el.setAttribute('title', _hidTitle.val); } catch (e) {} _hidTitle = null; } }
-  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); showTip(ev.clientX, ev.clientY, info, nm); }
-  function onMove(ev) { if (tipEl && tipEl.style.display !== 'none' && needleFor(ev.target)) { tipEl.style.left = Math.min(ev.clientX + 14, window.innerWidth - tipEl.offsetWidth - 8) + 'px'; tipEl.style.top = Math.min(ev.clientY + 16, window.innerHeight - tipEl.offsetHeight - 8) + 'px'; } }
+  function onOver(ev) { const nd = needleFor(ev.target); if (!nd) return; suppressTitle(ev.target); const nm = (_hidTitle && _hidTitle.val && _hidTitle.val !== nd) ? _hidTitle.val : null; const info = highlightPage(nd); showTip((_hidTitle && _hidTitle.el) || (ev.target.closest && ev.target.closest('a')) || ev.target, info, nm); }
   function onOut(ev) { if (!needleFor(ev.target)) return; const rt = ev.relatedTarget; if (_hidTitle && rt && _hidTitle.el.contains && _hidTitle.el.contains(rt)) return; clearHighlight(); hideTip(); restoreTitle(); }
 
   // ── styles ────────────────────────────────────────────────────────────────
@@ -45835,10 +46655,6 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
          terms and neither background follows the page theme. */
       ::highlight(gt-hl-existing){background:#1f6feb;color:#fff}
       ::highlight(gt-hl-new){background:#b45309;color:#fff}
-      .gt-tip{position:fixed;z-index:2147483647;pointer-events:none;background:#1b2430;color:#eef2f7;
-        font:12px -apple-system,Segoe UI,Arial,sans-serif;padding:4px 9px;border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
-      .gt-tip .gt-tip-name{font-weight:600}
-      .gt-tip .gt-tip-stat{color:#a9bed4;font-size:11px;margin-top:1px}   /* #564: the pill is always dark, so this is too — --mbu-info is mixed toward the page text and went near-black on it in the light theme */
       .gt-clone-btn{margin-left:10px;font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-info);background:var(--mbu-info-bg);
         border:1px solid var(--mbu-info);border-radius:5px;padding:2px 9px;cursor:pointer;vertical-align:middle}
       .gt-clone-btn:hover{background:var(--mbu-info-bg)}
@@ -46164,9 +46980,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         value: state.v,
         onChange: onCommit || null,
         placeholder: `tracks: 1,3,5-7 · 2:4 · all   (blank = ${blank})`,
-        title: 'A track number as shown (3, A1), a range (5-7), a medium-qualified number or range (2:4, 2:4-6), '
-          + 'a whole medium (2:*), or all.\nA plain number matching no displayed position means the Nth track, '
-          + `which is how a vinyl's "track 4" finds B1.\nLeave empty to use ${blank}.`,
+        title: 'Which tracks\n- a track number as shown: `3`, `A1`\n- a range: `5-7`\n- on a medium: `2:4`, `2:4-6`\n- a whole medium: `2:*`\n- `all`\n'
+          + `A number no track shows is the Nth track: a vinyl's “track 4” finds B1.\nEmpty: ${blank}`,
         onInput: (v) => {
           state.v = v;
           const rows = state.rowsFor();
@@ -46604,11 +47419,11 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const tracks = (r.media || []).reduce((s, m) => s + (m['track-count'] || 0), 0);
         const meta = [r.date, r.country, fmt, tracks ? tracks + ' tracks' : ''].filter(Boolean).join(' · ');
         if (meta) info.appendChild(el('span', 'gt-pop-rel-m', meta));
-        info.title = 'Copy this release’s credits onto this one';
+        info.dataset.tip = 'Copy this release’s credits onto this one';
         info.onclick = () => doCopyFrom(r.id, r.title + (r.disambiguation ? ` (${r.disambiguation})` : ''));
         const open = el('a', 'gt-pop-rel-open', '↗');   // ↗ open the release in a new tab to inspect first
         open.href = '/release/' + r.id; open.target = '_blank'; open.rel = 'noopener';
-        open.title = 'Open this release in a new tab';
+        open.dataset.tip = 'Open this release in a new tab';
         open.addEventListener('click', ev => ev.stopPropagation());
         b.appendChild(info); b.appendChild(open);
         list.appendChild(b);
@@ -46625,7 +47440,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // (same idiom as Apollo's link/artist add + ISRC Scout). Enter is a fallback for typed input.
     const add = el('div', 'gt-pop-add');
     const plus = el('button', 'gt-pop-add-btn'); plus.type = 'button'; plus.textContent = '＋ from a release URL / MBID';
-    const inp = el('input', 'gt-pop-tf gt-hidden'); inp.type = 'text'; inp.placeholder = 'paste a release URL / MBID…';
+    const inp = el('input', 'gt-pop-tf gt-hidden'); inp.type = 'text'; inp.placeholder = 'paste a release URL / MBID…'; inp.dataset.tip = 'Copy from another release\nPaste: the release’s MBID, or its MusicBrainz URL, copies from it at once';
     const fromInput = () => { const m = (inp.value || '').match(GID_RE); if (m) doCopyFrom(m[0]); };
     plus.onclick = () => { plus.classList.add('gt-hidden'); inp.classList.remove('gt-hidden'); try { inp.focus(); } catch (e) {} };
     inp.addEventListener('paste', () => setTimeout(fromInput, 0));   // wait for the pasted text to land in .value
@@ -46653,7 +47468,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     if (hdIc) hdIc.onerror = () => hdIc.remove();
     popEl.appendChild(hd.firstElementChild);
     const body = el('div', 'gt-cfg-body');
-    const opt = (label, hint, get, set) => { const l = el('label', 'gt-cfg-opt'); l.title = hint; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = get(); cb.onchange = () => set(cb.checked); l.append(cb, el('span', null, label)); return l; };
+    const opt = (label, hint, get, set) => { const l = el('label', 'gt-cfg-opt'); l.dataset.tip = hint; const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = get(); cb.onchange = () => set(cb.checked); l.append(cb, el('span', null, label)); return l; };
     body.appendChild(opt('Hide help text', 'Hide the two MusicBrainz help paragraphs at the top of the edit-relationships page', () => gtHideHelp, v => { gtHideHelp = v; try { GM_setValue('gt-hide-help', v); } catch (e) {} gtApplyHelp(); }));
     body.appendChild(opt('Hide native batch tools', "Hide MusicBrainz's own batch-tools table (#batch-tools) on the edit-relationships page", () => gtHideBatch, v => { gtHideBatch = v; try { GM_setValue('gt-hide-batch', v); } catch (e) {} gtApplyBatch(); }));
     body.appendChild(opt('Auto-match on start', 'Open the work matcher and run matching automatically when the page loads', () => gtAutoMatch, v => { gtAutoMatch = v; try { GM_setValue('gt-auto-match', v); } catch (e) {} }));
@@ -46674,29 +47489,29 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     if (!document.getElementById('release-rels')) return false;
     const bar = el('div', 'gt-toolbar');
     const b = el('button', 'gt-clone-btn', '⧉ Copy from release…');
-    b.title = 'Copy release-level credits (artists, labels) from another release onto this one';
+    b.dataset.tip = 'Copy release credits from another release\nArtists and labels, onto this one';
     b.type = 'button'; b.onclick = () => openCopyFromPopover(b); bar.appendChild(b); cloneBtnRef = b;
     const cons = el('button', 'gt-clone-btn', '▦ Consolidate RG…');
-    cons.title = 'Spread release-level credits across every release in this group (union minus format-specific)';
+    cons.dataset.tip = 'Spread release credits across every release in this group\nAll of them together, without the format-specific ones';
     cons.type = 'button'; cons.onclick = () => openConsolidate(); bar.appendChild(cons);
     const wm = el('button', 'gt-clone-btn', '◎ Match works…');
-    wm.title = 'Match each recording to an existing MusicBrainz work (via ISRC + title/artist siblings) and stage recording→work “performance” relationships';
+    wm.dataset.tip = 'Match each recording to an existing work\nBy ISRC, and by recordings of the same title and artist; stages the recording → work “performance” relationships.';
     wm.type = 'button'; wm.onclick = () => openWorkMatch(); bar.appendChild(wm);
     const tp = el('button', 'gt-clone-btn', '✎ Text parser…');
-    tp.title = 'Parse pasted or annotation credit text (e.g. "Role: Artist") into release relationships';
+    tp.dataset.tip = 'Read credits from text\nPasted, or the annotation’s, like `Role: Artist`, into release relationships';
     tp.type = 'button'; tp.onclick = () => openTextParser(); bar.appendChild(tp);
     // #365 one "Vertical:" section — ⬆ pushes the release's credits DOWN to its recordings, ⬇ pulls the
     // recordings' credits UP to the release (icons per majkinetor: up = release→recordings, down = →release)
     const vwrap = el('span', 'gt-vert');
     vwrap.appendChild(el('span', 'gt-vert-lbl', 'Vertical:'));
     const r2r = el('button', 'gt-clone-btn gt-vert-btn', '⬆');
-    r2r.title = 'Release → recordings: copy (or move) the release-level credits onto its recordings — the ticked ones, or all if none ticked';
+    r2r.dataset.tip = 'Release → recordings\nCopy (or move) the release credits onto its recordings: the ticked ones, or all when none is ticked.';
     r2r.type = 'button'; r2r.onclick = () => openRelToRec(r2r);
     const c2r = el('button', 'gt-clone-btn gt-vert-btn', '⬇');
-    c2r.title = 'Recordings → release: collect the recordings’ credits onto the release — a union across all tracks (shows the track range each covers)';
+    c2r.dataset.tip = 'Recordings → release\nCollect the recordings’ credits onto the release, all of them together, each with the tracks it covers.';
     c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
     vwrap.append(r2r, c2r); bar.appendChild(vwrap);
-    const cfg = el('button', 'gt-cfg-btn', MBU_CFG_ICON); cfg.type = 'button'; cfg.title = 'Group Therapy — options, about / help';
+    const cfg = el('button', 'gt-cfg-btn', MBU_CFG_ICON); cfg.type = 'button'; cfg.dataset.tip = 'Group Therapy\nOptions, about, help';
     cfg.onclick = () => openAboutPopover(cfg); bar.appendChild(cfg);
     // #372 the toolbar goes at the top of the tab (right after the entity tabs), not on the heading
     const tabs = content.querySelector(':scope > .tabs');
@@ -46796,7 +47611,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const b = el('span', 'gt-fmt-b', FMT_FAMILY[fam].label);
       b.style.background = FMT_FAMILY[fam].color;
       b.style.color = badgeInk(FMT_FAMILY[fam].color);
-      b.title = fam + (fmt && fmt !== fam ? ` (${fmt})` : '');
+      b.dataset.tip = fam + (fmt && fmt !== fam ? ` (${fmt})` : '');
       wrap.appendChild(b);
     }
     return wrap;
@@ -46980,7 +47795,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       rolesLine.appendChild(el('span', 'gt-dp-lbl', 'Roles'));
       if (!gtDateRoles.length) rolesLine.appendChild(el('span', 'gt-dp-hint', 'none — right-click a role below to add'));
       gtDateRoles.forEach(r => {
-        const chip = el('span', 'gt-dp-chip', r); chip.title = 'click to remove'; chip.appendChild(el('span', 'gt-dp-chipx', '×'));
+        const chip = el('span', 'gt-dp-chip', r); chip.dataset.tip = 'Click: remove'; chip.appendChild(el('span', 'gt-dp-chipx', '×'));
         chip.onclick = () => { gtDateRoles = gtDateRoles.filter(v => v !== r); saveDateRoles(); renderRoles(); renderBody(); };
         rolesLine.appendChild(chip);
       });
@@ -47000,7 +47815,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
           const row = el('label', 'gt-dp-crow' + (c.dated ? ' gt-dp-dated' : '')), cb = el('input'); cb.type = 'checkbox'; cb.checked = isChecked(c);
           cb.onchange = () => { manual.set(c.id, cb.checked); setTrackState(t, tcb); refreshCounts(); };
           const role = el('span', 'gt-dp-role', roleLabelOf(c.rel) || ltName(c.rel.linkTypeID));
-          role.title = 'right-click: remember this role for the default selection';
+          role.dataset.tip = 'Right-click: pick this role by default from now on';
           role.addEventListener('contextmenu', ev => { ev.preventDefault(); ev.stopPropagation(); addRole(ltName(c.rel.linkTypeID)); });
           row.append(cb, role, el('span', 'gt-dp-cname', c.name + (c.credit ? ` (${c.credit})` : '')));
           if (c.dated) row.append(el('span', 'gt-dp-has', fmtRoDate(c.rel)));
@@ -47072,14 +47887,14 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     releases.forEach(r => {
       const s = el('span', 'gt-cons-legi gt-cons-selitem' + (r.selected ? ' gt-on' : '') + (r.current ? ' gt-cur' : ''));
       s.appendChild(el('b', null, r.letter)); s.appendChild(fmtBadges(r.fmt)); s.appendChild(document.createTextNode(' ' + r.title)); if (r.year) s.appendChild(el('span', 'gt-cons-legyr', ' · ' + r.year));
-      const open = el('a', 'gt-cons-legopen', '↗'); open.href = '/release/' + r.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'Open this release in a new tab'; open.onclick = ev => ev.stopPropagation();
+      const open = el('a', 'gt-cons-legopen', '↗'); open.href = '/release/' + r.gid; open.target = '_blank'; open.rel = 'noopener'; open.dataset.tip = 'Open this release in a new tab'; open.onclick = ev => ev.stopPropagation();
       s.appendChild(open);
-      s.title = (r.selected ? 'In the matrix — click to remove its column' : 'Click to add its column') + (r.current ? ' · the release you’re editing' : '');
+      s.dataset.tip = (r.current ? 'The release you’re editing\n' : '') + (r.selected ? 'In the matrix\nClick: remove its column' : 'Click: add its column');
       s.onclick = () => { r.selected = !r.selected; recompute(); };
       leg.appendChild(s);
     });
     body.appendChild(leg);
-    const paste = el('input', 'gt-cons-paste'); paste.type = 'text'; paste.placeholder = 'paste release URLs / MBIDs to add them to the matrix…';
+    const paste = el('input', 'gt-cons-paste'); paste.type = 'text'; paste.placeholder = 'paste release URLs / MBIDs to add them to the matrix…'; paste.dataset.tip = 'Add releases to the matrix\nPaste: MBIDs or MusicBrainz URLs, one or more, adds them at once';
     paste.addEventListener('paste', () => setTimeout(() => {
       const gids = (paste.value.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi) || []);
       let n = 0; gids.forEach(g => { const rel = releases.find(r => r.gid.toLowerCase() === g.toLowerCase()); if (rel && !rel.selected) { rel.selected = true; n++; } });
@@ -47119,14 +47934,14 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const ent = el('td', 'gt-cons-ent'); ent.appendChild(document.createTextNode(row.label.ent)); if (row.label.credit) ent.appendChild(el('span', 'gt-cons-cr', ' “' + row.label.credit + '”')); tr.appendChild(ent);
         for (const rel of cols) {
           if (rel._relsErr) {   // #624 unread → unknown, not "missing"
-            const tf = el('td', 'gt-cons-cell gt-fail', '?'); tf.title = `Couldn’t read this release’s credits (${rel._relsErr}) — left out; use Retry above`;
+            const tf = el('td', 'gt-cons-cell gt-fail', '?'); tf.dataset.tip = `⚠ Couldn’t read this release’s credits: ${rel._relsErr}\nLeft out: Retry above tries again.`;
             tr.appendChild(tf); continue;
           }
           const td = el('td', 'gt-cons-cell'), has = row.present.has(rel.gid), prop = row.propose.has(rel.gid);
           td.classList.add(has ? 'gt-has' : prop ? 'gt-prop' : 'gt-none');
           td.textContent = has || prop ? rel.letter : '·';
-          if (has) td.title = 'already present';
-          else { td.style.cursor = 'pointer'; td.title = prop ? 'will be added — click to skip' : `skipped (format-specific for ${rel.fmt || '?'}) — click to add`; td.onclick = () => { row.propose.has(rel.gid) ? row.propose.delete(rel.gid) : row.propose.add(rel.gid); draw(); updatePlan(); }; }
+          if (has) td.dataset.tip = 'Already there';
+          else { td.style.cursor = 'pointer'; td.dataset.tip = prop ? 'To be added\nClick: skip it' : `Skipped: only for the ${rel.fmt || '?'} format\nClick: add it`; td.onclick = () => { row.propose.has(rel.gid) ? row.propose.delete(rel.gid) : row.propose.add(rel.gid); draw(); updatePlan(); }; }
           tr.appendChild(td);
         }
         tbl.appendChild(tr);
@@ -47134,14 +47949,14 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     };
     cols.forEach(r => {
       const th = el('th', 'gt-cons-col gt-cons-colsel' + (r._relsErr ? ' gt-fail' : '')); th.appendChild(el('div', 'gt-cons-coll', r.letter)); th.appendChild(fmtBadges(r.fmt));
-      th.title = r._relsErr ? `${r.title} — couldn’t read its credits (${r._relsErr}); use Retry above`
-        : `${r.title} — click to select / clear every addable credit for this release (skips format-specific)`;
+      th.dataset.tip = r._relsErr ? `${r.title}\n⚠ Couldn’t read its credits: ${r._relsErr}. Retry above tries again.`
+        : `${r.title}\nClick: pick or clear every credit that can be added to it, but the format-specific ones`;
       th.onclick = () => { const p = addableFor(r); const all = p.length && p.every(row => row.propose.has(r.gid)); p.forEach(row => all ? row.propose.delete(r.gid) : row.propose.add(r.gid)); draw(); updatePlan(); };
       head.appendChild(th);
     });
     tbl.appendChild(head); body.appendChild(tbl);
-    const autoBtn = el('button', 'gt-cons-btn', 'Auto select'); autoBtn.type = 'button'; autoBtn.title = 'Select every addable credit across the selected releases, except format-specific roles';
-    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.title = 'Deselect every proposed credit';
+    const autoBtn = el('button', 'gt-cons-btn', 'Auto select'); autoBtn.type = 'button'; autoBtn.dataset.tip = 'Pick every credit that can be added to the selected releases\nBut the format-specific roles';
+    const clearBtn = el('button', 'gt-cons-btn', 'Clear'); clearBtn.type = 'button'; clearBtn.dataset.tip = 'Clear every proposed credit';
     autoBtn.onclick = () => { cols.forEach(rel => addableFor(rel).forEach(row => row.propose.add(rel.gid))); draw(); updatePlan(); };
     clearBtn.onclick = () => { rows.forEach(row => row.propose.clear()); draw(); updatePlan(); };
     applyBtn.onclick = async () => { const n = await applyConsolidation(cols, rows, () => renderConsMatrix(ctx)); if (n) closeConsolidate(); };   // close on success (no auto-scroll — leave the page where it was)
@@ -47351,12 +48166,12 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
   function wmNewParamsUi() {
     wmDefaultType();   // #363 default to "Song" (once the catalogue exists)
     const wrap = el('div', 'gt-wm-nwp');
-    const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.title = 'Work type applied to every new work';
+    const typeSel = el('select', 'gt-wm-nwp-type'); typeSel.dataset.tip = 'The type of every new work';
     typeSel.appendChild(new Option('— type —', ''));
     wmWorkTypes().forEach(t => { const o = new Option(t.name, String(t.id)); if (t.id === wmNewType) o.selected = true; typeSel.appendChild(o); });
     typeSel.onchange = () => { wmNewType = typeSel.value ? +typeSel.value : null; wmApplyNewParams(); };
     wrap.appendChild(typeSel);
-    const lc = el('div', 'gt-wm-nwp-lang'); lc.title = 'Lyrics language(s) applied to every new work';
+    const lc = el('div', 'gt-wm-nwp-lang'); lc.dataset.tip = 'The lyrics languages of every new work';
     const chips = el('span', 'gt-wm-nwp-chips'), inp = el('input', 'gt-wm-nwp-inp');
     inp.placeholder = 'lyrics language…'; inp.spellcheck = false;
     let drop = null;
@@ -47364,7 +48179,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     function closeDrop() { if (drop) { drop.remove(); drop = null; document.removeEventListener('mousedown', onDown, true); } }
     function renderChips() {
       chips.textContent = '';
-      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
+      wmNewLangs.forEach(l => { const c = el('span', 'gt-wm-nwp-chip', l.name); const x = el('span', 'gt-wm-nwp-x', '×'); x.dataset.tip = 'Remove'; x.onclick = () => { wmNewLangs = wmNewLangs.filter(o => o !== l); wmApplyNewParams(); renderChips(); }; c.appendChild(x); chips.appendChild(c); });
     }
     function showDrop() {
       closeDrop();
@@ -47378,7 +48193,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     inp.oninput = showDrop; inp.onfocus = showDrop;
     inp.onkeydown = e => { if (e.key === 'Escape' && drop) { closeDrop(); e.stopPropagation(); } };
     lc.append(chips, inp); wrap.appendChild(lc); renderChips();
-    const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.title = 'recording-of relationship options — attributes (live, cover…) + dates';
+    const more = el('button', 'gt-wm-nwp-more', '⋯'); more.type = 'button'; more.dataset.tip = 'The recording-of relationship\nIts attributes (live, cover, …) and dates';
     more.onclick = () => wmRelOptsPopover(more); wrap.appendChild(more);
     // #432 (vzell): the ⋯ popover selections were invisible once it closed — surface them
     // as live chips right next to the button (attributes and "ended" removable via ×, the
@@ -47391,20 +48206,20 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const names = new Map(wmPerfAttrs().map(a => [a.typeID, a.name]));
       wmRelAttrs.forEach(id => {
         const c = el('span', 'gt-wm-nwp-chip', names.get(id) || ('#' + id));
-        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove attribute';
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.dataset.tip = 'Remove the attribute';
         x.onclick = () => { wmRelAttrs.delete(id); closeRoPop(); wmRoRefresh(); };
         c.appendChild(x); roSum.appendChild(c);
       });
       const b = fmtD(wmBegin), e2 = fmtD(wmEnd);
       if (b || e2) {
         const c = el('span', 'gt-wm-nwp-chip', (b || '…') + ' → ' + (e2 || '…'));
-        c.title = 'recording-of dates — click to edit'; c.style.cursor = 'pointer';
+        c.dataset.tip = 'The recording-of dates\nClick: edit them'; c.style.cursor = 'pointer';
         c.onclick = () => { if (!wmRoPop) wmRelOptsPopover(more); };
         roSum.appendChild(c);
       }
       if (wmEnded) {
         const c = el('span', 'gt-wm-nwp-chip', 'ended');
-        const x = el('span', 'gt-wm-nwp-x', '×'); x.title = 'remove';
+        const x = el('span', 'gt-wm-nwp-x', '×'); x.dataset.tip = 'Remove';
         x.onclick = () => { wmEnded = false; closeRoPop(); wmRoRefresh(); };
         c.appendChild(x); roSum.appendChild(c);
       }
@@ -47676,10 +48491,10 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     hdr.appendChild(el('span', 'gt-cons-title', 'Match recordings to works'));
     // #381 maximize/restore — toggles a near-fullscreen class. Clears any drag-resized inline size on the way
     // in (inline would beat the class) and restores it on the way out.
-    const max = el('button', 'gt-cons-x', '⛶'); max.type = 'button'; max.title = 'Maximize / restore';
+    const max = el('button', 'gt-cons-x', '⛶'); max.type = 'button'; max.dataset.tip = 'Maximize or restore';
     max.onclick = () => {
-      if (panel.classList.toggle('gt-wm-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; max.textContent = '❐'; max.title = 'Restore'; }
-      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; max.textContent = '⛶'; max.title = 'Maximize'; }
+      if (panel.classList.toggle('gt-wm-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; max.textContent = '❐'; max.dataset.tip = 'Restore'; }
+      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; max.textContent = '⛶'; max.dataset.tip = 'Maximize'; }
     };
     hdr.appendChild(max);
     const x = el('button', 'gt-cons-x', '✕'); x.type = 'button'; x.onclick = closeWorkMatch; hdr.appendChild(x);
@@ -47713,28 +48528,31 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
   // Apply stages every resolved row; the toolbar carries the cutoff chip, an unresolved count, and ⚡ Match.
   function renderWorkMatch(body, foot, rows) {
     body.textContent = ''; foot.textContent = '';
-    const mkAct = (glyph, title, run) => { const b = el('button', 'gt-wm-act', glyph); b.type = 'button'; b.title = title; b.onclick = e => { e.stopPropagation(); run(); }; return b; };
+    const mkAct = (glyph, title, run) => { const b = el('button', 'gt-wm-act', glyph); b.type = 'button'; b.dataset.tip = title; b.onclick = e => { e.stopPropagation(); run(); }; return b; };
     // ── toolbar ──
     const tb = el('div', 'gt-wm-tb');
     const amstatus = el('span', 'gt-wm-amstatus');
     const cutWrap = el('label', 'gt-wm-tbl2'); cutWrap.appendChild(el('b', null, 'Cutoff'));
-    const chip = el('span', 'gt-wm-cutoff'); chip.tabIndex = 0; chip.title = 'lowest confidence that ⚡ Match still resolves';
+    const chip = el('span', 'gt-wm-cutoff'); chip.tabIndex = 0;
     const chipDot = el('span', 'gt-wm-cutoff-dot'), chipLbl = el('span', 'gt-wm-cutoff-lbl');
     chip.append(chipDot, chipLbl, el('span', 'gt-wm-cutoff-caret', '▾')); cutWrap.appendChild(chip);
-    const paintChip = () => { const lvl = WM_LVL_BY_RANK[wmCutoff] || 'near'; chipDot.style.background = WM_LEVEL[lvl].c; chipLbl.textContent = lvl; };
+    const paintChip = () => { const lvl = WM_LVL_BY_RANK[wmCutoff] || 'near'; chipDot.style.background = WM_LEVEL[lvl].c; chipLbl.textContent = lvl;
+      // the tip is the levels' table, the chosen one marked and the ones below it dimmed
+      chip.dataset.tip = 'The lowest confidence ⚡ Match still resolves\n'
+        + WM_LVL_BY_RANK.map((l, i) => `{${WM_LEVEL[l].c}${i === wmCutoff ? ' on' : i > wmCutoff ? ' off' : ''}} ${l}: ${WM_LEVEL[l].t}`).join('\n'); };
     paintChip();
     const warn = el('span', 'gt-wm-warn');
     let cancelled = false;   // #372 cancel an ongoing match without closing the matcher
-    const cancelBtn = el('button', 'gt-wm-cancel', '✕ cancel'); cancelBtn.type = 'button'; cancelBtn.title = 'stop matching (keeps what has matched so far)'; cancelBtn.style.display = 'none';
+    const cancelBtn = el('button', 'gt-wm-cancel', '✕ cancel'); cancelBtn.type = 'button'; cancelBtn.dataset.tip = 'Stop matching\nWhat has matched so far stays.'; cancelBtn.style.display = 'none';
     cancelBtn.onclick = () => { cancelled = true; if (wmAbort) { try { wmAbort.abort(); } catch (e) {} } cancelBtn.style.display = 'none'; };   // abort in-flight fetches so it stops immediately
-    const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.title = 'resolve every unresolved track whose best match is at/above the cutoff';
-    const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.title = 'more actions';
+    const matchBtn = el('button', 'gt-wm-btn primary', '⚡ Match'); matchBtn.type = 'button'; matchBtn.dataset.tip = 'Resolve every open track whose best match reaches the cutoff';
+    const matchCaret = el('button', 'gt-wm-caret', '▾'); matchCaret.type = 'button'; matchCaret.dataset.tip = 'More';
     matchCaret.onclick = () => wmFloatMenu(matchCaret, [{ label: 'Clear all', run: () => { rows.forEach(r => { r.chosen = null; }); draw(); updatePlan(); } }]);
     // #363 new-work options on the left; matched status + cutoff + Match (with a caret menu for Clear) on the right
     tb.append(wmNewParamsUi());
     // #718 shown only when a track title has " / "; toggling rebuilds the rows (and re-matches if a match ran)
     if (rows.some(r => r.parts || wmMedleyParts(r.title))) {
-      const split = el('label', 'gt-wm-split'); split.title = 'Split track titles on “ / ” (a medley) and match each part to its own work';
+      const split = el('label', 'gt-wm-split'); split.dataset.tip = 'Split medleys\nTrack titles split on “ / ”, each part matched to its own work';
       const scb = document.createElement('input'); scb.type = 'checkbox'; scb.checked = wmSplitMedley;
       scb.onchange = () => { wmSplitMedley = scb.checked; try { GM_setValue('gt-wm-split', wmSplitMedley); } catch (e) {} openWorkMatch(rows.some(r => r._matched)); };
       split.append(scb, document.createTextNode('Split on '), el('code', null, '/')); tb.appendChild(split);
@@ -47777,19 +48595,19 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const w = row.chosen;
       if (!w) {
         if (dot) dot.style.visibility = 'hidden';
-        const none = el('span', 'gt-wm-none', '— none —'); none.title = 'pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
+        const none = el('span', 'gt-wm-none', '— none —'); none.dataset.tip = 'Pick a work'; none.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(none);
         const acts = el('span', 'gt-wm-acts'); acts.appendChild(mkAct('＋', 'set to a new work', () => { row.chosen = wmMakeNewWork(row.title); draw(); updatePlan(); })); wkd.appendChild(acts);
         return;
       }
-      if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.title = 'new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.title = L.t; } }
-      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || '')); nw.title = 'change / pick a work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
-      else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'change / pick a work (middle-click to open the work)'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
+      if (dot) { dot.style.visibility = 'visible'; if (w._gtNew) { dot.style.background = '#2c7a51'; dot.dataset.tip = 'A new work'; } else { const L = WM_LEVEL[row.level] || WM_LEVEL.near; dot.style.background = L.c; dot.dataset.tip = L.t; } }
+      if (w._gtNew) { const nw = el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || '')); nw.dataset.tip = 'Change or pick the work'; nw.onclick = () => wmPicker(row, wkd, draw, updatePlan); wkd.appendChild(nw); }
+      else { const a = el('a', 'gt-wm-wa', w.title); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Change or pick the work\nMiddle-click: open the work'; a.onclick = e => { e.preventDefault(); e.stopPropagation(); wmPicker(row, wkd, draw, updatePlan); }; wkd.appendChild(a); if (w.disambiguation) wkd.appendChild(el('span', 'gt-wm-disamb', ` (${w.disambiguation})`)); }
       if (wad && !w._gtNew) {   // #363 a NEW work has no writers yet — don't leave the auto-match candidate's writers showing
         wad.textContent = '';
         if (row.writers && row.writers.length) wad.appendChild(el('span', 'gt-wm-wwr', row.writers.slice(0, 4).join(', ')));
         // when the performer is one of the work's recording artists (why it matched), show them too — the
         // native work dropdown's "Artists:" line, e.g. Phil Collins on "You Can't Hurry Love"
-        if (row.artistMatched && row.workArtists && row.workArtists.length) { const ar = el('span', 'gt-wm-wart', '♫ ' + row.workArtists.slice(0, 3).join(', ')); ar.title = 'recording artists of this work — the performer is among them'; wad.appendChild(ar); }
+        if (row.artistMatched && row.workArtists && row.workArtists.length) { const ar = el('span', 'gt-wm-wart', '♫ ' + row.workArtists.slice(0, 3).join(', ')); ar.dataset.tip = 'Recording artists of this work\nThe performer is among them.'; wad.appendChild(ar); }
       }
       const acts = el('span', 'gt-wm-acts');
       acts.appendChild(mkAct('↺', 'clear this match', () => { row.chosen = null; draw(); updatePlan(); }));
@@ -47846,7 +48664,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     };
     matchBtn.onclick = runMatch;
     chip.onclick = () => wmFloatMenu(chip, WM_LVL_BY_RANK.map(lvl => ({ label: lvl, dot: WM_LEVEL[lvl].c, sel: WM_RANK[lvl] === wmCutoff, run: () => { wmCutoff = WM_RANK[lvl]; try { GM_setValue('gt-wm-cutoff', wmCutoff); } catch (e) {} paintChip(); applyCutoff(); } })));
-    const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.title = 'Create a new work (named after the track) for every recording still unresolved — same-title tracks share one';
+    const newAllBtn = el('button', 'gt-cons-btn', '＋ New work for unresolved'); newAllBtn.type = 'button'; newAllBtn.dataset.tip = 'A new work for every recording still open\nNamed after the track; tracks of the same title share one.';
     newAllBtn.onclick = () => { rows.forEach(r => { if (!(r.hasWorkOnPage || r.linked) && (r._matched || !wmRunning) && !r.chosen) r.chosen = wmMakeNewWork(r.title); }); draw(); updatePlan(); };   // #363 include cancelled rows once matching has stopped
     applyBtn.onclick = async () => { const n = await wmApply(rows, null); if (n > 0) closeWorkMatch(); };   // close the popup once staged (#363 follow-up)
     foot.append(newAllBtn, plan, applyBtn);   // #363 Clear moved to the Match caret menu; new-work options moved to the toolbar
@@ -47859,7 +48677,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     if (work.type && work.type !== 'Song') r.appendChild(el('span', 'gt-wm-rw', ' · ' + work.type));
     if (work.authors && work.authors.length) r.appendChild(el('span', 'gt-wm-rw', ' — ' + work.authors.slice(0, 4).join(', ')));
     if (work.artists && work.artists.length) r.appendChild(el('span', 'gt-wm-rw', ' · ♫ ' + work.artists.slice(0, 3).join(', ')));
-    if (work.gid) { const open = el('a', 'gt-wm-open', '↗'); open.href = '/work/' + work.gid; open.target = '_blank'; open.rel = 'noopener'; open.title = 'open this work in a new tab'; open.onclick = e => e.stopPropagation(); r.appendChild(open); }
+    if (work.gid) { const open = el('a', 'gt-wm-open', '↗'); open.href = '/work/' + work.gid; open.target = '_blank'; open.rel = 'noopener'; open.dataset.tip = 'Open this work in a new tab'; open.onclick = e => e.stopPropagation(); r.appendChild(open); }
     r.onclick = () => { row.chosen = work; row.best = work; if (!row.level || row.level === 'none') row.level = 'near'; row.writers = work.authors || []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     return r;
   }
@@ -47877,15 +48695,15 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const w = row.chosen;
       if (!w) { cur.appendChild(el('span', 'gt-wm-none', '— none —')); return; }
       if (w._gtNew) { cur.appendChild(el('span', 'gt-wm-newtag', '＋ new work: ' + (w.name || w.title || ''))); return; }
-      const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'open this work in a new tab'; cur.appendChild(a);
+      const a = el('a', 'gt-wm-wa', w.title + (w.disambiguation ? ` (${w.disambiguation})` : '')); a.href = '/work/' + w.gid; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Open this work in a new tab'; cur.appendChild(a);
       if (row.writers && row.writers.length) cur.appendChild(el('span', 'gt-wm-rw', ' — ' + row.writers.slice(0, 4).join(', ')));
-      const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.title = 'clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
+      const clr = el('button', 'gt-wm-act', '↺'); clr.type = 'button'; clr.dataset.tip = 'Clear this match'; clr.onclick = () => { row.chosen = null; paintCur(); draw && draw(); updatePlan && updatePlan(); }; cur.appendChild(clr);
     };
     paintCur(); popEl.appendChild(cur);
     const qrow = el('div', 'gt-wm-qrow');
-    const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; qrow.appendChild(q);
+    const q = el('input', 'gt-wm-q'); q.type = 'text'; q.placeholder = 'search works, or paste a work MBID / URL…'; q.dataset.tip = 'Search works by name\nPaste: an MBID, or its MusicBrainz URL, picks that work at once'; qrow.appendChild(q);
     // #363 create-new-work as a + button right of the search (like Apollo's recordings picker), not a footer button
-    const newBtn = el('button', 'gt-wm-newplus', '＋'); newBtn.type = 'button'; newBtn.title = 'Create a new work “' + trunc(row.title, 40) + '”';
+    const newBtn = el('button', 'gt-wm-newplus', '＋'); newBtn.type = 'button'; newBtn.dataset.tip = 'Create a new work “' + trunc(row.title, 40) + '”';
     newBtn.onclick = () => { const w = wmMakeNewWork(row.title); row.chosen = w; row.best = w; row.level = (!row.level || row.level === 'none') ? 'near' : row.level; row.writers = []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     qrow.appendChild(newBtn); popEl.appendChild(qrow);
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
@@ -47977,8 +48795,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       items.push(hdr,
         { checklist: entries, onToggle: () => { const n = chosen().length; copyItem._setSub && copyItem._setSub(String(n)); },
           rowBtns: [
-            { label: 'A', title: 'select every track crediting this artist — any role', run: e => { const n = selectByCredit(e.rel.other.gid, null); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this artist` : 'No other tracks with this artist'); } },
-            { label: 'R', title: 'select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
+            { label: 'A', title: 'Select every track crediting this artist, in any role', run: e => { const n = selectByCredit(e.rel.other.gid, null); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this artist` : 'No other tracks with this artist'); } },
+            { label: 'R', title: 'Select every track crediting this artist in the same role', run: e => { const n = selectByCredit(e.rel.other.gid, e.role); refreshHdr(); toast(n ? `+${n} track${n > 1 ? 's' : ''} with this role` : 'No other tracks with this role'); } },
           ] },
         copyItem, moveItem);
       // #398 "Set dates…" — only when the clicked rel carries a date to seed with. Opens the date picker
@@ -49052,10 +49870,10 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     hdr.appendChild(annoBtn);
     // #522 follow-up (majkinetor): "Add resizable columns and maximize
     // button" — same maximize/restore toggle Match Works already has.
-    const maxBtn = el('button', 'gt-cons-x', '⛶'); maxBtn.type = 'button'; maxBtn.title = 'Maximize / restore';
+    const maxBtn = el('button', 'gt-cons-x', '⛶'); maxBtn.type = 'button'; maxBtn.dataset.tip = 'Maximize or restore';
     maxBtn.onclick = () => {
-      if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.title = 'Restore'; }
-      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.title = 'Maximize'; }
+      if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.dataset.tip = 'Restore'; }
+      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.dataset.tip = 'Maximize'; }
       saveState();   // #544 follow-up: maximizing changed the window and saved nothing
     };
     hdr.appendChild(maxBtn);
@@ -49063,7 +49881,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
 
     const ctrl = el('div', 'gt-tp-ctrl');
     const patIn = el('input', 'gt-tp-pat'); patIn.type = 'text'; patIn.value = pattern;
-    const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.title = 'Clear pattern';
+    const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
     // #525 (majkinetor): "lets move the Resolve all to the top, to match the
@@ -49072,7 +49890,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // "⚡ Match" button lives at the right of the TOP bar, not the footer
     // (renderWorkMatch's `tb`), styled the same bold-purple "primary" way.
     const resolveBtn = el('button', 'gt-tp-resolve', '⚡ Match'); resolveBtn.type = 'button';
-    resolveBtn.title = 'Resolve every role and entity that can auto-resolve';
+    resolveBtn.dataset.tip = 'Resolve every role and entity that can auto-resolve';
     // #539: scope picker. Release is still the default — the recording scope is
     // opt-in and inert until a track selector is typed.
     const scopeWrap = el('span', 'gt-tp-scope');
@@ -49081,9 +49899,9 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     scopeSel.value = scope.kind;
     const tracksIn = el('input', 'gt-tp-tracks'); tracksIn.type = 'text'; tracksIn.value = scope.spec;
     tracksIn.placeholder = 'tracks: 1,3,5-7 · 2:4 · all';
-    tracksIn.title = 'Which recordings the credits go on: a track number as shown (3, A1), a range (5-7), '
-      + 'a medium-qualified number or range (2:4, 2:4-6), a whole medium (2:*), or all. '
-      + 'Leave empty to use the tracks ticked in the editor.';
+    tracksIn.dataset.tip = 'Which recordings the credits go on\n'
+      + '- a track number as shown: `3`, `A1`\n- a range: `5-7`\n- on a medium: `2:4`, `2:4-6`\n- a whole medium: `2:*`\n- `all`\n'
+      + 'Empty: the tracks ticked in the editor';
     const tracksInfo = el('span', 'gt-tp-tracks-info', '');
     // #597: per-row track detection. Separate from Scope on purpose — Scope
     // says where rows that name NO tracks go, this says whether a row may name
@@ -49093,17 +49911,18 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     const detSel = el('select', 'gt-tp-det-sel');
     [['auto', 'Tracks: auto'], ['off', 'Tracks: off']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; detSel.appendChild(o); });
     detSel.value = scope.tracks;
-    detSel.title = 'auto: a credit that names its own tracks — "Lead vocals (tracks 2,6,9)", "Djembe (track 4)" — goes on those recordings, '
-      + 'whatever Scope says; everything else follows Scope. A clause only counts when every number in it is a real track on this release, '
-      + 'so "(2003)" is left alone.\noff: the pre-#597 behaviour — Scope decides for every row.';
+    detSel.dataset.tip = 'Tracks named in a credit\n'
+      + 'Auto: a credit that names its own tracks, like “Lead vocals (tracks 2,6,9)”, goes on those recordings, whatever Scope says; the rest follows Scope. '
+      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row';
     // #777: where a work role goes when a credit lands on recordings — "create
     // needed", as in Credit Hoarder, makes the work a track lacks.
     const worksSel = el('select', 'gt-tp-works-sel');
     [['none', 'Works: create none'], ['needed', 'Works: create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
     worksSel.value = scope.works;
-    worksSel.title = 'A role recordings don\'t have but works do (lyricist, composer, librettist, translator) goes on the works of the tracks it is applied to.\n'
-      + 'create none: only works already linked; a track with no work is skipped and counted.\n'
-      + 'create needed: a track with no work also gets a new work, named after the recording. Match existing works first (◎ Match works…), or this creates duplicates.';
+    worksSel.dataset.tip = 'Work roles\nA role works have and recordings don\'t (lyricist, composer, librettist, translator) goes on the works of its tracks.\n'
+      + 'Create none: only works already linked; a track with no work is skipped, and counted\n'
+      + 'Create needed: a track with no work gets a new one, named after the recording\n'
+      + '⚠ Match the existing works first (◎ Match works…), or this makes duplicates';
     scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
@@ -49124,7 +49943,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         ? `→ ${targets.length} track${targets.length > 1 ? 's' : ''}${ticked ? ' (ticked)' : ''}: ${shown}`
         : (ticked ? '→ no tracks ticked' : '→ nothing matched');
       tracksInfo.style.color = targets.length ? 'var(--mbu-ok)' : 'var(--mbu-warn)';
-      tracksInfo.title = targets.map(t => `${t.num}  ${t.title}`).join('\n');
+      tracksInfo.dataset.tip = targets.map(t => `${t.num}  ${t.title}`).join('\n');
     };
     // The recordings this run will credit: an explicit selector wins, otherwise
     // the editor's own ticked tracks (the same idiom as GT's other tools).
@@ -49148,7 +49967,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // top bar has twice been one control too wide (#539), and the tooltip
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
-    freezeBtn.title = 'Freeze matched — lock this pattern onto every line that still uses the default pattern and already matches it, then try another pattern on what is left';
+    freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
     ctrl.append(patIn, patClr, freezeBtn, presets, resolveBtn);
 
     const src = el('div', 'gt-tp-src');
@@ -49203,7 +50022,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     const cnt = el('span', 'gt-tp-cnt');
     // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
-    applyClearBtn.title = 'Apply the resolved rows, then clear this release\'s annotation — submitted for you, with its own edit note';
+    applyClearBtn.dataset.tip = 'Apply the resolved rows, then clear the release\'s annotation\nSubmitted for you, with its own edit note';
     applyClearBtn.style.display = 'none';
     const applyBtn = el('button', 'gt-cons-btn gt-cons-apply', 'Apply'); applyBtn.type = 'button';
     // #544 (majkinetor): "Add [freeze pattern] option for matching rows the same
@@ -49259,7 +50078,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
           const span = spanByLine.get(r.li);
           const ovTd = el('td'); if (span > 1) ovTd.rowSpan = span;
           const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = pattern; ov.value = lines[r.li].override || '';
-          ov.title = 'Override the pattern for just this line'; ov.dataset.fkey = 'ov:' + r.li;
+          ov.dataset.tip = 'Another pattern for this line only'; ov.dataset.fkey = 'ov:' + r.li;
           ov.addEventListener('input', () => { lines[r.li].override = ov.value; render(); saveState(); });
           ovTd.appendChild(ov); tr.appendChild(ovTd);
 
@@ -49268,14 +50087,14 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
           // input synced back into the textarea, plus a remove button.
           const rawTd = el('td'); if (span > 1) rawTd.rowSpan = span;
           const rawWrap = el('span', 'gt-tp-rawwrap');
-          const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = r.raw; rawIn.title = r.raw;
+          const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = r.raw; rawIn.dataset.tip = r.raw;
           rawIn.dataset.fkey = 'raw:' + r.li;
           rawIn.addEventListener('input', () => {
             lines[r.li].raw = rawIn.value;
             [...entityOverride.keys()].filter(k => +k.split(':')[0] === r.li).forEach(k => entityOverride.delete(k));
             syncTextareaFromLines(); render(); saveState();
           });
-          const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.title = 'Remove this line';
+          const delBtn = el('button', 'gt-tp-rowdel', '✕'); delBtn.type = 'button'; delBtn.dataset.tip = 'Remove this line';
           delBtn.onclick = () => deleteLine(r.li);
           rawWrap.append(rawIn, delBtn);
           rawTd.appendChild(rawWrap);
@@ -49293,9 +50112,9 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         // entity's own canonical name, clearing that stray override.
         const entRawTd = el('td', 'gt-tp-c', r.entity || '');
         if (r.matched && r.entity) {
-          entRawTd.title = r.entityMatch
-            ? `Right-click: replace with the resolved name "${r.entityMatch.name}" (clears suffixes/typos in the raw text)`
-            : 'Resolve the entity first, then right-click here to clean up the raw text';
+          entRawTd.dataset.tip = r.entityMatch
+            ? `Right-click: replace it with the resolved name, “${r.entityMatch.name}”, without the raw text's suffixes and typos`
+            : 'Resolve the entity first\nThen right-click here cleans up the raw text.';
           entRawTd.addEventListener('contextmenu', e => {
             e.preventDefault();
             if (!r.entityMatch) { toast('Resolve this row’s entity first'); return; }
@@ -49329,7 +50148,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         // opens it directly (skipping the browser's own context menu).
         const roleTd = el('td', 'gt-tp-c');
         if (r.matched && !r.crKind) {
-          if (r.roleMatch) { const rs = el('button', 'gt-tp-search gt-tp-resolved', r.roleMatch.name); rs.type = 'button'; rs.title = 'Click to change'; rs.onclick = () => txpPickRole(r); roleTd.appendChild(rs); }
+          if (r.roleMatch) { const rs = el('button', 'gt-tp-search gt-tp-resolved', r.roleMatch.name); rs.type = 'button'; rs.dataset.tip = 'Click: change it'; rs.onclick = () => txpPickRole(r); roleTd.appendChild(rs); }
           else { const rb = el('button', 'gt-tp-search', 'search'); rb.type = 'button'; rb.onclick = () => txpPickRole(r); roleTd.appendChild(rb); }
         } else if (r.matched) {
           roleTd.appendChild(el('span', r.roleMatch ? 'gt-tp-resolved' : 'gt-tp-status', r.roleMatch ? r.roleMatch.name : '(resolves once holder is picked)'));
@@ -49342,7 +50161,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
             // #544: the disambiguation is set apart from the name here too, so
             // the resolved cell and the search results read the same way.
             if (r.entityMatch.disambiguation) a.appendChild(el('span', 'gt-tp-disamb', ` (${r.entityMatch.disambiguation})`));
-            a.href = '/' + r.entityMatch.entityType + '/' + r.entityMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.title = 'Click to change · right-click to open';
+            a.href = '/' + r.entityMatch.entityType + '/' + r.entityMatch.gid; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Click: change it\nRight-click: open it';
             a.addEventListener('click', e => { e.preventDefault(); txpPickEntity(r, a); });
             a.addEventListener('contextmenu', e => { e.preventDefault(); window.open(a.href, '_blank', 'noopener'); });
             entTd.appendChild(a);
@@ -49356,7 +50175,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
             // failed in a way nothing here can see never strands the row.
             const c = el('button', 'gt-tp-creating', `creating “${trunc(r.creating.name, 16)}”… ✕`);
             c.type = 'button';
-            c.title = `A background tab is creating this ${r.creating.kind}; the row fills in on its own once it commits.\nClick to stop waiting and get the search back.`;
+            c.dataset.tip = `A background tab is creating this ${r.creating.kind}\nThe row fills in by itself once it is saved.\nClick: stop waiting, and get the search back`;
             c.onclick = () => { const p = r.creating; if (p && p.cancel) p.cancel('cancelled'); else { pendingCreates.delete((r.entity || '').toLowerCase().trim()); render(); } };
             entTd.appendChild(c);
           } else { const ab = el('button', 'gt-tp-search', 'search'); ab.type = 'button'; ab.onclick = () => txpPickEntity(r, ab); entTd.appendChild(ab); }
@@ -49370,12 +50189,12 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         if (r.trackNote) {
           // the line carried more than one track list — see txpDetectTracks
           const w = el('span', 'gt-tp-trk-warn', '⚠ split line');
-          w.title = `${r.trackNote}\n\nOne line can only carry one track list, so this credit is going wherever Scope points instead. Split it into one role per line.`;
+          w.dataset.tip = `${r.trackNote}\n⚠ One line carries one track list, so this credit goes where Scope points instead. Split it into one role per line.`;
           trkTd.appendChild(w);
         } else if (r.trackTargets && r.trackTargets.length) {
           const nums = r.trackTargets.map(t => t.num);
           const s = el('span', 'gt-tp-trk-on', nums.length > 4 ? `${nums.slice(0, 4).join(', ')} +${nums.length - 4}` : nums.join(', '));
-          s.title = `From “${r.trackSpec}” in the credit text:\n` + r.trackTargets.map(t => `${t.num}  ${t.title}`).join('\n');
+          s.dataset.tip = `From “${r.trackSpec}” in the credit text\n` + r.trackTargets.map(t => `- ${t.num}  ${t.title}`).join('\n');
           trkTd.appendChild(s);
         } else if (scope.kind === 'recording') {
           trkTd.appendChild(el('span', 'gt-tp-trk-dim', 'scope'));
@@ -49691,7 +50510,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         // opened), so the spinner belongs on the + button. The background path
         // above closed the popover and signals on the row instead. #544
         createBtn.classList.add('gt-tp-plus-wait');
-        createBtn.title = `Waiting for the new ${kind}…`;
+        createBtn.dataset.tip = `Waiting for the new ${kind}…`;
         const win = window.open(url, '_blank');
         let done = false;
         const finish = async (gid) => {
@@ -49741,7 +50560,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const PLURAL = { artist: 'artists', label: 'labels', place: 'places' };
         hdr.textContent = `Pick ${ARTICLE[searchKind]} for “${trunc(r.role || r.raw, 40)}”`;
         q.placeholder = `search ${PLURAL[searchKind]}, or paste an MBID / URL…`;
-        createBtn.title = `Create ${searchKind} “${trunc(r.entity || '', 40)}” ↗  ·  right-click to create in the background`;
+        q.dataset.tip = `Search ${PLURAL[searchKind]} by name\nPaste: an MBID, or its MusicBrainz URL, picks that ${searchKind} at once`;
+        createBtn.dataset.tip = `Create the ${searchKind} “${trunc(r.entity || '', 40)}” ↗\nRight-click: create it in the background`;
         if (canToggle) [...popEl.querySelectorAll('.gt-tp-tab')].forEach(b => b.classList.toggle('gt-tp-tab-on', b.dataset.kind === searchKind));
       };
       renderChrome();
@@ -50348,7 +51168,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // the ✕ to the right in every other dialog here — the button sat glued to
     // the end of the title text. Same classes as the rest now.
     hdr.appendChild(el('span', 'gt-cons-title', title));
-    const close = el('button', 'gt-cons-x', '✕'); close.type = 'button'; close.title = 'Cancel'; hdr.appendChild(close);
+    const close = el('button', 'gt-cons-x', '✕'); close.type = 'button'; close.dataset.tip = 'Cancel'; hdr.appendChild(close);
     panel.appendChild(hdr);
     const search = el('input', 'gt-role-search');
     search.type = 'text'; search.placeholder = 'Type to filter roles…';
@@ -50542,11 +51362,11 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   function hintControls(ev) {
     const t = ev.target; if (!t || !t.closest) return;
     const cb = t.closest && t.closest('tr.track input.recording, tr.track input.work');
-    if (cb && !cb.dataset.gtHint) { cb.dataset.gtHint = '1'; if (!cb.title) cb.title = cb.matches('input.work')
-      ? 'Group Therapy: right-click to copy/move this work’s relationships to the ticked works'
-      : 'Group Therapy: right-click to copy/move this recording’s credits to the ticked recordings'; return; }
+    if (cb && !cb.dataset.gtHint) { cb.dataset.gtHint = '1'; if (!cb.title) cb.dataset.tip = cb.matches('input.work')
+      ? 'Group Therapy\nRight-click: copy or move this work’s relationships to the ticked works'
+      : 'Group Therapy\nRight-click: copy or move this recording’s credits to the ticked recordings'; return; }
     const x = t.closest('button.icon.remove-item');
-    if (x && !x.dataset.gtHint) { x.dataset.gtHint = '1'; if (!x.title) x.title = 'Group Therapy: right-click to remove a whole group (this role / this target / both)'; }
+    if (x && !x.dataset.gtHint) { x.dataset.gtHint = '1'; if (!x.title) x.dataset.tip = 'Group Therapy\nRight-click: remove a whole group: this role, this target, or both'; }
   }
 
   // ── boot ────────────────────────────────────────────────────────────────
@@ -50554,7 +51374,6 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     injectStyle();
     document.body.addEventListener('contextmenu', onContextMenu, true);
     document.body.addEventListener('mouseover', onOver);
-    document.body.addEventListener('mousemove', onMove);
     document.body.addEventListener('mouseout', onOut);
     document.body.addEventListener('mouseover', hintControls, true);
     let tries = 0; (function tryInject() { if (injectCloneButton() || tries++ > 40) return; setTimeout(tryInject, 500); })();
@@ -50744,7 +51563,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.19","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.19","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -50769,7 +51588,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('isrc_scout', 'ISRC Scout')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
@@ -51134,7 +51953,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   // it) so problems are obvious in the chip, the candidate list, and the popup.
   function sxMetaHtml(f, t) {
     const span = (txt, ok, tip) =>
-      '<span' + (ok === false ? ' class="ii-bad" title="' + esc(tip) + '"' : '') + '>' + esc(txt) + '</span>';
+      '<span' + (ok === false ? ' class="ii-bad" data-tip="' + esc(tip) + '"' : '') + '>' + esc(txt) + '</span>';
     const parts = [];
     if (f.title)  parts.push(span(f.title,  titleClose(f.title, t.title),   'Title differs from "' + t.title + '"'));
     if (f.artist) parts.push(span(f.artist, artistClose(f.artist, t.artist), 'Artist differs from "' + t.artist + '"'));
@@ -51143,7 +51962,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (f.dur) {
       const dOk = durClose(f.dur, t.dur);
       parts.push(span(f.dur, dOk, 'Length differs from MB (' + (t.dur || '?') + ')') +
-        (dOk === false && t.dur ? '<span class="ii-mbdur" title="MusicBrainz length"> ↔ ' + esc(t.dur) + '</span>' : ''));
+        (dOk === false && t.dur ? '<span class="ii-mbdur" data-tip="MusicBrainz length"> ↔ ' + esc(t.dur) + '</span>' : ''));
     }
     return parts.join(' · ');
   }
@@ -52458,7 +53277,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       if (el) {
         el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
         el.innerHTML = (good ? '✓ ' : '⚠ ') + sxMetaHtml(f, t) + (rel ? '<br><span class="ii-lookup-rel">' + esc(rel) + '</span>' : '');
-        el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
+        el.dataset.tip = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
       }
       Log.info(m.name + ' ' + isrc + ' (#' + (t.number || t.trackPos) + '): "' + f.title + '"' + (f.artist ? ' — ' + f.artist : ''));
     } catch (err) {
@@ -52558,8 +53377,8 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   }
   function allLineHtml(l, isrc) {
     const p = [];
-    if (l.at === 'here') p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">📍</span>');
-    else if (l.at) p.push('<span class="ii-all-at" title="' + esc(allAtText(l)) + '">↪ ' + esc(l.at) + '</span>');
+    if (l.at === 'here') p.push('<span class="ii-all-at" data-tip="' + esc(allAtText(l)) + '">📍</span>');
+    else if (l.at) p.push('<span class="ii-all-at" data-tip="' + esc(allAtText(l)) + '">↪ ' + esc(l.at) + '</span>');
     if (l.isrc && l.isrc !== isrc) p.push('<span class="ii-all-isrc">' + isrcHtml(l.isrc) + '</span>');
     if (l.song && l.song.title) p.push(esc('"' + l.song.title + '"' + (l.song.artist ? ' — ' + l.song.artist : '')));   // the length has its own column
     if (l.note) p.push('<span class="ii-all-sub">' + esc(l.note) + '</span>');
@@ -52607,7 +53426,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (lines.some(l => l.state === ALL_BLOCK)) text += ' ⛔';
     el.className = 'ii-lookup ii-all-chip ' + cls;
     el.textContent = text;
-    el.title = '';   // the comparison is the tooltip
+    el.dataset.tip = '';   // the comparison is the tooltip
     el.onclick = (e) => {
       e.stopPropagation();
       const p = modal.querySelector('#ii-all-pop');
@@ -52688,17 +53507,17 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const shown = allShownIsrc(pop, res);
     const count = i => res.lines.filter(l => l.isrc === i && (l.state === ALL_OK || l.state === ALL_DIFF)).length;
     pop.innerHTML = '<div class="ii-all-h"><span>Track ' + esc(num) + '</span>' +
-      isrcs.map(i => '<button type="button" class="ii-all-pick' + (asked.includes(i) ? '' : ' other') + (i === shown || i === pop._sel ? ' sel' : '') + '" data-isrc="' + esc(i) + '" title="' +
-        esc((i === res.isrc ? 'the row’s ISRC' : asked.includes(i) ? 'another ISRC the recording has' : 'another ISRC a provider has for this track') +
-          ' — ' + count(i) + ' provider(s) have it for this track; click to show ' + (asked.includes(i) ? 'what each provider says about it' : 'only those providers') +
-          (i === pop._sel && !asked.includes(i) ? ' (click again for all)' : '')) + '">' +
+      isrcs.map(i => '<button type="button" class="ii-all-pick' + (asked.includes(i) ? '' : ' other') + (i === shown || i === pop._sel ? ' sel' : '') + '" data-isrc="' + esc(i) + '" data-tip="' +
+        esc((i === res.isrc ? 'The row’s ISRC' : asked.includes(i) ? 'Another ISRC the recording has' : 'Another ISRC a provider has for this track') +
+          '\n' + count(i) + ' provider' + (count(i) === 1 ? ' has' : 's have') + ' it for this track.\nClick: show ' + (asked.includes(i) ? 'what each provider says about it' : 'only those providers') +
+          (i === pop._sel && !asked.includes(i) ? '\nClick again: show all' : '')) + '">' +
         isrcHtml(i) + ' <span class="ii-all-n">' + count(i) + '</span></button>').join('') +
-      '<span class="ii-all-sp"></span><button type="button" class="ii-all-copy" title="Copy this comparison as Markdown">copy</button></div>' +
+      '<span class="ii-all-sp"></span><button type="button" class="ii-all-copy" data-tip="Copy this comparison as Markdown">copy</button></div>' +
       res.lines.map((l, i) => !allLineShown(l, pop, res) ? '' :
         '<div class="ii-all-line ii-all-' + l.state + '"><span class="ii-all-mark">' + ALL_MARK[l.state] + '</span><span class="ii-all-ico">' + icon(l.key) + '</span>' +
-        '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" title="' + esc(allLineText(l, l.of || res.isrc)) + '">' + allLineHtml(l, l.of || res.isrc) + '</span>' +
+        '<span class="ii-all-name">' + esc(l.name) + '</span><span class="ii-all-note" data-tip="' + esc(allLineText(l, l.of || res.isrc)) + '">' + allLineHtml(l, l.of || res.isrc) + '</span>' +
         '<span class="ii-all-len">' + esc((l.song && l.song.dur) || '') + '</span>' +
-        (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" title="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
+        (l.state === ALL_DIFF ? '<button type="button" class="ii-all-use" data-i="' + i + '" data-tip="put ' + esc(l.isrc) + ' in the row">use</button>' : '<span></span>') + '</div>').join('');
     if (!keepPlace) placeAllPop(pop);
   }
   // Where it goes: right of the chip, level with the row, when it fits there; otherwise above the row
@@ -52827,12 +53646,12 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     modal.querySelectorAll('.ii-sx').forEach(b => {
       b.dataset.prov = key;
       b.innerHTML = provGlyph || m.short;
-      b.title = (m.kind === 'all'
-        ? 'Check this track’s ISRC on every provider at once — a verdict, and a comparison on click'
+      b.dataset.tip = (m.kind === 'all'
+        ? 'Check this track’s ISRC on every provider at once\nA verdict, and the comparison on a click'
         : m.kind === 'album'
         ? ('Look up this track’s ISRC on ' + m.name)
-        : 'Look up this track’s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist')
-        + '  ·  right-click: do all tracks';
+        : 'Look up this track’s ISRC on SoundExchange\nIt checks the ISRC entered, or with none, searches by title and artist.')
+        + '\nRight-click: all the tracks';
       b.style.color = m.kind === 'album' ? m.color : '';
     });
     RELEASE.tracks.forEach((t, i) => {
@@ -53881,10 +54700,10 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
                where they used to live, not up here. Only Log + Bulk/Export + config +
                maximize stay in the header; name/version/Help live in the
                config window. -->
-          <button class="ii-hlog" id="ii-log-link" type="button" title="Diagnostic log">log</button>
-          <button class="ii-hico" id="ii-bulk-toggle" type="button" title="Bulk / Export">▤</button>
-          <button class="ii-hico" id="ii-setup-toggle" type="button" title="Settings &amp; help">${MBU_CFG_ICON}</button>
-          <button class="ii-hico" id="ii-maximize-toggle" type="button" title="Maximize">⛶</button>
+          <button class="ii-hlog" id="ii-log-link" type="button" data-tip="The diagnostic log">log</button>
+          <button class="ii-hico" id="ii-bulk-toggle" type="button" data-tip="Bulk and export">▤</button>
+          <button class="ii-hico" id="ii-setup-toggle" type="button" data-tip="Settings and help">${MBU_CFG_ICON}</button>
+          <button class="ii-hico" id="ii-maximize-toggle" type="button" data-tip="Maximize">⛶</button>
         </div>
       </div>
 
@@ -53939,7 +54758,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
           <div class="ii-cfg-sec">More</div>
           <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
-           title="Your Add/Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
+           data-tip="Your Add ISRCs and Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
         </div>
 
         <div id="ii-cfg-platforms" hidden>
@@ -53950,7 +54769,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       </div>
 
       <div class="ii-pane" id="ii-bulk-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>Bulk / Export</h3>
+        <h3><button class="ii-pane-x" data-tip="Close">✕</button>Bulk / Export</h3>
         <!-- #471: both sections always shown now (no ISRCs/Links scope toggle) -->
         <div class="ii-cfg-grp">ISRCs</div>
         <div>
@@ -53981,7 +54800,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       </div>
 
       <div class="ii-pane" id="ii-note-pane">
-        <h3><button class="ii-pane-x" title="Close">✕</button>Edit note
+        <h3><button class="ii-pane-x" data-tip="Close">✕</button>Edit note
           <button class="ii-tbtn" id="ii-note-reset" style="padding:2px 9px;font-size:11px">Reset to default</button>
         </h3>
         <textarea id="ii-note-text" placeholder="Optional edit note attached to the submission…"></textarea>
@@ -53994,36 +54813,36 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
            where majkinetor said they used to live. -->
       <div id="ii-tools">
         <span class="ii-sx-group" id="ii-sx-group">
-          <button class="ii-tbtn sx" id="ii-sx-all" title="Search every track on SoundExchange">⟳ SoundExchange</button>
-          <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" title="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
-          <span class="ii-exact-set" id="ii-exact-set" title="Wrap the SoundExchange query in quotes for an exact match">
+          <button class="ii-tbtn sx" id="ii-sx-all" data-tip="Search every track on SoundExchange">⟳ SoundExchange</button>
+          <button class="ii-exact-toggle" id="ii-exact-toggle" type="button" data-tip="Exact-match options" aria-expanded="false">exact <span class="ii-exact-car">▾</span></button>
+          <span class="ii-exact-set" id="ii-exact-set" data-tip="Wrap the SoundExchange query in quotes for an exact match">
             <label><input type="checkbox" id="ii-ex-title">title</label>
             <label><input type="checkbox" id="ii-ex-artist">artist</label>
             <label><input type="checkbox" id="ii-ex-release">release</label>
           </span>
         </span>
-        <button class="ii-tbtn dz" id="ii-dz-all" title="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
-        <button class="ii-tbtn sp" id="ii-sp-all" title="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
-        <button class="ii-tbtn bp" id="ii-bp-all" title="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
-        <button class="ii-tbtn td" id="ii-td-all" title="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
-        <button class="ii-tbtn vo" id="ii-vo-all" title="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
-        <button class="ii-tbtn hd" id="ii-hd-all" title="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
-        <button class="ii-tbtn qz" id="ii-qz-all" title="Import ISRCs from Qobuz (needs Qobuz login in Platform Check)"><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
-        <button class="ii-tbtn am" id="ii-am-all" title="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
-        <button class="ii-tbtn sc" id="ii-sc-all" title="Import ISRCs from a SoundCloud set"><span class="ii-bico">${SRC_ICON.sc}</span><span class="ii-blabel">SoundCloud</span></button>
-        <button class="ii-tbtn ak" id="ii-ak-all" title="Import ISRCs from Audiomack"><span class="ii-bico">${SRC_ICON.ak}</span><span class="ii-blabel">Audiomack</span></button>
-        <button class="ii-tbtn sd" id="ii-sd-all" title="Import ISRCs from 7digital"><span class="ii-bico">${SRC_ICON.sd}</span><span class="ii-blabel">7digital</span></button>
-        <button class="ii-tbtn all" id="ii-all-all" title="Check every track’s ISRC on every available provider (All)"><span class="ii-bico">All</span><span class="ii-blabel">All</span></button>
+        <button class="ii-tbtn dz" id="ii-dz-all" data-tip="Import ISRCs from Deezer"><span class="ii-bico">${SRC_ICON.dz}</span><span class="ii-blabel">Deezer</span></button>
+        <button class="ii-tbtn sp" id="ii-sp-all" data-tip="Import ISRCs from Spotify"><span class="ii-bico">${SRC_ICON.sp}</span><span class="ii-blabel">Spotify</span></button>
+        <button class="ii-tbtn bp" id="ii-bp-all" data-tip="Import ISRCs from Beatport"><span class="ii-bico">${SRC_ICON.bp}</span><span class="ii-blabel">Beatport</span></button>
+        <button class="ii-tbtn td" id="ii-td-all" data-tip="Import ISRCs from Tidal"><span class="ii-bico">${SRC_ICON.td}</span><span class="ii-blabel">Tidal</span></button>
+        <button class="ii-tbtn vo" id="ii-vo-all" data-tip="Import ISRCs from Volumo"><span class="ii-bico">${SRC_ICON.vo}</span><span class="ii-blabel">Volumo</span></button>
+        <button class="ii-tbtn hd" id="ii-hd-all" data-tip="Import ISRCs from HDtracks"><span class="ii-bico">${SRC_ICON.hd}</span><span class="ii-blabel">HDtracks</span></button>
+        <button class="ii-tbtn qz" id="ii-qz-all" data-tip="Import ISRCs from Qobuz\nIt needs the Qobuz login in Platform Check."><span class="ii-bico">${SRC_ICON.qz}</span><span class="ii-blabel">Qobuz</span></button>
+        <button class="ii-tbtn am" id="ii-am-all" data-tip="Import ISRCs from Apple Music"><span class="ii-bico">${SRC_ICON.am}</span><span class="ii-blabel">Apple</span></button>
+        <button class="ii-tbtn sc" id="ii-sc-all" data-tip="Import ISRCs from a SoundCloud set"><span class="ii-bico">${SRC_ICON.sc}</span><span class="ii-blabel">SoundCloud</span></button>
+        <button class="ii-tbtn ak" id="ii-ak-all" data-tip="Import ISRCs from Audiomack"><span class="ii-bico">${SRC_ICON.ak}</span><span class="ii-blabel">Audiomack</span></button>
+        <button class="ii-tbtn sd" id="ii-sd-all" data-tip="Import ISRCs from 7digital"><span class="ii-bico">${SRC_ICON.sd}</span><span class="ii-blabel">7digital</span></button>
+        <button class="ii-tbtn all" id="ii-all-all" data-tip="Check every track’s ISRC on every provider at once"><span class="ii-bico">All</span><span class="ii-blabel">All</span></button>
         <span class="ii-urladd" id="ii-urladd">
-          <button class="ii-urladd-btn" id="ii-url-btn" type="button" title="Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz) — auto-detected and imported">+</button>
+          <button class="ii-urladd-btn" id="ii-url-btn" type="button" data-tip="Paste a streaming URL\nDeezer, Spotify, Beatport, Tidal, Volumo, HDtracks or Qobuz: it is recognised and imported.">+</button>
           <input class="ii-urladd-input" type="text" id="ii-url-input" placeholder="Paste a streaming album URL…" autocomplete="off">
         </span>
         <span class="ii-prog" id="ii-prog"></span>
-        <button class="ii-tbtn sx" id="ii-links-btn" type="button" title="Resolve each track on Deezer / Tidal / Bandcamp and show what's linkable — grey = already linked in MB, colour = found and addable"><svg class="ii-flat-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg> Find links</button>
+        <button class="ii-tbtn sx" id="ii-links-btn" type="button" data-tip="Find each track on Deezer, Tidal and Bandcamp\nShows what can be linked.\nGrey: already linked on MusicBrainz\nColour: found, and can be added"><svg class="ii-flat-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg> Find links</button>
         <!-- #680: Match imports ISRCs, then runs Find links, so it sits after it -->
-        <button class="ii-tbtn sx" id="ii-find-all" type="button" title="Import ISRCs from the fastest source this release links (the next one if it fails or gives none), then Find links">⚡ Match</button>
+        <button class="ii-tbtn sx" id="ii-find-all" type="button" data-tip="Import ISRCs from the fastest source this release links, then find links\nThe next source when one fails or gives none">⚡ Match</button>
         <span class="ii-clear-wrap">
-          <button class="ii-clear-toggle" id="ii-clear-toggle" type="button" title="Clear…" aria-expanded="false">▾</button>
+          <button class="ii-clear-toggle" id="ii-clear-toggle" type="button" data-tip="Clear…" aria-expanded="false">▾</button>
           <div class="ii-clear-menu" id="ii-clear-menu">
             <button type="button" id="ii-clear-all">Clear All</button>
             <button type="button" id="ii-clear-links">Clear Links</button>
@@ -54043,7 +54862,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
           </colgroup>
           <thead><tr>
             <th>#</th><th>Track</th><th></th>
-            <th><label class="ii-ex-all-lbl" title="Select all existing ISRCs for removal"><input type="checkbox" id="ii-ex-all">ISRC: linked</label></th>
+            <th><label class="ii-ex-all-lbl" data-tip="Tick every linked ISRC, to remove them"><input type="checkbox" id="ii-ex-all">ISRC: linked</label></th>
             <th>ISRC: new</th>
             <th>Links: linked</th>
             <th>Links: new</th>
@@ -54056,9 +54875,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         <!-- #471: both summaries always shown now (no ISRCs/Links scope toggle) -->
         <span class="ii-summary" id="ii-summary"></span>
         <span class="ii-summary" id="ii-summary-links"></span>
-        <button class="ii-tbtn" id="ii-delete" title="Delete the checked existing ISRCs" disabled>🗑 Delete ISRC</button>
-        <button class="ii-tbtn ghost" id="ii-note-toggle" title="Edit note">✎ Edit note</button>
-        <button class="ii-tbtn primary" id="ii-submit" title="Submit everything pending — entered ISRCs and resolved streaming links — in one go, then close">Submit to MusicBrainz</button>
+        <button class="ii-tbtn" id="ii-delete" data-tip="Delete the ticked ISRCs" disabled>🗑 Delete ISRC</button>
+        <button class="ii-tbtn ghost" id="ii-note-toggle" data-tip="Edit note">✎ Edit note</button>
+        <button class="ii-tbtn primary" id="ii-submit" data-tip="Submit everything pending in one go, then close\nThe ISRCs entered and the streaming links found">Submit to MusicBrainz</button>
       </div>
     `;
 
@@ -54171,8 +54990,8 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const refreshExactToggle = () => {
       const anyOn = sxExact.title || sxExact.artist || sxExact.release;
       exactToggle.classList.toggle('on', !!anyOn);
-      exactToggle.title = anyOn
-        ? 'Exact-match active: ' + ['title', 'artist', 'release'].filter(k => sxExact[k]).join(', ')
+      exactToggle.dataset.tip = anyOn
+        ? 'Exact match on: ' + ['title', 'artist', 'release'].filter(k => sxExact[k]).join(', ')
         : 'Exact-match options';
     };
     const applyExactCollapsed = (collapsed) => {
@@ -54494,10 +55313,10 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       _prevBox = { left: modal.style.left, top: modal.style.top, width: modal.style.width, height: modal.style.height,
         maxWidth: modal.style.maxWidth, maxHeight: modal.style.maxHeight, transform: modal.style.transform };
       applyMaximizedStyle();
-      _maxed = true; if (btn) { btn.textContent = '❐'; btn.title = 'Restore'; }
+      _maxed = true; if (btn) { btn.textContent = '❐'; btn.dataset.tip = 'Restore'; }
     } else {
       if (_prevBox) Object.assign(modal.style, _prevBox);
-      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.title = 'Maximize'; }
+      _maxed = false; if (btn) { btn.textContent = '⛶'; btn.dataset.tip = 'Maximize'; }
     }
   }
 
@@ -54567,7 +55386,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const el = modal.querySelector('#ii-auth-state');
     const authed = Auth.isAuthorized();
     const tog = modal.querySelector('#ii-setup-toggle');
-    if (tog) { tog.classList.toggle('ii-needauth', !authed); tog.title = authed ? 'Settings & help' : 'Settings & help: not authorized to submit ISRCs yet'; }
+    if (tog) { tog.classList.toggle('ii-needauth', !authed); tog.dataset.tip = authed ? 'Settings and help' : 'Settings and help\n⚠ Not authorized to submit ISRCs yet'; }
     // when authorized show Sign out; when not, show the code field in its place
     const code = modal.querySelector('#ii-oauth-code'), out = modal.querySelector('#ii-signout');
     if (code) code.style.display = authed ? 'none' : '';
@@ -55304,11 +56123,12 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       const isEnded = u => !!(endedSet && endedSet.has(u));
       const ended = urls.every(isEnded), first = urls.find(u => !isEnded(u)) || urls[0], n = urls.length;
       const verb = ended ? 'un-ends' : 'marks ended', all = n > 1 ? ' all ' + n : '';
-      const what = n === 1 ? esc(p.name) + ' — linked' + (ended ? ' · ENDED' : '')
-        : esc(p.name) + ' — ' + n + ' links&#10;' + urls.map(u => esc(u) + (isEnded(u) ? ' (ended)' : '')).join('&#10;') + '&#10;';
+      const what = n === 1 ? esc(p.name) + ' — linked' + (ended ? ' (ended)' : '')
+        : esc(p.name) + ' — ' + n + ' links&#10;' + urls.map(u => '- ' + esc(u) + (isEnded(u) ? ' (ended)' : '')).join('&#10;');
       return '<a class="ii-tl linked' + (other ? ' ii-tl-other' : '') + (ended ? ' ended' : '') + '" data-code="' + esc(p.code) + '"' +
         (other ? ' data-other="1" data-name="' + esc(p.name) + '"' : '') + ' data-urls="' + esc(JSON.stringify(urls)) + '" style="color:' + p.color + '" href="' + esc(first) + '" target="_blank" rel="noopener" ' +
-        'title="' + what + (other ? ' (ISRC Scout can’t add this one back)' : '') + ' · left-click opens · right-click ' + verb + all + ' (Ctrl: whole track · Alt: ' + esc(p.name) + ' everywhere) · middle-click removes' + all + ' (same modifiers)">' +
+        'data-tip="' + what + (other ? '&#10;⚠ ISRC Scout can’t add this one back' : '') + '&#10;&#10;Click: open' + '&#10;Right-click: ' + verb + all + '&#10;Middle-click: removes' + all
+        + '&#10;Ctrl + right/middle: the same on the whole track' + '&#10;Alt + right/middle: the same on ' + esc(p.name) + ' everywhere">' +
         p.icon + (n > 1 ? '<sup class="ii-trk-n">' + n + '</sup>' : '') + '</a>';
     }
     function linkedHtml(t) {
@@ -55331,7 +56151,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     }
     function addHtml(t) {
       const cells = providersFor(t).map(p =>
-        (!t.recId || linkedUrl(t, p)) ? '' : '<span class="ii-tl cand" data-code="' + p.code + '" title="' + esc(p.name) + '">' + p.icon + '</span>'
+        (!t.recId || linkedUrl(t, p)) ? '' : '<span class="ii-tl cand" data-code="' + p.code + '" data-tip="' + esc(p.name) + '">' + p.icon + '</span>'
       ).filter(Boolean).join('');
       return '<div class="ii-tl-add" data-rec="' + esc(t.recId || '') + '">' + cells + '</div>';
     }
@@ -55353,8 +56173,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       // #302: mark candidates resolved via an album link pulled from a sibling release
       const rg = p.urlKey && RELEASE.rgFrom && RELEASE.rgFrom[p.urlKey];
       if (rg) a.classList.add('ii-rg');
-      a.title = p.name + ' — left-click opens · right-click adds this · Ctrl+right-click adds all links on this track · Alt+right-click adds ' + p.name + ' on every track' +
-        (rg ? '  ·  ' + p.name + ' album link from another release in this group' : '');
+      a.dataset.tip = p.name + (rg ? '\nThe album link, from another release in this group' : '') + '\nClick: open\nRight-click: add this one\nCtrl+right-click: add every link on this track\nAlt+right-click: add ' + p.name + ' on every track';
       a.innerHTML = p.icon;
       // all add actions on right-click (left-click just opens the track); modifiers
       // scope it: Ctrl/⌘ = whole track, Alt = this provider across every track.
@@ -55546,7 +56365,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
           const t = RELEASE.tracks[ic.idx]; if (t) { t.recUrls = (t.recUrls || []).filter(u => u !== ic.url); delete _relCache[t.recId]; }
           const lb = t && linkedBox(ic.idx); if (lb) lb.outerHTML = linkedHtml(t);   // a group's other links stay, with their count
           const ab = !ic.p.other && addBox(ic.idx);   // re-offer as a hidden Add candidate so Find links can resolve it again — but never for the read-only "other" providers ISRC Scout can't add
-          if (ab && !ab.querySelector('.ii-tl[data-code="' + ic.p.code + '"]')) { const s = document.createElement('span'); s.className = 'ii-tl cand'; s.dataset.code = ic.p.code; s.title = ic.p.name; s.innerHTML = ic.p.icon; ab.appendChild(s); }
+          if (ab && !ab.querySelector('.ii-tl[data-code="' + ic.p.code + '"]')) { const s = document.createElement('span'); s.className = 'ii-tl cand'; s.dataset.code = ic.p.code; s.dataset.tip = ic.p.name; s.innerHTML = ic.p.icon; ab.appendChild(s); }
         });
         Log.info('Removed ' + used.length + ' link' + (used.length === 1 ? '' : 's') + ' on MusicBrainz');
       } catch (e) { Log.err('Remove links failed: ' + errText(e)); icons.forEach(ic => ic.el.classList.remove('removing')); }
@@ -55778,9 +56597,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       btn.classList.toggle('ii-mb', !!mbId);
       btn.classList.toggle('ii-rg', !!rg);
       btn.disabled = false;
-      btn.title = rg ? ('Import from ' + source + ' (link from another release in this group' + (rg.title ? ': ' + rg.title : '') + ')')
-        : mbId ? ('Import from ' + source + ' (linked in MusicBrainz)')
-        : hasPc ? ('Import from ' + source + ' (link found by Platform Check — not yet in MB)')
+      btn.dataset.tip = rg ? ('Import from ' + source + '\nLinked from another release in this group' + (rg.title ? ': ' + rg.title : ''))
+        : mbId ? ('Import from ' + source + '\nLinked on MusicBrainz')
+        : hasPc ? ('Import from ' + source + '\nFound by Platform Check, not on MusicBrainz yet')
         : ('No ' + source + ' link');
     });
 
@@ -55790,7 +56609,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     // #643: All, last in the toolbar, when there is more than one provider to compare
     { const allBtn = modal.querySelector('#ii-all-all'), n = allProviders().length;
       allBtn.style.display = n > 1 ? '' : 'none';
-      allBtn.title = 'Check every track’s ISRC on ' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + ' at once — a verdict per row, the comparison on its chip'; }
+      allBtn.dataset.tip = 'Check every track’s ISRC on every provider at once\n' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + '\nA verdict per row, the comparison on its chip'; }
   }
   function renderTracks() {
     // #301: release title centered (Zen), artist + year on the line below
@@ -55813,7 +56632,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       tr.innerHTML =
         '<td class="ii-pos">' + esc(t.number || t.trackPos) + '</td>' +
         '<td><div class="ii-track-title">' +
-          (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" title="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
+          (t.recId ? '<a href="' + MB_ROOT + '/recording/' + t.recId + '" target="_blank" rel="noopener" data-tip="' + esc(t.title) + '">' + esc(t.title) + '</a>' : esc(t.title)) +
           '</div><div class="ii-track-artist">' + esc(t.artist) + '</div></td>' +
         '<td class="ii-track-dur">' + esc(t.dur) + '</td>' +
         // #471: ISRC and Links columns are separate cells now, always both visible —
@@ -55823,18 +56642,18 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         '<td><div class="ii-inwrap">' +
           // #490: initial "search SoundExchange by title/artist" entry point — a row-hover-only
           // icon instead of a permanently-visible text link under every row.
-          '<button class="ii-sx-hover" type="button" tabindex="-1" title="Search SoundExchange by title/artist">' +
+          '<button class="ii-sx-hover" type="button" tabindex="-1" data-tip="Search SoundExchange by title and artist">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20" y2="20"/></svg>' +
           '</button>' +
           '<div class="ii-input-box">' +
             '<input class="ii-input" type="text" maxlength="15" value="' + esc(t.pending) + '">' +
-            '<button class="ii-clear" type="button" tabindex="-1" title="Clear this field">×</button>' +
+            '<button class="ii-clear" type="button" tabindex="-1" data-tip="Clear this field">×</button>' +
           '</div>' +
           // first track has no previous ISRC to increment — hide +1 but keep its slot so SX text stays aligned
-          '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" title="Previous ISRC + 1  (right-click: fill the +1 sequence down to the last track, overwriting)">+1</button>' +
+          '<button class="ii-plus' + (idx === 0 ? ' ii-plus-hidden' : '') + '" data-tip="The previous ISRC + 1\nRight-click: fill the +1 sequence down to the last track, over what is there">+1</button>' +
           '<span class="ii-sxsplit">' +
-            '<button class="ii-sx" type="button" title="Look up this track\'s ISRC on SoundExchange — verify the entered ISRC, or (if empty) search by title/artist  ·  right-click: do all tracks">SX</button>' +
-            '<button class="ii-sxprov" type="button" tabindex="-1" title="Choose the ISRC provider for all tracks">▾</button>' +
+            '<button class="ii-sx" type="button" data-tip="Look up this track\'s ISRC on SoundExchange\nIt checks the ISRC entered, or with none, searches by title and artist.\nRight-click: all the tracks">SX</button>' +
+            '<button class="ii-sxprov" type="button" tabindex="-1" data-tip="Choose the ISRC provider for all tracks">▾</button>' +
           '</span>' +
           '<span class="ii-lookup"></span>' +
           '</div><div class="ii-cands"></div></td>' +
@@ -55851,7 +56670,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         }
         input.dataset.autofill = '';
         endSuspectUndo();   // #773
-        if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431: a manual edit is the user taking over
+        if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.dataset.tip = ''; updateSuspectBadge(); }   // #431: a manual edit is the user taking over
         validateInput(input, t);
         updateSummary();
         // #157: don't hit SoundExchange on every keystroke (that spammed SX).
@@ -55926,14 +56745,14 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
            say, and we don't ask (his call — no extra requests). The link is where
            to go and look; it costs us nothing. */
         const inner = '⏳ <samp>' + isrcHtml(i) + '</samp>';
-        const tip = 'Remove-ISRC edit submitted in this session — MusicBrainz decides what happens to it. Click to see this recording’s open edits.';
+        const tip = 'A Remove ISRC edit, submitted in this session\nMusicBrainz decides what happens to it.\nClick: this recording’s open edits';
         return recId
-          ? '<a class="ii-ex-item ii-ex-pending" href="' + MB_ROOT + '/recording/' + esc(recId) + '/open_edits" target="_blank" rel="noopener" title="' + tip + '">' + inner + '</a>'
-          : '<span class="ii-ex-item ii-ex-pending" title="' + tip + '">' + inner + '</span>';
+          ? '<a class="ii-ex-item ii-ex-pending" href="' + MB_ROOT + '/recording/' + esc(recId) + '/open_edits" target="_blank" rel="noopener" data-tip="' + tip + '">' + inner + '</a>'
+          : '<span class="ii-ex-item ii-ex-pending" data-tip="' + tip + '">' + inner + '</span>';
       }
       const isBad = bad.has(normalizeIsrc(i));
-      return '<label class="ii-ex-item' + (isBad ? ' ii-ex-failed' : '') + '" title="'
-        + (isBad ? 'Remove-ISRC edit failed to submit — see the Log, then check it again to retry' : 'Check to delete this ISRC from the recording') + '">' +
+      return '<label class="ii-ex-item' + (isBad ? ' ii-ex-failed' : '') + '" data-tip="'
+        + (isBad ? '⚠ The Remove ISRC edit failed to submit\nSee the log, then tick it again to retry.' : 'Tick to delete this ISRC from the recording') + '">' +
         '<input type="checkbox" class="ii-ex-del" data-isrc="' + esc(i) + '">' +
         '<samp>' + isrcHtml(i) + '</samp></label>';
     }).join('');
@@ -55973,7 +56792,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       el.className = 'ii-lookup ' + (good ? 'ok' : 'warn');
       el.innerHTML = (good ? '✓ ' : '⚠ ') + sxMetaHtml(f, t) +
         (rel ? '<br><span class="ii-lookup-rel">' + esc(rel) + '</span>' : '');
-      el.title = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
+      el.dataset.tip = [f.title, f.artist, f.year, f.dur].filter(Boolean).join(' · ') + (rel ? '  |  ' + rel : '');
       Log.info('SX lookup ' + isrc + ': ' + (good ? 'match' : cls === 'warn' ? 'length mismatch' : 'MISMATCH') + ' "' + f.title + '" — ' + f.artist);
     }).catch(e => {
       if (e && (e.rateLimited || e.captcha)) { el.className = 'ii-lookup err'; el.textContent = e.captcha ? '⚠ captcha' : '⚠ rate-limited'; throw e; }   // let pumpVerify stop the queue (#126/#157)
@@ -56036,8 +56855,8 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     input.classList.remove('bad', 'dup', 'ok');
     if (!v) return;
     if (!isValidIsrc(v)) { input.classList.add('bad'); return; }
-    if (t.existing.includes(v)) { input.classList.add('dup'); input.title = 'Already on this recording'; return; }
-    input.title = '';
+    if (t.existing.includes(v)) { input.classList.add('dup'); input.dataset.tip = 'Already on this recording'; return; }
+    input.dataset.tip = '';
     input.classList.add('ok');
   }
 
@@ -56049,7 +56868,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     t.pending = normalizeIsrc(isrc);
     t.source = source || 'manual';
     input.value = t.pending;
-    if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431: a fresh fill resets any prior implausibility flag
+    if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.dataset.tip = ''; updateSuspectBadge(); }   // #431: a fresh fill resets any prior implausibility flag
     input.dataset.autofill = '1';            // filled by a source — the on-input handler won't fire
     validateInput(input, t);
     { const sxb = input.closest('tr')?.querySelector('.ii-sx'); if (sxb) sxb.disabled = trackBtnDisabled(t, t.pending); }   // #157/#181: keep per-track button enabled-state in sync after a fill
@@ -56072,11 +56891,11 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
 
   function clearPending() {
     abortSxWork('clear entered');            // cancel queued verifications + the bulk SX search (#127)
-    RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; inp.classList.remove('ii-in-suspect'); inp.title = ''; validateInput(inp, t); } });
+    RELEASE.tracks.forEach((t, i) => { t.pending = ''; t.source = ''; const inp = rowInput(i); if (inp) { inp.value = ''; inp.classList.remove('ii-in-suspect'); inp.dataset.tip = ''; validateInput(inp, t); } });
     _suspectUndo = null;   // #773
     updateSuspectBadge();   // #431
     tbody.querySelectorAll('.ii-cands').forEach(c => c.innerHTML = '');
-    tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.title = ''; l.onclick = null; });
+    tbody.querySelectorAll('.ii-lookup').forEach(l => { l.className = 'ii-lookup'; l.textContent = ''; l.dataset.tip = ''; l.onclick = null; });
     updateSummary();
     toast('Cleared entered ISRCs');
   }
@@ -56089,9 +56908,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     endSuspectUndo();   // #773
     t.pending = ''; t.source = '';
     input.value = ''; input.dataset.autofill = '';
-    if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.title = ''; updateSuspectBadge(); }   // #431
+    if (input.classList.contains('ii-in-suspect')) { input.classList.remove('ii-in-suspect'); input.dataset.tip = ''; updateSuspectBadge(); }   // #431
     validateInput(input, t);
-    const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
+    const lk = rowLookup(idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.dataset.tip = ''; lk.onclick = null; }
     // re-expand the candidate list so a different suggestion can be picked
     const box = rowCands(idx);
     if (box) { box.classList.remove('ii-collapsed'); box.querySelectorAll('.ii-cand.chosen').forEach(c => c.classList.remove('chosen')); }
@@ -56169,7 +56988,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       dup ? '<span style="color:var(--mbu-warn)">' + dup + ' already present</span>' : '',
       crossDup ? '<span style="color:var(--mbu-error)">' + crossDup + ' duplicated across tracks (blocked)</span>' : '',
       missing ? missing + ' still missing' : ''].filter(Boolean).join(' · ') +
-      (seq ? ' <span class="ii-seq-badge" title="Every track\'s ISRC is the previous one + 1: ' +
+      (seq ? ' <span class="ii-seq-badge" data-tip="Every track\'s ISRC is the previous one + 1\n' +
         esc(seq.from) + ' → ' + esc(seq.to) + '">⛓ sequential ' + esc(seq.from) + ' → ' + esc(seq.to) + '</span>' : '');
     _validIsrcCount = valid;
     refreshSubmitBtn();   // #406: label/enable reflect ISRCs + resolved links together
@@ -56386,7 +57205,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       const c = document.createElement('div');
       c.className = 'ii-cand' + (cls === 'best' ? ' best' : cls === 'warn' ? ' warn' : ' bad') + (inMb ? ' inmb' : '');
       c.dataset.isrc = normalizeIsrc(f.isrc);
-      c.title = relInfo ? 'Appears on: ' + relInfo : '';
+      c.dataset.tip = relInfo ? 'Appears on\n' + relInfo : '';
       c.innerHTML =
         '<span class="ii-cand-isrc">' + isrcHtml(f.isrc) + '</span>' +
         '<span class="ii-cand-meta">' + sxMetaHtml(f, t) +
@@ -56428,23 +57247,23 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     sxPanel.innerHTML = `
       <div class="ii-sxp-hdr">
         <span class="t">🔍 <b>SoundExchange</b> — <span id="ii-sxp-track"></span></span>
-        <button id="ii-sxp-close" title="Close">✕</button>
+        <button id="ii-sxp-close" data-tip="Close">✕</button>
       </div>
       <div class="ii-sxp-form">
         <div class="ii-sxp-field" id="ii-sxp-f-title">
-          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-title" title="Use the title in the search">
+          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-title" data-tip="Use the title in the search">
           <input type="text" class="ii-sxp-inp" id="ii-sxp-title" placeholder="Title" autocomplete="off">
-          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-title" title="Exact title (match the whole field)">E</button>
+          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-title" data-tip="Exact title\nMatch the whole field">E</button>
         </div>
         <div class="ii-sxp-field" id="ii-sxp-f-artist">
-          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-artist" title="Use the artist in the search">
+          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-artist" data-tip="Use the artist in the search">
           <input type="text" class="ii-sxp-inp" id="ii-sxp-artist" placeholder="Artist" autocomplete="off">
-          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-artist" title="Exact artist (match the whole field)">E</button>
+          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-artist" data-tip="Exact artist\nMatch the whole field">E</button>
         </div>
         <div class="ii-sxp-field" id="ii-sxp-f-release">
-          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-release" title="Use the release in the search">
+          <input type="checkbox" class="ii-sxp-en" id="ii-sxp-en-release" data-tip="Use the release in the search">
           <input type="text" class="ii-sxp-inp" id="ii-sxp-release" placeholder="Release" autocomplete="off">
-          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-release" title="Exact release (match the whole field)">E</button>
+          <button type="button" class="ii-sxp-E" id="ii-sxp-ex-release" data-tip="Exact release\nMatch the whole field">E</button>
         </div>
         <button id="ii-sxp-search">Search</button>
       </div>
@@ -56657,7 +57476,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const m = document.createElement('div');
     m.className = 'ii-cand-pending';
     m.textContent = '⏳ Not searched — click to load the next ' + Math.min(SX_BATCH_LIMIT, remaining) + ' on SoundExchange';
-    m.title = 'SoundExchange searches are capped at ' + SX_BATCH_LIMIT + ' at a time to avoid being blocked';
+    m.dataset.tip = 'At most ' + SX_BATCH_LIMIT + ' SoundExchange searches at a time\nMore gets the searches blocked.';
     m.addEventListener('click', () => processNextSxBatch());
     box.appendChild(m);
   }
@@ -56769,7 +57588,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       ? 'length differs by ' + durOff + 's (MB ' + t.dur + ' vs ' + label + ' ' + (s.dur || '?') + ')'
       : 'title/artist do not match ("' + s.title + '")';
     input.classList.add('ii-in-suspect');
-    input.title = '⚠ matched by position only, but ' + why + ' — verify before submitting';
+    input.dataset.tip = '⚠ Matched by position only, but the ' + why + '\nCheck it before submitting.';
     if (_stream) (_stream.suspects = _stream.suspects || []).push(idx);
     Log.warn(label + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": filled by position, but ' + why);
     updateSuspectBadge();
@@ -56804,9 +57623,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (n) _suspectUndo = null;   // new amber fills: the last Remove is over
     const u = _suspectUndo && _suspectUndo.length;
     el.innerHTML = n
-      ? '<span data-a="jump" title="These fills differ from the MB track in length or title: click to jump to the first one">⚠ ' + n + ' implausible fill' + s(n) + ' — verify</span>' +
-        '<button type="button" data-a="rm" title="Empty the ' + n + ' amber box' + (n === 1 ? '' : 'es') + '">✕ Remove</button>'
-      : u ? '<span>' + u + ' implausible fill' + s(u) + ' removed</span><button type="button" data-a="undo" title="Put them back">Undo</button>' : '';
+      ? '<span data-a="jump" data-tip="These fills differ from the MusicBrainz track in length or title\nClick: go to the first one">⚠ ' + n + ' implausible fill' + s(n) + ' — verify</span>' +
+        '<button type="button" data-a="rm" data-tip="Empty the ' + n + ' amber box' + (n === 1 ? '' : 'es') + '">✕ Remove</button>'
+      : u ? '<span>' + u + ' implausible fill' + s(u) + ' removed</span><button type="button" data-a="undo" data-tip="Put them back">Undo</button>' : '';
     el.classList.toggle('ii-sb-undo', !n && !!u);
     el.style.display = n || u ? '' : 'none';
     return n;
@@ -56820,16 +57639,16 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   function removeSuspects() {
     const rows = suspectRows();
     if (!rows.length) return 0;
-    const undo = rows.map(i => { const t = RELEASE.tracks[i], inp = rowInput(i); return { idx: i, isrc: t.pending, source: t.source, title: inp.title }; });
+    const undo = rows.map(i => { const t = RELEASE.tracks[i], inp = rowInput(i); return { idx: i, isrc: t.pending, source: t.source, title: inp.dataset.tip }; });
     undo.forEach(u => {
       const t = RELEASE.tracks[u.idx], inp = rowInput(u.idx);
       Log.info('Removed the implausible ' + u.isrc + ' (' + u.source + ') from #' + (t.number || t.trackPos) + ' "' + t.title + '"');
       _vq.items = _vq.items.filter(it => it.idx !== u.idx);
       t.pending = ''; t.source = '';
       inp.value = ''; inp.dataset.autofill = '';
-      inp.classList.remove('ii-in-suspect'); inp.title = '';
+      inp.classList.remove('ii-in-suspect'); inp.dataset.tip = '';
       validateInput(inp, t);
-      const lk = rowLookup(u.idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.title = ''; lk.onclick = null; }
+      const lk = rowLookup(u.idx); if (lk) { lk.className = 'ii-lookup'; lk.textContent = ''; lk.dataset.tip = ''; lk.onclick = null; }
     });
     _suspectUndo = undo;
     updateSuspectBadge();
@@ -56842,7 +57661,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     undo.forEach(u => {
       setPending(u.idx, u.isrc, true, u.source);
       const inp = rowInput(u.idx);
-      if (inp) { inp.classList.add('ii-in-suspect'); inp.title = u.title; }
+      if (inp) { inp.classList.add('ii-in-suspect'); inp.dataset.tip = u.title; }
     });
     Log.info('Put back ' + undo.length + ' implausible fill(s)');
     _suspectUndo = null;
@@ -56899,7 +57718,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   function flagLooseTitleFill(idx, s, label) {
     const t = RELEASE.tracks[idx], input = rowInput(idx); if (!input) return;
     input.classList.add('ii-in-suspect');
-    input.title = '⚠ matched by a similar title only ("' + s.title + '" → "' + t.title + '") — verify before submitting';
+    input.dataset.tip = '⚠ Matched by a similar title only\n“' + s.title + '” → “' + t.title + '”\nCheck it before submitting.';
     if (_stream) (_stream.suspects = _stream.suspects || []).push(idx);
     Log.warn(label + ' #' + (t.number || t.trackPos) + ' "' + t.title + '": filled by a similar title only ("' + s.title + '")');
     updateSuspectBadge();
@@ -56914,7 +57733,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     // instruction to go looking. Only on errors — a plain progress line has
     // nothing to open and should not look clickable.
     progEl.classList.toggle('tolog', !!isErr);
-    progEl.title = isErr ? 'Open the log' : '';
+    progEl.dataset.tip = isErr ? 'Open the log' : '';
     if (isErr) progEl.onclick = () => Log.open();
   };
   // test hook only — no behaviour change. The affordance below is a contract of
@@ -57151,11 +57970,11 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (d) {
       btn.innerHTML = SRC_ICON[d.code] || '+';
       btn.style.color = SRC_COLOR[d.code] || '';
-      btn.title = d.source + ' detected — press Enter to import its ISRCs';
+      btn.dataset.tip = d.source + ' URL\nEnter: import its ISRCs';
     } else {
       btn.textContent = '+';
       btn.style.color = '';
-      btn.title = 'Paste a streaming URL (Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Qobuz / Apple / SoundCloud set / Audiomack / 7digital) — auto-detected and imported';
+      btn.dataset.tip = 'Paste a streaming URL\nDeezer, Spotify, Beatport, Tidal, Volumo, HDtracks, Qobuz, Apple, a SoundCloud set, Audiomack or 7digital: it is recognised and imported.';
     }
   }
   async function submitUrlAdd(value) {
@@ -57602,11 +58421,11 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (missing === 0) {
       statusEl.textContent = '✓ ' + total + '/' + total;
       btn.classList.remove('has-missing');
-      btn.title = '';   // drop a "could not load" tooltip left by a failed first load (#607)
+      btn.dataset.tip = '';   // drop a "could not load" tooltip left by a failed first load (#607)
     } else {
       statusEl.textContent = '⚠ ' + (total - missing) + '/' + total;
       btn.classList.add('has-missing');
-      btn.title = missing + ' track' + (missing > 1 ? 's' : '') + ' missing ISRC';
+      btn.dataset.tip = missing + ' track' + (missing > 1 ? 's' : '') + ' without an ISRC';
     }
   }
 
@@ -57649,7 +58468,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     el.querySelectorAll('button[data-col]').forEach(b => {
       const on = c[b.dataset.col];
       b.classList.toggle('ii-coloff', !on);
-      b.title = (on ? 'Hide' : 'Show') + ' the ' + (b.dataset.col === 'isrc' ? 'ISRC' : 'Links') + ' column (ISRC Scout)';
+      b.dataset.tip = (on ? 'Hide' : 'Show') + ' the ' + (b.dataset.col === 'isrc' ? 'ISRC' : 'Links') + ' column (ISRC Scout)';
     });
   }
   var _tdObs = null, _tdQueued = false;
@@ -57661,9 +58480,9 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     if (t) TrackLinks.pageLinks(t).forEach(l => { const g = groups.get(l.name); if (g) g.push(l); else groups.set(l.name, [l]); });
     const links = [...groups.values()].map(g => {
       const l = g.find(x => !x.ended) || g[0], ended = g.every(x => x.ended);
-      const tip = g.length === 1 ? l.name + (l.ended ? ' (ended)' : '') + ' · ' + l.url
-        : l.name + ' · ' + g.length + ' links\n' + g.map(x => x.url + (x.ended ? ' (ended)' : '')).join('\n');
-      return '<a class="ii-trk-ln' + (ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" title="' +
+      const tip = g.length === 1 ? l.name + (l.ended ? ' (ended)' : '') + '\n' + l.url
+        : l.name + ' — ' + g.length + ' links\n' + g.map(x => '- ' + x.url + (x.ended ? ' (ended)' : '')).join('\n');
+      return '<a class="ii-trk-ln' + (ended ? ' ended' : '') + '" href="' + esc(l.url) + '" target="_blank" rel="noopener" style="color:' + l.color + '" data-tip="' +
         esc(tip) + '">' + l.icon + (g.length > 1 ? '<sup class="ii-trk-n">' + g.length + '</sup>' : '') + '</a>';
     }).join('');
     return [isrcs, links && '<div class="ii-trk-lns">' + links + '</div>'];
@@ -57720,7 +58539,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
   if (IS_OVERVIEW) {
     fetchRelease().catch(e => {
       const s = btnStatus(); if (s) s.textContent = '?';
-      btn.title = 'Could not load the release (' + ((e && e.message) || 'error') + ') — open ISRC Scout to retry; the count updates once it loads';
+      btn.dataset.tip = '⚠ Could not load the release: ' + ((e && e.message) || 'error') + '\nOpen ISRC Scout to try again; the count updates once it loads.';
       Log.warn('page button: release load failed — showing "?" until a later load succeeds (#607)');
     });
   }
@@ -57906,7 +58725,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
 
 // ===== mammoth (@run-at document-idle) ===========================================
 if (__stOff.indexOf("mammoth") < 0 && __stRuns("mammoth", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.17.231850","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.17.231850","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -57930,7 +58749,7 @@ if (__stOff.indexOf("mammoth") < 0 && __stRuns("mammoth", {"inc":["^https:\\/\\/
 (function () {
   'use strict';
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('mammoth', 'Mammoth')) return;
   try { console.info('[Mammoth] ' + mbuStartupInfo('Mammoth')); } catch (e) { /* no console */ }   // Mammoth keeps no session log
@@ -58421,12 +59240,12 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       </div>
       <div class="mmth-cfgpane" data-pane="settings">
         <div class="mmth-cfgsec">Edit note settings</div>
-        <label title="Keep saved notes &amp; history separate per edit-note type (release / artist / recording / …)"><input type="checkbox" class="mmth-s-scope"> Scope per resource</label>
+        <label data-tip="Keep saved notes and history apart per edit-note type\nRelease, artist, recording, …"><input type="checkbox" class="mmth-s-scope"> Scope per resource</label>
         <label><input type="checkbox" class="mmth-s-help"> Hide help text</label>
         <label>Sort saved notes
           <select class="mmth-s-sort"><option value="manual">Manual</option><option value="uses">Most used</option><option value="recent">Recent</option></select>
         </label>
-        <label title="Right-click does the other action">Default click action
+        <label data-tip="What a click on a saved note does\nRight-click: the other one">Default click action
           <select class="mmth-s-ins"><option value="replace">replace</option><option value="append">append</option></select>
         </label>
         <label><input type="checkbox" class="mmth-s-nl"> Insert empty line when appending</label>
@@ -58437,7 +59256,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         <label>Button label length <input type="number" class="mmth-s-btnchars" min="4" max="80"></label>
       </div>
       <div class="mmth-cfgpane" data-pane="fields" style="display:none">
-        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-reset" title="Re-add any missing built-in fields (catalog №, status, label, artist, Task…)">↺ Defaults</button><span class="mmth-cf-total"></span><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
+        <div class="mmth-cf-top"><button type="button" class="mmth-cf-add">＋ Add field</button><button type="button" class="mmth-cf-reset" data-tip="Add back the built-in fields you removed\nCatalog №, status, label, artist, Task, …">↺ Defaults</button><span class="mmth-cf-total"></span><button type="button" class="mmth-cf-mode">{ } JSON</button></div>
         <div class="mmth-cf-list"></div>
         <textarea class="mmth-cf-json" spellcheck="false" style="display:none" placeholder='[{ "selector": "div.instrument input", "label": "Instrument", "deltax": 16 }]'></textarea>
         <div class="mmth-cf-jsonrow" style="display:none"><button type="button" class="mmth-cf-jsonapply">Apply</button><span class="mmth-cf-jsonmsg"></span></div>
@@ -58511,20 +59330,20 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       SET.customFields.forEach((cf, i) => {
         const row = document.createElement('div'); row.className = 'mmth-cf-row' + (cf.enable === false ? ' mmth-cf-off' : '');
         const cnt = document.createElement('span'); cnt.className = 'mmth-cf-cnt';
-        const paint = () => { if (!cf.match) { cnt.textContent = ''; cnt.className = 'mmth-cf-cnt'; cnt.title = ''; return; } const n = cfCount(cf.match); cnt.textContent = n < 0 ? '!' : String(n); cnt.title = n < 0 ? 'invalid selector' : `matches ${n} field(s) now`; cnt.className = 'mmth-cf-cnt' + (n < 0 ? ' mmth-cf-bad' : n === 0 ? ' mmth-cf-zero' : ''); };
+        const paint = () => { if (!cf.match) { cnt.textContent = ''; cnt.className = 'mmth-cf-cnt'; cnt.dataset.tip = ''; return; } const n = cfCount(cf.match); cnt.textContent = n < 0 ? '!' : String(n); cnt.dataset.tip = n < 0 ? 'Not a valid selector' : `Matches ${n} field${n === 1 ? '' : 's'} on this page`; cnt.className = 'mmth-cf-cnt' + (n < 0 ? ' mmth-cf-bad' : n === 0 ? ' mmth-cf-zero' : ''); };
         const mk = (ph, key, w, type) => {
           const inp = document.createElement('input'); inp.type = type || 'text'; inp.placeholder = ph; inp.className = 'mmth-cf-in mmth-cf-' + key;
           inp.value = cf[key] != null ? cf[key] : ''; if (w) inp.style.width = w;
           inp.oninput = () => { cf[key] = type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value; if (key === 'match') paint(); cfApply(); };
           return inp;
         };
-        const dvIn = mk('lvl', 'dv', '34px', 'number'); dvIn.title = 'Bar level (deltav) — attach the pinned-button bar in-flow after the Nth ancestor of the field (0 = floating; raise it so the bar pushes the UI below instead of overlapping)'; dvIn.min = '0';
+        const dvIn = mk('lvl', 'dv', '34px', 'number'); dvIn.dataset.tip = 'Bar level (deltav)\nPuts the bar of pinned buttons in the page after the Nth ancestor of the field, so it pushes what is below instead of covering it.\n0: floating'; dvIn.min = '0';
         const subCb = document.createElement('input'); subCb.type = 'checkbox'; subCb.checked = !!cf.submit; subCb.onchange = () => { cf.submit = subCb.checked; cfApply(); };
-        const subL = document.createElement('label'); subL.className = 'mmth-cf-sub'; subL.title = 'Submit the field’s form ~200ms after a value is recalled — commits a tag, runs a header search, etc. (like pressing Enter). Only enable it on fields whose form is safe to submit on recall.';
+        const subL = document.createElement('label'); subL.className = 'mmth-cf-sub'; subL.dataset.tip = 'Submit the field’s form after a recall\nAbout 200 ms after a value is recalled, as if you pressed Enter: commits a tag, runs a header search, …\n⚠ Only on fields whose form is safe to submit';
         subL.append(subCb, Object.assign(document.createElement('span'), { textContent: '↵' }));
-        const tog = document.createElement('button'); tog.type = 'button'; tog.className = 'mmth-cf-tog'; const off0 = cf.enable === false; tog.textContent = off0 ? '○' : '◉'; tog.title = off0 ? 'Field is off — click to enable' : 'Field is on — click to disable';
+        const tog = document.createElement('button'); tog.type = 'button'; tog.className = 'mmth-cf-tog'; const off0 = cf.enable === false; tog.textContent = off0 ? '○' : '◉'; tog.dataset.tip = off0 ? 'This field is off\nClick: turn it on' : 'This field is on\nClick: turn it off';
         tog.onclick = () => { cf.enable = (cf.enable === false); renderFields(); cfApply(); };
-        const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.title = 'Remove this field';
+        const del = document.createElement('button'); del.type = 'button'; del.className = 'mmth-cf-del'; del.textContent = '🗑'; del.dataset.tip = 'Remove this field';
         del.onclick = () => { SET.customFields.splice(i, 1); renderFields(); cfApply(); };
         row.append(mk('CSS selector — comma-separate for several', 'match', '', 'text'), mk('Label', 'label', '84px'), mk('px', 'dx', '34px', 'number'), dvIn, subL, cnt, tog, del);
         cfList.appendChild(row); paint();
@@ -58589,7 +59408,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     closePop();
     const p = document.createElement('div'); p.className = 'mmth-pop';
     p.innerHTML = `
-      <h4>Edit-note syntax<a href="${SYNTAX_URL}" target="_blank" rel="noopener" title="Full documentation">doc ↗</a></h4>
+      <h4>Edit-note syntax<a href="${SYNTAX_URL}" target="_blank" rel="noopener" data-tip="Full documentation">doc ↗</a></h4>
       <div class="mmth-syn">
         <code>''italic''</code><span><i>italic</i></span>
         <code>'''bold'''</code><span><b>bold</b></span>
@@ -58639,7 +59458,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const wrap = inst.ta && inst.ta.closest('.mmth-wrap'); if (!wrap) return;
     const on = !!SET.minimized;
     wrap.classList.toggle('mmth-min', on);
-    if (inst.minBtn) { inst.minBtn.textContent = on ? '⤢' : '–'; inst.minBtn.title = on ? 'Restore the panel' : 'Minimize to corner'; }
+    if (inst.minBtn) { inst.minBtn.textContent = on ? '⤢' : '–'; inst.minBtn.dataset.tip = on ? 'Restore the panel' : 'Minimize to corner'; }
     if (on) { try { inst.ta.style.minHeight = ''; } catch (x) {} }       // drop the panel-height floor — panel is out of flow now
     if (!on) { if (inst.unpin) inst.unpin(); if (inst.side) inst.side.classList.remove('mmth-open'); }
   }
@@ -58702,7 +59521,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const fCount = document.createElement('span'); fCount.className = 'mmth-count'; inst.countEl = fCount;
     filterRow.appendChild(fInput); filterRow.appendChild(fCount); inst.filterInput = fInput;
 
-    const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.title = title; b.onclick = fn; return b; };
+    const fb = (glyph, title, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-fb' + (cls ? ' ' + cls : ''); b.textContent = glyph; b.dataset.tip = title; b.onclick = fn; return b; };
     ft.appendChild(fb('＋', 'Save current edit note', '', () => { const v = (ta.value || '').trim(); if (!v) return toast('Edit note is empty'); toast(addSaved(v) ? 'Saved' : 'Already saved'); }));
     const bSaved = fb('★', 'Saved notes', 'mmth-grp', () => { inst.view = 'saved'; renderInst(inst); });
     const bHist = fb('🕘', 'History (last used)', '', () => { inst.view = 'history'; renderInst(inst); });
@@ -58711,7 +59530,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const sp = document.createElement('span'); sp.className = 'mmth-fb mmth-spacer'; ft.appendChild(sp);
     // #309: which edit-note type these notes belong to (notes are kept separate per type)
     const scopeChip = document.createElement('span'); scopeChip.className = 'mmth-scope'; scopeChip.textContent = scopeLabel(SCOPE);
-    scopeChip.title = 'Saved notes & history are kept separate per edit-note type — these are your "' + scopeLabel(SCOPE) + '" notes (#309)';
+    scopeChip.dataset.tip = 'Your “' + scopeLabel(SCOPE) + '” notes\nSaved notes and history are kept apart per edit-note type';
     scopeChip.style.display = SET.scopePerResource ? '' : 'none';   // only shown when scoping is on
     ft.appendChild(scopeChip);
     inst.minBtn = fb('–', 'Minimize to corner', 'mmth-min-btn', () => { restoredFromMin = false; setMinimized(!SET.minimized); });   // #265: left of the ? button
@@ -58765,7 +59584,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const dflt = SET.defaultInsert;
     pinned.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-segb'; b.textContent = cap(it.text); b.style.maxWidth = (n + 1) + 'ch';
-      b.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · Ctrl/⌘-click: replace + submit)`;
+      b.dataset.tip = it.text + `\n\nClick: ${dflt}\nRight-click: ${dflt === 'replace' ? 'append' : 'replace'}\nCtrl/⌘+click: replace and submit`;
       b.onclick = e => {
         e.preventDefault();
         // #328: Ctrl/⌘-click = replace the note and submit the edit (parity with Ctrl/⌘+Enter;
@@ -58802,20 +59621,20 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       if (saved && it.pinned) row.classList.add('mmth-pinned');
       if (it.id === inst.cycId) row.classList.add('mmth-cyc');   // arrow-key / cycle selection (both views) #304
       const dflt = SET.defaultInsert;
-      row.title = it.text + `\n\n(click: ${dflt} · right-click: ${dflt === 'replace' ? 'append' : 'replace'} · Ctrl/⌘-click: set + submit)`;
+      row.dataset.tip = it.text + `\n\nClick: ${dflt}\nRight-click: ${dflt === 'replace' ? 'append' : 'replace'}\nCtrl/⌘+click: set and submit`;
 
       const txt = document.createElement('span'); txt.className = 'mmth-txt'; txt.textContent = it.text.replace(/\s+/g, ' ').trim();
       row.appendChild(txt);
 
       // right-side hover actions: pin/unpin + delete (saved); save + remove (history)
       const acts = document.createElement('div'); acts.className = 'mmth-rowacts';
-      const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.title = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
+      const ra = (glyph, title, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmth-ra'; b.textContent = glyph; b.dataset.tip = title; b.onclick = e => { e.stopPropagation(); fn(); }; acts.appendChild(b); };
       if (saved) { ra(it.pinned ? '★' : '☆', it.pinned ? 'Unpin from quick buttons' : 'Pin as a quick button', () => togglePinNote(it.id)); ra('🗑', 'Delete', () => removeSaved(it.id)); }
       else { ra('★', 'Save (pin to Saved)', () => { if (addSaved(it.text)) toast('Saved'); }); ra('🗑', 'Remove', () => removeHistory(it.text)); }
       row.appendChild(acts);
 
       if (manual) {
-        const grab = document.createElement('span'); grab.className = 'mmth-grab'; grab.textContent = '⠿'; grab.title = 'Drag to reorder'; grab.draggable = true;
+        const grab = document.createElement('span'); grab.className = 'mmth-grab'; grab.textContent = '⠿'; grab.dataset.tip = 'Drag to reorder'; grab.draggable = true;
         grab.addEventListener('dragstart', e => { _drag = { id: it.id }; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'row'); } catch (x) {} row.classList.add('mmth-dragging'); });
         grab.addEventListener('dragend', () => { row.classList.remove('mmth-dragging'); clearMarks(list); _drag = null; });
         row.appendChild(grab);
@@ -58867,14 +59686,14 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         const h = ta.offsetHeight; const was = _downH; _downH = null;
         if (h > 40 && h !== was && h !== SET.taHeight) { SET.taHeight = h; ta.style.height = h + 'px'; persistSet(); }
       });
-      const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.title = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
+      const vsep = document.createElement('div'); vsep.className = 'mmth-vsep'; vsep.dataset.tip = 'Drag to resize'; wrap.appendChild(vsep);   // resizable separator between field & panel (#212)
       const inst = buildSide(ta); const side = inst.side; wrap.appendChild(side);
       fieldCol.appendChild(inst.pinbar);   // #304: pinned quick-buttons directly below the field, in its column
       wireResize(vsep, side);
 
       // #265 minimized mode: badge in the field's top-right corner; hover (or click
       // to pin) floats the panel back in. mouseleave closes after a short grace.
-      const badge = document.createElement('div'); badge.className = 'mmth-badge'; badge.title = 'Mammoth — saved notes (click or hover)';
+      const badge = document.createElement('div'); badge.className = 'mmth-badge'; badge.dataset.tip = 'Mammoth — saved notes\nClick or hover: open them';
       badge.innerHTML = MAMMOTH_SVG;   // #308 vector, not the 🦣 emoji
       wrap.appendChild(badge); inst.badge = badge;
 
@@ -59284,7 +60103,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         // it takes real layout space and pushes the UI below it down instead of overlapping.
         const dv = def.deltav != null ? (+def.deltav || 0) : (el.dataset.mmthDeltav != null ? (+el.dataset.mmthDeltav || 0) : 0);
         const p = { el, key: keyFor(el, def), label: def.label || fLabelText(el) || 'Field', btn, bar, sel, dx, gid: def.gid || null, deltav: dv, submit: !!def.submit, z: fieldStackZ(el) };
-        btn.title = `Mammoth field memory — ${p.label}`;
+        btn.dataset.tip = `Mammoth field memory — ${p.label}`;
         btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); togglePop(p); });
         btn.addEventListener('mouseenter', () => el.classList.add('mmthf-hl'));
         btn.addEventListener('mouseleave', () => el.classList.remove('mmthf-hl'));
@@ -59336,7 +60155,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       setReserve(p, items.length > 0);
       if (!items.length) { p.bar.style.display = 'none'; return; }
       const seg = document.createElement('div'); seg.className = 'mmthf-seg';
-      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.title = `${cleanLabel(it.label || it.v)} → click to set`; b.addEventListener('click', e => { e.preventDefault(); recallInto(p, it); }); seg.appendChild(b); });
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mmthf-segb'; b.textContent = captionOf(it); b.style.maxWidth = (btnChars() + 1) + 'ch'; b.dataset.tip = `${cleanLabel(it.label || it.v)}\nClick: set the field to it`; b.addEventListener('click', e => { e.preventDefault(); recallInto(p, it); }); seg.appendChild(b); });
       p.bar.appendChild(seg);
     }
     function applyDefault(p) { const d = defaultOf(p.key); if (d && !readField(p.el).v) recallInto(p, d); }
@@ -59402,20 +60221,20 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       const el = document.createElement('div'); el.className = 'mmthf-pop'; el._key = p.key; el._anchor = p.btn; el._field = p.el;
       if (p.z) el.style.zIndex = String(Math.min(2147483647, p.z + 3));   // sit above the field's modal (see fieldStackZ)
       const rowHtml = (it, i) => {
-        const star = `<button class="mmthf-ra mmthf-star" title="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
-        const def = `<button class="mmthf-ra mmthf-def" title="${it.default ? 'Default — auto-fills an empty field (click to unset)' : 'Make default (auto-fills an empty field)'}">${it.default ? '◉' : '◯'}</button>`;
-        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-edit" title="Edit value (paste/append its MBID)">✎</button><button class="mmthf-ra mmthf-del" title="Forget">🗑</button><span class="mmthf-grab" title="Drag to reorder" draggable="true">⠿</span></div>`;
+        const star = `<button class="mmthf-ra mmthf-star" data-tip="${it.pinned ? 'Unpin from buttons' : 'Pin as a button'}">${it.pinned ? '★' : '☆'}</button>`;
+        const def = `<button class="mmthf-ra mmthf-def" data-tip="${it.default ? 'The default: fills the field when it is empty\nClick: unset' : 'Make it the default\nThe default fills the field when it is empty'}">${it.default ? '◉' : '◯'}</button>`;
+        const acts = `<div class="mmthf-acts">${star}${def}<button class="mmthf-ra mmthf-edit" data-tip="Edit the value\nPaste or append its MBID">✎</button><button class="mmthf-ra mmthf-del" data-tip="Forget this value">🗑</button><span class="mmthf-grab" data-tip="Drag to reorder" draggable="true">⠿</span></div>`;
         const ind = `<span class="mmthf-ind">${it.default ? '<span>◉</span>' : ''}${it.pinned ? '<span>★</span>' : ''}</span>`;
-        return `<div class="mmthf-row" data-i="${i}" title="${esc(it.label || it.v)}"><span class="mmthf-rtxt">${esc(cleanLabel(it.label || it.v))}</span>${ind}${acts}</div>`;
+        return `<div class="mmthf-row" data-i="${i}" data-tip="${esc(it.label || it.v)}"><span class="mmthf-rtxt">${esc(cleanLabel(it.label || it.v))}</span>${ind}${acts}</div>`;
       };
       // the filter box is always shown (whenever there's a saved value to filter)
       const searchOn = items.length > 0;
       el.innerHTML =
         `<div class="mmthf-ft">
-           <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} title="${cur.v ? 'Save current value: ' + esc(cur.label) : 'Field is empty'}">＋</button>
-           <button class="mmthf-fb mmthf-clear" title="Clear the field">✕</button>
+           <button class="mmthf-fb mmthf-save" ${cur.v ? '' : 'aria-disabled="true"'} data-tip="${cur.v ? 'Save the current value\n' + esc(cur.label) : 'The field is empty: nothing to save'}">＋</button>
+           <button class="mmthf-fb mmthf-clear" data-tip="Clear the field">✕</button>
            <span class="mmthf-ft-title"></span>
-           <button class="mmthf-fb mmthf-cfg" title="Mammoth settings">⚙︎</button>
+           <button class="mmthf-fb mmthf-cfg" data-tip="Mammoth settings">⚙︎</button>
          </div>
          ${searchOn ? '<div class="mmthf-filterrow"><input class="mmthf-filter" type="text" placeholder="Filter…" spellcheck="false"></div>' : ''}
          <div class="mmthf-list">${items.map(rowHtml).join('') || '<div class="mmthf-empty">No saved values yet</div>'}</div>`;
@@ -59549,7 +60368,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
 
 // ===== mission_control (@run-at document-end) ===================================
 if (__stOff.indexOf("mission_control") < 0 && __stRuns("mission_control", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.20.110252","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.20.110252","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.20.120000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -59557,7 +60376,7 @@ var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, m
 var { mbuGuessCase } = __st_GUESSCASE(GM_info);   // ST-GUESSCASE, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('mission_control', 'Mission Control')) return;
 
@@ -59916,7 +60735,7 @@ function bestHtml(b) {
     // a click on a cover opens it full screen, the other one a ← / → away (coverViewer)
     let n = 0;
     // `alt`: the full image, for a thumbnail that fails (a cover in an open edit has no CAA thumbnails yet)
-    const fig = (src, alt, title, lines) => '<div class="mc-best-c">' + (src ? '<button type="button" class="mc-cov" data-act="cover" data-i="' + (n++) + '" title="Show full screen (← → to compare)"><img alt="" src="' + esc(src) + '"' + (alt && alt !== src ? ' data-alt="' + esc(alt) + '"' : '') + '></button>' : '<span class="mc-best-no">🖼</span>')
+    const fig = (src, alt, title, lines) => '<div class="mc-best-c">' + (src ? '<button type="button" class="mc-cov" data-act="cover" data-i="' + (n++) + '" data-tip="Show it full screen\n← →: compare"><img alt="" src="' + esc(src) + '"' + (alt && alt !== src ? ' data-alt="' + esc(alt) + '"' : '') + '></button>' : '<span class="mc-best-no">🖼</span>')
         + '<div class="mc-best-t"><b>' + esc(title) + '</b>' + lines.filter(Boolean).map(l => '<span>' + esc(l) + '</span>').join('') + '</div></div>';
     const c = b.current;
     // the same size to the pixel and the byte: the front already is the best cover (imported earlier), not a comparison
@@ -59953,9 +60772,9 @@ function coverViewer(list, at) {
     let i = Math.min(at || 0, list.length - 1);
     const v = el('div', ''); v.id = 'mc-cover';
     v.setAttribute('role', 'dialog'); v.setAttribute('aria-label', 'Cover, full screen');
-    v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" title="Close (Esc)">✕</button></div>'
+    v.innerHTML = mbuHtml('<div class="mc-cov-top"><span class="mc-cov-t"></span><span class="mc-cov-i"></span><span class="mc-cov-n"></span><button type="button" class="mc-cov-x" data-tip="Close (Esc)">✕</button></div>'
         + '<div class="mc-cov-stage"><img alt=""></div>'
-        + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" title="Previous (←)">‹</button><button type="button" class="mc-cov-go next" title="Next (→)">›</button>' : ''));
+        + (list.length > 1 ? '<button type="button" class="mc-cov-go prev" data-tip="Previous (←)">‹</button><button type="button" class="mc-cov-go next" data-tip="Next (→)">›</button>' : ''));
     const show = () => {
         const x = list[i];
         v.querySelector('img').src = x.src;
@@ -60015,8 +60834,8 @@ function falconHtml(f) {
     const bad = f.items.filter(i => ['failed', 'partial', 'manual'].includes(i.status)).length;
     const head = 'Falcon ' + (settled < f.items.length ? 'is running: ' + settled + ' of ' + f.items.length + ' finished' : bad ? 'finished, ' + bad + ' need' + (bad === 1 ? 's' : '') + ' a look' : 'finished');
     return '<div class="mc-falcon' + (bad ? ' bad' : settled === f.items.length ? ' ok' : '') + '"><div class="mc-falcon-h">' + esc(head)
-        + (bad ? ' <button type="button" class="mc-falcon-open" data-act="falcon-open" title="Open Falcon\'s panel to see why and retry">Open Falcon</button>' : '') + '</div>'
-        + f.items.map(i => { const k = FALCON_MARK[i.status] || ['?', i.status]; return '<div class="mc-falcon-i st-' + esc(i.status) + '" title="' + esc(k[1] + (i.error ? ': ' + i.error : '')) + '"><span class="mk">' + k[0] + '</span><span class="ty">' + esc(i.entityType.replace('_', ' ')) + '</span><span class="nm">' + esc(i.name || i.mbid) + '</span><span class="ct">'
+        + (bad ? ' <button type="button" class="mc-falcon-open" data-act="falcon-open" data-tip="Open Falcon\'s panel\nTo see why, and try again">Open Falcon</button>' : '') + '</div>'
+        + f.items.map(i => { const k = FALCON_MARK[i.status] || ['?', i.status]; return '<div class="mc-falcon-i st-' + esc(i.status) + '" data-tip="' + esc(k[1] + (i.error ? ': ' + i.error : '')) + '"><span class="mk">' + k[0] + '</span><span class="ty">' + esc(i.entityType.replace('_', ' ')) + '</span><span class="nm">' + esc(i.name || i.mbid) + '</span><span class="ct">'
             + esc([i.urls ? i.urls + ' link' + (i.urls === 1 ? '' : 's') : '', i.cover ? 'cover' : ''].filter(Boolean).join(' + ')) + '</span>' + (i.error ? '<span class="er">' + esc(i.error) + '</span>' : '') + '</div>'; }).join('') + '</div>';
 }
 // #680: what a provider applied shows as linked from then on: its rows move to the linked icons,
@@ -60459,12 +61278,12 @@ function header() {
     h.addEventListener('animationiteration', e => { if (e.target === h && e.pseudoElement === '::after' && !isBusy()) h.classList.remove('mc-busy'); });
     // #680: the release where Probe was (the cover is the one in the Cover art card), the steps, then
     // Execute with its count; logo, version and Auto probe live in ⚙
-    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" title="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
-        + '<div class="mc-art" title="' + esc(rel.artist) + '">' + esc(rel.artist || '')
-        + (rel.versions ? ' <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener" title="All versions of this release">(' + esc(rel.versions.text) + ')</a>' : '') + '</div></div>'
-        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled title="Apply the selected changes, step by step">Execute</button>'
-        + '<button type="button" class="mc-btn ghost" data-act="cfg" title="Settings">' + MBU_CFG_ICON + '</button>'
-        + '<button type="button" class="mc-btn ghost" data-act="close" title="Close (Esc)">✕</button></div>');
+    h.innerHTML = mbuHtml(fmtIcon(rel.format) + '<div class="mc-rel"><div class="mc-ttl" data-tip="' + esc(rel.title) + '">' + esc(rel.title) + '</div>'
+        + '<div class="mc-art" data-tip="' + esc(rel.artist) + '">' + esc(rel.artist || '')
+        + (rel.versions ? ' <a class="mc-ver" href="' + esc(rel.versions.href) + '" target="_blank" rel="noopener" data-tip="Every version of this release">(' + esc(rel.versions.text) + ')</a>' : '') + '</div></div>'
+        + '<div class="mc-act"><button type="button" class="mc-btn mc-exec" data-act="exec" disabled data-tip="Apply the selected changes, step by step">Execute</button>'
+        + '<button type="button" class="mc-btn ghost" data-act="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button>'
+        + '<button type="button" class="mc-btn ghost" data-act="close" data-tip="Close (Esc)">✕</button></div>');
     h.insertBefore(steps(), h.querySelector('.mc-act'));
     return h;
 }
@@ -60499,20 +61318,20 @@ const FORMAT_KINDS = [
 function fmtIcon(format) {
     const first = (format || '').split('+')[0];
     const k = (format && FORMAT_KINDS.find(([, re]) => re.test(first)) || ['disc'])[0];
-    return '<span class="mc-fmt" title="' + esc((format || 'Format unknown') + ' · click: show or hide the execution order') + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
+    return '<span class="mc-fmt" data-tip="' + esc((format || 'Format unknown') + '\nClick: show or hide the order of the steps') + '"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[k] + '</svg></span>';
 }
 
 function seg(p) {
-    return '<div class="mc-seg" data-mode="' + p.mode + '" title="Auto: fetch during Probe · Ask: fetch on a button · Off: skip">'
+    return '<div class="mc-seg" data-mode="' + p.mode + '" data-tip="Auto: fetch during Probe · Ask: fetch on a button · Off: skip">'
         + ['auto', 'ask', 'off'].map(m => '<button type="button" data-v="' + m + '"' + (S[p.mode] === m ? ' class="on"' : '') + '>' + m[0].toUpperCase() + m.slice(1) + '</button>').join('') + '</div>';
 }
 
 function orderSidebar() {
     const a = el('aside', 'mc-side left');
-    let html = '<h2 class="mc-sec">Execution order <button type="button" class="mc-x" data-close="left" title="Hide">×</button></h2>';
+    let html = '<h2 class="mc-sec">Execution order <button type="button" class="mc-x" data-close="left" data-tip="Hide">×</button></h2>';
     const pv = p => '<div class="mc-pv">' + esc(p.provider) + '</div>';
     STEPS.forEach((s, k) => {
-        const node = '<span class="mc-node">' + (s.lanes ? '<span class="par" title="run in parallel">⇶</span>' : sIcon(s.id)) + '<span class="num">' + (k + 1) + '</span></span>';
+        const node = '<span class="mc-node">' + (s.lanes ? '<span class="par" data-tip="These run side by side">⇶</span>' : sIcon(s.id)) + '<span class="num">' + (k + 1) + '</span></span>';
         const last = k === STEPS.length - 1 ? ' last' : '';
         if (s.lanes) {
             html += '<div class="mc-stage head">' + node + '<div><div class="nm">' + esc(s.name) + ' <span class="tag">parallel</span></div></div></div>'
@@ -60525,7 +61344,7 @@ function orderSidebar() {
         }
     });
     html += '<div class="mc-runs"><div><span>Probed</span><b class="f-probe"></b></div><div><span>On Execute</span><b class="f-exec"></b></div>'
-        + '<div><span>Last run</span><b><span class="f-run"></span> · <button type="button" class="mc-loglink" data-act="log" title="Mission Control’s log">Log</button></b></div></div>';
+        + '<div><span>Last run</span><b><span class="f-run"></span> · <button type="button" class="mc-loglink" data-act="log" data-tip="Mission Control’s log">Log</button></b></div></div>';
     a.innerHTML = mbuHtml(html);
     return a;
 }
@@ -60563,7 +61382,7 @@ function paintCoverage(n) {
     const t = { linked: 0, new: 0, held: 0, none: 0 };
     xs.forEach(x => { t[x.state === 'withheld' || x.state === 'unsure' ? 'held' : x.state in t ? x.state : 'none']++; });
     bar.innerHTML = mbuHtml(xs.length ? Object.keys(t).filter(k => t[k]).map(k => '<i class="' + k + '" style="width:' + (100 * t[k] / xs.length).toFixed(2) + '%"></i>').join('') : '');
-    bar.title = xs.length ? t.linked + ' linked · ' + t.new + ' to add · ' + t.held + ' held back · ' + t.none + ' not found' : '';
+    bar.dataset.tip = xs.length ? '- ' + t.linked + ' linked\n- ' + t.new + ' to add\n- ' + t.held + ' held back\n- ' + t.none + ' not found' : '';
 }
 // the footer: when the last probe ran and how long it took, what Execute would send, the last run
 let probeAt = 0, probeTook = 0, lastRun = null;
@@ -60587,8 +61406,8 @@ let STALL_MS = 20000;
 function steps() {
     const d = el('div', 'mc-steps');
     const node = p => '<span class="mc-step" data-step="' + p.id + '"><span class="mc-ring">' + sIcon(p.id) + '<sup hidden></sup></span><span class="tx"><b>' + esc(p.provider) + '</b><i></i></span></span>';
-    d.innerHTML = mbuHtml('<button type="button" class="mc-re" data-act="probe" title="Probe: ask every provider what is missing (⚙: probe on open)">↻</button>'
-        + STEPS.map(s => s.lanes ? '<span class="mc-par" title="run in parallel">' + s.lanes.map(node).join('') + '</span>' : node(s)).join('<span class="mc-arrow">→</span>'));
+    d.innerHTML = mbuHtml('<button type="button" class="mc-re" data-act="probe" data-tip="Probe\nAsk every provider what is missing. ⚙ can make it run on open.">↻</button>'
+        + STEPS.map(s => s.lanes ? '<span class="mc-par" data-tip="These run side by side">' + s.lanes.map(node).join('') + '</span>' : node(s)).join('<span class="mc-arrow">→</span>'));
     return d;
 }
 function addText(p) {
@@ -60622,7 +61441,7 @@ function paintSteps() {
         const n = ui.querySelector('.mc-step[data-step="' + p.id + '"]'); if (!n) return;
         const [cls, words, mark] = stepState(p);
         n.className = 'mc-step ' + cls;
-        n.title = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '. Click to switch it on' : '. Click: off for this page · right-click: off for good');
+        n.dataset.tip = p.provider + ' — ' + (cls === 'busy' || cls === 'stalled' ? words : stateText(p)) + (cls === 'off' ? (PAGE_OFF.has(p.id) ? ' (off for this page)' : '') + '\nClick: switch it on' : '\nClick: off for this page\nRight-click: off for good');
         n.querySelector('i').textContent = words;
         const sup = n.querySelector('sup'); sup.hidden = !mark; sup.textContent = mark;
         // the provider's card shows the same state: a stripe on its edge, a tint and a word in its header (#680)
@@ -60644,10 +61463,10 @@ let stepClock = 0;
 const COLS = [
     { id: 'isrc', p: 'is', head: 'ISRC · IS', pick: true, cell: x =>
         x.state === 'new' ? '<span class="mc-add mono">+ ' + isrcHtml(x.isrc) + '</span>'
-        : x.state === 'unsure' ? '<span class="mc-warn mono" title="' + esc(x.why || '') + '">+ ' + isrcHtml(x.isrc) + ' ⚠</span>'
+        : x.state === 'unsure' ? '<span class="mc-warn mono" data-tip="' + esc(x.why || '') + '">+ ' + isrcHtml(x.isrc) + ' ⚠</span>'
         // a provider's hard stop (#680: an ISRC on two recordings): shown, never tickable
-        : x.state === 'blocked' ? '<span class="mc-err mono" title="' + esc('Blocked: ' + (x.why || '')) + '">⊘ ' + isrcHtml(x.isrc) + '</span>'
-        : x.state === 'linked' ? '<span class="weak mono" title="' + esc((x.existing || []).join(', ')) + '">' + isrcHtml((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
+        : x.state === 'blocked' ? '<span class="mc-err mono" data-tip="' + esc('⚠ Blocked\n' + (x.why || '')) + '">⊘ ' + isrcHtml(x.isrc) + '</span>'
+        : x.state === 'linked' ? '<span class="weak mono" data-tip="' + esc((x.existing || []).join(', ')) + '">' + isrcHtml((x.existing || [])[0] || x.isrc || '') + ((x.existing || []).length > 1 ? ' +' + (x.existing.length - 1) : '') + '</span>'
         : '<span class="pend">none found</span>' },
     // rendered by linksCell: IS's linked icons plus the links Find links found (#680)
     { id: 'links', p: 'is', head: 'Rec links · IS', cell: () => '' },
@@ -60655,17 +61474,17 @@ const COLS = [
     { id: 'fusion', p: 'fusion', head: 'RG duplicates · Fusion', pick: true, cell: x =>
         FX_SHOWN[x.state] ? '<span class="weak">' + esc(fxReleases(x)) + '</span>'
         // as Fusion's pool badge: this recording has an open edit, so Fusion groups it with nothing
-        : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" title="This recording has an open edit: Fusion leaves it out of auto-match until the edit closes">⏳ pending</a>'
+        : x.pending ? '<a class="mc-fxp" target="_blank" href="/recording/' + esc(x.key) + '/open_edits" data-tip="This recording has an open edit\nFusion leaves it out of Match until the edit closes.">⏳ pending</a>'
         : '<span class="pend">—</span>' },
     // #782: what the platforms give for the track: a length the track hasn't, a title that differs (shown, never applied)
     // a title or length taken in on the row under the track replaces them
     { id: 'plat', p: 'fc', head: 'Platforms · FC', cell: x => {
         const p = CMP.picks[pfIndex(x)];
-        if (p) return pfPill(x) + ' <span class="mc-add" title="Taken in: Platform Check sends it with the release">' + [p.title != null ? '→ ' + esc(p.title) : '', p.ms ? '→ <span class="mono">' + ccLen(p.ms) + '</span>' : ''].filter(Boolean).join(' · ') + '</span>';
-        return (x.lenNew ? '<span class="mc-add mono" title="' + esc('The track has no length; ' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths)') + '">+ ' + ccLen(x.len) + '</span> ' : '') + pfPill(x);
+        if (p) return pfPill(x) + ' <span class="mc-add" data-tip="Taken in\nPlatform Check sends it with the release.">' + [p.title != null ? '→ ' + esc(p.title) : '', p.ms ? '→ <span class="mono">' + ccLen(p.ms) + '</span>' : ''].filter(Boolean).join(' · ') + '</span>';
+        return (x.lenNew ? '<span class="mc-add mono" data-tip="' + esc('The track has no length\n' + ccLen(x.len) + ' from ' + x.lenFrom + '. Platform Check adds it with the release (Track lengths).') + '">+ ' + ccLen(x.len) + '</span> ' : '') + pfPill(x);
     } },
     { id: 'ch', p: 'ch', head: 'Credits · CH', cell: x =>
-        x.credits ? '<span title="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
+        x.credits ? '<span data-tip="' + esc((x.list || []).map(c => c.name + ' — ' + c.role).join('\n')) + '">' + x.credits + '</span>' : '<span class="pend">—</span>' },
 ];
 const FETCH_LABEL = { fusion: 'Fetch RG', ch: 'Fetch credits', fc: 'Compare' };
 function colHead(c) {
@@ -60673,7 +61492,7 @@ function colHead(c) {
     if (!p.mode) return esc(c.head);
     const r = results[p.id];
     const ask = modeOf(p) === 'ask' && found[p.id] && (!r || r.state !== 'busy');
-    return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" title="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
+    return esc(c.head) + (ask && FETCH_LABEL[p.id] ? ' <button type="button" class="mc-fetch" data-fetch="' + p.id + '" data-tip="Run this slow fetch now">' + (r ? '↻ ' : '') + FETCH_LABEL[p.id] + '</button>'
         : '<span class="mc-mode">' + modeOf(p) + '</span>');
 }
 function trackFinding(pid, rec) {
@@ -60691,13 +61510,13 @@ function trackLinks(rec) {
 const byIcon = (a, b) => a.localeCompare(b);
 function linksCell(t) {
     const x = trackFinding('is', t.rec), add = trackLinks(t.rec).slice().sort((a, b) => byIcon(urlIcon(a.url), urlIcon(b.url)));
-    const have = (x && x.linkUrls || []).slice().sort((a, b) => byIcon(urlIcon(a), urlIcon(b))).map(u => '<a class="mc-pico mc-have" target="_blank" rel="noopener" href="' + esc(u) + '" title="' + esc('Linked: ' + u) + '">' + stIcon(urlIcon(u), 14) + '</a>');
+    const have = (x && x.linkUrls || []).slice().sort((a, b) => byIcon(urlIcon(a), urlIcon(b))).map(u => '<a class="mc-pico mc-have" target="_blank" rel="noopener" href="' + esc(u) + '" data-tip="' + esc('Linked: ' + u) + '">' + stIcon(urlIcon(u), 14) + '</a>');
     const neu = add.map(l => {
         const on = picked.is && picked.is.has(l.key);
         // a found link opens on click like a linked one; right-click takes it in or leaves it out
         const ico = urlIcon(l.url);
-        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-col="links" data-ico="' + ico + '" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" title="' + esc(l.name + ': ' + l.url + '\nClick to open · right-click to ' + (on ? 'leave out (taken in)' : 'take in')
-            + '\nCtrl+right-click: the whole track · Alt+right-click: ' + l.name + ' on every track · Ctrl+Alt+right-click: everything') + '">+' + stIcon(ico, 14) + '</a>';
+        return '<a class="mc-pick mc-lnk' + (on ? ' on' : '') + '" data-prov="is" data-col="links" data-ico="' + ico + '" data-key="' + esc(l.key) + '" target="_blank" rel="noopener" href="' + esc(l.url) + '" data-tip="' + esc(l.name + (on ? ' — taken in' : '') + '\n' + l.url + '\nClick: open' + '\nRight-click: ' + (on ? 'leave it out' : 'take it in')
+            + '\nCtrl+right-click: the whole track\nAlt+right-click: ' + l.name + ' on every track\nCtrl+Alt+right-click: everything') + '">+' + stIcon(ico, 14) + '</a>';
     });
     if (!have.length && !neu.length) return '<span class="pend">none</span>';
     return '<span class="mc-icons">' + have.join('') + (have.length && neu.length ? '<span class="mc-isep"></span>' : '') + neu.join('') + '</span>';
@@ -60715,8 +61534,8 @@ function cellHtml(c, t) {
     // a pickable cell is its own toggle, no tick box (#680): a click takes it in or leaves it out
     if (!c.pick || !PICKABLE[x.state]) return lead + c.cell(x);
     const on = picked[p.id] && picked[p.id].has(x.key);
-    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-col="' + c.id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in')
-        + '\nCtrl-click: the whole track · Alt-click: the whole column · Ctrl+Alt-click: everything · drag: down the column">' + c.cell(x) + '</span>';
+    return lead + '<span class="mc-pick' + (on ? ' on' : '') + '" data-prov="' + p.id + '" data-col="' + c.id + '" data-key="' + esc(x.key) + '" data-tip="' + (on ? 'Taken in\nClick: leave it out' : 'Click: take it in')
+        + '\nCtrl+click: the whole track\nAlt+click: the whole column\nCtrl+Alt+click: everything\nDrag: down the column">' + c.cell(x) + '</span>';
 }
 
 // Fusion's comparison (#680) under the track is Fusion's own group card (#790): MC leaves a slot
@@ -60732,11 +61551,11 @@ const fxLenDiff = (me, m) => {
 };
 const fxCan = cap => !!(found.fusion && (found.fusion.capabilities || []).includes(cap));
 // Fusion's icon, not a labelled button: one sits on every comparison and the label was noise
-const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-fxgo" data-act="fx-fusion" data-key="' + esc(x.key) + '" title="Open in Fusion: Fusion\'s window with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + PROVIDER_ICONS.fusion + '"></button>' : '';
+const fxOpenBtn = x => fxCan('open') ? '<button type="button" class="mc-fxgo" data-act="fx-fusion" data-key="' + esc(x.key) + '" data-tip="Open in Fusion\nFusion\'s window, with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + PROVIDER_ICONS.fusion + '"></button>' : '';
 function fxPill(x) {
     if (!FX_SHOWN[x.state]) return '';
     const open = fxOpen.has(x.key), n = (x.matches || []).length;
-    return '<button type="button" class="mc-fxo" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + (open ? 'Hide' : 'Show') + ' what Fusion compared">'
+    return '<button type="button" class="mc-fxo" data-act="fx" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + (open ? 'Hide' : 'Show') + ' what Fusion compared">'
         + '<span class="car">▸</span>' + n + ' match' + (n === 1 ? '' : 'es') + '</button> ';
 }
 // #782: a track whose title differs opens, under its row, what each platform gives for it
@@ -60790,7 +61609,7 @@ function pfGuess(title) {   // the language, not its mode: a Cyrillic title gets
 // #782: the row under the track: what each platform gives for it, each title and length a click takes in
 function pfPill(x) {
     const open = fxOpen.has(x.key), d = x.differs;
-    return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" title="' + esc((d ? 'The platforms\' title: ' + x.title + ' (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\n' + (open ? 'Hide' : 'Show') + ' what each platform gives: a click on a title or a length takes it in') + '">'
+    return '<button type="button" class="mc-fxo' + (d ? '' : ' same') + '" data-act="fx-pf" data-key="' + esc(x.key) + '" aria-expanded="' + open + '" data-tip="' + esc((d ? 'The platforms\' title: ' + x.title + ' (' + x.titleFrom + ')' : 'The platforms agree with the title (' + x.titleFrom + ')') + '\nClick: ' + (open ? 'hide' : 'show') + ' what each platform gives. A click on a title or a length there takes it in.') + '">'
         + '<span class="car">▸</span>' + (d ? '≠ title' : '✓') + '</button>';
 }
 // the lines under a track, as rows of the Tracks table: the track's own (what it gets, typed in), then one per version
@@ -60799,17 +61618,17 @@ function pfRows(x, t, heads) {
     const i = pfIndex(x), p = CMP.picks[i] || {}, own = pfMs(t.len);
     const take = (what, k, inner, val, tip) => {
         const on = what === 'title' ? p.title === val : !!p.ms && pfSameLen(p.ms, val);
-        return '<button type="button" class="mc-pft' + (on ? ' on' : '') + '" data-act="fx-take" data-i="' + i + '" data-what="' + what + '" data-k="' + esc(k) + '" title="' + esc(tip) + '">' + inner + '</button>';
+        return '<button type="button" class="mc-pft' + (on ? ' on' : '') + '" data-act="fx-take" data-i="' + i + '" data-what="' + what + '" data-k="' + esc(k) + '" data-tip="' + esc(tip) + '">' + inner + '</button>';
     };
     const row = (cells, cls) => '<tr class="mc-pfr' + (cls ? ' ' + cls : '') + '" data-pfr="' + i + '">' + heads.map(h => '<td' + (h === 'ttl' ? ' class="ttl"' : '') + '>' + (cells[h] || '') + '</td>').join('') + '</tr>';
     const cur = p.title != null ? p.title : t.title, guess = pfGuess(cur);
     const mine = row({
-        ttl: '<span class="mc-pfti"><input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(cur) + '" spellcheck="false" title="The track\'s title: type another, or click a platform\'s below. Enter keeps it, Escape puts it back">'
-            + '<button type="button" class="mc-pfgc' + (guess === cur ? ' same' : '') + '" data-act="fx-gc" data-i="' + i + '" title="' + esc(guess === cur ? 'Guess case: the title is as guess case writes it (' + pfGuessMode() + ')' : 'Guess case (' + pfGuessMode() + ') → ' + guess) + '">Aa</button></span>',
-        len: '<input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" title="The track\'s length (m:ss): type another, or click a platform\'s below">',
+        ttl: '<span class="mc-pfti"><input type="text" class="mc-pf-in" data-pf-title="' + i + '" value="' + esc(cur) + '" spellcheck="false" data-tip="The track\'s title\nType another, or click a platform\'s below.\nEnter: keep it\nEsc: put it back">'
+            + '<button type="button" class="mc-pfgc' + (guess === cur ? ' same' : '') + '" data-act="fx-gc" data-i="' + i + '" data-tip="' + esc(guess === cur ? 'Guess case (' + pfGuessMode() + ')\nThe title is already as guess case writes it.' : 'Guess case (' + pfGuessMode() + ')\n→ ' + guess) + '">Aa</button></span>',
+        len: '<input type="text" class="mc-pf-in mono" data-pf-len="' + i + '" value="' + esc(p.ms ? ccLen(p.ms) : t.len && t.len !== '?:??' ? t.len : '') + '" placeholder="m:ss" spellcheck="false" data-tip="The track\'s length (`m:ss`)\nType another, or click a platform\'s below.">',
         // Apollo's revert-this-track; its slot stays when there's nothing to revert, so nothing beside it moves
-        plat: '<span class="mc-pfa"><button type="button" class="mc-pfrev' + (CMP.picks[i] ? '" data-act="fx-untake" data-i="' + i + '" title="Revert this track: keep it as it is"' : ' void" tabindex="-1" aria-hidden="true"') + '>↺</button>'
-            + (p.title != null ? '<label title="Give the recording this title too (the release editor\'s &quot;update the recording title&quot;)"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '>the recording too</label>' : '<span class="weak">this track</span>') + '</span>',
+        plat: '<span class="mc-pfa"><button type="button" class="mc-pfrev' + (CMP.picks[i] ? '" data-act="fx-untake" data-i="' + i + '" data-tip="Revert this track\nKeep it as it is"' : ' void" tabindex="-1" aria-hidden="true"') + '>↺</button>'
+            + (p.title != null ? '<label data-tip="Give the recording this title too\nThe release editor\'s “update the recording title”"><input type="checkbox" data-pf-rec="' + i + '"' + (p.recording ? ' checked' : '') + '>the recording too</label>' : '<span class="weak">this track</span>') + '</span>',
     }, 'own');
     const vs = x.versions || [];
     return mine + vs.map((v, n) => {
@@ -60866,7 +61685,7 @@ function fxAllBtn() {
     const ks = fxOpenable();
     if (!ks.length) return '';
     const all = ks.every(k => fxOpen.has(k));
-    return '<button type="button" class="mc-all" data-act="fx-all" title="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks: Fusion\'s, and the platforms\' where a title or a length differs (a click on a title or a length there takes it in; Platform Check sends it with the release, and Falcon writes it in the release editor)') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
+    return '<button type="button" class="mc-all" data-act="fx-all" data-tip="' + (all ? 'Fold every comparison under the tracks' : 'Open every comparison under the tracks\nFusion\'s, and the platforms\' where a title or a length differs. A click on a title or a length there takes it in: Platform Check sends it with the release, and Falcon writes it in the release editor.') + '">' + (all ? 'Collapse all' : 'Expand all') + '</button>';
 }
 function fxAct(b) {
     const k = b.dataset.key;
@@ -60921,9 +61740,9 @@ function paintMatrix() {
     if (fa) fa.innerHTML = mbuHtml(fxAllBtn());
     const slot = ui.querySelector('.mc-tapplied');
     if (slot) slot.innerHTML = mbuHtml(COLS.map(c => c.p).filter((p, i, a) => a.indexOf(p) === i).map(p => results[p] && results[p].applied)
-        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" title="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).provider + ': ' + (a.note || '')) + '</span>'
+        .filter(Boolean).map(a => '<span class="mc-applied ' + (a.ok ? 'ok' : 'err') + '" data-tip="' + esc(a.id) + '">' + (a.ok ? '✓ ' : '✕ ') + esc(PROVIDERS.find(x => x.id === a.id).provider + ': ' + (a.note || '')) + '</span>'
             // #748: a per-track provider's failure that can be tried again offers Retry here, as a card's does (#741)
-            + (!a.ok && a.retry ? '<button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(a.id) + '" title="Apply ' + esc(PROVIDERS.find(x => x.id === a.id).provider) + ' again, with what is still taken in">Retry</button>' : '')).join(''));
+            + (!a.ok && a.retry ? '<button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(a.id) + '" data-tip="Apply ' + esc(PROVIDERS.find(x => x.id === a.id).provider) + ' again, with what is still taken in">Retry</button>' : '')).join(''));
     let pend = 0, rows = 0;
     ui.querySelectorAll('.mc-tbl tbody tr[data-i]').forEach(tr => {
         const t = rel.tracks[+tr.dataset.i], n = trackPicks(t);
@@ -61080,7 +61899,7 @@ function paintReleaseCredits() {
     // and its pre-flight starts (the same choice as CH's toolbar, #680)
     const open = (r && r.open) || (found.ch && found.ch.open) || [], slot = box.parentNode.querySelector('.mc-chopen');
     // drawn as CH's toolbar draws them: an icon per source, All (no icon) as ⚛ All
-    const openHtml = open.length ? '<span class="mc-chlbl">Import credits:</span>' + open.map(o => '<a class="mc-btn mc-chsrc' + (o.icon ? '' : ' mc-chall') + '" href="' + esc(o.url) + '" title="' + esc(o.title || o.label) + '" aria-label="' + esc(o.label) + '">'
+    const openHtml = open.length ? '<span class="mc-chlbl">Import credits:</span>' + open.map(o => '<a class="mc-btn mc-chsrc' + (o.icon ? '' : ' mc-chall') + '" href="' + esc(o.url) + '" data-tip="' + esc(o.title || o.label) + '" aria-label="' + esc(o.label) + '">'
         + (o.icon ? stIcon(o.icon, 14) : '<b>⚛</b>' + esc(o.label)) + '</a>').join('') : '';
     if (slot && slot._mcHtml !== openHtml) { slot._mcHtml = openHtml; slot.innerHTML = mbuHtml(openHtml); }
     if (!r || r.state !== 'done') { box.innerHTML = mbuHtml('<div class="mc-empty">Credit Hoarder: ' + esc(stateText(p)) + (r ? '' : '. Fetch credits fills this in.') + '</div>'); return; }
@@ -61115,9 +61934,9 @@ function linkedBtn(linked, k) {
     const by = new Map();
     linked.forEach(x => { const k = x.icon || x.key; (by.get(k) || by.set(k, []).get(k)).push(x); });
     const nm = x => (isEnt(x) ? (x.entity.name || '') + ' · ' : '') + (x.name || x.key);
-    return '<button type="button" class="mc-linked' + (open ? ' on' : '') + '" data-act="linked" data-lk="' + esc(k) + '" title="'
-        + esc('Already linked: ' + linked.map(nm).join(', ') + (open ? '. Click to fold them back.' : '. Click to list them as rows.')) + '">'
-        + [...by].map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" title="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
+    return '<button type="button" class="mc-linked' + (open ? ' on' : '') + '" data-act="linked" data-lk="' + esc(k) + '" data-tip="'
+        + esc('Already linked\n' + linked.map(x => '- ' + nm(x)).join('\n') + (open ? '\nClick: fold them back' : '\nClick: list them as rows')) + '">'
+        + [...by].map(([k, xs]) => '<span class="mc-pico' + (xs[0].entity ? ' mc-ent' : '') + '" data-tip="' + esc(xs.map(nm).join(', ')) + '">' + stIcon(k, 14) + (xs.length > 1 ? '<sub>' + xs.length + '</sub>' : '') + '</span>').join('')
         + '<span class="mc-lk">✓ ' + linked.length + '</span></button>';
 }
 // a repaint rebuilds the card, which reloads its images: the cover thumbnails blinked on each
@@ -61139,7 +61958,7 @@ function paintCards() {
         const sum = r.summary ? '<div class="mc-summary">' + esc(r.summary) + '</div>' : '';
         const ap = (r.applied ? '<div class="mc-applied ' + (r.applied.ok ? 'ok' : 'err') + '">' + (r.applied.ok ? '✓ ' : '✕ ') + esc(r.applied.note || (r.applied.ok ? 'done' : 'failed'))
             // #741: a provider that says it can try again (retry) gets a button that applies it alone, with what is still taken in
-            + (!r.applied.ok && r.applied.retry ? ' <button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(id) + '" title="Apply ' + esc(p.provider) + ' again, with what is taken in">Retry</button>' : '') + '</div>' : '')
+            + (!r.applied.ok && r.applied.retry ? ' <button type="button" class="mc-retry" data-act="retry-apply" data-prov="' + esc(id) + '" data-tip="Apply ' + esc(p.provider) + ' again, with what is taken in">Retry</button>' : '') + '</div>' : '')
             + (r.working ? '<div class="mc-working"><span class="mc-spin"></span>' + esc(r.working) + '</div>' : '') + falconHtml(r.falcon) + bestHtml(r.best);
         // 'not found' is one line of icons, not a row each: it's most of the list and needs no action.
         // 'linked' needs none either: icons on their section's sub-heading (Release, Artists, Labels),
@@ -61173,19 +61992,19 @@ function paintCards() {
             const parts = String(x.why || '').split(' · ').filter(w => w && !(lane && lane.k && /barcode/.test(w)));
             const cons = w => Array.isArray(x.consFrom) && x.consFrom.length && /^consolidated by Mission Control from /.test(w);
             const others = w => Array.isArray(x.others) && x.others.length && /^already linked to /.test(w);
-            const otherA = o => '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + o.type + '/' + o.mbid) + '" title="' + esc('Open this ' + o.type + ' on MusicBrainz') + '">' + esc(o.name || o.mbid) + '</a>' + (o.disambiguation ? ' (' + esc(o.disambiguation) + ')' : '');
-            return parts.length ? '<div class="s">' + parts.map(w => others(w) ? 'already linked to ' + x.others.map(o => esc(o.type) + ' ' + otherA(o)).join(', ') : cons(w) ? '<span title="' + esc(w) + '">consolidated from ' + ccIcons(x.consFrom) + '</span>' : (x.mismatch || []).includes(w) ? '<b class="mc-off">' + esc(w) + '</b>' : esc(w)).join(' · ') + '</div>' : '';
+            const otherA = o => '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + o.type + '/' + o.mbid) + '" data-tip="' + esc('Open this ' + o.type + ' on MusicBrainz') + '">' + esc(o.name || o.mbid) + '</a>' + (o.disambiguation ? ' (' + esc(o.disambiguation) + ')' : '');
+            return parts.length ? '<div class="s">' + parts.map(w => others(w) ? 'already linked to ' + x.others.map(o => esc(o.type) + ' ' + otherA(o)).join(', ') : cons(w) ? '<span data-tip="' + esc(w) + '">consolidated from ' + ccIcons(x.consFrom) + '</span>' : (x.mismatch || []).includes(w) ? '<b class="mc-off">' + esc(w) + '</b>' : esc(w)).join(' · ') + '</div>' : '';
         };
         const coverChip = x => {
             const c = x.cover, dims = c.w ? c.w + '×' + c.h : '';
             if (!c.url) return '<span class="mc-csize">' + (dims || 'no cover') + '</span>';
-            return '<a class="mc-csize" target="_blank" rel="noopener" href="' + esc(c.url) + '" title="' + esc('Open the cover on ' + (x.name || x.key) + (dims ? ' (' + dims + ')' : '')) + '">' + (dims || 'cover') + ' ↗</a>';
+            return '<a class="mc-csize" target="_blank" rel="noopener" href="' + esc(c.url) + '" data-tip="' + esc('Open the cover on ' + (x.name || x.key) + (dims ? ' (' + dims + ')' : '')) + '">' + (dims || 'cover') + ' ↗</a>';
         };
         // an artist or label row: its name, its disambiguation (weak, as MusicBrainz shows it), the platform
         const entName = x => {
             const e = x.entity, n = x.name || x.key;
             if (!e || !e.mbid || !n.startsWith(e.name + ' · ')) return esc(n);
-            return '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + e.type + '/' + e.mbid) + '" title="' + esc('Open this ' + e.type + ' on MusicBrainz') + '">' + esc(e.name) + '</a>'
+            return '<a target="_blank" rel="noopener" href="' + esc(location.origin + '/' + e.type + '/' + e.mbid) + '" data-tip="' + esc('Open this ' + e.type + ' on MusicBrainz') + '">' + esc(e.name) + '</a>'
                 + (e.disambiguation ? ' <span class="weak">(' + esc(e.disambiguation) + ')</span>' : '') + esc(n.slice(e.name.length));
         };
         const line = (x, lane) => {
@@ -61194,11 +62013,11 @@ function paintCards() {
             const pill = x.role === 'searched' ? ['idle', 'searched'] : x.role === 'best' && x.state === 'new' ? ['add', 'enters'] : isBc(x) && x.state === 'linked' ? ['ok', 'added'] : PILL[x.state] || ['idle', x.state];
             // in a lane, the barcode and its reason are on the lane: only a differently written barcode stays
             return '<div class="mc-line ' + esc(x.state) + (x.cover ? ' mc-hassize' : '') + (x.entity ? ' mc-ent' : '') + (lane ? ' mc-in' : '') + (pick ? ' mc-pick' : '') + (on ? ' on' : '') + '"'
-                + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" title="' + (on ? 'Taken in: click to leave out' : 'Click to take in') + '"' : '') + '>'
+                + (pick ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '" data-tip="' + (on ? 'Taken in\nClick: leave it out' : 'Click: take it in') + '"' : '') + '>'
                 + '<span class="mc-tick">' + (on ? '✓' : '') + '</span>'
                 + '<span class="mc-pico">' + (x.kind === 'catno' || x.kind === 'label' ? CATNO_SVG : x.kind === 'event' || x.kind === 'lengths' ? FIELD_SVG : isBc(x) ? BARCODE_SVG : stIcon(x.icon || x.key, 14)) + '</span>'
                 + '<div class="mc-lt"><div class="t">' + (x.kind === 'event' ? 'Release event <b>' + esc(x.code) + '</b>' : x.kind === 'lengths' ? 'Track lengths for <b>' + esc(x.code) + '</b>' : x.kind === 'label' ? 'Label <b>' + esc(x.label && x.label.name || '') + '</b>' + (x.code ? ' · cat. no. <b class="mc-bcn">' + esc(x.code) + '</b>' : '') : x.kind === 'catno' ? 'Cat. no. <b class="mc-bcn">' + esc(x.code) + '</b> · ' + esc(x.label && x.label.name || '') : isBc(x) ? 'Barcode <b class="mc-bcn">' + esc(x.code) + '</b>' : entName(x)) + '</div>'
-                + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" title="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
+                + (x.url ? '<a class="s" target="_blank" rel="noopener" href="' + esc(x.url) + '" data-tip="' + esc(x.url) + '">' + esc(shortUrl(x.url)) + '</a>' : '')
                 + whyHtml(x, lane) + '</div>'
                 // #751: Art Station's row, the size of the platform's own cover in a column of its own, a link to the cover
                 + (x.cover ? coverChip(x) : '')
@@ -61234,22 +62053,22 @@ function paintCards() {
             const catChips = l => catsOf(l).map(x => {
                 placedCats.add(x.key);
                 const on = picked[id] && picked[id].has(x.key);
-                return '<span class="mc-cat mc-pick ' + esc(x.state) + (on ? ' on' : '') + '" data-prov="' + id + '" data-key="' + esc(x.key) + '" title="'
-                    + esc('Catalog number ' + x.code + ' for ' + x.label.name + ' · ' + (x.why || '') + (on ? '. Taken in: click to leave out' : '. Click to take in')) + '">' + (on ? '✓ ' : '') + esc(x.code) + '</span>';
+                return '<span class="mc-cat mc-pick ' + esc(x.state) + (on ? ' on' : '') + '" data-prov="' + id + '" data-key="' + esc(x.key) + '" data-tip="'
+                    + esc('Catalog number ' + x.code + ' for ' + x.label.name + (x.why ? '\n' + x.why : '') + (on ? '\nTaken in. Click: leave it out' : '\nClick: take it in')) + '">' + (on ? '✓ ' : '') + esc(x.code) + '</span>';
             }).join('');
             relHtml = order.map(l => {
                 const open = laneOpen.has(l.k), picks = l.rows.filter(laneTakes), n = picks.filter(x => picked[id] && picked[id].has(x.key)).length;
                 const states = [...new Set(l.rows.filter(x => x.state !== 'linked').map(x => x.state))].concat(l.rows.every(x => x.state === 'linked') ? ['linked'] : []), pill = states.length === 1 ? PILL[states[0]] || ['idle', states[0]] : null;
                 // every chip as wide as a 13-digit barcode, the digits centred: the icons line up in every lane
-                const chip = '<span class="mc-bc' + (l.k ? '' : ' none') + '"' + (l.k ? ' style="--bc:' + l.color + '"' : '') + ' title="' + esc(l.tip) + '"><i>0000000000000</i>' + (l.k ? '<b>' + bcShow(l.k) + '</b>' : '') + '</span>';
+                const chip = '<span class="mc-bc' + (l.k ? '' : ' none') + '"' + (l.k ? ' style="--bc:' + l.color + '"' : '') + ' data-tip="' + esc(l.tip) + '"><i>0000000000000</i>' + (l.k ? '<b>' + bcShow(l.k) + '</b>' : '') + '</span>';
                 const icons = l.rows.length ? l.rows.map(x => {
                     const pk = !!PICKABLE[x.state], on = pk && picked[id] && picked[id].has(x.key);
                     return '<span class="mc-ti ' + esc(x.state) + (x.mismatch ? ' off' : '') + (pk ? ' mc-pick' : '') + (on ? ' on' : '') + '"' + (pk ? ' data-prov="' + id + '" data-key="' + esc(x.key) + '"' : '')
-                        + ' title="' + esc((x.name || x.key) + (x.url ? ' — ' + x.url : '') + (x.why ? ' (' + x.why + ')' : '') + (x.state === 'linked' ? '. Already linked' : '') + (pk ? (on ? '. Taken in: click to leave out' : '. Click to take in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
+                        + ' data-tip="' + esc((x.name || x.key) + (x.state === 'linked' ? ' — already linked' : on ? ' — taken in' : '') + (x.url ? '\n' + x.url : '') + (x.why ? '\n' + x.why : '') + (pk ? (on ? '\nClick: leave it out' : '\nClick: take it in') : '')) + '">' + stIcon(x.icon || x.key, 16) + '</span>';
                 }).join('') : '<span class="mc-bcl-no">no platform found it</span>';
-                const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" title="' + esc('Take every link in this group in, or leave them all out' + (l.rows.some(x => PICKABLE[x.state] && x.mismatch) ? '. Not the ones marked amber: their track count or format is not the release\'s' : '')) + '">'
+                const all = picks.length ? '<button type="button" class="mc-all" data-act="lane-all" data-lane="' + esc(l.k) + '" data-tip="' + esc('Take every link in this group in, or leave them all out' + (l.rows.some(x => PICKABLE[x.state] && x.mismatch) ? '\nNot the ones marked amber: their track count or format is not the release\'s.' : '')) + '">'
                     + (n === picks.length ? '✓ all taken in' : n ? n + ' of ' + picks.length + ' · take all' : 'take all in') + '</button>' : '<span></span>';
-                return '<div class="mc-bcl' + (open ? ' open' : '') + (catW ? ' mc-hascat' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' title="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
+                return '<div class="mc-bcl' + (open ? ' open' : '') + (catW ? ' mc-hascat' : '') + (l.rows.length ? '' : ' empty') + '" data-act="lane" data-lane="' + esc(l.k) + '"' + (l.rows.length ? ' data-tip="' + (open ? 'Fold into one line' : 'Open into rows') + '"' : '') + '>'
                     + '<span class="mc-tri">' + (l.rows.length ? (open ? '▾' : '▸') : '') + '</span>' + chip + catCell(l)
                     + '<span class="mc-bcl-ic">' + icons + '</span>' + all + (pill ? '<span class="mc-pill ' + pill[0] + '">' + pill[1] + '</span>' : '<span></span>') + '</div>'
                     + (open ? l.rows.map(x => line(x, l)).join('') : '');
@@ -61262,8 +62081,8 @@ function paintCards() {
         const sect = (sub, title, body, lk) => !pc ? body : body || lk.length ? '<div class="mc-sub" data-sub="' + sub + '"><span>' + title + '</span>' + linkedBtn(lk, 'pc:' + sub) + '</div>' + body : '';
         const entSect = (type, title) => sect(type, title, entRows.filter(x => x.entity.type === type).map(x => line(x)).join(''), linked.filter(x => isEnt(x) && x.entity.type === type));
         setCard(box, mbuHtml(sum + (pc ? cmpHtml() : '') + ap + sect('release', 'Release', bcRowsOf().map(x => line(x)).join('') + rgRows.map(x => line(x)).join('') + relHtml + hint, linked.filter(x => !isEnt(x)))
-            + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" title="' + esc('Not found: ' + none.map(x => x.name || x.key).join(', ')) + '"><span>Not found</span>'
-            + none.map(x => '<span class="mc-pico" title="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? asGalleryHtml() : '')));
+            + entSect('artist', 'Artists') + entSect('label', 'Labels') + (none.length ? '<div class="mc-none" data-tip="' + esc('Not found\n' + none.map(x => '- ' + (x.name || x.key)).join('\n')) + '"><span>Not found</span>'
+            + none.map(x => '<span class="mc-pico" data-tip="' + esc(x.name || x.key) + '">' + stIcon(x.icon || x.key, 14) + '</span>').join('') + '</div>' : '') + (id === 'as' ? asGalleryHtml() : '')));
     });
 }
 // #727: a catalog number's icon, a tag
@@ -61295,13 +62114,13 @@ function paintExec() {
     ex.textContent = executing ? 'Executing…' : autoTimer ? 'Executing ' + n + ' in ' + Math.max(1, Math.ceil((autoEnd - Date.now()) / 1000)) + '… (click to cancel)' : n ? 'Execute (' + n + ')' : 'Execute';
     ex.classList.toggle('mc-cd', !!autoTimer);
     ex.style.setProperty('--mc-cd', autoTimer ? Math.min(100, 100 - (autoEnd - Date.now()) / (AUTO_EXEC_S * 10)).toFixed(1) + '%' : '0%');
-    ex.title = autoTimer ? 'Mission Control executes the selected changes when the countdown ends: click to cancel' : 'Apply the selected changes, step by step';
+    ex.dataset.tip = autoTimer ? 'Mission Control applies the selected changes when the countdown ends\nClick: cancel' : 'Apply the selected changes, step by step';
     autoExecCheck();
 }
 
 function inspector() {
     const a = el('aside', 'mc-side right');
-    a.innerHTML = mbuHtml('<h2 class="mc-sec"><span class="mc-insp-t">Inspector</span> <button type="button" class="mc-x" data-close="right" title="Hide">×</button></h2><div class="mc-insp"></div>');
+    a.innerHTML = mbuHtml('<h2 class="mc-sec"><span class="mc-insp-t">Inspector</span> <button type="button" class="mc-x" data-close="right" data-tip="Hide">×</button></h2><div class="mc-insp"></div>');
     return a;
 }
 function paintInspector() {
@@ -61331,12 +62150,12 @@ function paintInspector() {
             + (m.artist ? '<span>artist</span><span>' + esc(m.artist) + '</span>' : '')
             + (m.isrcs ? '<span>ISRCs</span><span class="mono">' + (m.isrcs.map(isrcHtml).join(', ') || 'none') + '</span>' : '')
             + '<span>AcoustIDs</span><span class="mono">' + (m.acoustids == null ? '<span class="weak">' + (fxBusy.has(x.key) ? 'checking…' : 'not checked') + '</span>'
-                : m.acoustids.map(v => '<span title="' + esc(v) + '"' + (x.self && (x.self.acoustids || []).includes(v) ? ' class="mc-fxs"' : '') + '>' + esc(v.slice(0, 8)) + '…</span>').join(', ') || 'none') + '</span>'
+                : m.acoustids.map(v => '<span data-tip="' + esc(v) + '"' + (x.self && (x.self.acoustids || []).includes(v) ? ' class="mc-fxs"' : '') + '>' + esc(v.slice(0, 8)) + '…</span>').join(', ') || 'none') + '</span>'
             + '<span>edits</span><span>' + (m.pending ? '<span class="mc-err">open edit</span>' : 'none') + '</span></div></div>').join('')
         + (x.signals ? '<div class="weak" style="font-size:11px;margin:4px 0">every pair agrees on: ' + esc(x.signals.join(', ') || 'nothing') + '</div>' : '')
         + fxOpenBtn(x);
     // #782: the track's versions on the platforms, the one most give first, what differs from the track's own title marked
-    const platBody = x => x.versions.map(v => '<div class="mc-fxm">' + mini('<span title="' + esc(v.title) + '">' + ccTitleDiff(v.title, t.title) + '</span>', ccIcons(v.keys))
+    const platBody = x => x.versions.map(v => '<div class="mc-fxm">' + mini('<span data-tip="' + esc(v.title) + '">' + ccTitleDiff(v.title, t.title) + '</span>', ccIcons(v.keys))
         + '<div class="mc-kv"><span>length</span><span>' + (ccLen(v.len) || '?') + '</span>' + (v.isrc ? '<span>ISRC</span><span class="mono">' + isrcHtml(v.isrc) + '</span>' : '') + '</div></div>').join('');
     // each credit names the sources that give it, when more than one source was read (#680)
     const chBody = x => (x.list || []).map(c => mini(esc(c.name), esc(c.role) + (c.sources && /,/.test(x.source || '') ? ' <span class="weak">· ' + esc(c.sources.join(', ')) + '</span>' : ''))).join('') || '<div class="weak" style="font-size:11.5px">no credits</div>';
@@ -61354,7 +62173,7 @@ function paintBadges() {
     ui.querySelectorAll('[data-p]').forEach(n => {
         const p = PROVIDERS.find(x => x.id === n.dataset.p); if (!p) return;
         const dot = n.querySelector('.mc-dot'); if (dot) dot.className = 'mc-dot ' + stateOf(p);
-        const st = n.querySelector('.st'); if (st) { st.textContent = sideText(p); st.title = stateText(p); }
+        const st = n.querySelector('.st'); if (st) { st.textContent = sideText(p); st.dataset.tip = stateText(p); }
         const chip = n.querySelector('.mc-chip'); if (chip) { const [c, t] = chipOf(p); chip.className = 'mc-chip ' + c; chip.textContent = t; }
         if (p.id === 'pc') paintCoverage(n);
     });
@@ -61630,7 +62449,7 @@ function paintOnOff() {
         s.classList.toggle('mc-off', off);
         if (!b) return;
         b.setAttribute('aria-pressed', String(!off));
-        b.title = off ? 'Left out: Execute skips this card. Click to take it in' : 'Click to leave this card out of Execute';
+        b.dataset.tip = off ? 'Left out: Execute skips this card\nClick: take it in' : 'Click: leave this card out of Execute';
     });
 }
 function setCardOff(id, off) {
@@ -61687,7 +62506,7 @@ const CC_NAMES = { discogs: 'Discogs', bandcamp: 'Bandcamp', spotify: 'Spotify',
 const ccName = k => CC_NAMES[k] || k;
 const CC_UNREAD = { spotify: 'Spotify is read through its web player only: its link is added, its data is not compared' };
 const ccIco = (k, size) => stIcon(k, size || 14) || '<span class="mcc-abbr">' + esc(String(k).slice(0, 2).toUpperCase()) + '</span>';
-const ccIcons = keys => '<span class="mcc-icos">' + keys.map(k => '<span title="' + esc(ccName(k)) + '">' + ccIco(k, 13) + '</span>').join('') + '</span>';
+const ccIcons = keys => '<span class="mcc-icos">' + keys.map(k => '<span data-tip="' + esc(ccName(k)) + '">' + ccIco(k, 13) + '</span>').join('') + '</span>';
 const ccBc = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
 const ccNorm = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[\s.,'’"“”!?()[\]\-–—:;/&+]+/g, ' ').trim();
 const ccLen = ms => { if (!ms) return ''; const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
@@ -61980,7 +62799,7 @@ function ccTitleDiff(a, b) {
     let p = 0; while (p < a.length && p < b.length && a[p] === b[p]) p++;
     let q = 0; while (q < a.length - p && q < b.length - p && a[a.length - 1 - q] === b[b.length - 1 - q]) q++;
     const mid = a.slice(p, a.length - q);
-    return esc(a.slice(0, p)) + (mid ? '<span class="hl">' + esc(mid) + '</span>' : '<span class="hl gap" title="missing here: ' + esc(b.slice(p, b.length - q)) + '"></span>') + esc(a.slice(a.length - q));
+    return esc(a.slice(0, p)) + (mid ? '<span class="hl">' + esc(mid) + '</span>' : '<span class="hl gap" data-tip="Missing here: ' + esc(b.slice(p, b.length - q)) + '"></span>') + esc(a.slice(a.length - q));
 }
 function ccDiff(v, w) {
     const out = [];
@@ -62277,10 +63096,10 @@ function ccPaintHeader() {
     const t = CC.ui.querySelector('.mcc-ttl'), sub = CC.ui.querySelector('.mcc-sub');
     const title = m.fields && m.fields.title.win ? m.fields.title.win.val : CC.src ? CC.src.rel.title : 'Consolidate';
     const artist = m.fields && m.fields.artist.win ? m.fields.artist.win.val : CC.src ? ccCredit(CC.src.rel.credit) : '';
-    if (t) { t.textContent = title; t.title = title; }
+    if (t) { t.textContent = title; t.dataset.tip = title; }
     const slot = CC.ui.querySelector('.mcc-fmt-slot'), fmt = ccFormat();
     if (slot && slot.dataset.fmt !== fmt) { slot.dataset.fmt = fmt; slot.innerHTML = mbuHtml(fmtIcon(fmt) || '<img src="' + ICON_URL + '" alt="" width="28" height="28">'); }
-    if (sub) { sub.textContent = artist; sub.title = artist; }   // majkinetor: only the artist; the Source step links the platform
+    if (sub) { sub.textContent = artist; sub.dataset.tip = artist; }   // majkinetor: only the artist; the Source step links the platform
     CC.ui.querySelectorAll('[data-cc="open"]').forEach(b => { b.disabled = !m.fields || CC.seeded; b.textContent = CC.seeded ? 'Opening the release editor…' : 'Add release →'; });
     CC.ui.querySelectorAll('[data-cc="more"]').forEach(b => { b.disabled = !m.fields || CC.seeded; });
     ccPaintSteps();
@@ -62294,7 +63113,7 @@ function ccSideHtml() {
     const srcTracks = CC.sources[0].tracks;
     let h = '<div class="mcc-h">Sources</div>';
     lanes.forEach(l => {
-        h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" title="' + (l.own ? 'The source\'s barcode' : 'Another barcode: another release') + '">' + esc(l.shown) + '</span>' : l.own ? '<div class="mcc-lane-note">no barcode</div>' : '');   // the other no-barcode lane's note says it
+        h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" data-tip="' + (l.own ? 'The source\'s barcode' : 'Another barcode\nAnother release') + '">' + esc(l.shown) + '</span>' : l.own ? '<div class="mcc-lane-note">no barcode</div>' : '');   // the other no-barcode lane's note says it
         if (!l.own && l.bc) h += '<div class="mcc-lane-note">' + esc(l.list.map(s => ccName(s.key) + (s.format ? ': ' + s.format : '')).join(', ')) + ' — another release, not read unless ticked</div>';
         else if (!l.bc && !l.own) h += '<div class="mcc-lane-note">no barcode shown: taken when the track count is the source\'s (' + srcTracks + ')</div>';
         l.list.forEach(s => {
@@ -62307,9 +63126,9 @@ function ccSideHtml() {
                 : r.state === 'failed' ? ['err', 'failed']
                 : r.state === 'done' ? ['', ccCount(r.rel) + ' tracks' + (r.rel.mediums.some(md => md.tracks.some(t => t.isrc)) ? ' · ISRCs' : '')]
                 : ['', s.tracks != null ? s.tracks + ' tracks' : ''];
-            const tip = s.role === 'source' ? 'The album First Contact read: ' + s.url
+            const tip = s.role === 'source' ? 'The album First Contact read\n' + s.url
                 : (meta[1] ? meta[1] + '\n' : '') + (CC_UNREAD[s.key] || (r.state === 'failed' ? 'Reading it failed: ' + r.error : s.why || '')) + '\n' + s.url;   // the note in full: the row may cut it short
-            h += '<label class="mcc-src' + (s.take ? '' : ' off') + (s.role === 'source' ? ' source' : '') + '" title="' + esc(tip.trim()) + '">'
+            h += '<label class="mcc-src' + (s.take ? '' : ' off') + (s.role === 'source' ? ' source' : '') + '" data-tip="' + esc(tip.trim()) + '">'
                 + '<input type="checkbox" data-cc="take" data-k="' + esc(s.key) + '"' + (s.take ? ' checked' : '') + (s.role === 'source' ? ' disabled' : '') + '>'
                 + ccIco(s.key, 15) + '<span class="nm"><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(ccName(s.key)) + '</a></span><span class="meta ' + meta[0] + '">' + esc(meta[1]) + '</span></label>';
         });
@@ -62337,12 +63156,12 @@ function ccFieldsHtml(m) {
             const w = k === 'date' ? ' style="min-width:' + (Math.max(...v.groups.map(g => String(g.show).length)) + 1) + 'ch"' : '';
             const val = g => '<span class="d"' + w + '><span>' + esc(g.show) + '</span></span>' + ccIcons(g.keys);   // the slot in one font for all, so the taken (larger) date lines up too
             // majkinetor: the platforms that give none follow on the value's line, greyed like Platform Check's strip
-            const none = v.none.length ? '<span class="mcc-none-sep"></span><span class="mcc-icos mcc-none-icos">' + v.none.map(k2 => '<span title="none from ' + esc(ccName(k2)) + '">' + ccIco(k2, 13) + '</span>').join('') + '</span>' : '';
+            const none = v.none.length ? '<span class="mcc-none-sep"></span><span class="mcc-icos mcc-none-icos">' + v.none.map(k2 => '<span data-tip="None from ' + esc(ccName(k2)) + '">' + ccIco(k2, 13) + '</span>').join('') + '</span>' : '';
             h += '<div class="mcc-win' + (k === 'date' ? ' lined' : '') + '">' + val(v.win) + none + '</div>';
             if (k === 'date') alts.sort((a, b) => String(a.val).localeCompare(String(b.val)));
             h += '<div class="mcc-alts' + (k === 'date' ? ' two" style="grid-template-rows:repeat(' + Math.ceil(alts.length / 2) + ',auto)' : '') + '">';   // down the first column, then the second
             alts.forEach(g => {
-                h += '<div class="mcc-alt" data-cc="field" data-f="' + k + '" data-v="' + esc(g.val) + '" title="Take this instead"><span class="r"></span><span class="v">' + val(g) + '</span></div>';
+                h += '<div class="mcc-alt" data-cc="field" data-f="' + k + '" data-v="' + esc(g.val) + '" data-tip="Take this instead"><span class="r"></span><span class="v">' + val(g) + '</span></div>';
             });
             h += '</div>';
         }
@@ -62354,7 +63173,7 @@ function ccTracksHtml(m) {
     const t = m.tracks;
     const agree = t.rows.filter(r => r.versions.length === 1).length, differ = t.rows.length - agree;
     let h = '<section class="mcc-sect" data-sect="tracks"><div class="mcc-sect-h"><b>Tracks</b><span class="hint">one row per track, the version most platforms have · a row that differs opens into its versions</span>'
-        + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" title="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
+        + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" data-tip="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
         + '<table class="mcc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th><th>ISRC</th><th>Agree</th><th></th></tr></thead><tbody>';
     const nM = new Set(t.rows.map(r => r.mi)).size;
     t.rows.forEach((r, i) => {
@@ -62369,7 +63188,7 @@ function ccTracksHtml(m) {
     });
     t.extras.forEach(x => {
         const v = x.versions[0], on = !!CC.extraTake[x.id];
-        h += '<tr class="row extra' + (on ? ' on' : '') + '" data-cc="extra" data-x="' + x.id + '" title="' + (on ? 'Taken in, at the end: click to leave it out' : 'Only ' + v.keys.map(ccName).join(', ') + ' has it: click to take it in') + '"><td class="pos">+</td><td class="ttl">' + esc(v.title) + '</td><td class="len">' + ccLen(v.len) + '</td><td class="isrc">' + (v.isrc ? isrcHtml(v.isrc) : '—') + '</td><td><span class="mcc-chip">only ' + esc(v.keys.map(ccName).join(', ')) + '</span></td><td></td></tr>';
+        h += '<tr class="row extra' + (on ? ' on' : '') + '" data-cc="extra" data-x="' + x.id + '" data-tip="' + (on ? 'Taken in, at the end\nClick: leave it out' : 'Only ' + v.keys.map(ccName).join(', ') + ' has it\nClick: take it in') + '"><td class="pos">+</td><td class="ttl">' + esc(v.title) + '</td><td class="len">' + ccLen(v.len) + '</td><td class="isrc">' + (v.isrc ? isrcHtml(v.isrc) : '—') + '</td><td><span class="mcc-chip">only ' + esc(v.keys.map(ccName).join(', ')) + '</span></td><td></td></tr>';
     });
     return h + '</tbody></table></section>';
 }
@@ -62399,9 +63218,9 @@ function ccPaintInspector() {
             const on = v === w, title = on ? esc(v.title) : ccTitleDiff(v.title, w.title);
             const len = !on && v.len && w.len && Math.abs(v.len - w.len) > 1000 ? hl(ccLen(v.len)) : esc(ccLen(v.len) || '?:??');
             const isrc = !v.isrc ? (on || !w.isrc ? 'no ISRC' : hl('no ISRC')) : !on && w.isrc && v.isrc !== w.isrc ? '<span class="hl">' + isrcHtml(v.isrc) + '</span>' : isrcHtml(v.isrc);
-            h += '<div class="mcc-ver' + (on ? ' on' : '') + '"' + (on || r.versions.length < 2 ? '' : ' data-cc="ver" data-r="' + esc(r.id) + '" data-k="' + esc(v.keys[0]) + '" title="Take this version"') + '>'
+            h += '<div class="mcc-ver' + (on ? ' on' : '') + '"' + (on || r.versions.length < 2 ? '' : ' data-cc="ver" data-r="' + esc(r.id) + '" data-k="' + esc(v.keys[0]) + '" data-tip="Take this version"') + '>'
                 + '<span class="r"></span><div class="t">' + title + '</div><span class="n">' + (on ? 'taken · ' : '') + v.keys.length + '</span>'
-                + '<div class="m"><span class="mono">' + len + ' · ' + isrc + '</span><span class="i" title="' + esc(v.keys.map(ccName).join(', ')) + '">' + ccIcons(v.keys) + '</span></div></div>';
+                + '<div class="m"><span class="mono">' + len + ' · ' + isrc + '</span><span class="i" data-tip="' + esc(v.keys.map(ccName).join(', ')) + '">' + ccIcons(v.keys) + '</span></div></div>';
         });
         h += '</div>';
         const cr = r.tracks.map(x => x.key + ': ' + ccCredit(x.t.credit)).filter((s, i, a) => a.findIndex(y => y.split(': ')[1] === s.split(': ')[1]) === i);
@@ -62511,7 +63330,7 @@ function ccLauncher() {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.title = 'Mission Control: the consolidation';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control — the consolidation';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';
     b.onclick = () => { b.remove(); mbRestackCorner('br'); ccOpen(); };
     document.body.appendChild(b);
@@ -62538,10 +63357,10 @@ function ccOpen() {
     mcStyle(); ccStyle();
     const ui = el('div', 'mbu-ui'); ui.id = 'mcc-root';
     ui.innerHTML = mbuHtml('<header class="mcc-hdr"><span class="mcc-fmt-slot"></span><div class="mcc-rel"><div class="mcc-ttl"></div><div class="mcc-sub"></div></div><div class="mcc-steps"></div>'
-        + '<div class="mcc-split"><button type="button" class="mcc-btn go" data-cc="open" disabled title="Open MusicBrainz\'s release editor in this tab, seeded with what is taken here">Add release →</button>'
-        + '<button type="button" class="mcc-btn go mcc-more" data-cc="more" disabled aria-haspopup="menu" aria-expanded="false" title="More">▾</button>'
-        + '<div class="mcc-menu" role="menu" hidden><button type="button" role="menuitem" data-cc="md" title="The whole comparison as Markdown tables, for an issue or an edit note">Copy as Markdown</button></div></div>'
-        + '<button type="button" class="mcc-btn ghost" data-cc="cfg" title="Settings">' + MBU_CFG_ICON + '</button><button type="button" class="mcc-btn ghost" data-cc="close" title="Close: the empty release editor is under it">✕</button></header>'
+        + '<div class="mcc-split"><button type="button" class="mcc-btn go" data-cc="open" disabled data-tip="Open MusicBrainz\'s release editor in this tab\nFilled in with what is taken here">Add release →</button>'
+        + '<button type="button" class="mcc-btn go mcc-more" data-cc="more" disabled aria-haspopup="menu" aria-expanded="false" data-tip="More">▾</button>'
+        + '<div class="mcc-menu" role="menu" hidden><button type="button" role="menuitem" data-cc="md" data-tip="Copy the whole comparison as Markdown tables\nFor an issue or an edit note">Copy as Markdown</button></div></div>'
+        + '<button type="button" class="mcc-btn ghost" data-cc="cfg" data-tip="Settings">' + MBU_CFG_ICON + '</button><button type="button" class="mcc-btn ghost" data-cc="close" data-tip="Close\nThe empty release editor is under it.">✕</button></header>'
         + '<div class="mcc-main"><aside class="mcc-side"></aside><main class="mcc-center"></main><aside class="mcc-insp"></aside></div>');
     document.body.appendChild(ui);
     CC.ui = ui;
@@ -62672,7 +63491,7 @@ function ccInMbHtml() {
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
     let h = '';
     // #727: Update this release takes what is consolidated here to it, for what it lacks
-    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" title="Open this release in this tab: Mission Control probes it, compares it with the platforms and offers what it lacks (the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths)">Update this release →</button>';
+    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" data-tip="Open this release in this tab\nMission Control probes it, compares it with the platforms and offers what it lacks: the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths.">Update this release →</button>';
     if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Update it with what it lacks, rather than adding the album again.<ul>' + same.map(e => li(e).replace(/<\/li>$/, upd(e) + '</li>')).join('') + '</ul></div>';
     if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
     return h;
@@ -62817,8 +63636,8 @@ function cmpHtml() {
     const r = results.fc;
     if (!r || r.state !== 'done' || !CMP.cons) return '';
     const read = CC.sources.filter(s => s.take && s.read.state === 'done').map(s => s.key);
-    return '<div class="mc-summary mc-cmp" title="' + esc('Mission Control compared the release with ' + read.map(ccName).join(', ') + ': what the release lacks is in the rows below') + '">Compared with ' + ccIcons(read)
-        + (CMP.title ? ' · <span class="mc-warn" title="' + esc('Shown only: Mission Control changes no title') + '">the platforms call it <b>' + esc(CMP.title.val) + '</b> (' + esc(CMP.title.from) + ')</span>' : '') + '</div>';
+    return '<div class="mc-summary mc-cmp" data-tip="' + esc('Mission Control compared the release with ' + read.map(ccName).join(', ') + '\nWhat the release lacks is in the rows below.') + '">Compared with ' + ccIcons(read)
+        + (CMP.title ? ' · <span class="mc-warn" data-tip="' + esc('Shown only\nMission Control changes no title.') + '">the platforms call it <b>' + esc(CMP.title.val) + '</b> (' + esc(CMP.title.from) + ')</span>' : '') + '</div>';
 }
 
 /* after saving: Mission Control on the new release (#702) */
@@ -62861,7 +63680,7 @@ function launcher() {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.title = 'Mission Control\nRight-click: settings';
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control\nRight-click: settings';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';   // highest priority: closest to the corner
     b.onclick = () => open();
     b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
@@ -62885,14 +63704,14 @@ else { launcher(); afterSave(); }
 
 // ===== platform_check (@run-at document-end) ====================================
 if (__stOff.indexOf("platform_check") < 0 && __stRuns("platform_check", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.20.110047","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.20.110047","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.20.120000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.20.120000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('platform_check', 'Platform Check')) return;
@@ -63891,7 +64710,7 @@ function showInlineSummary(reports) {
     el.style.color      = fail ? 'var(--mbu-warn)' : 'var(--mbu-ok)';
     el.style.background = fail ? 'var(--mbu-warn-bg)' : 'var(--mbu-ok-bg)';
     el.style.border     = '1px solid ' + (fail ? '#FFC107' : '#81C784');
-    el.title = reports.map(r => ((r.url || '').replace(/^https?:\/\//, '')) + ' — ' + (r.ok ? 'OK' + (r.type ? ' · ' + r.type : '') : 'FAIL · ' + r.miss)).join('\n');
+    el.dataset.tip = reports.map(r => ((r.url || '').replace(/^https?:\/\//, '')) + ' — ' + (r.ok ? 'OK' + (r.type ? ' · ' + r.type : '') : 'FAIL · ' + r.miss)).join('\n');
     el.textContent = '✓ Platform Check added ' + ok + (fail ? ', ' + fail + ' failed' : '') + ' — edit note set, review & Enter edit';
     const re = /^\s*external links\s*$/i;
     // #722 the links editor's own legend, by structure; the English text elsewhere
@@ -64234,22 +65053,22 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
-      <span id="mb-refresh-btn" class="pc-icon-btn" title="Refresh — clear cache and re-scan" style="${iconBtn}">↻</span>
+      <span id="mb-refresh-btn" class="pc-icon-btn" data-tip="Refresh\nClear the cache and scan again" style="${iconBtn}">↻</span>
     </div>
   </div>
   <!-- #740: what the platforms offer (barcodes, catalog numbers) on a line of their own, so the title line never moves;
        shown only while one of them is (pcSyncOffers) -->
   <div id="pc-offers" style="display: none; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px;">
-      <span id="mb-pasted-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
-      <span id="mb-found-bc" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
-      <span id="mb-picked-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
-      <span id="mb-found-cat" class="pc-icon-btn" title="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-pasted-bc" class="pc-icon-btn" data-tip="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-found-bc" class="pc-icon-btn" data-tip="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-picked-cat" class="pc-icon-btn" data-tip="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
+      <span id="mb-found-cat" class="pc-icon-btn" data-tip="" style="${iconBtn} display: none; font-size: 10px; white-space: nowrap;"></span>
   </div>
 </div>
 <div class="pc-rows" style="margin-bottom: 6px;">
   <div id="row-mb" class="pc-row pc-row-mb">
-    <span class="pc-cell-ico"><span class="pc-plat-ico" title="MusicBrainz">${stIcon('musicbrainz', 16)}</span></span>
-    <a id="mb-mb-name" class="pc-cell-name" href="${MB_ORIGIN}/release/" target="_blank" rel="noopener" title="MusicBrainz" style="color: var(--mbu-accent-text);">MB</a>
+    <span class="pc-cell-ico"><span class="pc-plat-ico" data-tip="MusicBrainz">${stIcon('musicbrainz', 16)}</span></span>
+    <a id="mb-mb-name" class="pc-cell-name" href="${MB_ORIGIN}/release/" target="_blank" rel="noopener" data-tip="MusicBrainz" style="color: var(--mbu-accent-text);">MB</a>
     <span class="pc-meta">
       <span id="mb-mb-year"   class="pc-cell-year"></span>
       <span id="mb-mb-format" class="pc-cell-format"></span>
@@ -64263,7 +65082,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   <div id="row-${p}" class="pc-row pc-st-notfound">
     <span class="pc-cell-ico">
       <span id="ico-${p}" class="pc-ico-slot" style="font-size: 11px; text-align: center; color: var(--mbu-text-weak);">⚪</span>
-      <span id="plat-${p}" class="pc-plat-ico" title="${PROVIDER_NAME[p]}">${stIcon(p, 16)}</span>
+      <span id="plat-${p}" class="pc-plat-ico" data-tip="${PROVIDER_NAME[p]}">${stIcon(p, 16)}</span>
     </span>
     <a id="mb-online-${p}" class="pc-cell-name" href="#" target="_blank" rel="noopener" style="color: ${PROVIDER_COLOR[p] || 'var(--mbu-text)'};">${PROVIDER_NAME[p]}</a>
     <span class="pc-meta">
@@ -64278,13 +65097,13 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-inject-btn"      class="pc-icon-btn" title="Open the release editor and queue OK URLs to add · right-click: add them silently in the background · middle-click or Alt+click: add them, including the ones strict barcode/format settings withhold (with Ctrl: in the background)" style="${iconBtn}">+</span>
-    <span id="mb-openall-btn"     class="pc-icon-btn" title="Open found platform pages not yet in MB (non-circled) in new tabs" style="${iconBtn}">↗</span>
-    <span id="mb-links-btn"       class="pc-icon-btn" title="Artists &amp; labels: the artist and label pages the matched platforms name, for the release's MusicBrainz artists and labels" style="${iconBtn} font-size: 11px; white-space: nowrap;">Artists &amp; labels</span>
+    <span id="mb-inject-btn"      class="pc-icon-btn" data-tip="Add the found URLs\nClick: open the release editor with them queued\nRight-click: add them silently in the background\nMiddle/Alt+click: add them all, the ones the strict barcode and format settings withhold too\nCtrl+middle/Alt+click: the same, in the background" style="${iconBtn}">+</span>
+    <span id="mb-openall-btn"     class="pc-icon-btn" data-tip="Open the found pages not on MusicBrainz yet\nThe ones not circled, each in a new tab" style="${iconBtn}">↗</span>
+    <span id="mb-links-btn"       class="pc-icon-btn" data-tip="Artists &amp; labels\nThe artist and label pages the matched platforms name, for the release's artists and labels on MusicBrainz" style="${iconBtn} font-size: 11px; white-space: nowrap;">Artists &amp; labels</span>
   </div>
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-log-open-btn"    class="pc-icon-btn" title="Diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
-    <span id="mb-token-setup-btn" class="pc-icon-btn" title="Settings" style="${iconBtn}">${MBU_CFG_ICON}</span>
+    <span id="mb-log-open-btn"    class="pc-icon-btn" data-tip="The diagnostic log" style="${iconBtn} font-size: 11px;">log</span>
+    <span id="mb-token-setup-btn" class="pc-icon-btn" data-tip="Settings" style="${iconBtn}">${MBU_CFG_ICON}</span>
   </div>
 </div>
 `;
@@ -64322,18 +65141,18 @@ providerModal.innerHTML = `
     </div>
 
     <div class="pc-setup-sec">Link confidence</div>
-    <div class="pc-set-row"><label title="When on, found links whose barcode doesn't match MB's are withheld from + / ↗ (MB treats a different barcode as a different release). A subtle amber left bar marks known mismatches regardless of this setting."><input type="checkbox" id="mb-respect-barcode"> <span>Use <b>barcodes</b></span></label>
-      <select id="mb-barcode-mode" title="strictly: only add barcode-confirmed links (also withholds links whose barcode can't be checked, e.g. Apple/Spotify). · if they exist: only withhold links whose barcode is known and differs."><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
-    <div class="pc-set-row"><label title="When on, found links whose format is incompatible with MB's (e.g. a Digital-only platform on a CD release) are withheld from + / ↗. Digital-only platforms (Spotify, Apple, Tidal…) count as Digital; Bandcamp/Discogs use their actual format. A subtle violet left bar marks mismatches."><input type="checkbox" id="mb-respect-format"> <span>Use <b>formats</b></span></label>
-      <select id="mb-format-mode" title="strictly: also withhold links whose format can't be determined. · if they exist: only withhold links whose format is known and incompatible."><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
+    <div class="pc-set-row"><label data-tip="Hold back links with another barcode\nFound links whose barcode isn't MusicBrainz's are withheld from + and ↗: MusicBrainz treats another barcode as another release.\nA thin amber bar on the left marks a known mismatch, whatever this setting."><input type="checkbox" id="mb-respect-barcode"> <span>Use <b>barcodes</b></span></label>
+      <select id="mb-barcode-mode" data-tip="Strictly: add only links with a confirmed barcode; ones whose barcode can't be checked (Apple, Spotify) are withheld too\nIf they exist: withhold only links whose barcode is known and differs"><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
+    <div class="pc-set-row"><label data-tip="Hold back links with another format\nFound links whose format the MusicBrainz release can't have (a digital-only platform on a CD release) are withheld from + and ↗. Digital-only platforms (Spotify, Apple, Tidal, …) count as Digital; Bandcamp and Discogs use their own format.\nA thin violet bar on the left marks a mismatch."><input type="checkbox" id="mb-respect-format"> <span>Use <b>formats</b></span></label>
+      <select id="mb-format-mode" data-tip="Strictly: withhold links whose format can't be told too\nIf they exist: withhold only links whose format is known and doesn't fit"><option value="exists">if they exist</option><option value="strict">strictly</option></select></div>
 
     <div class="pc-setup-sec">Adding links</div>
-    <div class="pc-set-row"><label title="On: + opens the release editor in a new tab, leaving this one on the panel. Off: it navigates this tab instead. Either way, right-click on + (or a platform icon) always adds silently in a background tab that submits and closes itself."><input type="checkbox" id="mb-open-new-tab"> <span>Open the editor in a <b>new tab</b></span></label></div>
-    <div class="pc-set-row"><label title="#556. Firefox throttles timers in a background tab - to one step per second, and worse once the tab has spent its execution budget - and MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so this plays an inaudible tone (30Hz, gain 0.0008) for the few seconds the background-add tab is alive. Measured on the same 2-link add: 20.2s without it, 3.7s with. REQUIRES allowing audio for musicbrainz.org (padlock menu > Autoplay > Allow Audio) - without it Firefox blocks the tone and the setting does nothing, which the Log says - and it lights the speaker icon while it runs. A WebRTC loopback was tried instead and does NOT work: it connects, and changes nothing."><input type="checkbox" id="mb-bg-audio"> <span>Keep background tabs <b>awake</b></span></label></div>
+    <div class="pc-set-row"><label data-tip="Where + opens the release editor\nOn: in a new tab, leaving this one on the panel\nOff: in this tab\nRight-click on + or a platform icon always adds silently, in a background tab that submits and closes itself."><input type="checkbox" id="mb-open-new-tab"> <span>Open the editor in a <b>new tab</b></span></label></div>
+    <div class="pc-set-row"><label data-tip="Keep the background tab fast in Firefox\nFirefox slows the timers of a background tab to a step a second, and MusicBrainz's submit is a chain of them. A tab playing audio is spared, so this plays a tone nobody hears (30 Hz, gain 0.0008) while the background tab is open: a 2-link add went from 20.2 s to 3.7 s.\n⚠ Allow audio for musicbrainz.org (padlock menu → Autoplay → Allow Audio), or Firefox blocks the tone and this does nothing; the log says so. The speaker icon shows while it plays."><input type="checkbox" id="mb-bg-audio"> <span>Keep background tabs <b>awake</b></span></label></div>
 
     <div class="pc-setup-sec">Artists &amp; labels</div>
-    <div class="pc-set-row"><label title="On: once the scans finish, MusicBrainz is asked which of the artist and label pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added. Off: it is asked only when you open the table."><input type="checkbox" id="mb-links-count"> <span><b>Count</b> the links to add</span></label></div>
-    <div class="pc-set-row"><label title="On: after Run in Falcon from Artists &amp; labels, Falcon closes its panel once the run finishes with every link added. A run with a failed or partial edit leaves it open, to read why. Send only, and a Falcon opened in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <span><b>Close Falcon</b> after a successful import</span></label></div>
+    <div class="pc-set-row"><label data-tip="Count the artist and label links to add\nOn: once the scans finish, MusicBrainz is asked which pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added\nOff: it is asked when you open the table"><input type="checkbox" id="mb-links-count"> <span><b>Count</b> the links to add</span></label></div>
+    <div class="pc-set-row"><label data-tip="Close Falcon after a clean run\nAfter Run in Falcon from Artists &amp; labels, Falcon closes its panel once every link is added. A failed or partial edit leaves it open, to read why.\nSend only, and a Falcon in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <span><b>Close Falcon</b> after a successful import</span></label></div>
 
     <div class="pc-setup-sec">Appearance</div>
     <div class="pc-set-grid">
@@ -64342,9 +65161,9 @@ providerModal.innerHTML = `
       <div class="pc-set-k">Name</div>
       <div class="pc-set-v"><label><input type="checkbox" id="mb-show-names"> Show</label><span class="pc-set-lbl">size</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-name-size" min="8" max="14" step="1"><button type="button" data-step="1">+</button></span></div>
       <div class="pc-set-k">Compact</div>
-      <div class="pc-set-v"><label title="A provider that found nothing (or is still searching) shrinks to a dimmed icon in a strip under the rows, and rises into a full row once it finds something. Discogs and Bandcamp always stay full rows. Click a strip icon to search that platform, just like clicking its row."><input type="checkbox" id="mb-compact-unmatched"> Unmatched</label><label title="A provider that found a release which isn't a clean match (a different barcode or format, or withheld by the strict barcode/format settings) also shrinks to an icon in the strip, with an amber ring. Off: it keeps its full row, so its tracks, year and label show."><input type="checkbox" id="mb-compact-nonstrict"> Low-confidence</label></div>
+      <div class="pc-set-v"><label data-tip="Shrink platforms that found nothing\nOne that found nothing (or is still searching) shrinks to a dim icon in a strip under the rows, and becomes a full row once it finds something. Discogs and Bandcamp always keep full rows.\nClick: a strip icon searches its platform, as its row does"><input type="checkbox" id="mb-compact-unmatched"> Unmatched</label><label data-tip="Shrink platforms with an uncertain match too\nOne whose release isn't a clean match (another barcode or format, or withheld by the strict settings) shrinks to an icon in the strip, with an amber ring.\nOff: it keeps its full row, with its tracks, year and label."><input type="checkbox" id="mb-compact-nonstrict"> Low-confidence</label></div>
       <div class="pc-set-k">In MusicBrainz</div>
-      <div class="pc-set-v"><select id="mb-marker" title="How an icon shows that its link is already on the release (icons mode)">
+      <div class="pc-set-v"><select id="mb-marker" data-tip="How an icon shows that its link is already on the release (icons mode)">
           <option value="circle">Ring</option>
           <option value="bold">Bold ring</option>
           <option value="badge">✓ badge</option>
@@ -64352,12 +65171,12 @@ providerModal.innerHTML = `
           <option value="square">Rounded square</option>
         </select></div>
       <div class="pc-set-k">Format</div>
-      <div class="pc-set-v" title="Show each release's format as a compact 4-quadrant circle (Vinyl · Cassette · CD · Digital) or as text."><span class="pc-seg"><label><input type="radio" name="format-marker" value="circle"><span>◔ Circle</span></label><label><input type="radio" name="format-marker" value="text"><span>Text</span></label></span></div>
+      <div class="pc-set-v" data-tip="How each release's format shows\nA small circle in four parts (Vinyl · Cassette · CD · Digital), or text"><span class="pc-seg"><label><input type="radio" name="format-marker" value="circle"><span>◔ Circle</span></label><label><input type="radio" name="format-marker" value="text"><span>Text</span></label></span></div>
       <div class="pc-set-k">Layout</div>
       <div class="pc-set-v"><span class="pc-seg"><label><input type="radio" name="mb-layout" value="1row"><span>1 row</span></label><label><input type="radio" name="mb-layout" value="2row"><span>2 rows</span></label></span></div>
       <div class="pc-set-k">Spacing</div>
       <div class="pc-set-v"><span class="pc-set-lbl">rows</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-row-gap" min="0" max="10" step="1"><button type="button" data-step="1">+</button></span>
-        <span class="pc-set-lbl" title="Column spacing is only used in the 1-row layout">columns</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-col-gap" min="0" max="10" step="1"><button type="button" data-step="1">+</button></span></div>
+        <span class="pc-set-lbl" data-tip="Column spacing\nUsed only in the one-row layout">columns</span><span class="pc-step"><button type="button" data-step="-1">−</button><input type="number" id="mb-col-gap" min="0" max="10" step="1"><button type="button" data-step="1">+</button></span></div>
     </div>
 
   </div>
@@ -64371,7 +65190,7 @@ providerModal.innerHTML = `
     <div id="mb-provider-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 4px;">
     ${PROVIDER_ORDER.map(p => `
       <div class="pc-prov-row" data-provider="${p}" draggable="true" style="display: flex; align-items: center; min-width: 0; font-size: 13px; padding: 2px 6px; border-radius: 4px; background: var(--mbu-bg-raised); border: 1px solid transparent; cursor: grab; user-select: none;">
-        <span class="pc-prov-grip" style="color: var(--mbu-text-weak); font-size: 12px; margin-right: 5px; letter-spacing: -2px;" title="Drag to reorder">⋮⋮</span>
+        <span class="pc-prov-grip" style="color: var(--mbu-text-weak); font-size: 12px; margin-right: 5px; letter-spacing: -2px;" data-tip="Drag to reorder">⋮⋮</span>
         <input type="checkbox" id="mb-toggle-${p}" checked style="margin: 0 7px 0 0; width: 14px; height: 14px; flex: 0 0 auto;">
         <span style="display: inline-flex; flex: 0 0 auto; margin-right: 6px;">${stIcon(p, 15)}</span>
         <span style="font-weight: 500; flex-grow: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mbu-text);">${PROVIDER_NAME[p]}</span>
@@ -65213,9 +66032,9 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         const parts = [];
         if (source) parts.push(`via ${source}`);
         if (fromCache) parts.push('cached');
-        a.title = parts.length ? `${PROVIDER_NAME[p]} URL — ${parts.join(' · ')}` : '';
+        a.dataset.tip = parts.length ? `${PROVIDER_NAME[p]} URL\n${parts.join(' · ')}` : '';
     } else {
-        a.title = `No ${PROVIDER_NAME[p]} URL found`;
+        a.dataset.tip = `No ${PROVIDER_NAME[p]} URL found`;
     }
 
     // val is the platform's track count as a bare number, coloured by match
@@ -65227,27 +66046,27 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         // An Apple album with tracks the storefront doesn't offer (#684): its API leaves them out, so the
         // count is what's offered, and the album's own count follows it ("20/24"). It matches on the first.
         val.textContent = String(remoteTracks) + (hiddenTracks > 0 ? 'ⁿ' : '') + (unoffered > 0 ? '/' + (parseInt(remoteTracks, 10) + unoffered) : '');
-        const hiddenNote = (hiddenTracks > 0 ? `\n${hiddenTracks} download-only track(s) hidden from streaming on Bandcamp` : '')
-            + (unoffered > 0 ? `\nThe album has ${parseInt(remoteTracks, 10) + unoffered} tracks: ${unoffered} not offered by ${PROVIDER_NAME[p]}, so missing from its track list` : '');
+        const hiddenNote = (hiddenTracks > 0 ? `\n- ${hiddenTracks} download-only track${hiddenTracks === 1 ? '' : 's'}, hidden from streaming on Bandcamp` : '')
+            + (unoffered > 0 ? `\n- The album has ${parseInt(remoteTracks, 10) + unoffered} tracks: ${unoffered} not offered by ${PROVIDER_NAME[p]}, so missing from its track list` : '');
         if (parseInt(remoteTracks, 10) === parseInt(mbTracks, 10)) {
             ico.textContent = '✓';
             const tone = fromCache ? '#5B82B0' : '#008000';
             ico.style.color = tone;
             val.style.color = tone;
-            val.title = `${remoteTracks} tracks, matches MB — ${fromCache ? 'blue: from the local cache' : 'green: fetched live this scan'}` + hiddenNote;
+            val.dataset.tip = `${remoteTracks} tracks, as on MusicBrainz\n${fromCache ? 'Blue: from the cache in this browser' : 'Green: read in this scan'}` + hiddenNote;
         } else {
             ico.textContent = '~'; ico.style.color = 'var(--mbu-warn)';
             val.style.color = 'var(--mbu-warn)';
-            val.title = `${remoteTracks} tracks, MB has ${mbTracks}${fromCache ? ' (from the local cache)' : ''}` + hiddenNote;
+            val.dataset.tip = `${remoteTracks} tracks; MusicBrainz has ${mbTracks}${fromCache ? '\nFrom the cache in this browser' : ''}` + hiddenNote;
         }
     } else if (url) {
         ico.textContent = '?'; ico.style.color = 'var(--mbu-text-weak)';
         val.textContent = '?'; val.style.color = 'var(--mbu-text-weak)';
-        val.title = 'Track count could not be read';
+        val.dataset.tip = 'The track count could not be read';
     } else {
         ico.textContent = '×'; ico.style.color = 'var(--mbu-error)';
         val.textContent = '—'; val.style.color = 'var(--mbu-error)';
-        val.title = `No ${PROVIDER_NAME[p]} release found`;
+        val.dataset.tip = `No ${PROVIDER_NAME[p]} release found`;
     }
 
     // Circle MB-rels rows regardless of glyph — circle says "URL is in MB".
@@ -65261,9 +66080,9 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
     // #641: middle click adds a confirmed (✓) link anyway — over a strict barcode/format
     // withholding, which sometimes keeps back a legitimate find — in the foreground
     const canForce = !!(url && ico.textContent === '✓' && !fromMbRels);
-    const forceTip = blocked ? ' · middle-click or Alt+click: add it anyway (with Ctrl: in the background)' : ' · middle-click or Alt+click: add it even if strict settings would withhold it (with Ctrl: in the background)';
+    const forceTip = (blocked ? '\nMiddle/Alt+click: add it anyway' : '\nMiddle/Alt+click: add it even if the strict settings withhold it') + '\nCtrl+middle/Alt+click: the same, in the background';
     ico.style.cursor = canAdd || (blocked && canForce) ? 'pointer' : '';
-    ico.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (blocked ? `Withheld from + / ↗ — barcode/format confidence is on (see the coloured bar)${canForce ? forceTip : ''}` : '');
+    ico.dataset.tip = canAdd ? `The ${PROVIDER_NAME[p]} URL, not on MusicBrainz yet\nClick: add it\nRight-click: add it silently in the background${forceTip}` : (blocked ? `Withheld from + and ↗\nThe barcode or format check is on: see the coloured bar.${canForce ? forceTip : ''}` : '');
     ico.onclick = canAdd ? () => addSingleUrl(p) : null;
     ico.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
     pcWireForce(ico, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
@@ -65286,12 +66105,12 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         row.dataset.barcodeDiff = bcDiff ? '1' : '';
         row.classList.toggle('pc-format-diff', fmtDiff);
         const diffTips = [];
-        if (bcDiff) diffTips.push(`Different barcode than MB (MB ${MB_BARCODE} · ${PROVIDER_NAME[p]} ${barcode}) — likely a different release`);
-        if (fmtDiff) diffTips.push(`Format incompatible with MB release (MB ${MB_FORMAT} · ${PROVIDER_NAME[p]} ${normalizeFormat(format) || 'Digital'}) — likely a different release`);
+        if (bcDiff) diffTips.push(`⚠ Another barcode than MusicBrainz's: likely another release\nMusicBrainz ${MB_BARCODE} · ${PROVIDER_NAME[p]} ${barcode}`);
+        if (fmtDiff) diffTips.push(`⚠ A format the MusicBrainz release can't have: likely another release\nMusicBrainz ${MB_FORMAT} · ${PROVIDER_NAME[p]} ${normalizeFormat(format) || 'Digital'}`);
         // strict-mode withholding with no known mismatch (barcode/format couldn't be confirmed)
-        if (blocked && !diffTips.length) diffTips.push(`Withheld from + / ↗ — couldn't confirm barcode/format (strict mode)`);
-        if (diffTips.length) row.title = diffTips.join(' · ');
-        else if (row.title && /Different barcode|Format incompatible|Withheld from/.test(row.title)) row.title = '';
+        if (blocked && !diffTips.length) diffTips.push(`Withheld from + and ↗\nThe strict mode couldn't confirm the barcode or format.`);
+        if (diffTips.length) row.dataset.tip = diffTips.join('\n');
+        else if (row.dataset.tip && /Another barcode|A format the MusicBrainz|Withheld from/.test(row.dataset.tip)) row.dataset.tip = '';
         wireRowOpen(p);   // #173 — see below; re-wired here so the cursor tracks the new state
     }
     const plat = document.getElementById(`plat-${p}`);
@@ -65300,7 +66119,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         plat.onclick = canAdd ? () => addSingleUrl(p) : null;   // click-to-add works on the brand icon too
         plat.oncontextmenu = canAdd ? (e) => { e.preventDefault(); addSingleUrl(p, true); } : null;
         pcWireForce(plat, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
-        plat.title = canAdd ? `Click to add ${PROVIDER_NAME[p]} URL to MB · right-click: add it silently in the background${forceTip}` : (url ? a.title + (blocked && canForce ? forceTip : '') : `No ${PROVIDER_NAME[p]} URL found`);
+        plat.dataset.tip = canAdd ? `The ${PROVIDER_NAME[p]} URL, not on MusicBrainz yet\nClick: add it\nRight-click: add it silently in the background${forceTip}` : (url ? a.dataset.tip + (blocked && canForce ? forceTip : '') : `No ${PROVIDER_NAME[p]} URL found`);
     }
 
     // Discogs gets a master state in the left slot. Other platforms have an
@@ -65315,7 +66134,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
             masterEl.oncontextmenu = null;
             delete masterEl.dataset.pcAddMaster;
             masterEl.style.cursor = 'default';
-            masterEl.title      = '';
+            masterEl.dataset.tip      = '';
             masterEl.classList.remove('pc-ico-circled');
         }
     }
@@ -65333,7 +66152,7 @@ function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCa
         const t = document.createElement('span'); t.className = 'pc-lbl-t'; t.textContent = lEl.textContent;
         const c = document.createElement('span'); c.className = 'pc-cell-cat'; c.textContent = catnos[0].catno + (catnos.length > 1 ? ` +${catnos.length - 1}` : '');   // the rest in the tooltip
         lEl.textContent = ''; lEl.append(t, c);
-        lEl.title = `${lEl.title || ''}${lEl.title ? ' · ' : ''}catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
+        lEl.dataset.tip = `${lEl.dataset.tip || ''}${lEl.dataset.tip ? '\n' : ''}Catalog number ${catnos.map(x => `${x.catno} (${x.label})`).join(', ')}`;
     }
     pcNoteFoundCatnos(p, catnos);
     refreshCompactStrip();   // #355
@@ -65380,7 +66199,7 @@ function refreshCompactStrip() {
         // #641: a withheld match (✓, folded into the strip as a mismatch) takes the same
         // middle click as its full row's icon: add it anyway, in the foreground
         const canForce = !!(a && /^https?:\/\//.test(a.getAttribute('href') || '') && document.getElementById(`ico-${p}`)?.textContent.trim() === '✓' && !row.classList.contains('pc-inmb'));
-        ico.title = `${PROVIDER_NAME[p]} — ${mismatch ? 'found but a different release · click to open it' : 'click to search'}${canForce ? ' · middle-click or Alt+click: add it anyway (with Ctrl: in the background)' : ''}`;
+        ico.dataset.tip = `${PROVIDER_NAME[p]} — ${mismatch ? 'found, but another release\nClick: open it' : 'not found\nClick: search'}${canForce ? '\nMiddle/Alt+click: add it anyway\nCtrl+middle/Alt+click: the same, in the background' : ''}`;
         pcWireForce(ico, canForce ? (bg) => addSingleUrl(p, bg, true) : null);
         ico.innerHTML = stIcon(p, 16);
         ico.addEventListener('click', () => {
@@ -65413,9 +66232,9 @@ function setMetaCells(yearId, formatId, labelId, year, format, label) {
     const hasY = !!year, hasF = !!fmt, hasL = !!label;
     // 2-digit year to save space in the compact row (#173); full year in tooltip.
     const y2 = hasY ? String(year).slice(-2) : '';
-    if (yEl) { yEl.textContent = hasY ? (hasF || hasL ? `${y2} ·` : y2) : ''; yEl.title = hasY ? String(year) : ''; }
+    if (yEl) { yEl.textContent = hasY ? (hasF || hasL ? `${y2} ·` : y2) : ''; yEl.dataset.tip = hasY ? String(year) : ''; }
     if (fEl) {
-        fEl.textContent = ''; fEl.title = hasF ? fmt : '';
+        fEl.textContent = ''; fEl.dataset.tip = hasF ? fmt : '';
         if (hasF) {
             const marker = fmtMarker(fmt); fEl.appendChild(marker);
             // recognized formats render BOTH the circle and a text span; the "Format marker" option toggles
@@ -65424,7 +66243,7 @@ function setMetaCells(yearId, formatId, labelId, year, format, label) {
             if (hasL) fEl.appendChild(document.createTextNode(' ·'));
         }
     }
-    if (lEl) { lEl.textContent = hasL ? label : ''; lEl.title = hasL ? label : ''; }
+    if (lEl) { lEl.textContent = hasL ? label : ''; lEl.dataset.tip = hasL ? label : ''; }
 }
 
 // MB's "Digital Media" is the spec name, but in a tight sidebar "Digital"
@@ -65490,7 +66309,7 @@ function stripCopyright(text) {
 function applyMasterIcon(el, state) {
     el.textContent = state.glyph;
     el.style.color = state.muted ? 'var(--mbu-text-weak)' : 'var(--mbu-info)';
-    el.title       = state.title;
+    el.dataset.tip       = state.title;
     el.classList.toggle('pc-ico-circled', !!state.circled);
     if (state.clickable && state.addMasterUrl) {
         el.style.cursor = 'pointer';
@@ -65514,21 +66333,21 @@ function discogsMasterState(cachedMasterUrl, existingDiscogsMaster) {
         // authoritative RG-level link, same as honouring any existing MB rel).
         if (existingDiscogsMaster) {
             return { glyph: '✓', circled: true, clickable: false, masterUrl: existingDiscogsMaster,
-                title: `Discogs master on the release-group: ${existingDiscogsMaster}` };
+                title: `The Discogs master, on the release group\n${existingDiscogsMaster}` };
         }
         // Discogs returns no master_id when the release simply isn't part of a
         // master group (one-off pressings, niche labels). Show a muted "—" so
         // the user can distinguish "release has no master" from "we haven't
         // scanned yet" without the slot looking like a bug.
-        return { glyph: '—', circled: false, clickable: false, title: 'Discogs release has no master entry', muted: true };
+        return { glyph: '—', circled: false, clickable: false, title: 'The Discogs release has no master', muted: true };
     }
     if (existingDiscogsMaster === cachedMasterUrl) {
-        return { glyph: '✓', circled: true,  clickable: false, masterUrl: cachedMasterUrl, title: 'Discogs master URL is on the release-group' };
+        return { glyph: '✓', circled: true,  clickable: false, masterUrl: cachedMasterUrl, title: 'The Discogs master URL is on the release group' };
     }
     if (existingDiscogsMaster) {
-        return { glyph: '~', circled: true,  clickable: false, masterUrl: existingDiscogsMaster, title: `MB has a different Discogs master on the release-group: ${existingDiscogsMaster}` };
+        return { glyph: '~', circled: true,  clickable: false, masterUrl: existingDiscogsMaster, title: `⚠ MusicBrainz has another Discogs master on the release group\n${existingDiscogsMaster}` };
     }
-    return     { glyph: '✓', circled: false, clickable: true,  masterUrl: cachedMasterUrl, title: 'Click to add this Discogs master URL to the release-group · right-click: add it silently in the background', addMasterUrl: cachedMasterUrl };
+    return     { glyph: '✓', circled: false, clickable: true,  masterUrl: cachedMasterUrl, title: 'The Discogs master URL, not on the release group yet\nClick: add it\nRight-click: add it silently in the background', addMasterUrl: cachedMasterUrl };
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -67260,7 +68079,7 @@ function ytmNoteOtherVersions(v, label = 'YouTube Music') {
     const names = v.map(x => `"${x.title}"${x.sub ? ' (' + x.sub + ')' : ''}`).join('; ');
     appendLog(label, `The album has ${v.length} other version(s) on YouTube Music: ${names} — check the match is the right one`, 'warn');
     const a = document.getElementById('mb-online-ytmusic');
-    if (a && a.href && /music\.youtube\.com/.test(a.href)) a.title = (a.title ? a.title + '\n' : '') + `Also on YouTube Music as ${v.length} other version(s): ${names}. They can share title and tracks — check it's this one.`;
+    if (a && a.href && /music\.youtube\.com/.test(a.href)) a.dataset.tip = (a.dataset.tip ? a.dataset.tip + '\n' : '') + `⚠ Also on YouTube Music as ${v.length} other version${v.length === 1 ? '' : 's'}: ${names}\nThey can share the title and tracks: check it's this one.`;
 }
 // The album behind a YouTube Music link: …/browse/MPREb_… directly, …/playlist?list=OLAK5uy_…
 // through the playlist's page, which names its album.
@@ -68519,7 +69338,7 @@ function resetRows() {
         // a subsequent refresh doesn't see the previous /album/<id> result
         // as an "existing MB rel" — covered by the #mb-pc-panel exclusion
         // in parseMbFromDom too, but defensive cleanup either way.
-        if (a)    { a.href = '#'; a.title = ''; }
+        if (a)    { a.href = '#'; a.dataset.tip = ''; }
         // The row stays clickable across a reset — dataset.searchUrl survives, so
         // a re-scanning row still opens the provider's search (it's the same
         // release). runScans re-seeds and re-wires a moment later anyway.
@@ -68880,14 +69699,14 @@ function parseMbData(data) {
 // while scans run (no separate icon, no ticking seconds, no end-state noise), and a click
 // then stops them (#674); the total scan time goes into the button's tooltip when done.
 let _scanT0 = 0;
-const REFRESH_TITLE = 'Refresh — clear cache and re-scan';
+const REFRESH_TITLE = 'Refresh\nClear the cache and scan again';
 function setScanStatus(state) {
     const btn = document.getElementById('mb-refresh-btn'); if (!btn) return;
-    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.title = 'Scanning platforms… · click to stop'; return; }
+    if (state === 'busy') { _scanT0 = Date.now(); btn.classList.add('pc-scanning'); btn.dataset.tip = 'Scanning the platforms…\nClick: stop'; return; }
     btn.classList.remove('pc-scanning');
     const secs = ((Date.now() - _scanT0) / 1000).toFixed(1);
-    btn.title = state === 'done' ? `${REFRESH_TITLE} (last scan: ${secs}s)`
-        : state === 'stopped' ? `${REFRESH_TITLE} (last scan stopped after ${secs}s)` : `${REFRESH_TITLE} (last scan halted — see the log)`;
+    btn.dataset.tip = state === 'done' ? `${REFRESH_TITLE}\nThe last scan took ${secs} s.`
+        : state === 'stopped' ? `${REFRESH_TITLE}\nThe last scan stopped after ${secs} s.` : `${REFRESH_TITLE}\n⚠ The last scan halted: see the log`;
 }
 async function runScans() {
     // (#422) thin status wrapper — the scan body lives in runScansInner; `false` = halted.
@@ -69491,9 +70310,9 @@ async function pcOpenLinksTable(btn) {
       #pc-links-ov .pc-lk-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: var(--mbu-text); padding: 5px 14px; font: 13px var(--mbu-font); cursor: pointer; }
       #pc-links-ov .pc-lk-menu button:hover { background: var(--mbu-bg-hover); }
     </style>
-    <div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">Artists &amp; labels</span><button type="button" class="mbu-ov-x" title="Close">✕</button></div>
+    <div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">Artists &amp; labels</span><button type="button" class="mbu-ov-x" data-tip="Close">✕</button></div>
     <div class="mbu-ov-body"></div>
-    <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled title="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled title="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" title="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
+    <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled data-tip="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled data-tip="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" data-tip="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
     document.body.appendChild(ov);
     const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
@@ -69537,7 +70356,7 @@ async function pcOpenLinksTable(btn) {
     const tbl = document.createElement('table');
     const head = tbl.createTHead().insertRow();
     head.appendChild(document.createElement('th')).textContent = 'MusicBrainz';
-    for (const p of provs) { const th = head.appendChild(document.createElement('th')); th.title = PROVIDER_NAME[p]; th.innerHTML = mbuHtml(stIcon(p, 16)); }
+    for (const p of provs) { const th = head.appendChild(document.createElement('th')); th.dataset.tip = PROVIDER_NAME[p]; th.innerHTML = mbuHtml(stIcon(p, 16)); }
     head.appendChild(document.createElement('th'));
     const body = tbl.createTBody();
     const refresh = () => {
@@ -69557,7 +70376,7 @@ async function pcOpenLinksTable(btn) {
             const td = tr.insertCell();
             const cs = r.cells[p];
             if (!cs) { td.className = 'pc-lk-none'; td.textContent = '·'; continue; }
-            const paint = () => { const m = cellMark(cs); td.className = `pc-lk-cell ${m.cls}`; td.textContent = m.text; td.title = cellTitle(cs, r); };
+            const paint = () => { const m = cellMark(cs); td.className = `pc-lk-cell ${m.cls}`; td.textContent = m.text; td.dataset.tip = cellTitle(cs, r); };
             paint();
             td.onclick = () => { const o = otherOf(cs); window.open(o ? `${MB_ORIGIN}/${o.type}/${o.mbid}` : cs[0].url, '_blank', 'noopener'); };
             td.onmousedown = e => { if (e.button === 1 && otherOf(cs)) e.preventDefault(); };   // no autoscroll
@@ -69572,7 +70391,8 @@ async function pcOpenLinksTable(btn) {
             };
         }
         const act = tr.insertCell();
-        const edit = Object.assign(document.createElement('button'), { type: 'button', className: 'pc-lk-edit', textContent: '✎', title: `Open the ${r.type}'s edit page with its new links filled in, for you to submit` });
+        const edit = Object.assign(document.createElement('button'), { type: 'button', className: 'pc-lk-edit', textContent: '✎' });
+        edit.dataset.tip = `Open the ${r.type}'s edit page\nWith its new links filled in, for you to submit`;
         edit.onclick = () => {
             const urls = Object.values(r.cells).flat().filter(c => c.on).map(c => c.url);
             if (!urls.length) { flashInfo(edit, 'No new links in this row'); return; }
@@ -69641,7 +70461,7 @@ function pcShowPastedBarcode(code) {
     if (!chip) return;
     chip.style.display = code ? '' : 'none';
     chip.textContent = code ? `${code} ×` : '';
-    chip.title = code ? `Pasted barcode ${code}: the platforms are checked against it, and a link you add adds it to the release too · click to remove it` : '';
+    chip.dataset.tip = code ? `Pasted barcode ${code}\nThe platforms are checked against it, and a link you add adds it to the release too.\nClick: remove it` : '';
     pcShowFoundBarcodes();   // #674: the found ones give way to the pasted one
 }
 
@@ -69685,9 +70505,9 @@ function pcShowFoundBarcodes() {
     const list = MB_OWN_BARCODE || pcPastedBarcode() ? [] : pcFoundBarcodes();
     btn.style.display = list.length ? '' : 'none';
     btn.innerHTML = mbuHtml(list.length ? `${PC_BARCODE_SVG} ${list.length}` : '');
-    btn.title = list.length === 1
-        ? `The release has no barcode; ${list[0].platforms.map(p => PROVIDER_NAME[p]).join(', ')} report${list[0].platforms.length === 1 ? 's' : ''} ${list[0].code} · click to choose`
-        : list.length ? `The release has no barcode; the platforms report ${list.length} different ones · click to choose` : '';
+    btn.dataset.tip = list.length === 1
+        ? `The release has no barcode\n${list[0].platforms.map(p => PROVIDER_NAME[p]).join(', ')} report${list[0].platforms.length === 1 ? 's' : ''} ${list[0].code}.\nClick: choose`
+        : list.length ? `The release has no barcode\nThe platforms report ${list.length} different ones.\nClick: choose` : '';
     if (!list.length) document.getElementById('pc-bc-pop')?._pcClose?.();
 }
 // The MusicBrainz releases that already have this barcode, other than this one: [{ id, title,
@@ -69718,9 +70538,9 @@ function pcOpenFoundBarcodes(btn) {
     const pop = document.createElement('div');
     pop.id = 'pc-bc-pop';
     pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Barcodes on the platforms</div>` + list.map(c => `
-      <div class="pc-bc-opt" data-code="${c.code}" title="Use ${c.code} as if it were pasted · right-click: add it to the release in the background, on its own · Ctrl+click: copy it">
+      <div class="pc-bc-opt" data-code="${c.code}" data-tip="Use ${c.code} as if it were pasted\nRight-click: add it to the release in the background, on its own\nCtrl+click: copy it">
         <span class="pc-bc-code">${c.code}</span><span class="pc-bc-use">use</span>
-        <span class="pc-bc-who">${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
+        <span class="pc-bc-who">${c.platforms.map(p => `<span class="pc-bc-plat" data-tip="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
         ${c.format === 'same' ? `<span class="pc-bc-fmt pc-bc-same">✓ ${mbKind}, like this release</span>`
           : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>` : ''}
         ${pcGtinValid(c.code) ? '' : '<span class="pc-bc-fmt pc-bc-other">⚠ wrong check digit</span>'}
@@ -69741,9 +70561,9 @@ function pcOpenFoundBarcodes(btn) {
         if (!on.length) { line.remove(); return; }
         const r = on[0], more = on.length > 1 ? ` and ${on.length - 1} more` : '';
         line.classList.add('pc-bc-other');
-        line.innerHTML = mbuHtml(`⚠ already on <a href="${MB_ORIGIN}/release/${r.id}" target="_blank" rel="noopener" title="${pcEsc([r.format, r.date].filter(Boolean).join(' · '))}">${pcEsc(r.title)}</a>${more}`);
+        line.innerHTML = mbuHtml(`⚠ already on <a href="${MB_ORIGIN}/release/${r.id}" target="_blank" rel="noopener" data-tip="${pcEsc([r.format, r.date].filter(Boolean).join(' · '))}">${pcEsc(r.title)}</a>${more}`);
         opt.dataset.onMb = r.title || r.id;
-        opt.title = `${opt.dataset.code} is already on another MusicBrainz release — probably that edition's, not this one's · click to use it anyway · right-click: add it anyway, in the background · Ctrl+click: copy it`;
+        opt.dataset.tip = `⚠ ${opt.dataset.code} is already on another MusicBrainz release\nProbably that edition's, not this one's.\nClick: use it anyway\nRight-click: add it anyway, in the background\nCtrl+click: copy it`;
     }));
     pop.addEventListener('click', e => {
         if (e.target.closest('a')) return;   // the release it is already on: opened, not picked
@@ -69847,15 +70667,15 @@ function pcShowFoundCatnos() {
         const v = Object.values(picked);
         chip.style.display = v.length ? '' : 'none';
         chip.textContent = v.length ? `${v.map(x => x.catno).join(', ')} ×` : '';
-        chip.title = v.length ? `Catalog number ${v.map(x => `${x.catno} for ${x.name}`).join(', ')}: a link you add adds it to the release too · click to remove it` : '';
+        chip.dataset.tip = v.length ? `Catalog number ${v.map(x => `${x.catno} for ${x.name}`).join(', ')}\nA link you add adds it to the release too.\nClick: remove it` : '';
     }
     if (!btn) return;
     const list = pcFoundCatnos().filter(e => !picked[e.label.mbid]);
     btn.style.display = list.length ? '' : 'none';
     btn.innerHTML = mbuHtml(list.length ? `${PC_CATNO_SVG} ${list.length}` : '');
-    btn.title = list.length === 1
-        ? `${list[0].label.name} has no catalog number; ${list[0].platforms.map(x => PROVIDER_NAME[x]).join(', ')} give${list[0].platforms.length === 1 ? 's' : ''} ${list[0].catno} · click to choose`
-        : list.length ? `The release's labels have no catalog number; the platforms give ${list.length} · click to choose` : '';
+    btn.dataset.tip = list.length === 1
+        ? `${list[0].label.name} has no catalog number\n${list[0].platforms.map(x => PROVIDER_NAME[x]).join(', ')} give${list[0].platforms.length === 1 ? 's' : ''} ${list[0].catno}.\nClick: choose`
+        : list.length ? `The release's labels have no catalog number\nThe platforms give ${list.length}.\nClick: choose` : '';
     if (!list.length) document.getElementById('pc-cat-pop')?._pcClose?.();
 }
 // Queued with the links for the release editor; a stale one from an earlier add is cleared.
@@ -69876,9 +70696,9 @@ function pcOpenFoundCatnos(btn) {
     const pop = document.createElement('div');
     pop.id = 'pc-cat-pop'; pop.className = 'pc-bc-pop';
     pop.innerHTML = mbuHtml(`<div class="pc-bc-h">Catalog numbers on the platforms</div>` + list.map((c, i) => `
-      <div class="pc-bc-opt" data-i="${i}" title="Add ${pcEsc(c.catno)} to ${pcEsc(c.label.name)} with the links you add · right-click: copy it">
+      <div class="pc-bc-opt" data-i="${i}" data-tip="Add ${pcEsc(c.catno)} to ${pcEsc(c.label.name)} with the links you add\nRight-click: copy it">
         <span class="pc-bc-code">${pcEsc(c.catno)}</span><span class="pc-bc-use">use</span>
-        <span class="pc-bc-who">for ${pcEsc(c.label.name)} · ${c.platforms.map(p => `<span class="pc-bc-plat" title="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
+        <span class="pc-bc-who">for ${pcEsc(c.label.name)} · ${c.platforms.map(p => `<span class="pc-bc-plat" data-tip="${PROVIDER_NAME[p]}">${stIcon(p, 12)}</span>`).join('')} ${c.platforms.map(p => PROVIDER_NAME[p]).join(', ')}</span>
         ${c.sure ? '<span class="pc-bc-fmt pc-bc-same">✓ from links like this release</span>'
           : c.off ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${pcEsc(c.off.join(' · '))}</span>`
           : c.format === 'other' ? `<span class="pc-bc-fmt pc-bc-other">⚠ ${c.kinds.join(' and ')}: this release is ${mbKind}</span>`

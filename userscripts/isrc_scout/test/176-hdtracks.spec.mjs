@@ -25,7 +25,7 @@ test('a pasted HDtracks URL imports its 13 ISRCs', { tag: ['@sandbox', '@web'] }
   await page.waitForSelector('#ii-urladd.open', { timeout: 5000 });
   await page.fill('#ii-url-input', HD);
   await page.dispatchEvent('#ii-url-input', 'input');
-  check((await page.evaluate(() => document.getElementById('ii-url-btn')?.title || '')).includes('HDtracks'), 'the + button recognises HDtracks');
+  check((await page.evaluate(() => document.getElementById('ii-url-btn')?.dataset.tip || '')).includes('HDtracks'), 'the + button recognises HDtracks');
   await page.press('#ii-url-input', 'Enter');
   await page.waitForFunction(() => /HDtracks done/i.test(window.__isrcScoutLog?.() || ''), null, { timeout: 30000 }).catch(() => {});
   const log = await logText(page);

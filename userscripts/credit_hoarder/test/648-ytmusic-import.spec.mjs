@@ -20,7 +20,7 @@ test('YouTube Music: credits import from the linked album and stage producer rel
   try {
     const btn = page.locator('.discogs-bar .discogs-src-ico[data-src="YouTube Music"]');
     await btn.waitFor({ state: 'visible', timeout: 30_000 });
-    check(/YouTube Music/.test(await btn.getAttribute('title') || ''), 'the toolbar offers YouTube Music');
+    check(/YouTube Music/.test(await btn.getAttribute('data-tip') || ''), 'the toolbar offers YouTube Music');
     await btn.click();
     await confirmReviewTable(page);
     const { log: importLog, timedOut } = await waitForImportDone(page);

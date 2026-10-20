@@ -10,7 +10,7 @@ test.use({ gm: { name: 'ISRC Scout' } });
 // toggleMaximize() sets, on every open and every viewport resize.
 test('#484: a maximized window reopens maximized, and Restore restores it', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await openScout(page, inject);
-  const box = () => page.evaluate(() => { const m = document.getElementById('ii-modal'); return { width: m.style.width, title: document.getElementById('ii-maximize-toggle').title, px: m.getBoundingClientRect().width, vw: window.innerWidth }; });
+  const box = () => page.evaluate(() => { const m = document.getElementById('ii-modal'); return { width: m.style.width, title: document.getElementById('ii-maximize-toggle').dataset.tip, px: m.getBoundingClientRect().width, vw: window.innerWidth }; });
   await page.click('#ii-maximize-toggle');
   const max = await box();
   check(max.width === '96vw' && max.title === 'Restore', `maximized (${JSON.stringify(max)})`);
@@ -58,7 +58,7 @@ test('#490: SoundExchange search is a row-hover icon that survives "Clear ISRCs"
 test('#580: a status that says "see Log" opens the log; ordinary progress does not look clickable', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await openScout(page, inject);
   await page.waitForFunction(() => !!(window.__isrcScoutTestProg && window.__isrcScoutTestProg.setProg), null, { timeout: 5000 });
-  const probe = () => page.evaluate(() => { const el = document.getElementById('ii-prog'), pane = document.getElementById('mbu-logpop'); return { tolog: el.classList.contains('tolog'), err: el.classList.contains('err'), cursor: getComputedStyle(el).cursor, title: el.title, click: typeof el.onclick === 'function', open: !!pane }; });
+  const probe = () => page.evaluate(() => { const el = document.getElementById('ii-prog'), pane = document.getElementById('mbu-logpop'); return { tolog: el.classList.contains('tolog'), err: el.classList.contains('err'), cursor: getComputedStyle(el).cursor, title: el.dataset.tip, click: typeof el.onclick === 'function', open: !!pane }; });
   await page.evaluate(() => window.__isrcScoutTestProg.setProg('reading tracklist…', false));
   const plain = await probe();
   check(!plain.tolog && !plain.click && plain.cursor !== 'pointer', `a progress line is not clickable (${JSON.stringify(plain)})`);

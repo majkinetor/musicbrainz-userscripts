@@ -17,7 +17,7 @@ test('a custom field pins field memory to the input its selector matches', { tag
   await idle(page);
   await inject('mammoth');
 
-  await page.click('button[title="Settings"]');
+  await page.click('button[data-tip="Settings"]');
   // MusicBrainz's form can keep growing after load and push the Settings button far
   // below the screen; the Fields tab then widened the window and re-placed it "above"
   // that button, off screen and out of reach. Grow the page here so it happens every run.
@@ -30,7 +30,7 @@ test('a custom field pins field memory to the input its selector matches', { tag
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(inp, v);
     inp.dispatchEvent(new Event('input', { bubbles: true }));
   }, [cls, v]);
-  const counter = () => page.evaluate(() => { const c = document.querySelector('.mmth-cf-row .mmth-cf-cnt'); return { text: c.textContent, title: c.title, bad: c.classList.contains('mmth-cf-bad') }; });
+  const counter = () => page.evaluate(() => { const c = document.querySelector('.mmth-cf-row .mmth-cf-cnt'); return { text: c.textContent, title: c.dataset.tip, bad: c.classList.contains('mmth-cf-bad') }; });
 
   await page.click('.mmth-cf-add');
   await typeInto('.mmth-cf-match', TARGET);
@@ -41,7 +41,7 @@ test('a custom field pins field memory to the input its selector matches', { tag
   await page.click('.mmth-cf-add');
   await typeInto('.mmth-cf-match', 'input[[');
   const bad = await until(counter, c => c.bad);
-  check(bad.bad && /invalid/i.test(bad.title), `an invalid selector is marked (${JSON.stringify(bad)})`);
+  check(bad.bad && /not a valid selector/i.test(bad.title), `an invalid selector is marked (${JSON.stringify(bad)})`);
 
   // close Settings, then look at the field (a pin is parked while its field is off screen)
   await page.keyboard.press('Escape');
@@ -51,9 +51,9 @@ test('a custom field pins field memory to the input its selector matches', { tag
     const pins = [...document.querySelectorAll('.mmthf-pin')];
     const near = pins.find(p => { const pr = p.getBoundingClientRect(); return Math.abs(pr.top - er.top) < 30 && pr.left > er.left && pr.left < er.right + 40; });
     return {
-      pinned: el.dataset.mmthf === '1', near: !!near, title: near ? near.title : '',
+      pinned: el.dataset.mmthf === '1', near: !!near, title: near ? near.dataset.tip : '',
       field: { t: Math.round(er.top), l: Math.round(er.left), r: Math.round(er.right) },
-      pins: near ? undefined : pins.map(p => { const pr = p.getBoundingClientRect(); return { t: Math.round(pr.top), l: Math.round(pr.left), title: p.title }; }),
+      pins: near ? undefined : pins.map(p => { const pr = p.getBoundingClientRect(); return { t: Math.round(pr.top), l: Math.round(pr.left), title: p.dataset.tip }; }),
     };
   }, TARGET), r => r.pinned && r.near);
   check(r.pinned && r.near, `a pin sits in the comment input (${JSON.stringify(r)})`);

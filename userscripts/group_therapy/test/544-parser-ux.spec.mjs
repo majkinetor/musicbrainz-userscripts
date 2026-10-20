@@ -85,9 +85,9 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     check(/^click: every row/i.test(hint), '#5: a plain click now applies to every row with this text');
     check(/right-click: this row only/i.test(hint), 'and right-click is the single-row case');
 
-    const plusTitle = await page.evaluate(() => (document.querySelector('.gt-tp-plus') || {}).title || '');
+    const plusTitle = await page.evaluate(() => ((document.querySelector('.gt-tp-plus') || {}).dataset || {}).tip || '');
     console.log('plus title: ' + JSON.stringify(plusTitle));
-    check(/right-click to create in the background/i.test(plusTitle), '#1: the + button advertises background creation');
+    check(/Right-click: create it in the background/i.test(plusTitle), '#1: the + button advertises background creation');
 
     // #2: paste an MBID → resolved and applied, no result row to click
     const pasted = await page.evaluate(async (gid) => {

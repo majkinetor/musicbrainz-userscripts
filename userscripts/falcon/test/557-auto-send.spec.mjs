@@ -176,7 +176,7 @@ test("#557: auto send", { tag: ['@sandbox', '@login'] }, async ({ context, page 
       cb.checked = true; cb.dispatchEvent(new Event('change'));
       return {
         missing: false, legend: (lgd || '').trim(), label: (cb.parentElement.textContent || '').trim(),
-        title: cb.parentElement.title, persisted: window.__falconTest.cfg.autoSendFromHarmony,
+        title: cb.parentElement.dataset.tip, persisted: window.__falconTest.cfg.autoSendFromHarmony,
         order: [...fs.querySelectorAll('input[type=checkbox]')].map(i => i.id),
       };
     });

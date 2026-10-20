@@ -70,7 +70,7 @@ test("#494: existing cover warning", { tag: ['@sandbox', '@login'] }, async ({ c
     await page.click('.falcon-row-expand[data-id="clean"]');
     const info = await page.evaluate(() => ({
       dupWarningText: document.querySelector('.falcon-row[data-id="dup"]')?.innerText || '',
-      dupSummaryTitle: [...document.querySelectorAll('.falcon-row[data-id="dup"] > div > span[title]')].map(s => s.getAttribute('title')).find(t => /already has/.test(t || '')) || '',
+      dupSummaryTitle: [...document.querySelectorAll('.falcon-row[data-id="dup"] > div > span[data-tip]')].map(s => s.getAttribute('data-tip')).find(t => /already has/.test(t || '')) || '',
       cleanWarningPresent: (document.querySelector('.falcon-row[data-id="clean"]')?.innerText || '').includes('already has'),
     }));
     console.log('ui check:', JSON.stringify(info));

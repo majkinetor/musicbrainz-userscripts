@@ -64,7 +64,7 @@ test('#680: Fusion runs on Fetch RG and marks the tracks with duplicates', { tag
   check(await card.locator('.fs-idunk').count() === 0, 'once checked, no ISRC or AcoustID is unknown on the card');
   check(/AcoustIDs/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'the inspector lists the match\'s AcoustIDs');
   check(!/not checked/.test(await page.locator('#mc-root .mc-insp .mc-fxm').first().textContent()), 'and they are checked');
-  check(await card.locator('[data-act="mc-open"] img').count() === 1 && await card.locator('[data-act="mc-open"]').getAttribute('title') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
+  check(await card.locator('[data-act="mc-open"] img').count() === 1 && await card.locator('[data-act="mc-open"]').getAttribute('data-tip') !== null, 'Open in Fusion is Fusion\'s icon, with a tooltip');
 
   // the card is Fusion's: a new merge target is the one Execute merges into, and the card survives MC's repaints
   const other = card.locator('.fs-grow:not(.fs-target-row)').first(), gid = await other.getAttribute('data-gid');

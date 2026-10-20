@@ -40,7 +40,7 @@ test('#680: a card switched off is left out of Execute', { tag: ['@sandbox'] }, 
   check(await page.locator('#mc-root .mc-sect-h .mc-icsw').count() === 4, "every card's icon is its switch: tracks, links, cover art, release credits");
   check(await sw('pc').getAttribute('aria-pressed') === 'true', 'on to begin with');
   await sw('pc').locator('.ic').click();   // the icon
-  check(await sw('pc').getAttribute('aria-pressed') === 'false' && /Left out/.test(await sw('pc').getAttribute('title')), 'a click on the icon switches it off, and its tooltip says so');
+  check(await sw('pc').getAttribute('aria-pressed') === 'false' && /Left out/.test(await sw('pc').getAttribute('data-tip')), 'a click on the icon switches it off, and its tooltip says so');
   check(!(await page.locator('#mc-root [data-card="pc"]').isVisible()) && await page.locator('#mc-root .mc-sect[data-sect="pc"] .mc-sect-h').isVisible(), 'the off card is folded to its header');
   check(await exec.textContent() === 'Execute (1)', `its tick leaves the count (${await exec.textContent()})`);
   await page.screenshot({ path: 'test-results/mc-680-card-onoff.png' });

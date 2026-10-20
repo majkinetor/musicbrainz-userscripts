@@ -47,8 +47,8 @@ test("json io and name yield", { tag: ['@sandbox', '@login'] }, async ({ context
     imp: !!document.getElementById('falcon-import'),
     exp: !!document.getElementById('falcon-export'),
     file: (document.getElementById('falcon-import-file') || {}).accept,
-    impTitle: (document.getElementById('falcon-import') || {}).title,
-    expTitle: (document.getElementById('falcon-export') || {}).title,
+    impTitle: ((document.getElementById('falcon-import') || {}).dataset || {}).tip,
+    expTitle: ((document.getElementById('falcon-export') || {}).dataset || {}).tip,
   }));
   console.log('toolbar:', JSON.stringify(ui));
   ck(!ui.plus && !ui.box, 'the (+) paste box is gone');

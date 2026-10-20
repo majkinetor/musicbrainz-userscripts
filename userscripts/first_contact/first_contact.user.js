@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.19
+// @version      2026.10.20.120000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -2737,8 +2737,8 @@ function mountButton(provider, id) {
         more.type = 'button';
         more.className = 'fc-more';
         more.textContent = MBU_CFG_ICON;
-        more.title = 'Settings';
-        more.setAttribute('aria-label', more.title);
+        more.dataset.tip = 'Settings';
+        more.setAttribute('aria-label', more.dataset.tip);
         more.addEventListener('click', e => { e.stopPropagation(); togglePanel(more); });
         const cons = document.createElement('button');
         cons.type = 'button';
@@ -2772,7 +2772,7 @@ function mountButton(provider, id) {
     root.dataset.fcProvider = provider.name;
     root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
     root.classList.toggle('fc-gear-hidden', !!settings().gearHidden);   // majkinetor: ⚙︎ can go, a right-click opens the settings
-    root.querySelector('.fc-go').title = `Import to MusicBrainz: open the release editor with this ${provider.name} release filled in`;
+    root.querySelector('.fc-go').dataset.tip = `Import to MusicBrainz\nOpens the release editor with this ${provider.name} release filled in`;
     showHarmony(root, provider);
     showCons(root, provider);
     root.style.display = '';
@@ -3122,22 +3122,22 @@ function togglePanel(anchor) {
         + '<label>MusicBrainz server <select class="fc-server">'
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
-        + `<label class="fc-check" title="On ${here} only: the album's notes on the platform (Bandcamp's about and credits, Discogs's notes, Qobuz's and Apple's reviews, Beatport's and YouTube Music's description, Amazon Music's ℗ line), with a line saying where they come from. Reviews are the critic's text: check you may copy it before you submit."><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
-        + `<label class="fc-check" title="Once the release editor has the release, or the album is sent to Harmony, this platform tab closes. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
-        + `<label class="fc-check" title="A button beside Import that reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor"><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
-        + `<label class="fc-check" title="A button between Import and ⚙︎ that looks this album up on Harmony instead, with every platform that has its barcode; Falcon carries on from there"><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
+        + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
+        + `<label class="fc-check" data-tip="Close the platform's tab once the release editor has the release\nOr once the album is sent to Harmony. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
+        + `<label class="fc-check" data-tip="A Consolidate button beside Import\nIt reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor."><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
+        + `<label class="fc-check" data-tip="A Send to Harmony button between Import and ⚙︎\nIt looks this album up on Harmony instead, with every platform that has its barcode. Falcon carries on from there."><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
         + '<div class="fc-sec">Archive</div>'
         // #659: majkinetor: "It should be ON by default or many people will not use it"
-        + `<label class="fc-check" title="On every import, ask the Internet Archive's Wayback Machine to save the album page (and, for Deezer and Apple Music, the album data FC read). This sends each imported URL to archive.org."><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
+        + `<label class="fc-check" data-tip="Save the album page on the Wayback Machine at every import\nFor Deezer and Apple Music, the album data First Contact read as well.\n⚠ This sends each imported URL to archive.org"><input type="checkbox" class="fc-archive"${s.archive ? ' checked' : ''}> Archive the album page on the Internet Archive</label>`
         + mbaKeysHtml(!s.archive)
         + '<div class="fc-sec">Button</div>'
-        + `<label class="fc-check" title="The button shows only its icon; hover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
-        + `<label class="fc-check" title="No ⚙︎ button: right-click any of the buttons for the settings (that works with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
-        + `<label class="fc-check" title="On ${here} only: a button you have moved stays on its spot on the page (above the cover, say) and scrolls with it, instead of staying put on the screen. The button in its corner always stays on the screen."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
+        + `<label class="fc-check" data-tip="Only the icon on the button\nHover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
+        + `<label class="fc-check" data-tip="No ⚙︎ button\nRight-click: any of the buttons opens the settings (with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
+        + `<label class="fc-check" data-tip="A moved button scrolls with the page\nIt stays on its spot on the page (above the cover, say) instead of on the screen. In its corner it always stays on the screen. For ${here} only."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         // majkinetor: "change this to Reset: all | this one"
-        + `<div class="fc-reset" title="Drag the button to move it; each platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
-        + `<button type="button" class="fc-reset-all" title="Back in the corner on every platform">all</button> | `
-        + `<button type="button" class="fc-reset-pos" title="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
+        + `<div class="fc-reset" data-tip="Drag the button to move it\nEach platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
+        + `<button type="button" class="fc-reset-all" data-tip="Back in the corner on every platform">all</button> | `
+        + `<button type="button" class="fc-reset-pos" data-tip="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
         + '</div>');
     document.body.appendChild(panel);
     placePanel(panel, anchor.closest('#fc-root') || anchor);
@@ -3319,17 +3319,17 @@ function showHarmony(root, provider) {
     const none = HARMONY_NONE.has(provider.id);
     b.setAttribute('aria-disabled', String(none));
     b.setAttribute('aria-label', 'Send to Harmony');
-    b.title = harmonyWhy(provider);
+    b.dataset.tip = harmonyWhy(provider);
 }
 function harmonyWhy(provider) {
-    if (HARMONY_NONE.has(provider.id)) return `Send to Harmony: Harmony can't look up ${provider.name}, and ${provider.name} shows no barcode`;
-    if (HARMONY_URLS[provider.id]) return `Send to Harmony: look this ${provider.name} album up on Harmony, with every platform that has its barcode`;
-    return `Send to Harmony: read the barcode here first (Harmony can't look up ${provider.name}), then look it up on Harmony`;
+    if (HARMONY_NONE.has(provider.id)) return `Send to Harmony\nHarmony can't look up ${provider.name}, and ${provider.name} shows no barcode`;
+    if (HARMONY_URLS[provider.id]) return `Send to Harmony\nLooks this ${provider.name} album up on Harmony, with every platform that has its barcode`;
+    return `Send to Harmony\nReads the barcode here first (Harmony can't look up ${provider.name}), then looks it up on Harmony`;
 }
 async function sendToHarmony() {
     if (busy || !current) return;
     const { provider, id } = current;
-    if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony: /, ''), { kind: 'warn' }); return; }
+    if (HARMONY_NONE.has(provider.id)) { mbuToast(harmonyWhy(provider).replace(/^Send to Harmony\n/, ''), { kind: 'warn' }); return; }
     const direct = HARMONY_URLS[provider.id];
     if (direct) {
         openHarmony(harmonyLookup({ url: direct(id) }));
@@ -3411,7 +3411,7 @@ function showCons(root, provider) {
     if (!b) return;
     b.hidden = !settings().consolidate || provider.consolidate === false;
     b.setAttribute('aria-label', 'Consolidate in Mission Control');
-    b.title = `Consolidate in Mission Control: read this ${provider.name} album, find it on the other platforms, and take the best of each into the release editor`;
+    b.dataset.tip = `Consolidate in Mission Control\nReads this ${provider.name} album, finds it on the other platforms, and takes the best of each into the release editor`;
 }
 async function consolidateCurrent() {
     if (busy || !current) return;
@@ -3695,7 +3695,7 @@ function mbMain() {
 /* ── shared blocks ───────────────────────────────────────────────────────── */
 
 // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
+const MBU_TOKENS = ':root{--mbu-bg:var(--background, #fff);--mbu-bg-raised:#faf9fe;--mbu-bg-raised:color-mix(in srgb, var(--mbu-bg) 96%, var(--mbu-accent));--mbu-bg-sunken:#f4f2f9;--mbu-bg-sunken:color-mix(in srgb, var(--mbu-bg) 94%, var(--mbu-text));--mbu-bg-hover:#f3eefe;--mbu-bg-hover:color-mix(in srgb, var(--mbu-bg) 91%, var(--mbu-accent));--mbu-text:var(--text, #222);--mbu-text-dim:#555;--mbu-text-dim:color-mix(in srgb, var(--mbu-text) 78%, var(--mbu-bg));--mbu-text-weak:#999;--mbu-text-weak:color-mix(in srgb, var(--mbu-text) 52%, var(--mbu-bg));--mbu-text-on-accent:#fff;--mbu-border:var(--border, #cfc6e6);--mbu-border-soft:#e2dcef;--mbu-border-strong:#9a8ccb;--mbu-border-strong:color-mix(in srgb, var(--mbu-border) 70%, var(--mbu-text));--mbu-divider:#eee;--mbu-divider:color-mix(in srgb, var(--mbu-bg) 92%, var(--mbu-text));--mbu-accent:#5f3ec0;--mbu-accent-hover:#4e329f;--mbu-accent-deep:#3b2c70;--mbu-accent-soft:#ece4ff;--mbu-accent-soft:color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent));--mbu-accent-fg:#fff;--mbu-accent-text:#5f3ec0;--mbu-accent-deep-text:#3b2c70;--mbu-ok:#1f9d6b;--mbu-ok:color-mix(in srgb, #1f9d6b 78%, var(--mbu-text));--mbu-ok-bg:#eef7f1;--mbu-ok-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-ok));--mbu-ok-border:#9bd3b6;--mbu-warn:#a05a00;--mbu-warn:color-mix(in srgb, #b4791f 78%, var(--mbu-text));--mbu-warn-bg:#fff7e6;--mbu-warn-bg:color-mix(in srgb, var(--mbu-bg) 88%, var(--mbu-warn));--mbu-warn-border:#f0c877;--mbu-error:#c0392b;--mbu-error:color-mix(in srgb, #d0473a 78%, var(--mbu-text));--mbu-error-bg:#fdecec;--mbu-error-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-error));--mbu-error-border:#e2a1a1;--mbu-info:#2f7fbf;--mbu-info:color-mix(in srgb, #3f8fd0 78%, var(--mbu-text));--mbu-info-bg:#eef4fb;--mbu-info-bg:color-mix(in srgb, var(--mbu-bg) 90%, var(--mbu-info));--mbu-info-border:#a9c8e6;--mbu-font:-apple-system,Segoe UI,Roboto,Arial,sans-serif;--mbu-font-mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;--mbu-fs:14px;--mbu-fs-sm:12px;--mbu-fs-xs:11px;--mbu-radius:6px;--mbu-radius-lg:10px;--mbu-shadow:0 1px 5px rgba(60,40,110,.07);--mbu-shadow-lg:0 8px 30px rgba(40,20,80,.3);--mbu-z-panel:30;--mbu-z-pop:99998;--mbu-z-modal:2147483000;--mbu-z-modal-panel:2147483001;--mbu-z-tip:2147483600}:root[data-mbu-theme="dark"]{--mbu-bg:#1e1b24;--mbu-text:#e9e5f2;--mbu-border:#3b3548;--mbu-accent-text:#b9a7f0;--mbu-accent-deep-text:#a493e0}:root[data-mbu-theme="dark"][data-mbu-seed="theme"]{--mbu-bg:var(--background, #1e1b24);--mbu-text:var(--text, #e9e5f2);--mbu-border:var(--border, #3b3548)}';
 // </ST-TOKENS>
 
 // <ST-UI> — generated by dev/ui/sync-ui.mjs from dev/ui/ui-components.mjs — DO NOT EDIT
@@ -3707,7 +3707,7 @@ function mbuHelpHref(name) {
 }
 function mbuHelpHtml(name, label) {
     return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-        + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+        + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
 }
 function mbuHelpEl(name, label) {
     var a = document.createElement('a');
@@ -3715,7 +3715,7 @@ function mbuHelpEl(name, label) {
     a.href = mbuHelpHref(name);
     a.target = '_blank';
     a.rel = 'noopener';
-    a.title = 'open the README in a new tab';
+    a.dataset.tip = 'Open the README in a new tab';
     a.textContent = label || '? Help';
     return a;
 }
@@ -3913,12 +3913,12 @@ function mbuCfgHeader(o) {
     var html = '<div class="mbu-cfg-h">';
     if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
     html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-    if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
     html += '<span class="mbu-cfg-sp"></span>';
     if (o.log) {
         html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
             + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-            + ' title="Open the activity log">Log</button>';
+            + ' data-tip="Open the activity log">Log</button>';
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
@@ -4270,18 +4270,18 @@ function mbuLog(o) {
         root.classList.add('mbu-logpop');
         root.dataset.mbuLv = vid;
         root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-            + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-            + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
-            + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-            + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-            + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+            + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+            + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
             + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
         if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
         var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
         var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -4434,14 +4434,14 @@ function mbuLog(o) {
         win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
         var minBtn = pop.querySelector('.mbu-logpop-min');
         var setMin = function (m) {
-            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
             if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
             else Object.assign(pop.style, restore);
         };
         var fullBtn = pop.querySelector('.mbu-logpop-full');
         var setFull = function (f) {
             pop.classList.toggle('full', f);
-            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
         };
         minBtn.onclick = function () {
             var m = pop.classList.toggle('min');
@@ -4869,7 +4869,402 @@ try {
     if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
     if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
     if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+    if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
+
+// Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+function mbuTipV() { return 6; }
+function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483600);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;background:none;color:var(--mbu-text-weak,#888);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}#mbu-tip .mbu-tip-on{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip .mbu-tip-dl.mbu-tip-on::after{content:\"◂\";margin-left:-2px;font-size:11px}#mbu-tip .mbu-tip-off{opacity:.45}#mbu-tip .mbu-tip-sym{letter-spacing:.2px}#mbu-tip .mbu-tip-mouse{display:block;flex:none}#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+function mbuTipEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+}
+function mbuTipLabel(line) {
+    var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+    if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+    return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+}
+function mbuTipIsKey(label) {
+    return /click|drag|wheel|scroll|hover|double|press|paste|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+}
+function mbuTipInline(s) {
+    return mbuTipEsc(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, function (m, k) { return mbuTipKbd(k); })
+        .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+}
+function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function mbuTipMod(k) { return { ctrl: 'Ctrl', alt: 'Alt', shift: '⇧', cmd: '⌘', meta: '⌘' }[String(k).toLowerCase()] || k; }
+function mbuTipKbd(combo) {
+    var parts = String(combo).split(/\s*\+\s*/);
+    var key = parts.pop();
+    return '<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">' + mbuTipEsc(combo) + '</span><span aria-hidden="true">'
+        + parts.concat('').map(mbuTipMod).join('+') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
+}
+function mbuTipKey(label) {
+    var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
+    if (!m) return /^(?:(?:ctrl|alt|shift|cmd|meta)\s*\+\s*)+\S/i.test(label) ? mbuTipKbd(label) : '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + '</span>';
+    var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];
+    var btn = (m[2] || '').toLowerCase(), act = m[3].toLowerCase();
+    var wheel = btn === 'middle' || act === 'wheel' || act === 'scroll';
+    var fill = wheel ? '' : btn === 'right' ? 'M6 1C8.8 1 11 3.2 11 6v1H6z' : 'M6 1C3.2 1 1 3.2 1 6v1h5z';
+    var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="10" height="13" aria-hidden="true">'
+        + (fill ? '<path d="' + fill + '" fill="currentColor"/>' : '')
+        + '<rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="currentColor" stroke-width="1.3"/>'
+        + '<path d="M1 7h10' + (wheel ? '' : 'M6 1v6') + '" stroke="currentColor" stroke-width="1.1"/>'
+        + (wheel ? '<rect x="5" y="2.6" width="2" height="3.4" rx="1" fill="currentColor"/>' : '')
+        + '</svg>';
+    var extra = btn === 'double' ? '×2' : act === 'drag' ? 'drag' : (act === 'wheel' || act === 'scroll') ? '↕' : '';
+    return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + '</span>'
+        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join('+') + '</kbd>' : '')
+        + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + '</span>' : '') + '</span>';
+}
+function mbuTipText(src) {
+    var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+    if (!raw) return '';
+    var lines = [];
+    // the shapes the old title texts took, read as the rows they mean:
+    //   "… — click to open it"              → "…" + "Click: open it"
+    //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+    //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+    raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+        .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+    raw.split('\n').forEach(function (line) {
+        line = line.replace(/\s+$/, '');
+        // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+        var parts = line.split(/\s+·\s+/), out = [parts[0]];
+        for (var i = 1; i < parts.length; i++) {
+            if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+        }
+        out.forEach(function (seg) {
+            if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+            var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+            bits.forEach(function (b) { lines.push(b); });
+        });
+    });
+    // blocks: lead / paragraph / rows / bullets
+    var blocks = [], rowRun = [];
+    var flushRows = function () {
+        if (!rowRun.length) return;
+        var keyed = rowRun.filter(function (r) { return r.key; }).length;
+        if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+        else blocks.push({ t: 'p', s: rowRun[0].line });
+        rowRun = [];
+    };
+    lines.forEach(function (line, n) {
+        if (!line.trim()) { flushRows(); return; }
+        var b = /^\s*[-•]\s+(.*)$/.exec(line);
+        if (b) {
+            flushRows();
+            var last = blocks[blocks.length - 1];
+            if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+            return;
+        }
+        // a level row, "{#2f6fd6} Exact: …": a dot in the colour before the label; "{#… on}" marks the
+        // chosen level, "{#… off}" dims one past it (a cutoff's table)
+        var lv = /^\{(#[0-9a-f]{3,8})(?: (on|off))?\}\s*(\S[\s\S]*)$/i.exec(line);
+        if (lv) {
+            var ll = mbuTipLabel(lv[3]) || { label: lv[3], text: '' };
+            rowRun.push({ label: ll.label, text: ll.text, dot: lv[1], st: lv[2] ? lv[2].toLowerCase() : '', line: line });
+            return;
+        }
+        var l = mbuTipLabel(line);
+        // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+        if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+        flushRows();
+        blocks.push({ t: 'p', s: line });
+    });
+    flushRows();
+    // one long paragraph: its first sentence becomes the lead
+    if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+        var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+        if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+    }
+    var lead = blocks.length > 1 && blocks[0].t === 'p';
+    var rowsHtml = function (bl) {
+        return bl.rows.map(function (r) {
+            if (r.dot) {
+                var c = r.st ? ' mbu-tip-' + r.st : '';
+                return '<span class="mbu-tip-dl' + c + '"><i style="background:' + r.dot + '"></i>' + mbuTipEsc(mbuTipCap(r.label)) + '</span>'
+                    + '<span class="mbu-tip-dt' + c + '">' + mbuTipInline(r.text) + '</span>';
+            }
+            return (r.key ? mbuTipKey(r.label) : '<span class="mbu-tip-o">' + mbuTipEsc(mbuTipCap(r.label)) + '</span>') + '<span>' + mbuTipInline(r.text) + '</span>';
+        }).join('');
+    };
+    var html = function (bl, i, span) {
+        var sp = span ? ' mbu-tip-span' : '';
+        if (bl.t === 'ul') return '<ul class="mbu-tip-ul' + sp + '">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+        if (bl.t === 'rows') return span ? rowsHtml(bl) : '<div class="mbu-tip-rows">' + rowsHtml(bl) + '</div>';
+        var warn = /^⚠/.test(bl.s);
+        return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + sp + '">' + mbuTipInline(bl.s) + '</div>';
+    };
+    // rows with a note between them stay one grid, the note under the row before it, so their labels line up
+    var first = -1, last = -1;
+    blocks.forEach(function (bl, i) { if (bl.t === 'rows') { if (first < 0) first = i; last = i; } });
+    var out = '';
+    for (var i = 0; i < blocks.length; i++) {
+        if (i === first && last > first) {
+            out += '<div class="mbu-tip-rows">';
+            for (; i <= last; i++) out += html(blocks[i], i, true);
+            out += '</div>';
+            i = last;
+        } else out += html(blocks[i], i, false);
+    }
+    return out;
+}
+function mbuTipCard(o) {
+    o = o || {};
+    var h = '';
+    if (o.head || o.title || o.aside) {
+        h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+            + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+    }
+    if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+    if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+    return h;
+}
+function mbuTipS() {
+    return mbuTipS.s || (mbuTipS.s = {
+        me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+        cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+    });
+}
+function mbuTip(el, content, opts) {
+    if (!el) return el;
+    var _mbuTip = mbuTipS();
+    mbuTipStart();
+    opts = opts || {};
+    if (typeof content === 'function') {
+        if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+        el.setAttribute('data-mbu-tip-own', '');
+        el.removeAttribute('title');
+        return el;
+    }
+    if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+    if (opts.place) el.setAttribute('data-tip-place', opts.place);
+    if (opts.wide) el.setAttribute('data-tip-wide', '');
+    el.removeAttribute('title');
+    if (_mbuTip.cur === el) mbuTipRender();
+    return el;
+}
+function mbuTipOn(selector, fn, opts) {
+    mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+    mbuTipStart();
+}
+function mbuTipShowFor(el, content, opts) {
+    if (!el || content == null || content === '') { mbuTipHide(true); return; }
+    mbuTipStart();
+    var o = opts || {};
+    var fn = typeof content === 'function' ? content : function () { return content; };
+    var S = mbuTipS();
+    if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+    mbuTipShow({ el: el, fn: fn, opts: o });
+}
+function mbuTipHtml(s) {
+    if (mbuTipHtml.tt === undefined) {
+        mbuTipHtml.tt = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings */ }
+    }
+    return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+}
+function mbuTipCss() {
+    var s = document.getElementById('mbu-tip-css');
+    if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+    if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+    s.setAttribute('data-v', String(mbuTipV()));
+    s.textContent = mbuTipCssText();
+}
+function mbuTipEl() {
+    var t = document.getElementById('mbu-tip');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'mbu-tip';
+        t.setAttribute('role', 'tooltip');
+        (document.body || document.documentElement).appendChild(t);
+    }
+    return t;
+}
+function mbuTipFind(node) {
+    var _mbuTip = mbuTipS();
+    var tip = document.getElementById('mbu-tip');
+    for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+        if (el === tip) return null;
+        var reg = _mbuTip.els && _mbuTip.els.get(el);
+        if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+        for (var i = 0; i < _mbuTip.prov.length; i++) {
+            var p = _mbuTip.prov[i];
+            try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+        }
+        if (!_mbuTip.lead) continue;
+        if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+        if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+        // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+        if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+            var root = null;
+            try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+            if (root) {
+                el.setAttribute('data-tip', el.getAttribute('title'));
+                el.removeAttribute('title');
+                return { el: el, opts: {} };
+            }
+        }
+    }
+    return null;
+}
+function mbuTipRender() {
+    var _mbuTip = mbuTipS();
+    var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+    if (!a) return false;
+    if (o.fn) {
+        try { c = o.fn(a); } catch (e) { c = null; }
+        if (c == null || c === '') return false;
+        if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+        else { t.textContent = ''; t.appendChild(c); }
+    } else {
+        var s = a.getAttribute('data-tip');
+        if (!s) return false;
+        var h = mbuTipText(s);
+        t.innerHTML = mbuTipHtml(h);
+        // an element with nothing to read of its own is named by its tip
+        if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+            a.setAttribute('aria-label', s.split('\n')[0]);
+        }
+    }
+    t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+    t.setAttribute('data-owner', _mbuTip.me);
+    mbuTipPlace(t, a, o.place);
+    return true;
+}
+function mbuTipPlace(t, a, place) {
+    var _mbuTip = mbuTipS();
+    var r = a.getBoundingClientRect();
+    if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+    t.style.left = '0px'; t.style.top = '0px';
+    var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+    var below = place !== 'above';
+    if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+    else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+    var top = below ? r.bottom + gap : r.top - gap - h;
+    // a wide element (a row, a long field): the arrow points where the pointer is
+    var cx = r.left + r.width / 2;
+    if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+    var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+    t.style.left = left + 'px';
+    t.style.top = Math.max(m, Math.round(top)) + 'px';
+    t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+    t.classList.toggle('mbu-tip-up', !below);
+}
+function mbuTipShow(found) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+    if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+    mbuTipCss();
+    _mbuTip.cur = found.el;
+    _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+    if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+    var t = mbuTipEl();
+    found.el.setAttribute('aria-describedby', 'mbu-tip');
+    // next frame, so the transition runs from the hidden state
+    requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+    // the element can go (a re-render) or change its text while the tip is up
+    clearInterval(_mbuTip.liveT);
+    _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+    try {
+        if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+        _mbuTip.obs.disconnect();
+        if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+    } catch (e) { /* no observer: the text is read again on the next hover */ }
+}
+function mbuTipHide(now) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+    _mbuTip.pend = null;
+    var hide = function () {
+        var a = _mbuTip.cur;
+        if (!a) return;
+        _mbuTip.cur = null;
+        clearInterval(_mbuTip.liveT);
+        try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+        if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+        var t = document.getElementById('mbu-tip');
+        if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+        _mbuTip.warm = Date.now();
+    };
+    if (now) hide();
+    else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+}
+function mbuTipStart() {
+    if (mbuTipStart.done || typeof document === 'undefined') return;
+    var _mbuTip = mbuTipS();
+    var root = document.documentElement;
+    if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+    mbuTipStart.done = true;
+    if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+    var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+    window.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+    window.addEventListener('mouseover', function (e) {
+        _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+        if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+        var f = mbuTipFind(e.target);
+        if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+        if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+        if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+        clearTimeout(_mbuTip.showT);
+        _mbuTip.pend = f;
+        var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+        _mbuTip.showT = setTimeout(function () {
+            _mbuTip.pend = null;
+            if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+        }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+    }, true);
+    window.addEventListener('mouseout', function (e) {
+        var to = e.relatedTarget;
+        var q = _mbuTip.quiet;
+        if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+        var p = _mbuTip.pend;
+        if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+        var a = _mbuTip.cur;
+        if (!a) return;
+        if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+        if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+    }, true);
+    window.addEventListener('mousedown', function (e) {
+        if (inTip(e.target)) return;
+        clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+        var f = mbuTipFind(e.target);
+        _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+        if (_mbuTip.cur) mbuTipHide(true);
+    }, true);
+    document.addEventListener('keydown', function (e) {
+        if (!_mbuTip.cur) return;
+        var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+        // typing closes a plain tip, as it does the browser's; modifiers alone don't
+        if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+        mbuTipHide(true);
+        if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+    }, true);
+    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+    window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+    document.addEventListener('focusin', function (e) {
+        var el = e.target, vis = false;
+        try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+        if (!vis) return;
+        var f = mbuTipFind(el);
+        if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+    }, true);
+    document.addEventListener('focusout', function (e) {
+        if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+    }, true);
+}
+mbuTipStart();
 // </ST-UI>
 
 // <ST-ARCHIVE> — generated by dev/archive/sync-archive.mjs from dev/archive/wayback.mjs — DO NOT EDIT
@@ -4971,7 +5366,7 @@ function mbaKeysHtml(off) {
     // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
     // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
     const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
-    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" data-tip="archive.org keys: optional, shared by First Contact and Apollo Editor\nWith them the save uses Save Page Now 2: higher limits, and a screenshot of the page, the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music).\nWithout them the save is anonymous.">`
         + `<div class="mbu-ia-h">archive.org keys <span class="mbu-ia-st">${mbaKeysState(k.iaKey, k.iaSecret)}</span> <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
         + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
         + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;

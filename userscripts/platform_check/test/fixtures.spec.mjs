@@ -34,7 +34,7 @@ FIXTURES.forEach((f, i) => {
       check(found.includes(e.discogsMaster), `the Discogs master: ${e.discogsMaster} (found "${found || r.master}")`);
     }
     if (e.headerYear) {
-      const year = await page.evaluate(() => document.getElementById('mb-mb-year')?.title);   // shown as '21, in full on hover
+      const year = await page.evaluate(() => document.getElementById('mb-mb-year')?.dataset.tip);   // shown as '21, in full on hover
       check(year === e.headerYear, `the header's year: ${e.headerYear} (shows "${year}")`);
     }
     if (i === 0) {

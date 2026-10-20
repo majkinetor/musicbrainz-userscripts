@@ -1,4 +1,6 @@
 // Shared UI components for every userscript in this repo. #563
+
+import { tipJs } from './tooltip.mjs';
 //
 // THIS FILE IS THE SINGLE PLACE THE STANDARD WIDGETS ARE DEFINED. Change one
 // here, run `node dev/ui/sync-ui.mjs` (the pre-commit hook does it for you), and
@@ -372,7 +374,7 @@ function mbuHelpHref(name) {
 }
 function mbuHelpHtml(name, label) {
     return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-        + ' title="open the README in a new tab">' + (label || '? Help') + '</a>';
+        + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
 }
 function mbuHelpEl(name, label) {
     var a = document.createElement('a');
@@ -380,7 +382,7 @@ function mbuHelpEl(name, label) {
     a.href = mbuHelpHref(name);
     a.target = '_blank';
     a.rel = 'noopener';
-    a.title = 'open the README in a new tab';
+    a.dataset.tip = 'Open the README in a new tab';
     a.textContent = label || '? Help';
     return a;
 }
@@ -578,12 +580,12 @@ function mbuCfgHeader(o) {
     var html = '<div class="mbu-cfg-h">';
     if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
     html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
-    if (o.version) html += '<span class="mbu-cfg-ver" title="installed script version">v' + esc(o.version) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
     html += '<span class="mbu-cfg-sp"></span>';
     if (o.log) {
         html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
             + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
-            + ' title="Open the activity log">Log</button>';
+            + ' data-tip="Open the activity log">Log</button>';
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
@@ -935,18 +937,18 @@ function mbuLog(o) {
         root.classList.add('mbu-logpop');
         root.dataset.mbuLv = vid;
         root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
-            + '<input class="mbu-log-q" type="search" placeholder="Filter" title="Show only the lines with this text" autocomplete="off">'
-            + (H ? '<select class="mbu-log-ses" title="The session shown: this one, or a past one kept in this browser"></select>' : '')
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\\nEsc: empty the box" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses" data-tip="The session shown\\nThis one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
-            + (H ? '<button class="mbu-logpop-hclear" type="button" title="Delete every past session (this one stays)">Clear history</button>' : '')
-            + '<label class="mbu-log-dbg" title="Record each step in detail. Leave it on when reporting a problem"><input type="checkbox"> debug</label>'
-            + '<button class="mbu-logpop-clear" type="button" title="Clear the log (the lines so far are gone)">Clear</button>'
-            + '<button class="mbu-logpop-copy" type="button" title="Copy as Markdown (paste into a GitHub issue)">⧉ Copy</button>'
-            + (floating ? '<button class="mbu-logpop-full" type="button" title="Full screen (or double-click the title bar)">⛶</button>'
-                + '<button class="mbu-logpop-min" type="button" title="Minimize">–</button>'
-                + '<button class="mbu-logpop-x" type="button" title="Close">✕</button>' : '') + '</div>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\\nThis one stays">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" data-tip="Record each step in detail\\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+            + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\\nThe lines so far are gone">Clear</button>'
+            + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\\nReady to paste into a GitHub issue">⧉ Copy</button>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\\nDouble-click: the title bar does the same">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
             + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
-            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" title="Resize"></div>' : ''));
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
         if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
         var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
         var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
@@ -1099,14 +1101,14 @@ function mbuLog(o) {
         win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
         var minBtn = pop.querySelector('.mbu-logpop-min');
         var setMin = function (m) {
-            minBtn.textContent = m ? '▢' : '–'; minBtn.title = m ? 'Restore' : 'Minimize';
+            minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
             if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
             else Object.assign(pop.style, restore);
         };
         var fullBtn = pop.querySelector('.mbu-logpop-full');
         var setFull = function (f) {
             pop.classList.toggle('full', f);
-            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.title = f ? 'Restore the size (or double-click the title bar)' : 'Full screen (or double-click the title bar)';
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\\nDouble-click: the title bar does the same';
         };
         minBtn.onclick = function () {
             var m = pop.classList.toggle('min');
@@ -1534,8 +1536,12 @@ try {
     if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
     if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
     if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+    if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
 } catch (e) { /* a locked-down page must not stop the script loading */ }
 `.trim();
 
+// The tooltip (dev/ui/tooltip.mjs) rides in every ST-UI block; Scribe and Bandcamp Player
+// Enhanced, off this block, carry it alone in an ST-TIP block.
+export const TIP_JS = tipJs(ROOTS);
 export const UI_CSS = CSS;
-export const UI_JS = JS;
+export const UI_JS = JS + '\n\n' + TIP_JS;

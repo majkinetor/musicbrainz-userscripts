@@ -13,7 +13,7 @@ test('a long release title ellipsizes instead of widening the page', { tag: ['@c
   await until(() => page.evaluate(() => document.querySelector('#tc-nav-title .tc-nav-title-album')?.textContent || ''), t => t.length > 100);
   const r = await page.evaluate(() => {
     const vw = document.documentElement.clientWidth, w = document.querySelector('fieldset.advanced-medium .medium-title.warning');
-    return { vw, sw: document.documentElement.scrollWidth, warn: w ? Math.round(w.getBoundingClientRect().right) : null, tip: document.querySelector('#tc-nav-title .tc-nav-title-album').title.length };
+    return { vw, sw: document.documentElement.scrollWidth, warn: w ? Math.round(w.getBoundingClientRect().right) : null, tip: document.querySelector('#tc-nav-title .tc-nav-title-album').dataset.tip.length };
   });
   check(r.sw <= r.vw, `the page stays the window's width (${r.sw} in ${r.vw})`);
   check(r.warn !== null && r.warn <= r.vw, `the medium-title warning is on screen (right edge ${r.warn})`);

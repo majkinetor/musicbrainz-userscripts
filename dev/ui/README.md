@@ -3,16 +3,18 @@
 The widgets every script shares (#563), the platform icon set (#404), and the
 live checks for both. Colours come from [`../tokens/`](../tokens/README.md).
 
-| File | What it is |
-|---|---|
-| `ui-components.mjs` | the components: help link, toast, config header, log window, overlay, dismissal, the scoped control defaults — **the only file you edit** |
-| `platform-icons.mjs` | the platform icon set (Spotify, Discogs, …) |
-| `sync-ui.mjs` | inlines the components into every `// <ST-UI>` carrier |
-| `sync-icons.mjs` | the same for `// <ST-ICONS>` |
-| `verify-ui-live.mjs` | drives each component in a real page and asserts the contract |
-| `verify-theme-live.mjs` | with a dark theme on, is any control in our windows still light? |
-| `verify-contrast-live.mjs` | is every label readable? (four theme modes, see below) |
-| `shoot-ui.mjs` | 46 numbered screenshots into `../screens/ui/`, light and dark |
+| File                       | What it is                                                                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ui-components.mjs`        | the components: help link, toast, config header, log window, overlay, dismissal, the scoped control defaults — **the file you edit**, with `tooltip.mjs` |
+| `tooltip.mjs`              | the tooltip, `mbuTip` ([below](#tooltips)): in every ST-UI block, and alone in an ST-TIP block                                                           |
+| `mbu-tip.spec.mjs`         | the tooltip's spec: the text form, hover, closing, the card, two copies on one page                                                                      |
+| `platform-icons.mjs`       | the platform icon set (Spotify, Discogs, …)                                                                                                              |
+| `sync-ui.mjs`              | inlines the components into every `// <ST-UI>` carrier                                                                                                   |
+| `sync-icons.mjs`           | the same for `// <ST-ICONS>`                                                                                                                             |
+| `verify-ui-live.mjs`       | drives each component in a real page and asserts the contract                                                                                            |
+| `verify-theme-live.mjs`    | with a dark theme on, is any control in our windows still light?                                                                                         |
+| `verify-contrast-live.mjs` | is every label readable? (four theme modes, see below)                                                                                                   |
+| `shoot-ui.mjs`             | 46 numbered screenshots into `../screens/ui/`, light and dark                                                                                            |
 
 ```bash
 node dev/ui/sync-ui.mjs             # the pre-commit hook runs this for you
@@ -36,17 +38,47 @@ Every viewer has a **debug** switch, remembered per script and off by default: o
 
 `mbuToast(msg, { action: { label, onClick } })` puts one button on a toast: it then takes clicks and stays up 12 s. A script uses it to ask for the log when something goes wrong in the wild, as Apollo does for #638.
 
+## Tooltips
+
+Every tooltip is `mbuTip` (#793), never the browser's `title` ([Standard 14](../../STANDARDS.md#standard-14)). It is in every ST-UI block; Scribe and Bandcamp Player Enhanced, off that block, carry it alone between `// <ST-TIP>` markers. It writes its own stylesheet, with a fallback for every token, so it needs no ST-TOKENS block.
+
+|                                                             |                                                                                                                                                                 |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-tip="…"`                                              | the tip of an element, as plain text; `mbuTip(el, 'text')` sets it from code                                                                                    |
+| `mbuTipOn(selector, el => html, opts)`                      | a rich tip for every element matching, now and after a re-render; `opts`: `interactive` (the pointer can go onto it), `card`, `wide`, `place: 'above'`, `delay` |
+| `mbuTip(el, el => html, opts)`                              | the same, for one element                                                                                                                                       |
+| `mbuTipCard({ head, title, aside, body, foot, footAside })` | a card's markup: a header band, a body, a quiet footer (Apollo's match card)                                                                                    |
+| `mbuTipShowFor(el, html)`                                   | show a tip at an element now, for a script that decides when (Group Therapy's credit count)                                                                     |
+| `mbuTipHide(true)`                                          | close it                                                                                                                                                        |
+| `mbuTipText(text)`                                          | the text form as HTML                                                                                                                                           |
+
+The text form reads structure out of plain text, so the strings stay readable in the source:
+
+- a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row. A mouse action is drawn: its modifiers as keys, then a mouse with its button filled in (×2 for a double click, `drag`, ↕ for the wheel). Any other key is its name; Shift and Cmd are drawn ⇧ and ⌘ there and in a bracketed shortcut (Ctrl and Alt stay words). A key is bold grey text; the mouse is small and grey, its pressed button in the accent, with the words kept for a screen reader. Rows with a note between them stay in one grid, so their labels line up, the note in the text column under the row before it;
+- a field that takes an MBID says so in a `Paste: an MBID, or its MusicBrainz URL, …` row;
+- a level row `{#2f6fd6} Exact: …` has a dot in that colour; `{#… on}` marks the chosen level and `{#… off}` dims one. A cutoff's tip is its levels' table: the chosen one marked, the ones it leaves out dimmed;
+- two or more lines `On: …`, `Off: …` (up to three words before the colon) are an option list;
+- ` · ` before such a label starts a new line, and so does `. ` between two of them;
+- the old shapes read the same way: `… — click to X` and a closing `(right-click: X)` become rows, `Ctrl-click` is `Ctrl+click`;
+- a line starting `- ` or `• ` is a bullet, one starting `⚠` a warning;
+- the first line is the lead when more follows, and a long paragraph's first sentence leads;
+- `` `code` ``, `**bold**`, and a shortcut in brackets, `(Ctrl+Alt+F)` or `(P)`, drawn as a key.
+
+It opens after 350 ms (at once while moving from one tip to the next), under the element or over it when there's no room, with its arrow at the element, or at the pointer on a wide one. A click, Esc, a scroll, typing or leaving closes it; an interactive one stays while the pointer is on it. Keyboard focus shows it too, and an element with nothing to read of its own (an icon, a ✕) gets the tip as its `aria-label`. It sits over everything, modals included (`--mbu-z-tip`).
+
+Several copies run on one page. The first to start serves `data-tip` for all (`data-mbu-tip` on `<html>`); each serves the rich tips its own script registered; they share the one `#mbu-tip` element and its stylesheet. A `title` left inside one of our windows (`ROOTS`, or `.mbu-ui`) is moved to `data-tip` on hover, before the browser shows it; an `<option>` keeps its own.
+
 ## The four theme worlds
 
 `verify-contrast-live.mjs` runs one of four, and they are not
 interchangeable — each caught bugs the others could not:
 
-| Flag | The world |
-|---|---|
-| *(none)* | a dark userstyle that sets `--background`/`--text` **and** paints the page |
-| `--novars` | a dark userstyle that paints the page and defines **no** variables |
-| `--light` | no userstyle at all |
-| `--userstyle` | kellnerd's real "Dark Side of MusicBrainz", fetched from his repo |
+| Flag          | The world                                                                  |
+| ------------- | -------------------------------------------------------------------------- |
+| *(none)*      | a dark userstyle that sets `--background`/`--text` **and** paints the page |
+| `--novars`    | a dark userstyle that paints the page and defines **no** variables         |
+| `--light`     | no userstyle at all                                                        |
+| `--userstyle` | kellnerd's real "Dark Side of MusicBrainz", fetched from his repo          |
 
 The last one exists because our own inventions were fair models of *a*
 userstyle and none was a model of the one people actually run. It inverts every

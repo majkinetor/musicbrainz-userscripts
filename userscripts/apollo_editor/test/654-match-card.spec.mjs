@@ -22,9 +22,9 @@ test('a badge opens its match card: stage, artist, the release that proves it, w
 
   const badge = page.locator('.tc-mirror .tc-badge.rg').first();
   check(await badge.count() > 0, 'the fixture has rg badges');
-  check(!(await badge.getAttribute('title')), 'no plain title to compete with the card');
+  check(!(await badge.getAttribute('title')) && !(await badge.getAttribute('data-tip')), 'no plain tip to compete with the card');
   await badge.hover();
-  const card = page.locator('#tc-mtip');
+  const card = page.locator('#mbu-tip.mbu-tip-on');
   await card.waitFor({ state: 'visible', timeout: 5000 });
   const txt = await card.textContent();
   check(/Release group/.test(txt) && /stage 2 · auto-linked/.test(txt), `the stage, and that Apollo linked it ("${txt.slice(0, 120)}")`);
@@ -38,7 +38,7 @@ test('a badge opens its match card: stage, artist, the release that proves it, w
   await page.waitForTimeout(500);
   check(await card.isVisible(), 'the card stays while the pointer is on it');
   await page.keyboard.press('Escape');
-  check(await page.locator('#tc-mtip').count() === 0, 'Esc closes it');
+  check(await page.locator('#mbu-tip.mbu-tip-on').count() === 0, 'Esc closes it');
 });
 
 // majkinetor: "I didn't select any other edition" — the pos evidence was a duplicate: a release with

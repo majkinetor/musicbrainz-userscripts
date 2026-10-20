@@ -70,7 +70,7 @@ test("#546: add progress", { tag: ['@sandbox', '@login'] }, async ({ context, pa
       busy: b.classList.contains('falcon-busy'),
       // a class nobody styled would be a lie — read what the spinner actually is
       spins: !!cs && cs.animationName === 'falcon-spin' && cs.borderTopColor !== cs.borderLeftColor,
-      title: b.title,
+      title: b.dataset.tip,
     };
   });
   const readLog = () => page.evaluate(() => window.__falconTest.getLog().map(l => (l.msg || l.message || String(l))));

@@ -35,13 +35,13 @@ test.describe('#621', () => {
     await page.locator('#tc-lppop .tc-lp-row').nth(2).locator('.tc-lp-add').click();
     const state = () => page.evaluate(() => {
       const p = document.getElementById('tc-lppop'), ok = p.querySelector('.tc-lp-ok');
-      return { vals: [...p.querySelectorAll('.tc-lp-val')].map(i => i.value), bad: p.querySelectorAll('.tc-lp-val.bad').length, disabled: ok.disabled, ok: ok.textContent, foot: p.querySelector('.tc-lp-cnt').textContent, badge: getComputedStyle(p.querySelector('.tc-lp-err')).display !== 'none', tip: (p.querySelectorAll('.tc-lp-val')[1] || {}).title || '' };
+      return { vals: [...p.querySelectorAll('.tc-lp-val')].map(i => i.value), bad: p.querySelectorAll('.tc-lp-val.bad').length, disabled: ok.disabled, ok: ok.textContent, foot: p.querySelector('.tc-lp-cnt').textContent, badge: getComputedStyle(p.querySelector('.tc-lp-err')).display !== 'none', tip: ((p.querySelectorAll('.tc-lp-val')[1] || {}).dataset || {}).tip || '' };
     });
     const s = await state();
     check(JSON.stringify(s.vals) === '["3:01","","3:03","","3:05"]', `rows: 3:01 · empty · 3:03 · empty · 3:05 (${JSON.stringify(s.vals)})`);
     check(s.bad === 0 && !s.badge, 'the empty rows are not invalid');
     check(!s.disabled && /Apply 3 to Medium 1/.test(s.ok), `Apply is on, counting what it writes (${s.ok})`);
-    check(/2 empty — left as is/.test(s.foot) && /keeps its current length/.test(s.tip), `and says so (${s.foot}; ${s.tip})`);
+    check(/2 empty — left as is/.test(s.foot) && /keeps its length/.test(s.tip), `and says so (${s.foot}; ${s.tip})`);
     const row2 = page.locator('#tc-lppop .tc-lp-val').nth(1);
     await row2.fill('9:99');
     const bad = await state();

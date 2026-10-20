@@ -11,7 +11,8 @@
 //      not resolving inside the highlight pseudo-element.
 //   2. the hover tooltip's second line was `color: var(--mbu-info)` on a fixed
 //      dark pill. In the light theme --mbu-info is a mid blue mixed toward dark
-//      text, so it sits on #1b2430 at barely any contrast.
+//      text, so it sits on #1b2430 at barely any contrast. The count is in the
+//      shared tooltip now (dev/ui/tooltip.mjs), so its rules are the ones measured.
 //
 // ::highlight() styling cannot be read back with getComputedStyle — it isn't on
 // any element — so this measures PIXELS: render the rule, screenshot, and
@@ -31,12 +32,9 @@ test('the hover highlight and tooltip text are readable in Chromium and Firefox'
 
   // the shipped rules, pulled out of the script so this guards what actually ships
   const hlRules = (code.match(/^\s*::highlight\(gt-hl-[a-z]+\)\{[^}]*\}/gm) || []).map(s => s.trim().replace(/^'|',?$/g, ''));
-  /* The .gt-tip rules sit in a template literal and the first one WRAPS across two
-     lines. Anchored at line start on purpose: an unanchored match also caught the
-     `.gt-tip` inside a JS selector STRING and swallowed code into the stylesheet,
-     which broke the rules after it — the tooltip was then measured against a plain
-     white page and reported a meaningless 18:1 "pass". */
-  const tipRules = (code.match(/^\s*\.gt-tip[\w .-]*\{[^}]*\}/gm) || []).map(x => x.trim());
+  // the shared tooltip's stylesheet, as the script's ST-UI block carries it
+  const tipCss = (() => { const m = code.match(/function mbuTipCssText\(\) \{ return ("(?:[^"\\]|\\.)*"); \}/); return m ? JSON.parse(m[1]) : ''; })();
+  check(!!tipCss, 'the shared tooltip\'s rules were found in the source');
   console.log('highlight rules found:\n  ' + hlRules.join('\n  '));
   check(hlRules.length === 2, `both ::highlight rules were found in the source (${hlRules.length})`);
   // The tokens the page would have, so a var() reference COULD resolve if the
@@ -54,10 +52,10 @@ test('the hover highlight and tooltip text are readable in Chromium and Firefox'
     #a b{color:#000}
     #a a{color:#1e5ecc;text-decoration:none}
     ${hlRules.join('\n  ')}
-    ${tipRules.join('\n  ')}
+    ${tipCss}
   </style>
   <div id="a"><b>guitar</b> <a href="#">Sky Saxon</a></div>
-  <div class="gt-tip" id="t" style="position:static;display:inline-block"><div class="gt-tip-name">Saxon, Sky</div><div class="gt-tip-stat">8x - track B5 - release</div></div>
+  <div id="mbu-tip" class="mbu-tip-on" style="position:static;display:inline-block;visibility:visible;opacity:1;transform:none"><div class="mbu-tip-lead">Saxon, Sky</div><div class="mbu-tip-p" id="stat">8x - track B5 - release</div></div>
   <script>
     const host = document.getElementById('a');
     const ranges = [];
@@ -122,7 +120,7 @@ test('the hover highlight and tooltip text are readable in Chromium and Firefox'
     const marks = {
       existing: readMark(await pixels(browser, await page.locator('#a b').screenshot())),
       new: readMark(await pixels(browser, await page.locator('#a a').screenshot())),
-      tip: readMark(await pixels(browser, await page.locator('#t .gt-tip-stat').screenshot())),
+      tip: readMark(await pixels(browser, await page.locator('#stat').screenshot())),
     };
     for (const [k, m] of Object.entries(marks)) {
       console.log(`  ${k.padEnd(9)} glyph rgb(${m.glyph}) (${(m.share * 100).toFixed(1)}% of box) on rgb(${m.bg}) → ${m.ratio.toFixed(2)}:1`);

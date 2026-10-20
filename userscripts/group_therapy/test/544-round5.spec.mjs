@@ -127,13 +127,13 @@ test('the text parser remembers maximized and the annotation button, and a creat
   await frames(page);
   const creating = await page.evaluate(() => {
     const els = [...document.querySelectorAll('.gt-tp-creating')];
-    return { n: els.length, tag: els[0] && els[0].tagName, text: els[0] && els[0].textContent.trim(), title: els[0] && els[0].title };
+    return { n: els.length, tag: els[0] && els[0].tagName, text: els[0] && els[0].textContent.trim(), title: els[0] && els[0].dataset.tip };
   });
   console.log('creating placeholders: ' + JSON.stringify(creating));
   check(creating.n === 2, 'both rows with that name show "creating…" (' + creating.n + ')');
   check(creating.tag === 'BUTTON', '#544.3: the placeholder is a button, not inert text');
   check(/✕/.test(creating.text || ''), 'it shows a ✕ affordance — ' + JSON.stringify(creating.text));
-  check(/click to stop waiting/i.test(creating.title || ''), 'and its tooltip says clicking cancels');
+  check(/Click: stop waiting/i.test(creating.title || ''), 'and its tooltip says clicking cancels');
   await attachShot(testInfo, page.locator('.gt-tp'), 'i544r5-creating-cancel');
 
   await page.evaluate(() => document.querySelector('.gt-tp-creating').click());

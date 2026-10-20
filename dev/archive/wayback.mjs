@@ -136,7 +136,7 @@ function mbaKeysHtml(off) {
     // no password-manager icon in the fields: they opt out by attribute (LastPass, 1Password,
     // Bitwarden, Dashlane), and the secret is a text field masked in CSS, since type=password draws every manager in
     const opt = 'autocomplete="off" data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other" spellcheck="false"';
-    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" title="Optional, and shared by First Contact and Apollo Editor. With your archive.org keys the save uses Save Page Now 2: higher limits, and a screenshot of the page, which is the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music). Without keys the save is anonymous.">`
+    return `<div class="mbu-ia${off ? ' mbu-ia-off' : ''}" data-tip="archive.org keys: optional, shared by First Contact and Apollo Editor\nWith them the save uses Save Page Now 2: higher limits, and a screenshot of the page, the evidence for platforms that build their pages in the browser (Spotify, Tidal, YouTube Music).\nWithout them the save is anonymous.">`
         + `<div class="mbu-ia-h">archive.org keys <span class="mbu-ia-st">${mbaKeysState(k.iaKey, k.iaSecret)}</span> <a href="https://archive.org/account/s3.php" target="_blank" rel="noopener">get them</a></div>`
         + `<input type="text" class="mbu-ia-key" placeholder="access key" ${opt} value="${q(k.iaKey)}">`
         + `<input type="text" class="mbu-ia-secret" placeholder="secret" ${opt} value="${q(k.iaSecret)}"></div>`;

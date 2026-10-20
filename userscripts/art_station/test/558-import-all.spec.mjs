@@ -39,7 +39,7 @@ test('"Import all" counts every source, reads on hover, and right-click runs it'
   check(registered, 'a custom provider is registered through the public API (#250)');
   await page.waitForFunction(() => /\(\d+\)/.test((document.querySelector('.as-src-n') || {}).textContent || ''), null, { timeout: 20000 }).catch(() => {});
 
-  const btn = await page.evaluate(() => { const b = document.querySelector('.as-src'); return { n: ((b.querySelector('.as-src-n') || {}).textContent || '').trim(), title: b.title }; });
+  const btn = await page.evaluate(() => { const b = document.querySelector('.as-src'); return { n: ((b.querySelector('.as-src-n') || {}).textContent || '').trim(), title: b.dataset.tip }; });
   const total = parseInt((btn.n.match(/\((\d+)\)/) || [])[1], 10);
   check(total >= 2, `the release offers several sources (${total}); otherwise "all" proves nothing`);
   check(/right-click/i.test(btn.title) && new RegExp(`import from all ${total}`, 'i').test(btn.title), `the tooltip names the right-click shortcut and the count (${JSON.stringify(btn.title)})`);

@@ -16,7 +16,7 @@ const ONLY_DEEZER = Object.fromEntries(['discogs', 'bandcamp', 'spotify', 'apple
 test.use({ gm: { name: 'Platform Check', values: { ...ONLY_DEEZER, 'pc:respect-format': false } } });
 
 const scans = page => page.evaluate(() => (window.__pcLog ? window.__pcLog.messages().filter(m => /All scans completed/.test(m)) : []).length);
-const button = page => page.evaluate(() => { const b = document.getElementById('mb-found-bc'); return { shown: getComputedStyle(b).display !== 'none', text: b.textContent.trim(), title: b.title }; });
+const button = page => page.evaluate(() => { const b = document.getElementById('mb-found-bc'); return { shown: getComputedStyle(b).display !== 'none', text: b.textContent.trim(), title: b.dataset.tip }; });
 
 // Deezer's search finds the album asked for, by the artist asked for, with nb_tracks tracks.
 // state.slow: the search answers late, with another album (2) of another barcode
@@ -146,7 +146,7 @@ test('↻ stops a scan running', { tag: ['@sandbox'] }, async ({ page, inject, c
   await page.click('#mb-refresh-btn');
   await until(() => state.asked, Boolean, { timeout: 30000 });
   await page.click('#mb-refresh-btn', { force: true });   // it spins: never "stable" for a plain click
-  const btn = await page.evaluate(() => { const b = document.getElementById('mb-refresh-btn'); return { spinning: b.classList.contains('pc-scanning'), title: b.title }; });
+  const btn = await page.evaluate(() => { const b = document.getElementById('mb-refresh-btn'); return { spinning: b.classList.contains('pc-scanning'), title: b.dataset.tip }; });
   check(!btn.spinning && /stopped/.test(btn.title), `stopped (${JSON.stringify(btn)})`);
   check(/Scan stopped/.test(await logText(page)), 'the log says so');
   await page.waitForTimeout(7000);

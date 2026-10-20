@@ -29,7 +29,7 @@ test('a dialog hides the pins unless it hosts a pinned field', { tag: '@unit' },
     document.body.appendChild(d);
   }, kind);
   const state = () => page.evaluate(() => {
-    const pin = [...document.querySelectorAll('.mmthf-pin')].find(p => /Credited as/i.test(p.title || ''));
+    const pin = [...document.querySelectorAll('.mmthf-pin')].find(p => /Credited as/i.test(p.dataset.tip || ''));
     const cf = document.querySelector('.dialog.popover .attribute-credit');
     return {
       blocking: document.documentElement.classList.contains('mmthf-dialog'),

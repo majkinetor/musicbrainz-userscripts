@@ -54,10 +54,10 @@ test('an automatic match credited under another name offers "+ alias"', { tag: [
   const B = await page.evaluate(() => {
     const tr = [...document.querySelectorAll('tr')].find(t => /The Rolling Tones/.test(t.textContent) && /St\. Maarten's The Rolling Tones/.test(t.textContent));
     const btn = tr && tr.querySelector('.discogs-add-alias');
-    return tr ? { alias: btn ? btn.textContent.trim() : null, title: btn ? btn.title.split('\n')[0] : '' } : null;
+    return tr ? { alias: btn ? btn.textContent.trim() : null, title: btn ? btn.dataset.tip.split('\n')[0] : '' } : null;
   });
   check(B && B.alias === '+ alias', `the automatically matched row offers "+ alias" (${B && (B.alias || 'no button')})`);
-  check(B && /Add "The Rolling Tones" as an alias of St\. Maarten's The Rolling Tones/.test(B.title), `…to add the credited name ("${B && B.title}")`);
+  check(B && /Add “The Rolling Tones” as an alias of St\. Maarten's The Rolling Tones/.test(B.title), `…to add the credited name ("${B && B.title}")`);
   check(posts.length === 0, `nothing was POSTed to MusicBrainz (${posts.length})`);
   await ws.done();
 });

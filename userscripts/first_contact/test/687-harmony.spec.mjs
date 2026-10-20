@@ -24,7 +24,7 @@ test('Send to Harmony: a platform Harmony knows goes by its album link', { tag: 
   await b.waitFor({ state: 'visible' });
   const order = await page.evaluate(() => [...document.querySelectorAll('#fc-root > button')].map(x => x.className));
   check(order.join() === 'fc-go,fc-cons,fc-harmony,fc-more', `between Import (and Consolidate, #702) and ⚙︎: ${order}`);
-  check(/^Send to Harmony: look this Deezer album up/.test(await b.getAttribute('title')), `the tooltip says what it does: ${await b.getAttribute('title')}`);
+  check(/^Send to Harmony\nLooks this Deezer album up/.test(await b.getAttribute('data-tip')), `the tooltip says what it does: ${await b.getAttribute('data-tip')}`);
   await b.click();
   const sent = await until(() => page.evaluate(() => window.__fcLastHarmony), v => !!v);
   check(sent === 'https://harmony.pulsewidth.org.uk/release?url=https%3A%2F%2Fwww.deezer.com%2Falbum%2F6575789&category=preferred', `the canonical album link, with Harmony's own settings: ${sent}`);
@@ -54,7 +54,7 @@ test('Send to Harmony: another platform goes by the barcode it reads first', { t
   await stub(page, 'https://volumo.com/album/12345-some-album');
   await inject('first_contact', { waitFor: '__fcTest' });
   const b = page.locator('#fc-root .fc-harmony');
-  check(/read the barcode here first \(Harmony can't look up Volumo\)/.test(await b.getAttribute('title')), `the tooltip says it reads first: ${await b.getAttribute('title')}`);
+  check(/Reads the barcode here first \(Harmony can't look up Volumo\)/.test(await b.getAttribute('data-tip')), `the tooltip says it reads first: ${await b.getAttribute('data-tip')}`);
   // the read itself is Volumo's (650-volumo-hdtracks-soundcloud); here it answers once released
   await page.evaluate(() => {
     const v = window.__fcTest.providers.find(p => p.id === 'volumo');
@@ -82,7 +82,7 @@ test('Send to Harmony: greyed out on YouTube Music; the setting hides it', { tag
   const b = page.locator('#fc-root .fc-harmony');
   await b.waitFor({ state: 'visible' });
   check(await b.getAttribute('aria-disabled') === 'true', 'greyed out');
-  check(/can't look up YouTube Music, and YouTube Music shows no barcode/.test(await b.getAttribute('title')), `the tooltip says why: ${await b.getAttribute('title')}`);
+  check(/can't look up YouTube Music, and YouTube Music shows no barcode/.test(await b.getAttribute('data-tip')), `the tooltip says why: ${await b.getAttribute('data-tip')}`);
   await b.click({ force: true });   // aria-disabled: Playwright won't click it otherwise
   const toast = await until(() => page.evaluate(() => (document.getElementById('mbu-toast') || {}).textContent || ''), t => /YouTube Music/.test(t));
   check(/can't look up YouTube Music/.test(toast), `a click says why: ${toast}`);
