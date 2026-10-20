@@ -38,7 +38,7 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 6;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 7;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
@@ -67,13 +67,13 @@ const CSS = [
     '#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}',
     '#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}',
     '#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}',
-    '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}',
+    '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}',
     '#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}',
     '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}',
     // a key is bold grey text, no box (majkinetor picked B of six mocks, then "make keys gray too")
     '#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;',
     'background:none;color:var(--mbu-text-weak,#888);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
-    '#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}',
+    '#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap}',
     '#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}',
     '#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}',
     '#mbu-tip .mbu-tip-on{color:var(--mbu-accent-text,#5f3ec0)}',
@@ -81,7 +81,9 @@ const CSS = [
     '#mbu-tip .mbu-tip-off{opacity:.45}',
     '#mbu-tip .mbu-tip-sym{letter-spacing:.2px}',
     // the mouse small and grey, only the pressed button in the accent (majkinetor: 6 of six mocks)
-    '#mbu-tip .mbu-tip-mouse{display:block;flex:none}',
+    '#mbu-tip .mbu-tip-mouse{display:block;flex:none;position:relative}',
+    // a mouse that leads its label gives the row its baseline (its bottom edge): down to sit on the line
+    '#mbu-tip .mbu-tip-sr+.mbu-tip-mouse{top:3px}',
     '#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}',
     '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}',
     '#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
@@ -113,7 +115,7 @@ function mbuTipEsc(s) {
 
 // a label before ': ' — at most three words, no sentence punctuation
 function mbuTipLabel(line) {
-    var m = /^([^\s:.,;!?()][^:.,;!?()]{0,30}?): (\S[\s\S]*)$/.exec(line);
+    var m = /^([^\s:.,;!?()][^:.,;!?()]{0,40}?): (\S[\s\S]*)$/.exec(line);
     if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
     return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
 }
@@ -133,6 +135,9 @@ function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 // button it takes filled in (×2 for a double click) — with the words kept for a screen reader;
 // any other label (Esc, Ctrl+V, Hover) is a key chip with its text.
 function mbuTipKey(label) {
+    // two ways to do the same, "Middle-click / Alt+click": each drawn, a grey slash between
+    var alts = String(label).split(/\s+\/\s+/);
+    if (alts.length > 1) return '<span class="mbu-tip-kk">' + alts.map(mbuTipKey).join('<span class="mbu-tip-kx">/</span>') + '</span>';
     var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
     if (!m) return /^(?:(?:ctrl|alt|shift|cmd|meta)\s*\+\s*)+\S/i.test(label) ? mbuTipKbd(label) : '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + '</span>';
     var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];

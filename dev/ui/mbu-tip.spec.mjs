@@ -74,6 +74,9 @@ test('a page that stops mouseover at the window still gets its tip; a lone key l
   check(/aria-hidden="true">Ctrl\+⇧<\/kbd><svg/.test(k('Ctrl+Shift+click')), 'Ctrl+Shift+click: Ctrl+⇧ and the mouse');
   check(/rx="1" fill/.test(k('Middle-click')) && !/<path d="M6 1C/.test(k('Middle-click')), 'Middle-click: the wheel');
   check(/mbu-tip-k">Esc</.test(k('Esc')) && !/svg/.test(k('Esc')), 'Esc stays a key chip');
+  // majkinetor, on Platform Check's "Middle/Alt+click" (with a screenshot): "doesn't look good"
+  const alt = k('Ctrl+middle-click / Ctrl+Alt+click');
+  check((alt.match(/class="mbu-tip-mouse"/g) || []).length === 2 && /mbu-tip-kx">\/</.test(alt) && !/: x</.test(alt), `two ways to do it: both drawn, a slash between (${alt})`);
   // rows with a note between them are one grid, the note across it (majkinetor: "not aligned properly")
   const split = mbuTipText('Apollo is on\nClick: show MusicBrainz’s own\nOn every tab, until you switch back.\nRight-click: settings');
   check((split.match(/class="mbu-tip-rows"/g) || []).length === 1 && /mbu-tip-p mbu-tip-span">On every tab/.test(split), `one grid, the note in the text column (${split})`);
