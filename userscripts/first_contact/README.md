@@ -22,7 +22,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 
 ## Import
 
-On a platform's album page, click **Import to MusicBrainz** in the bottom-right corner. Once the release is read (the button counts the tracks), a new tab opens with MusicBrainz's release editor, filled in:
+On a platform's album page, click **Import to MusicBrainz**: once the release is read, the release editor opens in a new tab, filled in:
 
 | Field                | From                                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------------------- |
@@ -57,15 +57,15 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 
 ## Consolidate
 
-The button beside **Import to MusicBrainz**, with [Mission Control](../mission_control/README.md)'s icon, reads the album as Import does, then opens MusicBrainz's release editor in a new tab with Mission Control over it. Mission Control finds the album on the other platforms, First Contact reads each of them there, and you take the best title, date, label, tracklist and ISRCs of all of them into the editor. See [Consolidate a new release](../mission_control/README.md#consolidate-a-new-release).
+The button with [Mission Control](../mission_control/README.md)'s icon opens the release editor with Mission Control over it, which finds the album on the other platforms so you can take the best title, date, label, tracklist and ISRCs of all of them ([Consolidate a new release](../mission_control/README.md#consolidate-a-new-release)).
 
-Mission Control has to be installed, and Platform Check too, to find the other platforms; [String Theory](../string_theory/README.md) has them all. Turn the button off in [Settings](#settings). Presto Music has no Consolidate button: Mission Control doesn't compare it.
+It needs Mission Control and Platform Check, both in [String Theory](../string_theory/README.md). Presto Music has no Consolidate button: Mission Control doesn't compare it.
 
 First Contact reads the platforms for Mission Control on a release MusicBrainz already has too, when Mission Control [compares it with the platforms](../mission_control/README.md#compare-with-the-platforms).
 
 ## Send to Harmony
 
-The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon, opens the album in Harmony's release lookup in a new tab instead. Harmony then finds the album by its barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings), in the region set there, and [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony has none, so it looks an album link up on its own platform only, and a barcode on none.
+The button with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon opens the album in Harmony's lookup instead, which finds it by barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings); [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony looks an album link up only on its own platform, and a barcode nowhere.
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
@@ -73,9 +73,7 @@ The button before **⚙︎**, with [Harmony](https://harmony.pulsewidth.org.uk/)
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
-Harmony can't read the platforms in the last two rows. For the middle row, First Contact reads the album first, as for an import, and sends its barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing, and a message says why. YouTube Music and Amazon Music show no barcode either, so there is nothing to send.
-
-Turn the button off in [Settings](#settings).
+Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
 
 ## Platforms
 
@@ -114,7 +112,7 @@ Pages: `<name>.bandcamp.com/album/<slug>`
 - A compilation's *Artist - Title* track titles are split into artist and title.
 - The album link gets both *purchase for download* and, when it streams, *stream for free*.
 - Only the artist the page belongs to has a Bandcamp link to hand off.
-- An album that isn't out yet hides the lengths of its unreleased tracks. First Contact takes them from Bandcamp's app data, with a warning and a line in the edit note: they can still change before the release.
+- An album that isn't out yet hides its unreleased tracks' lengths; First Contact takes them anyway, with a warning and a line in the edit note, as they can still change.
 
 ### Discogs
 
@@ -136,7 +134,7 @@ Pages: `music.apple.com/<country>/album/…`
 - *- Single* / *- EP* at the end of the title is the type, not part of the title.
 - Music videos are left out.
 - The link gets *streaming page* and, when the iTunes Store sells the album, *purchase for download*.
-- An album can list tracks Apple doesn't offer. Apple leaves them out of the album data and numbers the others around them, so 1.8 is followed by 1.10. When that happens, First Contact names the missing tracks and asks before it opens the editor. If you choose *Import anyway*, each missing track is an empty track at its own position, so the others keep their numbers. Give each empty track its title, or remove it. The edit note lists them.
+- An album can list tracks Apple doesn't offer, so 1.8 is followed by 1.10. First Contact names them and asks first; *Import anyway* adds each as an empty track at its position, for you to title or remove, and the edit note lists them.
 
 ### Tidal
 
@@ -257,22 +255,20 @@ Pages: `prestomusic.com/classical/products/<id>`, `prestomusic.com/jazz/products
 
 ## Artist matching
 
-First Contact doesn't pick MusicBrainz artists or labels itself. It hands every credited artist's platform link (the release's and each track's) to [Apollo Editor](../apollo_editor/README.md#artist-matching) on the release editor page, and Apollo matches them, the platform link first. Keep Apollo's *Auto-match on start: Label, Artist* on (the default), or click its **Match** button yourself.
-
-When the artist exists but lacks the platform link, Apollo offers to add it, so the next import of that artist matches at once; when it doesn't exist, Apollo offers to create it with the link. Other scripts can read the same [handoff](#handoff).
+First Contact hands every credited artist's platform link, the release's and each track's, to [Apollo Editor](../apollo_editor/README.md#artist-matching), which matches them, the link first: on start with *Auto-match on start: Label, Artist* (the default), or with its **Match**. Apollo offers to add the link to an artist that lacks it, or to create the artist with it. Other scripts can read the same [handoff](#handoff).
 
 ## Archive
 
-On every import, First Contact asks the Internet Archive's Wayback Machine to save the album page, so anyone can later check what the platform showed, even after the page changes or is gone. The edit note doesn't mention it; the [Wayback Machine](https://web.archive.org/) finds the snapshot by the page's address.
+On every import, First Contact has the Internet Archive's [Wayback Machine](https://web.archive.org/) save the album page, so anyone can later check what it showed; the snapshot is found by the page's address.
 
-- The import never waits for the save, which takes from a few seconds to a minute; the [log](#settings) says when it's done or why it failed.
+- The import doesn't wait for the save; the [log](#settings) says how it went.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too.
-- Discogs refuses the Internet Archive, so its page can't be saved, nor a screenshot of it. For Discogs, the release's data from Discogs' API is saved instead.
+- Discogs refuses the Internet Archive, so its release data is saved instead.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page.
 
 ### archive.org keys
 
-Without keys the save is anonymous. The Internet Archive limits how many anonymous saves one connection may make, so after many imports in a row some are refused (the log says so). With your own keys:
+Anonymous saves are limited per connection, so after many imports some are refused. With your own keys:
 
 - the limit is much higher;
 - each save also takes a screenshot of the page;
@@ -280,20 +276,18 @@ Without keys the save is anonymous. The Internet Archive limits how many anonymo
 
 To get them, make a free account on [archive.org](https://archive.org), log in, and open [archive.org/account/s3.php](https://archive.org/account/s3.php). Copy the *access key* and the *secret* into **⚙︎ → archive.org keys**.
 
-[Apollo Editor](../apollo_editor/README.md#archive) uses the same keys to archive a release's links. In [String Theory](../string_theory/README.md), keys set in one show in the other.
+[Apollo Editor](../apollo_editor/README.md#archive) archives a release's links with the same keys, shared in [String Theory](../string_theory/README.md).
 
 > [!NOTE]
 > Archiving sends the address of every album you import to archive.org, and with keys, under your account. Turn **Archive the album page on the Internet Archive** off in [Settings](#settings) if you don't want that.
 
 ## Moving the button
 
-Drag **Import to MusicBrainz** (or any of its buttons) to wherever it is out of the way. Each platform remembers its own place. **⚙︎ → Reset:** **this one** puts it back in the bottom-right corner on that platform and stops it scrolling with the page; **all** does so on every platform.
-
-By default the button stays put on the screen. With **Moved button scrolls with the page on** *platform* on (see [Settings](#settings)), a moved button stays on its spot on that platform's page instead, above the cover, say, and scrolls with it. Each platform has its own, so the button can scroll with the page on Bandcamp and stay on the screen on Spotify.
+Drag the buttons anywhere; each platform remembers its place, and **⚙︎ → Reset** puts them back. They stay put on the screen, or, with *Moved button scrolls with the page on* platform, scroll with that platform's page.
 
 ## Settings
 
-The **⚙︎** button next to **Import to MusicBrainz** opens them, in three sections, as does a right-click on any of the buttons.
+**⚙︎**, or a right-click on any of the buttons.
 
 ### Import
 
