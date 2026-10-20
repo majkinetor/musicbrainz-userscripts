@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.143200
+// @version      2026.10.20.223959
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -3532,7 +3532,7 @@ function ccStyle() {
         + '.mcc-ver .r{grid-row:1;width:11px;height:11px;border:1px solid var(--mbu-border-strong);border-radius:50%;margin-top:3px}.mcc-ver.on .r{background:var(--mbu-accent);border-color:var(--mbu-accent);box-shadow:inset 0 0 0 2px var(--mbu-bg)}'
         + '.mcc-ver .t{font-weight:600;word-break:break-word}.mcc-ver .n{color:var(--mbu-text-weak);white-space:nowrap;text-align:right}'
         + '.mcc-ver .m{grid-column:2/4;display:flex;align-items:center;gap:8px;color:var(--mbu-text-dim);min-width:0}.mcc-ver .m .mono{white-space:nowrap}.mcc-ver .i{margin-left:auto;display:flex;justify-content:flex-end;min-width:0}.mcc-ver .i .mcc-icos{flex-wrap:wrap;justify-content:flex-end}'
-        + '.mcc-ver .hl{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:3px;padding:0 2px}.mcc-ver .hl.gap{display:inline-block;width:6px;height:1em;vertical-align:-2px;padding:0;border:1px dashed var(--mbu-warn-border)}'
+        + '.mcc-ver .hl{background:var(--mbu-warn-bg);color:var(--mbu-warn);border-radius:3px;padding:0 2px}.mcc-tbl .hl.in,.mcc-ver .hl.in{padding:0;border-radius:2px}.mcc-ver .hl.gap{display:inline-block;width:6px;height:1em;vertical-align:-2px;padding:0;border:1px dashed var(--mbu-warn-border)}'
         + '.mcc-insp p{font-size:12px;color:var(--mbu-text-dim);margin:0 0 12px}.mcc-tick{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin:0 0 6px;cursor:pointer}.mcc-tick input{margin:2px 0 0}'
         + '.mcc-split{position:relative;display:inline-flex}.mcc-split>.mcc-btn:first-child{border-top-right-radius:0;border-bottom-right-radius:0}'
         + '.mcc-split>.mcc-more{border-top-left-radius:0;border-bottom-left-radius:0;border-left:1px solid var(--mbu-accent-hover);padding:6px 10px;min-width:32px;justify-content:center}'
@@ -3739,7 +3739,7 @@ function ccTitleDiff(a, b) {
     let p = 0; while (p < a.length && p < b.length && a[p] === b[p]) p++;
     let q = 0; while (q < a.length - p && q < b.length - p && a[a.length - 1 - q] === b[b.length - 1 - q]) q++;
     const mid = a.slice(p, a.length - q);
-    return esc(a.slice(0, p)) + (mid ? '<span class="hl">' + esc(mid) + '</span>' : '<span class="hl gap" data-tip="Missing here: ' + esc(b.slice(p, b.length - q)) + '"></span>') + esc(a.slice(a.length - q));
+    return esc(a.slice(0, p)) + (mid ? '<span class="hl in">' + esc(mid) + '</span>' : '<span class="hl gap" data-tip="Missing here: ' + esc(b.slice(p, b.length - q)) + '"></span>') + esc(a.slice(a.length - q));
 }
 function ccDiff(v, w) {
     const out = [];
