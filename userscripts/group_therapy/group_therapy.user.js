@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.20.232454
+// @version      2026.10.20.234121
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2779,8 +2779,9 @@
     // bare: "(2,6,9)" · "(A1, B2)" · "(1-3)"
     const reBare = /[([]\s*([^)\]]+?)\s*[)\]]/g;
     // A name can end in a bare number that isn't a track — Discogs numbers its
-    // namesakes "John Smith (2)" — so text read from the ENTITY takes only the
-    // clauses that say "track".
+    // namesakes "John Smith (2)" — so explicitOnly takes only the clauses that say
+    // "track". Copy reads a credited-as name with it; the text parser doesn't, since
+    // majkinetor wants "Jerry Ross (1)" read as track 1 and a namesake fixed by hand.
     if (!explicitOnly) while ((m = reBare.exec(s))) { if (!covered(m.index)) cands.push({ start: m.index, end: m.index + m[0].length, inner: m[1], explicit: false }); }
 
     const norm = t => String(t).replace(/\band\b/gi, ',').replace(/[&;]/g, ',')
@@ -5285,7 +5286,7 @@
       const attachTracks = (rec) => {
         if (!trackRows) return rec;
         let field = 'role', det = rec.role ? txpDetectTracks(rec.role, trackRows) : null;
-        if (!det && rec.entity) { field = 'entity'; det = txpDetectTracks(rec.entity, trackRows, true); }
+        if (!det && rec.entity) { field = 'entity'; det = txpDetectTracks(rec.entity, trackRows); }
         if (!det) return rec;
         if (det.ambiguous) { rec.trackNote = `${det.ambiguous} track lists — split the line`; return rec; }
         if (det.clean) rec[field] = det.clean;

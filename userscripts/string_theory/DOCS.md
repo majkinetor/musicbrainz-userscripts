@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 23:34 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 23:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1474,16 +1474,9 @@ A bracket after `R` or `E` splits it into rows: `[,]` on commas, `[&]` on " & ",
 
 `{{}}` alone on a line ends a block. `{{…}}` can sit anywhere in a line and is cut out of its text, so credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them. **🔒 Freeze matched** pins the top pattern on the lines it matches, like in Apollo, and leaves lines with their own pattern alone.
 
-**Tracks**: with **Tracks: auto** (the default), a clause naming tracks sends that row to those tracks; every other row follows Scope. Write the numbers without commas, so `[,]` leaves the list whole:
+**Tracks**: with **Tracks: auto** (the default), a clause after the role or the name, like `(1)`, `(A1 B2)`, `(tracks 2 6 9)`, `[tracks 1-3]` or `on tracks 2 and 6`, sends that row to those tracks; every other row follows Scope. Write the numbers without commas, so `[,]` leaves the list whole: `Lyricist: Mimmo Epifani (tracks 1-3 5-11)`.
 
-| Clause              | After      |
-| ------------------- | ---------- |
-| `(tracks 2 6 9)`    | role, name |
-| `[tracks 1-3]`      | role, name |
-| `on tracks 2 and 6` | role, name |
-| `(A1 B2)`           | role       |
-
-`Lyricist: Mimmo Epifani (tracks 1-3 5-11)` credits tracks 1–3 and 5–11. After a name the clause must say *tracks*. It counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
+A clause counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
 
 #### Track selector
 
