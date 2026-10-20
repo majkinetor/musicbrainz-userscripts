@@ -69,7 +69,7 @@ test('a page that stops mouseover at the window still gets its tip; a lone key l
   check(/mbu-tip-k">Esc</.test(k('Esc')) && !/svg/.test(k('Esc')), 'Esc stays a key chip');
   // rows with a note between them are one grid, the note across it (majkinetor: "not aligned properly")
   const split = mbuTipText('Apollo is on\nClick: show MusicBrainz’s own\nOn every tab, until you switch back.\nRight-click: settings');
-  check((split.match(/class="mbu-tip-rows"/g) || []).length === 1 && /mbu-tip-p mbu-tip-span">On every tab/.test(split), `one grid, the note spanning it (${split})`);
+  check((split.match(/class="mbu-tip-rows"/g) || []).length === 1 && /mbu-tip-p mbu-tip-span">On every tab/.test(split), `one grid, the note in the text column (${split})`);
   await page.evaluate(() => window.addEventListener('mouseover', e => e.stopPropagation(), true));
   await page.hover('#plain');
   check(/Copy the log/.test(await until(() => shown(page), h => !!h)), 'the tip shows');

@@ -67,7 +67,7 @@ const CSS = [
     '#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}',
     '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}',
     '#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}',
-    '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:1/-1;justify-self:stretch}',
+    '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}',
     '#mbu-tip .mbu-tip-k{display:inline-block;padding:0 5px;border:1px solid var(--mbu-border,#cfc6e6);border-bottom-width:2px;border-radius:4px;',
     'background:var(--mbu-bg-raised,#faf9fe);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
     '#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}',
@@ -209,7 +209,7 @@ function mbuTipText(src) {
         var warn = /^⚠/.test(bl.s);
         return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + sp + '">' + mbuTipInline(bl.s) + '</div>';
     };
-    // rows with a note between them stay one grid, the note across it, so their labels line up
+    // rows with a note between them stay one grid, the note under the row before it, so their labels line up
     var first = -1, last = -1;
     blocks.forEach(function (bl, i) { if (bl.t === 'rows') { if (first < 0) first = i; last = i; } });
     var out = '';
