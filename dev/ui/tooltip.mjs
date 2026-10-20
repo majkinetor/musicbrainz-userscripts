@@ -12,7 +12,8 @@
 //
 // The text form (mbuTipText) is plain text with a little structure read out of it, so the
 // strings stay readable in the source:
-//   · a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row, the key in a chip
+//   · a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row: a mouse action drawn as
+//     its modifier keys and a mouse with its button filled in, any other key as a chip
 //   · two or more lines `On: …` / `Off: …` (≤ 3 words before the colon) are an option list
 //   · ` · ` before such a label, or `. ` between two of them, starts a new line
 //   · a line starting `- ` or `• ` is a bullet, one starting `⚠` a warning
@@ -35,7 +36,7 @@
 // Written as real functions and emitted with Function.prototype.toString, so this file is
 // linted and parsed like any other; no template literals, no imports, no ES2020+ syntax inside.
 
-const V = 1;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
+const V = 2;   // bump when the CSS changes: a newer copy replaces an older copy's <style>
 
 // Every var() has its fallback: Scribe and Bandcamp Player Enhanced carry no tokens, and with
 // no other script on the page there is no :root block to read from.
@@ -64,10 +65,15 @@ const CSS = [
     '#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}',
     '#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}',
     '#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}',
-    '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:baseline;color:var(--mbu-text-dim,#555)}',
+    '#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;color:var(--mbu-text-dim,#555)}',
     '#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}',
+    '#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:1/-1;justify-self:stretch}',
     '#mbu-tip .mbu-tip-k{display:inline-block;padding:0 5px;border:1px solid var(--mbu-border,#cfc6e6);border-bottom-width:2px;border-radius:4px;',
     'background:var(--mbu-bg-raised,#faf9fe);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
+    '#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap;align-self:center}',
+    '#mbu-tip .mbu-tip-mouse{display:block;flex:none}',
+    '#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif)}',
+    '#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);',
     'color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}',
     '#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}',
@@ -111,6 +117,28 @@ function mbuTipInline(s) {
         .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
 }
 function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// A key row's label: a mouse action is drawn — its modifiers as keys, then a mouse with the
+// button it takes filled in (×2 for a double click) — with the words kept for a screen reader;
+// any other label (Esc, Ctrl+V, Hover) is a key chip with its text.
+function mbuTipKey(label) {
+    var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
+    if (!m) return '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + '</span>';
+    var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];
+    var btn = (m[2] || '').toLowerCase(), act = m[3].toLowerCase();
+    var wheel = btn === 'middle' || act === 'wheel' || act === 'scroll';
+    var fill = wheel ? '' : btn === 'right' ? 'M6 1C8.8 1 11 3.2 11 6v1H6z' : 'M6 1C3.2 1 1 3.2 1 6v1h5z';
+    var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="14" height="19" aria-hidden="true">'
+        + (fill ? '<path d="' + fill + '" fill="currentColor"/>' : '')
+        + '<rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="currentColor" stroke-width="1.3"/>'
+        + '<path d="M1 7h10' + (wheel ? '' : 'M6 1v6') + '" stroke="currentColor" stroke-width="1.1"/>'
+        + (wheel ? '<rect x="5" y="2.6" width="2" height="3.4" rx="1" fill="currentColor"/>' : '')
+        + '</svg>';
+    var extra = btn === 'double' ? '×2' : act === 'drag' ? 'drag' : (act === 'wheel' || act === 'scroll') ? '↕' : '';
+    return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + '</span>'
+        + mods.map(function (k) { k = k.toLowerCase(); return '<kbd class="mbu-tip-k">' + (k === 'cmd' || k === 'meta' ? '⌘' : mbuTipCap(k)) + '</kbd>'; }).join('')
+        + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + '</span>' : '') + '</span>';
+}
 
 // Plain text → the tooltip's HTML (see the header for what is read out of it).
 function mbuTipText(src) {
@@ -169,16 +197,31 @@ function mbuTipText(src) {
         if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
     }
     var lead = blocks.length > 1 && blocks[0].t === 'p';
-    return blocks.map(function (bl, i) {
-        if (bl.t === 'ul') return '<ul class="mbu-tip-ul">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
-        if (bl.t === 'rows') {
-            return '<div class="mbu-tip-rows">' + bl.rows.map(function (r) {
-                return '<span class="' + (r.key ? 'mbu-tip-k' : 'mbu-tip-o') + '">' + mbuTipEsc(mbuTipCap(r.label)) + '</span><span>' + mbuTipInline(r.text) + '</span>';
-            }).join('') + '</div>';
-        }
+    var rowsHtml = function (bl) {
+        return bl.rows.map(function (r) {
+            return (r.key ? mbuTipKey(r.label) : '<span class="mbu-tip-o">' + mbuTipEsc(mbuTipCap(r.label)) + '</span>') + '<span>' + mbuTipInline(r.text) + '</span>';
+        }).join('');
+    };
+    var html = function (bl, i, span) {
+        var sp = span ? ' mbu-tip-span' : '';
+        if (bl.t === 'ul') return '<ul class="mbu-tip-ul' + sp + '">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+        if (bl.t === 'rows') return span ? rowsHtml(bl) : '<div class="mbu-tip-rows">' + rowsHtml(bl) + '</div>';
         var warn = /^⚠/.test(bl.s);
-        return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + '">' + mbuTipInline(bl.s) + '</div>';
-    }).join('');
+        return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + sp + '">' + mbuTipInline(bl.s) + '</div>';
+    };
+    // rows with a note between them stay one grid, the note across it, so their labels line up
+    var first = -1, last = -1;
+    blocks.forEach(function (bl, i) { if (bl.t === 'rows') { if (first < 0) first = i; last = i; } });
+    var out = '';
+    for (var i = 0; i < blocks.length; i++) {
+        if (i === first && last > first) {
+            out += '<div class="mbu-tip-rows">';
+            for (; i <= last; i++) out += html(blocks[i], i, true);
+            out += '</div>';
+            i = last;
+        } else out += html(blocks[i], i, false);
+    }
+    return out;
 }
 
 // A card's markup: head (HTML: a badge, an icon) · title · aside / body (HTML) / foot · footAside.
@@ -462,7 +505,7 @@ function mbuTipV() { return V; }
 function mbuTipCssText() { return CSS; }
 function mbuTipRoots() { return '.mbu-ui'; }
 
-const RUNTIME = [mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipText, mbuTipCard, mbuTipS,
+const RUNTIME = [mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS,
     mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart];
 
 /** The tooltip's JS, for the ST-UI and ST-TIP blocks. `roots`: our containers (ui-components' ROOTS). */

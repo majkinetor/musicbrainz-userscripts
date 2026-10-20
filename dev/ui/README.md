@@ -54,7 +54,7 @@ Every tooltip is `mbuTip` (#793), never the browser's `title` ([Standard 14](../
 
 The text form reads structure out of plain text, so the strings stay readable in the source:
 
-- a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row, the key in a chip;
+- a line `Right-click: …`, `Ctrl+click: …`, `Esc: …` is a key row. A mouse action is drawn: its modifiers as keys, then a mouse with its button filled in (×2 for a double click, `drag`, ↕ for the wheel). Any other key is a chip with its name. Rows with a note between them stay in one grid, so their labels line up;
 - two or more lines `On: …`, `Off: …` (up to three words before the colon) are an option list;
 - ` · ` before such a label starts a new line, and so does `. ` between two of them;
 - the old shapes read the same way: `… — click to X` and a closing `(right-click: X)` become rows, `Ctrl-click` is `Ctrl+click`;

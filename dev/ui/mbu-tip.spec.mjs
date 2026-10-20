@@ -30,13 +30,13 @@ test.beforeEach(async ({ page }) => {
 
 test('the text form: key rows, option rows, the lead, a shortcut', { tag: ['@unit'] }, async () => {
   const keys = mbuTipText('Use it as if it were pasted · right-click: add it in the background · Ctrl+click: copy it');
-  check(/mbu-tip-lead">Use it as if it were pasted</.test(keys) && (keys.match(/class="mbu-tip-k">/g) || []).length === 2, `" · Right-click: …" become key rows under a lead (${keys})`);
+  check(/mbu-tip-lead">Use it as if it were pasted</.test(keys) && (keys.match(/class="mbu-tip-mouse"/g) || []).length === 2 && /<kbd class="mbu-tip-k">Ctrl<\/kbd><svg/.test(keys), `" · Right-click: …" become key rows under a lead (${keys})`);
   const opts = mbuTipText('Auto: fetch during Probe · Ask: fetch on a button · Off: skip');
   check((opts.match(/class="mbu-tip-o">/g) || []).length === 3, 'two or more "Label: …" lines are an option list, the first line too');
   check(!/mbu-tip-o|mbu-tip-k/.test(mbuTipText('Release group: when one release group fits, pick it')), 'a lone "Label: …" sentence stays a sentence');
   check(/<kbd class="mbu-tip-k">Ctrl\+Alt\+F<\/kbd>/.test(mbuTipText('Falcon (Ctrl+Alt+F)')), 'a shortcut in brackets is drawn as a key');
   const old = mbuTipText('Couldn’t reach Discogs — click to retry');
-  check(/mbu-tip-k">Click<\/span><span>retry/.test(old), `"… — click to X" reads as a Click row (${old})`);
+  check(/mbu-tip-sr">Click<\/span>.*<\/svg><\/span><span>retry/.test(old), `"… — click to X" reads as a Click row (${old})`);
   check(/^<div class="mbu-tip-p">/.test(mbuTipText('deadmau5')) && /deadmau5/.test(mbuTipText('deadmau5')), 'data is shown as it is, not capitalised');
   check(!/<script/.test(mbuTipText('<script>alert(1)</script>')), 'the text is escaped');
   const long = mbuTipText('Tidy the Release information tab and use the right column. Apollo keeps the original layout one click away, and a second click brings it back.');
@@ -58,7 +58,18 @@ test('hovering shows the tip after a moment, styled, and leaving hides it', { ta
 // majkinetor: Apollo's release-title Aa still showed MusicBrainz's "Guess case", because Apollo
 // stops the page's mouseover at the window, before a document listener hears it
 test('a page that stops mouseover at the window still gets its tip; a lone key line is a key row', { tag: ['@unit'] }, async ({ page }) => {
-  check(/mbu-tip-k">Right-click<\/span><span>edit the URL/.test(mbuTipText('Right-click: edit the URL')), 'a lone "Right-click: …" is a key row');
+  const rc = mbuTipText('Right-click: edit the URL');
+  check(/mbu-tip-sr">Right-click<\/span><svg[^]*M6 1C8\.8[^]*<\/svg><\/span><span>edit the URL/.test(rc), `a lone "Right-click: …" is a key row, a mouse with its right button filled (${rc})`);
+  // majkinetor: "replace Click/Right click … with more concise (mouse icon, modifiers etc.)"
+  const k = l => mbuTipText(l + ': x');
+  check(/M6 1C3\.2/.test(k('Click')) && !/<kbd/.test(k('Click')), 'Click: the left button, no key');
+  check(/mbu-tip-kx" aria-hidden="true">×2/.test(k('Double-click')), 'Double-click: ×2');
+  check(/<kbd class="mbu-tip-k">Ctrl<\/kbd><kbd class="mbu-tip-k">Shift<\/kbd><svg/.test(k('Ctrl+Shift+click')), 'Ctrl+Shift+click: two keys and the mouse');
+  check(/rx="1" fill/.test(k('Middle-click')) && !/<path d="M6 1C/.test(k('Middle-click')), 'Middle-click: the wheel');
+  check(/mbu-tip-k">Esc</.test(k('Esc')) && !/svg/.test(k('Esc')), 'Esc stays a key chip');
+  // rows with a note between them are one grid, the note across it (majkinetor: "not aligned properly")
+  const split = mbuTipText('Apollo is on\nClick: show MusicBrainz’s own\nOn every tab, until you switch back.\nRight-click: settings');
+  check((split.match(/class="mbu-tip-rows"/g) || []).length === 1 && /mbu-tip-p mbu-tip-span">On every tab/.test(split), `one grid, the note spanning it (${split})`);
   await page.evaluate(() => window.addEventListener('mouseover', e => e.stopPropagation(), true));
   await page.hover('#plain');
   check(/Copy the log/.test(await until(() => shown(page), h => !!h)), 'the tip shows');
