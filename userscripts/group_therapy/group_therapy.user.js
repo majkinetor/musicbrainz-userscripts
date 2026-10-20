@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.20.131711
+// @version      2026.10.20.155441
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5411,8 +5411,17 @@
       }
       return classifyBaseRole(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands);
     }
-    function classifyBaseRole(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands) {
-      rt = TXP_VOCAL_SYNONYMS[rt] || rt;   // #666: "backing vocals" → "background vocals"
+    function classifyBaseRole(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands, noTail) {
+      // "Cover photo", "English translations": when the whole text names no role, its last word may
+      if (!noTail && !TXP_ROLE_SYNONYMS[rt] && !TXP_VOCAL_SYNONYMS[rt] && /\s/.test(rt || '')) {
+        const tail = TXP_ROLE_SYNONYMS[rt.split(/\s+/).pop()];
+        if (tail) {
+          const whole = classifyBaseRole(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands, true);
+          if (whole.artistMatch || whole.labelMatch || whole.placeMatch || whole.instrumentMatch) return whole;
+          return classifyBaseRole(tail, artistCands, labelCands, instrumentLt, instrumentCands, placeCands, true);
+        }
+      }
+      rt = TXP_ROLE_SYNONYMS[rt] || TXP_VOCAL_SYNONYMS[rt] || rt;   // #666: "backing vocals" → "background vocals"
       const a = txpMatchRoleText(artistCands, rt);
       const l = txpMatchRoleText(labelCands, rt);
       const pl = txpMatchRoleText(placeCands || [], rt);
@@ -6801,6 +6810,21 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   const txpVocalCandidates = () => txpAttrCandidates(VOCAL_ATTR_ROOT);
   // #666: liner-note wordings MB's vocal vocabulary doesn't use. Applied to the
   // whole (lower-cased, flag-stripped) role text before matching.
+  // Covers name a role by its work rather than its doer: "Lyrics by", "Music by", "Photos".
+  // Matched by text alone, "lyrics" and "composed" hit the place roles "lyrics written at"
+  // and "composed at", so these go to the doer's role first.
+  const TXP_ROLE_SYNONYMS = {
+    'lyrics': 'lyricist', 'lyric': 'lyricist', 'words': 'lyricist', 'text': 'lyricist', 'texts': 'lyricist',
+    'music': 'composer', 'composed': 'composer', 'composition': 'composer', 'compositions': 'composer',
+    'words and music': 'writer', 'words & music': 'writer', 'music and lyrics': 'writer', 'music & lyrics': 'writer',
+    'written': 'writer', 'songs': 'writer', 'songwriting': 'writer',
+    'arrangement': 'arranger', 'arrangements': 'arranger', 'arranged': 'arranger',
+    'photo': 'photography', 'photos': 'photography', 'photographs': 'photography', 'photographed': 'photography',
+    'translation': 'translator', 'translations': 'translator', 'translated': 'translator',
+    'mixed': 'mix', 'mixing': 'mix', 'mastered': 'mastering', 'engineered': 'engineer', 'remixed': 'remixer',
+    'conducted': 'conductor', 'orchestrated': 'orchestrator', 'orchestration': 'orchestrator',
+    'illustrated': 'illustration', 'illustrations': 'illustration', 'designed': 'design',
+  };
   const TXP_VOCAL_SYNONYMS = {
     'backing vocals': 'background vocals', 'backing vocal': 'background vocals', 'backing vocalist': 'background vocals',
     'backup vocals': 'background vocals', 'backup vocal': 'background vocals', 'background vocal': 'background vocals',

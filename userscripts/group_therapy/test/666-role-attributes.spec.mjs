@@ -26,6 +26,7 @@ test('vocal types and qualifiers resolve to role + attributes', { tag: ['@sandbo
   await page.fill('.gt-tp-ta', [
     'Lead Vocals: A', 'Backing Vocals: B', 'Vocals: C', 'Guest Vocals: D', 'Guest Lead Vocals: E',
     'Co-Producer: F', 'Executive Producer: G', 'Additional Guitar: H', 'Co-Writer: I', 'Tenor: J',
+    'Lyrics: K', 'Composed: L', 'Words and Music: M', 'Arrangements: N', 'Photos: O', 'Cover photo: P', 'English translations: Q', 'Mixed: S', 'Mastered: T',
   ].join('\n'));
   await frames(page);
   await page.click('.gt-tp-resolve');
@@ -47,6 +48,9 @@ test('vocal types and qualifiers resolve to role + attributes', { tag: ['@sandbo
   check(got('Additional Guitar') === 'additional guitar', `"Additional Guitar" → instrument guitar + additional (got "${got('Additional Guitar')}")`);
   check(!/^co /.test(got('Co-Writer') || ''), `"Co-Writer" gets no co attribute — writer doesn't allow it (got "${got('Co-Writer')}")`);
   check(!/vocal/.test(got('Tenor') || ''), `"Tenor" alone is not taken as tenor vocals (got "${got('Tenor')}")`);
+  // a role named by its work, not the place role whose name contains it ("lyrics written at")
+  for (const [role, want] of [['Lyrics', 'lyricist'], ['Composed', 'composer'], ['Words and Music', 'writer'], ['Arrangements', 'arranger'], ['Photos', 'photography'], ['Cover photo', 'photography'], ['English translations', 'translator'], ['Mixed', 'mix'], ['Mastered', 'mastering']])
+    check(got(role) === want, `"${role}" → ${want} (got "${got(role)}")`);
 
   // ── apply one: the staged rel carries BOTH attributes ───────────────────────
   await page.fill('.gt-tp-ta', 'Guest Lead Vocals: Test Artist For 666');
