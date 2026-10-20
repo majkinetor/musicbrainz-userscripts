@@ -78,6 +78,8 @@ test('what the spec proves', { tag: '@sandbox' }, async ({ page, inject }) => {
 
 Specs run on test.musicbrainz.org. Its data is an older copy of production, so a fixture can be missing there, or be missing a link added since.
 
+- **A spec that changes something works on a pristine entity** (maintainer, 2026-10-20): `pristine(page, kind, fields)` makes a new, minimal one for the run and returns its MBID. Never an entity another spec, or a person, also works on: what one run leaves there (a cover, a link, a barcode) breaks the next spec that reads it. Live-536's cover uploads, one a run on Art Station's fixture release, made Art Station's specs there time out. Every field has a safe default; pass only the ones the spec needs a given value of. A recording or release group comes with a release of its own. Read-only specs can keep using a shared fixture.
+
 - `node dev/test/copy-to-sandbox.mjs <mbid>` copies a production release to the sandbox: title, credits, tracklist, links. Artists the sandbox lacks are created first. The new MBID is recorded in [`sandbox-copies.json`](sandbox-copies.json).
 - `node dev/test/sandbox-add-links.mjs <mbid>` adds the links production has and the sandbox's copy lacks, keeping the release's other relationships.
 

@@ -6,8 +6,14 @@
 // checked by looking at the edit MusicBrainz actually created.
 //
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
+//
+// Each run uploads once, to a pristine release of its own. On Art Station's fixture release its
+// images piled up, one a run (57 by 2026-10-20), and Art Station's specs there, which load every
+// image, timed out. Removing them isn't the way: after a removal, or a release's first upload,
+// the next upload's signing answers 500 for a long while ("a temporary delay ... from the
+// Internet Archive").
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -18,7 +24,6 @@ test("live 536 cover edit note", { tag: ['@sandbox', '@login', '@web'] }, async 
 
   const HOST = 'https://test.musicbrainz.org';
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) { console.log('REFUSING: sandbox only'); throw new Error('stopped: see the log above'); }
-  const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   const NL = String.fromCharCode(10);
   const ck = check;
 
@@ -58,6 +63,9 @@ test("live 536 cover edit note", { tag: ['@sandbox', '@login', '@web'] }, async 
       }).catch(e => onerror && onerror(e));
     };
   });
+
+  const { mbid: RELEASE } = await pristine(page, 'release');
+  console.log('new release: ' + RELEASE);
 
   for (let a = 1; ; a++) {
     try { await page.goto(`${HOST}/release/${RELEASE}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }

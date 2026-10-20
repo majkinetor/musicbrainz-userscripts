@@ -370,6 +370,63 @@ export async function attachShot(testInfo, target, name) {
   try { await testInfo.attach(name, { body: await target.screenshot(), contentType: 'image/png' }); } catch (e) { /* nothing to show */ }
 }
 
+// A new, minimal entity on the sandbox, made for this run alone (maintainer, 2026-10-20): a spec
+// that changes something works on one of these, never on an entity other specs, or people, use
+// too. Every field gets a safe default (a unique name among them); pass only the ones the spec
+// needs a given value of. `fields` are the create form's names without their `edit-<kind>.`
+// prefix (a release's are /release/add's seed names). Leaves `page` on the new entity and
+// returns { mbid, name }; a release also gives its release group's MBID and its recordings'.
+// A recording or a release group comes with a new release of its own (their create forms
+// don't take a seeded artist credit), so its `fields` are the release's and it also gives
+// `release`. Instruments and areas can't be made: the sandbox account isn't allowed to.
+//   const { mbid } = await pristine(page, 'release');
+//   const { mbid: band } = await pristine(page, 'artist', { type_id: '2' });   // a group
+export async function pristine(page, kind, fields = {}) {
+  if (kind === 'instrument' || kind === 'area') throw new Error(`pristine: the sandbox account can't create ${kind}s`);
+  if (kind === 'recording' || kind === 'release-group') {
+    const r = await pristine(page, 'release', fields);
+    return { mbid: kind === 'recording' ? r.recordings[0] : r.releaseGroup, name: r.name, release: r.mbid, releaseGroup: r.releaseGroup, recordings: r.recordings };
+  }
+  const name = `Pristine ${kind} ${new Date().toISOString().slice(0, 19)} ${Math.random().toString(36).slice(2, 6)}`;
+  const note = 'A test entity, made for one spec run (mb-userscripts)';
+  await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  if (kind === 'release') {
+    const seed = {
+      name, status: 'official', 'mediums.0.format': 'Digital Media',
+      'artist_credit.names.0.mbid': '05aef2c6-cba2-481f-a917-04411953cbc2',   // a sandbox artist (sandbox-copies.json)
+      'mediums.0.track.0.name': 'Track 1', 'mediums.0.track.0.length': '180000',
+      edit_note: note, ...fields,
+    };
+    await page.evaluate(seed => {
+      const f = document.createElement('form'); f.method = 'POST'; f.action = '/release/add'; f.style.display = 'none';
+      for (const [k, v] of Object.entries(seed)) for (const x of [].concat(v)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = x; f.appendChild(i); }
+      document.body.appendChild(f); f.submit();
+    }, seed);
+    await page.waitForURL(/\/release\/add/, { timeout: 60000 });
+    await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length > 0; } catch (e) { return false; } }, null, { timeout: 120000 });
+    await idle(page);
+    await page.locator('a[href="#edit-note"]').first().click();
+    await page.locator('#enter-edit').click();
+  } else {
+    const defaults = { name, edit_note: note, ...(kind === 'artist' ? { sort_name: name, comment: 'test' } : {}), ...(kind === 'series' ? { type_id: '2' } : {}) };
+    const pre = 'edit-' + kind.replace('-', '_') + '.';
+    const q = new URLSearchParams(Object.entries({ ...defaults, ...fields }).map(([k, v]) => [pre + k, v]));
+    await page.goto(`${SANDBOX}/${kind}/create?${q}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await idle(page);
+    await page.locator('button.submit.positive').click();
+  }
+  const at = new RegExp('^/' + kind + '/[0-9a-f-]{36}$');
+  await page.waitForURL(u => at.test(u.pathname), { timeout: 90000 });
+  const out = { mbid: new URL(page.url()).pathname.split('/')[2], name: fields.name || name };
+  if (kind === 'release') {
+    const j = await mbJson(`${SANDBOX}/ws/2/release/${out.mbid}?inc=recordings+release-groups&fmt=json`);
+    out.releaseGroup = j['release-group'].id;
+    out.recordings = j.media.flatMap(m => m.tracks.map(t => t.recording.id));
+  }
+  return out;
+}
+
 // Skip (not fail) when the profile isn't logged in to the site the page is on.
 export async function requireLogin(page) {
   const out = page.url().includes('/login') || await page.evaluate(() => !document.querySelector('a[href*="/logout"]'));
