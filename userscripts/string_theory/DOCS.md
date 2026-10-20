@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-20 11:38 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-20 11:40 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1558,7 +1558,7 @@ An album-based provider needs the release's album link: already in MusicBrainz, 
 
 Click the **ISRC** badge (`✓ 12/12`, or `⚠ 9/12` pulsing when some are missing). Each track shows its ISRCs and an input for a new one: red is invalid, orange a duplicate, green good.
 
-ISRCs are shown in their parts, `US-AM1-85-74817`: country, registrant, year and number. A copy is still the plain code, and what you type stays plain. *Show ISRCs in parts* turns it off.
+ISRCs show in their parts, `US-AM1-85-74817` (country, registrant, year, number); a copy is the plain code. *Show ISRCs in parts* turns it off.
 
 #### Importing ISRCs
 
@@ -1582,7 +1582,7 @@ The toolbar shows the providers available for this release:
 <img width="1000" src="../isrc_scout/screenshots/isrc-tracks.png" />
 
 - **+1** fills the previous track's ISRC plus one.
-- The **lookup** button looks the row's ISRC up on the selected provider and shows its title, artist and length next to the row, mismatches in red. Guests don't count as a mismatch: a *feat.* clause is left out of both titles, and when the credits differ only the main artist has to match, since databases list guests differently. Nor does a typo: a word one letter off (*Les Ecrocs* for *Les Escrocs*), in words of five letters or more, reads as the same song: the lookup marks it ⚠, and **All** counts it with the note *its title is spelled differently*. Its menu switches every row to another provider; right-click runs it on all tracks.
+- **lookup** looks the row's ISRC up on the selected provider and shows its title, artist and length, mismatches in red. Guests (*feat.*, extra artists) aren't a mismatch, and a word of five letters or more one letter off (*Les Ecrocs*) is marked ⚠ as *spelled differently*. Its menu switches every row to another provider; a right-click runs it on all tracks.
 - **All** (top of the menu) checks the row's ISRCs on [every provider](#checking-every-provider) at once.
 - **⚙** opens a SoundExchange search you can tune (title, artist, release, exact), with a link to run it on their site.
 
@@ -1592,13 +1592,13 @@ The toolbar shows the providers available for this release:
 | Year          | recorded after the release year (+1)                                      |
 | Length        | more than 10 s off; MusicBrainz's length is shown alongside               |
 
-A result passing every check fills an empty field (blue); a length mismatch only warns (yellow). Lookups don't run while you type: only when you leave a field you typed into, press the button, or run the SoundExchange search. A SoundExchange captcha or rate limit shows in the toolbar; solve it there and continue.
+A result passing every check fills an empty field (blue); a length mismatch only warns (yellow). Lookups run when you leave a field you typed into, press the button, or search SoundExchange, whose captcha or rate limit shows in the toolbar to solve.
 
 #### Checking every provider
 
 **All** checks the row's ISRCs on every provider available for the release (not SoundExchange, which serves a captcha on nearly every run): the entered one and every ISRC the recording already has. **All** at the end of the toolbar, or a right-click on a row's **All**, checks every track.
 
-The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it. Hover the verdict for the comparison, and click it to pin it. Each line starts with the provider's verdict:
+The row shows a verdict: **✓ 4/4** when every provider that knows the ISRC agrees, **⚠ 1/4** when some don't, **– 0/4** when none knows it. Hover the verdict for the comparison; a click pins it. Each line starts with the provider's verdict:
 
 - Deezer and Tidal look the ISRC up: ✓ their song for it is this track, ⚠ it is another song.
 - An album provider (Qobuz, Apple, Beatport…) reads the release's album there: ✓ it has this ISRC at the same position as this track (📍), or at another position (↪ track 3: the album orders its tracks differently). When the album hasn't the ISRC at all, ✗ it has **another** ISRC at this track's position, offered with **use**. An ISRC that belongs to another track of the release, or that the row already has, is never offered.
@@ -1613,21 +1613,21 @@ The header lists the row's ISRCs first, then any other ISRC a provider named, ea
 
 #### Submitting
 
-Submitting ISRCs needs OAuth once: **⚙ Setup → Authorize**, approve in the tab that opens. Then **Submit to MusicBrainz**. *Sign out* forgets the token. test.musicbrainz.org has its own accounts, so it is authorized separately; musicbrainz.org and beta share one authorization. A token MusicBrainz no longer accepts is forgotten, and Setup asks you to authorize again.
+Submitting ISRCs needs authorizing once: **⚙ Setup → Authorize**, then approve in the tab that opens. musicbrainz.org and beta share it; test.musicbrainz.org needs its own. When MusicBrainz stops accepting it, Setup asks again; *Sign out* forgets it.
 
 Amber fills (see the warning under [Providers](#providers-1)) are counted in the footer's *⚠ N implausible fills — verify*: click it to go to the first one, or **✕ Remove** to empty them all (**Undo** puts them back until the next change). Submitting with amber fills asks first: *Review first*, *Remove them, submit the rest*, or *Submit anyway*.
 
 ### Links
 
-The **Links** tab shows, per track, what each recording already links to (**Linked**) and what was found but isn't linked yet (**Add**). Linked shows every provider, including ones ISRC Scout can't add (YouTube, Amazon Music, any host). A site ISRC Scout has no icon of its own for gets the one MusicBrainz shows beside the link on the recording's page, and a globe when MusicBrainz has none.
+The **Links** tab shows, per track, what each recording already links to (**Linked**) and what was found but isn't linked yet (**Add**). Linked shows every site, ones ISRC Scout can't add too, with MusicBrainz's icon (or a globe) where ISRC Scout has none.
 
 <img width="1000" src="../isrc_scout/screenshots/links.png" />
 
-**Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must have the track's title there; a typo in it, as above, still counts, and so do a "feat." the platform keeps in the title where MusicBrainz moved it to the artist credit, and an apostrophe written differently. A Deezer track that no longer plays anywhere is not offered. **➕ Add links** adds everything found; adding goes through your logged-in session (no OAuth), with ISRC Scout's edit note.
+**Find links** resolves every track on every available provider, in parallel. A provider matched by position (Apple Music, Bandcamp, SoundCloud, Audiomack, Spotify, YouTube Music, Amazon Music) must also have the track's title, allowing a typo, a *feat.* or another apostrophe. A Deezer track that no longer plays anywhere isn't offered. **➕ Add links** adds everything found, with no authorizing needed.
 
 #### Match
 
-**⚡ Match**, at the right of the toolbar after **Find links**, does both steps in one click. It imports ISRCs from the fastest source the release links: one-request sources (Qobuz, Audiomack, Apple Music, Tidal, …) before per-track ones (Deezer, 7digital) and Spotify. If a source fails or gives nothing, it tries the next. Then it runs **Find links** with the ISRCs it found. A link pulled from the release group is skipped, since whether it fits this release needs you to look.
+**⚡ Match** does both: it imports ISRCs from the fastest source the release links (Qobuz, Audiomack, Apple Music, Tidal… before Deezer, 7digital and Spotify), moving on when one fails or gives nothing, then runs **Find links**. It skips the release group's links, which need you to look.
 
 | Click               | on an **Add** icon               | on a **Linked** icon                           |
 | ------------------- | -------------------------------- | ---------------------------------------------- |
@@ -1645,11 +1645,11 @@ End a link when the release is taken down and it no longer resolves ([MusicBrain
 
 ### Tracklist
 
-The release page's tracklist gets two columns before *Rating*: **ISRC**, each track's ISRCs, and **Links**, its recording's links. An ISRC opens its MusicBrainz page, an icon the provider's track. Each platform shows one icon; when the recording has several links there, a number beside it says how many, its tooltip lists them, and it opens the first one that hasn't ended. An ended link is faded, and a site's icon is the one the **Links** tab shows. They follow what you submit and change in the editor. **ISRC** and **Links** above the tracklist, beside MusicBrainz's own *Display credits at bottom*, show or hide each column (struck through when hidden). In the settings, *ISRC column on the tracklist* and *Links column on the tracklist* do the same, and *Column toggles above the tracklist* hides the toggles.
+The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens its MusicBrainz page, an icon the provider's track; a platform with several links shows how many, and opens the first that hasn't ended. An ended link is faded. **ISRC** and **Links** above the tracklist show or hide each column.
 
 ### Settings
 
-**⚙** in the editor's header opens the settings window; a click outside it, or Esc, closes it.
+**⚙** in the editor's header:
 
 <img width="420" src="../isrc_scout/screenshots/options.png" />
 
@@ -1669,7 +1669,7 @@ The release page's tracklist gets two columns before *Rating*: **ISRC**, each tr
 
 #### Platforms
 
-**Platforms**, at the top of the settings window, has a switch for each platform ISRC Scout uses, SoundExchange included. A platform switched off loses its import button and its per-track lookup, and Match, Find links and All skip it; links already found on it are dropped. Platform Check keeps its own list, so a platform can be on in one and off in the other.
+A platform switched off loses its import button and lookup, Match, Find links and All skip it, and its found links are dropped. Platform Check keeps its own list.
 
 ### Shortcuts
 
@@ -1684,27 +1684,27 @@ The mouse gestures on links are in the [Links](#links) table.
 
 #### YouTube Music
 
-YouTube Music shows no ISRCs. When the release links its YouTube Music album (Platform Check finds it), each track is taken from that album's tracklist by position and title, as official audio, never a music video. A song a free listener can't play (YouTube Premium only, or not available at all) is left out, since the links are added as *free streaming*. Without a linked album, the track's ISRC is searched, and a result counts only when it is official audio (not a user upload), has the track's title, is within 3 s of its length, and comes from this release's album. The log names every result it skipped, and why. A link added on its own names its YouTube Music album in the edit note.
+YouTube Music shows no ISRCs. With the release's album linked, each track comes from its tracklist by position and title, as official audio. A song a free listener can't play is left out, as the links are *free streaming*. Without the album, the ISRC is searched; a result counts only as official audio with the track's title, within 3 s of its length, from this release's album. The log says what it skipped and why.
 
 #### Amazon Music
 
-Amazon Music shows no ISRCs, so its track links come only from the release's Amazon Music album, when the release links it (Platform Check finds it by name). Each track is taken by position, or by title when the album orders it differently, and only when the title matches and the length is within 3 seconds. No Amazon account is needed, and the links are added as *streaming page*.
+Amazon Music shows no ISRCs; its links come from the release's linked album, by position or title, when the title matches and the length is within 3 s. They are added as *streaming page*; no account is needed.
 
 #### 7digital
 
-No login is needed. Each track of the release is searched for by its title, and the results from the linked 7digital album are kept, which takes some seconds on a long album. A 7digital track has no page of its own, so there are no track links.
+Each track is searched by its title, keeping the linked album's results; a long album takes some seconds. 7digital tracks have no pages, so there are no links. No login is needed.
 
 #### Spotify
 
 Spotify's ISRCs come through a lookup service. Pick it in **⚙ Setup**; switch if one is down or throttled:
 
 - **[Harmony](https://harmony.pulsewidth.org.uk)**, the default, gives them by disc and position, with each track's length.
-- **[molla](https://isrc.mollamusicgroup.com)** maps the album's ISRCs by position when its track count matches the release, otherwise by title and artist. Its quota is shared by all its users, so it is often out of it.
+- **[molla](https://isrc.mollamusicgroup.com)** maps the album's ISRCs by position when its track count matches the release, otherwise by title and artist. Its shared quota often runs out.
 - **[ISRC Hunt](https://isrchunt.com)** gives them by disc and position.
 
 #### Beatport
 
-An import opens the Beatport release in a background tab, reads the ISRCs there and closes it. A Beatport release page you open yourself is read too.
+An import reads the Beatport release in a background tab. A Beatport release page you open is read too.
 
 #### Qobuz
 
