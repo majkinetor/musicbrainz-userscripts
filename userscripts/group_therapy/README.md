@@ -22,7 +22,7 @@ Batch operations and helpers for the MusicBrainz *Edit relationships* page.
 - **[Highlight](#highlight)** a role or an entity everywhere, with counts.
 - **[Edit note](#edit-note)**: a line per action, under Group Therapy's signature.
 
-Everything works on existing and newly added relationships, and everything except consolidation only stages changes: you review and save.
+Everything works on new relationships too, and, except consolidation, only stages changes for you to save.
 
 ## Batch delete
 
@@ -33,7 +33,7 @@ Right-click a relationship's **×**:
 - *Remove "‹target›" — everywhere*
 - *Remove "‹role›" + "‹target›"*
 
-Each option shows what it touches, e.g. *guitar — all tracks (14) · tracks 1–12*. With recordings or works ticked, the options apply only to those. The same works on works.
+Each option shows what it touches (*guitar — all tracks (14) · tracks 1–12*) and keeps to the ticked recordings or works, if any. It works on works too.
 
 <img width="500" src="./screenshots/remove.png" />
 
@@ -48,32 +48,32 @@ The destinations are the ticked recordings, or every other track when none are t
 
 <img width="650" src="./screenshots/copy.png" />
 
-**From another release** in the group: **⧉ Copy from release…** lists its release credits (artists and labels) to pick from. Roles that don't suit this release's format start unticked, so a vinyl-only credit doesn't reach a digital edition.
+**From another release** in the group: **⧉ Copy from release…** lists its release credits (artists and labels) to pick from. Roles that don't suit this release's format (vinyl-only on a digital edition) start unticked.
 
 **Between the release and its recordings** (the toolbar's *Vertical* section):
 
-- **⬆ Release → recordings** copies or moves the release credits to the recordings. A role recordings don't have but works do (lyricist, composer, librettist, translator) goes on the tracks' works, only when every chosen track has one: it never creates works, so add them first with **◎ Match works…**. **Move** removes from the release only what it placed; the rest stays, and the message says how many. Release-only roles (liner notes, mastering, artwork, ℗, ©…) start unticked.
+- **⬆ Release → recordings** copies or moves the release credits to the recordings. A work role (lyricist, composer, librettist, translator) goes on the tracks' works, only when every chosen track has one; add works first with **◎ Match works…**. **Move** removes from the release only what it placed. Release-only roles (liner notes, mastering, artwork, ℗, ©…) start unticked.
 - **⬇ Recordings → release** collects the recordings' credits onto the release, with the track range each covers.
 
 Both take a [track selector](#track-selector) and map each role to the destination's link type by name; a role with no equivalent is skipped and counted.
 
 ### Set dates
 
-When the relationship you right-click has a date (a *recorded at* with a date, say), the copy menu offers **Set dates from…**. It lists every datable credit on the selected tracks as a track → credits tree:
+Right-clicking a dated relationship (a *recorded at* with a date) offers **Set dates from…**, listing every datable credit on the selected tracks, by track:
 
 - the begin and end date (`YYYY`, `YYYY-MM` or `YYYY-MM-DD`) are prefilled from that relationship and editable;
 - credits whose role is on your remembered **roles** list start ticked (right-click a role to add it, click its chip to drop it);
 - **Apply** sets the date on every ticked credit that has none.
 
 > [!NOTE]
-> It fills blanks only: MusicBrainz's editor keeps an existing date when a relationship is updated, so dated credits are shown but left unchanged.
+> MusicBrainz's editor keeps an existing date when a relationship is updated, so dated credits are shown but left as they are.
 
 ## Release group consolidation
 
 **▦ Consolidate RG…** shows every release credit across the group as a role × release matrix: one row per credit, one column per release (A, B, C…, with a format badge), green where the credit exists.
 
 - Click a cell to add that credit to that release, a column letter to add everything addable to it, or **Auto select** for all. A credit that doesn't suit a release's format shows `·`; click to force it.
-- **Apply** submits the additions directly, one batch per release, each with an edit note saying how many credits it added.
+- **Apply** submits the additions, one batch per release.
 - A release whose credits couldn't be read (MusicBrainz throttling) shows `?` and gets nothing until **Retry** reads it.
 - With more than 10 releases, you pick which ones to consolidate.
 
@@ -81,7 +81,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 
 ## Work matching
 
-**◎ Match works…** links each recording to an existing work, so a compilation of standards reuses the works instead of creating duplicates. Candidates come from ISRCs (a recording sharing an ISRC usually shares the work) and from MusicBrainz's work search, ranked by exact title, then by how many recordings use each work. *Beat It* thus resolves to Michael Jackson's work, not a same-named cover.
+**◎ Match works…** links each recording to an existing work, so a compilation of standards reuses the works instead of creating duplicates. Candidates come from ISRCs (a recording sharing an ISRC usually shares the work) and from MusicBrainz's work search, ranked by exact title, then by how many recordings use each work: *Beat It* resolves to Michael Jackson's work, not a same-named cover.
 
 <img width="800" src="./screenshots/match-works.png" />
 
@@ -94,7 +94,7 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 
 **⚡ Match** selects the rows at or above the **Cutoff**. ✎ on a row searches, takes a pasted work MBID or URL, or creates a work. **＋ New work for unresolved** creates one for every unmatched recording. **Apply** stages the performance relationships.
 
-**Medleys**: a track titled like `Land of Hope and Dreams / People Get Ready` is a recording of several works. MusicBrainz [separates them with " / "](https://musicbrainz.org/doc/Style/Titles#Extra_title_information_(ETI)), so the track gets a row per work, each matched or picked on its own, and **Apply** links the recording to all of them. Only a slash with spaces around it splits: `AC/DC` stays whole. **Split on /** in the toolbar (on by default, shown when a title has one) turns this off.
+**Medleys**: a title of several works [split by " / "](https://musicbrainz.org/doc/Style/Titles#Extra_title_information_(ETI)), like `Land of Hope and Dreams / People Get Ready`, gets a row per work, and **Apply** links the recording to all of them. `AC/DC`, without spaces, stays whole. **Split on /** (on) turns this off.
 
 ## Text parser
 
@@ -115,10 +115,10 @@ When the relationship you right-click has a date (a *recorded at* with a date, s
 - **⚡ Match** resolves roles and entities where it can (including *mastered by* → *mastering*). A role that exists only for labels picks a label; an ambiguous one defaults to a label, or an artist when the name is one of the release's artists.
 - Instruments and vocal types resolve to the *instrument* or *vocal* role plus that attribute: *Flute*, *Lead Vocals*, *Backing Vocals* → *background vocals*. A leading *Guest*, *Additional*, *Solo*, *Co-*, *Executive*, *Assistant* or *Associate* is added as an attribute when the role allows it: *Guest Vocals*, *Co-Producer*, *Executive Producer*.
 - Row colours: plain is ready, amber is matched but unresolved, red didn't match.
-- **search** on a row opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click **+** to create it in a background tab). Picking a result resolves every row with the same name; right-click resolves only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
+- **search** on a row opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click: in the background). A pick resolves every row with the same name; a right-click only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
 - Each line can have its own **pattern**, its text can be edited in place, and **✕** removes it. **🔒 Freeze matched** pins the current pattern on the lines it already matches, like in Apollo.
 - **Scope** sends the credits to the release (default) or to recordings chosen with a [track selector](#track-selector); the roles offered follow the scope.
-- **Works**: a role recordings don't have but works do (lyricist, composer, librettist, translator), going to tracks, goes on those tracks' works. *create none* (the default) uses only the works already linked and skips a track without one; *create needed* also creates the missing work, named after the recording. Match existing works first with **◎ Match works…**, or *create needed* makes duplicates.
+- **Works**: a work role going to tracks goes on their works. *create none* (default) skips a track without one; *create needed* creates it, named after the recording, so match existing works first with **◎ Match works…** or it makes duplicates.
 - **Apply** stages the rows. After **Load annotation**, **Apply & clear annotation** also opens the annotation editor, emptied.
 
 The text and the resolutions last until the page reloads.
@@ -156,7 +156,7 @@ Hover an entity or a role to light up every occurrence, with a count and where i
 
 ## Edit note
 
-Once you use Group Therapy on a page, it adds its signature to the edit note, followed by a line per action (*Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*). Your own text stays.
+Group Therapy adds its signature and a line per action to the edit note (*Copied 2 credits from track 1 to tracks 2–5*, *Removed guitar (14)*), keeping your text.
 
 ## Settings
 
