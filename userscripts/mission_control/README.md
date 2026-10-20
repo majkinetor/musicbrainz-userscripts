@@ -24,9 +24,7 @@ One window on a release page that asks the other scripts what the release is mis
 - **[Execute](#execute)**: applies what you selected, script by script, in a fixed order.
 - **[Consolidate a new release](#consolidate-a-new-release)**: compare an album across the platforms and take the best of each into the release editor, or into the release MusicBrainz already has.
 
-Open Mission Control with its icon in the bottom-right corner of a release page. Right-click the icon for the settings.
-
-On a phone it fills the screen in one column: the steps scroll sideways under the release, the execution order and the inspector come after the cards, and a wide table scrolls inside its card.
+Open Mission Control with its corner icon on a release page. On a phone it fills the screen in one column.
 
 ## Probe
 
@@ -43,7 +41,7 @@ On a phone it fills the screen in one column: the steps scroll sideways under th
 
 Platforms, Fusion and Credit Hoarder are slow, so each has a switch under its step: **Auto** fetches during the probe, **Ask** waits for its button in the Tracks header (**Compare**, **Fetch RG**, **Fetch credits**), **Off** leaves it out. Platforms starts on Auto, Fusion and Credit Hoarder on Ask.
 
-Click a step in the header to switch its script off for this page: it isn't asked, its card and column go, and Execute leaves it out. Right-click it to switch it off for good, remembered for the next release. Click it again to switch it back on; Fusion and Credit Hoarder get back the switch they had. The format icon left of the release title shows or hides the Execution order.
+Click a step in the header to switch it off for this page, right-click to switch it off for good; click it again to switch it back on. The format icon left of the release title shows or hides the Execution order.
 
 The album links you select in the Release and entity links card are passed on to ISRC Scout before they are added, so the tracks get their links from those albums too.
 
@@ -53,7 +51,7 @@ One row per track, a column per script: the ISRCs and recording links ISRC Scout
 
 The Tracks header counts the changes taken in and on how many tracks; each track with one has a bar on its left.
 
-Click a finding to take it in, and again to leave it out; what is taken in is tinted and ticked. New findings start taken in. A click anywhere else in a track's row also shows it in the [Inspector](#inspector); a click on a finding or a badge only shows it there when the Inspector is already open.
+Click a finding to take it in or leave it out; new findings start taken in. A click elsewhere in a row shows the track in the [Inspector](#inspector).
 
 To take in or leave out many at once, hold a key while you click: the others follow the one you click.
 
@@ -65,7 +63,7 @@ To take in or leave out many at once, hold a key while you click: the others fol
 
 Found links take the same keys with a right-click. Press on an ISRC or a duplicate and drag up or down the column to do the same to every one you pass.
 
-Fusion's count opens Fusion's own group card under the row, the one its board shows: each recording with its disambiguation, artist, release, length, ISRCs and AcoustIDs, and what they share. The cards fill in as their ISRCs and AcoustIDs come. On the card, the star picks the recording the others merge into, ✎ writes the merge's edit note, and Fusion's icon (*Open in Fusion*) shows the group on Fusion's board. **Execute** merges the groups taken in. **Expand all** in the Tracks header opens every track's comparison (and the platforms' titles, [below](#compare-with-the-platforms)), and **Collapse all** folds them.
+Fusion's count opens its group card under the row, as on Fusion's board: the star picks the recording the others merge into, ✎ writes the edit note, and Fusion's icon opens the group in Fusion. **Execute** merges the groups taken in. **Expand all** / **Collapse all** in the header open or fold every track's comparison and [platform versions](#compare-with-the-platforms).
 
 ## Release and entity links
 
@@ -80,23 +78,23 @@ The platform pages Platform Check found, grouped by the barcode each platform gi
 
 A link whose track count or format is not the release's is most likely another release: its icon gets an amber dot, and its row says what differs in amber (*10 tracks, the release has 13*). **take all in** leaves those links out; click one to take it in anyway.
 
-A new link Platform Check found without the release's barcode (or for a release without one) matched on its track count alone, so it may be another album with as many tracks. It starts left out, and [First Contact](../first_contact/README.md) reads it on every probe, whatever the Platforms step's mode. When fewer than half its track lengths match the release's, it stays left out and its row says *another tracklist*, even with every title the same: that is another version of the album. Other titles with the same lengths (a translated tracklist) are the release. Without lengths to compare, only a tracklist with no title in common is left out. Otherwise it is taken in. Without First Contact, or for a platform it can't read (Spotify), it stays left out; click it to take it in.
+A new link found without the release's barcode matched on its track count alone, so it starts left out and [First Contact](../first_contact/README.md) reads it on every probe. It is then taken in, unless fewer than half its track lengths match (*another tracklist*, even with the same titles) or, without lengths, no title does. A platform First Contact can't read (Spotify) stays left out.
 
-A release without a barcode gets a **Barcode** row at the top of *Release* for each barcode the platforms report, each saying where it came from. The one Platform Check is sure of starts taken in: a barcode you pasted, the one a consolidation brings ([Update this release](#update-this-release)), or one reported by a link the release already has, whose track count and medium match the release. A release has one barcode, so taking another in leaves the first out. Execute adds it with the links, in the same edit.
+A release without a barcode gets a **Barcode** row for each barcode the platforms report. The one Platform Check is sure of starts taken in: one you pasted, one a consolidation brings ([Update this release](#update-this-release)), or one from a link the release already has, with its track count and medium. Taking another in leaves the first out.
 
-The catalog numbers the platforms give, for a label the release has without one, sit beside the barcode of their group. A group with a barcode is one release, so it shows one per label; a platform in it that gives none just didn't say. The group without a barcode can show several, since its platforms may be different releases. Click one to take it in or leave it out; **take all in** never takes a catalog number. Only the one in the release's own group starts taken in, and only from a platform with the release's track count and medium (a CD with the digital release's barcode doesn't count), and a label takes one, so taking another in leaves the first out.
+Catalog numbers the platforms give, for a label the release has without one, sit beside their group's barcode: one per label in a group with a barcode, maybe several in the group without. Only the one in the release's own group, from a platform with its track count and medium, starts taken in; **take all in** never takes one, and a label takes one at a time.
 
-**Artists** and **Labels** list the pages the matched albums name for them. A page MusicBrainz has on another artist or label is withheld, and its row names that one, with its disambiguation and a link, beside the release's own artist and its disambiguation, so you can tell the wrong one from a duplicate. The platforms that found nothing fold into one line of icons. A heading's ✓ count opens the links it already has into rows.
+**Artists** and **Labels** list the pages the matched albums name for them. A page MusicBrainz has on another artist or label is withheld, its row naming both with their disambiguations, so you can tell a wrong one from a duplicate. A heading's ✓ count lists the links it already has.
 
 After [Compare with the platforms](#compare-with-the-platforms), *Release* also has a row for the **Release event** and one for the **Track lengths**, when the release lacks them.
 
-The links are added through [Falcon](../falcon/README.md), out of sight. The card lists each one with its status as it goes; when one fails, **Open Falcon** shows why and lets you retry.
+Execute adds the links through [Falcon](../falcon/README.md), listing each with its status; **Open Falcon** shows why one failed, to retry.
 
 ## Compare with the platforms
 
-**Compare**, in the Platforms column of Tracks, reads the release on its platforms with [First Contact](../first_contact/README.md#consolidate), as [Consolidate](#consolidate-a-new-release) does for an album MusicBrainz doesn't have yet. Its step is **Auto** by default, so it compares on every probe; set it to **Ask** to compare only on the button.
+**Compare**, in the Platforms column of Tracks, reads the release on its platforms with [First Contact](../first_contact/README.md#consolidate), on every probe while its step is **Auto**.
 
-1. It reads the platforms Platform Check has for the release: the links it already has and the ones found with its barcode, and those without a barcode that have as many tracks. A link with another barcode, track count or format is another release, and is left out. So is one without a barcode whose tracklist is another album's (see [Release and entity links](#release-and-entity-links)); a platform the probe read for that isn't read again. Spotify can be read on its own page only, so its link counts but its data isn't compared.
+1. It reads the release's links, and the ones found with its barcode or, without one, with as many tracks. Another barcode, track count, format or [tracklist](#release-and-entity-links) is another release, left out. Spotify's data isn't compared.
 2. For each field, the value most platforms give wins, as in a consolidation.
 3. What the release lacks is offered where it is added, taken in:
 
@@ -111,25 +109,25 @@ The links are added through [Falcon](../falcon/README.md), out of sight. The car
 | Track title, length | you take a platform's, or type your own                      | the row under the track                     |
 | Title               | the platforms give another                                   | shown only, never changed                   |
 
-Nothing the release has is changed unless you take it. The tracks are compared one by one only when the platforms have as many as the release. The Platforms column shows each track's length to add (*+ 4:01*), and *≠ title* when the platforms call it something else (*✓* when they agree). Either opens, under the row, what the platforms give for the track: a line per version (title, with the part that differs marked, length and ISRC), the platforms that give it on the right. A click on a title or length there takes it in, and the track's own line above them holds what the track gets: type there for a title or length of your own (Enter keeps it, Escape puts it back). **Aa** beside the title shows, on hover, the title as Guess case writes it in the release's language, and a click takes that in; it's the same Guess case as [Apollo's](../apollo_editor/README.md#guess-case). *the recording too* gives the recording the new title as well; **↺** reverts the track. The column then shows what the track gets (*→ Title · → 5:02*), and Execute counts it. **Expand all** opens these rows, where a title or a length differs, with Fusion's comparisons. The [Inspector](#inspector) shows the track's versions too. Platform Check's card names the platforms read, and the release's title if the platforms give another.
+Nothing the release has changes unless you take it. Tracks are compared only when the platforms have as many as the release. The Platforms column shows a length to add (*+ 4:01*) and *≠ title* when the platforms call the track something else (*✓* when they agree); either opens its versions under the row, the differing part marked. Click a title or length to take it, or type your own on the track's line (Enter keeps it, Esc reverts). **Aa** takes the title as [Guess case](../apollo_editor/README.md#guess-case) writes it; *the recording too* renames the recording as well; **↺** reverts the track. The column then shows what the track gets (*→ Title · → 5:02*).
 
 Execute adds the release event, the track lengths and the titles and lengths you took with the barcode, labels and links, in one edit of the release, through [Falcon](../falcon/README.md). A track that changed on MusicBrainz since you compared keeps what it has.
 
 ## Cover art
 
-Art Station looks for the largest cover on the platforms the release links, and on the album links taken in under *Release and entity links*, which Execute adds first: take one in or leave it out and it looks again. It shows the best cover beside the current front, with each one's size. What Execute will do is written under it: enter it as the front and remove the current one, add it beside the current fronts, or nothing when the front already is that cover.
+Art Station looks for the largest cover on the release's platforms, the album links taken in included, and looks again when those change. The best cover shows beside the current front, each with its size, and what Execute will do with it underneath.
 
-Each platform searched shows how large its own cover is on the right, or *no cover*; click the size to open that cover. A release without a front cover starts with the cover taken in. Click either image to see both full screen, with **←** **→** between them.
+Each platform searched shows its cover's size (click to open it) or *no cover*. A release without a front starts with the cover taken in.
 
 ### Gallery
 
-Under the front, the card shows [Art Station's gallery](../art_station/README.md#gallery) for the release, with everything it does there: drag covers into order, set types and comments, remove, rotate, view full screen. When the gallery would take more than two rows, the card is two columns wide.
+Under the front is [Art Station's gallery](../art_station/README.md#gallery) for the release, doing all it does there.
 
-Discogs and Amazon have every image of a release: the back, the medium, the booklet. The gallery puts the others at its end under **More images**, a row for each store (the one with the larger images first); the stores that give one image each, like every store of a digital release with its front, share one row, the largest first. Hover an image and click **＋ take in**, or click **＋ take all in** in a row's header, to add them after the covers, then drag them where they go. Full screen on one goes through its own row. The stores don't say what an image is, so nothing starts typed. An image that is the same picture as a cover the release already has says *in archive*, even one just entered; one that is the same as the best front or as a larger image says which (*= Amazon 1*). Such a duplicate can't be taken in: it has no **＋ take in** and no type, and **＋ take all in** leaves it out, saying how many it takes when it leaves some, *＋ take all in (3)*. Taking in waits until the comparison is done.
+Discogs and Amazon have every image of a release. The gallery ends with **More images**, a row per store, larger images first; stores with one image each share a row. **＋ take in** on an image, or **＋ take all in** on a row, adds them after the covers, untyped. An image the release already has says *in archive*, and one equal to the best front or a larger image says which (*= Amazon 1*); such duplicates can't be taken in.
 
-Taking the best front's platform in or out on the card puts the best cover in the gallery or leaves it out (waiting in *More images*), and with it the removal of the smaller front it replaces. What you change in the gallery wins over that. Under the gallery, **Execute:** lists what Execute will do there, and Execute counts it.
+Taking the best front's platform in or out puts the best cover, and the removal of the front it replaces, in the gallery or out; your own changes there win. **Execute:** under the gallery lists what Execute will do there.
 
-Execute enters what the gallery holds: Art Station's own **Enter edit** isn't shown. An image MusicBrainz didn't take shows its error on the card, with **Retry**.
+Execute enters what the gallery holds; an image MusicBrainz refused shows its error, with **Retry**.
 
 An upload that fails is repeated as Art Station's [auto-repeat](../art_station/README.md#applying-changes) setting says, and the card shows each attempt.
 
@@ -143,35 +141,35 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 
 ## Execute
 
-**Execute** in the header applies what is taken in, step by step in the Execution order; the steps on one line run together. The count on the button is what will be sent. Each card shows its progress, and a step that fails doesn't stop the next one.
+**Execute** applies what is taken in, in the Execution order (steps on one line together), counting it on the button. A failed step doesn't stop the next.
 
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
 
-A step that failed and can be tried again (a cover upload or ISRC submit that kept failing, say) shows **Retry** beside its error: it applies that step alone again, with what is still taken in. What a step got through before it failed shows as done, and leaves the count.
+A failed step that can be tried again shows **Retry** beside its error; what got through before shows as done.
 
-Click a card's icon or title to switch the card off: it folds to its header, and Execute leaves out what is taken in there. Your selection stays for when you switch it on again.
+Click a card's icon or title to switch it off: Execute leaves it out, and your selection waits for it.
 
 ## Consolidate a new release
 
 For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:
 
-1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** on the left groups them by barcode, the album's own first. The platforms in its lane are taken in, and so are those without a barcode that have as many tracks. A platform in another lane is another release, so it is left out until you tick it. If MusicBrainz already has this album (a release one of these links belongs to, with the same barcode, format and track count), a banner at the top names it, with [Update this release](#update-this-release), so you add what it lacks instead of adding the album again. Releases the links belong to that differ in one of those are listed under it as other editions.
-2. First Contact reads each platform taken in; the header counts them. A platform taken in without a barcode whose track lengths are mostly not the album's (fewer than half match), whatever its titles, is another album or another version of it: it is unticked once read, and its row says *another tracklist*. A platform you tick by hand stays ticked. Spotify can be read on its own page only, so its link is added but its data isn't compared.
-3. **Release** shows each field with the platforms that give each value; those that give none follow on the value's line, greyed. The value most of them give is taken, and a tie goes to Platform Check's platform order. Click another value to take it instead; the other dates are listed earliest first, in two columns.
-4. **Tracks** lines the tracklists up. A track the platforms agree on shows their icons. One where they differ in title, ISRC or length (by more than a second) says how many versions it has: click it to see them, and click a version to take it. **N differ** in the header opens or closes them all. A track only one platform has is struck through and left out; click it to take it in, at the end.
-5. **Add release** opens MusicBrainz's release editor in this tab with what is taken: the fields, the tracklist with its ISRCs, every taken platform's link, and each artist's pages on all the platforms read, which [Apollo Editor](../apollo_editor/README.md#artist-matching) tries when it matches the artists. A link of a platform that wasn't read (Spotify, or one whose read failed) gets the type Platform Check adds it with.
+1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** groups them by barcode: the album's own lane first and taken in, with those without a barcode that have as many tracks; another lane is another release, left out until you tick it. If MusicBrainz already has the album (same barcode, format and track count), a banner names it with [Update this release](#update-this-release), and other editions under it.
+2. First Contact reads each platform taken in. One without a barcode whose track lengths mostly differ is unticked as *another tracklist*, unless you ticked it. Spotify's link is added but its data isn't compared.
+3. **Release** shows each field's values with the platforms giving them; the most given is taken (a tie goes by Platform Check's order). Click another to take it.
+4. **Tracks** lines the tracklists up. A track whose platforms differ in title, ISRC or length (by over a second) says how many versions it has; click it to see them and take one. **N differ** opens or closes them all. A track only one platform has is left out; click it to take it in, at the end.
+5. **Add release** opens the release editor in this tab with what is taken: the fields, the tracklist and ISRCs, every taken platform's link, and each artist's pages for [Apollo Editor](../apollo_editor/README.md#artist-matching) to match by.
 
 <img src="./screenshots/consolidate.png" />
 
-Once you save the release, Mission Control opens on it and probes, for what the editor can't take: the ISRCs taken here and the recording links (added by ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving**, on the right, chooses which of them start taken in; **Execute** then applies them as on any release. With *…and Execute once the probe has finished* on in the settings, Mission Control presses Execute itself once every script has answered, after a 5-second countdown on the button: click the button to stop it. With nothing taken in there is no countdown.
+Once saved, Mission Control opens on the release and probes for what the editor can't take: the ISRCs and recording links (ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving** chooses which start taken in. With *…and Execute once the probe has finished*, Execute runs itself after a 5-second countdown on the button; a click stops it.
 
-Click a track to see its versions on the right, with what sets each apart from the taken one highlighted and the platforms that give it; click a version there to take it. **Copy as Markdown**, in the **▾** menu beside **Add release**, copies the whole comparison as tables, for an issue or an edit note. **✕** shows the empty editor under it; the corner icon brings Mission Control back.
+A track's versions show on the right too. **▾ → Copy as Markdown** beside **Add release** copies the comparison as tables. **✕** shows the editor under it; the corner icon brings Mission Control back.
 
 ### Update this release
 
-**Update this release**, beside a release in the banner, opens that release in this tab. Mission Control opens on it, probes, and [compares it with the platforms](#compare-with-the-platforms) at once, whatever its step's switch says. The release reads the platforms itself, so what was picked by hand here isn't carried over. It offers what the release lacks, and the cover and artist links as after saving a new release; **After saving** chooses which scripts' findings start taken in.
+**Update this release**, in the banner, opens that release here; Mission Control probes and [compares it with the platforms](#compare-with-the-platforms) at once, offering what it lacks as after saving a new release. What you picked by hand isn't carried over.
 
-A label with another catalog number keeps it. A label the release hasn't is added with its catalog number once Mission Control knows which MusicBrainz label it is: by the label's page on the platform, or, marked unsure, by a name only one MusicBrainz label has. A label it can't tell is left out. Each row shows the icons of the platforms its value came from: a catalog number only the platforms that gave it. The edit note names the platforms read.
+A label with another catalog number keeps it. A new label is added with its catalog number when Mission Control can tell which MusicBrainz label it is: by its page on the platform, or, marked unsure, by a name only one label has. The edit note names the platforms read.
 
 ## Settings
 
