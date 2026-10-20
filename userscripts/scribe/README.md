@@ -17,13 +17,13 @@ Both need the [helper](#the-helper) running.
 
 ## Edit a field
 
-Focus a text field and press **Ctrl+Alt+E**: its text opens in your editor as a `.md` file. Each save updates the field. You can have several fields open at once; **Esc** in a field disconnects it.
+Press **Ctrl+Alt+E** in a text field: its text opens in your editor as a `.md` file, and each save updates the field. Several fields can be open at once; **Esc** in a field disconnects it.
 
 ## Edit a whole release
 
-On a release's **Edit** page, Scribe's icon appears bottom-right, with the other scripts' icons, while the helper runs, grey, and in colour while you're editing. Click it, or press **Ctrl+Alt+R**, to open the release as one Markdown document ([format](./RELEASE_MD_SPEC.md)). Each save applies the changes to the release editor; you review and submit as usual.
+On a release's **Edit** page, Scribe's corner icon shows while the helper runs: grey, in colour while you edit. Click it or press **Ctrl+Alt+R** to open the release as one Markdown document ([format](./RELEASE_MD_SPEC.md)). Each save applies to the release editor; submit as usual.
 
-A window beside the icons lists what changed this session. A value that can't be applied (an invalid status, say) is flagged there with a ⌖ button to its field, and counted in the header. **✕** stops editing.
+A window beside the icon lists this session's changes. A value that can't be applied (an invalid status, say) is flagged with **⌖** to its field and counted in the header. **✕** stops editing.
 
 |             |                                                                                     |
 | ----------- | ----------------------------------------------------------------------------------- |
@@ -32,13 +32,13 @@ A window beside the icons lists what changed this session. A value that can't be
 
 Titles are the track and medium titles; release info is the title, disambiguation, status, packaging, language, script, barcode and annotation.
 
-Existing artists and labels are referenced by an MBID link at the bottom of the document; a `[Name]` without one creates a new entity.
+Artists and labels link to their MBID at the bottom of the document; a `[Name]` without one creates a new entity.
 
-Once Scribe has set a field, it adds a summary to the edit note (`Edited via Markdown — set 5 fields: release title, barcode · 2 track fields…`). Your own text in the note is kept, and a later save updates the summary rather than adding another.
+Scribe adds a summary of what it set to the edit note (`Edited via Markdown — set 5 fields: release title, barcode · 2 track fields…`), keeps your text, and updates the summary on each save.
 
 ## The helper
 
-A small local program that opens files in your editor and hands the saved text back. It listens on your computer only (127.0.0.1), and every request must carry its token.
+A small local program that opens files in your editor and hands the saved text back. It listens only on 127.0.0.1, and every request needs its token.
 
 ```powershell
 .\scribe.exe --editor "code -r"              # Windows: a tray app
