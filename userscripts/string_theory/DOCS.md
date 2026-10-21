@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 10:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 10:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1434,7 +1434,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 **✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns). It opens under the toolbar, in the page, so the release's tracks and credits stay in reach as you scroll. Its two top rows stay on top:
 
 - the settings, the status and **Apply**. Each part of the status (`2/6 picked · 1 role to pick · 1 line not parsed`) takes you to the next of its kind;
-- the [pattern](#patterns) (its ▾ has the usual ones), 🔒 Freeze, the pasted text (one line until you click it), **Cutoff**, **Load annotation** and **Apply & clear annotation**.
+- the [pattern](#patterns) (its ▾ has the usual ones), 🔒 Freeze, the pasted text (one line until you click it, then numbered as the rows are), **Cutoff**, **Load annotation** and **Apply & clear annotation**.
 
 <img src="../group_therapy/screenshots/text-parser.png" />
 
@@ -1442,7 +1442,7 @@ Each name gets one row: the credit on the left, MusicBrainz on the right.
 
 - **Left**: the name as credited, its roles, the tracks a credit names, and under them the line each came from. **+** creates the artist, label or place (right-click: in the background).
   - A role in red has no match; click a role to pick it. The pick applies to every credit with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
-  - A line's text and its own pattern can be edited there, and **✕** removes the line. Lines that give no credit are listed above the table, under **Not parsed**.
+  - A line's text and its own pattern can be edited there, and **✕** removes the line. A line that gives no credit stays in its place as a *not parsed* row, to fix there.
   - A credit keeps the text's spelling as its credited name when it differs from MusicBrainz's; its tooltip shows both. Right-click the name to use MusicBrainz's instead, in the text too, or tick **Use MB name as credit** for every credit.
 - **Right**: the pick, or the [candidates](#matching-1). **✓** picks one for every credit with that name; right-click **✓**: for one credit only. **✕** on a pick brings the candidates back.
   - The box under them searches, or takes a pasted MBID or URL. Where the role allows more than one kind, choose artist, label or place beside it.

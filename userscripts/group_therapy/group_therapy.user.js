@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.104619
+// @version      2026.10.21.104817
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5156,9 +5156,11 @@
       + '.gt-tp-dd-it{display:flex;align-items:baseline;gap:8px;border:none;background:none;padding:4px 10px;text-align:left;cursor:pointer;font:inherit}.gt-tp-dd-it:hover,.gt-tp-dd-on{background:var(--mbu-bg-hover)}'
       + '.gt-tp-dd-pat{font:12.5px monospace;color:var(--mbu-text)}.gt-tp-dd-ex{font-size:11px;color:var(--mbu-text-weak)}'
       + '.gt-tp-freeze{flex:0 0 auto;height:28px;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:0 7px;font-size:12px;line-height:1}.gt-tp-freeze:hover{background:var(--mbu-bg-hover)}'
-      + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0;height:28px}'   /* the open box floats: nothing below moves when it closes, so a click there lands */
+      + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0;height:28px}'
+      + '.gt-tp-gut{display:none}'
+      + '.gt-tp-paste-open .gt-tp-gut{display:block;position:absolute;top:1px;left:1px;width:36px;z-index:8;overflow:hidden;box-sizing:border-box;padding:5px 6px 0 0;font:12px/1.4 monospace;text-align:right;white-space:pre;color:var(--mbu-text-weak);background:var(--mbu-bg-raised);border-right:1px solid var(--mbu-border);border-radius:4px 0 0 4px;pointer-events:none}'   /* the open box floats: nothing below moves when it closes, so a click there lands */
       + '.gt-tp-ta{display:block;width:100%;height:28px;box-sizing:border-box;padding:0 80px 0 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px/26px monospace;outline:none;resize:none;overflow:hidden;white-space:pre;background:var(--mbu-bg)}'
-      + '.gt-tp-ta.gt-tp-ta-open{position:absolute;top:0;left:0;right:0;z-index:7;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:5px 8px;line-height:1.4;overflow:auto;white-space:pre-wrap;border-color:var(--mbu-info)}'
+      + '.gt-tp-ta.gt-tp-ta-open{position:absolute;top:0;left:0;right:0;z-index:7;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:5px 8px 5px 44px;line-height:1.4;overflow:auto;white-space:pre;border-color:var(--mbu-info)}'
       + '.gt-tp-lines{position:absolute;right:6px;top:5px;border:none;background:var(--mbu-bg);padding:0 2px;font-size:11px;color:var(--mbu-text-weak);cursor:pointer}.gt-tp-paste-open .gt-tp-lines{display:none}'
       + '.gt-tp-opts{flex:none;display:flex;align-items:center;gap:10px;height:28px}'
       + '.gt-tp-opts .gt-tp-cut select{border:none;background:transparent;font-weight:600;cursor:pointer}'
@@ -5173,7 +5175,6 @@
       + '.gt-tp-scope-sel,.gt-tp-det-sel,.gt-tp-works-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-tp-body{padding-top:8px;overflow:auto}'
       + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}.gt-tp-bar .gt-tp-cnt-todo{color:var(--mbu-warn)}.gt-tp-bar .gt-tp-cnt-done{color:var(--mbu-ok)}'
       // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
       // Scope pill via its margin-left:auto) to match Match Works' own
@@ -5200,6 +5201,7 @@
       + '.gt-tp-colresize::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:1px;background:var(--mbu-border)}'
       + '.gt-tp-ehead{display:flex;align-items:center;gap:6px}'
       + '.gt-tp-ename{font-size:13px;font-weight:600;color:var(--mbu-text);flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+      + '.gt-tp-ename.gt-tp-unparsed{color:var(--mbu-error);font-style:italic;font-weight:600}'
       + '.gt-tp-ekind{font-size:10px;text-transform:uppercase;color:var(--mbu-text-weak)}'
       + '.gt-tp-ehead .gt-tp-plus{margin-left:auto;flex:none;width:28px;height:24px;border:1px solid var(--mbu-ok-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:15px monospace;color:var(--mbu-ok);line-height:1}.gt-tp-ehead .gt-tp-plus:hover{background:var(--mbu-ok-bg)}'
       + '.gt-tp-eroles{margin-top:2px;display:flex;flex-wrap:wrap;gap:3px 4px}'
@@ -5230,8 +5232,6 @@
       + '.gt-tp-esrch-q{flex:1;min-width:0;height:24px;box-sizing:border-box;padding:2px 7px;border:1px solid var(--mbu-border);border-radius:4px;font:inherit;font-size:12px;outline:none;background:var(--mbu-bg);color:var(--mbu-text)}.gt-tp-esrch-q:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-esrch-kind{flex:none;height:24px;font:inherit;font-size:11.5px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg)}'
       // a line's pattern and text, opened from its number or listed as not parsed
-      + '.gt-tp-unp{display:flex;flex-direction:column;gap:3px}.gt-tp-unp:empty{display:none}'
-      + '.gt-tp-unp-title{font-weight:700;font-size:12px;color:var(--mbu-error)}'
       + '.gt-tp-line{display:flex;align-items:center;gap:4px;margin-top:3px}'
       + '.gt-tp-line-no{flex:none;min-width:18px;font-size:11px;color:var(--mbu-text-weak);text-align:right}'
       + '.gt-tp-ov{flex:0 0 140px;box-sizing:border-box;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:var(--mbu-info)}'
@@ -5917,17 +5917,21 @@
     ta.rows = 1;
     const linesLbl = el('button', 'gt-tp-lines', ''); linesLbl.type = 'button'; linesLbl.dataset.tip = 'Show all the text';
     linesLbl.onclick = () => ta.focus();
-    const fitTa = () => { ta.style.height = ''; if (ta.classList.contains('gt-tp-ta-open')) ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(window.innerHeight * 0.5)) + 'px'; };
+    // #798: line numbers beside the open text, the numbers the rows show
+    const gut = el('div', 'gt-tp-gut');
+    const fitGut = () => {
+      const n = ta.value.split('\n').length;
+      if (gut.childElementCount !== n) gut.textContent = Array.from({ length: n }, (_, i) => i + 1).join('\n');
+      gut.style.height = Math.max(0, ta.clientHeight) + 'px';
+      gut.scrollTop = ta.scrollTop;
+    };
+    ta.addEventListener('scroll', () => { gut.scrollTop = ta.scrollTop; });
+    const fitTa = () => { ta.style.height = ''; if (ta.classList.contains('gt-tp-ta-open')) ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(window.innerHeight * 0.5)) + 'px'; fitGut(); };
     ta.addEventListener('focus', () => { ta.classList.add('gt-tp-ta-open'); pasteWrap.classList.add('gt-tp-paste-open'); fitTa(); });
     ta.addEventListener('blur', () => { ta.classList.remove('gt-tp-ta-open'); pasteWrap.classList.remove('gt-tp-paste-open'); fitTa(); ta.scrollTop = 0; });
     ta.addEventListener('input', fitTa);
-    pasteWrap.append(ta, linesLbl);
+    pasteWrap.append(ta, gut, linesLbl);
 
-    // #798: one table, the entities'. Above it, only the lines that gave no
-    // credit, to fix their pattern or text
-    const body = el('div', 'gt-cons-body gt-tp-body');
-    const unp = el('div', 'gt-tp-unp');
-    body.appendChild(unp);
 
     // #798: the entities, as in Credit Hoarder's review table — one row per name,
     // the credit on the left, MusicBrainz's candidates for it on the right
@@ -6016,15 +6020,6 @@
       w.append(rawIn, ov, del);
       return w;
     }
-    function renderUnparsed(rows) {
-      unp.textContent = '';
-      const seen = new Set();
-      const bad = rows.filter(r => (!r.matched || !(r.entity || '').trim()) && !seen.has(r.li) && seen.add(r.li));
-      if (!rows.length) { unp.appendChild(el('div', 'gt-pop-note', 'Paste credit text above, or load the annotation.')); return; }
-      if (!bad.length) return;
-      unp.appendChild(el('div', 'gt-tp-unp-title', `Not parsed — ${bad.length}`));
-      bad.forEach(r => unp.appendChild(lineEditor(r.li, r)));
-    }
     // a credit's role: click picks it
     function roleChip(r) {
       const chip = el('span', 'gt-tp-role' + (r.roleMatch ? '' : ' gt-tp-role-miss') + (appliedKeys.has(r.key) ? ' gt-tp-role-done' : ''));
@@ -6084,9 +6079,29 @@
         groups.get(k).rows.push(r);
       });
       entsTitle.textContent = groups.size ? `Entities — ${groups.size}` : 'Entities';
-      ents.style.display = groups.size ? '' : 'none';
+      if (!rows.length) {
+        const td = el('td', 'gt-pop-note', 'Paste credit text above, or load the annotation.'); td.colSpan = 2;
+        etbody.appendChild(el('tr')).appendChild(td);
+        return;
+      }
+      // #798: in the text's order, and a line that gives no credit stays where it
+      // is, as a row of its own — editing its pattern never moves the page
+      const items = [...groups.values()].map(g => ({ li: Math.min(...g.rows.map(r => r.li)), g }));
+      const seenLi = new Set();
+      rows.filter(r => (!r.matched || !(r.entity || '').trim()) && !seenLi.has(r.li) && seenLi.add(r.li)).forEach(r => items.push({ li: r.li, bad: r }));
+      items.sort((a, b) => a.li - b.li);
       const KIND = { artist: 'Artist', label: 'Label', place: 'Place' };
-      for (const g of groups.values()) {
+      for (const it of items) {
+        if (it.bad) {
+          const tr = el('tr', 'gt-tp-erow gt-tp-st-red'); tr.dataset.unparsed = '1';
+          const left = el('td');
+          const head = el('div', 'gt-tp-ehead'); head.appendChild(el('span', 'gt-tp-ename gt-tp-unparsed', 'not parsed'));
+          left.append(head, lineEditor(it.li, it.bad));
+          const right = el('td', 'gt-tp-enone', 'The pattern finds no role and name in this line: give it its own pattern, or edit its text.');
+          tr.append(left, right); etbody.appendChild(tr);
+          continue;
+        }
+        const g = it.g;
         const r0 = g.rows[0], cc = candCache.get(g.key), ent = entityCache.get(g.key) || null, pi = pickInfo.get(g.key) || {};
         const creating = pendingCreates.get(g.key), ss = searchState.get(g.key);
         const kind = (ss && ss.kind) || r0.entityType || 'artist';
@@ -6234,7 +6249,6 @@
       const activeSel = activeFkey && typeof active.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
 
       const rows = parsedRows().map(attachResolution);
-      renderUnparsed(rows);
       // #798: counted in what you act on — names picked, lines not parsed — not in
       // lines the pattern read, which looked done when it wasn't
       const credits = rows.filter(r => r.matched && (r.entity || '').trim());
@@ -6256,7 +6270,7 @@
       if (rows.length) {
         part(`${picked}/${names.size} picked`, picked < names.size, 'Click: the next name left to pick', '.gt-tp-erow[data-unpicked]');
         if (roleless) part(`${roleless} role${roleless === 1 ? '' : 's'} to pick`, true, 'Click: the next credit whose role is left to pick', '.gt-tp-erow[data-roleless]');
-        if (unparsed) part(`${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, true, 'Click: the lines not parsed', '.gt-tp-unp');
+        if (unparsed) part(`${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, true, 'Click: the next line not parsed', '.gt-tp-erow[data-unparsed]');
         if (applied) part(`${applied} applied`, false);
       }
       cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0 || roleless > 0);
@@ -6751,7 +6765,7 @@
     ctrl.append(pasteWrap, opts);
     const top = el('div', 'gt-tp-top');
     top.append(hdr, ctrl);
-    panel.append(top, body, ents);
+    panel.append(top, ents);
     // #798: under Group Therapy's toolbar, where the button that opened it is
     const bar = document.querySelector('.gt-toolbar');
     if (bar) bar.after(panel); else (document.getElementById('content') || document.body).prepend(panel);
