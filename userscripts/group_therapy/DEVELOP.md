@@ -24,3 +24,7 @@ Each name's candidates are ranked by `mbmRankCandidates` from the shared matcher
 - **Remembered picks**: GM `gt-tp-picks`, `{ "<release artist mbid>|<folded name>": { gid, name, kind } }`, the newest 3000.
 
 The cutoff is GM `gt-tp-cutoff` (`strong` · `unique` · `weak`). The candidates and who picked what stay with the parser's other state, per release, until the page reloads.
+
+## Text parser roles
+
+A role text is matched, in order, by: your earlier pick for that text (GM `gt-tp-roles`, keyed `release|text` or `recording|text`, since a pair's link types differ); the link-type names (exact, contained, a common stem); then the word scan (`txpRoleScan`). The scan only sees the link types of the credit's kind, and reads each type's name and its `link_phrase`, `reverse_link_phrase` and `long_link_phrase` with the `{…}` placeholders removed (in MusicBrainz's interface language), plus `TXP_ROLE_SYNONYMS`. Stop words (*by, at, of, and, all*…) and words under three letters don't count. Per word, a type scores 3 when a whole phrase is the word, 2 when a phrase contains it, 1 when a stem matches; *music*, *lyrics* and the other made things count double. A stem is the word less one common ending (*-ation, -tion, -ing, -ist, -er, -ed, -es, -s*) when four letters are left; two words match when one stem starts the other (*writ* · *written*, *produc* · *produced*). One type ahead is taken; a tie is offered on the chip, four at most.

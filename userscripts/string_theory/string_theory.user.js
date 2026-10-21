@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.110216
+// @version      2026.10.21.111816
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -131,8 +131,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.21.110216 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.21.102218\n  · Art Station v2026.10.20.231231\n  · Credit Hoarder v2026.10.21.102221\n  · Falcon v2026.10.20.143006\n  · First Contact v2026.10.21\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.110213\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.223959\n  · Platform Check v2026.10.20.142620");
+  console.log('%c String Theory %c v2026.10.21.111816 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.21.102218\n  · Art Station v2026.10.20.231231\n  · Credit Hoarder v2026.10.21.102221\n  · Falcon v2026.10.20.143006\n  · First Contact v2026.10.21\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.111812\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.223959\n  · Platform Check v2026.10.20.142620");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -140,7 +140,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.21.102218"],["art_station","Art Station","2026.10.20.231231"],["credit_hoarder","Credit Hoarder","2026.10.21.102221"],["falcon","Falcon","2026.10.20.143006"],["first_contact","First Contact","2026.10.21"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.110213"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.223959"],["platform_check","Platform Check","2026.10.20.142620"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.21.102218"],["art_station","Art Station","2026.10.20.231231"],["credit_hoarder","Credit Hoarder","2026.10.21.102221"],["falcon","Falcon","2026.10.20.143006"],["first_contact","First Contact","2026.10.21"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.111812"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.223959"],["platform_check","Platform Check","2026.10.20.142620"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -46421,7 +46421,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.110213","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.110213","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.111812","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.111812","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
@@ -46941,6 +46941,13 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       .gt-role-row:hover{background:var(--mbu-bg-raised)}
       .gt-role-name{font-weight:600;font-size:13px}
       .gt-role-recent{font-weight:400;font-size:10px;color:var(--mbu-info);margin-left:6px}
+      .gt-role-sub{font-weight:400;font-size:12px;color:var(--mbu-text-weak);margin-left:8px}
+      .gt-role-kind{font-weight:400;font-size:10px;text-transform:uppercase;color:var(--mbu-text-weak);border:1px solid var(--mbu-border);border-radius:8px;padding:0 6px;margin-left:7px;vertical-align:1px}
+      .gt-role-from{font-weight:400;font-size:11px;color:var(--mbu-ok);margin-left:7px}
+      .gt-role-sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--mbu-text-weak);padding:7px 8px 2px}
+      .gt-role-sec-other{border-top:1px dashed var(--mbu-border);margin-top:4px}
+      .gt-role-sug{background:var(--mbu-bg-raised)}
+      .gt-role-other{opacity:.6}
       .gt-role-desc{font-size:11px;color:var(--mbu-text-dim);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}   /* #544: was one nowrap line + ellipsis, which cut every description; two wrapped lines instead */
       .gt-cons{background:var(--mbu-bg);border-radius:var(--mbu-radius-lg);box-shadow:0 18px 50px rgba(0,0,0,.35);width:min(920px,94vw);max-height:88vh;display:flex;flex-direction:column;font:13px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text)}
       .gt-cons-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--mbu-border)}
@@ -49755,6 +49762,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       + '.gt-tp-role-pick{border:none;background:none;padding:0;cursor:pointer;font:inherit;color:var(--mbu-text-dim)}.gt-tp-role-pick:hover{color:var(--mbu-info);text-decoration:underline}'
       + '.gt-tp-role-miss .gt-tp-role-pick{color:var(--mbu-error);font-weight:600}'
       + '.gt-tp-role-done{opacity:.6}'
+      + '.gt-tp-rsug{border:1px solid var(--mbu-ok-border);border-radius:10px;padding:0 7px;background:var(--mbu-bg);color:var(--mbu-ok);font:inherit;font-size:11px;cursor:pointer}.gt-tp-rsug:hover{background:var(--mbu-ok-bg)}'
       + '.gt-tp-role:not(:last-child)::after{content:",";margin-left:-3px}'
       + '.gt-tp-role-own{color:var(--mbu-accent-text)}.gt-tp-role-own-x{border:none;background:none;padding:0 2px;cursor:pointer;color:var(--mbu-text-weak);font-size:10px}.gt-tp-role-own-x:hover{color:var(--mbu-error)}'
       + '.gt-tp-trk-on{color:var(--mbu-ok);font-weight:600;cursor:help}.gt-tp-trk-warn{color:var(--mbu-warn);cursor:help}'
@@ -50183,6 +50191,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // or the type doesn't take that qualifier — falls back to classifying the
     // whole text exactly as before.
     function classifyRoleText(rt, artistCands, labelCands, instrumentLt, instrumentCands, placeCands) {
+      const learned = txpLearnedRole(rt);   // #798: your pick for this text, from any release
+      if (learned) return learned;
       const fm = TXP_FLAG_RE.exec(rt || '');
       if (fm) {
         const flagId = txpFlagAttrId(fm[1]);
@@ -50208,13 +50218,11 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
           return classifyBaseRole(tail, artistCands, labelCands, instrumentLt, instrumentCands, placeCands, true);
         }
       }
+      const rt0 = rt;
       rt = TXP_ROLE_SYNONYMS[rt] || TXP_VOCAL_SYNONYMS[rt] || rt;   // #666: "backing vocals" → "background vocals"
-      const a = txpMatchRoleText(artistCands, rt);
-      const l = txpMatchRoleText(labelCands, rt);
-      const pl = txpMatchRoleText(placeCands || [], rt);
-      const artistMatch = a ? a.hit : null;
-      const labelMatch = l ? l.hit : null;
-      const placeMatch = pl ? pl.hit : null;
+      let a = txpMatchRoleText(artistCands, rt);
+      let l = txpMatchRoleText(labelCands, rt);
+      let pl = txpMatchRoleText(placeCands || [], rt);
       let instrumentMatch = null;
       // #666: vocal types. "lead vocals" LOOSELY matches the bare "vocal" link
       // type (it contains "vocal"), so a vocal-attribute hit wins over that
@@ -50231,6 +50239,21 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const iHit = txpMatchRoleText(instrumentCands, rt);
         if (iHit) instrumentMatch = { id: instrumentLt.id, name: iHit.hit.name, attributeId: iHit.hit.id };
       }
+      // #798: where a kind found nothing yet, the word scan; a tie is offered on the chip
+      const suggest = {};
+      const scan = (kind, cands, cur) => {
+        if (cur) return cur;
+        const sc = txpRoleScan(rt0, cands);
+        if (!sc) return cur;
+        if (sc.suggest.length) suggest[kind] = sc.suggest;
+        return sc.hit ? { hit: { ...sc.hit, from: sc.from }, tier: 3 } : cur;
+      };
+      if (!instrumentMatch) a = scan('artist', artistCands, a);
+      l = scan('label', labelCands, l);
+      pl = scan('place', placeCands || [], pl);
+      const artistMatch = a ? a.hit : null;
+      const labelMatch = l ? l.hit : null;
+      const placeMatch = pl ? pl.hit : null;
       // instrument roles are inherently artist-only. A role matching only ONE
       // side forces that side outright. A role matching BOTH sides is only
       // genuinely ambiguous when both matched at the SAME confidence tier —
@@ -50250,7 +50273,26 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         tiers.sort((x, y) => x[1].tier - y[1].tier);
         forced = tiers[0][1].tier < tiers[1][1].tier ? tiers[0][0] : null;   // a clear winner, or genuinely ambiguous
       }
-      return { artistMatch, labelMatch, placeMatch, instrumentMatch, forced };
+      return { artistMatch, labelMatch, placeMatch, instrumentMatch, forced, suggest };
+    }
+    // #798: role picks you made, by role text, so the text resolves on the next release too
+    const TXP_ROLES_KEY = 'gt-tp-roles';
+    const roleKey = rt => (scope.kind === 'recording' ? 'recording' : 'release') + '|' + (rt || '').toLowerCase().trim();
+    const learnedRoles = () => { try { return JSON.parse(GM_getValue(TXP_ROLES_KEY, '{}')) || {}; } catch (e) { return {}; } };
+    function txpLearnedRole(rt) {
+      const m = learnedRoles()[roleKey(rt)];
+      if (!m) return null;
+      const has = t => t === 'artist' ? !!(m.artistMatch || m.instrumentMatch) : !!m[t + 'Match'];
+      const kinds = ['artist', 'label', 'place'].filter(has);
+      return { artistMatch: m.artistMatch || null, labelMatch: m.labelMatch || null, placeMatch: m.placeMatch || null, instrumentMatch: m.instrumentMatch || null,
+        forced: kinds.length === 1 ? kinds[0] : null, learned: true, suggest: {} };
+    }
+    function txpLearnRole(rt, next) {
+      const all = learnedRoles(), k = roleKey(rt);
+      delete all[k]; all[k] = { artistMatch: next.artistMatch, labelMatch: next.labelMatch, placeMatch: next.placeMatch, instrumentMatch: next.instrumentMatch };
+      const keys = Object.keys(all);
+      keys.slice(0, Math.max(0, keys.length - 1000)).forEach(x => delete all[x]);
+      try { GM_setValue(TXP_ROLES_KEY, JSON.stringify(all)); } catch (e) {}
     }
     // the entity type for an ORDINARY credit row: forced by its role's own
     // classification when unambiguous, otherwise the same release-artist-
@@ -50603,9 +50645,18 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const name = r.roleMatch ? r.roleMatch.name : (r.crKind ? (r.role || '') : `${r.role || '?'} ?`);
       if (!r.crKind) {
         const b = el('button', 'gt-tp-role-pick', (appliedKeys.has(r.key) ? '✓ ' : '') + name); b.type = 'button';
-        b.dataset.tip = `“${r.role}”\nClick: ${r.roleMatch ? 'change' : 'pick'} the role`;
+        const how = r.roleMatch && r.roleMatch.from ? `, from “${r.roleMatch.from}”` : (r.roleClass && r.roleClass.learned ? ', your pick' : '');
+        b.dataset.tip = `“${r.role}”${how}\nClick: ${r.roleMatch ? 'change' : 'pick'} the role`;
         b.onclick = () => txpPickRole(r);
         chip.appendChild(b);
+        // #798: a tie the scan couldn't break, offered to click
+        const sug = !r.roleMatch && r.roleClass && r.roleClass.suggest ? (r.roleClass.suggest[r.entityType || 'artist'] || []) : [];
+        sug.forEach(c => {
+          const sb = el('button', 'gt-tp-rsug', c.name); sb.type = 'button';
+          sb.dataset.tip = `From “${c.from}”\nClick: this role, for every credit with “${r.role}”`;
+          sb.onclick = () => txpApplyRole(r, { ...c, _entityType: r.entityType || 'artist' });
+          chip.appendChild(sb);
+        });
       } else {
         const t = el('span', 'gt-tp-role-cr', (appliedKeys.has(r.key) ? '✓ ' : '') + name + (r.year ? ' ' + r.year : ''));
         if (!r.roleMatch) t.dataset.tip = 'Its role follows the holder picked';
@@ -50976,9 +51027,9 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const vocalOpts = vocalLt ? txpVocalCandidates().map(c => ({ id: c.id, name: c.name, desc: 'vocal', _instrument: true, _ltId: vocalLt.id, _entityType: 'artist' })) : [];
       const roles = [
         ...artistCands.map(c => ({ ...c, _entityType: 'artist' })),
-        ...labelCands.map(c => ({ ...c, _entityType: 'label', desc: (c.desc ? c.desc + ' ' : '') + '(label)' })),
+        ...labelCands.map(c => ({ ...c, _entityType: 'label' })),
         // #525: place roles too — "recorded at", "mixed at", "mastered at" …
-        ...linkTypesForPair('place', scopeTarget).map(c => ({ ...c, _entityType: 'place', desc: (c.desc ? c.desc + ' ' : '') + '(place)' })),
+        ...linkTypesForPair('place', scopeTarget).map(c => ({ ...c, _entityType: 'place' })),
         ...vocalOpts,
         ...instrumentOpts,
       ];
@@ -50986,7 +51037,17 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       // it is not already filled in in search box in popup like Artist" —
       // pre-fill/pre-filter with the parsed role text, same as the entity
       // popover already does with r.entity.
-      openRolePicker(roles, `Pick a role for “${trunc(r.entity || r.raw, 40)}”`, picked => {
+      // #798: what the scan offered comes first, the credit's kind next, other kinds last
+      const kind = r.entityForced || r.entityType || 'artist';
+      const sug = ((r.roleClass && r.roleClass.suggest) || {})[kind] || [];
+      const suggested = sug.map(c => roles.find(x => x.id === c.id && x._entityType === kind && !x._instrument)).filter(Boolean)
+        .map((x, i) => ({ ...x, from: sug[i] && sug[i].from }));
+      const KIND_WORD = { artist: 'artist', label: 'label', place: 'place' };
+      openRolePicker(roles, `Pick a role for “${trunc(r.entity || r.raw, 40)}”`, picked => txpApplyRole(r, picked), r.role || '',
+        { suggested, primaryKind: kind, subtitle: `${KIND_WORD[kind]} · ${scopeTarget === 'recording' ? 'on recordings' : 'on the release'}` });
+    }
+    function txpApplyRole(r, picked) {
+      {
         const resolved = picked._instrument ? { id: picked._ltId, name: picked.name, attributeId: picked.id } : { id: picked.id, name: picked.name };
         // The pick is shared by every row with this role text, and those rows
         // can name different kinds of entity — "Producer: Livio Giacomi &
@@ -51002,8 +51063,9 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const has = t => t === 'artist' ? !!(next.artistMatch || next.instrumentMatch) : !!next[t + 'Match'];
         next.forced = ['artist', 'label', 'place'].filter(has).length === 1 ? picked._entityType : null;
         roleCache.set(rk, next);
+        txpLearnRole(r.role || '', next);   // #798
         render(); saveState();
-      }, r.role || '');
+      }
     }
     // #798: create the entity a name lacks — in a tab you watch (click), or in
     // the background (right-click), where the created page posts its MBID back
@@ -51593,6 +51655,70 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     'lead vocal': 'lead vocals', 'lead vocalist': 'lead vocals', 'lead singer': 'lead vocals',
     'choir': 'choir vocals', 'spoken word': 'spoken vocals',
   };
+  // #798 role word scan. A role text MusicBrainz's link-type NAMES don't match
+  // ("Lyrics by": the type is "lyricist") is matched word by word against the
+  // type's own phrases ("{additional} lyrics", "composed", "produced"…), in
+  // MusicBrainz's interface language, plus the synonyms above. Short and
+  // connecting words don't count; the thing made ("music", "lyrics") counts
+  // double over the verb. Only the kind's own types are given (an artist's
+  // credit never sees "written at"), so what is left is one, or a few to offer.
+  const TXP_STOP = new Set(['by', 'at', 'of', 'for', 'the', 'and', 'all', 'a', 'an', 'in', 'on', 'with', 'from', 'to', '&', 'additional', 'original']);
+  const TXP_OBJECT_WORDS = new Set(['music', 'lyrics', 'lyric', 'words', 'text', 'texts', 'libretto', 'songs', 'arrangement', 'arrangements', 'orchestration', 'photography', 'photos', 'photo', 'design', 'artwork', 'illustration', 'illustrations', 'translation', 'translations', 'production', 'mastering', 'mixing', 'recording', 'engineering']);
+  function txpWordStem(w) {
+    for (const suf of ['ations', 'ation', 'tions', 'tion', 'ings', 'ing', 'ists', 'ist', 'ers', 'er', 'ies', 'ed', 'es', 's']) {
+      if (w.endsWith(suf) && w.length - suf.length >= 4) return w.slice(0, -suf.length);
+    }
+    return w;
+  }
+  // "writ" (writer) and "written", "produc" (production) and "produced": one stem starts the other
+  function txpStemMatch(a, b) {
+    const x = txpWordStem(a), y = txpWordStem(b);
+    const [sh, lo] = x.length <= y.length ? [x, y] : [y, x];
+    return sh.length >= 3 && lo.startsWith(sh);
+  }
+  // a link type's words: its name, and its phrases without their {…} placeholders
+  function txpLtTerms(lt) {
+    const t = ((W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {})[lt.id] || {};
+    const clean = x => String(x || '').replace(/\{[^}]*\}/g, ' ').toLowerCase().replace(/[^\p{L}\p{N}' -]+/gu, ' ').replace(/\s+/g, ' ').trim();
+    return [...new Set([clean(lt.name), clean(t.link_phrase), clean(t.reverse_link_phrase), clean(t.long_link_phrase)].filter(Boolean))];
+  }
+  // → { hit, from, suggest: [] } with one clear winner, { suggest: [...] } with a
+  // tie (each carrying `from`, the word it came from), or null
+  function txpRoleScan(rt, cands) {
+    if (!cands || !cands.length) return null;
+    const words0 = String(rt || '').toLowerCase().replace(/[^\p{L}\p{N}&' -]+/gu, ' ').split(/\s+/).filter(Boolean);
+    while (words0.length && TXP_STOP.has(words0[0])) words0.shift();
+    while (words0.length && TXP_STOP.has(words0[words0.length - 1])) words0.pop();
+    const bare = words0.join(' ');
+    if (!bare) return null;
+    const terms = cands.map(c => ({ c, terms: txpLtTerms(c) }));
+    const byName = n => cands.find(c => c.name === n);
+    const syn = TXP_ROLE_SYNONYMS[bare] && byName(TXP_ROLE_SYNONYMS[bare]);
+    if (syn) return { hit: syn, from: bare, suggest: [] };
+    const exact = terms.filter(t => t.terms.includes(bare));
+    if (exact.length === 1) return { hit: exact[0].c, from: bare, suggest: [] };
+    const score = new Map(), from = new Map();
+    const vote = (c, pts, w) => { score.set(c, (score.get(c) || 0) + pts); if (!from.has(c)) from.set(c, w); };
+    for (const w of words0) {
+      if (w.length < 3 || TXP_STOP.has(w)) continue;
+      const weight = TXP_OBJECT_WORDS.has(w) ? 2 : 1;
+      for (const t of terms) {
+        let best = 0;
+        for (const term of t.terms) {
+          if (term === w) best = Math.max(best, 3);
+          for (const tw of term.split(' ')) { if (tw === w) best = Math.max(best, 2); else if (txpStemMatch(w, tw)) best = Math.max(best, 1); }
+        }
+        if (best) vote(t.c, best * weight, w);
+      }
+      const s1 = TXP_ROLE_SYNONYMS[w] && byName(TXP_ROLE_SYNONYMS[w]);
+      if (s1) vote(s1, 3 * weight, w);
+    }
+    const ranked = [...score.entries()].sort((x, y) => y[1] - x[1]);
+    if (!ranked.length) return null;
+    const out = list => list.slice(0, 4).map(([c]) => ({ ...c, from: from.get(c) }));
+    if (ranked.length === 1 || ranked[0][1] > ranked[1][1]) return { hit: ranked[0][0], from: from.get(ranked[0][0]), suggest: out(ranked.slice(1)) };
+    return { suggest: out(ranked) };
+  }
   // #666: qualifier words that are ATTRIBUTES on many link types ("Guest
   // Vocals", "Co-Producer", "Executive Producer"). Names, not ids, are the key —
   // the id is looked up from MB's own table at runtime.
@@ -51623,7 +51749,8 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
   // same replacement over and over. Takes the role LIST directly (not a `rel`)
   // so #522's text parser can feed it `linkTypesForPair(...)` roles for a pair
   // that has no existing relationship yet.
-  function openRolePicker(roles, title, onPick, initialQuery) {
+  function openRolePicker(roles, title, onPick, initialQuery, opts) {
+    opts = opts || {};
     if (!roles.length) { toast('No relationship types are valid for this pair'); return; }
     const ov = el('div', 'gt-cons-ov'), panel = el('div', 'gt-cons gt-role-pick');
     const hdr = el('div', 'gt-cons-hdr');
@@ -51631,7 +51758,9 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     // The title span carried no class, so it missed the `flex:1` that pushes
     // the ✕ to the right in every other dialog here — the button sat glued to
     // the end of the title text. Same classes as the rest now.
-    hdr.appendChild(el('span', 'gt-cons-title', title));
+    const ttl = el('span', 'gt-cons-title', title);
+    if (opts.subtitle) ttl.appendChild(el('span', 'gt-role-sub', opts.subtitle));   // #798: whose role, and where
+    hdr.appendChild(ttl);
     const close = el('button', 'gt-cons-x', '✕'); close.type = 'button'; close.dataset.tip = 'Cancel'; hdr.appendChild(close);
     panel.appendChild(hdr);
     const search = el('input', 'gt-role-search');
@@ -51660,25 +51789,63 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
       active = (active + delta + rows.length) % rows.length;   // wraps, so Up from the top lands on the last
       paintActive();
     };
+    // #798: a filter of several words matches word by word, by stem ("lyrics by" → lyricist)
+    const qWords = q => q.split(/\s+/).filter(w => w.length >= 3 && !TXP_STOP.has(w));
+    const matches = (r, q) => {
+      if (!q || r.name.toLowerCase().includes(q)) return true;
+      const ws = qWords(q);
+      if (!ws.length) return false;
+      const rw = (r._instrument ? [r.name.toLowerCase()] : txpLtTerms(r)).join(' ').split(' ');
+      return ws.every(w => rw.some(x => x === w || txpStemMatch(w, x)));
+    };
     function render() {
-      const q = search.value.trim().toLowerCase();
+      let q = search.value.trim().toLowerCase();
+      // #798: the role's own text, when it matches no role, filters nothing — the
+      // whole list shows instead of "no role matches", the text still selected
+      if (q && q === (initialQuery || '').trim().toLowerCase() && !roles.some(r => matches(r, q))) q = '';
       const hist = roleHistory();
       const rank = r => { const i = hist.findIndex(h => h.id === r.id); return i < 0 ? 999 : i; };
-      const shown = roles.filter(r => !q || r.name.toLowerCase().includes(q))
-        .sort((p, o) => (rank(p) - rank(o)) || p.name.localeCompare(o.name));
+      const byRank = (p, o) => (rank(p) - rank(o)) || p.name.localeCompare(o.name);
+      const prim = opts.primaryKind;
+      const sugIds = new Set((opts.suggested || []).map(r => r._entityType + ':' + r.id));
+      const filtered = roles.filter(r => matches(r, q));
+      // Suggested first (unfiltered while the box holds the role's own text), then the
+      // credit's kind, then the other kinds under a divider, dimmed
+      const sugShown = (opts.suggested || []).filter(r => !q || q === (initialQuery || '').trim().toLowerCase() || matches(r, q));
+      // the kind's link types before its instruments and vocals; other kinds grouped by kind
+      const own = filtered.filter(r => !prim || r._entityType === prim || !r._entityType).filter(r => !sugIds.has(r._entityType + ':' + r.id))
+        .sort((p, o) => (!!p._instrument - !!o._instrument) || byRank(p, o)).slice(0, 200);
+      const KIND_ORDER = { artist: 0, label: 1, place: 2 };
+      const other = prim ? filtered.filter(r => r._entityType && r._entityType !== prim)
+        .sort((p, o) => (KIND_ORDER[p._entityType] - KIND_ORDER[o._entityType]) || byRank(p, o)).slice(0, 100) : [];
       list.textContent = '';
-      rows = shown.slice(0, 200).map(r => {
-        const row = el('div', 'gt-role-row');
+      const section = (text, cls) => list.appendChild(el('div', 'gt-role-sec' + (cls ? ' ' + cls : ''), text));
+      const KIND_NAME = { artist: 'an artist', label: 'a label', place: 'a place' };
+      const shown = [];
+      if (sugShown.length) { section('Suggested'); sugShown.forEach(r => shown.push([r, 'gt-role-sug'])); }
+      if (prim && (sugShown.length || other.length) && own.length) section('Roles for ' + KIND_NAME[prim]);
+      own.forEach(r => shown.push([r, '']));
+      let lastKind = null;
+      rows = [];
+      const addRow = ([r, cls]) => {
+        const row = el('div', 'gt-role-row' + (cls ? ' ' + cls : ''));
         const nm = el('span', 'gt-role-name', r.name);
+        if (r._entityType && prim) nm.appendChild(el('span', 'gt-role-kind', r._instrument ? 'instrument' : r._entityType));   // #798: the kind beside the name
+        if (r.from) nm.appendChild(el('span', 'gt-role-from', `from “${r.from}”`));
         if (rank(r) < 999) nm.appendChild(el('span', 'gt-role-recent', ' recent'));
         row.appendChild(nm);
         if (r.desc) row.appendChild(el('span', 'gt-role-desc', r.desc));   // #544: no 110-char truncation — the CSS clamps to two lines
         row.addEventListener('click', () => { rememberRole(r.id, r.name); done(); onPick(r); });
         row.addEventListener('mousemove', () => { const i = rows.indexOf(row); if (i >= 0 && i !== active) { active = i; paintActive(); } });   // #544: keep mouse and keyboard on the same row
         list.appendChild(row);
-        return row;
+        rows.push(row);
+      };
+      shown.forEach(addRow);
+      other.forEach(r => {
+        if (r._entityType !== lastKind) { lastKind = r._entityType; section('For ' + KIND_NAME[lastKind], 'gt-role-sec-other'); }
+        addRow([r, 'gt-role-other']);
       });
-      if (!shown.length) list.appendChild(el('div', 'gt-note', 'No role matches that filter'));
+      if (!rows.length) list.appendChild(el('div', 'gt-note', 'No role matches that filter'));
       if (active >= rows.length) active = 0;   // #544: the filter just changed the list under us
       paintActive();
     }
