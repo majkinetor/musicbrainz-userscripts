@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.175528
+// @version      2026.10.21.180014
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -2862,9 +2862,12 @@ function injectStyle() {
 #fc-check .fc-check-rel { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 #fc-check .fc-check-rel a { color: var(--mbu-accent-text); }
 #fc-check .fc-dim { color: var(--mbu-text-dim); font-weight: normal; }
-#fc-check .fc-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-#fc-check .fc-badge { font-size: 11px; line-height: 1.5; padding: 0 7px; border-radius: 9px; border: 1px solid var(--mbu-ok-border); background: var(--mbu-ok-bg); color: var(--mbu-ok); }
-#fc-check .fc-badge-no { border-color: var(--mbu-warn-border); background: var(--mbu-warn-bg); color: var(--mbu-warn); }
+#fc-check .fc-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+#fc-check .fc-ic { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 20px; color: var(--mbu-ok); cursor: default; }
+#fc-check .fc-ic svg { width: 14px; height: 14px; display: block; }
+#fc-check .fc-ic::after { content: '✓'; position: absolute; right: -1px; bottom: -3px; font-size: 9px; font-weight: 700; line-height: 1; }
+#fc-check .fc-ic-no { color: var(--mbu-warn); }
+#fc-check .fc-ic-no::after { content: '≠'; font-size: 10px; }
 #fc-check .fc-check-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 #fc-check .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 #fc-check button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
@@ -3885,6 +3888,26 @@ async function checkOnLoad(provider, id) {
     } finally { c.busy = false; c.checkP = null; }
 }
 
+// The panel's icons: the link (Apollo's), the barcode, the format by kind and the date (Mission Control's), a
+// title and a tracklist of their own
+const CHECK_ICONS = {
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    barcode: '<svg viewBox="0 0 14 10" fill="currentColor"><rect x="0" width="1.4" height="10"/><rect x="2.4" width="0.8" height="10"/><rect x="4.2" width="1.8" height="10"/><rect x="7" width="0.8" height="10"/><rect x="8.8" width="1.4" height="10"/><rect x="11.2" width="0.8" height="10"/><rect x="12.6" width="1.4" height="10"/></svg>',
+    title: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3h10M7 3v9"/></svg>',
+    tracks: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 3.5h7.5M5 7h7.5M5 10.5h7.5"/><circle cx="2" cy="3.5" r=".9" fill="currentColor"/><circle cx="2" cy="7" r=".9" fill="currentColor"/><circle cx="2" cy="10.5" r=".9" fill="currentColor"/></svg>',
+    date: '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5"/><path d="M1.5 6h11M4.5 1v3M9.5 1v3"/></svg>',
+};
+const FORMAT_ICONS = {
+    digital: '<path d="M8 25h16a6 6 0 0 0 .8-11.95A9 9 0 0 0 7.4 15.2 5 5 0 0 0 8 25z"/>',
+    vinyl: '<circle cx="19" cy="16" r="10.5"/><circle cx="19" cy="16" r="6.5" stroke-width="1" opacity=".5"/><circle cx="19" cy="16" r="2.4" fill="currentColor"/><rect x="3" y="4" width="14" height="24" rx="1.5" fill="var(--mbu-bg)"/>',
+    cassette: '<rect x="3" y="7" width="26" height="18" rx="2.5"/><circle cx="11" cy="15" r="2.6"/><circle cx="21" cy="15" r="2.6"/><path d="M11 12.4h10M9 25l2-4h10l2 4"/>',
+    disc: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3.5"/><path d="M16 7a9 9 0 0 1 9 9" opacity=".55"/>',
+};
+function checkIcon(name, format) {
+    if (name !== 'format') return CHECK_ICONS[name] || '';
+    const k = fmtKind(String(format || '').split('+')[0]);
+    return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">' + (FORMAT_ICONS[k] || FORMAT_ICONS.disc) + '</svg>';
+}
 // A release's badges in the panel: [name, agrees, tooltip] for each thing both the release and the album give
 function checkBadges(e, rel, provider) {
     const out = [];
@@ -3925,11 +3948,14 @@ function askExisting(result, rel, provider, anchor) {
             line.append(dot, a);
             if (e.disamb) line.append(el('span', 'fc-dim', ` (${e.disamb})`));
             li.append(line, el('div', 'fc-dim', `${meta}${!e.same && !e.links.length ? `${meta ? ' · ' : ''}another edition` : ''}`));
-            // majkinetor: "badges for stuff that matches": what agrees with the album, and what differs (≠)
+            // majkinetor: "badges for stuff that matches", as icons: what agrees with the album (✓), and what differs (≠)
             const badges = el('div', 'fc-badges');
             for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
-                const bd = el('span', 'fc-badge' + (ok ? '' : ' fc-badge-no'), ok ? name : '≠ ' + name);
+                const bd = el('span', 'fc-ic' + (ok ? '' : ' fc-ic-no'));
+                bd.dataset.name = name;
                 bd.dataset.tip = tip;
+                bd.setAttribute('aria-label', (ok ? '' : '≠ ') + name);
+                bd.innerHTML = mbuHtml(checkIcon(name, e.format));
                 badges.append(bd);
             }
             if (badges.childNodes.length) li.append(badges);

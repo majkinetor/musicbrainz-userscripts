@@ -60,7 +60,7 @@ test.describe('on a Deezer album the sandbox has', () => {
     const row = box.locator('li', { has: page.locator(`a[href$="/release/${RAM}"]`) });
     check(await row.count() === 1, 'the release is listed, linked to the sandbox');
     const text = (await row.textContent()).replace(/\s+/g, ' ');
-    const badges = await row.locator('.fc-badge').evaluateAll(bs => bs.map(b => (b.classList.contains('fc-badge-no') ? '!' : '') + b.textContent));
+    const badges = await row.locator('.fc-ic').evaluateAll(bs => bs.map(b => (b.classList.contains('fc-ic-no') ? '!≠ ' : '') + b.dataset.name));
     check(['link', 'barcode', 'title', 'tracks', 'format'].every(b => badges.includes(b)), `badges for what agrees: link, barcode, title, tracks, format (${badges})`);
     check(!badges.some(b => b.startsWith('!') && b !== '!≠ date'), `nothing else differs (${badges})`);
     check(await row.locator('.fc-check-link').count() === 0, 'no Add link only: the release has the link');
