@@ -34,6 +34,8 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
     below: !!tr.querySelector('.gt-tp-below'),
   })));
   const row = (list, name) => list.find(e => e.name === name) || {};
+  // the cutoff is a chip with a menu of the levels, as Apollo's and Fusion's
+  const setCut = async v => { await page.click('.gt-tp-cutchip'); await page.click(`.gt-tp-cutmenu .gt-tp-cutmi[data-v="${v}"]`); await frames(page); };
 
   await open();
   const inline = await page.evaluate(() => {
@@ -48,7 +50,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
 
   await page.fill('.gt-tp-ta', [`Producer: ${relArtist}`, 'Guitar: John Smith', 'Mastering: Bob Ludwig'].join('\n'));
   await page.dispatchEvent('.gt-tp-ta', 'input');
-  await page.selectOption('.gt-tp-cut-sel', 'unique');
+  await setCut('unique');
   check(!(await page.locator('.gt-tp-resolve').count()), 'no Match button');
   await match();
   let list = await ents();
@@ -56,7 +58,6 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   check(list.length === 3, `a row per name (${list.length})`);
   const pills = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-cnt .gt-tp-pill')].map(p => p.className.replace('gt-tp-pill ', '') + ':' + p.textContent));
   check(JSON.stringify(pills) === '["gt-tp-pill-todo:1 name"]', `the status is one pill per thing left: one name to pick (${JSON.stringify(pills)})`);
-  await page.locator('.gt-tp-top').screenshot({ path: 'dev/_798-p.png' });
   const ra = row(list, relArtist);
   check(ra.picked && ra.level === 'strong' && ra.why.some(w => /on release/.test(w)), `the release artist is picked as Strong, saying why (${JSON.stringify(ra)})`);
   const js = row(list, 'John Smith');
@@ -67,12 +68,14 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   await attachShot(testInfo, page.locator('.gt-tp'), 'i798-entities');
 
   // the cutoff: Strong leaves the unique name waiting, below the cutoff
-  await page.selectOption('.gt-tp-cut-sel', 'strong');
+  await setCut('strong');
+  const cutTip = await page.getAttribute('.gt-tp-cut', 'data-tip');
+  check(/^The lowest confidence picked for you\n\{#2e9e5b on\} Strong: .*\n\{#d68910 off\} Unique name: .*\n\{#c0392b off\} Weak: /.test(cutTip), `the chip's tooltip is the levels' table, Strong chosen (${cutTip})`);
   await frames(page);
   list = await ents();
   check(!row(list, 'Bob Ludwig').picked && row(list, 'Bob Ludwig').below, 'at Strong, the unique name waits on its row, below the cutoff');
   check(row(list, relArtist).picked, 'and the Strong pick stays');
-  await page.selectOption('.gt-tp-cut-sel', 'unique');
+  await setCut('unique');
   await until(ents, l => row(l, 'Bob Ludwig').picked);
 
   // ✓ picks a candidate for every row with the name; the line table follows
@@ -90,7 +93,6 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   // the line the credit came from sits under it: its text and its pattern on one row
   check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line is under its credit, for editing');
   check(await jsTr.locator('.gt-tp-line .gt-tp-ov').count() === 1, 'with its pattern beside it');
-  await page.locator('.gt-tp').screenshot({ path: 'dev/_798-d.png' });
 
   // ✕ brings the candidates back, and nothing re-picks it on its own
   await jsTr.locator('.gt-tp-cand-x').click();

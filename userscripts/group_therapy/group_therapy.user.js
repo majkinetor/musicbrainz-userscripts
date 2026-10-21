@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.105153
+// @version      2026.10.21.110213
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5164,7 +5164,12 @@
       + '.gt-tp-ta.gt-tp-ta-open{position:absolute;top:0;left:0;right:0;z-index:7;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:5px 8px 5px 44px;line-height:1.4;overflow:auto;white-space:pre;border-color:var(--mbu-info)}'
       + '.gt-tp-lines{position:absolute;right:6px;top:5px;border:none;background:var(--mbu-bg);padding:0 2px;font-size:11px;color:var(--mbu-text-weak);cursor:pointer}.gt-tp-paste-open .gt-tp-lines{display:none}'
       + '.gt-tp-opts{flex:none;display:flex;align-items:center;gap:10px;height:28px}'
-      + '.gt-tp-opts .gt-tp-cut select{border:none;background:transparent;font-weight:600;cursor:pointer}'
+      + '.gt-tp-cut{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}'
+      + '.gt-tp-cutchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mbu-border);border-radius:14px;padding:2px 9px;cursor:pointer;font-size:12px;background:var(--mbu-bg);color:var(--mbu-text);user-select:none}'
+      + '.gt-tp-cutdot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.18);flex:none}'
+      + '.gt-tp-cutcaret{color:var(--mbu-text-weak);font-size:10px}'
+      + '.gt-tp-cutmenu{position:fixed;z-index:var(--mbu-z-pop);background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:7px;box-shadow:0 8px 24px rgba(40,20,80,.22);padding:4px;font-size:13px}'
+      + '.gt-tp-cutmi{display:flex;align-items:center;gap:9px;padding:5px 11px 5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap;color:var(--mbu-text)}.gt-tp-cutmi:hover,.gt-tp-cutmi.sel{background:var(--mbu-bg-hover)}'
       + '.gt-tp-opts .gt-tp-anno,.gt-tp-opts .gt-cons-btn{height:28px;box-sizing:border-box;padding:0 10px;font-size:12px;font-weight:400;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font-family:inherit}'
       + '.gt-tp-bar .gt-tp-title{flex:none}'
       + '.gt-tp-bar .gt-tp-grow{flex:1}'
@@ -5947,16 +5952,50 @@
     const ents = el('div', 'gt-tp-ents');
     const entsHdr = el('div', 'gt-tp-ents-hdr');
     const entsTitle = el('span', 'gt-tp-ents-title', 'Entities');
-    const cutWrap = el('label', 'gt-tp-cut');
-    const cutSel = el('select', 'gt-tp-cut-sel');
-    [['strong', 'Strong'], ['unique', 'Unique name'], ['weak', 'Weak']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; cutSel.appendChild(o); });
-    cutSel.value = cutoff;
-    cutWrap.dataset.tip = 'The lowest confidence picked for you\n'
-      + '- Strong: the release backs it: already credited here, a release artist’s member or collaborator, or your earlier pick\n'
-      + '- Unique name: the only one in MusicBrainz with this name\n'
-      + '- Weak: the best guess, when it clearly leads\n'
-      + 'A match below it waits on its row for ✓. Your own picks stay.';
-    cutWrap.append('Cutoff:', cutSel);
+    // #798 (majkinetor): the cutoff as Apollo's and Fusion's — a chip with the
+    // level's dot, a menu of the levels, their table in the tooltip
+    const CUT_LEVELS = ['strong', 'unique', 'weak'];
+    const CUT_NAME = { strong: 'Strong', unique: 'Unique name', weak: 'Weak' };
+    const CUT_COLOR = { strong: '#2e9e5b', unique: '#d68910', weak: '#c0392b' };
+    const CUT_MEANS = { strong: 'the release backs it: already credited on it, a release artist’s member or collaborator, or your earlier pick',
+      unique: 'the only one in MusicBrainz with this name or alias', weak: 'the best guess, when it clearly leads the next' };
+    const cutWrap = el('span', 'gt-tp-cut');
+    const cutChip = el('span', 'gt-tp-cutchip'); cutChip.tabIndex = 0; cutChip.setAttribute('role', 'button');
+    const cutDot = el('span', 'gt-tp-cutdot'), cutLbl = el('span', 'gt-tp-cutlbl');
+    cutChip.append(cutDot, cutLbl, el('span', 'gt-tp-cutcaret', '▾'));
+    cutWrap.append(el('b', '', 'Cutoff'), cutChip);
+    const paintCut = () => {
+      const cur = CUT_LEVELS.indexOf(cutoff);
+      cutDot.style.background = CUT_COLOR[cutoff]; cutLbl.textContent = CUT_NAME[cutoff];
+      cutWrap.dataset.tip = 'The lowest confidence picked for you\n'
+        + CUT_LEVELS.map((c, i) => '{' + CUT_COLOR[c] + (i === cur ? ' on' : i > cur ? ' off' : '') + '} ' + CUT_NAME[c] + ': ' + CUT_MEANS[c]).join('\n')
+        + '\nA match below it waits on its row for ✓; your own picks stay';
+    };
+    paintCut();
+    const setCutoff = async v => {
+      if (v === cutoff) return;
+      cutoff = v; paintCut();
+      try { GM_setValue(TXP_CUT_KEY, cutoff); } catch (e) {}
+      for (const k of candCache.keys()) await txpAutoPick(k);
+      render(); saveState();
+    };
+    const openCut = () => {
+      document.querySelectorAll('.gt-tp-cutmenu').forEach(m => m.remove());
+      const m = el('div', 'gt-tp-cutmenu');
+      CUT_LEVELS.forEach(c => {
+        const it = el('div', 'gt-tp-cutmi' + (c === cutoff ? ' sel' : '')); it.dataset.v = c;
+        const d = el('span', 'gt-tp-cutdot'); d.style.background = CUT_COLOR[c];
+        it.append(d, CUT_NAME[c]);
+        it.onmousedown = e => { e.preventDefault(); m.remove(); document.removeEventListener('mousedown', off, true); setCutoff(c); };
+        m.appendChild(it);
+      });
+      document.body.appendChild(m);
+      const r = cutChip.getBoundingClientRect(); m.style.left = r.left + 'px'; m.style.top = (r.bottom + 3) + 'px';
+      const off = e => { if (!m.contains(e.target) && !cutChip.contains(e.target)) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+      setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+    };
+    cutChip.onclick = () => (document.querySelector('.gt-tp-cutmenu') ? document.querySelectorAll('.gt-tp-cutmenu').forEach(m => m.remove()) : openCut());
+    cutChip.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cutChip.onclick(); } };
     entsHdr.append(entsTitle);
     const etbl = el('table', 'gt-tp-etbl');
     const TXP_ECOL_KEY = 'gt-tp-ecol';
@@ -5976,12 +6015,6 @@
     }
     const etbody = el('tbody'); etbl.appendChild(etbody);
     ents.append(entsHdr, etbl);
-    cutSel.onchange = async () => {
-      cutoff = cutSel.value;
-      try { GM_setValue(TXP_CUT_KEY, cutoff); } catch (e) {}
-      for (const k of candCache.keys()) await txpAutoPick(k);
-      render(); saveState();
-    };
     const LEVEL_TIP = { strong: 'Strong: the release backs it', unique: 'Unique name: the only one with this name', weak: 'Weak: a best guess', you: 'Picked by you' };
     const lifeOf = c => (c.begin || c.end) ? `${c.begin || '?'}–${c.end || ''}` : '';
     // one line per candidate: ✓ · dot · name (disambiguation) · type · life · area · reasons
