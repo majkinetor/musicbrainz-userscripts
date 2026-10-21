@@ -10,14 +10,14 @@
 //    a new tab, which is closed unsubmitted; back on the page it turns to "✓ alias" once
 //    MusicBrainz has the alias. B's web-service answers are production's
 //    (fixtures/ws-613-add-alias.json.gz, RECORD_WS=1 to refresh).
-import { test, check, expect, replayWs, SANDBOX, until, frames } from '../../../dev/test/harness.mjs';
+import { test, check, expect, replayWs, SANDBOX, until, frames, pristine } from '../../../dev/test/harness.mjs';
 import { withShim, openEditor } from './ch.mjs';
 
 const UA = { 'User-Agent': 'mb-userscripts-tests/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
 test.use({ gm: false });
 
 test('the button rule, and a background "+ alias" that really lands, once', { tag: ['@sandbox', '@login'] }, async ({ context, page, inject }) => {
-  const MOCKY = 'c321a13a-1c52-43c0-b60a-3a454cb7f9a2';   // an artist on the sandbox
+  const { mbid: ARTIST } = await pristine(page, 'artist');   // the alias lands on an artist made for the run (#795)
   const aliasName = 'CH 613 alias ' + new Date().toISOString().replace(/\D/g, '').slice(0, 12);
   await openEditor(page, 'c16af706-4926-4248-80c5-5faee767d579');
   await inject('credit_hoarder', { waitFor: '__creditHoarder', transform: withShim });
@@ -36,23 +36,23 @@ test('the button rule, and a background "+ alias" that really lands, once', { ta
   check(!rules.heldByName && !rules.heldByAlias && rules.notHeld, `the button shows only when the credit is neither the name nor an alias (${JSON.stringify(rules)})`);
   check(rules.unknownAliases && !rules.label && !rules.va, 'with the aliases unknown (a cached candidate) it shows when the credit differs from the name; never for labels or special-purpose artists');
 
-  const sub = await page.evaluate(async ([mbid, name]) => { try { return { ok: true, url: await window.__creditHoarder.submitAliasBackground(mbid, name, 'Credit Hoarder #613 "+ alias" test (test.musicbrainz.org)') }; } catch (e) { return { ok: false, err: e.message }; } }, [MOCKY, aliasName]);
+  const sub = await page.evaluate(async ([mbid, name]) => { try { return { ok: true, url: await window.__creditHoarder.submitAliasBackground(mbid, name, 'Credit Hoarder #613 "+ alias" test (test.musicbrainz.org)') }; } catch (e) { return { ok: false, err: e.message }; } }, [ARTIST, aliasName]);
   check(sub.ok, `MusicBrainz accepted the background submit (${JSON.stringify(sub)})`);
   // until MusicBrainz shows it (every 2 s); if it isn't applied for this account, the edit is open instead
-  const aliasesNow = () => fetch(`${SANDBOX}/ws/2/artist/${MOCKY}?inc=aliases&fmt=json&_=${Date.now()}`, { headers: UA }).then(r => r.json()).then(j => j.aliases || []).catch(() => []);
+  const aliasesNow = () => fetch(`${SANDBOX}/ws/2/artist/${ARTIST}?inc=aliases&fmt=json&_=${Date.now()}`, { headers: UA }).then(r => r.json()).then(j => j.aliases || []).catch(() => []);
   const aliases = await until(aliasesNow, a => a.some(x => x.name === aliasName), { timeout: 15000, every: 2000 });
   const mine = aliases.find(a => a.name === aliasName);
   if (mine) {
     check(mine.type == null && !mine['type-id'], `the alias is on the artist, with no type (${JSON.stringify(mine.type)})`);
   } else {
     // not auto-applied for this account: the edit is open instead
-    const open = await page.evaluate(async mbid => ((await fetch(`/artist/${mbid}/open_edits`).then(r => r.text())).match(/Add artist alias/g) || []).length, MOCKY);
+    const open = await page.evaluate(async mbid => ((await fetch(`/artist/${mbid}/open_edits`).then(r => r.text())).match(/Add artist alias/g) || []).length, ARTIST);
     check(open > 0, `the alias edit is open on the artist (${open} open "Add artist alias" edits)`);
   }
-  const again = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.submitAliasBackground(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [MOCKY, aliasName]);
+  const again = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.submitAliasBackground(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [ARTIST, aliasName]);
   check(again && again.already === true, `the same alias again: "already", nothing submitted (${JSON.stringify(again)})`);
   const tabs = context.pages().length;
-  const leftDup = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.openAddAliasForm(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [MOCKY, aliasName]);
+  const leftDup = await page.evaluate(async ([mbid, name]) => { try { return await window.__creditHoarder.openAddAliasForm(mbid, name, 'dup check'); } catch (e) { return { err: e.message }; } }, [ARTIST, aliasName]);
   await until(() => context.pages().length === tabs, Boolean, { timeout: 10000 });
   check(leftDup && leftDup.already === true && context.pages().length === tabs, `a left click on an alias it already has: "already", and the tab it opened is closed (${JSON.stringify(leftDup)})`);
 });
