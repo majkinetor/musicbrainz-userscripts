@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.094834
+// @version      2026.10.21.095344
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5218,7 +5218,6 @@
       + '.gt-tp-unp-title{font-weight:700;font-size:12px;color:var(--mbu-error)}'
       + '.gt-tp-line{display:flex;align-items:center;gap:4px;margin-top:3px}'
       + '.gt-tp-line-no{flex:none;min-width:18px;font-size:11px;color:var(--mbu-text-weak);text-align:right}'
-      + '.gt-tp-line-lbl{flex:none;font-size:10px;text-transform:uppercase;color:var(--mbu-text-weak)}'
       + '.gt-tp-ov{flex:0 0 140px;box-sizing:border-box;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-raw{flex:1;min-width:0;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text);font-size:11.5px;font-family:inherit;outline:none}.gt-tp-raw:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-rowdel{flex:none;background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:var(--mbu-error)}'
@@ -5978,7 +5977,7 @@
       });
       const del = el('button', 'gt-tp-rowdel', '✕'); del.type = 'button'; del.dataset.tip = 'Remove this line';
       del.onclick = () => deleteLine(li);
-      w.append(rawIn, el('span', 'gt-tp-line-lbl', 'pattern'), ov, del);
+      w.append(rawIn, ov, del);
       return w;
     }
     function renderUnparsed(rows) {
