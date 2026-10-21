@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.095344
+// @version      2026.10.21.100221
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5140,7 +5140,12 @@
       // next row" — a long "→ 12 tracks: 1, 2, 3 …" pushed the button off the
       // end. Scope and Match now travel as ONE right-hand group that shrinks
       // (the track list truncates) instead of wrapping the button away.
-      + '.gt-cons-foot .gt-tp-scope{margin-right:auto}'
+      + '.gt-cons.gt-tp .gt-tp-bar{position:sticky;top:0;z-index:5;flex-wrap:wrap;gap:6px 14px;padding:7px 14px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);box-shadow:0 2px 6px rgba(0,0,0,.08);border-radius:7px 7px 0 0}'
+      + '.gt-tp-bar .gt-tp-title{flex:none}'
+      + '.gt-tp-bar .gt-tp-grow{flex:1}'
+      + '.gt-tp-bar .gt-tp-scope{background:none;padding:0;font-size:12.5px;gap:10px}'
+      + '.gt-tp-bar .gt-tp-scope select{border:none;background:transparent;font-weight:600;font-size:12.5px;color:var(--mbu-text);cursor:pointer}'
+      + '.gt-tp-bar .gt-tp-anno,.gt-tp-bar .gt-cons-apply{margin-left:0}'
       + '.gt-tp-pat{width:180px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:13px monospace;outline:none}'
       + '.gt-tp-pat:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-clr{background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:var(--mbu-text-dim)}'
@@ -5156,13 +5161,13 @@
       + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font-size:12px;font-family:inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
-      + '.gt-cons-foot .gt-tp-cnt{flex:1;font-size:12px;color:var(--mbu-text-dim)}'
+      + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}'
       // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
       + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
-      + '.gt-tp-ctrl .gt-tp-busy{margin-left:auto;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}'
+      + '.gt-tp-bar .gt-tp-busy{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}'
       + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
       // #544: disambiguation must not read as part of the name — smaller, grey,
       // italic, in the results AND in the resolved table cell.
@@ -5876,7 +5881,7 @@
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
     freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
-    ctrl.append(patIn, patClr, freezeBtn, presets, busy);
+    ctrl.append(patIn, patClr, freezeBtn, presets);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -6138,7 +6143,6 @@
       }
     }
 
-    const foot = el('div', 'gt-cons-foot');
     const cnt = el('span', 'gt-tp-cnt');
     // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
@@ -6151,7 +6155,6 @@
     // pattern afterwards leaves those alone and only re-parses the rest.
     // It lives in the footer rather than the top bar because that bar has twice
     // been one control too wide (#539).
-    foot.append(scopeWrap, cnt, applyClearBtn, applyBtn);   // #539: scope at the far left, Apply at the far right
 
     const syncTextareaFromLines = () => { ta.value = lines.map(l => l.raw).join('\n'); };
     // #522 follow-up (majkinetor, live): "Lets have an option to remove a
@@ -6670,7 +6673,13 @@
       annoBtn.disabled = false; annoBtn.textContent = 'Load annotation';
     };
 
-    panel.append(hdr, ctrl, src, body, ents, foot);
+    // #798: Credit Hoarder's kind of toolbar — sticky at the top while the table
+    // scrolls under it, with what Apply does (Scope, Tracks, Works), where things
+    // stand, and Apply itself
+    hdr.textContent = '';
+    hdr.classList.add('gt-tp-bar');
+    hdr.append(el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), scopeWrap, cnt, busy, el('span', 'gt-tp-grow'), applyClearBtn, applyBtn, annoBtn, xb);
+    panel.append(hdr, ctrl, src, body, ents);
     // #798: under Group Therapy's toolbar, where the button that opened it is
     const bar = document.querySelector('.gt-toolbar');
     if (bar) bar.after(panel); else (document.getElementById('content') || document.body).prepend(panel);
