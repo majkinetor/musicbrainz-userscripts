@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.091954
+// @version      2026.10.21.094514
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5191,7 +5191,6 @@
       + '.gt-tp-role-pick{border:none;background:none;padding:0;cursor:pointer;font:inherit;color:var(--mbu-text-dim)}.gt-tp-role-pick:hover{color:var(--mbu-info);text-decoration:underline}'
       + '.gt-tp-role-miss .gt-tp-role-pick{color:var(--mbu-error);font-weight:600}'
       + '.gt-tp-role-done{opacity:.6}'
-      + '.gt-tp-role-line{border:none;background:none;padding:0;cursor:pointer;font:inherit;color:var(--mbu-text-weak)}.gt-tp-role-line:hover{color:var(--mbu-info)}'
       + '.gt-tp-role:not(:last-child)::after{content:",";margin-left:-3px}'
       + '.gt-tp-role-own{color:var(--mbu-accent-text)}.gt-tp-role-own-x{border:none;background:none;padding:0 2px;cursor:pointer;color:var(--mbu-text-weak);font-size:10px}.gt-tp-role-own-x:hover{color:var(--mbu-error)}'
       + '.gt-tp-trk-on{color:var(--mbu-ok);font-weight:600;cursor:help}.gt-tp-trk-warn{color:var(--mbu-warn);cursor:help}'
@@ -5219,7 +5218,8 @@
       + '.gt-tp-unp-title{font-weight:700;font-size:12px;color:var(--mbu-error)}'
       + '.gt-tp-line{display:flex;align-items:center;gap:4px;margin-top:3px}'
       + '.gt-tp-line-no{flex:none;min-width:18px;font-size:11px;color:var(--mbu-text-weak);text-align:right}'
-      + '.gt-tp-ov{flex:0 0 130px;box-sizing:border-box;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:var(--mbu-info)}'
+      + '.gt-tp-line-lbl{flex:none;font-size:10px;text-transform:uppercase;color:var(--mbu-text-weak)}'
+      + '.gt-tp-ov{flex:0 0 140px;box-sizing:border-box;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:4px;font:11px monospace;outline:none}.gt-tp-ov:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-raw{flex:1;min-width:0;padding:2px 6px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text);font-size:11.5px;font-family:inherit;outline:none}.gt-tp-raw:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-rowdel{flex:none;background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:2px 4px;font-size:12px}.gt-tp-rowdel:hover{color:var(--mbu-error)}'
       + '@media (prefers-reduced-motion:reduce){.gt-tp-creating{animation:none;background:var(--mbu-bg-raised)}}';
@@ -5890,7 +5890,6 @@
     const body = el('div', 'gt-cons-body gt-tp-body');
     const unp = el('div', 'gt-tp-unp');
     body.appendChild(unp);
-    const openLines = new Set();   // lines whose pattern and text are open for editing, by index
 
     // #798: the entities, as in Credit Hoarder's review table — one row per name,
     // the credit on the left, MusicBrainz's candidates for it on the right
@@ -5910,8 +5909,8 @@
     entsHdr.append(entsTitle, cutWrap);
     const etbl = el('table', 'gt-tp-etbl');
     const TXP_ECOL_KEY = 'gt-tp-ecol';
-    let ecolW = '34%';
-    try { ecolW = GM_getValue(TXP_ECOL_KEY, '34%') || '34%'; } catch (e) {}
+    let ecolW = '48%';
+    try { ecolW = GM_getValue(TXP_ECOL_KEY, '48%') || '48%'; } catch (e) {}
     etbl.innerHTML = '<colgroup><col><col></colgroup><thead><tr><th>Credited</th><th>MusicBrainz</th></tr></thead>';
     const ecol = etbl.querySelector('col'); ecol.style.width = ecolW;
     {
@@ -5975,8 +5974,8 @@
         syncTextareaFromLines(); render(); saveState(); scheduleMatch();
       });
       const del = el('button', 'gt-tp-rowdel', '✕'); del.type = 'button'; del.dataset.tip = 'Remove this line';
-      del.onclick = () => { openLines.delete(li); deleteLine(li); };
-      w.append(ov, rawIn, del);
+      del.onclick = () => deleteLine(li);
+      w.append(rawIn, el('span', 'gt-tp-line-lbl', 'pattern'), ov, del);
       return w;
     }
     function renderUnparsed(rows) {
@@ -5988,18 +5987,18 @@
       unp.appendChild(el('div', 'gt-tp-unp-title', `Not parsed — ${bad.length}`));
       bad.forEach(r => unp.appendChild(lineEditor(r.li, r)));
     }
-    // a credit's role: click picks it; its line number opens the line
+    // a credit's role: click picks it
     function roleChip(r) {
       const chip = el('span', 'gt-tp-role' + (r.roleMatch ? '' : ' gt-tp-role-miss') + (appliedKeys.has(r.key) ? ' gt-tp-role-done' : ''));
       const name = r.roleMatch ? r.roleMatch.name : (r.crKind ? (r.role || '') : `${r.role || '?'} ?`);
       if (!r.crKind) {
         const b = el('button', 'gt-tp-role-pick', (appliedKeys.has(r.key) ? '✓ ' : '') + name); b.type = 'button';
-        b.dataset.tip = `“${r.role}”, from line ${r.li + 1}\nClick: ${r.roleMatch ? 'change' : 'pick'} the role`;
+        b.dataset.tip = `“${r.role}”\nClick: ${r.roleMatch ? 'change' : 'pick'} the role`;
         b.onclick = () => txpPickRole(r);
         chip.appendChild(b);
       } else {
         const t = el('span', 'gt-tp-role-cr', (appliedKeys.has(r.key) ? '✓ ' : '') + name + (r.year ? ' ' + r.year : ''));
-        t.dataset.tip = r.roleMatch ? `From line ${r.li + 1}` : `From line ${r.li + 1}\nIts role follows the holder picked`;
+        if (!r.roleMatch) t.dataset.tip = 'Its role follows the holder picked';
         chip.appendChild(t);
       }
       if (entityOverride.has(r.key)) {
@@ -6010,10 +6009,6 @@
         x.onclick = () => { entityOverride.delete(r.key); render(); saveState(); };
         ov.appendChild(x); chip.appendChild(ov);
       }
-      const ln = el('button', 'gt-tp-role-line', `[${r.li + 1}]`); ln.type = 'button';
-      ln.dataset.tip = `Line ${r.li + 1}: ${lines[r.li] ? lines[r.li].raw : ''}\nClick: edit its pattern or text`;
-      ln.onclick = () => { if (openLines.has(r.li)) openLines.delete(r.li); else openLines.add(r.li); render(); };
-      chip.appendChild(ln);
       if (r.trackNote) {
         const w = el('span', 'gt-tp-trk-warn', '⚠ split line');
         w.dataset.tip = `${r.trackNote}\n⚠ One line carries one track list, so this credit goes where Scope points instead. Split it into one role per line.`;
@@ -6079,7 +6074,8 @@
         const rl = el('div', 'gt-tp-eroles');
         g.rows.forEach(r => rl.appendChild(roleChip(r)));
         left.appendChild(rl);
-        [...new Set(g.rows.map(r => r.li))].filter(li => openLines.has(li)).forEach(li => left.appendChild(lineEditor(li, g.rows.find(r => r.li === li))));
+        // each line the credits came from, under them: its text and its pattern on one row
+        [...new Set(g.rows.map(r => r.li))].forEach(li => left.appendChild(lineEditor(li, g.rows.find(r => r.li === li))));
         // MusicBrainz: the pick, or the candidates (or search results), then the search box
         const right = el('td');
         const list = el('div', 'gt-tp-cands');

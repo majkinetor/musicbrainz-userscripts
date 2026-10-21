@@ -78,9 +78,10 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   check(picked === firstName, `the pick is the candidate ticked (${picked})`);
   check(/3 ready/.test(await page.textContent('.gt-tp-cnt')), 'and its credit is ready to apply');
 
-  // a line number opens the line's pattern and text, in the table
-  await jsTr.locator('.gt-tp-role-line').click();
-  check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line opens under its credit, for editing');
+  // the line the credit came from sits under it: its text and its pattern on one row
+  check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line is under its credit, for editing');
+  check(await jsTr.locator('.gt-tp-line .gt-tp-ov').count() === 1, 'with its pattern beside it');
+  await page.locator('.gt-tp').screenshot({ path: 'dev/_798-d.png' });
 
   // ✕ brings the candidates back, and nothing re-picks it on its own
   await jsTr.locator('.gt-tp-cand-x').click();
