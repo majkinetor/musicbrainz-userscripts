@@ -75,6 +75,7 @@ Each automatic match has a dot saying how sure it is:
 
 On a row:
 
+- The roles under the name are the relationships it gets, with their task where there is one: *Coordinator [Album]* is *misc: album coordinator*. Hover them for the credit each came from.
 - **Search** by name, or paste an MBID or a MusicBrainz URL.
 - **+** opens MusicBrainz's create page prefilled (name, sort name, type, source URL) and selects the new entity once saved; a right-click creates it in the background. Where the source has a profile (Discogs), **▾** adds a disambiguation from the role or the profile, and the real name; its **Create ↗** takes a right-click too.
 - **+ alias** adds a credited name the artist lacks as an alias, so the next import matches it: a click opens the prefilled form, a right-click adds it in the background. A one-off spelling is better left to *Credited as*.

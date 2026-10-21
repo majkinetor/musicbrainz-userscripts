@@ -507,6 +507,14 @@ export const ENTITY_TYPE_MAP = {
         entityType: 'artist',
         linkType: 'misc',
     },
+    // #800: "Coordinator [Production]" (mappers.js) and any source's own "Production
+    // Coordinator". MB has this type for releases only, so on a track it goes in as misc
+    // with the same task.
+    'Production Coordinator': {
+        entityType: 'artist',
+        linkType: 'production coordinator',
+        onRecording: { linkType: 'misc', attributes: [{ _type: 'task', value: 'production coordinator' }] },
+    },
     Management: {
         entityType: 'artist',
         linkType: 'misc',
