@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.115054
+// @version      2026.10.21.115735
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5370,6 +5370,10 @@
     // right-click still writes into the shared entityCache above,
     // propagating to every row with that exact text like before.
     const entityOverride = new Map();   // row.key (li:pi:si) -> entity
+    // #798 (majkinetor): "I choosed published label here and it didn't change it" —
+    // the kind you gave a name (a role of another kind, or the search's kind), by
+    // its lowercased text; it outranks the guess until an entity is picked
+    const nameKind = new Map();
     // #544 (majkinetor): "After right clicking to create entity in the background,
     // close search popup. While background tab is active, add info about it
     // (`creating ...`) that resolves to entity name after tab is closed as usual.
@@ -5799,7 +5803,7 @@
       const cls = roleCache.get(rt) || null;
       row.roleClass = cls;
       row.entityForced = (cls && cls.forced) || null;
-      row.entityType = row.entityForced || (row.entityMatch ? row.entityMatch.entityType : rowEntityType(row));
+      row.entityType = row.entityForced || (row.entityMatch ? row.entityMatch.entityType : nameKind.get((row.entity || '').toLowerCase().trim()) || rowEntityType(row));
       // A resolved entity of another kind than the forced one gets that kind's
       // role, or none: MusicBrainz refuses an artist on a place's relationship
       // ("An error occurred: [object Object]" on submit).
@@ -6302,7 +6306,7 @@
             const ks = el('select', 'gt-tp-esrch-kind');
             ['artist', 'label', 'place'].forEach(v => { const o = el('option', '', KIND[v]); o.value = v; ks.appendChild(o); });
             ks.value = kind;
-            ks.onchange = () => { searchState.set(g.key, { term: q.value, kind: ks.value }); txpRunSearch(g.key, g.text); };
+            ks.onchange = () => { nameKind.set(g.key, ks.value); searchState.set(g.key, { term: q.value, kind: ks.value }); render(); saveState(); txpRunSearch(g.key, g.text); };
             sr.appendChild(ks);
           }
           right.appendChild(sr);
@@ -6558,6 +6562,18 @@
         next.forced = ['artist', 'label', 'place'].filter(has).length === 1 ? picked._entityType : null;
         roleCache.set(rk, next);
         txpLearnRole(r.role || '', next);   // #798
+        // #798: a role of another kind picked for this credit makes the name that
+        // kind: a pick of the old kind goes, and that kind is searched instead
+        const nk = (r.entity || '').toLowerCase().trim(), kind = picked._instrument ? 'artist' : picked._entityType;
+        if (nk && kind && !r.crKind && kind !== r.entityType) {
+          nameKind.set(nk, kind);
+          const ent = entityCache.get(nk);
+          if (ent && ent.entityType && ent.entityType !== kind) { entityCache.set(nk, null); pickInfo.set(nk, { by: 'you', none: true }); }
+          searchState.set(nk, { term: r.entity.trim(), kind });
+          render(); saveState();
+          txpRunSearch(nk, r.entity.trim());
+          return;
+        }
         render(); saveState();
       }
     }
@@ -6825,6 +6841,7 @@
       roleCache: [...roleCache.entries()],
       entityCache: [...entityCache.entries()],
       entityOverride: [...entityOverride.entries()],
+      nameKind: [...nameKind.entries()],   // #798
       appliedKeys: [...appliedKeys],
       candCache: [...candCache.entries()],   // #798
       pickInfo: [...pickInfo.entries()],
@@ -6926,6 +6943,7 @@
       (saved.roleCache || []).forEach(([k, v]) => roleCache.set(k, v));
       (saved.entityCache || []).forEach(([k, v]) => entityCache.set(k, v));
       (saved.entityOverride || []).forEach(([k, v]) => entityOverride.set(k, v));
+      (saved.nameKind || []).forEach(([k, v]) => nameKind.set(k, v));
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
       loadedFromAnnotation = !!saved.loadedFromAnnotation;   // #544: brings "Apply & clear annotation" back with its text
       (saved.candCache || []).forEach(([k, v]) => candCache.set(k, v));   // #798

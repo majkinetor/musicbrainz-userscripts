@@ -74,5 +74,17 @@ test('the text parser: roles by MusicBrainz\'s phrases, picks remembered, the pi
   const tip = await page.getAttribute('.gt-tp-role-pick', 'data-tip');
   check(again && !again.miss && again.text === picked && /your pick/.test(tip), `the role text resolves to your pick next time (${JSON.stringify(again)} · ${tip})`);
 
+  // "I choosed published label here and it didn't change it": a role of another
+  // kind makes the credit that kind, and that kind is searched
+  await open('Publisher: Fanzines Editions');
+  await page.locator('.gt-tp-role-pick').first().click();
+  await page.waitForSelector('.gt-role-pick .gt-role-row');
+  await page.fill('.gt-role-pick .gt-role-search', 'published');
+  await frames(page);
+  await page.locator('.gt-role-pick .gt-role-row.gt-role-other').first().click();
+  await until(() => page.evaluate(() => ({ kind: (document.querySelector('.gt-tp-ekind') || {}).textContent, role: (document.querySelector('.gt-tp-role-pick') || {}).textContent, sel: (document.querySelector('.gt-tp-esrch-kind') || {}).value })), v => v.kind === 'label', { timeout: 30000 }).catch(() => {});
+  const pub = await page.evaluate(() => ({ kind: (document.querySelector('.gt-tp-ekind') || {}).textContent, role: (document.querySelector('.gt-tp-role-pick') || {}).textContent, sel: (document.querySelector('.gt-tp-esrch-kind') || {}).value }));
+  check(pub.kind === 'label' && pub.role === 'published' && pub.sel === 'label', `a label's role makes the credit a label (${JSON.stringify(pub)})`);
+
   check(posts.length === 0, `nothing was submitted (${posts.length})`);
 });
