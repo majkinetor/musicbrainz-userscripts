@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 17:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 17:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -972,7 +972,7 @@ Before the release editor opens, First Contact looks the album up in MusicBrainz
 | empty circle  | none of these (*On page load, link only*: no release has its link) |
 | dashed circle | the check failed; the import goes on without it                    |
 
-A release counts as this album unless its barcode, format (digital, CD, vinyl…) or track count differs. Other editions are listed too, greyed.
+A release counts as this album unless its barcode, format (digital, CD, vinyl…) or track count differs. Other editions are listed too, greyed. Badges under each release say what agrees with the album (**link**, **barcode**, **title**, **tracks**, **format**, **date**) and, marked **≠**, what differs; hover one to compare the two.
 
 When MusicBrainz may have the album, a panel lists those releases before the editor opens. For each:
 

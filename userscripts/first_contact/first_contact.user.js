@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.170220
+// @version      2026.10.21.175528
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -2862,6 +2862,9 @@ function injectStyle() {
 #fc-check .fc-check-rel { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 #fc-check .fc-check-rel a { color: var(--mbu-accent-text); }
 #fc-check .fc-dim { color: var(--mbu-text-dim); font-weight: normal; }
+#fc-check .fc-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+#fc-check .fc-badge { font-size: 11px; line-height: 1.5; padding: 0 7px; border-radius: 9px; border: 1px solid var(--mbu-ok-border); background: var(--mbu-ok-bg); color: var(--mbu-ok); }
+#fc-check .fc-badge-no { border-color: var(--mbu-warn-border); background: var(--mbu-warn-bg); color: var(--mbu-warn); }
 #fc-check .fc-check-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 #fc-check .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 #fc-check button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
@@ -3745,7 +3748,22 @@ function titleClose(a, b) {
     }
     return 1 - prev[y.length] / m >= 0.85;
 }
-const luceneQ = s => '"' + String(s || '').replace(/["\\]/g, '\\$&') + '"';
+// One album's link, whatever form it is stored in: the platform and its album id where the address has one
+// (a storefront, a locale, www, /browse, a slug aside), else the address without its scheme, www and trailing slash
+function linkKey(url) {
+    const u = String(url || '').trim();
+    const m = (re, k) => { const x = u.match(re); return x ? k + ':' + x[x.length - 1].toLowerCase() : null; };
+    return m(/^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?(\d+)/i, 'apple')
+        || m(/^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?album\/(\d+)/i, 'deezer')
+        || m(/^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i, 'tidal')
+        || m(/^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\/([A-Za-z0-9]{22})/i, 'spotify')
+        || m(/^https?:\/\/music\.amazon\.[a-z.]+\/albums\/([A-Z0-9]{10})/i, 'amazon')
+        || m(/^https?:\/\/(?:www\.|open\.)?qobuz\.com\/(?:[a-z]{2}-[a-z]{2}\/)?album\/(?:[^/?#]+\/)?([A-Za-z0-9]+)\/?(?:[?#]|$)/i, 'qobuz')
+        || m(/^https?:\/\/(?:www\.)?beatport\.com\/(?:[a-z]{2}\/)?release\/[^/]+\/(\d+)/i, 'beatport')
+        || m(/^https?:\/\/(?:www\.)?discogs\.com\/(?:[a-z]{2}\/)?release\/(\d+)/i, 'discogs')
+        || u.toLowerCase().replace(/^https?:\/\/(?:www\.)?/, '').replace(/[?#].*$/, '').replace(/\/+$/, '');
+}
+const luceneQ = s =>'"' + String(s || '').replace(/["\\]/g, '\\$&') + '"';
 function entryOf(by, x) {
     const e = by.get(x.id) || { id: x.id, title: x.title || '', disamb: x.disambiguation || '', date: x.date || '', country: x.country || '', barcode: x.barcode || '', links: [], how: [] };
     if (Array.isArray(x.media) && x.media.length && e.tracks == null) {
@@ -3786,10 +3804,17 @@ async function checkAlbum(provider, id, rel) {
         const q = `release:${luceneQ(rel.title)}` + (!va && artist ? ` AND artistname:${luceneQ(artist)}` : '');
         const j = await mbWs(`release?query=${encodeURIComponent(q)}&limit=15`);
         ((j && j.releases) || []).filter(x => titleClose(x.title, rel.title)).forEach(x => { const e = entryOf(by, x); if (!e.how.includes('title')) e.how.push('title'); });
-        // a release found by its link alone has no media yet: its format and track count, for the few there are
-        for (const e of [...by.values()].filter(x => x.tracks == null).slice(0, 4)) {
-            const x = await mbWs(`release/${e.id}?inc=media`);
-            if (x) entryOf(by, Object.assign({}, x, { id: e.id }));
+        // each release's own links (and, for one found by its link alone, its format and track count): the
+        // album's link may be on it in a form the lookup above didn't try (another storefront, locale or domain)
+        const keys = new Set(albumLinks(provider, id, rel).map(linkKey));
+        const pre = [...by.values()];
+        pre.forEach(e => { e.same = sameAlbum(e, rel); });
+        for (const e of pre.filter(x => x.same || x.links.length).slice(0, 6)) {
+            const x = await mbWs(`release/${e.id}?inc=media+url-rels`);
+            if (!x) continue;
+            entryOf(by, Object.assign({}, x, { id: e.id }));
+            e.urls = (x.relations || []).map(r => r.url && r.url.resource).filter(Boolean);
+            for (const u of e.urls) if (keys.has(linkKey(u)) && !e.links.includes(u)) { e.links.push(u); if (!e.how.includes('link')) e.how.unshift('link'); }
         }
     }
     const releases = [...by.values()];
@@ -3860,6 +3885,18 @@ async function checkOnLoad(provider, id) {
     } finally { c.busy = false; c.checkP = null; }
 }
 
+// A release's badges in the panel: [name, agrees, tooltip] for each thing both the release and the album give
+function checkBadges(e, rel, provider) {
+    const out = [];
+    const relDate = rel.date && rel.date.year ? [rel.date.year, rel.date.month, rel.date.day].filter(Boolean).map((n, i) => (i ? String(n).padStart(2, '0') : n)).join('-') : '';
+    if (e.links.length) out.push(['link', true, `Its ${provider.name} link is on this release`]);
+    if (e.barcode && rel.barcode) out.push(['barcode', bcCore(e.barcode) === bcCore(rel.barcode), `Barcode\nThis release: ${e.barcode}\n${provider.name}: ${rel.barcode}`]);
+    if (e.title) out.push(['title', titleClose(e.title, rel.title), `Title\nThis release: ${e.title}\n${provider.name}: ${rel.title}`]);
+    if (e.tracks) out.push(['tracks', e.tracks === relTracks(rel), `Track count\nThis release: ${e.tracks}\n${provider.name}: ${relTracks(rel)}`]);
+    if (e.format && !/unknown/i.test(e.format)) out.push(['format', fmtKind(e.format) === fmtKind(relFormat(rel)), `Format\nThis release: ${e.format}\n${provider.name}: ${relFormat(rel)}`]);
+    if (e.date && relDate) out.push(['date', e.date === relDate, `Release date\nThis release: ${e.date}\n${provider.name}: ${relDate}`]);
+    return out;
+}
 // The panel a match opens before the release editor. → 'import', or null (done, or cancelled)
 function askExisting(result, rel, provider, anchor) {
     return new Promise(resolve => {
@@ -3875,7 +3912,6 @@ function askExisting(result, rel, provider, anchor) {
         box.append(h, el('p', null, sure ? `Its ${provider.name} link is already on the release below. Update it with what it lacks rather than adding the album again.`
             : `Check the release${result.releases.filter(e => e.same).length > 1 ? 's' : ''} below before you add the album again: update one with what it lacks, or add only the link.`));
         const list = el('ul', 'fc-check-list');
-        const how = e => [e.how.includes('link') && 'its link', e.how.includes('barcode') && 'the barcode', e.how.includes('title') && 'the title and artist'].filter(Boolean).join(', ');
         const done = v => { box.remove(); document.removeEventListener('keydown', key, true); resolve(v); };
         const key = e => { if (e.key === 'Escape') { e.stopPropagation(); done(null); } };
         for (const e of result.releases) {
@@ -3888,7 +3924,15 @@ function askExisting(result, rel, provider, anchor) {
             const line = el('div', 'fc-check-rel');
             line.append(dot, a);
             if (e.disamb) line.append(el('span', 'fc-dim', ` (${e.disamb})`));
-            li.append(line, el('div', 'fc-dim', `${meta}${meta ? ' · ' : ''}found by ${how(e)}${!e.same && !e.links.length ? ' · another edition' : ''}`));
+            li.append(line, el('div', 'fc-dim', `${meta}${!e.same && !e.links.length ? `${meta ? ' · ' : ''}another edition` : ''}`));
+            // majkinetor: "badges for stuff that matches": what agrees with the album, and what differs (≠)
+            const badges = el('div', 'fc-badges');
+            for (const [name, ok, tip] of checkBadges(e, rel, provider)) {
+                const bd = el('span', 'fc-badge' + (ok ? '' : ' fc-badge-no'), ok ? name : '≠ ' + name);
+                bd.dataset.tip = tip;
+                badges.append(bd);
+            }
+            if (badges.childNodes.length) li.append(badges);
             if (e.same || e.links.length) {
                 const acts = el('div', 'fc-check-acts');
                 const upd = el('button', 'fc-check-upd', 'Update this release');
@@ -3896,7 +3940,9 @@ function askExisting(result, rel, provider, anchor) {
                 upd.dataset.tip = 'Update this release in Mission Control\nIt opens the release, compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.';
                 upd.addEventListener('click', () => { updateRelease(e, rel, provider); done(null); });
                 acts.append(upd);
-                const missing = (rel.urls || []).filter(u => !e.links.some(l => l.replace(/\/+$/, '') === String(u.url).replace(/\/+$/, '')));
+                // the album's links the release lacks, in whatever form it has them
+                const has = new Set((e.urls || e.links).map(linkKey));
+                const missing = (rel.urls || []).filter(u => !has.has(linkKey(u.url)));
                 if (missing.length) {
                     const ln = el('button', 'fc-check-link', 'Add link only');
                     ln.type = 'button';

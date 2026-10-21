@@ -24,6 +24,21 @@ test('a release is this album unless its barcode, format or track count differs'
   check(titleClose('Pt. 1 Café', 'Pt 1 Cafe'), 'punctuation and accents don\'t count');
 });
 
+test('a link is the same album whatever form MusicBrainz stores it in', { tag: ['@unit'] }, async () => {
+  const { linkKey } = await loadFunctions('first_contact', ['linkKey']);
+  const same = [
+    ['https://music.apple.com/us/album/random-access-memories/617154241', 'https://music.apple.com/gb/album/617154241'],
+    ['https://www.deezer.com/en/album/6575789', 'https://www.deezer.com/album/6575789'],
+    ['https://listen.tidal.com/album/20188315', 'https://tidal.com/browse/album/20188315'],
+    ['https://www.qobuz.com/fr-fr/album/random-access-memories-daft-punk/0886443927087', 'https://www.qobuz.com/gb-en/album/random-access-memories-daft-punk/0886443927087'],
+    ['https://open.spotify.com/intl-de/album/4m2880jivSbbyEGAKfITCa', 'https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa'],
+    ['https://music.amazon.de/albums/B00CM0CK4Q', 'https://music.amazon.com/albums/B00CM0CK4Q'],
+    ['https://daftpunk.bandcamp.com/album/ram/', 'http://daftpunk.bandcamp.com/album/ram'],
+  ];
+  for (const [a, b] of same) check(linkKey(a) === linkKey(b), `${a} is ${b} (${linkKey(a)} / ${linkKey(b)})`);
+  check(linkKey('https://www.deezer.com/album/1') !== linkKey('https://www.deezer.com/album/2'), 'another album id is another album');
+});
+
 test.describe('on a Deezer album the sandbox has', () => {
   test.use({
     gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', archive: false } } },
@@ -45,7 +60,9 @@ test.describe('on a Deezer album the sandbox has', () => {
     const row = box.locator('li', { has: page.locator(`a[href$="/release/${RAM}"]`) });
     check(await row.count() === 1, 'the release is listed, linked to the sandbox');
     const text = (await row.textContent()).replace(/\s+/g, ' ');
-    check(/found by its link, the barcode/.test(text), `found by its link and its barcode (${text})`);
+    const badges = await row.locator('.fc-badge').evaluateAll(bs => bs.map(b => (b.classList.contains('fc-badge-no') ? '!' : '') + b.textContent));
+    check(['link', 'barcode', 'title', 'tracks', 'format'].every(b => badges.includes(b)), `badges for what agrees: link, barcode, title, tracks, format (${badges})`);
+    check(!badges.some(b => b.startsWith('!') && b !== '!≠ date'), `nothing else differs (${badges})`);
     check(await row.locator('.fc-check-link').count() === 0, 'no Add link only: the release has the link');
     check(await page.evaluate(() => !window.__fcLastSeed), 'the release editor isn\'t seeded yet');
     check(await go.locator('.fc-light[data-light="linked"]').count() === 1, 'the Import button wears the light');
