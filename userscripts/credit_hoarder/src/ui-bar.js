@@ -1443,7 +1443,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     function mbuTipS() {
         return mbuTipS.s || (mbuTipS.s = {
             me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
-            cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, mx: -1, my: -1, obs: null,
+            cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, tab: false, mx: -1, my: -1, obs: null,
         });
     }
     function mbuTip(el, content, opts) {
@@ -1658,9 +1658,11 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
             var f = mbuTipFind(e.target);
             _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+            _mbuTip.tab = false;
             if (_mbuTip.cur) mbuTipHide(true);
         }, true);
         document.addEventListener('keydown', function (e) {
+            if (!/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) _mbuTip.tab = e.key === 'Tab';
             if (!_mbuTip.cur) return;
             var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
             // typing closes a plain tip, as it does the browser's; modifiers alone don't
@@ -1673,7 +1675,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         document.addEventListener('focusin', function (e) {
             var el = e.target, vis = false;
             try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
-            if (!vis) return;
+            // a text box is :focus-visible even when a script focuses it (a picker opening), so only Tab's focus shows the tip
+            if (!vis || !_mbuTip.tab) return;
             var f = mbuTipFind(el);
             if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
         }, true);
