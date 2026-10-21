@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 12:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 12:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1475,6 +1475,8 @@ Each candidate shows its type, life span and area, and why it ranks where it doe
 The candidates also rank on the role and the release: a person for an instrument or a vocal, a group for an orchestra or a choir; someone born after the release or gone long before it ranks lower, and one from the release's country higher.
 
 Beyond this release, the parser also looks at who the other releases of its release group credit (three of them, `+ same group`) and, for a name still left open, who recordings credit beside the release artist (`+ co-credit`).
+
+**Check roles**, on a row with several candidates, asks whether each of them has held the row's role before: `+ producer ×3` (its tooltip says on what) ranks one up and can pick it, `− never producer` only says so. It reads up to five candidates' relationships from MusicBrainz, which takes a moment for a prolific one, so it waits for the click.
 
 #### Patterns
 

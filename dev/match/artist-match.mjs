@@ -158,6 +158,7 @@ export function mbmCoCreditHits(recordingsJson, ctxGid, name) {
  *   unique      gid of the only MB entity holding the name (mbmExactIdentity 'unique')
  *   sibling     [{ gid, why }] credited on another release of the release group 
  *   cocredit    [{ gid, n, of }] credited beside release artist `of` on n recordings 
+ *   history     [{ gid, role, n, where }] how often it held the row's role before (asked for on a row)
  *   want        'person' | 'group' | null — what the role takes
  *   year, area  the release's year and country
  * → { ranked: [{ …cand, points, level, reasons: [{ text, tip, sign: 1 | -1 }] }], best }
@@ -185,6 +186,10 @@ export function mbmRankCandidates(name, cands, ctx) {
         if (sib.length && !known.length) add(50, 'same group', true, sib.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'On another release of this release group');
         const co = (c.cocredit || []).find(x => x.gid === k.gid);
         if (co && !known.length) add(40, 'co-credit', true, 'Credited beside ' + (co.of || 'the release artist') + ' on ' + co.n + ' recording' + (co.n === 1 ? '' : 's'));
+        // asked for on a row: has it held this role before, and how often
+        const hist = (c.history || []).find(x => x.gid === k.gid);
+        if (hist && hist.n > 0) add(35, hist.role + ' ×' + hist.n, true, 'Credited as ' + hist.role + ' ' + hist.n + ' time' + (hist.n === 1 ? '' : 's') + ' in MusicBrainz' + (hist.where ? '\n' + hist.where : ''));
+        else if (hist) reasons.push({ text: 'never ' + hist.role, tip: 'No ' + hist.role + ' credit in MusicBrainz', sign: -1 });   // said, not counted: it stays among the ones not checked
         const holds = mbmHolds(k, name);
         if (holds === 'name') add(20, '');
         else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');

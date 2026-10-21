@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.122838
+// @version      2026.10.21.124739
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4700,6 +4700,10 @@
           if (sib.length && !known.length) add(50, 'same group', true, sib.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'On another release of this release group');
           const co = (c.cocredit || []).find(x => x.gid === k.gid);
           if (co && !known.length) add(40, 'co-credit', true, 'Credited beside ' + (co.of || 'the release artist') + ' on ' + co.n + ' recording' + (co.n === 1 ? '' : 's'));
+          // asked for on a row: has it held this role before, and how often
+          const hist = (c.history || []).find(x => x.gid === k.gid);
+          if (hist && hist.n > 0) add(35, hist.role + ' ×' + hist.n, true, 'Credited as ' + hist.role + ' ' + hist.n + ' time' + (hist.n === 1 ? '' : 's') + ' in MusicBrainz' + (hist.where ? '\n' + hist.where : ''));
+          else if (hist) reasons.push({ text: 'never ' + hist.role, tip: 'No ' + hist.role + ' credit in MusicBrainz', sign: -1 });   // said, not counted: it stays among the ones not checked
           const holds = mbmHolds(k, name);
           if (holds === 'name') add(20, '');
           else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');
@@ -4948,6 +4952,21 @@
     const res = [...n.values()];
     _txpCoCache.set(key, res);
     return res;
+  }
+  // #798 (majkinetor): "Add it as a explicit request on individual rows" — whether
+  // a candidate has held a role before. Its relationships of the kinds the role
+  // goes on; large for a prolific one, so only when asked, and cached for the page.
+  const _txpRelsCache = new Map();
+  async function txpEntityRels(kind, gid, incs) {
+    const key = kind + '|' + gid + '|' + incs;
+    if (_txpRelsCache.has(key)) return _txpRelsCache.get(key);
+    let j = null;
+    try { j = await mbnFetch(`/ws/2/${kind}/${gid}?inc=${incs}&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    catch (e) { return null; }   // transient: not cached
+    if (!j || !j.id) return null;
+    const rels = j.relations || [];
+    _txpRelsCache.set(key, rels);
+    return rels;
   }
   // Your picks, remembered per release artist and name, so the next release of the
   // same artist starts from them.
@@ -5317,6 +5336,7 @@
       + '.gt-tp-esrch{display:flex;gap:4px;margin-top:3px}'
       + '.gt-tp-esrch-go{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:24px;padding:0;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text-dim);cursor:pointer}.gt-tp-esrch-go:hover{color:var(--mbu-info);border-color:var(--mbu-info)}'
       + '.gt-tp-esrch-q{flex:1;min-width:0;height:24px;box-sizing:border-box;padding:2px 7px;border:1px solid var(--mbu-border);border-radius:4px;font:inherit;font-size:12px;outline:none;background:var(--mbu-bg);color:var(--mbu-text)}.gt-tp-esrch-q:focus{border-color:var(--mbu-info)}'
+      + '.gt-tp-hist{flex:none;height:24px;padding:0 9px;font:inherit;font-size:11.5px;white-space:nowrap;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer}.gt-tp-hist:hover{background:var(--mbu-bg-hover)}.gt-tp-hist:disabled{opacity:.6;cursor:default}'
       + '.gt-tp-esrch-kind{flex:none;height:24px;font:inherit;font-size:11.5px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg)}'
       // a line's pattern and text, opened from its number or listed as not parsed
       + '.gt-tp-line{display:flex;align-items:center;gap:4px;margin-top:3px}'
@@ -5466,6 +5486,7 @@
     // 'you' (a pick, or ✕ with none: then nothing is picked for it automatically).
     const candCache = new Map();   // name -> { kind, ranked, best }
     const pickInfo = new Map();    // name -> { by: 'auto' | 'you', level?, none? }
+    const roleHist = new Map();    // name -> [{ gid, role, n, where }], asked for on its row (#798)
     const TXP_CUT_KEY = 'gt-tp-cutoff';
     const LEVEL_RANK = { strong: 3, unique: 2, weak: 1 };
     let cutoff = (() => { try { return GM_getValue(TXP_CUT_KEY, 'unique'); } catch (e) { return 'unique'; } })();
@@ -5545,7 +5566,7 @@
       const knownCtx = known.filter(k => pool.has(k.entity.gid) && (pool.get(k.entity.gid).credited || holds(pool.get(k.entity.gid))))
         .map(k => ({ gid: k.entity.gid, why: k.why[0] }));
       const rank = cocredit => mbmRankCandidates(text, [...pool.values()].map(c => c.credited ? { ...c, name: holds(c) ? c.name : text, shown: c.name } : c),
-        { remembered, known: knownCtx, related: relatedCtx, sibling: siblingCtx, cocredit, unique, want, year: pc && pc.year, area: pc && pc.area });
+        { remembered, known: knownCtx, related: relatedCtx, sibling: siblingCtx, cocredit, history: roleHist.get(text.toLowerCase().trim()) || [], unique, want, year: pc && pc.year, area: pc && pc.area });
       let r = rank([]);
       // #798 step 4: a name still open asks who recordings credit beside the release artist
       if (kind === 'artist' && !r.best && r.ranked.length > 1) {
@@ -6379,6 +6400,15 @@
           q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
           go.onclick = run;
           sr.append(go, q);
+          // #798: has a candidate held this role before — one request each, so asked for
+          if (!ent && cc && cc.ranked.length > 1 && g.rows.some(r => r.roleMatch && !r.crKind)) {
+            const done = roleHist.has(g.key);
+            const hb = el('button', 'gt-tp-hist', done ? '↻ Roles checked' : 'Check roles'); hb.type = 'button';
+            hb.dataset.tip = 'Has each candidate held this role before?\nReads their relationships from MusicBrainz: one request per candidate, five at most, large for a prolific one'
+              + (done ? '\nChecked: the badges say how often. Click: check again' : '');
+            hb.onclick = () => txpCheckRoles(g, hb);
+            sr.appendChild(hb);
+          }
           if (!r0.entityForced) {
             // a role MusicBrainz has for several kinds: search the one you mean
             const ks = el('select', 'gt-tp-esrch-kind');
@@ -6654,6 +6684,39 @@
         render(); saveState();
       }
     }
+    // #798: has each candidate held the row's role before? Its relationships of the
+    // kinds the role goes on (release and recording, or work), five candidates at
+    // most; each one's count of that role becomes a badge, and the ranking uses it.
+    async function txpCheckRoles(g, btn) {
+      const cc = candCache.get(g.key); if (!cc || !cc.ranked.length) return;
+      const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
+      const lat = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_attribute_type) || {};
+      // the roles to look for: a link type's name, and an instrument's or a vocal's own name
+      const want = [], targets = new Set();
+      g.rows.forEach(r => {
+        const m = r.roleMatch; if (!m || !lts[m.id]) return;
+        const lt = lts[m.id], attr = m.attributeId != null && lat[m.attributeId] ? lat[m.attributeId].name : null;
+        if (!want.some(w => w.type === lt.name && w.attr === attr)) want.push({ type: lt.name, attr, label: attr || lt.name });
+        targets.add(lt.type1 === 'work' || lt.type0 === 'work' ? 'work' : 'rec');
+      });
+      if (!want.length) { toast('Pick the role first'); return; }
+      const incs = [...targets].map(t => t === 'work' ? 'work-rels' : 'release-rels+recording-rels').join('+');
+      const label = want.map(w => w.label).join(', ');
+      btn.disabled = true;
+      const hist = [];
+      const cands = cc.ranked.slice(0, 5);
+      for (let i = 0; i < cands.length; i++) {
+        btn.textContent = `Checking ${i + 1}/${cands.length}…`;
+        const rels = await txpEntityRels(cands[i].kind || cc.kind || 'artist', cands[i].gid, incs);
+        if (!rels) continue;
+        const hits = rels.filter(x => want.some(w => x.type === w.type && (!w.attr || (x.attributes || []).some(a => String(a).toLowerCase() === w.attr.toLowerCase()))));
+        const by = {}; hits.forEach(x => { by[x['target-type']] = (by[x['target-type']] || 0) + 1; });
+        hist.push({ gid: cands[i].gid, role: label, n: hits.length, where: Object.entries(by).map(([t, n]) => `${n} ${t}${n === 1 ? '' : 's'}`).join(' · ') });
+      }
+      roleHist.set(g.key, hist);
+      candCache.delete(g.key);   // ranked again, with the history
+      render(); saveState(); scheduleMatch();
+    }
     // #798: create the entity a name lacks — in a tab you watch (click), or in
     // the background (right-click), where the created page posts its MBID back
     // (#544, #598). Either way it then resolves every row with that name.
@@ -6922,6 +6985,7 @@
       appliedKeys: [...appliedKeys],
       candCache: [...candCache.entries()],   // #798
       pickInfo: [...pickInfo.entries()],
+      roleHist: [...roleHist.entries()],
     });
     const onTextChange = () => {
       const newLines = ta.value.split('\n').map((raw, i) => ({ raw, override: (lines[i] && lines[i].override) || '' }));
@@ -7025,6 +7089,7 @@
       loadedFromAnnotation = !!saved.loadedFromAnnotation;   // #544: brings "Apply & clear annotation" back with its text
       (saved.candCache || []).forEach(([k, v]) => candCache.set(k, v));   // #798
       (saved.pickInfo || []).forEach(([k, v]) => pickInfo.set(k, v));
+      (saved.roleHist || []).forEach(([k, v]) => roleHist.set(k, v));
     }
     // #544 follow-up: whatever was last on screen is what comes back, whichever
     // control changed it — see closeTextParser.

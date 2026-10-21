@@ -85,6 +85,8 @@ rk = mbmRankCandidates('John Smith', smiths, { sibling: [{ gid: 's3', why: 'prod
 ck(rk.best && rk.best.gid === 's3' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => x.text === 'same group' && /deluxe/.test(x.tip)), 'step 4: credited on another release of the group → strong pick, with the release', rk.best);
 rk = mbmRankCandidates('John Smith', smiths, { cocredit: [{ gid: 's1', n: 3, of: 'Toto' }] });
 ck(rk.best && rk.best.gid === 's1' && rk.ranked[0].reasons.some(x => x.text === 'co-credit' && /beside Toto on 3 recordings/.test(x.tip)), 'step 4: credited beside the release artist → strong pick', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { history: [{ gid: 's1', role: 'mastering', n: 0 }, { gid: 's2', role: 'mastering', n: 12, where: 'release · recording' }, { gid: 's3', role: 'mastering', n: 0 }] });
+ck(rk.best && rk.best.gid === 's2' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => x.text === 'mastering ×12') && rk.ranked[1].reasons.some(x => x.text === 'never mastering' && x.sign < 0), 'role history: the one who held the role is picked, the others say they never did', rk.ranked.map(x => x.reasons));
 rk = mbmRankCandidates('John Smith', smiths, { known: [{ gid: 's1', why: 'x' }], sibling: [{ gid: 's1', why: 'y' }] });
 ck(!rk.ranked[0].reasons.some(x => x.text === 'same group'), 'step 4: on the release already, the group adds nothing', rk.ranked[0].reasons);
 
