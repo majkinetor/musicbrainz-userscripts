@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.100940
+// @version      2026.10.21.101057
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -6703,7 +6703,8 @@
     // stand, and Apply itself
     hdr.textContent = '';
     hdr.classList.add('gt-tp-bar');
-    hdr.append(el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), scopeWrap, cnt, busy, el('span', 'gt-tp-grow'), applyClearBtn, applyBtn, annoBtn, xb);
+    // Apply last on the right (majkinetor), so ✕ goes first on the left
+    hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), scopeWrap, cnt, busy, el('span', 'gt-tp-grow'), annoBtn, applyClearBtn, applyBtn);
     panel.append(hdr, ctrl, src, body, ents);
     // #798: under Group Therapy's toolbar, where the button that opened it is
     const bar = document.querySelector('.gt-toolbar');
