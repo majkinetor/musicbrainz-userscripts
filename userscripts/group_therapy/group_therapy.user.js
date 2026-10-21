@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.091331
+// @version      2026.10.21.091954
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4572,8 +4572,23 @@
     let rows = [out];
     for (const [field, alts] of compiled.splitSpecs) {
       const rx = txpSplitRegex(alts);
+      // #798: keep the separators, and glue a piece back on while its brackets
+      // are open, so "Mimmo Epifani (tracks 1-3, 5-11)" stays one name
+      const keep = new RegExp('(' + rx.source + ')', rx.flags);
+      const open = t => (t.match(/[([{]/g) || []).length - (t.match(/[)\]}]/g) || []).length;
+      const splitTop = v => {
+        const parts = v.split(keep), out = [];
+        let cur = '';
+        for (let i = 0; i < parts.length; i += 2) {
+          cur += parts[i];
+          if (i + 1 < parts.length && open(cur) > 0) { cur += parts[i + 1]; continue; }
+          out.push(cur); cur = '';
+        }
+        if (cur) out.push(cur);
+        return out;
+      };
       rows = rows.flatMap(r => {
-        const vals = (r[field] || '').split(rx).map(s => s.trim()).filter(Boolean);
+        const vals = splitTop(r[field] || '').map(s => s.trim()).filter(Boolean);
         return vals.length ? vals.map(v => ({ ...r, [field]: v })) : [r];
       });
     }
@@ -5147,10 +5162,8 @@
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
       + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
+      + '.gt-tp-ctrl .gt-tp-busy{margin-left:auto;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}'
       + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);font-weight:bold}'
-      + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:var(--mbu-accent)}'
-      + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
       // #544: disambiguation must not read as part of the name — smaller, grey,
       // italic, in the results AND in the resolved table cell.
       + '.gt-tp-disamb{color:var(--mbu-text-weak);font-size:11px;font-style:italic;font-weight:400}'
@@ -5781,13 +5794,9 @@
     const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
-    // #525 (majkinetor): "lets move the Resolve all to the top, to match the
-    // standard, here is the example in GT's work matcher" then "Name it also
-    // Match with the icon" — mirrors Match Works' own toolbar exactly: its
-    // "⚡ Match" button lives at the right of the TOP bar, not the footer
-    // (renderWorkMatch's `tb`), styled the same bold-purple "primary" way.
-    const resolveBtn = el('button', 'gt-tp-resolve', '⚡ Match'); resolveBtn.type = 'button';
-    resolveBtn.dataset.tip = 'Resolve every role and entity that can auto-resolve';
+    // #798: no Match button — matching runs by itself after each change; this
+    // says when it is working
+    const busy = el('span', 'gt-tp-busy');
     // #539: scope picker. Release is still the default — the recording scope is
     // opt-in and inert until a track selector is typed.
     const scopeWrap = el('span', 'gt-tp-scope');
@@ -5849,7 +5858,7 @@
       if (scope.spec.trim()) return txpMatchTracks(scope.spec, rows);
       return rows.filter(r => { const cb = r.tr.querySelector('input.recording'); return cb && cb.checked; });
     }
-    scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); };
+    scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); scheduleMatch(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
     detSel.onchange = () => { scope.tracks = detSel.value; render(); saveState(); };   // #597
     worksSel.onchange = () => { scope.works = worksSel.value; if (scope.works === 'needed') txpWorksWarning(); saveState(); };   // #777
@@ -5865,7 +5874,7 @@
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
     freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
-    ctrl.append(patIn, patClr, freezeBtn, presets, resolveBtn);
+    ctrl.append(patIn, patClr, freezeBtn, presets, busy);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -5957,13 +5966,13 @@
       w.appendChild(el('span', 'gt-tp-line-no', String(li + 1)));
       const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = (r && r.textPat) || pattern; ov.value = lines[li].override || '';
       ov.dataset.tip = r && r.textPat ? 'Another pattern for this line only\nThe text sets {{' + r.textPat + '}} for it' : 'Another pattern for this line only'; ov.dataset.fkey = 'ov:' + li;
-      ov.addEventListener('input', () => { lines[li].override = ov.value; render(); saveState(); });
+      ov.addEventListener('input', () => { lines[li].override = ov.value; render(); saveState(); scheduleMatch(); });
       const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = lines[li].raw; rawIn.dataset.tip = 'The line\'s text\nEdits go to the pasted text too';
       rawIn.dataset.fkey = 'raw:' + li;
       rawIn.addEventListener('input', () => {
         lines[li].raw = rawIn.value;
         [...entityOverride.keys()].filter(k => +k.split(':')[0] === li).forEach(k => entityOverride.delete(k));
-        syncTextareaFromLines(); render(); saveState();
+        syncTextareaFromLines(); render(); saveState(); scheduleMatch();
       });
       const del = el('button', 'gt-tp-rowdel', '✕'); del.type = 'button'; del.dataset.tip = 'Remove this line';
       del.onclick = () => { openLines.delete(li); deleteLine(li); };
@@ -6025,7 +6034,7 @@
       g.rows.forEach(r => { if (lines[r.li] && lines[r.li].raw.includes(r.entity)) lines[r.li].raw = lines[r.li].raw.replace(r.entity, canonical); });
       const k = canonical.toLowerCase().trim();
       entityCache.set(k, ent); pickInfo.set(k, { by: 'you', gid: ent.gid });
-      syncTextareaFromLines(); render(); saveState();
+      syncTextareaFromLines(); render(); saveState(); scheduleMatch();
       toast(`Set to “${canonical}”`);
     }
     const roleLabel = r => `${(r.roleMatch && r.roleMatch.name) || r.role || '?'} [${r.li + 1}]`;
@@ -6099,7 +6108,7 @@
             onPickRow: e => pickRowMenu(e, g, c),
           })));
         } else {
-          list.appendChild(el('div', 'gt-tp-enone', '⚡ Match finds the candidates'));
+          list.appendChild(el('div', 'gt-tp-enone', 'Matching…'));
         }
         right.appendChild(list);
         if (!creating) {
@@ -6163,7 +6172,7 @@
       const ovRenumbered = new Map();
       entityOverride.forEach((v, k) => { const li = +k.split(':')[0]; if (li !== delLi) ovRenumbered.set(renumberKey(k, delLi), v); });
       entityOverride.clear(); ovRenumbered.forEach((v, k) => entityOverride.set(k, v));
-      syncTextareaFromLines(); render(); saveState();
+      syncTextareaFromLines(); render(); saveState(); scheduleMatch();
     }
 
     function render() {
@@ -6195,8 +6204,16 @@
       }
     }
 
+    // #798: after a change, matching runs on its own: roles at once, then each
+    // name not seen yet (the rest are cached per name)
+    let matching = false, matchAgain = false, matchTimer = null;
+    function scheduleMatch() {
+      clearTimeout(matchTimer);
+      matchTimer = setTimeout(() => { if (matching) matchAgain = true; else resolveAll(); }, 500);
+    }
     async function resolveAll() {
-      resolveBtn.disabled = true; resolveBtn.textContent = 'Resolving…';
+      matching = true;
+      busy.textContent = 'Matching…';
       try {
         const rows = parsedRows().filter(r => r.matched);
         const crRows = rows.filter(r => r.crKind);
@@ -6244,8 +6261,8 @@
         const todo = entities.filter(([t]) => { const k = t.toLowerCase().trim(); return !candCache.has(k) && (pickInfo.get(k) || {}).by !== 'you'; });
         resolveTotal = todo.length;
         resolveDone = 0;
-        const bumpProgress = () => { resolveDone++; resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`; };
-        resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`;
+        const bumpProgress = () => { resolveDone++; busy.textContent = `Matching ${resolveDone}/${resolveTotal}…`; };
+        if (resolveTotal) busy.textContent = `Matching ${resolveDone}/${resolveTotal}…`;
         const pc = todo.length ? await txpReleaseContext() : null;
         for (const [text, entityType] of todo) {
           const key = text.toLowerCase().trim();
@@ -6261,7 +6278,8 @@
           bumpProgress(); render(); saveState();
         }
       } finally {
-        resolveBtn.disabled = false; resolveBtn.textContent = '⚡ Match'; render(); saveState();
+        matching = false; busy.textContent = ''; render(); saveState();
+        if (matchAgain) { matchAgain = false; scheduleMatch(); }
       }
     }
 
@@ -6601,9 +6619,9 @@
         }
       }
       lines = newLines;
-      render(); saveState();
+      render(); saveState(); scheduleMatch();
     };
-    const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); };
+    const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); scheduleMatch(); };
     patIn.addEventListener('input', onPatternChange);
     patClr.onclick = () => { patIn.value = ''; onPatternChange(); };
     ta.addEventListener('input', onTextChange);
@@ -6618,7 +6636,6 @@
     }, 0));
     const setSrcOpen = (open) => { ta.style.display = open ? '' : 'none'; srcTgl.textContent = (open ? '▾' : '▸') + ' Paste credit text'; };
     srcTgl.onclick = () => { setSrcOpen(ta.style.display === 'none'); saveState(); };
-    resolveBtn.onclick = resolveAll;
     // #544 freeze: per LINE, since the override is a line's property — a line
     // that expanded into several rows is frozen once.
     freezeBtn.onclick = () => {
@@ -6677,6 +6694,7 @@
     // #544 follow-up: whatever was last on screen is what comes back, whichever
     // control changed it — see closeTextParser.
     _txpSaveOnClose = saveState;
+    if (lines.some(l => l.raw.trim())) scheduleMatch();   // #798
     render();
     refreshScopeUi();   // #539: show what the saved scope selects, before anything is touched
     setTimeout(() => { try { patIn.focus(); patIn.select(); } catch (e) {} }, 30);

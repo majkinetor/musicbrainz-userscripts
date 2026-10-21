@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.091335
+// @version      2026.10.21.091958
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -131,8 +131,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.21.091335 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.21.085014\n  · Art Station v2026.10.20.231231\n  · Credit Hoarder v2026.10.21.085228\n  · Falcon v2026.10.20.143006\n  · First Contact v2026.10.21\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.091331\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.223959\n  · Platform Check v2026.10.20.142620");
+  console.log('%c String Theory %c v2026.10.21.091958 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.21.085014\n  · Art Station v2026.10.20.231231\n  · Credit Hoarder v2026.10.21.085228\n  · Falcon v2026.10.20.143006\n  · First Contact v2026.10.21\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.091954\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.223959\n  · Platform Check v2026.10.20.142620");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -140,7 +140,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.21.085014"],["art_station","Art Station","2026.10.20.231231"],["credit_hoarder","Credit Hoarder","2026.10.21.085228"],["falcon","Falcon","2026.10.20.143006"],["first_contact","First Contact","2026.10.21"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.091331"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.223959"],["platform_check","Platform Check","2026.10.20.142620"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.21.085014"],["art_station","Art Station","2026.10.20.231231"],["credit_hoarder","Credit Hoarder","2026.10.21.085228"],["falcon","Falcon","2026.10.20.143006"],["first_contact","First Contact","2026.10.21"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.091954"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.223959"],["platform_check","Platform Check","2026.10.20.142620"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -46421,7 +46421,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.091331","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.091331","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.091954","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.091954","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
@@ -49236,8 +49236,23 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     let rows = [out];
     for (const [field, alts] of compiled.splitSpecs) {
       const rx = txpSplitRegex(alts);
+      // #798: keep the separators, and glue a piece back on while its brackets
+      // are open, so "Mimmo Epifani (tracks 1-3, 5-11)" stays one name
+      const keep = new RegExp('(' + rx.source + ')', rx.flags);
+      const open = t => (t.match(/[([{]/g) || []).length - (t.match(/[)\]}]/g) || []).length;
+      const splitTop = v => {
+        const parts = v.split(keep), out = [];
+        let cur = '';
+        for (let i = 0; i < parts.length; i += 2) {
+          cur += parts[i];
+          if (i + 1 < parts.length && open(cur) > 0) { cur += parts[i + 1]; continue; }
+          out.push(cur); cur = '';
+        }
+        if (cur) out.push(cur);
+        return out;
+      };
       rows = rows.flatMap(r => {
-        const vals = (r[field] || '').split(rx).map(s => s.trim()).filter(Boolean);
+        const vals = splitTop(r[field] || '').map(s => s.trim()).filter(Boolean);
         return vals.length ? vals.map(v => ({ ...r, [field]: v })) : [r];
       });
     }
@@ -49682,10 +49697,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
       + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
+      + '.gt-tp-ctrl .gt-tp-busy{margin-left:auto;font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}'
       + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
-      + '.gt-tp-ctrl .gt-tp-resolve{margin-left:auto;flex:0 0 auto;white-space:nowrap;padding:5px 12px;border:1px solid transparent;border-radius:5px;background:transparent;cursor:pointer;font-size:13px;font-family:inherit;color:var(--mbu-accent-text);font-weight:bold}'
-      + '.gt-tp-ctrl .gt-tp-resolve:hover{background:linear-gradient(#7a52df,#5f3ec0);color:#fff;border-color:var(--mbu-accent)}'
-      + '.gt-tp-ctrl .gt-tp-resolve:disabled{opacity:.45;cursor:default;pointer-events:none}'
       // #544: disambiguation must not read as part of the name — smaller, grey,
       // italic, in the results AND in the resolved table cell.
       + '.gt-tp-disamb{color:var(--mbu-text-weak);font-size:11px;font-style:italic;font-weight:400}'
@@ -50316,13 +50329,9 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
     const presets = el('span', 'gt-tp-presets');
     TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
-    // #525 (majkinetor): "lets move the Resolve all to the top, to match the
-    // standard, here is the example in GT's work matcher" then "Name it also
-    // Match with the icon" — mirrors Match Works' own toolbar exactly: its
-    // "⚡ Match" button lives at the right of the TOP bar, not the footer
-    // (renderWorkMatch's `tb`), styled the same bold-purple "primary" way.
-    const resolveBtn = el('button', 'gt-tp-resolve', '⚡ Match'); resolveBtn.type = 'button';
-    resolveBtn.dataset.tip = 'Resolve every role and entity that can auto-resolve';
+    // #798: no Match button — matching runs by itself after each change; this
+    // says when it is working
+    const busy = el('span', 'gt-tp-busy');
     // #539: scope picker. Release is still the default — the recording scope is
     // opt-in and inert until a track selector is typed.
     const scopeWrap = el('span', 'gt-tp-scope');
@@ -50384,7 +50393,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       if (scope.spec.trim()) return txpMatchTracks(scope.spec, rows);
       return rows.filter(r => { const cb = r.tr.querySelector('input.recording'); return cb && cb.checked; });
     }
-    scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); };
+    scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); scheduleMatch(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
     detSel.onchange = () => { scope.tracks = detSel.value; render(); saveState(); };   // #597
     worksSel.onchange = () => { scope.works = worksSel.value; if (scope.works === 'needed') txpWorksWarning(); saveState(); };   // #777
@@ -50400,7 +50409,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
     freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
-    ctrl.append(patIn, patClr, freezeBtn, presets, resolveBtn);
+    ctrl.append(patIn, patClr, freezeBtn, presets, busy);
 
     const src = el('div', 'gt-tp-src');
     const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
@@ -50492,13 +50501,13 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       w.appendChild(el('span', 'gt-tp-line-no', String(li + 1)));
       const ov = el('input', 'gt-tp-ov'); ov.type = 'text'; ov.placeholder = (r && r.textPat) || pattern; ov.value = lines[li].override || '';
       ov.dataset.tip = r && r.textPat ? 'Another pattern for this line only\nThe text sets {{' + r.textPat + '}} for it' : 'Another pattern for this line only'; ov.dataset.fkey = 'ov:' + li;
-      ov.addEventListener('input', () => { lines[li].override = ov.value; render(); saveState(); });
+      ov.addEventListener('input', () => { lines[li].override = ov.value; render(); saveState(); scheduleMatch(); });
       const rawIn = el('input', 'gt-tp-raw'); rawIn.type = 'text'; rawIn.value = lines[li].raw; rawIn.dataset.tip = 'The line\'s text\nEdits go to the pasted text too';
       rawIn.dataset.fkey = 'raw:' + li;
       rawIn.addEventListener('input', () => {
         lines[li].raw = rawIn.value;
         [...entityOverride.keys()].filter(k => +k.split(':')[0] === li).forEach(k => entityOverride.delete(k));
-        syncTextareaFromLines(); render(); saveState();
+        syncTextareaFromLines(); render(); saveState(); scheduleMatch();
       });
       const del = el('button', 'gt-tp-rowdel', '✕'); del.type = 'button'; del.dataset.tip = 'Remove this line';
       del.onclick = () => { openLines.delete(li); deleteLine(li); };
@@ -50560,7 +50569,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       g.rows.forEach(r => { if (lines[r.li] && lines[r.li].raw.includes(r.entity)) lines[r.li].raw = lines[r.li].raw.replace(r.entity, canonical); });
       const k = canonical.toLowerCase().trim();
       entityCache.set(k, ent); pickInfo.set(k, { by: 'you', gid: ent.gid });
-      syncTextareaFromLines(); render(); saveState();
+      syncTextareaFromLines(); render(); saveState(); scheduleMatch();
       toast(`Set to “${canonical}”`);
     }
     const roleLabel = r => `${(r.roleMatch && r.roleMatch.name) || r.role || '?'} [${r.li + 1}]`;
@@ -50634,7 +50643,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
             onPickRow: e => pickRowMenu(e, g, c),
           })));
         } else {
-          list.appendChild(el('div', 'gt-tp-enone', '⚡ Match finds the candidates'));
+          list.appendChild(el('div', 'gt-tp-enone', 'Matching…'));
         }
         right.appendChild(list);
         if (!creating) {
@@ -50698,7 +50707,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const ovRenumbered = new Map();
       entityOverride.forEach((v, k) => { const li = +k.split(':')[0]; if (li !== delLi) ovRenumbered.set(renumberKey(k, delLi), v); });
       entityOverride.clear(); ovRenumbered.forEach((v, k) => entityOverride.set(k, v));
-      syncTextareaFromLines(); render(); saveState();
+      syncTextareaFromLines(); render(); saveState(); scheduleMatch();
     }
 
     function render() {
@@ -50730,8 +50739,16 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       }
     }
 
+    // #798: after a change, matching runs on its own: roles at once, then each
+    // name not seen yet (the rest are cached per name)
+    let matching = false, matchAgain = false, matchTimer = null;
+    function scheduleMatch() {
+      clearTimeout(matchTimer);
+      matchTimer = setTimeout(() => { if (matching) matchAgain = true; else resolveAll(); }, 500);
+    }
     async function resolveAll() {
-      resolveBtn.disabled = true; resolveBtn.textContent = 'Resolving…';
+      matching = true;
+      busy.textContent = 'Matching…';
       try {
         const rows = parsedRows().filter(r => r.matched);
         const crRows = rows.filter(r => r.crKind);
@@ -50779,8 +50796,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const todo = entities.filter(([t]) => { const k = t.toLowerCase().trim(); return !candCache.has(k) && (pickInfo.get(k) || {}).by !== 'you'; });
         resolveTotal = todo.length;
         resolveDone = 0;
-        const bumpProgress = () => { resolveDone++; resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`; };
-        resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`;
+        const bumpProgress = () => { resolveDone++; busy.textContent = `Matching ${resolveDone}/${resolveTotal}…`; };
+        if (resolveTotal) busy.textContent = `Matching ${resolveDone}/${resolveTotal}…`;
         const pc = todo.length ? await txpReleaseContext() : null;
         for (const [text, entityType] of todo) {
           const key = text.toLowerCase().trim();
@@ -50796,7 +50813,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
           bumpProgress(); render(); saveState();
         }
       } finally {
-        resolveBtn.disabled = false; resolveBtn.textContent = '⚡ Match'; render(); saveState();
+        matching = false; busy.textContent = ''; render(); saveState();
+        if (matchAgain) { matchAgain = false; scheduleMatch(); }
       }
     }
 
@@ -51136,9 +51154,9 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         }
       }
       lines = newLines;
-      render(); saveState();
+      render(); saveState(); scheduleMatch();
     };
-    const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); };
+    const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); scheduleMatch(); };
     patIn.addEventListener('input', onPatternChange);
     patClr.onclick = () => { patIn.value = ''; onPatternChange(); };
     ta.addEventListener('input', onTextChange);
@@ -51153,7 +51171,6 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     }, 0));
     const setSrcOpen = (open) => { ta.style.display = open ? '' : 'none'; srcTgl.textContent = (open ? '▾' : '▸') + ' Paste credit text'; };
     srcTgl.onclick = () => { setSrcOpen(ta.style.display === 'none'); saveState(); };
-    resolveBtn.onclick = resolveAll;
     // #544 freeze: per LINE, since the override is a line's property — a line
     // that expanded into several rows is frozen once.
     freezeBtn.onclick = () => {
@@ -51212,6 +51229,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // #544 follow-up: whatever was last on screen is what comes back, whichever
     // control changed it — see closeTextParser.
     _txpSaveOnClose = saveState;
+    if (lines.some(l => l.raw.trim())) scheduleMatch();   // #798
     render();
     refreshScopeUi();   // #539: show what the saved scope selects, before anything is touched
     setTimeout(() => { try { patIn.focus(); patIn.select(); } catch (e) {} }, 30);

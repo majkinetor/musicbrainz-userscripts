@@ -18,9 +18,9 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   const relArtist = await page.evaluate(() => window.MB.relationshipEditor.state.entity.artistCredit.names[0].artist.name);
 
   const open = async () => { await page.click('.gt-clone-btn:has-text("Text parser")'); await page.waitForSelector('.gt-tp'); };
+  // no Match button: matching runs by itself after a change; done when nothing says "Matching…"
   const match = async () => {
-    await page.click('.gt-tp-resolve');
-    await until(() => page.textContent('.gt-tp-resolve'), t => (t || '').trim() === '⚡ Match', { timeout: 120000 });
+    await until(() => page.evaluate(() => !document.querySelector('.gt-tp-busy').textContent && !/Matching…/.test(document.querySelector('.gt-tp').innerText) && !!document.querySelector('.gt-tp-erow')), Boolean, { timeout: 120000 });
     await frames(page);
   };
   const ents = () => page.evaluate(() => [...document.querySelectorAll('.gt-tp-erow')].map(tr => ({
@@ -44,6 +44,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   await page.fill('.gt-tp-ta', [`Producer: ${relArtist}`, 'Guitar: John Smith', 'Mastering: Bob Ludwig'].join('\n'));
   await page.dispatchEvent('.gt-tp-ta', 'input');
   await page.selectOption('.gt-tp-cut-sel', 'unique');
+  check(!(await page.locator('.gt-tp-resolve').count()), 'no Match button');
   await match();
   let list = await ents();
   console.log('after Match: ' + JSON.stringify(list));
