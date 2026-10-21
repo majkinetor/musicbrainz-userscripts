@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.112244
+// @version      2026.10.21.115054
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5215,6 +5215,13 @@
       + '.gt-tp-etbl th{position:relative;text-align:left;font-size:12px;padding:4px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border)}'
       + '.gt-tp-etbl td{vertical-align:top;padding:4px 8px;border-bottom:1px solid var(--mbu-border);font-size:12px}'
       + '.gt-tp-erow.gt-tp-st-ok td{background:var(--mbu-ok-bg)}.gt-tp-erow.gt-tp-st-amber td{background:var(--mbu-warn-bg)}.gt-tp-erow.gt-tp-st-red td{background:var(--mbu-error-bg)}'
+      // #798: the row you work in, or a status pill took you to: a bar and a tint over its colour
+      + '.gt-tp-erow.gt-tp-cur td{box-shadow:inset 0 0 0 9999px color-mix(in srgb,var(--mbu-accent) 8%,transparent)}'
+      + '.gt-tp-erow.gt-tp-cur td:first-child{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--mbu-accent) 55%,transparent),inset 0 0 0 9999px color-mix(in srgb,var(--mbu-accent) 8%,transparent)}'
+      + '.gt-tp-erow.gt-tp-jump td{box-shadow:inset 0 0 0 9999px color-mix(in srgb,var(--mbu-accent) 13%,transparent)}'
+      + '.gt-tp-erow.gt-tp-jump td:first-child{box-shadow:inset 3px 0 0 var(--mbu-accent),inset 0 0 0 9999px color-mix(in srgb,var(--mbu-accent) 13%,transparent)}'
+      + '.gt-tp-ring{outline:2px solid var(--mbu-warn);outline-offset:2px;border-radius:4px;animation:gt-tp-ring 1s ease-out 2}'
+      + '@keyframes gt-tp-ring{0%{outline-color:transparent}30%{outline-color:var(--mbu-warn)}100%{outline-color:var(--mbu-warn)}}'
       + '.gt-tp-colresize{position:absolute;top:0;right:0;width:7px;height:100%;cursor:col-resize}'
       + '.gt-tp-colresize::after{content:"";position:absolute;top:0;bottom:0;right:3px;width:1px;background:var(--mbu-border)}'
       + '.gt-tp-ehead{display:flex;align-items:center;gap:6px}'
@@ -6056,6 +6063,20 @@
       handle.addEventListener('mousedown', e => { e.preventDefault(); x0 = e.clientX; w0 = th.getBoundingClientRect().width; document.addEventListener('mousemove', move); document.addEventListener('mouseup', up); });
     }
     const etbody = el('tbody'); etbl.appendChild(etbody);
+    // #798 (majkinetor): which row a pill means, and which you are in — the mark is
+    // kept by the row's key, so a re-render keeps it; 'jump' is a pill's, 'cur' yours
+    let curRow = '', curHow = '';
+    const markRow = (rk, how) => {
+      curRow = rk; curHow = how;
+      etbody.querySelectorAll('.gt-tp-erow').forEach(t => {
+        t.classList.toggle('gt-tp-cur', t.dataset.rk === rk && how === 'cur');
+        t.classList.toggle('gt-tp-jump', t.dataset.rk === rk && how === 'jump');
+      });
+    };
+    etbody.addEventListener('focusin', e => {
+      const tr = e.target.closest('.gt-tp-erow');
+      if (tr && (tr.dataset.rk !== curRow || curHow !== 'cur')) markRow(tr.dataset.rk, 'cur');
+    });
     ents.append(entsHdr, etbl);
     const LEVEL_TIP = { strong: 'Strong: the release backs it', unique: 'Unique name: the only one with this name', weak: 'Weak: a best guess', you: 'Picked by you' };
     const lifeOf = c => (c.begin || c.end) ? `${c.begin || '?'}–${c.end || ''}` : '';
@@ -6187,6 +6208,8 @@
       for (const it of items) {
         if (it.bad) {
           const tr = el('tr', 'gt-tp-erow gt-tp-st-red'); tr.dataset.unparsed = '1';
+          tr.dataset.rk = 'line:' + it.li;
+          if (curRow === tr.dataset.rk) tr.classList.add(curHow === 'jump' ? 'gt-tp-jump' : 'gt-tp-cur');
           const left = el('td');
           const head = el('div', 'gt-tp-ehead'); head.appendChild(el('span', 'gt-tp-ename gt-tp-unparsed', 'not parsed'));
           left.append(head, lineEditor(it.li, it.bad));
@@ -6201,6 +6224,8 @@
         const allRoles = g.rows.every(r => r.roleMatch || r.crKind);
         const st = ent && allRoles ? 'ok' : (ent || creating || (cc && cc.ranked.length)) ? 'amber' : cc ? 'red' : '';
         const tr = el('tr', 'gt-tp-erow' + (st ? ' gt-tp-st-' + st : ''));
+        tr.dataset.rk = g.key;
+        if (curRow === g.key) tr.classList.add(curHow === 'jump' ? 'gt-tp-jump' : 'gt-tp-cur');
         if (!ent) tr.dataset.unpicked = '1';
         if (!allRoles) tr.dataset.roleless = '1';
         // the credit: name, kind, + to create it; its roles with their lines
@@ -6296,6 +6321,10 @@
       const edge = top.getBoundingClientRect().bottom + 8;
       const next = left.find(r => r.getBoundingClientRect().top > edge + 4) || left[0];
       window.scrollTo({ top: window.scrollY + next.getBoundingClientRect().top - edge, behavior: 'smooth' });
+      // #798: the row marked, and what is missing in it ringed for a moment
+      markRow(next.dataset.rk, 'jump');
+      const what = /roleless/.test(sel) ? next.querySelector('.gt-tp-role-miss') : /unparsed/.test(sel) ? next.querySelector('.gt-tp-line') : (next.querySelector('.gt-tp-cands:not(:empty)') || next.lastElementChild);
+      if (what) { what.classList.add('gt-tp-ring'); setTimeout(() => what.classList.remove('gt-tp-ring'), 2000); }
     };
     // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
