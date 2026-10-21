@@ -162,6 +162,25 @@ export function convertPotentialDJMixers(json) {
  *     value:…}` attribute (with `Drum Programming` remapped to the
  *     `Programmed By` link type).
  */
+// #800: the misc rel's `task` is MB's free-text "credited task", so it has to read as the
+// whole job. A Discogs bracket on a misc role is usually a scope ("Coordinator [Album]" →
+// "album coordinator"), but it may already name the job ("A&R [A&R Coordination By]",
+// "Management [Tour Manager]"), start with a preposition ("Management [For X]" → "management
+// for x"), or qualify a catch-all base whose bracket IS the job ("Other [Hair]", "Crew [Lighting]").
+const MISC_GENERIC_ROLES = new Set(['other', 'crew', 'miscellaneous support']);
+export function miscTask(role, bracket) {
+    const r = role.trim().toLowerCase();
+    const b = (bracket || '').replace(/]/g, '').trim().toLowerCase();
+    if (!b) return r;
+    if (MISC_GENERIC_ROLES.has(r)) return b;
+    const stem = r.replace(/\s+by$/, '').slice(0, 5);
+    if (b.includes(stem)) return b;
+    if (/^(for|at|of|with|on|in|from|to|by)\b/.test(b)) return `${r} ${b}`;
+    return `${b} ${r.replace(/\s+by$/, '')}`;
+}
+
+const withSourceRole = (role, mapped) => (mapped ? Object.assign(mapped, { sourceRole: role.trim() }) : mapped);
+
 export function getArtistRoles(artist) {
     const roleStr = artist.role;
     const rawRoles = roleStr.split(',');
@@ -172,7 +191,8 @@ export function getArtistRoles(artist) {
         artist.name = artist.name.replace(/\([0-9]+\)/, '').trim();
     }
     return rawRoles
-        .map(role => {
+        // #800: each mapped role keeps the Discogs role it came from, for the review table's tooltip
+        .map(role => withSourceRole(role, (() => {
             let additionalAttributes = [];
             let creditedAs = null;
             let rolePart = role.trim().split('[');
@@ -229,9 +249,7 @@ export function getArtistRoles(artist) {
             }
             const mapping = ENTITY_TYPE_MAP[actualRole];
             if (mapping && mapping.linkType == 'misc') {
-                // Use sub-role text if present (e.g. '[Management]'), otherwise the role name itself
-                const taskValue = rolePart[1] ? rolePart[1].replace(']', '').trim().toLowerCase() : actualRole.trim().toLowerCase();
-                additionalAttributes.push({ _type: 'task', value: taskValue });
+                additionalAttributes.push({ _type: 'task', value: miscTask(actualRole, rolePart[1]) });
             }
             if (mapping && mapping.linkType == 'engineer' && rolePart[1]) {
                 additionalAttributes.push({ _type: 'task', value: rolePart[1].replace(']', '').trim().toLowerCase() });
@@ -321,7 +339,7 @@ export function getArtistRoles(artist) {
                 artist: artist,
                 attributes: additionalAttributes,
             });
-        })
+        })()))
         .filter(resolvedRole => {
             return !!resolvedRole;
         })

@@ -3480,9 +3480,15 @@ function runSourcePipeline({ companies, artistRoles, tracklistRels, tracklist, s
                     else if (attr._type === 'vocal' && attr.value) displayLabel = attr.value;
                     else if (typeof attr === 'string') displayLabel = `${role.linkType} [${attr}]`;
                 }
+                // #800: a task (misc's credited task, engineer [technical], …) is what the
+                // role actually is — "misc" alone hid that "Coordinator [Album]" was a coordinator
+                const task = (role.attributes || []).find(a => a && a._type === 'task' && a.value)?.value || '';
+                if (task) displayLabel = `${role.linkType}: ${task}`;
                 rolesMap.get(url).push({
                     linkType: role.linkType,
                     displayLabel,
+                    task,
+                    sourceRole: role.sourceRole || '',
                     trackPos: role.track?.position || '',
                     trackTitle: role.track?.title || '',
                 });

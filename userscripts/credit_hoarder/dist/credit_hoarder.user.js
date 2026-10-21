@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.21.110105
+// @version      2026.10.21.111702
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -2311,6 +2311,18 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     }).filter((role) => role !== null);
     return djmixers;
   }
+  var MISC_GENERIC_ROLES = /* @__PURE__ */ new Set(["other", "crew", "miscellaneous support"]);
+  function miscTask(role, bracket) {
+    const r = role.trim().toLowerCase();
+    const b = (bracket || "").replace(/]/g, "").trim().toLowerCase();
+    if (!b) return r;
+    if (MISC_GENERIC_ROLES.has(r)) return b;
+    const stem = r.replace(/\s+by$/, "").slice(0, 5);
+    if (b.includes(stem)) return b;
+    if (/^(for|at|of|with|on|in|from|to|by)\b/.test(b)) return `${r} ${b}`;
+    return `${b} ${r.replace(/\s+by$/, "")}`;
+  }
+  var withSourceRole = (role, mapped) => mapped ? Object.assign(mapped, { sourceRole: role.trim() }) : mapped;
   function getArtistRoles(artist) {
     const roleStr = artist.role;
     const rawRoles = roleStr.split(",");
@@ -2320,7 +2332,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     if (/\([0-9]+\)/.test(artist.name)) {
       artist.name = artist.name.replace(/\([0-9]+\)/, "").trim();
     }
-    return rawRoles.map((role) => {
+    return rawRoles.map((role) => withSourceRole(role, (() => {
       let additionalAttributes = [];
       let creditedAs = null;
       let rolePart = role.trim().split("[");
@@ -2373,8 +2385,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       }
       const mapping = ENTITY_TYPE_MAP[actualRole];
       if (mapping && mapping.linkType == "misc") {
-        const taskValue = rolePart[1] ? rolePart[1].replace("]", "").trim().toLowerCase() : actualRole.trim().toLowerCase();
-        additionalAttributes.push({ _type: "task", value: taskValue });
+        additionalAttributes.push({ _type: "task", value: miscTask(actualRole, rolePart[1]) });
       }
       if (mapping && mapping.linkType == "engineer" && rolePart[1]) {
         additionalAttributes.push({ _type: "task", value: rolePart[1].replace("]", "").trim().toLowerCase() });
@@ -2434,7 +2445,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         artist,
         attributes: additionalAttributes
       });
-    }).filter((resolvedRole) => {
+    })())).filter((resolvedRole) => {
       return !!resolvedRole;
     }).filter((r, i, all) => !isBareInstrument(r) || !all.some((o) => o.linkType === "vocal" || o.linkType === "instrument" && !isBareInstrument(o)));
   }
@@ -4963,11 +4974,16 @@ No lookup by name: search MusicBrainz yourself.`;
         const rolesList = r._roles || [];
         if (rolesList.length > 0) {
           const byRole = /* @__PURE__ */ new Map();
-          rolesList.forEach(({ displayLabel, linkType, trackPos }) => {
+          const sourcesByRole = /* @__PURE__ */ new Map();
+          rolesList.forEach(({ displayLabel, linkType, trackPos, sourceRole }) => {
             const key = displayLabel || linkType;
             if (!key) return;
-            if (!byRole.has(key)) byRole.set(key, /* @__PURE__ */ new Set());
+            if (!byRole.has(key)) {
+              byRole.set(key, /* @__PURE__ */ new Set());
+              sourcesByRole.set(key, /* @__PURE__ */ new Set());
+            }
             if (trackPos) byRole.get(key).add(String(trackPos));
+            if (sourceRole) sourcesByRole.get(key).add(sourceRole);
           });
           const compressPositions = (posSet) => {
             const all = [...posSet];
@@ -4985,11 +5001,13 @@ No lookup by name: search MusicBrainz yourself.`;
           };
           const chips = [...byRole.entries()].map(([roleKey, posSet]) => {
             const pos = compressPositions(posSet);
-            return { roleKey, displayText: roleKey + (pos ? " " + pos : "") };
+            return { roleKey, displayText: roleKey + (pos ? " " + pos : ""), sources: [...sourcesByRole.get(roleKey)] };
           });
           const rolesLine = document.createElement("div");
           rolesLine.style.cssText = "font-size:0.75rem;color:var(--mbu-text-weak);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;";
-          rolesLine.dataset.tip = chips.map((c) => c.displayText).join(", ");
+          const tipLines = chips.map((c) => c.displayText + (c.sources.length ? " \u2190 " + c.sources.join(", ") : ""));
+          if (chips.some((c) => c.sources.length)) tipLines.unshift("Roles, each with the credit it came from");
+          rolesLine.dataset.tip = tipLines.join("\n");
           chips.forEach((chip, i) => {
             if (i > 0) rolesLine.appendChild(document.createTextNode(", "));
             const span = document.createElement("span");
@@ -5705,7 +5723,7 @@ Right-click: add ${_addCount > 1 ? "them" : "it"} silently in the background`;
             const distinctRoles = [];
             const seen = /* @__PURE__ */ new Set();
             for (const role of r._roles || []) {
-              const label = (role.displayLabel || role.linkType || "").trim();
+              const label = (role.task || role.displayLabel || role.linkType || "").trim();
               if (!label || seen.has(label)) continue;
               seen.add(label);
               distinctRoles.push(label);
@@ -11184,9 +11202,13 @@ ${lines}
         else if (attr._type === "vocal" && attr.value) displayLabel = attr.value;
         else if (typeof attr === "string") displayLabel = `${role.linkType} [${attr}]`;
       }
+      const task = (role.attributes || []).find((a) => a && a._type === "task" && a.value)?.value || "";
+      if (task) displayLabel = `${role.linkType}: ${task}`;
       rolesMap.get(url).push({
         linkType: role.linkType,
         displayLabel,
+        task,
+        sourceRole: role.sourceRole || "",
         trackPos: role.track?.position || "",
         trackTitle: role.track?.title || ""
       });

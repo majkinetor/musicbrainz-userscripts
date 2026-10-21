@@ -825,11 +825,13 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 // Multi-medium compound positions ("2-5") aren't pure integers and would
                 // clash with range notation, so those are comma-joined verbatim.
                 const byRole = new Map();   // roleKey → Set of positions (empty set = release-level only)
-                rolesList.forEach(({ displayLabel, linkType, trackPos }) => {
+                const sourcesByRole = new Map();   // roleKey → Set of source roles it came from (#800)
+                rolesList.forEach(({ displayLabel, linkType, trackPos, sourceRole }) => {
                     const key = displayLabel || linkType;
                     if (!key) return;
-                    if (!byRole.has(key)) byRole.set(key, new Set());
+                    if (!byRole.has(key)) { byRole.set(key, new Set()); sourcesByRole.set(key, new Set()); }
                     if (trackPos) byRole.get(key).add(String(trackPos));
+                    if (sourceRole) sourcesByRole.get(key).add(sourceRole);
                 });
                 const compressPositions = posSet => {
                     const all = [...posSet];
@@ -847,12 +849,16 @@ export async function showReviewTable(allResults, rolesMap, companiesRolesMap, o
                 };
                 const chips = [...byRole.entries()].map(([roleKey, posSet]) => {
                     const pos = compressPositions(posSet);
-                    return { roleKey, displayText: roleKey + (pos ? ' ' + pos : '') };
+                    return { roleKey, displayText: roleKey + (pos ? ' ' + pos : ''), sources: [...sourcesByRole.get(roleKey)] };
                 });
 
                 const rolesLine = document.createElement('div');
                 rolesLine.style.cssText = 'font-size:0.75rem;color:var(--mbu-text-weak);margin-top:0.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px;';
-                rolesLine.dataset.tip = chips.map(c => c.displayText).join(', ');
+                // #800: one line per chip, with the source role(s) it was mapped from — "misc" alone
+                // doesn't say it was a "Coordinator [Album]"
+                const tipLines = chips.map(c => c.displayText + (c.sources.length ? ' ← ' + c.sources.join(', ') : ''));
+                if (chips.some(c => c.sources.length)) tipLines.unshift('Roles, each with the credit it came from');
+                rolesLine.dataset.tip = tipLines.join('\n');
                 chips.forEach((chip, i) => {
                     if (i > 0) rolesLine.appendChild(document.createTextNode(', '));
                     const span = document.createElement('span');
@@ -1741,7 +1747,7 @@ Right-click: submit it in the background, with no alias type`;
                     const distinctRoles = [];
                     const seen = new Set();
                     for (const role of (r._roles || [])) {
-                        const label = (role.displayLabel || role.linkType || '').trim();
+                        const label = (role.task || role.displayLabel || role.linkType || '').trim();
                         if (!label || seen.has(label)) continue;
                         seen.add(label);
                         distinctRoles.push(label);
