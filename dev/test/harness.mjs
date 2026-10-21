@@ -27,7 +27,7 @@
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { readFileSync, appendFileSync } from 'node:fs';
-import { gzipSync, gunzipSync } from 'node:zlib';
+import { gzipSync, gunzipSync, deflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { installProdGuard, hostOf, withUa } from './guard.mjs';
@@ -477,6 +477,38 @@ export async function pristine(page, kind, fields = {}) {
     out.recordings = j.media.flatMap(m => m.tracks.map(t => t.recording.id));
   }
   return out;
+}
+
+// A cover on a pristine release, through MusicBrainz's own add-cover-art form: a plain PNG of
+// one colour, typed and commented as asked. Only one upload per release: after a release's first,
+// signing the next answers 500 for a long while ("a temporary delay ... from the Internet
+// Archive"). Leaves `page` on the release's cover-art page, once the web service counts it.
+//   await pristineCover(page, mbid, { types: ['Back'], comment: 'the back' });
+export async function pristineCover(page, release, { types = ['Front'], comment = '', rgb = [40, 60, 200] } = {}) {
+  await page.goto(`${SANDBOX}/release/${release}/add-cover-art`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await idle(page);
+  await page.setInputFiles('input[name="files[]"]', { name: 'cover.png', mimeType: 'image/png', buffer: pngImage(300, 300, rgb) });
+  for (const t of types) await page.locator('label', { hasText: new RegExp('^\\s*' + t + '\\s*$') }).locator('input[type=checkbox]').first().check();
+  if (comment) await page.fill('input[name="add-cover-art.comment"]', comment);
+  await page.fill('textarea[name="add-cover-art.edit_note"]', 'A test cover, made for one spec run (mb-userscripts)');
+  await page.click('#add-cover-art-submit');
+  await page.waitForURL(u => /\/cover-art$/.test(u.pathname), { timeout: 120000 });
+  await until(() => page.evaluate(r => fetch(`/ws/2/release/${r}?fmt=json`, { cache: 'no-store' }).then(x => x.json()).then(j => j['cover-art-archive'].count).catch(() => 0), release), n => n > 0, { timeout: 60000, every: 3000 });
+}
+
+// A PNG of one colour, w × h (a stand-in image a spec can upload or serve).
+export function pngImage(w, h, rgb) {
+  const table = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+  const crc = b => { let x = 0xffffffff; for (const v of b) x = table[(x ^ v) & 0xff] ^ (x >>> 8); return (x ^ 0xffffffff) >>> 0; };
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type), data]), sum = Buffer.alloc(4); sum.writeUInt32BE(crc(body));
+    return Buffer.concat([len, body, sum]);
+  };
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 2;   // 8-bit RGB
+  const row = Buffer.concat([Buffer.from([0]), Buffer.from(Array.from({ length: w * 3 }, (_, i) => rgb[i % 3]))]);
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(Buffer.concat(Array(h).fill(row)))), chunk('IEND', Buffer.alloc(0))]);
 }
 
 // Skip (not fail) when the profile isn't logged in to the site the page is on.

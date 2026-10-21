@@ -10,7 +10,7 @@
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 // Run: node test/live-533-disambiguation-proof.mjs
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -22,28 +22,25 @@ test("live 533 disambiguation proof", { tag: ['@sandbox', '@login'] }, async ({ 
   const HOST = 'https://test.musicbrainz.org';
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) { console.log('REFUSING: sandbox only'); throw new Error('stopped: see the log above'); }
 
-  // Entities on the sandbox release the other Falcon/GT tests already use.
+  // pristine entities, made for the run (#795): a release (with its release group and recording),
+  // an artist and a label. The release takes the other route: its KO editor ignores seeded
+  // params, so Falcon types the field.
+  const rel = await pristine(page, 'release');
   const TARGETS = [
-    { type: 'artist',        mbid: '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7', seg: 'artist' },
-    { type: 'release_group', mbid: 'ed64def7-4a2f-4ff7-9ae3-fbdfac9f8e0e', seg: 'release-group' },
-    { type: 'recording',     mbid: '2bea9225-3cee-4a23-b8f3-cd705bed3d06', seg: 'recording' },
-    // a sandbox label that carries NO disambiguation of its own — the point is to
-    // prove Falcon can set one, not to overwrite somebody's real annotation
-    { type: 'label',         mbid: '0bef945e-5ab2-4276-8296-921b48d45ace', seg: 'label' },
-    // the follow-up ("Release also has disambiguation attribute"): this one does
-    // NOT go through seeding — its KO editor ignores the param, so Falcon types
-    // the field. Included here precisely because it takes the other route.
-    { type: 'release',       mbid: '3a37a35f-1e06-457f-9b2a-46155c5c03ce', seg: 'release' },
+    { type: 'artist',        mbid: (await pristine(page, 'artist')).mbid, seg: 'artist' },
+    { type: 'release_group', mbid: rel.releaseGroup, seg: 'release-group' },
+    { type: 'recording',     mbid: rel.recordings[0], seg: 'recording' },
+    { type: 'label',         mbid: (await pristine(page, 'label')).mbid, seg: 'label' },
+    { type: 'release',       mbid: rel.mbid, seg: 'release' },
   ];
   // seconds included: a minute-resolution stamp made two runs in the same minute
   // indistinguishable, which briefly looked like the edit had not applied.
   const STAMP = 'falcon test ' + new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-  const UA = { 'User-Agent': 'Falcon-verify-533/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
   async function readBack(seg, mbid) {
     for (let a = 1; a <= 6; a++) {
-      const r = await fetch(`${HOST}/ws/2/${seg}/${mbid}?fmt=json`, { headers: UA });
-      if (r.ok) return (await r.json()).disambiguation;
+      const r = await page.evaluate(p => fetch(p, { cache: 'no-store' }).then(async x => ({ ok: x.ok, j: x.ok ? await x.json() : null })).catch(() => ({ ok: false })), `/ws/2/${seg}/${mbid}?fmt=json`);
+      if (r.ok) return r.j.disambiguation;
       await new Promise(x => setTimeout(x, 4000));
     }
     return '<unreadable>';
@@ -64,7 +61,7 @@ test("live 533 disambiguation proof", { tag: ['@sandbox', '@login'] }, async ({ 
   });
   const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
   for (let a = 1; ; a++) {
-    try { await page.goto(`${HOST}/release/3a37a35f-1e06-457f-9b2a-46155c5c03ce`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
+    try { await page.goto(`${HOST}/release/${rel.mbid}`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
     catch (e) { if (a >= 3) throw e; await page.waitForTimeout(5000); }
   }
   await requireLogin(page);

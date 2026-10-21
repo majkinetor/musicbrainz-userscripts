@@ -2,19 +2,20 @@
 // MusicBrainz in another form. Falcon took that one back, as it should, then refused the whole
 // form: "1 pre-existing link(s) vanished from the form". Its snapshot of the links to protect was
 // taken after MusicBrainz rendered the seeded rows, so the row it took back counted as existing.
-// The new link must go in; the one already there is reported as such.
+// The new link must go in; the one already there is reported as such. The artist is pristine,
+// made for the run (#795).
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
-const ARTIST = '5441c29d-3602-4898-b1a1-b77fa23b8e50';   // David Bowie, on the sandbox
 const QOBUZ = id => `https://www.qobuz.com/${id}/interpreter/falcon-test/769001`;
 // a channel that's new on every run, so the run always has something to submit
 const ytm = () => 'https://music.youtube.com/channel/UC' + Array.from({ length: 22 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 62)]).join('');
 
 test('#769: a link already there in another form does not stop the new one going in', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  const { mbid: ARTIST } = await pristine(page, 'artist');
   await context.addInitScript(() => {
     const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
@@ -43,7 +44,7 @@ test('#769: a link already there in another form does not stop the new one going
     return item;
   };
 
-  // the gb-en form goes on (or is already there from an earlier run)
+  // the gb-en form goes on
   const setup = await run([{ url: QOBUZ('gb-en'), linkTypeId: '176' }]);
   check(['done', 'skipped'].includes(setup?.status), `setup: the gb-en Qobuz page is on the artist (${setup?.status}: ${setup?.error})`);
 

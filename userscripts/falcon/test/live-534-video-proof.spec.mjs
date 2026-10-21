@@ -15,7 +15,7 @@
 //
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -26,26 +26,24 @@ test("live 534 video proof", { tag: ['@sandbox', '@login'] }, async ({ context, 
 
   const HOST = 'https://test.musicbrainz.org';
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) { console.log('REFUSING: sandbox only'); throw new Error('stopped: see the log above'); }
-  const UA = { 'User-Agent': 'Falcon-verify-534/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const ck = check;
 
+  // read in the page (on the sandbox): Node's reads were throttled under load
   async function ws2(path) {
     for (let a = 1; a <= 6; a++) {
-      try { const r = await fetch(`${HOST}/ws/2/${path}`, { headers: UA }); if (r.ok) return await r.json(); }
-      catch (e) { /* the sandbox drops connections under load */ }
+      const j = await page.evaluate(p => fetch('/ws/2/' + p, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null), path).catch(() => null);
+      if (j) return j;
       await sleep(2500 * a);
     }
     return null;
   }
 
-  // A recording with no video flag, to set one on. Picked from the sandbox
-  // release the other Falcon tests use.
-  const TARGET = '2bea9225-3cee-4a23-b8f3-cd705bed3d06';
-  // And one that already IS a video, for the preservation half.
-  const already = await ws2('recording?query=video:true&limit=5&fmt=json');
-  const VIDEO_REC = (already && (already.recordings || []).find(r => r.video)) || null;
-  if (!VIDEO_REC) { console.log('could not find an already-video recording on the sandbox'); throw new Error('stopped: see the log above'); }
+  // Pristine recordings, made for the run (#795): one with no video flag, to set one on, and
+  // one that already IS a video, for the preservation half.
+  const TARGET = (await pristine(page, 'recording')).mbid;
+  const VIDEO_REC = await ws2(`recording/${(await pristine(page, 'standalone-recording', { video: '1' })).mbid}?fmt=json`);
+  if (!VIDEO_REC || !VIDEO_REC.video) { console.log('could not make an already-video recording: ' + JSON.stringify(VIDEO_REC)); throw new Error('stopped: see the log above'); }
   console.log(`target      : ${TARGET}`);
   console.log(`already-video: ${VIDEO_REC.id}  "${VIDEO_REC.title}"`);
 

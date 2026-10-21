@@ -3,20 +3,20 @@
 // appropriate edit note."
 //
 // A real proof on test.musicbrainz.org, not a mock: this SETS an annotation on a
-// sandbox release, clears it through the shipped code path, and then reads the
+// pristine release, made for the run (#795), clears it through the shipped code path, and then reads the
 // annotation back from a fresh page load to confirm it is actually gone — and
 // reads the resulting edit out of MusicBrainz's own edit list to confirm the
 // note landed on it. A 200 from a form POST proves only that the request left
 // the browser.
 //
 // Sandbox only. It writes, deliberately, and only there.
-import { test, check, expect, requireLogin, SANDBOX, idle, settled } from '../../../dev/test/harness.mjs';
-import { RELEASE } from './gt.mjs';
+import { test, check, expect, requireLogin, SANDBOX, idle, settled, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
 test('Apply & clear annotation really clears it, with an edit note', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const HOST = SANDBOX;
+  const { mbid: RELEASE } = await pristine(page, 'release');
   const MARKER = 'GT #550 probe ' + new Date().toISOString();
   const ANNOTATION = `Copyright: (C) 2017 Global\n(P) 2017 Global\n\n${MARKER}`;
 

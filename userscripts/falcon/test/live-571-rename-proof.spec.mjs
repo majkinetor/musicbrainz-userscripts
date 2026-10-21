@@ -17,7 +17,7 @@
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 // Run: node test/live-571-rename-proof.mjs
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 import { join } from 'node:path';
 
 // the script brings its own GM stand-ins, as it did before the harness
@@ -29,27 +29,27 @@ test("live 571 rename proof", { tag: ['@sandbox', '@login'] }, async ({ context,
   const HOST = 'https://test.musicbrainz.org';
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) { console.log('REFUSING: sandbox only'); throw new Error('stopped: see the log above'); }
 
+  // pristine entities, made for the run (#795): a release (with its release group and recording),
+  // an artist and a label. The release takes the other route: its KO editor ignores seeded
+  // params, so Falcon types the field.
+  const rel = await pristine(page, 'release');
   const TARGETS = [
-    { type: 'artist',        mbid: '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7', seg: 'artist' },
-    { type: 'release_group', mbid: 'ed64def7-4a2f-4ff7-9ae3-fbdfac9f8e0e', seg: 'release-group' },
-    { type: 'recording',     mbid: '2bea9225-3cee-4a23-b8f3-cd705bed3d06', seg: 'recording' },
-    { type: 'label',         mbid: '0bef945e-5ab2-4276-8296-921b48d45ace', seg: 'label' },
-    // the one that does NOT go through seeding — its KO editor ignores the param,
-    // so Falcon types the field (setReleaseName). Included precisely because it
-    // takes the other route.
-    { type: 'release',       mbid: '3a37a35f-1e06-457f-9b2a-46155c5c03ce', seg: 'release' },
+    { type: 'artist',        mbid: (await pristine(page, 'artist')).mbid, seg: 'artist' },
+    { type: 'release_group', mbid: rel.releaseGroup, seg: 'release-group' },
+    { type: 'recording',     mbid: rel.recordings[0], seg: 'recording' },
+    { type: 'label',         mbid: (await pristine(page, 'label')).mbid, seg: 'label' },
+    { type: 'release',       mbid: rel.mbid, seg: 'release' },
   ];
   const STAMP = 'falcon rename ' + new Date().toISOString().slice(0, 19).replace('T', ' ');
   // #573: deliberately NOT containing STAMP — otherwise the renamed title would
   // satisfy a search for the reason and the assertion would prove nothing.
   const REASON = 'why this batch ran: conforming names, run id ' + Date.now();
 
-  const UA = { 'User-Agent': 'Falcon-verify-571/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
   // artists/labels use `name`; releases, RGs and recordings use `title`.
   async function readName(seg, mbid) {
     for (let a = 1; a <= 6; a++) {
-      const r = await fetch(`${HOST}/ws/2/${seg}/${mbid}?fmt=json`, { headers: UA });
-      if (r.ok) { const j = await r.json(); return j.title != null ? j.title : j.name; }
+      const r = await page.evaluate(p => fetch(p, { cache: 'no-store' }).then(async x => ({ ok: x.ok, j: x.ok ? await x.json() : null })).catch(() => ({ ok: false })), `/ws/2/${seg}/${mbid}?fmt=json`);
+      if (r.ok) { const j = r.j; return j.title != null ? j.title : j.name; }
       await new Promise(x => setTimeout(x, 4000));
     }
     return '<unreadable>';
@@ -120,13 +120,14 @@ test("live 571 rename proof", { tag: ['@sandbox', '@login'] }, async ({ context,
   // only shows the new value in the first case. Both prove the same thing —
   // Falcon built and submitted a correct edit — so accept either and say which.
   const epage = await context.newPage();   // the read-back, in a tab of its own
-  // ⚠ /<entity>/<mbid>/open_edits lists edits for RELATED entities too, so match
+  // /edits, not /open_edits: a rename of an entity the run made applies at once (#795).
+  // ⚠ /<entity>/<mbid>/edits lists edits for RELATED entities too, so match
   // the edit's own type class — not just the page text. A release's page carries
   // its recordings' edits, and an earlier proof passed on the wrong one.
   const EDIT_CLASS = { artist: 'edit-artist', label: 'edit-label', recording: 'edit-recording', release: 'edit-release', release_group: 'edit-release-group' };
   const openEditHas = async (seg, mbid, stamp, cls) => {
     for (let a = 1; ; a++) {
-      try { await epage.goto(`${HOST}/${seg}/${mbid}/open_edits`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
+      try { await epage.goto(`${HOST}/${seg}/${mbid}/edits`, { waitUntil: 'domcontentloaded', timeout: 60000 }); break; }
       catch (e) { if (a >= 3) return false; await epage.waitForTimeout(5000); }
     }
     await idle(epage);

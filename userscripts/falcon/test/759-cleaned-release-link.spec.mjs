@@ -3,18 +3,18 @@
 // never set the link's type (purchase for download), typed the url in again, and reported the
 // url failed with every validation message the release editor keeps hidden on the page.
 //
-// Writes to the sandbox: each run adds a made-up Apple Music album link to a release there.
+// Writes to the sandbox: each run adds a made-up Apple Music album link to a pristine release (#795).
 import { readFile } from 'node:fs/promises';
-import { test, check, until, requireLogin, sourceOf, idle, mbNoise, loadFunctions } from '../../../dev/test/harness.mjs';
+import { test, check, until, requireLogin, sourceOf, idle, mbNoise, loadFunctions, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
-const RELEASE = '3d2edcfc-d823-4e04-abc6-1dca9702af94';
 const ID = '1999' + String(Date.now()).slice(-6);
 const URL1 = `https://music.apple.com/us/album/zzq-falcon-759-single/${ID}`;
 
 test('#759: a release link MusicBrainz cleans as it seeds it gets both its types', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   test.setTimeout(180000);
+  const { mbid: RELEASE } = await pristine(page, 'release');
   const code = await readFile(sourceOf('falcon'), 'utf8');
   await context.addInitScript(() => {
     const store = new Map();
