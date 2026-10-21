@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.102218
+// @version      2026.10.21.103009
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5861,8 +5861,8 @@
       return b;
     };
     const detSel = toggle('gt-tp-det', 'Tracks named in credits', scope.tracks === 'auto', 'Tracks named in a credit\n'
-      + 'Auto: a credit that names its own tracks, like “Lead vocals (tracks 2,6,9)”, goes on those recordings, whatever Scope says; the rest follows Scope. '
-      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row',
+      + 'On: a credit that names its own tracks, like “Lead vocals (tracks 2,6,9)”, goes on those recordings, whatever Scope says; the rest follows Scope. '
+      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every credit',
       v => { scope.tracks = v ? 'auto' : 'off'; render(); saveState(); });   // #597
     // #777: where a work role goes when a credit lands on recordings — "create
     // needed", as in Credit Hoarder, makes the work a track lacks.
