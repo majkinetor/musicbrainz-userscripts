@@ -169,6 +169,8 @@ A track's versions show on the right too. **▾ → Copy as Markdown** beside **
 
 **Update this release**, in the banner, opens that release here; Mission Control probes and [compares it with the platforms](#compare-with-the-platforms) at once, offering what it lacks as after saving a new release. What you picked by hand isn't carried over.
 
+[First Contact](../first_contact/README.md#already-in-musicbrainz) offers it too, when MusicBrainz already has the album you are about to import: the release opens in a new tab, compared with the platforms and with that album, though the release has neither its link nor its barcode.
+
 A label with another catalog number keeps it. A new label is added with its catalog number when Mission Control can tell which MusicBrainz label it is: by its page on the platform, or, marked unsure, by a name only one label has. The edit note names the platforms read.
 
 ## Settings

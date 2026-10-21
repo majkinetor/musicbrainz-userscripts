@@ -5,7 +5,7 @@
 import { test, check, until, sourceOf } from '../../../dev/test/harness.mjs';
 import { readFile } from 'node:fs/promises';
 
-test.use({ gm: { name: 'First Contact', persist: 'tabs' }, pageErrors: 'ignore' });   // the platforms' own scripts are not ours
+test.use({ gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { check: 'off' } } }, pageErrors: 'ignore' });   // #801's check is 801-mb-check's;   // the platforms' own scripts are not ours
 
 const BC = 'https://bullion.bandcamp.com/album/nearly';
 // A fresh, logged-out browser gets Bandcamp's modal dialog (a full-window backdrop at z-index 200,

@@ -6,7 +6,7 @@
 // editorial notes).
 import { test, check, SANDBOX } from '../../../dev/test/harness.mjs';
 
-test.use({ gm: { name: 'First Contact' } });
+test.use({ gm: { name: 'First Contact', values: { 'fc.settings': { check: 'off' } } } });   // #801's check is 801-mb-check's
 
 test('annotation: the platform\'s notes with their source', { tag: ['@web'] }, async ({ page, inject }) => {
   await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
@@ -42,7 +42,7 @@ test('annotation setting: on by default, per platform; off, no annotation in the
   });
   const gm = k => page.evaluate(k => GM_getValue(k, null), k);
   // as an older version left it: the one setting, off
-  await page.evaluate(() => GM_setValue('fc.settings', { server: 'musicbrainz.org', annotation: false }));
+  await page.evaluate(() => GM_setValue('fc.settings', { server: 'musicbrainz.org', annotation: false, check: 'off' }));
   const on = await seedOf();
   const tail = 'From Bandcamp: https://bullion.bandcamp.com/album/nearly';
   check(typeof on === 'string' && on.endsWith('\n\n' + tail) && on.length > tail.length + 40, `on by default, the old "off" included: the album's notes and their source (${JSON.stringify((on || '').slice(-120))})`);
