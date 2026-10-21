@@ -4,15 +4,17 @@
 # Docker running.
 #
 # MusicBrainz exports on Wednesday and Saturday; the edit dump is complete by ~04:50 UTC
-# (dev/script-metrics/scheduled-run.ps1 has the measurements). Wednesday 09:00 UTC takes that
+# (dev/script-metrics/scheduled-run.ps1 has the measurements). Wednesday 09:17 UTC takes that
 # week's first one. Actions → metrics → Run workflow runs it by hand ("force" rebuilds even
 # when the reports already come from the latest dump).
+# Off the full hour on purpose: GitHub delays scheduled runs under load, worst at :00 (the
+# 09:00 schedule started 5-7 h late), and may drop one.
 name: metrics
 permissions:
   contents: write
 on:
   schedule:
-    - cron: '0 9 * * 3'
+    - cron: '17 9 * * 3'
   workflow_dispatch:
     inputs:
       force:

@@ -36,7 +36,7 @@ docker compose run --rm --entrypoint sqlite3 metrics /data/metrics.db
 
 ## Where it runs
 
-Weekly on GitHub Actions ([`metrics.yml`](../../.github/workflows/metrics.yml)): Wednesday 09:00 UTC, a few hours
+Weekly on GitHub Actions ([`metrics.yml`](../../.github/workflows/metrics.yml)): Wednesday 09:17 UTC (GitHub may start it hours late), a few hours
 after MusicBrainz finishes that day's export. It reads `LATEST`, skips the run when the committed reports already
 come from that dump, runs `run.sh` against it, and commits the four reports (`out/METRICS.md`, `out/dashboard.html`,
 `out/metrics.json`, `docs/stats.html`) as `github-actions[bot]`. **Actions → metrics → Run workflow** runs it by
