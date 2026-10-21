@@ -6,7 +6,7 @@
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero at the end.
 import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
-import { blockEdits, installRelReader, RELEASE } from './gt.mjs';
+import { blockEdits, installRelReader, RELEASE, tpPaste, tpCredits, tpPick, tpApply } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -19,23 +19,13 @@ test('vocal types and qualifiers resolve to role + attributes', { tag: ['@sandbo
   await idle(page);
   await installRelReader(page);
 
-  // ── auto-resolution of the role column ──────────────────────────────────────
-  await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await frames(page);
-  await page.fill('.gt-tp-pat', 'R: E');
-  await page.fill('.gt-tp-ta', [
+  // ── auto-resolution of the roles ────────────────────────────────────────────
+  await tpPaste(page, [
     'Lead Vocals: A', 'Backing Vocals: B', 'Vocals: C', 'Guest Vocals: D', 'Guest Lead Vocals: E',
     'Co-Producer: F', 'Executive Producer: G', 'Additional Guitar: H', 'Co-Writer: I', 'Tenor: J',
     'Lyrics: K', 'Composed: L', 'Words and Music: M', 'Arrangements: N', 'Photos: O', 'Cover photo: P', 'English translations: Q', 'Mixed: S', 'Mastered: T',
-  ].join('\n'));
-  await frames(page);
-  await page.click('.gt-tp-resolve');
-  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});
-  await frames(page);
-  const rows = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')].map(tr => {
-    const cs = [...tr.querySelectorAll('.gt-tp-c')];
-    return { role: cs[0]?.textContent, resolved: (tr.querySelector('button.gt-tp-resolved')?.textContent || '').toLowerCase() };
-  }));
+  ].join('\n'), 'R: E');
+  const rows = (await tpCredits(page)).map(c => ({ role: c.role, resolved: (c.resolved || '').toLowerCase() }));
   console.log('rows: ' + JSON.stringify(rows));
   const got = role => (rows.find(r => r.role === role) || {}).resolved;
   check(got('Lead Vocals') === 'lead vocals', `"Lead Vocals" → the lead vocals attribute, not bare "vocal" (got "${got('Lead Vocals')}")`);
@@ -53,20 +43,11 @@ test('vocal types and qualifiers resolve to role + attributes', { tag: ['@sandbo
     check(got(role) === want, `"${role}" → ${want} (got "${got(role)}")`);
 
   // ── apply one: the staged rel carries BOTH attributes ───────────────────────
-  await page.fill('.gt-tp-ta', 'Guest Lead Vocals: Test Artist For 666');
-  await frames(page);
-  await page.click('.gt-tp-resolve');
-  await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});
-  await frames(page);
   const gid = await page.evaluate(() => { const a = document.querySelector('.relationship-item a[href^="/artist/"]'); return a ? a.getAttribute('href').split('/')[2] : null; });
   check(!!gid, 'found an artist on the release to credit');
-  await page.click('.gt-tp-search:not(.gt-tp-resolved)');
-  await frames(page);
-  await page.fill('.gt-tp-q', gid);
-  await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-  await frames(page);
-  await page.click('.gt-cons-apply');
-  await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);
+  await tpPaste(page, 'Guest Lead Vocals: Test Artist For 666');
+  await tpPick(page, 'Test Artist For 666', gid);
+  await tpApply(page);
   await frames(page);
   const staged = await page.evaluate(() => {
     const lat = MB.linkedEntities.link_attribute_type;

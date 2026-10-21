@@ -37,6 +37,45 @@ export async function ensureAnnotation(page, release = RELEASE) {
   await Promise.all([page.waitForNavigation({ timeout: 60000 }).catch(() => {}), page.click('button:has-text("Enter edit")')]);
 }
 
+// ── the text parser (#798: in the page, a row per name) ──────────────────────────
+// Opens it (once), sets the pattern when given, pastes the text, and waits for matching.
+export async function tpPaste(page, text, pattern) {
+  if (!(await page.$('.gt-tp'))) {
+    await page.evaluate(() => window.__groupTherapy.openTextParser());
+    await page.waitForSelector('.gt-tp');
+  }
+  if (pattern != null) { await page.fill('.gt-tp-pat', pattern); await page.dispatchEvent('.gt-tp-pat', 'input'); }
+  await page.fill('.gt-tp-ta', text);
+  await page.dispatchEvent('.gt-tp-ta', 'input');
+  await tpSettle(page);
+}
+// Matching runs by itself after a change (500 ms later); done when nothing says "Matching…".
+export async function tpSettle(page) {
+  await page.waitForTimeout(700);
+  await page.waitForFunction(() => {
+    const tp = document.querySelector('.gt-tp');
+    return !tp || (!(tp.querySelector('.gt-tp-busy') || {}).textContent && !/Matching…|Searching…/.test(tp.innerText));
+  }, null, { timeout: 120000 });
+  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+}
+// Every credit as the parser reads it: { line, role, entity, matched, crKind, year,
+// resolved (the role's name), kind, gid, name, tracks, trackNote, applied }.
+export const tpCredits = page => page.evaluate(() => window.__groupTherapy.txpCredits());
+// The row of a name.
+export const tpRow = (page, name) => page.locator('.gt-tp-erow').filter({ has: page.locator('.gt-tp-ename', { hasText: new RegExp('^' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }) });
+// Picks an entity for a name: an MBID pasted into the row's search is taken at once.
+export async function tpPick(page, name, mbid) {
+  const row = tpRow(page, name);
+  await row.locator('.gt-tp-esrch-q').fill(mbid);
+  await row.locator('.gt-tp-esrch-q').press('Enter');
+  await page.waitForFunction(([n, g]) => window.__groupTherapy.txpCredits().some(c => c.entity === n && c.gid === g), [name, mbid], { timeout: 30000 });
+}
+// Apply: the parser closes once the credits are staged.
+export async function tpApply(page) {
+  await page.click('.gt-tp .gt-cons-apply');
+  await page.waitForFunction(() => !document.querySelector('.gt-tp'), null, { timeout: 30000 }).catch(() => {});
+}
+
 // window.__rel(item): the relationship behind a .relationship-item, read from React's fiber.
 export const installRelReader = page => page.evaluate(() => {
   window.__rel = it => {

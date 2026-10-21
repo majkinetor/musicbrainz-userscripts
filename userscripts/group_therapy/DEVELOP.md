@@ -21,7 +21,7 @@ Each name's candidates are ranked by `mbmRankCandidates` from the shared matcher
 - **The page**, read at ⚡ Match with no request: the release and track artist credits, the release labels, and both ends of every `.relationship-item` (this session's additions too).
 - **The identity search** (`/ws/2/<artist|label>?query=alias:"x" OR <kind>:"x"`, up to 100): its holders of the name are the candidates, with their type, life span and area. Places, and names nobody holds, fall back to `/ws/js/<kind>`.
 - **Related artists**: one `/ws/2/artist/<mbid>?inc=aliases+artist-rels` per real release artist (four at most), cached for the page's life.
-- **More evidence** (GM `gt-tp-deep`, off by default), approved on #798 as step 4:
+- **Beyond the release**, approved on #798 as step 4, always on:
   - **The release group**: `/ws/2/release?release-group=<mbid>&limit=25`, then the first three other releases with `inc=artist-credits+labels+artist-rels+label-rels+place-rels+recordings+recording-level-rels+work-level-rels+work-rels` (about 200 KB each); once per page. An entity credited there with the name scores `same group` (+50, strong).
   - **Co-credits**: for a name still without a pick, `/ws/2/recording?query=arid:<release artist> AND artistname:"x"` for the first two release artists, as Credit Hoarder's; an artist credited as the name beside them scores `co-credit` (+40, strong).
   - Not done: whether a candidate has held the role before. `/ws/2/artist/<mbid>?inc=release-rels` is 2.4 MB for Bob Ludwig, and `recording-rels+work-rels` 3–4 MB for John Williams or Paul McCartney, per candidate.

@@ -330,7 +330,7 @@
           if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
           const rel = (c.related || []).find(x => x.gid === k.gid);
           if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
-          // step 4, opt-in: another release of the release group credits it, or a
+          // step 4: another release of the release group credits it, or a
           // recording credits it beside the release artist
           const sib = (c.sibling || []).filter(x => x.gid === k.gid);
           if (sib.length && !known.length) add(50, 'same group', true, sib.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'On another release of this release group');

@@ -15,7 +15,7 @@
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero.
 import { test, check, requireLogin, SANDBOX, attachShot, settled, idle, frames } from '../../../dev/test/harness.mjs';
-import { blockEdits, ensureAnnotation } from './gt.mjs';
+import { blockEdits, ensureAnnotation, tpSettle, tpRow, tpCredits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -96,38 +96,30 @@ test('the text parser remembers the annotation button, and a create can be cance
   await attachShot(testInfo, page.locator('.gt-tp'), 'i544r5-anno');
 
   // ── 3. the "creating…" placeholder can be cancelled ─────────────────────────
+  // #798: one row per name, so two credits with the name share one placeholder
   await setText(`Producer: Zzq Cancel Me Xyzzy${NL}Mixer: Zzq Cancel Me Xyzzy${NL}Guitar: Someone Else Entirely`, 'R: E');
-  await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('.gt-tp-tbl tbody tr')];
-    const btns = [...rows[0].querySelectorAll('button.gt-tp-search')];
-    btns[btns.length - 1].click();
-  });
-  await page.waitForSelector('.gt-tp-apop', { timeout: 8000 });
-  await frames(page);
-  await page.evaluate(() => document.querySelector('.gt-tp-plus').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })));
+  await tpSettle(page);
+  const row = tpRow(page, 'Zzq Cancel Me Xyzzy');
+  await row.locator('.gt-tp-plus').dispatchEvent('contextmenu');   // right-click +: create in the background
   await frames(page);
   const creating = await page.evaluate(() => {
     const els = [...document.querySelectorAll('.gt-tp-creating')];
     return { n: els.length, tag: els[0] && els[0].tagName, text: els[0] && els[0].textContent.trim(), title: els[0] && els[0].dataset.tip };
   });
   console.log('creating placeholders: ' + JSON.stringify(creating));
-  check(creating.n === 2, 'both rows with that name show "creating…" (' + creating.n + ')');
+  check(creating.n === 1 && (await row.locator('.gt-tp-creating').count()) === 1, 'the name\'s row shows "creating…" (' + creating.n + ')');
   check(creating.tag === 'BUTTON', '#544.3: the placeholder is a button, not inert text');
   check(/✕/.test(creating.text || ''), 'it shows a ✕ affordance — ' + JSON.stringify(creating.text));
   check(/Click: stop waiting/i.test(creating.title || ''), 'and its tooltip says clicking cancels');
+  check(!(await row.locator('.gt-tp-esrch-q').count()), 'no search while it waits');
   await attachShot(testInfo, page.locator('.gt-tp'), 'i544r5-creating-cancel');
 
-  await page.evaluate(() => document.querySelector('.gt-tp-creating').click());
+  await page.click('.gt-tp-creating');
   await frames(page);
-  const cancelled = await page.evaluate(() => ({
-    creating: document.querySelectorAll('.gt-tp-creating').length,
-    searchBtns: [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(r => [...r.querySelectorAll('button.gt-tp-search')].length),
-  }));
+  const cancelled = { creating: await page.locator('.gt-tp-creating').count(), search: await row.locator('.gt-tp-esrch-q').count(), plus: await row.locator('.gt-tp-plus').count() };
   console.log('after clicking the placeholder: ' + JSON.stringify(cancelled));
-  check(cancelled.creating === 0, '#544.3: THE FIX — clicking clears it, on BOTH rows (they share the name)');
-  // two buttons per unresolved row = role search + ENTITY search. Asserting ">=1"
-  // would pass on the broken build too, where the stuck rows kept only the role one.
-  check(cancelled.searchBtns.every(n => n === 2), 'and the entity search is back on every row — ' + JSON.stringify(cancelled.searchBtns));
+  check(cancelled.creating === 0, '#544.3: THE FIX — clicking clears it');
+  check(cancelled.search === 1 && cancelled.plus === 1, 'and the row\'s search and + are back — ' + JSON.stringify(cancelled));
   // A cancelled create must stay cancelled: if the tab commits anyway later, that
   // post-back must not silently rewrite rows the user has stopped waiting on.
   await page.evaluate(async () => {
@@ -141,13 +133,10 @@ test('the text parser remembers the annotation button, and a create can be cance
     await heard; seen.close();
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   });
-  const afterLate = await page.evaluate(() => ({
-    creating: document.querySelectorAll('.gt-tp-creating').length,
-    rows: [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(r => (r.innerText || '').replace(/\s+/g, ' ').trim()),
-  }));
-  console.log('after a late post-back: ' + JSON.stringify(afterLate));
-  check(afterLate.creating === 0, 'a late post-back does not bring the placeholder back (' + afterLate.creating + ')');
-  check(!afterLate.rows.some(t => /もちこまめ/.test(t)), 'and does not resolve the rows either — the cancel really unsubscribed');
+  const late = (await tpCredits(page)).filter(c => c.entity === 'Zzq Cancel Me Xyzzy');
+  console.log('after a late post-back: ' + JSON.stringify(late));
+  check((await page.locator('.gt-tp-creating').count()) === 0, 'a late post-back does not bring the placeholder back');
+  check(late.length === 2 && late.every(c => !c.gid), 'and does not resolve the credits either — the cancel really unsubscribed');
 
   check(posts.length === 0, 'nothing was submitted (' + posts.length + ' POSTs to /edit)');
 });

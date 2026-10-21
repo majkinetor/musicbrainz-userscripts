@@ -8,7 +8,7 @@
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero at the end.
 import { test, check, requireLogin, SANDBOX, settled, idle, frames } from '../../../dev/test/harness.mjs';
-import { blockEdits } from './gt.mjs';
+import { blockEdits, tpPaste, tpCredits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -27,34 +27,23 @@ test('the text parser: in the page, create seeding, places, presets', { tag: ['@
   await idle(page);
 
   // open the text parser
-  await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
-    if (b) b.click();
-  });
+  await page.click('.gt-clone-btn:has-text("Text parser")');
   await page.waitForSelector('.gt-tp', { timeout: 15000 });
   await frames(page);
 
-  // ── 4. presets ──────────────────────────────────────────────────────────────
-  const presets = await page.locator('.gt-tp-presets .gt-tp-chip').allTextContents();
+  // ── 4. presets, under the pattern's ▾ ───────────────────────────────────────
+  await page.click('.gt-tp-ddbtn');
+  const presets = await page.locator('.gt-tp-dd .gt-tp-dd-pat').allTextContents();
+  await page.click('.gt-tp-ddbtn');
   console.log('presets: ' + JSON.stringify(presets));
   check(!presets.includes('R - E') && !presets.includes('E: R'), 'the two trailing presets are gone');
   check(presets.includes('R by E[&]'), '"R by E[&]" is offered');
 
   // and it must actually parse — [&] splits on " & "
-  const parsed = await page.evaluate(() => {
-    const api = window.__gtTxp || null;
-    return api ? null : null;   // engine isn't exported; drive it through the UI instead
-  });
-  await page.evaluate(() => {
-    const ta = document.querySelector('.gt-tp-src textarea, .gt-tp textarea');
-    if (ta) { ta.value = 'Recorded at Abbey Road Studios\nProduced by Alice Smith & Bob Jones'; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-    const pat = document.querySelector('.gt-tp-pat');
-    if (pat) { pat.value = 'R by E[&]'; pat.dispatchEvent(new Event('input', { bubbles: true })); }
-  });
-  await frames(page);
-  const rows = await page.locator('.gt-tp-row, .gt-tp-tbl tbody tr').count();
-  console.log('rows after "R by E[&]": ' + rows);
-  check(rows >= 2, 'the "&" split produces a row per entity (' + rows + ')');
+  await tpPaste(page, 'Recorded at Abbey Road Studios\nProduced by Alice Smith & Bob Jones', 'R by E[&]');
+  const split = (await tpCredits(page)).filter(c => c.matched && c.role === 'Produced').map(c => c.entity);
+  console.log('after "R by E[&]": ' + JSON.stringify(split));
+  check(split.length === 2 && split.includes('Alice Smith') && split.includes('Bob Jones'), 'the "&" split produces a credit per entity (' + JSON.stringify(split) + ')');
 
   // ── 1. #798: the parser is in the page now, so it can't slide under the
   // scrollbar: it takes the content's width, inside the client box.
@@ -66,46 +55,25 @@ test('the text parser: in the page, create seeding, places, presets', { tag: ['@
   console.log('inline panel: ' + JSON.stringify(geo));
   check(geo.position === 'static' && geo.right <= geo.docW, 'the parser is in the page flow and fits the client box');
 
-  // ── 3. Place: roles, tab, search ────────────────────────────────────────────
+  // ── 3. Place: roles, kind, pick ─────────────────────────────────────────────
   const placeRoles = await page.evaluate(() => {
     const lts = window.MB?.linkedEntities?.link_type || {};
     return Object.values(lts).filter(t => t.type0 === 'place' && t.type1 === 'release' && !t.deprecated).map(t => t.name);
   });
   console.log('place↔release roles available: ' + placeRoles.length + ' — ' + placeRoles.slice(0, 4).join(', '));
   check(placeRoles.includes('recorded at'), 'MB really does model "recorded at" as place→release');
-
-  // "Recorded at X" should classify as a PLACE row, not artist
-  await page.evaluate(() => {
-    const ta = document.querySelector('.gt-tp-src textarea, .gt-tp textarea');
-    if (ta) { ta.value = 'Recorded at: Abbey Road Studios'; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-    const pat = document.querySelector('.gt-tp-pat');
-    if (pat) { pat.value = 'R: E'; pat.dispatchEvent(new Event('input', { bubbles: true })); }
-  });
-  await frames(page);
-  // role classification happens in the Resolve pass, not on keystroke
-  await page.evaluate(() => {
-    const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match|Resolv/i.test(x.textContent || ''));
-    if (b) b.click();
-  });
-  await page.waitForFunction(() => {
-    const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match|Resolv/i.test(x.textContent || ''));
-    return b && !/Resolving/i.test(b.textContent);
-  }, null, { timeout: 30000 }).catch(() => {});
-  await frames(page);
-  const typeCell = await page.evaluate(() => {
-    const t = document.querySelector('.gt-tp-tbl');
-    return t ? t.textContent.replace(/\s+/g, ' ').slice(0, 400) : '';
-  });
-  console.log('table: ' + typeCell);
-  // The table shows the matched ROLE and ENTITY, not the word "place". Combined
-  // with the check above — "recorded at" exists as place→release and NOT as
-  // artist→release — a resolved "recorded at" row can only have come from the
-  // place candidates, which is the thing #525 asked for.
   const artistHasRecordedAt = await page.evaluate(() => Object.values(window.MB?.linkedEntities?.link_type || {})
       .some(t => t.type0 === 'artist' && t.type1 === 'release' && !t.deprecated && t.name.toLowerCase() === 'recorded at'));
   check(!artistHasRecordedAt, '"recorded at" is not an artist→release type, so a match can only be the place one');
-  check(/recorded at/i.test(typeCell), 'the role resolved to "recorded at"');
-  check(/ready/i.test(typeCell), 'and the row is ready to stage (place entity resolved too)');
+
+  // "Recorded at: X" is a PLACE credit, not an artist's
+  await tpPaste(page, 'Recorded at: Abbey Road Studios', 'R: E');
+  const c = (await tpCredits(page))[0] || {};
+  console.log('credit: ' + JSON.stringify(c));
+  check(c.resolved === 'recorded at' && c.kind === 'place', `the role resolved to "recorded at", for a place (${c.resolved}, ${c.kind})`);
+  const kindShown = await page.locator('.gt-tp-erow .gt-tp-ekind').first().textContent();
+  check(kindShown === 'place', `the row says place (${kindShown})`);
+  check(!!c.gid, 'and the place is picked, so the credit is ready to stage');
 
   check(posts.length === 0, 'nothing was ever submitted (' + posts.length + ' POSTs to /edit)');
 });

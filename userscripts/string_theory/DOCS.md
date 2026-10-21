@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 12:15 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 12:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1434,7 +1434,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 **✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns). It opens under the toolbar, in the page, so the release's tracks and credits stay in reach as you scroll. Its two top rows stay on top:
 
 - the settings, what is left and **Apply**. What is left shows as one pill each (`5 names`, `2 roles`, `2 lines` not parsed), and a click on one takes you to the next: its row is marked, and what is missing in it flashes. `✓ all picked` shows when nothing is. The row you work in is marked too.
-- the [pattern](#patterns) (its ▾ has the usual ones), 🔒 Freeze, the pasted text (one line until you click it, then numbered as the rows are), **More evidence**, **Cutoff**, **Load annotation** and **Apply & clear annotation**.
+- the [pattern](#patterns) (its ▾ has the usual ones), 🔒 Freeze, the pasted text (one line until you click it, then numbered as the rows are), **Cutoff**, **Load annotation** and **Apply & clear annotation**.
 
 <img src="../group_therapy/screenshots/text-parser.png" />
 
@@ -1463,20 +1463,18 @@ The text and the picks last until the page reloads.
 
 Each candidate shows its type, life span and area, and why it ranks where it does (`+ on release`, `+ related`, `− born 1990`); its tooltip has the detail (*Already lyricist on this release*, *member of band · Toto*).
 
-| Dot | Confidence  | Why                                                                                                       |
-| :-: | ----------- | --------------------------------------------------------------------------------------------------------- |
-|  🟢  | Strong      | on this release, a release artist's member or collaborator, your pick, or [more evidence](#more-evidence) |
-|  🟡  | Unique name | the only artist or label in MusicBrainz with this name or alias                                           |
-|  🔴  | Weak        | the best guess                                                                                            |
-|  ⚪  | You         | picked by you                                                                                             |
+| Dot | Confidence  | Why                                                                         |
+| :-: | ----------- | --------------------------------------------------------------------------- |
+|  🟢  | Strong      | on the release or its group, a member or co-credit of its artist, your pick |
+|  🟡  | Unique name | the only artist or label in MusicBrainz with this name or alias             |
+|  🔴  | Weak        | the best guess                                                              |
+|  ⚪  | You         | picked by you                                                               |
 
 **Cutoff** (default *Unique name*) is the lowest confidence picked for you, and only when the candidate clearly leads the next one. A match below it waits on its row, marked *below cutoff*. Your picks are remembered for the release artist, so the next release of that artist starts from them.
 
 The candidates also rank on the role and the release: a person for an instrument or a vocal, a group for an orchestra or a choir; someone born after the release or gone long before it ranks lower, and one from the release's country higher.
 
-##### More evidence
-
-**More evidence** (off by default) looks further, at the cost of a few more MusicBrainz requests: who the other releases of this release group credit (three of them, `+ same group`), and, for a name still left open, who recordings credit beside the release artist (`+ co-credit`).
+Beyond this release, the parser also looks at who the other releases of its release group credit (three of them, `+ same group`) and, for a name still left open, who recordings credit beside the release artist (`+ co-credit`).
 
 #### Patterns
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.121209
+// @version      2026.10.21.122838
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4694,7 +4694,7 @@
           if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
           const rel = (c.related || []).find(x => x.gid === k.gid);
           if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
-          // step 4, opt-in: another release of the release group credits it, or a
+          // step 4: another release of the release group credits it, or a
           // recording credits it beside the release artist
           const sib = (c.sibling || []).filter(x => x.gid === k.gid);
           if (sib.length && !known.length) add(50, 'same group', true, sib.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'On another release of this release group');
@@ -4894,9 +4894,9 @@
     _txpRelatedCache.set(artist.gid, list);
     return list;
   }
-  // #798 step 4, opt-in ("More evidence"): who the other releases of the release
-  // group credit, up to 3 of them, once per page; and who recordings credit beside
-  // the release artist, for a name still left open. Approved on #798.
+  // #798 step 4: who the other releases of the release group credit, up to 3 of
+  // them, once per page; and who recordings credit beside the release artist, for
+  // a name still left open. Approved on #798; always on (majkinetor).
   const _txpSiblingCache = new Map();
   async function txpSiblingEvidence(rgGid, selfGid) {
     if (!rgGid) return [];
@@ -5470,8 +5470,6 @@
     const LEVEL_RANK = { strong: 3, unique: 2, weak: 1 };
     let cutoff = (() => { try { return GM_getValue(TXP_CUT_KEY, 'unique'); } catch (e) { return 'unique'; } })();
     if (!LEVEL_RANK[cutoff]) cutoff = 'unique';
-    const TXP_DEEP_KEY = 'gt-tp-deep';   // #798 step 4: "More evidence", off by default
-    let deep = (() => { try { return !!GM_getValue(TXP_DEEP_KEY, false); } catch (e) { return false; } })();
     const releaseArtists = () => ((release.artistCredit && release.artistCredit.names) || []).map(n => n && n.artist).filter(a => a && a.gid && !MBM_SPECIAL_PURPOSE.has(a.gid));
     const releaseArtistGids = () => [...new Set(releaseArtists().map(a => a.gid))];
     // What the release already says: its credits, its labels and every relationship
@@ -5498,7 +5496,7 @@
       const related = [];
       for (const a of releaseArtists().slice(0, 4)) for (const r of await txpRelatedOf(a)) if (!related.some(x => x.gid === r.gid)) related.push(r);
       const ev = (release.events || [])[0] || {};
-      const sibling = deep ? await txpSiblingEvidence((release.releaseGroup && release.releaseGroup.gid) || null, release.gid) : [];
+      const sibling = await txpSiblingEvidence((release.releaseGroup && release.releaseGroup.gid) || null, release.gid);
       return { known: [...known.values()], related, sibling, year: (ev.date && ev.date.year) || null, area: (ev.country && ev.country.name) || null };
     }
     // a person for an instrument or a vocal, a group for an orchestra or a choir
@@ -5550,7 +5548,7 @@
         { remembered, known: knownCtx, related: relatedCtx, sibling: siblingCtx, cocredit, unique, want, year: pc && pc.year, area: pc && pc.area });
       let r = rank([]);
       // #798 step 4: a name still open asks who recordings credit beside the release artist
-      if (deep && kind === 'artist' && !r.best && r.ranked.length > 1) {
+      if (kind === 'artist' && !r.best && r.ranked.length > 1) {
         const co = [];
         for (const a of releaseArtists().slice(0, 2)) {
           for (const h of await txpCoCredits(a.gid, text)) {
@@ -7004,12 +7002,7 @@
     hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), detSel, mbNameLbl, scopeWrap, worksWrap, el('span', 'gt-tp-grow'), cnt, busy, applyBtn);
     // the row: pattern, Freeze, the text; on the right the rarer settings
     const opts = el('span', 'gt-tp-opts');
-    // #798 step 4: more requests for more evidence, so you turn it on
-    const deepLbl = toggle('gt-tp-deep', 'More evidence', deep, 'More evidence for a name with several candidates\n'
-      + 'On: also who the other releases of this release group credit (3 of them), and who recordings credit beside the release artist\n'
-      + 'A few more MusicBrainz requests\nOff: this release only',
-      v => { deep = v; try { GM_setValue(TXP_DEEP_KEY, deep); } catch (e) {} candCache.clear(); render(); scheduleMatch(); });
-    opts.append(deepLbl, cutWrap, annoBtn, applyClearBtn);
+    opts.append(cutWrap, annoBtn, applyClearBtn);
     ctrl.append(pasteWrap, opts);
     const top = el('div', 'gt-tp-top');
     top.append(hdr, ctrl);
@@ -7036,6 +7029,15 @@
     // #544 follow-up: whatever was last on screen is what comes back, whichever
     // control changed it — see closeTextParser.
     _txpSaveOnClose = saveState;
+    // for the specs: what each credit reads and resolves to, whatever the layout
+    try {
+      W.__groupTherapy.txpCredits = () => parsedRows().map(attachResolution).map(r => ({
+        line: r.li + 1, role: r.role, entity: r.entity, matched: r.matched, crKind: r.crKind || null, year: r.year || null,
+        resolved: r.roleMatch ? r.roleMatch.name : null, kind: r.entityType || null,
+        gid: r.entityMatch ? r.entityMatch.gid : null, name: r.entityMatch ? val(r.entityMatch.name) || '' : null,
+        tracks: (r.trackTargets || []).map(t => t.num), trackNote: r.trackNote || null, applied: appliedKeys.has(r.key),
+      }));
+    } catch (e) {}
     if (lines.some(l => l.raw.trim())) scheduleMatch();   // #798
     render();
     refreshScopeUi();   // #539: show what the saved scope selects, before anything is touched

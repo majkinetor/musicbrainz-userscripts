@@ -23,7 +23,7 @@
 // Never submits: every POST to /edit is aborted, so this exercises the staged
 // editor state, which is what the user reviews before saving.
 import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
-import { blockEdits } from './gt.mjs';
+import { blockEdits, tpPaste, tpCredits, tpPick, tpApply } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -74,30 +74,13 @@ test('a copyright notice year is both the start and the end date', { tag: ['@san
   if (!label) {
     console.log('SKIP: no label found on the test server to use as a ℗ holder');
   } else {
-    await page.evaluate(() => window.__groupTherapy.openTextParser());
-    await frames(page);
-    check(await page.isVisible('.gt-cons.gt-tp'), 'the Text parser modal opens');
-
-    await page.fill('.gt-tp-ta', `\u2117 ${YEAR} ${label.name}`);
-    await frames(page);
-    const parsed = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')]
-      .map(tr => [...tr.querySelectorAll('.gt-tp-c')].map(td => td.textContent.trim())));
-    log('parsed rows:', JSON.stringify(parsed));
-    check(parsed.length === 1 && /phonographic/i.test(parsed[0][0] || ''), `the ℗ line parses as one phonographic-copyright row (got ${JSON.stringify(parsed)})`);
-
-    await page.click('.gt-tp-resolve');
-    await page.waitForFunction(() => { const b = document.querySelector('.gt-tp-resolve'); return b && !b.disabled; }, null, { timeout: 60000 }).catch(() => {});   // resolved
-    await frames(page);
-    // resolve the holder through the picker's paste-MBID path — deterministic,
-    // unlike clicking whichever search result happens to rank first today.
-    const needsPick = await page.isVisible('.gt-tp-search:not(.gt-tp-resolved)');
-    if (needsPick) {
-      await page.click('.gt-tp-search:not(.gt-tp-resolved)');
-      await frames(page);
-      await page.fill('.gt-tp-q', label.gid);
-      await page.waitForFunction(() => !document.querySelector('.gt-tp-apop'), null, { timeout: 15000 });
-      await frames(page);
-    }
+    await tpPaste(page, `℗ ${YEAR} ${label.name}`);
+    check(await page.isVisible('.gt-tp'), 'the Text parser opens');
+    const parsed = await tpCredits(page);
+    log('parsed credits:', JSON.stringify(parsed));
+    check(parsed.length === 1 && /phonographic/i.test(parsed[0].role || ''), `the ℗ line parses as one phonographic-copyright credit (got ${JSON.stringify(parsed.map(c => c.role))})`);
+    // the holder by its MBID — deterministic, unlike whichever candidate ranks first today
+    if (parsed[0] && parsed[0].gid !== label.gid) await tpPick(page, parsed[0].entity, label.gid);
 
     // Record what the tool actually hands MB. MB's own state keeps relationships
     // in its immutable trees, which are awkward and version-fragile to walk; the
@@ -116,8 +99,7 @@ test('a copyright notice year is both the start and the end date', { tag: ['@san
     });
 
     const before = await page.evaluate(() => document.querySelectorAll('.relationship-item').length);
-    await page.click('.gt-cons-apply');
-    await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+    await tpApply(page);   // applied: the parser closes
     await frames(page);
 
     const staged = await page.evaluate(() => window.__574dispatches || []);

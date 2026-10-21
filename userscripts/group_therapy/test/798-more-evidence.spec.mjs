@@ -1,6 +1,7 @@
 // #798 step 4: "co-credits alongside the release artist (as Credit Hoarder's),
-// credits already entered on other releases of the same release group" — opt-in
-// ("More evidence"), as they cost more requests.
+// credits already entered on other releases of the same release group". Always on
+// (majkinetor: "Remove more evidence and do it always, add badges when evidence
+// found on row"); what it finds is a badge on the candidate.
 //
 // MusicBrainz's answers for the release group and the recordings are stubbed here,
 // so the evidence points at a candidate the spec chooses: John Smith has several
@@ -10,11 +11,11 @@ import { openRelEditor, blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });   // fresh: no remembered picks
 
-test('the text parser: More evidence from the release group and co-credits', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the text parser: evidence from the release group and co-credits, with badges', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   test.setTimeout(300000);
   const posts = await blockEdits(page);
   const asked = { group: 0, release: 0, recording: 0 };
-  let target = null, mode = 'group';
+  let target = null, mode = 'none';
   await page.route(/\/ws\/2\/release\?release-group=/, r => { asked.group++; r.fulfill({ json: { releases: [{ id: '00000000-0000-4000-8000-000000000001', title: 'Sibling' }] } }); });
   await page.route(/\/ws\/2\/release\/00000000-0000-4000-8000-000000000001/, r => {
     asked.release++;
@@ -48,29 +49,28 @@ test('the text parser: More evidence from the release group and co-credits', { t
     };
   });
 
+  // no evidence anywhere: several John Smiths, none picked; both places were asked
   await open();
-  const off = await state();
-  console.log('off: ' + JSON.stringify(off));
-  check(!off.picked && off.cands.length > 1, `off: several John Smiths, none picked (${off.cands.length})`);
-  check(asked.group === 0 && asked.recording === 0, `off: no release group or recording request (${JSON.stringify(asked)})`);
-  target = off.cands[off.cands.length - 1];   // the last: the one evidence must lift
+  const none = await state();
+  console.log('none: ' + JSON.stringify(none) + ' ' + JSON.stringify(asked));
+  check(!none.picked && none.cands.length > 1, `no evidence: several John Smiths, none picked (${none.cands.length})`);
+  check(asked.group >= 1 && asked.recording >= 1, `the release group and the co-credits are asked without a setting (${JSON.stringify(asked)})`);
+  check(!(await page.$('.gt-tp-deep')), 'no "More evidence" toggle');
+  target = none.cands[none.cands.length - 1];   // the last: the one evidence must lift
 
-  // on: the release group's other release credits the target as producer
-  await page.click('.gt-tp-deep');
-  await settle();
+  // the release group's other release credits the target as producer
+  mode = 'group';
+  await open();   // a new page: its caches are gone
   const grp = await state();
   console.log('group: ' + JSON.stringify(grp) + ' ' + JSON.stringify(asked));
-  check(asked.group >= 1 && asked.release >= 1, 'on: the release group\'s releases are read');
-  check(grp.picked === target && grp.why.some(w => /same group/.test(w) && /producer on “Sibling” 1999/.test(w)), `on: the one the release group credits is picked, and says where (${JSON.stringify(grp.why)})`);
+  check(grp.picked === target && grp.why.some(w => /same group/.test(w) && /producer on “Sibling” 1999/.test(w)), `the one the release group credits is picked, with a "same group" badge that says where (${JSON.stringify(grp.why)})`);
 
   // co-credit: nothing in the group; a recording credits the target beside the release artist
   mode = 'co';
-  await open();   // a new page: its caches are gone (and this spec's storage too)
-  if (!(await page.evaluate(() => document.querySelector('.gt-tp-deep').classList.contains('on')))) { await page.click('.gt-tp-deep'); await settle(); }
+  await open();
   const co = await state();
   console.log('co: ' + JSON.stringify(co) + ' ' + JSON.stringify(asked));
-  check(asked.recording >= 1, 'on: an open name asks who recordings credit beside the release artist');
-  check(co.picked === target && co.why.some(w => /co-credit/.test(w) && /on 1 recording\}/.test(w)), `the co-credited one is picked (${JSON.stringify(co.why)})`);
+  check(co.picked === target && co.why.some(w => /co-credit/.test(w) && /on 1 recording\}/.test(w)), `the co-credited one is picked, with a "co-credit" badge (${JSON.stringify(co.why)})`);
 
   check(posts.length === 0, `nothing was submitted (${posts.length})`);
 });
