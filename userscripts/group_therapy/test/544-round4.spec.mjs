@@ -167,7 +167,7 @@ test('the text parser: background create marks the row, disambiguations, popup p
   await attachShot(testInfo, page.locator('.gt-tp-apop'), 'i544r4-disamb');
 
   // ── 3. the popup must not sit under the scrollbar ───────────────────────────
-  // The reported case is a maximized parser in a window that HAS a classic
+  // The reported case is a parser as wide as the window (in the page since #798), with a classic
   // scrollbar: the anchor sits hard against the right edge, and the old clamp
   // measured against window.innerWidth, which includes the scrollbar.
   //
@@ -180,10 +180,8 @@ test('the text parser: background create marks the row, disambiguations, popup p
   await page.setViewportSize({ width: 900, height: 800 });
   await frames(page);
   const geo = await page.evaluate(async () => {
-    const mx = [...document.querySelectorAll('.gt-tp .gt-cons-x')].find(b => b.textContent.includes('⛶'));
     const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
     const frame = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    if (mx) mx.click();                                        // maximize → entity column against the right edge
     await frame();
     const rows = [...document.querySelectorAll('.gt-tp-tbl tbody tr')];
     const btns = [...rows[1].querySelectorAll('button.gt-tp-search')];
@@ -204,7 +202,7 @@ test('the text parser: background create marks the row, disambiguations, popup p
     };
   });
   console.log('popup geometry: ' + JSON.stringify(geo));
-  check(!geo.missing, 'the popup opened with the parser maximized');
+  check(!geo.missing, 'the popup opened');
   if (!geo.missing) {
     check(geo.anchorLeft > geo.clientW * 0.5, 'the anchor really is in the right half — the reported case (' + geo.anchorLeft + ' of ' + geo.clientW + ')');
     check(geo.popRight <= geo.clientW - 12, '#3: the popup keeps a visible gap from the right edge (' + (geo.clientW - geo.popRight) + 'px)');

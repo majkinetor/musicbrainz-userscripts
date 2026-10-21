@@ -1,5 +1,5 @@
 // #525 (majkinetor), the four follow-ups to the text parser:
-//   1. the maximized window slid under the vertical scrollbar
+//   1. the maximized window slid under the vertical scrollbar (in the page since #798)
 //   2. seed the create form (type=Person + sort name, artists only) and adopt
 //      the MBID once the create tab lands on the new entity
 //   3. Place as a first-class entity — its own roles and a picker tab
@@ -12,7 +12,7 @@ import { blockEdits } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: maximized window, create seeding, places, presets', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the text parser: in the page, create seeding, places, presets', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const RELEASE_GID = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
 
   for (let a = 1; ; a++) {
@@ -56,27 +56,15 @@ test('the text parser: maximized window, create seeding, places, presets', { tag
   console.log('rows after "R by E[&]": ' + rows);
   check(rows >= 2, 'the "&" split produces a row per entity (' + rows + ')');
 
-  // ── 1. maximize must not slide under the scrollbar ──────────────────────────
+  // ── 1. #798: the parser is in the page now, so it can't slide under the
+  // scrollbar: it takes the content's width, inside the client box.
   const geo = await page.evaluate(() => {
-    document.body.style.minHeight = '6000px';   // guarantee a vertical scrollbar to overlap
-    const btn = [...document.querySelectorAll('.gt-tp button')].find(b => /^[⛶❐]$/.test((b.textContent || '').trim()));
-    if (btn) btn.click();
-    const p = document.querySelector('.gt-tp').getBoundingClientRect();
-    return { right: Math.round(p.right), docW: document.documentElement.clientWidth, innerW: window.innerWidth, bottom: Math.round(p.bottom), docH: document.documentElement.clientHeight };
+    document.body.style.minHeight = '6000px';   // guarantee a vertical scrollbar
+    const p = document.querySelector('.gt-tp');
+    return { right: Math.round(p.getBoundingClientRect().right), docW: document.documentElement.clientWidth, position: getComputedStyle(p).position };
   });
-  console.log('maximized: ' + JSON.stringify(geo));
-  check(geo.right <= geo.docW && geo.bottom <= geo.docH, 'the maximized panel fits the client box');
-  // Headless Chromium draws OVERLAY scrollbars, so clientWidth === innerWidth and
-  // the geometric check above can never fail here — it would pass just as happily
-  // against the old 98vw rule. Assert the actual mechanism instead: inset-based
-  // fixed positioning is what stops the overlap on a real classic scrollbar.
-  const how = await page.evaluate(() => {
-    const cs = getComputedStyle(document.querySelector('.gt-tp'));
-    return { position: cs.position, right: cs.right, bottom: cs.bottom, width: cs.width };
-  });
-  console.log('maximize mechanism: ' + JSON.stringify(how));
-  check(how.position === 'fixed', 'the maximized panel is fixed-positioned');
-  check(how.right !== 'auto' && how.bottom !== 'auto', 'and sized by insets rather than a vw width (which counts the scrollbar)');
+  console.log('inline panel: ' + JSON.stringify(geo));
+  check(geo.position === 'static' && geo.right <= geo.docW, 'the parser is in the page flow and fits the client box');
 
   // ── 3. Place: roles, tab, search ────────────────────────────────────────────
   const placeRoles = await page.evaluate(() => {

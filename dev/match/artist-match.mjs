@@ -144,6 +144,66 @@ export function mbmCoCreditHits(recordingsJson, ctxGid, name) {
 }
 
 /**
+ * #798 — rank the candidates for a credited name on the evidence a release gives,
+ * for liner notes, which carry names only (no URLs).
+ *
+ * cands: [{ gid, name, aliases: [names], type, begin, end, area, disambiguation, score }]
+ *   type 'Person' | 'Group' | 'Orchestra' | 'Choir' | … (ws/2's), begin/end years or
+ *   null, area a name, score ws/2's search score.
+ * ctx:
+ *   remembered  gid the user picked for this name before (on this release artist)
+ *   known       [{ gid, why }] entities already on the release: credits, relationships
+ *   related     [{ gid, rel, of }] the release artists' related artists (rel: 'member
+ *               of band', …; of: the release artist's name)
+ *   unique      gid of the only MB entity holding the name (mbmExactIdentity 'unique')
+ *   want        'person' | 'group' | null — what the role takes
+ *   year, area  the release's year and country
+ * → { ranked: [{ …cand, points, level, reasons: [{ text, tip, sign: 1 | -1 }] }], best }
+ *   text is a word or two for a badge, tip the detail behind it.
+ *   level: 'strong' (release evidence) | 'unique' (only holder) | 'weak' (best guess);
+ *   best: the top one with its level when it leads the next by 30 points, else null.
+ */
+export function mbmRankCandidates(name, cands, ctx) {
+    const c = ctx || {};
+    const GROUPS = ['group', 'orchestra', 'choir'];
+    const ranked = [];
+    for (const k of cands || []) {
+        if (!k || !k.gid || [...MBM_SPECIAL_PURPOSE].includes(k.gid)) continue;   // an array here, a Set in the inlined block
+        const reasons = [];
+        let points = 0, strong = false;
+        const add = (p, text, isStrong, tip) => { points += p; if (text) reasons.push({ text, tip: tip || text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
+        if (c.remembered && c.remembered === k.gid) add(100, 'your pick', true, 'You picked it for this name before');
+        const known = (c.known || []).filter(x => x.gid === k.gid);
+        if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
+        const rel = (c.related || []).find(x => x.gid === k.gid);
+        if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
+        const holds = mbmHolds(k, name);
+        if (holds === 'name') add(20, '');
+        else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');
+        if (c.unique && c.unique === k.gid) add(40, 'unique', false, 'The only one in MusicBrainz with this name or alias');
+        const t = String(k.type || '').toLowerCase();
+        if (c.want && t) {
+            const isGroup = GROUPS.includes(t);
+            if (c.want === 'person' && isGroup) add(-25, 'a ' + t, false, 'A ' + t + ', for a role a person plays');
+            else if (c.want === 'group' && t === 'person') add(-25, 'a person', false, 'A person, for a group\'s credit');
+            else if ((c.want === 'person' && t === 'person') || (c.want === 'group' && isGroup)) add(5, '');
+        }
+        if (c.year) {
+            if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin, false, (t === 'person' ? 'Born ' : 'Founded ') + k.begin + ', after the release (' + c.year + ')');
+            else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end, false, (t === 'person' ? 'Died ' : 'Ended ') + k.end + ', before the release (' + c.year + ')');
+        }
+        if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area, false, 'From ' + k.area + ', the release\'s country');
+        if (typeof k.score === 'number') points += k.score / 20;
+        const level = strong ? 'strong' : (c.unique && c.unique === k.gid) ? 'unique' : 'weak';
+        ranked.push({ ...k, points: Math.round(points * 10) / 10, level, reasons });
+    }
+    ranked.sort((a, b) => b.points - a.points);
+    const top = ranked[0], next = ranked[1];
+    const best = top && (top.level !== 'weak' || mbmHolds(top, name)) && (!next || top.points - next.points >= 30) ? { gid: top.gid, level: top.level } : null;
+    return { ranked, best };
+}
+
+/**
  * A first guess at a new artist's sort name, for the create-artist form (Apollo, Credit
  * Hoarder; #623). MB's own "guess" button has the same limits; the editor reviews it.
  *
@@ -173,5 +233,5 @@ export function mbmGuessSortName(name) {
 // what sync-match.mjs inlines, in order (constants first)
 export const MBM_INLINE = {
     consts: { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE },
-    fns: [mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmGuessSortName],
+    fns: [mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmRankCandidates, mbmGuessSortName],
 };

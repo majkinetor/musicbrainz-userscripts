@@ -98,24 +98,48 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 
 ## Text parser
 
-**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns).
+**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns). It opens under the toolbar, in the page, so the release's tracks and credits stay in reach as you scroll. Its two top rows stay on top:
 
-<img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
+- the settings, what is left and **Apply**. What is left shows as one pill each (`5 names`, `2 roles`, `2 lines` not parsed), and a click on one takes you to the next: its row is marked, and what is missing in it flashes. `✓ all picked` shows when nothing is. The row you work in is marked too.
+- the [pattern](#patterns) (its ▾ has the usual ones), 🔒 Freeze, the pasted text (one line until you click it, then numbered as the rows are), **Cutoff**, **Load annotation** and **Apply & clear annotation**.
 
-- **Copyright lines** (©, ℗, *licensed to/from*, *distributed by*, *marketed by*) are recognised without a pattern. One year becomes both the begin and end date, as [MusicBrainz asks](https://musicbrainz.org/relationship/2ed5a497-4f85-4b3f-831e-d341ad28c544). Several holders on one line (`℗ 2012 Shady/Aftermath/Interscope`) become one row each, and a line with two markers is split in two when pasted.
-- **⚡ Match** resolves roles and entities where it can (including *mastered by* → *mastering*). A role that exists only for labels picks a label; an ambiguous one defaults to a label, or an artist when the name is one of the release's artists.
+<img src="./screenshots/text-parser.png" />
+
+Each name gets one row: the credit on the left, MusicBrainz on the right.
+
+- **Left**: the name as credited, its roles, the tracks a credit names, and under them the line each came from. **+** creates the artist, label or place (right-click: in the background).
+  - A role in red has no match; the roles beside it, when there are some, are the closest, and a click picks one. Click the role itself to pick from all of them: the credit's kind (artist, label or place) is in the picker's header, its roles come first and the other kinds' last, each tagged with its kind. The pick applies to every credit with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*, and it is remembered: that role text resolves by itself on the next release.
+  - A line's text and its own pattern can be edited there, and **✕** removes the line. A line that gives no credit stays in its place as a *not parsed* row, to fix there.
+  - A credit keeps the text's spelling as its credited name when it differs from MusicBrainz's; its tooltip shows both. Right-click the name to use MusicBrainz's instead, in the text too, or tick **Use MB name as credit** for every credit.
+- **Right**: the pick, or the [candidates](#matching). **✓** picks one for every credit with that name; right-click **✓**: for one credit only. **✕** on a pick brings the candidates back.
+  - The box under them searches, or takes a pasted MBID or URL. Where the role allows more than one kind, choose artist, label or place beside it.
+- Row colours: green is ready, amber needs a pick or a role, red has no candidates.
+- **Copyright lines** (©, ℗, *licensed to/from*, *distributed by*, *marketed by*) are recognised without a pattern. One year becomes both the begin and end date, as [MusicBrainz asks](https://musicbrainz.org/relationship/2ed5a497-4f85-4b3f-831e-d341ad28c544). Several holders on one line (`℗ 2012 Shady/Aftermath/Interscope`) become one credit each, and a line with two markers is split in two when pasted.
+- Matching runs by itself after each change: it resolves roles and finds each name's candidates. A role is matched by MusicBrainz's own wording, word by word, only among the roles the credit's kind can have: *Lyrics by* → *lyricist*, *All music written by* → *composer*, *Production by* → *production*, *Mastered by* → *mastering*. A role that exists only for labels picks a label; an ambiguous one defaults to a label, or an artist when the name is one of the release's artists.
 - Instruments and vocal types resolve to the *instrument* or *vocal* role plus that attribute: *Flute*, *Lead Vocals*, *Backing Vocals* → *background vocals*. A leading *Guest*, *Additional*, *Solo*, *Co-*, *Executive*, *Assistant* or *Associate* is added as an attribute when the role allows it: *Guest Vocals*, *Co-Producer*, *Executive Producer*.
-- Row colours: plain is ready, amber is matched but unresolved, red didn't match.
-- **search** on a row opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click: in the background). A pick resolves every row with the same name; a right-click only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
-- A line's text can be edited in place, and **✕** removes it.
 - **Scope** sends the credits to the release (default) or to recordings chosen with a [track selector](#track-selector); the roles offered follow the scope.
 - **Works**: a work role going to tracks goes on their works. *create none* (default) skips a track without one; *create needed* creates it, named after the recording, so match existing works first with **◎ Match works…** or it makes duplicates.
-- **Apply** stages the rows. After **Load annotation**, **Apply & clear annotation** also opens the annotation editor, emptied.
+- **Apply** stages the credits. After **Load annotation**, **Apply & clear annotation** also clears the release's annotation, with its own edit note.
 
-The text and the resolutions last until the page reloads.
+The text and the picks last until the page reloads.
 
 > [!NOTE]
 > Only single-line credits are parsed; grouped multi-line blocks are not.
+
+### Matching
+
+Each candidate shows its type, life span and area, and why it ranks where it does (`+ on release`, `+ related`, `− born 1990`); its tooltip has the detail (*Already lyricist on this release*, *member of band · Toto*).
+
+| Dot | Confidence  | Why                                                                               |
+| :-: | ----------- | --------------------------------------------------------------------------------- |
+|  🟢  | Strong      | credited on this release, a release artist's member or collaborator, or your pick |
+|  🟡  | Unique name | the only artist or label in MusicBrainz with this name or alias                   |
+|  🔴  | Weak        | the best guess                                                                    |
+|  ⚪  | You         | picked by you                                                                     |
+
+**Cutoff** (default *Unique name*) is the lowest confidence picked for you, and only when the candidate clearly leads the next one. A match below it waits on its row, marked *below cutoff*. Your picks are remembered for the release artist, so the next release of that artist starts from them.
+
+The candidates also rank on the role and the release: a person for an instrument or a vocal, a group for an orchestra or a choir; someone born after the release or gone long before it ranks lower, and one from the release's country higher.
 
 ### Patterns
 
@@ -142,7 +166,7 @@ A bracket after `R` or `E` splits it into rows: `[,]` on commas, `[&]` on " & ",
 
 `{{}}` alone on a line ends a block. `{{…}}` can sit anywhere in a line and is cut out of its text, so credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them. **🔒 Freeze matched** pins the top pattern on the lines it matches, like in Apollo, and leaves lines with their own pattern alone.
 
-**Tracks**: with **Tracks: auto** (the default), a clause after the role or the name, like `(1)`, `(A1 B2)`, `(tracks 2 6 9)`, `[tracks 1-3]` or `on tracks 2 and 6`, sends that row to those tracks; every other row follows Scope. Write the numbers without commas, so `[,]` leaves the list whole: `Lyricist: Mimmo Epifani (tracks 1-3 5-11)`.
+**Tracks**: with **Tracks named in credits** on (the default), a clause after the role or the name, like `(1)`, `(A1 B2)`, `(tracks 2 6 9)`, `[tracks 1-3]` or `on tracks 2 and 6`, sends that credit to those tracks; every other credit follows Scope. A split never cuts inside brackets, so `Lyricist: Mimmo Epifani (tracks 1-3, 5-11)` read with `R: E[,]` stays one name.
 
 A clause counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
 

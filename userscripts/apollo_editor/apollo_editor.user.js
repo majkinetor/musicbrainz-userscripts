@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.231037
+// @version      2026.10.21.102218
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -315,6 +315,45 @@
           }
       }
       return out;
+  }
+  function mbmRankCandidates(name, cands, ctx) {
+      const c = ctx || {};
+      const GROUPS = ['group', 'orchestra', 'choir'];
+      const ranked = [];
+      for (const k of cands || []) {
+          if (!k || !k.gid || [...MBM_SPECIAL_PURPOSE].includes(k.gid)) continue;   // an array here, a Set in the inlined block
+          const reasons = [];
+          let points = 0, strong = false;
+          const add = (p, text, isStrong, tip) => { points += p; if (text) reasons.push({ text, tip: tip || text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
+          if (c.remembered && c.remembered === k.gid) add(100, 'your pick', true, 'You picked it for this name before');
+          const known = (c.known || []).filter(x => x.gid === k.gid);
+          if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
+          const rel = (c.related || []).find(x => x.gid === k.gid);
+          if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
+          const holds = mbmHolds(k, name);
+          if (holds === 'name') add(20, '');
+          else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');
+          if (c.unique && c.unique === k.gid) add(40, 'unique', false, 'The only one in MusicBrainz with this name or alias');
+          const t = String(k.type || '').toLowerCase();
+          if (c.want && t) {
+              const isGroup = GROUPS.includes(t);
+              if (c.want === 'person' && isGroup) add(-25, 'a ' + t, false, 'A ' + t + ', for a role a person plays');
+              else if (c.want === 'group' && t === 'person') add(-25, 'a person', false, 'A person, for a group\'s credit');
+              else if ((c.want === 'person' && t === 'person') || (c.want === 'group' && isGroup)) add(5, '');
+          }
+          if (c.year) {
+              if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin, false, (t === 'person' ? 'Born ' : 'Founded ') + k.begin + ', after the release (' + c.year + ')');
+              else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end, false, (t === 'person' ? 'Died ' : 'Ended ') + k.end + ', before the release (' + c.year + ')');
+          }
+          if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area, false, 'From ' + k.area + ', the release\'s country');
+          if (typeof k.score === 'number') points += k.score / 20;
+          const level = strong ? 'strong' : (c.unique && c.unique === k.gid) ? 'unique' : 'weak';
+          ranked.push({ ...k, points: Math.round(points * 10) / 10, level, reasons });
+      }
+      ranked.sort((a, b) => b.points - a.points);
+      const top = ranked[0], next = ranked[1];
+      const best = top && (top.level !== 'weak' || mbmHolds(top, name)) && (!next || top.points - next.points >= 30) ? { gid: top.gid, level: top.level } : null;
+      return { ranked, best };
   }
   function mbmGuessSortName(name) {
       if (!name || !name.trim()) return name;
