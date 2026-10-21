@@ -1,5 +1,5 @@
 // #798 (majkinetor): "Add it as a explicit request on individual rows" — whether a
-// candidate has held the row's role before. Only when asked (Check roles), since an
+// candidate has held the row's role before. Only when asked (MB roles), since an
 // artist's relationships run to megabytes; five candidates at most.
 //
 // MusicBrainz's answers are stubbed: the candidate the spec chooses has produced
@@ -9,7 +9,7 @@ import { openRelEditor, blockEdits, tpPaste, tpRow, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: Check roles ranks the candidates on the role they held before', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('the text parser: MB roles ranks the candidates on the role they held before', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   test.setTimeout(300000);
   const posts = await blockEdits(page);
   // nothing from the release group or co-credits, so John Smith stays open
@@ -31,7 +31,7 @@ test('the text parser: Check roles ranks the candidates on the role they held be
   console.log('candidates: ' + cands.length);
   check(cands.length > 1 && !(await row.locator('.gt-tp-cand-on').count()), `several John Smiths, none picked (${cands.length})`);
   check(asked.length === 0, 'no relationships are read until asked');
-  check(await row.locator('.gt-tp-hist').count() === 1, 'the row offers Check roles');
+  check(await row.locator('.gt-tp-hist').count() === 1, 'the row offers MB roles');
   target = cands[2];   // the third: the check must lift it
 
   await row.locator('.gt-tp-hist').click();

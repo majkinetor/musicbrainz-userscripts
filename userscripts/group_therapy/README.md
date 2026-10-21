@@ -143,7 +143,7 @@ The candidates also rank on the role and the release: a person for an instrument
 
 Beyond this release, the parser also looks at who the other releases of its release group credit (three of them, `+ same group`) and, for a name still left open, who recordings credit beside the release artist (`+ co-credit`).
 
-**Check roles**, on a row with several candidates, asks whether each of them has held the row's role before: `+ producer ×3` (its tooltip says on what) ranks one up and can pick it, `− never producer` only says so. It reads up to five candidates' relationships from MusicBrainz, which takes a moment for a prolific one, so it waits for the click.
+**MB roles**, on a row with several candidates, asks whether each of them has held the row's role before: `+ producer ×3` (its tooltip says on what) ranks one up and can pick it, `− never producer` only says so. It reads up to five candidates' relationships from MusicBrainz, which takes a moment for a prolific one, so it waits for the click.
 
 ### Patterns
 

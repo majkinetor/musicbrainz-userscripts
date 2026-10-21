@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.124739
+// @version      2026.10.21.133503
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -6406,7 +6406,7 @@
           // #798: has a candidate held this role before — one request each, so asked for
           if (!ent && cc && cc.ranked.length > 1 && g.rows.some(r => r.roleMatch && !r.crKind)) {
             const done = roleHist.has(g.key);
-            const hb = el('button', 'gt-tp-hist', done ? '↻ Roles checked' : 'Check roles'); hb.type = 'button';
+            const hb = el('button', 'gt-tp-hist', done ? '↻ MB roles' : 'MB roles'); hb.type = 'button';
             hb.dataset.tip = 'Has each candidate held this role before?\nReads their relationships from MusicBrainz: one request per candidate, five at most, large for a prolific one'
               + (done ? '\nChecked: the badges say how often. Click: check again' : '');
             hb.onclick = () => txpCheckRoles(g, hb);
@@ -6709,7 +6709,7 @@
       const hist = [];
       const cands = cc.ranked.slice(0, 5);
       for (let i = 0; i < cands.length; i++) {
-        btn.textContent = `Checking ${i + 1}/${cands.length}…`;
+        btn.textContent = `MB roles ${i + 1}/${cands.length}…`;
         const rels = await txpEntityRels(cands[i].kind || cc.kind || 'artist', cands[i].gid, incs);
         if (!rels) continue;
         const hits = rels.filter(x => want.some(w => x.type === w.type && (!w.attr || (x.attributes || []).some(a => String(a).toLowerCase() === w.attr.toLowerCase()))));
