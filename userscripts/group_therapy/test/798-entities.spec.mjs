@@ -41,6 +41,10 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
     return { afterBar: document.querySelector('.gt-toolbar').nextElementSibling === p, overlay: !!document.querySelector('.gt-cons-ov') };
   });
   check(inline.afterBar && !inline.overlay, `the parser opens in the page, under the toolbar (${JSON.stringify(inline)})`);
+  await page.click('.gt-tp-ta');
+  await page.keyboard.press('Escape');
+  await frames(page);
+  check(await page.locator('.gt-tp').count() === 1, 'Escape does not close it (✕ does)');
 
   await page.fill('.gt-tp-ta', [`Producer: ${relArtist}`, 'Guitar: John Smith', 'Mastering: Bob Ludwig'].join('\n'));
   await page.dispatchEvent('.gt-tp-ta', 'input');

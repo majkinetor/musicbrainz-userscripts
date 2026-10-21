@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.103009
+// @version      2026.10.21.104519
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5242,21 +5242,8 @@
   }
 
   let txpEl = null;
-  // #522 follow-up (majkinetor, live): "Esc during role selection closes main
-  // popup" — a nested picker (the role picker's own overlay, or the shared
-  // artist/label-search popover) should close on Escape WITHOUT taking the
-  // whole tool down too. Both this and the nested pickers' own Escape
-  // handling are registered on `document` with capture:true — when a nested
-  // picker is open, just return (don't stopPropagation) so its own handler,
-  // registered later, still gets its turn on the same event.
-  function onTxpKey(e) {
-    if (e.key !== 'Escape') return;
-    if (document.querySelector('.gt-role-pick') || popEl) return;
-    // #798: in the page now, so Escape in one of MusicBrainz's own fields is theirs
-    const f = document.activeElement;
-    if (txpEl && f && f !== document.body && !txpEl.contains(f)) return;
-    e.stopPropagation(); closeTextParser();
-  }
+  // #798 (majkinetor): Escape no longer closes the parser — it is part of the
+  // page now; ✕ closes it. Escape still closes a picker opened from it.
   // #544 follow-up (majkinetor): "Maximized state is still not remembered."
   // saveState() was only ever called by the actions that CHANGE row data —
   // maximizing, or loading the annotation, changed the window and saved nothing,
@@ -5271,7 +5258,7 @@
     if (!txpEl) return;
     try { if (_txpSaveOnClose) _txpSaveOnClose(); } catch (e) {}
     _txpSaveOnClose = null;
-    txpEl.remove(); txpEl = null; document.removeEventListener('keydown', onTxpKey, true);
+    txpEl.remove(); txpEl = null;
   }
 
   // #522 follow-up: "it would be good to keep window state after closing it
@@ -6769,7 +6756,6 @@
     const bar = document.querySelector('.gt-toolbar');
     if (bar) bar.after(panel); else (document.getElementById('content') || document.body).prepend(panel);
     try { panel.scrollIntoView({ block: 'nearest' }); } catch (e) {}
-    document.addEventListener('keydown', onTxpKey, true);
     if (saved) {
       if (saved.text) {
         ta.value = saved.text;
