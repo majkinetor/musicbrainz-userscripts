@@ -48,7 +48,7 @@ On a release page (`/release/<mbid>`) First Contact runs as a reader only (`mbRe
 | HDtracks | HDtracks's API |
 | SoundCloud | `api-v2.soundcloud.com`, with the web player's public client id |
 | Amazon Music | the web player's API (`na.mesk.skill.music.a2z.com`), as a guest |
-| Presto Music | the product page's HTML (behind Cloudflare, so only on the page): the tracklist's works (`.c-tracklist__work`), the barcode from the ld+json (`gtin13`), the format from the purchase block; a product without a tracklist fetches its other formats' pages (`a.c-product__variant`) with the page's cookies |
+| Presto Music | the shop's product page HTML (behind Cloudflare, so only on the page): the tracklist's works (`.c-tracklist__work`), the barcode from the ld+json (`gtin13`), the format from the purchase block. Plus the streaming app's API (`ajax-www.prestomusic.com/api/app/6/{album,about,tracks}/<code>`: anonymous, open CORS, no bot check; code 54 for a product that doesn't stream), by the same product number: the ISRCs, matched to the page's tracks one for one, and whether to add the streaming link. A product without a tracklist reads its other formats (`a.c-product__variant`) from the API, else their pages with the page's cookies. On `streaming.prestomusic.com` everything is from the API; the barcode is the booklet PDF's file name (`0827568019622_W.pdf`), check digit checked, and the shop link is a work's `productLink` |
 
 ### Spotify
 

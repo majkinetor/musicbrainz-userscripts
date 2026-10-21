@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 11:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 14:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -983,25 +983,25 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 
 ### Platforms
 
-| Platform                        |   ISRCs    |  Barcode   | Label                 | Notes          |
-| ------------------------------- | :--------: | :--------: | --------------------- | -------------- |
-| [Deezer](#deezer)               |     ✓      |     ✓      | ✓                     |                |
-| [Bandcamp](#bandcamp)           |            |     ✓      | on a label's page     | about, credits |
-| [Discogs](#discogs)             |            |     ✓      | ✓ with catalog number | notes          |
-| [Apple Music](#apple-music)     |     ✓      |     ✓      | ✓                     | review         |
-| [Tidal](#tidal)                 |     ✓      |     ✓      | from the ℗ line       |                |
-| [Qobuz](#qobuz)                 |            |     ✓      | ✓                     | review         |
-| [Beatport](#beatport)           |     ✓      |     ✓      | ✓ with catalog number | description    |
-| [Spotify](#spotify)             |            |     ✓      | ✓                     |                |
-| [YouTube Music](#youtube-music) |            |            |                       | description    |
-| [Volumo](#volumo)               |     ✓      |     ✓      | ✓ with catalog number | description    |
-| [HDtracks](#hdtracks)           |     ✓      |     ✓      | ✓                     | description    |
-| [SoundCloud](#soundcloud)       | label sets | label sets | ✓                     | description    |
-| [Amazon Music](#amazon-music)   |            |            | from the ℗ line       | ℗ line         |
-| [Audiomack](#audiomack)         |     ✓      |     ✓      | from the ℗ line       | description    |
-| [7digital](#7digital)           |     ✓      |     ✓      | ✓                     | ℗ and © lines  |
-| [Ototoy](#ototoy)               |            |            | ✓                     | album info     |
-| [Presto Music](#presto-music)   |            |     ✓      | ✓ with catalog number | about          |
+| Platform                        |      ISRCs      |  Barcode   | Label                 | Notes          |
+| ------------------------------- | :-------------: | :--------: | --------------------- | -------------- |
+| [Deezer](#deezer)               |        ✓        |     ✓      | ✓                     |                |
+| [Bandcamp](#bandcamp)           |                 |     ✓      | on a label's page     | about, credits |
+| [Discogs](#discogs)             |                 |     ✓      | ✓ with catalog number | notes          |
+| [Apple Music](#apple-music)     |        ✓        |     ✓      | ✓                     | review         |
+| [Tidal](#tidal)                 |        ✓        |     ✓      | from the ℗ line       |                |
+| [Qobuz](#qobuz)                 |                 |     ✓      | ✓                     | review         |
+| [Beatport](#beatport)           |        ✓        |     ✓      | ✓ with catalog number | description    |
+| [Spotify](#spotify)             |                 |     ✓      | ✓                     |                |
+| [YouTube Music](#youtube-music) |                 |            |                       | description    |
+| [Volumo](#volumo)               |        ✓        |     ✓      | ✓ with catalog number | description    |
+| [HDtracks](#hdtracks)           |        ✓        |     ✓      | ✓                     | description    |
+| [SoundCloud](#soundcloud)       |   label sets    | label sets | ✓                     | description    |
+| [Amazon Music](#amazon-music)   |                 |            | from the ℗ line       | ℗ line         |
+| [Audiomack](#audiomack)         |        ✓        |     ✓      | from the ℗ line       | description    |
+| [7digital](#7digital)           |        ✓        |     ✓      | ✓                     | ℗ and © lines  |
+| [Ototoy](#ototoy)               |                 |            | ✓                     | album info     |
+| [Presto Music](#presto-music)   | streamed albums |     ✓      | ✓ with catalog number | about          |
 
 #### Deezer
 
@@ -1150,15 +1150,18 @@ Pages: `ototoy.jp/_/default/p/<id>`
 
 #### Presto Music
 
-Pages: `prestomusic.com/classical/products/<id>`, `prestomusic.com/jazz/products/<id>`
+Pages: `prestomusic.com/classical/products/<id>`, `prestomusic.com/jazz/products/<id>`, `streaming.prestomusic.com/album/<id>`
 
 - No Presto account is needed.
+- The shop and the streaming app share their product numbers, so an album imports the same from either. ISRCs come from the streaming app, so only an album that streams has them.
+- From the streaming app the release is *Digital Media*, with the streaming link and the shop link. Its barcode comes from the booklet, so an album without a booklet has none.
+- From the shop, a download also gets the streaming link, when the album streams. A CD, SACD or vinyl doesn't: on MusicBrainz the download is a separate release.
 - Presto sells CDs, SACDs, vinyl and downloads, so the medium's format is the one on the page: *CD*, *Hybrid SACD*, *Vinyl*, or *Digital Media* for a download. A physical one gets the *purchase for mail-order* link and no packaging; the country is left for you.
 - A set of several discs (*5 CDs*) comes as one medium: Presto doesn't say where each disc starts. A message says so; split it at each disc's first track with Apollo Editor's [Split medium](../apollo_editor/README.md#merge-and-split-mediums).
 - A classical work's movements are its tracks, titled *Work: Movement*; a work without movements is one track. The composer Presto puts before a title (*Beethoven: …*, *Ida Sand: Salt & Sugar*) is left out.
 - Track artists are the names Presto lists for each work without an instrument or role. The musicians listed with one (*Ida Sand (piano)*, *Ola Gustafsson (guitar)*) are left out; when every name has one, as on most classical pages (*Chiaroscuro Quartet (stringquartet)*), all of them are the artists. Artists have no Presto link to hand off.
 - Some lengths are missing; those tracks get none.
-- When the page lists no tracks (a new vinyl, say), the tracklist is taken from another format of the same album, the CD first. A message and the edit note say where it came from: check it, as the vinyl can differ. When no format lists tracks, nothing is imported.
+- When the shop page lists no tracks (a new vinyl, say), the tracklist is taken from another format of the same album, the CD first. A message and the edit note say where it came from: check it, as the vinyl can differ. When no format lists tracks, nothing is imported.
 
 ### Artist matching
 
