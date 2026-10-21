@@ -1,21 +1,21 @@
 // #783: a recording item can carry a length (length, in ms), seeded into the recording's edit form. A REAL run on
 // test.musicbrainz: a standalone recording (no tracks) gets a new length, the edit is accepted, and the recording is
-// read back; each run sets the other of two lengths, so there is always a change. A recording whose length comes
-// from its tracks is refused, Falcon says why, and no edit is made.
+// read back. A recording whose length comes from its tracks is refused, Falcon says why, and no edit is made. Both
+// recordings are pristine, made for the run (#795).
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
 const HOST = 'https://test.musicbrainz.org';
-const STANDALONE = '61cba4ae-98e6-4c93-8f09-a37ec195b9e9';   // "Falcon 783 standalone", made for this proof: no tracks
-const TRACKED = '061bde0b-18be-4358-a2e8-69d4d7614ecf';      // "Fjara", track 1 of "Fjara / Runaway Train"
 
 test('#783: Falcon sets a standalone recording\'s length, and says why it can\'t for one with tracks', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  const { mbid: STANDALONE } = await pristine(page, 'standalone-recording', { length: '201000' });
+  const { mbid: TRACKED } = await pristine(page, 'recording');   // track 1 of a release
   const goto = async (p, url) => { for (let a = 1; ; a++) { try { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); return; } catch (e) { if (a >= 3) throw e; await p.waitForTimeout(5000); } } };
   const lengthOf = id => page.evaluate(async id => {
     for (let a = 0; ; a++) {
@@ -68,7 +68,7 @@ test('#783: Falcon sets a standalone recording\'s length, and says why it can\'t
   await requireLogin(page);
   await acceptOpen(STANDALONE);
   const before = await lengthOf(STANDALONE);
-  const want = before === 201000 ? 202000 : 201000;
+  const want = 202000;
   console.log(`before Falcon: ${before}, setting ${want}`);
   const first = await run(STANDALONE, want);
   console.log(JSON.stringify(first.out)); first.log.slice(-6).forEach(l => console.log('  ' + l));

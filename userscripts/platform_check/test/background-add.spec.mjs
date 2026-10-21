@@ -9,13 +9,12 @@
 //   gets killed" — the add's timeline reaches the opener's Log, and survives its reload.
 // #559: the Discogs master goes onto the release GROUP the same way.
 //
-// test.musicbrainz.org, logged in. This SUBMITS real edits there (a new link each run);
-// the sandbox exists for it. Platform Check runs in every tab, as a manager runs it.
-import { test, check, requireLogin, sourceOf, mbJson, SANDBOX } from '../../../dev/test/harness.mjs';
+// test.musicbrainz.org, logged in. This SUBMITS real edits there, each test to a pristine
+// release of its own, made for the run (#795). Platform Check runs in every tab, as a manager
+// runs it (from once the release is made).
+import { test, check, requireLogin, sourceOf, mbJson, SANDBOX, pristine } from '../../../dev/test/harness.mjs';
 import { readFile } from 'node:fs/promises';
 
-const REL = 'c778af9d-fe2f-4502-939c-15e4e2b76c55';   // "Midnight Carnival": written to by this spec only
-const RG = '9d3283d0-82a1-4b27-901a-de2d2965ebea';
 test.use({ gm: { name: 'Platform Check', xhr: 'none' } });
 
 // Platform Check in every tab (at document-end), each edit tab in the background, and
@@ -54,20 +53,21 @@ async function everyTab(context) {
   return said;
 }
 // a release's (or group's) links, read back from the sandbox
-const linksOf = async kind => {
-  const j = await mbJson(`${SANDBOX}/ws/2/${kind}/${kind === 'release' ? REL : RG}?inc=url-rels&fmt=json`);
+const linksOf = async (kind, mbid) => {
+  const j = await mbJson(`${SANDBOX}/ws/2/${kind}/${mbid}?inc=url-rels&fmt=json`);
   return (j.relations || []).map(r => r.url && r.url.resource).filter(Boolean);
 };
 const until = async (cond, ms) => { for (const t0 = Date.now(); Date.now() - t0 < ms && !cond(); ) await new Promise(r => setTimeout(r, 250)); return cond(); };
 const hiddenEditTab = said => until(() => said.some(l => /an edit tab, hidden: true/.test(l)), 30000);
 
 test('#464, #556: a background add lands on the release, closes its tab, and leaves its log', { tag: ['@sandbox', '@login', '@critical'] }, async ({ page, context }) => {
+  const { mbid: REL, releaseGroup: RG } = await pristine(page, 'release');
   const said = await everyTab(context);
   await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await page.waitForFunction(() => !!window.__pcTest464, null, { timeout: 30000 });
   const url = `https://www.deezer.com/album/${1e9 + Date.now() % 1e9}`;   // a new one each run
-  check(!(await linksOf('release')).includes(url), 'the link is not on the release yet');
+  check(!(await linksOf('release', REL)).includes(url), 'the link is not on the release yet');
   await page.evaluate(([id, u]) => { localStorage.removeItem('pc:bg-log'); localStorage.setItem('pc:pending:' + id, JSON.stringify({ deezer: u })); }, [REL, url]);
 
   const opened = context.waitForEvent('page', { timeout: 30000 });
@@ -83,7 +83,7 @@ test('#464, #556: a background add lands on the release, closes its tab, and lea
   check(reloaded, 'the opener reloads');
   await page.waitForLoadState('domcontentloaded');
   check((await page.evaluate(() => sessionStorage.getItem('__closedByOpener'))) === '1', 'the opener closed it, through its GM_openInTab handle');
-  check((await linksOf('release')).includes(url), `the link is on the release now (${url})`);
+  check((await linksOf('release', REL)).includes(url), `the link is on the release now (${url})`);
 
   await page.waitForFunction(() => /background add/.test(window.__pcLog ? window.__pcLog.messages().join('\n') : ''), null, { timeout: 30000 }).catch(() => {});
   const log = await page.evaluate(() => window.__pcLog ? window.__pcLog.messages().join('\n') : '');
@@ -92,12 +92,13 @@ test('#464, #556: a background add lands on the release, closes its tab, and lea
 });
 
 test('#559: the Discogs master lands on the release group, in the background', { tag: ['@sandbox', '@login'] }, async ({ page, context }) => {
+  const { mbid: REL, releaseGroup: RG } = await pristine(page, 'release');
   const said = await everyTab(context);
   await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
   await page.waitForFunction(() => !!window.__pcTest464, null, { timeout: 30000 });
   const master = `https://www.discogs.com/master/${900000 + Date.now() % 99999}`;
-  check(!(await linksOf('release-group')).includes(master), 'the master is not on the group yet');
+  check(!(await linksOf('release-group', RG)).includes(master), 'the master is not on the group yet');
   await page.evaluate(([rg, m]) => localStorage.setItem('pc:pending:rg:' + rg, JSON.stringify({ 'discogs-master': m })), [RG, master]);
 
   const opened = context.waitForEvent('page', { timeout: 30000 });
@@ -105,42 +106,20 @@ test('#559: the Discogs master lands on the release group, in the background', {
   const tab = await opened;
   check(await hiddenEditTab(said), 'a hidden background tab opens the release-group editor');
   check(await until(() => tab.isClosed(), 120000), 'it submits and is closed');
-  check((await linksOf('release-group')).includes(master), `the master is on the release group now (${master})`);
+  check((await linksOf('release-group', RG)).includes(master), `the master is on the release group now (${master})`);
 });
 
 // #780: a barcode from the found-barcodes list, right-clicked: the release editor fills the barcode alone
-// (a link queued for the release stays out, and stays queued), submits, and closes. The release is then
-// given back its empty barcode, through the editor, so the next run starts from the same place.
+// (a link queued for the release stays out, and stays queued), submits, and closes.
 const gtin = core => core + String((10 - [...core].reverse().reduce((a, d, i) => a + Number(d) * (i % 2 ? 1 : 3), 0) % 10) % 10);
-const barcodeOf = async () => (await mbJson(`${SANDBOX}/ws/2/release/${REL}?fmt=json`)).barcode;
-// the release's barcode taken off through the editor (also before a run, should an earlier one have stopped half-way)
-async function clearBarcode(page) {
-  await page.goto(`${SANDBOX}/release/${REL}/edit`, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('#barcode', { timeout: 60000 });
-  await page.waitForFunction(() => document.getElementById('barcode').value, null, { timeout: 30000 });
-  await page.click('#barcode');
-  await page.keyboard.press('Control+A');
-  await page.keyboard.press('Backspace');
-  await page.keyboard.press('Tab');
-  await page.waitForTimeout(1500);   // the editor binds the change late
-  check(!(await page.inputValue('#barcode')), "the editor's Barcode field is empty");
-  // Enter edit is shown on the edit-note step only; clicked as Platform Check clicks it
-  await page.waitForSelector('#enter-edit:not([disabled])', { state: 'attached', timeout: 30000 });
-  await Promise.all([page.waitForURL(u => !/\/edit/.test(u.pathname), { timeout: 60000 }), page.evaluate(() => document.getElementById('enter-edit').click())]);
-  // taking a barcode off is voted on, not applied: the sandbox's own Accept edit applies it
-  await page.goto(`${SANDBOX}/release/${REL}/open_edits`, { waitUntil: 'domcontentloaded' });
-  const accept = await page.evaluate(() => [...document.querySelectorAll('.edit-list')].filter(e => /Barcode/.test(e.innerText))
-    .map(e => e.querySelector('a[href*="/test/accept-edit/"]')?.getAttribute('href')).filter(Boolean)[0] || null);
-  check(accept, 'the edit taking the barcode off is open, to accept');
-  if (accept) await page.goto(SANDBOX + accept, { waitUntil: 'domcontentloaded' });
-}
+const barcodeOf = async rel => (await mbJson(`${SANDBOX}/ws/2/release/${rel}?fmt=json`)).barcode;
 test('#780: a barcode alone lands on the release, in the background', { tag: ['@sandbox', '@login'] }, async ({ page, context }) => {
+  const { mbid: REL, releaseGroup: RG } = await pristine(page, 'release');
   const said = await everyTab(context);
   await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' });
   await requireLogin(page);
-  if (await barcodeOf()) { await clearBarcode(page); await page.goto(`${SANDBOX}/release/${REL}`, { waitUntil: 'domcontentloaded' }); }
   await page.waitForFunction(() => !!window.__pcTest464, null, { timeout: 30000 });
-  check(!(await barcodeOf()), 'the release has no barcode yet');
+  check(!(await barcodeOf(REL)), 'the release has no barcode yet');
   const code = gtin('5' + String(Date.now()).slice(-11));   // a new one each run
   const url = `https://www.deezer.com/album/${1e9 + Date.now() % 1e9}`;
   await page.evaluate(([id, c, u]) => {
@@ -154,8 +133,8 @@ test('#780: a barcode alone lands on the release, in the background', { tag: ['@
   const tab = await opened;
   check(await hiddenEditTab(said), 'a hidden background tab opens the editor');
   check(await until(() => tab.isClosed(), 120000), 'it submits and is closed');
-  check((await barcodeOf()) === code, `the barcode is on the release now (${code})`);
-  check(!(await linksOf('release')).includes(url), 'the queued link is not');
+  check((await barcodeOf(REL)) === code, `the barcode is on the release now (${code})`);
+  check(!(await linksOf('release', REL)).includes(url), 'the queued link is not');
   let reloaded = false;
   for (const t0 = Date.now(); !reloaded && Date.now() - t0 < 30000; await new Promise(r => setTimeout(r, 500))) {
     reloaded = await page.evaluate(() => !window.__beforeTheAdd && document.readyState !== 'loading').catch(() => false);
@@ -164,7 +143,4 @@ test('#780: a barcode alone lands on the release, in the background', { tag: ['@
   const left = await page.evaluate(id => ({ bc: localStorage.getItem('pc:bg-barcode:' + id), links: localStorage.getItem('pc:pending:' + id) }), REL);
   check(!left.bc && (left.links || '').includes(url), `the barcode is consumed, the link still queued (${JSON.stringify(left)})`);
   await page.evaluate(id => localStorage.removeItem('pc:pending:' + id), REL);
-
-  await clearBarcode(page);
-  check(!(await barcodeOf()), 'the barcode is taken off again');
 });

@@ -16,27 +16,23 @@
 // Runs in Firefox (majkinetor's browser, and where the freeze lived). Needs the
 // .pw-profile-ff logged into test.musicbrainz.org — that is a SEPARATE account
 // database from production; the sandbox login is majkinetor/mb.
+//
+// The recordings are pristine, made for the run (#795): eight tracks of a new release, made in
+// the harness's Chromium (pristine()'s artist form didn't submit in Playwright's Firefox).
 import { readFile } from 'node:fs/promises';
 import { firefox } from '@playwright/test';
-import { test, check, requireLogin, sourceOf, REPO, idle, frames, settled, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, REPO, idle, frames, settled, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 import { resolve } from 'node:path';
 import { installProdGuard } from '../../../dev/test/guard.mjs';
 
 // Firefox (the harness is Chromium): the script launches it, with its own GM stand-ins
 test.use({ gm: false });
 
-test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({}) => {
+test("#467: e2e testserver", { tag: ['@sandbox', '@login', '@flaky'] }, async ({ page: chromium }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  const { recordings: RECS } = await pristine(chromium, 'release', { tracks: 8 });
 
   const TEST_MB = 'https://test.musicbrainz.org';
-  // stable sandbox recordings; if any of these ever vanish the run reports it
-  // rather than silently testing fewer entities.
-  const RECS = [
-    'fe5bad81-5d3c-4e8e-b636-f0b77b5b3e76', '3964f887-c1ab-474a-a33e-629a56b6377d',
-    '8ad7132c-d7f2-423d-964c-3f6537fe9d8a', '38552665-562f-454a-8788-b93241b39de2',
-    '23532e14-f71f-4ec9-8fdb-8eba5146b6bf', 'f808c981-7abd-468a-91e0-3b147d46c34d',
-    '55ef97a1-659d-4f86-8355-f897c1f59e14', '05a51124-0f8b-496a-8324-c30c3dcc3d5a',
-  ];
 
   const context = await firefox.launchPersistentContext(resolve(REPO, '.pw-profile-ff'), { headless: true, viewport: { width: 1500, height: 950 } });
   // closed in `finally`: a spec that skips (the profile isn't signed in) or fails must not leave

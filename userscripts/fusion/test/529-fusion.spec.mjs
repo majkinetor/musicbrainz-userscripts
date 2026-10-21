@@ -5,31 +5,16 @@
 // Fusion's own background GET(merge_queue)->POST(merge) flow — the exact
 // mechanism live-verified during #529's design phase. Nothing here touches
 // production MusicBrainz.
-import { test, check, requireLogin, mbJson, until, settled } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, until, settled, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Fusion' } });
 
 test('Fusion end to end: matching engine, UI, and real merges on the sandbox', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
 
   // This suite performs REAL merges on the sandbox, so it CONSUMES its own
-  // fixtures: recordings hardcoded here get merged into one another, and a later
-  // run then finds fewer distinct recordings than it needs — which is exactly how
-  // the mergeAll test started forming 1 group instead of 2. Pick fresh ones at
-  // runtime instead: any sandbox release that still has 4+ distinct recordings.
-  async function pickFixtures() {
-      // MB answers 403 to a UA-less request, and node's fetch sends none — the
-      // page-context calls elsewhere in this file inherit the browser's UA, this one does not.
-      const jget = u => mbJson(u).catch(e => { console.log('fixture lookup: ' + e.message); return null; });
-      const ARTIST = 'c321a13a-1c52-43c0-b60a-3a454cb7f9a2';   // Mocky — large sandbox catalogue
-      const sr = await jget('https://test.musicbrainz.org/ws/2/recording?query=arid:' + ARTIST + '&limit=25&fmt=json');
-      const gids = [];
-      // audio only: other specs flag sandbox recordings as videos, and Fusion never groups a video with audio
-      for (const r of (sr && sr.recordings) || []) if (r.id && !r.video && !gids.includes(r.id)) gids.push(r.id);
-      return gids.length >= 4 ? { release: null, gids } : null;
-  }
-  const fixtures = await pickFixtures();
-  test.skip(!fixtures, 'no suitable fixture release left on the sandbox');
-  console.log('fixtures: ' + fixtures.gids.slice(0, 4).join(', '));
+  // fixtures: four recordings made for the run (#795), the tracks of a pristine release.
+  const fixtures = { gids: (await pristine(page, 'release', { tracks: 4 })).recordings };
+  console.log('fixtures: ' + fixtures.gids.join(', '));
 
   const RECORDING_A = fixtures.gids[0];
   const RECORDING_B = fixtures.gids[1];

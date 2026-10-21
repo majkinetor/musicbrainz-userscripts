@@ -16,6 +16,11 @@ test('pristine makes a new entity of every kind, defaults or fields given', { ta
   check((await read('recording', rec.mbid)).title === 'Given title', 'a recording, a field set by the caller (through its release)');
   const rg = await pristine(page, 'release-group');
   check((await read('release-group', rg.mbid)).id === rg.mbid && rg.release !== rel.mbid, 'a release group, with a release of its own');
+  const alone = await pristine(page, 'standalone-recording', { length: '201000' });
+  const a = await mbJson(`${SANDBOX}/ws/2/recording/${alone.mbid}?inc=artist-credits+releases&fmt=json`);
+  const by = (await mbJson(`${SANDBOX}/ws/2/release/${rel.mbid}?inc=artist-credits&fmt=json`))['artist-credit'][0].artist;
+  check(a.title === alone.name && a.length === 201000 && !a.releases.length, `a standalone recording, its length given (${JSON.stringify([a.title, a.length, a.releases.length])})`);
+  check(a['artist-credit'][0].artist.id === by.id && /^Pristine artist/.test(by.name), `both credit the run's own artist (${by.name})`);
 
   for (const [kind, fields, want] of [
     ['artist', { type_id: '2' }, j => j.type === 'Group'],

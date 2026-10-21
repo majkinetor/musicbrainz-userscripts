@@ -9,7 +9,7 @@
 // uploadOneCover is called directly — not wrapped, not stubbed.
 import zlib from 'node:zlib';
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, until } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, until, pristine } from '../../../dev/test/harness.mjs';
 
 /// the harness's GM storage; the spec answers GM_xmlhttpRequest itself, below
 test.use({ gm: { name: 'Falcon' } });
@@ -17,7 +17,7 @@ test.use({ gm: { name: 'Falcon' } });
 test("live 496 multi cover proof", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
-  const TEST_RELEASE = '3d2edcfc-d823-4e04-abc6-1dca9702af94';   // same test.musicbrainz.org release #495 already submitted real edits to
+  const { mbid: TEST_RELEASE } = await pristine(page, 'release');   // made for the run (#795): a release other specs read gains no covers
   const TEST_ORIGIN = 'https://test.musicbrainz.org';
 
   const logLines = [];
@@ -89,18 +89,15 @@ test("live 496 multi cover proof", { tag: ['@sandbox', '@login'] }, async ({ con
   console.log('\n── Falcon debug log (this run only) ──');
   logLines.forEach(l => console.log(' ', l));
 
-  // read the entity BACK via MB's own API — per "faked submits prove nothing",
-  // this is what actually proves the covers landed, not just that a request left the browser.
-  // the archive's index lags an upload: asked until the covers show, every 3 s
-  const caa = await until(() => page.evaluate(async (mbid) => {
-    const r = await fetch(`https://coverartarchive.org/release/${mbid}`, { headers: { Accept: 'application/json' } }).catch(() => null);
-    if (!r || !r.ok) return null;
-    return r.json();
-  }, TEST_RELEASE), c => c && (c.images || []).length > 0, { timeout: 120000, every: 3000 });
-  console.log('\n── Cover Art Archive read-back (proof) ──');
-  console.log(JSON.stringify(caa, null, 1));
-
-  const images = (caa && caa.images) || [];
-  console.log(`\n${images.length} cover image(s) now on the release (${TEST_ORIGIN}/release/${TEST_RELEASE}):`);
-  images.forEach(im => console.log(`  - types=${JSON.stringify(im.types)} comment="${im.comment}" front=${im.front}`));
+  // read the release BACK from the sandbox's web service — per "faked submits prove nothing",
+  // this is what proves the covers landed, not just that a request left the browser. Its
+  // count can lag the upload: asked until both show, every 3 s
+  const art = await until(() => page.evaluate(async (mbid) => {
+    const r = await fetch(`/ws/2/release/${mbid}?fmt=json`, { cache: 'no-store' }).catch(() => null);
+    return r && r.ok ? (await r.json())['cover-art-archive'] : null;
+  }, TEST_RELEASE), c => c && c.count >= 2, { timeout: 120000, every: 3000 });
+  console.log('\n── read back from the sandbox ──');
+  console.log(JSON.stringify(art));
+  check(result.status === 'done', `Falcon reports both uploads done (${result.status} ${result.error || ''})`);
+  check(art && art.count === 2 && art.front, `the release has both covers, one of them its front (${JSON.stringify(art)})`);
 });

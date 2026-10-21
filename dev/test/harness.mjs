@@ -26,7 +26,7 @@
 // @login (needs the logged-in profile), @critical (the quick run: pnpm test --grep @critical).
 import { test as base, expect, chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
+import { readFileSync, appendFileSync } from 'node:fs';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -135,6 +135,7 @@ export const test = base.extend({
     await ctx.addInitScript(() => { window.__mbuTest = true; });
     const watch = p => p.on('pageerror', e => errors.push(e.message));
     ctx.pages().forEach(watch); ctx.on('page', watch);
+    if (process.env.SANDBOX_WRITES) logSandboxWrites(ctx, testInfo, process.env.SANDBOX_WRITES);
 
     await use(ctx);
 
@@ -163,6 +164,25 @@ export const test = base.extend({
     });
   },
 });
+
+// SANDBOX_WRITES=<file>: every request but a read that reaches the sandbox (or the Internet
+// Archive, where cover art goes) is appended to <file>, one JSON line each, with the spec that
+// made it: how a spec writing to a shared entity is found (#795). A page route that answered
+// it is marked `faked` (no server address); GM_xmlhttpRequest calls are logged as they leave.
+const SANDBOX_HOSTS = /(^|\.)(test\.musicbrainz\.org|archive\.org)$/i;
+function logSandboxWrites(ctx, testInfo, file) {
+  const spec = testInfo.file.replace(/\\/g, '/').replace(/^.*?userscripts\//, '') + ' > ' + testInfo.title;
+  const put = (method, url, via, faked) => appendFileSync(file, JSON.stringify({ spec, method, url, via, ...(faked ? { faked } : {}) }) + '\n');
+  const write = (method, url) => !['GET', 'HEAD', 'OPTIONS'].includes(String(method).toUpperCase()) && SANDBOX_HOSTS.test(new URL(url).hostname);
+  ctx.on('response', async r => {
+    const q = r.request();
+    if (!write(q.method(), q.url())) return;
+    put(q.method(), q.url(), 'page', !(await r.serverAddr().catch(() => null)));
+  });
+  ctx.on('requestfailed', q => { if (write(q.method(), q.url())) put(q.method(), q.url(), 'page', 'failed'); });
+  // asked last: only a call nothing else answered goes out
+  answerGm(ctx, o => { if (write(o.method, o.url)) put(o.method, o.url, 'GM_xmlhttpRequest'); return null; });
+}
 
 // A MusicBrainz web-service read from Node (fixture lookups): sends a User-Agent
 // (MB answers 403 without one) and waits out throttling (503/429, honouring
@@ -378,26 +398,42 @@ export async function attachShot(testInfo, target, name) {
 // returns { mbid, name }; a release also gives its release group's MBID and its recordings'.
 // A recording or a release group comes with a new release of its own (their create forms
 // don't take a seeded artist credit), so its `fields` are the release's and it also gives
-// `release`. Instruments and areas can't be made: the sandbox account isn't allowed to.
+// `release`. A 'standalone-recording' is one with no release (its fields are the recording
+// form's, and `artist` an artist's MBID to credit). Instruments and areas can't be made: the
+// sandbox account isn't allowed to. A release or a standalone recording credits an artist made
+// for the run (once, shared by the run's entities) unless `fields` names one: nothing it stands
+// on is sandbox-only data, or another spec's. A release has one track unless `tracks: n` asks
+// for more ("Track 1", "Track 2"…, 3:00, 3:01…); a seed field given for a track overrides it.
 //   const { mbid } = await pristine(page, 'release');
+//   const { recordings } = await pristine(page, 'release', { tracks: 8 });
 //   const { mbid: band } = await pristine(page, 'artist', { type_id: '2' });   // a group
+//   const { mbid: rec } = await pristine(page, 'standalone-recording', { length: '201000' });
+let pristineArtist = null;
 export async function pristine(page, kind, fields = {}) {
   if (kind === 'instrument' || kind === 'area') throw new Error(`pristine: the sandbox account can't create ${kind}s`);
   if (kind === 'recording' || kind === 'release-group') {
     const r = await pristine(page, 'release', fields);
     return { mbid: kind === 'recording' ? r.recordings[0] : r.releaseGroup, name: r.name, release: r.mbid, releaseGroup: r.releaseGroup, recordings: r.recordings };
   }
+  let credit = null;
+  if (kind === 'release' && !Object.keys(fields).some(k => k.startsWith('artist_credit.'))) {
+    pristineArtist = pristineArtist || (await pristine(page, 'artist')).mbid;
+    fields = { 'artist_credit.names.0.mbid': pristineArtist, ...fields };
+  }
+  if (kind === 'standalone-recording') {
+    ({ artist: credit, ...fields } = fields);
+    credit = credit || (pristineArtist = pristineArtist || (await pristine(page, 'artist')).mbid);
+  }
+  const form = kind === 'standalone-recording' ? 'recording' : kind;
   const name = `Pristine ${kind} ${new Date().toISOString().slice(0, 19)} ${Math.random().toString(36).slice(2, 6)}`;
   const note = 'A test entity, made for one spec run (mb-userscripts)';
   await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await requireLogin(page);
   if (kind === 'release') {
-    const seed = {
-      name, status: 'official', 'mediums.0.format': 'Digital Media',
-      'artist_credit.names.0.mbid': '05aef2c6-cba2-481f-a917-04411953cbc2',   // a sandbox artist (sandbox-copies.json)
-      'mediums.0.track.0.name': 'Track 1', 'mediums.0.track.0.length': '180000',
-      edit_note: note, ...fields,
-    };
+    const { tracks = 1, ...given } = fields;
+    const seed = { name, status: 'official', 'mediums.0.format': 'Digital Media', edit_note: note };
+    for (let i = 0; i < tracks; i++) Object.assign(seed, { [`mediums.0.track.${i}.name`]: `Track ${i + 1}`, [`mediums.0.track.${i}.length`]: String(180000 + i * 1000) });
+    Object.assign(seed, given);
     await page.evaluate(seed => {
       const f = document.createElement('form'); f.method = 'POST'; f.action = '/release/add'; f.style.display = 'none';
       for (const [k, v] of Object.entries(seed)) for (const x of [].concat(v)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = x; f.appendChild(i); }
@@ -410,17 +446,33 @@ export async function pristine(page, kind, fields = {}) {
     await page.locator('#enter-edit').click();
   } else {
     const defaults = { name, edit_note: note, ...(kind === 'artist' ? { sort_name: name, comment: 'test' } : {}), ...(kind === 'series' ? { type_id: '2' } : {}) };
-    const pre = 'edit-' + kind.replace('-', '_') + '.';
+    const pre = 'edit-' + form.replace('-', '_') + '.';
     const q = new URLSearchParams(Object.entries({ ...defaults, ...fields }).map(([k, v]) => [pre + k, v]));
-    await page.goto(`${SANDBOX}/${kind}/create?${q}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.goto(`${SANDBOX}/${form}/create?${q}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await idle(page);
+    if (credit) {
+      // the form takes no seeded artist credit; its artist field looks up an MBID typed in
+      const looked = page.waitForResponse(r => r.url().includes('/ws/js/entity/' + credit), { timeout: 60000 });
+      await page.locator('#ac-source-single-artist').fill(credit);
+      await looked;
+      await page.waitForFunction(() => /^\d+$/.test(document.querySelector('input[name$="artist_credit.names.0.artist.id"]')?.value || ''), null, { timeout: 30000 });
+    }
     await page.locator('button.submit.positive').click();
   }
-  const at = new RegExp('^/' + kind + '/[0-9a-f-]{36}$');
+  const at = new RegExp('^/' + form + '/[0-9a-f-]{36}$');
   await page.waitForURL(u => at.test(u.pathname), { timeout: 90000 });
   const out = { mbid: new URL(page.url()).pathname.split('/')[2], name: fields.name || name };
   if (kind === 'release') {
-    const j = await mbJson(`${SANDBOX}/ws/2/release/${out.mbid}?inc=recordings+release-groups&fmt=json`);
+    // read in the page: under load the sandbox answered Node's reads 503 for a minute while the
+    // page's went through
+    const j = await page.evaluate(async r => {
+      for (let a = 0; ; a++) {
+        const x = await fetch(`/ws/2/release/${r}?inc=recordings+release-groups&fmt=json`, { cache: 'no-store' }).then(x => x.json()).catch(() => ({}));
+        if (x.id === r) return x;
+        if (a >= 15) throw new Error('pristine: the web service gave no release: ' + JSON.stringify(x).slice(0, 200));
+        await new Promise(z => setTimeout(z, 2000 * Math.min(a + 1, 5)));
+      }
+    }, out.mbid);
     out.releaseGroup = j['release-group'].id;
     out.recordings = j.media.flatMap(m => m.tracks.map(t => t.recording.id));
   }

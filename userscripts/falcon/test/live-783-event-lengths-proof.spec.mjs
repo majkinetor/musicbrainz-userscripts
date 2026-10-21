@@ -1,16 +1,15 @@
 // #783: a release item can carry a release event (event: { date, country }) and track lengths (lengths: [{ medium,
 // position, ms }]), which Falcon enters in the release editor where the release has none. A REAL run on
-// test.musicbrainz: the release's event and two of its tracks' lengths are taken off by hand, Falcon puts them back,
-// the edits are accepted, and the release is read back. A second item, with the event the release has by then, is
-// left alone, with no edit. It ends as it started, Falcon's own edits having put the event and the lengths back.
+// test.musicbrainz: a pristine release (#795) of four tracks, without an event and with no length on tracks 3 and 4,
+// gets them from Falcon, the edits are accepted, and the release is read back. A second item, with the event the
+// release has by then, is left alone, with no edit.
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
 const HOST = 'https://test.musicbrainz.org';
-const RELEASE = '45ddda7c-74c7-46cd-8d83-f5b644820b00';   // "Fjara / Runaway Train": [Worldwide] 2014-02-20, 4 tracks with lengths
 const EVENT = { date: { year: 2014, month: 2, day: 20 }, country: 'XW' };
 const LENGTHS = [{ medium: 1, position: 3, ms: 418952 }, { medium: 1, position: 4, ms: 428673 }];
 
@@ -18,6 +17,11 @@ test('#783: Falcon enters a release event and track lengths where the release ha
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  // four tracks, the first two with a length, and no release event
+  const { mbid: RELEASE } = await pristine(page, 'release', {
+    'mediums.0.track.1.name': 'Track 2', 'mediums.0.track.1.length': '200000',
+    'mediums.0.track.2.name': 'Track 3', 'mediums.0.track.3.name': 'Track 4',
+  });
   const goto = async (p, url) => { for (let a = 1; ; a++) { try { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); return; } catch (e) { if (a >= 3) throw e; await p.waitForTimeout(5000); } } };
   // the release as the web service has it: its events and its tracks' lengths
   const state = () => page.evaluate(async r => {
@@ -45,23 +49,7 @@ test('#783: Falcon enters a release event and track lengths where the release ha
   await goto(page, `${HOST}/release/${RELEASE}`);
   await requireLogin(page);
   await acceptOpen();
-  let start = await state();
-  if (start.events.length || start.lengths[2] || start.lengths[3]) {
-    await goto(page, `${HOST}/release/${RELEASE}/edit`);
-    await page.waitForFunction(() => { try { return MB.releaseEditor.rootField.release().mediums()[0].tracks().length === 4; } catch (e) { return false; } }, null, { timeout: 60000 });
-    await page.waitForTimeout(1500);
-    await page.evaluate(() => {
-      const re = MB.releaseEditor, rel = re.rootField.release();
-      rel.events().slice().forEach(e => re.removeReleaseEvent(e));
-      rel.mediums()[0].tracks().slice(2).forEach(t => { t.formattedLength(''); t.length(null); });
-    });
-    await page.locator('a[href="#edit-note"]').first().click();
-    await page.locator('#edit-note-text, textarea.edit-note').first().fill('Falcon #783 proof: set up a release without its event and two track lengths');
-    await page.locator('#enter-edit').click();
-    await page.waitForURL(u => !/\/edit$/.test(u.pathname), { timeout: 60000 });
-    await acceptOpen(true);
-    start = await state();
-  }
+  const start = await state();
   console.log('before Falcon: ' + JSON.stringify(start));
   check(!start.events.length && !start.lengths[2] && !start.lengths[3] && start.lengths[0], `the release starts without an event, tracks 3 and 4 without a length (${JSON.stringify(start)})`);
 
@@ -112,5 +100,5 @@ test('#783: Falcon enters a release event and track lengths where the release ha
   await page.waitForTimeout(10000);   // as long as an edit can take to show
   await goto(page, `${HOST}/release/${RELEASE}/open_edits`);
   check(!(await page.locator('a[href*="/accept-edit/"]').count()), 'and no edit was made');
-  check(JSON.stringify((await state()).events) === JSON.stringify(['2014-02-20 XW']), 'the release keeps its event: it is as it started');
+  check(JSON.stringify((await state()).events) === JSON.stringify(['2014-02-20 XW']), 'the release keeps its event, and only it');
 });

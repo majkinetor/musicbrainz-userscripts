@@ -14,7 +14,7 @@
 // test.musicbrainz.org (sanctioned sandbox, real submits are fine there),
 // never production.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -22,9 +22,8 @@ test.use({ gm: false });
 test("#495: release rg links", { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
 
-  // Real ids off test.musicbrainz.org's own dataset (found live via /ws/2/release?query=*).
-  const TEST_RELEASE = '3d2edcfc-d823-4e04-abc6-1dca9702af94';
-  const TEST_RG = 'bff3d538-eb21-450f-9f38-eafcf47dfa07';
+  // a release and its release group made for the run (#795): the links below go on for real
+  const { mbid: TEST_RELEASE, releaseGroup: TEST_RG } = await pristine(page, 'release');
 
   await context.addInitScript(() => {
     const store = new Map();
@@ -91,7 +90,7 @@ test("#495: release rg links", { tag: ['@sandbox', '@login'] }, async ({ context
   }
 
   // 3. Live, real submit on test.musicbrainz.org (sanctioned sandbox — majkinetor's
-  //    own instruction for this issue): add a url to a real release AND its
+  //    own instruction for this issue): add a url to a pristine release AND its
   //    release-group through Falcon's actual queue/worker pipeline, end to end,
   //    including the tab-switch for the release. Both real submits are fine
   //    here — this is exactly what the sandbox is for.

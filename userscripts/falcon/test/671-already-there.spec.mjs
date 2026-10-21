@@ -6,17 +6,19 @@
 // And the same page under another locale counts as already there: MusicBrainz keeps a Qobuz or
 // Apple Music link in whatever locale it was entered in, so adding the us-en form of a gb-en
 // link would only have duplicated it.
+//
+// The artist is pristine, made for the run (#795): the links go on it for real.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
-const ARTIST = '5441c29d-3602-4898-b1a1-b77fa23b8e50';   // David Bowie, on the sandbox
 const YTM = 'https://music.youtube.com/channel/UC671FalconTestChannel00';
 const QOBUZ = id => `https://www.qobuz.com/${id}/interpreter/falcon-test/671001`;
 
 test('#671: a link already there (or there in another locale) is skipped, not failed', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  const { mbid: ARTIST } = await pristine(page, 'artist');
   await context.addInitScript(() => {
     const store = new Map();
     window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;

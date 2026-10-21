@@ -3,20 +3,21 @@
 // still holds what `was` says. A REAL run on test.musicbrainz: track 1.2 gets a new title, its recording too, and
 // another length; the edits are accepted and the release read back. A change whose `was` the track no longer holds
 // is left alone, with no edit. Then Falcon puts the title, the recording's title and the length back as they were.
+// The release is pristine, made for the run (#795).
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
 const HOST = 'https://test.musicbrainz.org';
-const RELEASE = '45ddda7c-74c7-46cd-8d83-f5b644820b00';   // "Fjara / Runaway Train", 4 tracks
 const MARK = ' (Falcon #783)';
 
 test('#783: Falcon changes a track\'s title, its recording\'s and its length, only while the track holds what it had', { tag: ['@sandbox', '@login'] }, async ({ context, page }) => {
   test.setTimeout(900_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  const { mbid: RELEASE } = await pristine(page, 'release', { tracks: 2 });
   const goto = async (p, url) => { for (let a = 1; ; a++) { try { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); return; } catch (e) { if (a >= 3) throw e; await p.waitForTimeout(5000); } } };
   // track 1.2 as the web service has it: its title, its recording's title, its length
   const state = () => page.evaluate(async r => {
@@ -72,15 +73,7 @@ test('#783: Falcon changes a track\'s title, its recording\'s and its length, on
   await goto(page, `${HOST}/release/${RELEASE}`);
   await requireLogin(page);
   await acceptOpen();
-  let start = await state();
-  // a run that stopped half way left the mark on: take it off first
-  if (start.title.endsWith(MARK) || start.rec.endsWith(MARK)) {
-    const base = start.title.replace(MARK, '');
-    const fix = await run({ mbid: RELEASE, payload: { tracks: [{ medium: 1, position: 2, title: base, recording: true }] }, note: 'Falcon #783 proof: put back a title an earlier run left' });
-    check(fix.out[0].s === 'done', `an earlier run's title is put back first (${JSON.stringify(fix.out)})`);
-    await acceptOpen(true);
-    start = await state();
-  }
+  const start = await state();
   console.log('before Falcon: ' + JSON.stringify(start));
   check(!!start.title && !start.title.endsWith(MARK) && start.rec === start.title, `track 1.2 has its own title, as its recording has (${JSON.stringify(start)})`);
   const newTitle = start.title + MARK, newMs = (start.ms ? Math.round(start.ms / 1000) * 1000 : 200000) + 3000;

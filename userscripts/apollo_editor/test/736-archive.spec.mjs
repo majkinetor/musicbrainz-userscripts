@@ -5,7 +5,7 @@
 // The submit spec makes a real release on test.musicbrainz.org; web.archive.org is answered by
 // answerGm, so nothing is saved on archive.org. ARCHIVE_LIVE=1 lets one save through to archive.org
 // instead and looks for its snapshot: that a save started at Enter edit finishes after the page leaves.
-import { test, check, until, SANDBOX, answerGm, functionSource, settled } from '../../../dev/test/harness.mjs';
+import { test, check, until, SANDBOX, answerGm, functionSource, settled, pristine } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 async function fns() {
@@ -28,7 +28,6 @@ test('the release links to save', { tag: ['@unit', '@critical'] }, async () => {
   check(archiveUrls(['https://musicbrainz.org/x'], new Set()).length === 0, 'no links: nothing to do');
 });
 
-const ARTIST = 'c321a13a-1c52-43c0-b60a-3a454cb7f9a2';   // Mocky, on the sandbox
 const LIVE = !!process.env.ARCHIVE_LIVE;
 
 test.describe('Enter edit', () => {
@@ -45,8 +44,9 @@ test.describe('Enter edit', () => {
       if (LIVE) return null;   // through to archive.org
       return { status: 200, url: url.replace('/save/', `/web/${stamp}/`), headers: 'content-type: text/html', body: '<html>snapshot</html>' };
     });
+    const { mbid: ARTIST, name: artistName } = await pristine(page, 'artist');   // made for the run (#795)
     const seed = {
-      name: `Apollo 736 fixture ${stamp}`, 'artist_credit.names.0.mbid': ARTIST, 'artist_credit.names.0.name': 'Mocky', status: 'official', type: 'album',
+      name: `Apollo 736 fixture ${stamp}`, 'artist_credit.names.0.mbid': ARTIST, 'artist_credit.names.0.name': artistName, status: 'official', type: 'album',
       'mediums.0.format': 'Digital Media', 'mediums.0.track.0.name': `Archive ${stamp}`, 'mediums.0.track.0.length': '2:00',
       'urls.0.url': `https://www.discogs.com/release/${stamp.slice(4)}`, 'urls.1.url': `https://open.spotify.com/album/mbu736x${stamp}`, 'urls.2.url': `https://www.deezer.com/album/9${stamp.slice(6)}`,
       edit_note: `Apollo #736 archive test fixture (mb-userscripts test suite). Source: ${source} and ${SANDBOX}/artist/${ARTIST}`,

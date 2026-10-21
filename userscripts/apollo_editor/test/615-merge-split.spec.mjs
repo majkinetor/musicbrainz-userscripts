@@ -8,29 +8,17 @@
 //   Merge (all ticked) → one medium, 7 tracks numbered 1–7, each on its original recording.
 //   Split at track 5 → 4 + 3, the new medium numbered from 1, the same recordings.
 // "Remove medium" waits for votes, as for anyone; the sandbox's own Accept applies it.
-import { test, check, mbJson, SANDBOX, requireLogin, until, idle } from '../../../dev/test/harness.mjs';
+import { test, check, mbJson, SANDBOX, until, pristine } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 test.use({ gm: apolloGm() });
-const ARTIST = 'c321a13a-1c52-43c0-b60a-3a454cb7f9a2';   // Mocky, on the sandbox
 const MEDIA = [['Alpha', 'Bravo'], ['Charlie', 'Delta'], ['Echo', 'Foxtrot', 'Golf']];
 
+// a pristine release (#795) of three media
 async function makeRelease(page) {
-  const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12);
-  const f = { name: `Apollo 615 fixture ${stamp}`, 'artist_credit.names.0.mbid': ARTIST, 'artist_credit.names.0.name': 'Mocky', status: 'official', type: 'album', edit_note: 'Apollo Editor #615 merge/split test fixture (mb-userscripts test suite)' };
-  MEDIA.forEach((tracks, mi) => { f[`mediums.${mi}.format`] = 'Digital Media'; tracks.forEach((t, ti) => { f[`mediums.${mi}.track.${ti}.name`] = `${t} ${stamp}`; f[`mediums.${mi}.track.${ti}.length`] = `${2 + ti}:0${mi}`; }); });
-  await page.goto(SANDBOX + '/', { waitUntil: 'domcontentloaded' });
-  await requireLogin(page);
-  await page.evaluate(f => {
-    const form = document.createElement('form'); form.method = 'POST'; form.action = '/release/add';
-    for (const [k, v] of Object.entries(f)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; form.appendChild(i); }
-    document.body.appendChild(form); form.submit();
-  }, f);
-  await page.waitForFunction(() => { try { const n = MB.releaseEditor.rootField.release().artistCredit().names; return n[0].artist && n[0].artist.id; } catch (e) { return false; } }, null, { timeout: 60000 });
-  await idle(page);
-  await page.evaluate(() => MB.releaseEditor.submitEdits());
-  await page.waitForURL(/\/release\/[0-9a-f-]{36}(\?|$|#)/, { timeout: 120000 });
-  return page.url().match(/\/release\/([0-9a-f-]{36})/)[1];
+  const f = { type: 'album' };
+  MEDIA.forEach((tracks, mi) => { f[`mediums.${mi}.format`] = 'Digital Media'; tracks.forEach((t, ti) => { f[`mediums.${mi}.track.${ti}.name`] = t; f[`mediums.${mi}.track.${ti}.length`] = `${2 + ti}:0${mi}`; }); });
+  return (await pristine(page, 'release', f)).mbid;
 }
 const read = async rel => (await mbJson(`${SANDBOX}/ws/2/release/${rel}?inc=recordings&fmt=json&_=${Date.now()}`)).media.map(m => ({ pos: m.position, tracks: m.tracks.map(t => ({ num: t.number, rec: t.recording.id })) }));
 const inEditor = page => page.evaluate(() => MB.releaseEditor.rootField.release().mediums().map(m => ({ pos: m.position(), tracks: m.tracks().map(t => ({ num: String(t.number()), rec: t.recording() && !t.hasNewRecording() ? t.recording().gid : null })) })));

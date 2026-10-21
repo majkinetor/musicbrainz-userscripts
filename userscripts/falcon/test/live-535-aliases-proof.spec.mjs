@@ -10,9 +10,11 @@
 // _535-aliases.json) and attached to its report, so it can be handed over as the
 // worked example.
 //
+// The release (two tracks) and the artist are pristine, made for the run (#795).
+//
 // Sandbox only: refuses to run against any host but test.musicbrainz.org.
 import { readFile, writeFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 // the script brings its own GM stand-ins, as it did before the harness
 test.use({ gm: false });
@@ -22,19 +24,23 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login', '@flaky'] }, async 
 
   const HOST = 'https://test.musicbrainz.org';
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) { console.log('REFUSING: sandbox only'); throw new Error('stopped: see the log above'); }
-  const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
-  const UA = { 'User-Agent': 'Falcon-verify-535/1.0 ( https://github.com/majkinetor/musicbrainz-userscripts )', Accept: 'application/json' };
+  const { mbid: RELEASE } = await pristine(page, 'release', { tracks: 2 });
+  const { mbid: ARTIST } = await pristine(page, 'artist');
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const ck = check;
 
+  // read in the page (on the sandbox, after pristine()): under load the sandbox answered Node's
+  // reads 503 for a minute while the page's went through
   async function ws2(path) {
     for (let a = 1; a <= 6; a++) {
-      try { const r = await fetch(`${HOST}/ws/2/${path}`, { headers: UA }); if (r.ok) return await r.json(); }
-      catch (e) { /* the sandbox drops connections under load */ }
+      const j = await page.evaluate(p => fetch('/ws/2/' + p, { cache: 'no-store' }).then(r => r.ok ? r.json() : r.status).catch(e => String(e)), path).catch(e => String(e));
+      if (j && typeof j === 'object') return j;
+      console.log(`ws/2 ${path}: ${j}`);
       await sleep(2500 * a);
     }
     return null;
   }
+
 
   // ── build the JSON: two locales per recording, one file ─────────────────────
   const rel = await ws2(`release/${RELEASE}?inc=recordings&fmt=json`);
@@ -165,7 +171,6 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login', '@flaky'] }, async 
   // different enums (e.g. recordings doesn't have legal name type)". Proving one
   // other type end-to-end, with a type name that ONLY exists there, catches the
   // case where the type <select> is read from the wrong entity's form.
-  const ARTIST = '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7';
   const p2 = await context.newPage();   // a tab of its own, its GM storage fresh
   await p2.addInitScript(() => {
     const s = new Map();
@@ -184,15 +189,15 @@ test("live 535 aliases proof", { tag: ['@sandbox', '@login', '@flaky'] }, async 
   await idle(p2);
 
   // "Legal name" exists for an artist and does NOT for a recording
-  const typeProbe = await p2.evaluate(async (mbid) => {
+  const typeProbe = await p2.evaluate(async ([mbid, rec]) => {
     const out = {};
-    for (const [kind, seg, id] of [['artist', 'artist', mbid], ['recording', 'recording', '2bea9225-3cee-4a23-b8f3-cd705bed3d06']]) {
+    for (const [kind, seg, id] of [['artist', 'artist', mbid], ['recording', 'recording', rec]]) {
       const html = await fetch(`${location.origin}/${seg}/${id}/add-alias`, { credentials: 'same-origin' }).then(r => r.text());
       const doc = new DOMParser().parseFromString(html, 'text/html');
       out[kind] = window.__falconTest.resolveAliasTypeId(doc, 'Legal name');
     }
     return out;
-  }, ARTIST);
+  }, [ARTIST, recs[0].id]);
   console.log('type resolution: ' + JSON.stringify(typeProbe));
   ck(!!typeProbe.artist.id, 'an artist alias can be typed "Legal name"');
   ck(!typeProbe.recording.id && /unknown alias type/i.test(typeProbe.recording.why || ''), 'a recording cannot, and says so instead of guessing an id');

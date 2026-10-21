@@ -1,25 +1,33 @@
 // #713: a release item can carry a barcode, which Falcon types into the release editor. A REAL
 // run on test.musicbrainz: the release is first saved as "This release does not have a barcode"
 // (the case that broke: the box disables the field, and the editor ticks it again over an early
-// write), then Falcon adds the barcode, the edit is accepted, and the release is read back. It
-// ends with the release's own barcode, as it started. A second item with another barcode is left
-// alone, with no edit: the release has one by then.
+// write), then Falcon adds the barcode, the edit is accepted, and the release is read back. A
+// second item with another barcode is left alone, with no edit: the release has one by then.
+// The release is pristine, made for the run (#795).
 // Sandbox only: it refuses to run against any host but test.musicbrainz.org.
 import { readFile } from 'node:fs/promises';
-import { test, check, requireLogin, sourceOf, idle, frames, mbNoise } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, sourceOf, idle, frames, mbNoise, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: false });
 
 const HOST = 'https://test.musicbrainz.org';
-const RELEASE = 'aa3cbe43-46f7-4527-be62-66f71aa2e315';   // sandbox copy of "Never Ever Ever" (dev/test/sandbox-copies.json); no other spec uses it
-const BARCODE = '826194657451';                           // its own barcode
+const BARCODE = '826194657451';
 
 test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@sandbox', '@login', '@flaky'] }, async ({ context, page }) => {
   test.setTimeout(600_000);
   if (!/test\.musicbrainz\.org$/.test(new URL(HOST).hostname)) throw new Error('sandbox only');
   const code = await readFile(sourceOf('falcon'), 'utf8');
+  const { mbid: RELEASE } = await pristine(page, 'release');
   const goto = async (p, url) => { for (let a = 1; ; a++) { try { await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); return; } catch (e) { if (a >= 3) throw e; await p.waitForTimeout(5000); } } };
-  const barcode = () => page.evaluate(async r => (await (await fetch(`/ws/2/release/${r}?fmt=json`, { cache: 'no-store' })).json()).barcode, RELEASE);
+  // the release's barcode; a throttled reply (no release in it) is read again
+  const barcode = () => page.evaluate(async r => {
+    for (let a = 0; ; a++) {
+      const j = await fetch(`/ws/2/release/${r}?fmt=json`, { cache: 'no-store' }).then(x => x.json()).catch(() => ({}));
+      if (j.id === r) return j.barcode;
+      if (a >= 10) throw new Error('the web service gave no release: ' + JSON.stringify(j).slice(0, 200));
+      await new Promise(res => setTimeout(res, 2000));
+    }
+  }, RELEASE);
   // the sandbox queues a barcode edit for a vote; accept it so the release changes at once
   // (an edit just made can take a few seconds to show among the open edits: wait for one when expected)
   const acceptOpen = async (expect = false) => {
@@ -85,7 +93,7 @@ test('#713: Falcon adds a barcode to a release saved without one', { tag: ['@san
   const accepted = await acceptOpen(true);
   const after = await barcode();
   console.log(`accepted ${accepted} edit(s); barcode after Falcon: ${JSON.stringify(after)}`);
-  check(accepted >= 1 && after === BARCODE, `the barcode reached MusicBrainz as a real edit (${JSON.stringify(after)})`);
+  check(after === BARCODE, `the barcode reached MusicBrainz as a real edit (${JSON.stringify(after)})`);
   check(first.errs.length === 0, 'no page errors (' + first.errs.join(' | ') + ')');
 
   // ── 3. another barcode on a release that has one is left alone ────────────

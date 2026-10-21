@@ -8,12 +8,12 @@
 // Internet Archive as the sandbox signs it, with the browser's upload throttled so
 // the live phase lasts a few seconds. The register and reorder POSTs are aborted:
 // no edit is created. Runs on test.musicbrainz.org.
-import { test, check, until, requireLogin, SANDBOX, idle, attachShot } from '../../../dev/test/harness.mjs';
+import { test, check, until, requireLogin, SANDBOX, idle, attachShot, pristine } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
 test('the commit window shows the live upload rate, then the average', { tag: ['@sandbox', '@login', '@web'] }, async ({ page, context, inject }, testInfo) => {
-  const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
+  const { mbid: RELEASE } = await pristine(page, 'release');   // made for the run (#795): the upload goes to its bucket
   const KBPS = 300;
   await page.route(/\/(add|reorder)-cover-art(\?|$)/, r => r.request().method() === 'POST' ? r.abort() : r.fallback());
   await page.goto(`${SANDBOX}/release/${RELEASE}/add-cover-art`, { waitUntil: 'domcontentloaded' });
