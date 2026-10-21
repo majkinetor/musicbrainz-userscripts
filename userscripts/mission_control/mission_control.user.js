@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.223959
+// @version      2026.10.21.170220
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -2159,7 +2159,7 @@ function settingsWindow() {
 // default): ISRC Scout gets the ISRCs taken here, Art Station the cover, Platform Check the links.
 const CC_PC_KEY = { amazon: 'amazonmusic' };   // First Contact's provider ids → Platform Check's keys (the ST-ICONS names)
 const ccKey = id => CC_PC_KEY[id] || id;
-const CC_NAMES = { discogs: 'Discogs', bandcamp: 'Bandcamp', spotify: 'Spotify', apple: 'Apple Music', deezer: 'Deezer', tidal: 'Tidal', ytmusic: 'YouTube Music', amazonmusic: 'Amazon Music', qobuz: 'Qobuz', beatport: 'Beatport', volumo: 'Volumo', hdtracks: 'HDtracks', sevendigital: '7digital', soundcloud: 'SoundCloud', audiomack: 'Audiomack', ototoy: 'OTOTOY' };
+const CC_NAMES = { discogs: 'Discogs', bandcamp: 'Bandcamp', spotify: 'Spotify', apple: 'Apple Music', deezer: 'Deezer', tidal: 'Tidal', ytmusic: 'YouTube Music', amazonmusic: 'Amazon Music', qobuz: 'Qobuz', beatport: 'Beatport', volumo: 'Volumo', hdtracks: 'HDtracks', sevendigital: '7digital', soundcloud: 'SoundCloud', audiomack: 'Audiomack', ototoy: 'OTOTOY', presto: 'Presto Music' };
 const ccName = k => CC_NAMES[k] || k;
 const CC_UNREAD = { spotify: 'Spotify is read through its web player only: its link is added, its data is not compared' };
 const ccIco = (k, size) => stIcon(k, size || 14) || '<span class="mcc-abbr">' + esc(String(k).slice(0, 2).toUpperCase()) + '</span>';
@@ -4500,7 +4500,16 @@ function cmpStart() {
         return { key: x.key, url: x.url, barcode: x.barcode || null, tracks: x.tracks == null ? null : x.tracks, format: x.format || null, mismatch: x.mismatch || null, state: x.state,
             role: 'found', take: !x.mismatch && (own && bc ? bc === own : count), read: VET.get(x.url) && VET.get(x.url).rel ? { state: 'done', rel: VET.get(x.url).rel, provider: { id: x.key }, ms: 0 } : { state: 'none' } };
     });
-    CC.sources.forEach(s => { if (s.read.state === 'done') { Log.cat('Platforms').debug('platforms: ' + ccName(s.key) + ' read already, for its tracklist'); ccTracklistCheck(s); } });
+    // #801: the album First Contact found to be this release, as it read it: taken in, first, in place of what Platform
+    // Check found on its platform, unless the release links that platform already
+    const src = AFTER && AFTER.compare && AFTER.source;
+    if (src && src.url && src.rel && !CC.sources.some(s => s.key === src.key && s.state === 'linked')) {
+        const fmt = (src.rel.mediums || []).map(m => m.format || 'Digital Media').join(' + ');
+        CC.sources = [{ key: src.key, url: src.url, barcode: src.rel.barcode || null, tracks: ccCount(src.rel), format: fmt, mismatch: null, state: 'new', role: 'source', take: true,
+            read: { state: 'done', rel: src.rel, provider: src.provider, ms: 0 } }].concat(CC.sources.filter(s => s.key !== src.key));
+        Log.cat('Platforms').info('platforms: ' + ccName(src.key) + ' ' + src.url + ' taken in, as First Contact read it');
+    }
+    CC.sources.forEach(s => { if (s.read.state === 'done' && s.role !== 'source') { Log.cat('Platforms').debug('platforms: ' + ccName(s.key) + ' read already, for its tracklist'); ccTracklistCheck(s); } });
     const want = CC.sources.filter(s => s.take && ccReadable(s.key));
     Log.cat('Platforms').info('platforms: ' + CC.sources.map(s => s.key + (s.take ? (ccReadable(s.key) ? '✓' : '·unread') : '·') + (s.barcode ? ' ' + s.barcode : '') + (s.tracks != null ? ' ' + s.tracks + 't' : '')).join(' | ') + ' · the release\'s barcode ' + (own || '—'));
     if (!want.length) { cmpDone(CC.sources.length ? 'no platform of this release to read' : 'Platform Check found no platform'); return; }
@@ -4605,6 +4614,33 @@ function afterSave() {
     Log.cat('After saving').info((a.mbid ? 'a consolidation updates this release: Mission Control opens, probes and compares it with the platforms' : 'the consolidated release is saved: Mission Control opens and probes') + ' · ' + Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + (a.mbid ? '' : ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation'));
     open();
     setTimeout(() => { if (ui && !run) probe(); if (ui && S.consExec) autoExecArm(); }, 700);
+}
+// #801: First Contact found an album on a platform in MusicBrainz, and Update this release opened this release
+// (/release/<mbid>#fc-update=<token>): Mission Control opens, probes and compares the release with the platforms,
+// that album among them as First Contact read it (AFTER.source, taken in whatever Platform Check finds)
+const FC_UPDATE = RELEASE ? (location.hash.match(/[#&]fc-update=([a-z0-9]+)/i) || [])[1] : null;
+function fcUpdate(token) {
+    let took = false;
+    const take = json => {
+        if (took) return;
+        let h = null;
+        try { h = JSON.parse(json); } catch (e) { return; }
+        if (!h || h.token !== token) return;
+        took = true;
+        try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) { /* the address keeps it */ }
+        if (h.error) { Log.cat('After saving').warn('First Contact\'s update: ' + h.error); mbuToast('Mission Control: ' + h.error, { kind: 'warn' }); return; }
+        if (h.mbid !== RELEASE) { Log.cat('After saving').info('First Contact\'s update is for release ' + h.mbid + ', not this one: dropped'); return; }
+        const p = h.platform || {};
+        AFTER = { created: h.created, mbid: RELEASE, title: h.rel.title, ticks: { is: true, as: true, pc: true }, compare: true,
+            source: { key: ccKey(p.id || h.source), url: h.url, rel: h.rel, provider: p } };
+        Log.cat('After saving').info('First Contact found ' + (p.name || h.source) + '\'s album ' + h.url + ' to be this release: Mission Control opens, probes and compares it with the platforms, that album included');
+        open();
+        setTimeout(() => { if (ui && !run) probe(); if (ui && S.consExec) autoExecArm(); }, 700);
+    };
+    document.addEventListener('fc:update', e => take(e.detail));
+    if (document.documentElement.dataset.fcUpdate) take(document.documentElement.dataset.fcUpdate);
+    else document.dispatchEvent(new CustomEvent('fc:update-request'));
+    setTimeout(() => { if (!took) Log.cat('After saving').warn('First Contact\'s update ' + token + ' never came: First Contact isn\'t running on this page'); }, 4000);
 }
 // what wasn't ticked for after saving starts left out
 function afterPicks(id) {
@@ -6224,5 +6260,5 @@ mbuTipStart();
 // </ST-UI>
 
 if (CONS) consolidateMain(CONS);
-else { launcher(); afterSave(); }
+else { launcher(); if (FC_UPDATE) fcUpdate(FC_UPDATE); else afterSave(); }
 })();

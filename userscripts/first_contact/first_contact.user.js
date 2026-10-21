@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.160100
+// @version      2026.10.21.170220
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -72,6 +72,9 @@
 // @connect      music.amazon.com
 // @connect      na.mesk.skill.music.a2z.com
 // @connect      web.archive.org
+// @connect      musicbrainz.org
+// @connect      beta.musicbrainz.org
+// @connect      test.musicbrainz.org
 // @connect      bandcamp.com
 // ==/UserScript==
 
@@ -126,7 +129,7 @@ function settings() {
         delete stored.iaKey; delete stored.iaSecret;
         GM_setValue('fc.settings', stored);
     }
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, harmonyHost: HARMONY_HOSTS[0], consolidate: true, archive: true }, stored);
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, harmonyHost: HARMONY_HOSTS[0], consolidate: true, archive: true, check: 'import' }, stored);
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     if (!HARMONY_HOSTS.includes(s.harmonyHost)) s.harmonyHost = HARMONY_HOSTS[0];
     // the option that showed ⚙︎ only on hover became Hide the settings button: who had it on keeps ⚙︎ out of sight
@@ -2839,6 +2842,31 @@ function injectStyle() {
 #fc-warn .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 #fc-warn button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
 #fc-warn button.fc-warn-go { background: var(--mbu-accent); border-color: var(--mbu-accent); color: #fff; }
+/* #801: the MusicBrainz check's light, on the Import button and in its panel */
+.fc-light { display: inline-block; flex: 0 0 auto; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; border: 2px solid var(--mbu-text-weak); }
+.fc-light[data-light="linked"] { background: var(--mbu-ok); border-color: var(--mbu-ok); }
+.fc-light[data-light="barcode"] { background: var(--mbu-warn); border-color: var(--mbu-warn); }
+.fc-light[data-light="similar"] { background: color-mix(in srgb, var(--mbu-warn) 50%, var(--mbu-error)); border-color: color-mix(in srgb, var(--mbu-warn) 50%, var(--mbu-error)); }
+.fc-light[data-light="failed"] { border-style: dashed; }
+.fc-light[data-light="busy"] { border-color: var(--mbu-text-weak); border-top-color: var(--mbu-accent-text); animation: fc-spin .8s linear infinite; }
+#fc-root .fc-go[aria-busy="true"] .fc-light { display: none; }
+#fc-check { position: fixed; right: 16px; bottom: 16px; z-index: 2147483002; box-sizing: border-box; width: min(460px, calc(100vw - 16px)); overflow: auto;
+  background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: 8px;
+  box-shadow: var(--mbu-shadow, 0 4px 18px rgba(0,0,0,.3)); font: 12.5px/1.4 system-ui, sans-serif; padding: 10px 12px; color-scheme: light; }
+:root[data-mbu-theme=dark] #fc-check { color-scheme: dark; }
+#fc-check .fc-check-h { display: flex; align-items: center; gap: 7px; font-weight: 700; margin: 0 0 6px; }
+#fc-check p { margin: 0 0 8px; }
+#fc-check .fc-check-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+#fc-check li { margin: 0; padding: 6px 8px; border: 1px solid var(--mbu-border-soft); border-radius: 6px; }
+#fc-check li.fc-other { opacity: .8; }
+#fc-check .fc-check-rel { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+#fc-check .fc-check-rel a { color: var(--mbu-accent-text); }
+#fc-check .fc-dim { color: var(--mbu-text-dim); font-weight: normal; }
+#fc-check .fc-check-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+#fc-check .fc-warn-b { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+#fc-check button { all: revert; font: inherit; cursor: pointer; padding: 4px 12px; border-radius: 5px; border: 1px solid var(--mbu-border); background: var(--mbu-bg); color: var(--mbu-text); }
+#fc-check button:hover { background: var(--mbu-bg-hover); }
+#fc-check button.fc-check-upd { background: var(--mbu-accent); border-color: var(--mbu-accent); color: #fff; }
 /* links (? Help, get them) in the readable accent: --mbu-accent is the deep purple that vanishes on the dark panel */
 #fc-panel a { color: var(--mbu-accent-text); }
 ` + mbaKeysCss('#fc-panel');
@@ -2897,7 +2925,12 @@ function mountButton(provider, id) {
     root.dataset.fcProvider = provider.name;
     root.classList.toggle('fc-iconly', !!settings().iconOnly);   // majkinetor: an option to hide the button's text
     root.classList.toggle('fc-gear-hidden', !!settings().gearHidden);   // majkinetor: ⚙︎ can go, a right-click opens the settings
-    root.querySelector('.fc-go').dataset.tip = `Import to MusicBrainz\nOpens the release editor with this ${provider.name} release filled in`;
+    const go = root.querySelector('.fc-go');
+    go.dataset.tip = go.dataset.tipBase = `Import to MusicBrainz\nOpens the release editor with this ${provider.name} release filled in`;
+    // #801: the light of a check already done for this album, or none
+    const c = checks.get(checkKey(provider, id)) || {};
+    const r = c.result || c.linkResult;
+    showLight(r ? r.light : c.busy ? 'busy' : null);
     showHarmony(root, provider);
     showCons(root, provider);
     root.style.display = '';
@@ -3247,6 +3280,10 @@ function togglePanel(anchor) {
         + '<label>MusicBrainz server <select class="fc-server">'
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
+        // #801
+        + `<label data-tip="Look the album up in MusicBrainz before the release editor opens\nBy its link, its barcode, and its title and artist. If MusicBrainz may have it, you choose: update that release in Mission Control, add only the link, or import anyway.\n- On import: when you click Import\n- On page load, link only: the link as the page opens, its light on the button; Import checks in full\n- On page load, full: the album is read and checked as the page opens, its light on the button; Import uses that read">Check MusicBrainz <select class="fc-check-mode">`
+        + CHECK_MODES.map(([v, t]) => `<option value="${v}"${v === checkMode() ? ' selected' : ''}>${t}</option>`).join('')
+        + '</select></label>'
         + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + `<label class="fc-check" data-tip="Close the platform's tab once the release editor has the release\nOr once the album is sent to Harmony. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         + `<label class="fc-check" data-tip="A Consolidate button beside Import\nIt reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor."><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
@@ -3291,6 +3328,13 @@ function togglePanel(anchor) {
         const next = Object.assign(settings(), { server: e.target.value });
         saveSettings(next);
         Log.info(`server set to ${next.server}`);
+    });
+    panel.querySelector('.fc-check-mode').addEventListener('change', e => {
+        const next = Object.assign(settings(), { check: e.target.value });
+        saveSettings(next);
+        Log.info(`check MusicBrainz: ${e.target.value}`);
+        if (next.check === 'off') showLight(null);
+        else if (current) checkOnLoad(current.provider, current.id);
     });
     panel.querySelector('.fc-harmony-host').addEventListener('change', e => {
         const next = Object.assign(settings(), { harmonyHost: e.target.value });
@@ -3401,17 +3445,37 @@ async function importCurrent() {
     show();
     const ticker = setInterval(show, 1000);
     try {
-        const rel = await provider.fetchRelease(id, (n, total) => { count = `${n}/${total}`; show(); });
-        if (rel.missing) {
+        // #801: an album read as the page opened is taken as it is
+        const raw = await readAlbum(provider, id, (n, total) => { count = `${n}/${total}`; show(); });
+        if (raw.missing) {
             count = ''; phase = 'Tracks missing'; show();
-            if (!(await askMissing(rel, provider, go))) { Log.info('import cancelled: tracks missing'); return; }
+            if (!(await askMissing(raw, provider, go))) { Log.info('import cancelled: tracks missing'); return; }
             Log.info('import anyway, with tracks missing');
         }
-        count = ''; phase = 'Opening MusicBrainz…'; show();
-        finishRelease(rel, provider);
+        const rel = finishedCopy(raw, provider);
         const nTracks = rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
         Log.info(`release read in ${Date.now() - t0} ms: "${rel.title}" · ${rel.credit.map(c => c.name + c.join).join('')} · ${rel.mediums.length} medium(s), ${nTracks} track(s) · types ${rel.types.join('+') || '—'} · script ${rel.script || '—'}`);
         if (!nTracks) throw new Error(`${provider.name} returned no tracks`);
+        // #801: MusicBrainz may have it already: a match asks first
+        if (checkMode() !== 'off') {
+            const c = checks.get(checkKey(provider, id)) || {};
+            checks.set(checkKey(provider, id), c);
+            count = ''; phase = 'Checking MusicBrainz…'; show();
+            let result = c.result || (c.checkP && await c.checkP.catch(() => null));
+            if (!result) {
+                try { result = c.result = await checkAlbum(provider, id, rel); } catch (e) {
+                    Log.warn(`MusicBrainz check failed, importing without it: ${e.message}`);
+                    mbuToast(`⚠ ${NAME}: the MusicBrainz check failed (${e.message}); the album is imported without it`, { kind: 'warn' });
+                }
+            }
+            showLight(result ? result.light : 'failed');
+            if (result && result.releases.some(e => e.same || e.links.length)) {
+                count = ''; phase = 'In MusicBrainz?'; show();
+                if ((await askExisting(result, rel, provider, go)) !== 'import') { Log.info('import not done: MusicBrainz may have the album'); return; }
+                Log.info('import anyway, though MusicBrainz may have the album');
+            }
+        }
+        count = ''; phase = 'Opening MusicBrainz…'; show();
 
         pruneHandoffs();
         // archiving is extra: whatever goes wrong with it, the import goes on without it
@@ -3592,6 +3656,297 @@ async function consolidateCurrent() {
     }
 }
 
+/* ── #801: is the album in MusicBrainz already? ──────────────────────────── */
+// It is too easy to import an album MusicBrainz has, which only needed its link. Before the release
+// editor opens (or as the page opens, by the Check MusicBrainz setting) the album is looked up in
+// MusicBrainz: by its links (linked), its barcode, and its title and artist (similar). A release is this
+// album when its barcode (leading zeros aside), its format in kind and its track count agree with the
+// album's, each where both give one: Mission Control's ccSameRelease, for a consolidation. A match opens a
+// panel: update that release in Mission Control, add the link only, or import anyway. Consolidate and
+// Mission Control's reads never check: Mission Control's consolidation has its own (ccCheckInMb).
+const CHECK_MODES = [
+    ['off', 'Off'],
+    ['import', 'On import'],
+    ['link', 'On page load, link only'],
+    ['read', 'On page load, full'],
+];
+const UPDATE_PREFIX = HANDOFF_PREFIX + 'upd.';
+const LIGHTS = {
+    busy: 'Checking MusicBrainz…',
+    linked: 'MusicBrainz has this album\nIts link is on a release there',
+    barcode: 'MusicBrainz may have this album\nA release there has its barcode',
+    similar: 'MusicBrainz may have this album\nA release there has a similar title and artist, and as many tracks',
+    none: 'Not found in MusicBrainz\nNo release there has its link, its barcode, or its title and artist',
+    nolink: 'Its link is not in MusicBrainz\nImport looks for the barcode and the title too',
+    failed: 'The MusicBrainz check failed\nSee the log',
+};
+const checks = new Map();   // provider id + album id → { light, releases, raw (the album read, unfinished), relP }
+const checkKey = (provider, id) => provider.id + ' ' + id;
+const checkMode = () => (CHECK_MODES.some(([v]) => v === settings().check) ? settings().check : 'import');
+
+// ws/2 through the manager: the JSON, null for a 404. One request a second, as MusicBrainz asks; a busy
+// server (503) is asked again twice.
+let wsNext = 0;
+async function mbWs(path) {
+    const now = Date.now(), at = Math.max(now, wsNext);
+    wsNext = at + 1100;
+    if (at > now) await new Promise(r => setTimeout(r, at - now));
+    const url = `https://${settings().server}/ws/2/${path}${path.includes('?') ? '&' : '?'}fmt=json`;
+    for (let i = 0; ; i++) {
+        try { return JSON.parse(await gmText(url)); } catch (e) {
+            if (e.status === 404) return null;
+            if (e.status === 503 && i < 2) { await new Promise(r => setTimeout(r, 1500 * (i + 1))); continue; }
+            throw e;
+        }
+    }
+}
+
+// The album's links in every form MusicBrainz may store them in: the read's, Harmony's form of the page,
+// the page itself; an Apple Music album under any storefront, an Amazon Music one under any domain.
+function albumLinks(provider, id, rel) {
+    const out = new Set();
+    const add = u => { if (u) { const s = String(u).replace(/\/+$/, ''); out.add(s); } };
+    if (rel) { add(rel.url); (rel.urls || []).forEach(u => add(u.url)); }
+    if (HARMONY_URLS[provider.id]) try { add(HARMONY_URLS[provider.id](id)); } catch (e) { /* no such form */ }
+    if (provider.albumId(location) === id) add(mbaCleanUrl(location.href).replace(/[?#].*$/, ''));
+    for (const u of [...out]) {
+        let m = u.match(/^https?:\/\/(?:music|itunes)\.apple\.com\/([a-z]{2})\/album\/(?:[^/?#]+\/)?(?:id)?(\d+)/i);
+        if (m) [m[1].toLowerCase(), ...APPLE_STOREFRONTS].forEach(c => out.add(`https://music.apple.com/${c}/album/${m[2]}`));
+        m = u.match(/^https?:\/\/music\.amazon\.[a-z.]+\/albums\/([A-Z0-9]{10})/i);
+        if (m) AMAZON_TLDS.forEach(t => out.add(`https://music.amazon.${t}/albums/${m[1].toUpperCase()}`));
+        m = u.match(/^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/(\d+)/i);
+        if (m) out.add(`https://tidal.com/album/${m[1]}`).add(`https://tidal.com/browse/album/${m[1]}`);
+    }
+    return [...out].slice(0, 100);
+}
+
+const fmtKind = f => String(f || '').split('+').map(x => { x = x.trim(); return /digital/i.test(x) ? 'digital' : /\bcd\b|compact disc|hdcd|sacd/i.test(x) ? 'cd' : /vinyl|"|\blp\b/i.test(x) ? 'vinyl' : /cassette/i.test(x) ? 'cassette' : x.toLowerCase(); }).sort().join('+');
+const bcCore = b => String(b || '').replace(/\D/g, '').replace(/^0+/, '');
+const relFormat = rel => rel.mediums.map(m => m.format || 'Digital Media').join(' + ');
+const relTracks = rel => rel.mediums.reduce((n, m) => n + m.tracks.length, 0);
+// this album, as far as MusicBrainz's release and the read tell: what's missing on either side doesn't count
+function sameAlbum(e, rel) {
+    if (e.barcode && rel.barcode && bcCore(e.barcode) !== bcCore(rel.barcode)) return false;
+    if (e.format && !/unknown/i.test(e.format) && fmtKind(e.format) !== fmtKind(relFormat(rel))) return false;
+    if (e.tracks && e.tracks !== relTracks(rel)) return false;
+    return true;
+}
+const foldTitle = s => String(s || '').normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+function titleClose(a, b) {
+    const x = foldTitle(a), y = foldTitle(b);
+    if (!x || !y) return false;
+    if (x === y) return true;
+    const m = Math.max(x.length, y.length);
+    let prev = Array.from({ length: y.length + 1 }, (v, j) => j);
+    for (let i = 1; i <= x.length; i++) {
+        const cur = [i];
+        for (let j = 1; j <= y.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (x[i - 1] === y[j - 1] ? 0 : 1));
+        prev = cur;
+    }
+    return 1 - prev[y.length] / m >= 0.85;
+}
+const luceneQ = s => '"' + String(s || '').replace(/["\\]/g, '\\$&') + '"';
+function entryOf(by, x) {
+    const e = by.get(x.id) || { id: x.id, title: x.title || '', disamb: x.disambiguation || '', date: x.date || '', country: x.country || '', barcode: x.barcode || '', links: [], how: [] };
+    if (Array.isArray(x.media) && x.media.length && e.tracks == null) {
+        e.format = x.media.map(m => m.format || '(unknown format)').join(' + ');
+        e.tracks = x.media.reduce((n, m) => n + (m['track-count'] || 0), 0);
+    }
+    if (x['artist-credit'] && !e.artist) e.artist = x['artist-credit'].map(a => (a.name || '') + (a.joinphrase || '')).join('');
+    by.set(x.id, e);
+    return e;
+}
+// the releases the album's links are on
+async function checkLinks(links, by) {
+    if (!links.length) return;
+    const j = await mbWs('url?' + links.map(u => 'resource=' + encodeURIComponent(u)).join('&') + '&inc=release-rels');
+    if (!j) return;
+    (Array.isArray(j.urls) ? j.urls : [j]).forEach(u => (u.relations || []).forEach(r => {
+        if (!r.release || !r.release.id) return;
+        const e = entryOf(by, r.release);
+        if (!e.links.includes(u.resource)) e.links.push(u.resource);
+        if (!e.how.includes('link')) e.how.push('link');
+    }));
+}
+// The light and the releases for an album read (finished), or for its links alone (rel null)
+async function checkAlbum(provider, id, rel) {
+    const t0 = Date.now(), by = new Map();
+    const links = albumLinks(provider, id, rel);
+    Log.info(`MusicBrainz check (${settings().server}): ${links.length} link form(s)${rel ? `, barcode ${rel.barcode || '—'}, "${rel.title}"` : ', the link only'}`);
+    await checkLinks(links, by);
+    if (rel) {
+        const d = String(rel.barcode || '').replace(/\D/g, ''), core = bcCore(d);
+        const forms = [...new Set([d, core, '0' + core, '00' + core])].filter(x => x.length >= 8 && x.length <= 14);
+        if (core) {
+            const j = await mbWs(`release?query=${encodeURIComponent('barcode:(' + forms.join(' OR ') + ')')}&limit=10`);
+            ((j && j.releases) || []).filter(x => bcCore(x.barcode) === core).forEach(x => { const e = entryOf(by, x); if (!e.how.includes('barcode')) e.how.push('barcode'); });
+        }
+        const va = rel.credit.some(c => c.mbid === VARIOUS_ARTISTS_MBID);
+        const artist = (rel.credit[0] || {}).artistName || (rel.credit[0] || {}).name;
+        const q = `release:${luceneQ(rel.title)}` + (!va && artist ? ` AND artistname:${luceneQ(artist)}` : '');
+        const j = await mbWs(`release?query=${encodeURIComponent(q)}&limit=15`);
+        ((j && j.releases) || []).filter(x => titleClose(x.title, rel.title)).forEach(x => { const e = entryOf(by, x); if (!e.how.includes('title')) e.how.push('title'); });
+        // a release found by its link alone has no media yet: its format and track count, for the few there are
+        for (const e of [...by.values()].filter(x => x.tracks == null).slice(0, 4)) {
+            const x = await mbWs(`release/${e.id}?inc=media`);
+            if (x) entryOf(by, Object.assign({}, x, { id: e.id }));
+        }
+    }
+    const releases = [...by.values()];
+    releases.forEach(e => {
+        e.same = rel ? sameAlbum(e, rel) : true;
+        // found by its title only, it counts when the track count agrees (not only where one is unknown)
+        if (e.how.length === 1 && e.how[0] === 'title' && !(rel && e.tracks && e.tracks === relTracks(rel))) e.same = false;
+    });
+    const rank = e => (e.how.includes('link') ? 4 : 0) + (e.same ? 2 : 0) + (e.how.includes('barcode') ? 1 : 0);
+    releases.sort((a, b) => rank(b) - rank(a));
+    const light = releases.some(e => e.links.length) ? 'linked'
+        : releases.some(e => e.same && e.how.includes('barcode')) ? 'barcode'
+        : releases.some(e => e.same) ? 'similar' : rel ? 'none' : 'nolink';
+    // a title-only hit that isn't this album is noise; another edition by link or barcode is worth a line
+    const shown = releases.filter(e => e.same || e.how.some(h => h !== 'title'));
+    Log[light === 'none' || light === 'nolink' ? 'ok' : 'warn'](`MusicBrainz check: ${light} in ${Date.now() - t0} ms${shown.length ? ' · ' + shown.map(e => `${e.id} "${e.title}" ${e.format || '?'}, ${e.tracks == null ? '?' : e.tracks} tracks, barcode ${e.barcode || '—'} [${e.how.join('+')}${e.same ? ', this album' : ''}]`).join(' | ') : ''}`);
+    return { light, releases: shown };
+}
+
+// The light on the Import button
+function showLight(light) {
+    const go = document.querySelector('#fc-root .fc-go');
+    if (!go) return;
+    let dot = go.querySelector('.fc-light');
+    if (!light) { if (dot) dot.remove(); go.dataset.tip = go.dataset.tipBase || go.dataset.tip; return; }
+    if (!dot) { dot = document.createElement('i'); dot.className = 'fc-light'; go.insertBefore(dot, go.querySelector('span')); }
+    dot.dataset.light = light;
+    go.dataset.tipBase = go.dataset.tipBase || go.dataset.tip;
+    go.dataset.tip = go.dataset.tipBase + '\n\n' + LIGHTS[light];
+}
+// The album read for this page, once: an import, or the check as the page opens. Kept unfinished; each
+// use finishes its own copy (finishRelease changes what it gets).
+function readAlbum(provider, id, progress) {
+    const c = checks.get(checkKey(provider, id)) || {};
+    checks.set(checkKey(provider, id), c);
+    if (!c.relP) {
+        c.relP = provider.fetchRelease(id, progress || (() => {}));
+        c.relP.catch(() => { if (checks.get(checkKey(provider, id)) === c) c.relP = null; });   // a failed read is read again
+    }
+    return c.relP;
+}
+const finishedCopy = (raw, provider) => finishRelease(JSON.parse(JSON.stringify(raw)), provider);
+// As the page opens (Check MusicBrainz: On page load): the link, or the album read and checked in full
+async function checkOnLoad(provider, id) {
+    const mode = checkMode();
+    if (mode !== 'link' && mode !== 'read') return;
+    const key = checkKey(provider, id), c = checks.get(key) || {};
+    checks.set(key, c);
+    if (c.result || c.linkResult || c.busy) return;
+    c.busy = true;
+    const here = () => current && checkKey(current.provider, current.id) === key;
+    // a read waits for the page to settle: the readers of a page's own data need it drawn
+    if (mode === 'read') { await new Promise(r => setTimeout(r, 2000)); if (!here()) { c.busy = false; return; } }
+    showLight('busy');
+    const p = (async () => {
+        const rel = mode === 'read' ? finishedCopy(await readAlbum(provider, id), provider) : null;
+        const r = await checkAlbum(provider, id, rel);
+        if (rel) c.result = r; else c.linkResult = r;
+        return rel ? r : null;
+    })();
+    if (mode === 'read') c.checkP = p;
+    try {
+        await p;
+        if (here()) showLight((c.result || c.linkResult).light);
+    } catch (e) {
+        Log.warn(`MusicBrainz check on load failed: ${e.message}`);
+        if (here()) showLight('failed');
+    } finally { c.busy = false; c.checkP = null; }
+}
+
+// The panel a match opens before the release editor. → 'import', or null (done, or cancelled)
+function askExisting(result, rel, provider, anchor) {
+    return new Promise(resolve => {
+        document.getElementById('fc-check')?.remove();
+        const box = document.createElement('div');
+        box.id = 'fc-check';
+        box.setAttribute('role', 'alertdialog');
+        const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+        const sure = result.light === 'linked';
+        const h = el('div', 'fc-check-h');
+        h.append(el('i', 'fc-light'), el('span', null, sure ? 'MusicBrainz has this album' : 'MusicBrainz may have this album'));
+        h.firstChild.dataset.light = result.light;
+        box.append(h, el('p', null, sure ? `Its ${provider.name} link is already on the release below. Update it with what it lacks rather than adding the album again.`
+            : `Check the release${result.releases.filter(e => e.same).length > 1 ? 's' : ''} below before you add the album again: update one with what it lacks, or add only the link.`));
+        const list = el('ul', 'fc-check-list');
+        const how = e => [e.how.includes('link') && 'its link', e.how.includes('barcode') && 'the barcode', e.how.includes('title') && 'the title and artist'].filter(Boolean).join(', ');
+        const done = v => { box.remove(); document.removeEventListener('keydown', key, true); resolve(v); };
+        const key = e => { if (e.key === 'Escape') { e.stopPropagation(); done(null); } };
+        for (const e of result.releases) {
+            const li = el('li', e.same || e.links.length ? 'fc-same' : 'fc-other');
+            const dot = el('i', 'fc-light');
+            dot.dataset.light = e.links.length ? 'linked' : !e.same ? 'other' : e.how.includes('barcode') ? 'barcode' : 'similar';
+            const a = el('a', null, e.title);
+            a.href = `https://${settings().server}/release/${e.id}`; a.target = '_blank'; a.rel = 'noopener';
+            const meta = [e.artist, e.date, e.country, e.format, e.tracks != null ? `${e.tracks} tracks` : null, e.barcode].filter(Boolean).join(' · ');
+            const line = el('div', 'fc-check-rel');
+            line.append(dot, a);
+            if (e.disamb) line.append(el('span', 'fc-dim', ` (${e.disamb})`));
+            li.append(line, el('div', 'fc-dim', `${meta}${meta ? ' · ' : ''}found by ${how(e)}${!e.same && !e.links.length ? ' · another edition' : ''}`));
+            if (e.same || e.links.length) {
+                const acts = el('div', 'fc-check-acts');
+                const upd = el('button', 'fc-check-upd', 'Update this release');
+                upd.type = 'button';
+                upd.dataset.tip = 'Update this release in Mission Control\nIt opens the release, compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.';
+                upd.addEventListener('click', () => { updateRelease(e, rel, provider); done(null); });
+                acts.append(upd);
+                const missing = (rel.urls || []).filter(u => !e.links.some(l => l.replace(/\/+$/, '') === String(u.url).replace(/\/+$/, '')));
+                if (missing.length) {
+                    const ln = el('button', 'fc-check-link', 'Add link only');
+                    ln.type = 'button';
+                    ln.dataset.tip = `Add the ${provider.name} link to this release\nIts edit page opens with the link and an edit note; nothing else changes.`;
+                    ln.addEventListener('click', () => { addLinkOnly(e, missing, rel, provider); done(null); });
+                    acts.append(ln);
+                }
+                li.append(acts);
+            }
+            list.append(li);
+        }
+        const b = el('div', 'fc-warn-b');
+        const no = el('button', 'fc-warn-no', 'Cancel'); no.type = 'button';
+        const go = el('button', 'fc-warn-go', 'Import anyway'); go.type = 'button';
+        b.append(no, go);
+        box.append(list, b);
+        document.body.appendChild(box);
+        if (anchor && anchor.isConnected) placePanel(box, anchor);
+        document.addEventListener('keydown', key, true);
+        no.addEventListener('click', () => done(null));
+        go.addEventListener('click', () => done('import'));
+        (box.querySelector('.fc-check-upd') || go).focus();
+    });
+}
+function openMb(url) {
+    Log.info(`opening ${url}`);
+    if (mbuTestHooks()) { window.__fcLastOpen = url; return; }
+    if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
+    else { const w = window.open(url, '_blank'); if (w) w.opener = null; else location.assign(url); }
+}
+// Update this release: Mission Control opens on it and compares it with the platforms, this album among
+// them as read here (on a release page First Contact hands it over: mbUpdate)
+function updateRelease(e, rel, provider) {
+    const token = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    pruneHandoffs();
+    GM_setValue(UPDATE_PREFIX + token, { v: 1, token, created: Date.now(), mbid: e.id, source: provider.id, sourceName: provider.name, platform: providerMeta(provider), url: rel.url, rel: relWithForms(rel, provider) });
+    Log.info(`update release ${e.id} "${e.title}" in Mission Control with ${provider.name}'s album (token ${token})`);
+    if (mbuTestHooks()) window.__fcLastUpdate = { token, mbid: e.id };
+    openMb(`https://${settings().server}/release/${e.id}#fc-update=${token}`);
+    if (settings().closeAfter && !mbuTestHooks()) closeSourceTab();
+}
+// Add link only: the release's edit page, seeded with the album's links and an edit note
+function addLinkOnly(e, urls, rel, provider) {
+    const q = new URLSearchParams();
+    urls.forEach((u, i) => { q.set(`urls.${i}.url`, u.url); if (u.linkType) q.set(`urls.${i}.link_type`, u.linkType); });
+    q.set('edit_note', `${provider.name}: ${rel.url}\nMusicBrainz had this album already; First Contact found it by ${e.how.includes('link') ? 'its link' : e.how.includes('barcode') ? 'its barcode' : 'its title and artist'}.\n\n${(typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || NAME} v${VERSION} by majkinetor - ${HOMEPAGE}`);
+    Log.info(`add ${urls.length} link(s) to release ${e.id}: ${urls.map(u => u.url).join(', ')}`);
+    openMb(`https://${settings().server}/release/${e.id}/edit?${q}`);
+}
+
 // On MusicBrainz's /release/add#mc=<token>: hand the album to Mission Control, read the other
 // platforms for it, and seed the release editor with what it took. Every detail is a JSON string.
 //   fc:consolidate          → the album as Consolidate stored it, or { token, error }; again on fc:consolidate-request
@@ -3626,6 +3981,26 @@ function mbReader() {
     document.addEventListener('mc:discover', () => { Log.debug('Mission Control asked: answering as provider fc (reader)'); hello(); });
     document.addEventListener('mc:read', e => { mcRead(e.detail); });
     hello();   // Mission Control may have asked before First Contact loaded
+}
+// #801: on /release/<mbid>#fc-update=<token>, the album Update this release sent, for Mission Control to compare
+// the release with: fc:update (detail: JSON), again on fc:update-request; { token, error } when it isn't stored
+function mbUpdate(token) {
+    const key = UPDATE_PREFIX + token;
+    let h = GM_getValue(key, null), from = 'storage';
+    if (!h) { try { h = JSON.parse(sessionStorage.getItem(key) || 'null'); from = 'this tab'; } catch (e) { h = null; } }
+    if (h) {
+        try { sessionStorage.setItem(key, JSON.stringify(h)); } catch (e) { Log.debug(`update ${token}: no copy for this tab (${e.message})`); }
+        GM_deleteValue(key);
+        Log.info(`Mission Control: update ${token} read from ${from}: ${h.sourceName} "${h.rel && h.rel.title}" (${h.url}) for release ${h.mbid}`);
+    } else Log.warn(`release page opened with update ${token}, but it is not stored (expired, or another browser)`);
+    const json = JSON.stringify(h || { token, error: 'First Contact has no album stored for this update: it is kept for an hour, in the browser that read it.' });
+    const publish = why => {
+        document.documentElement.dataset.fcUpdate = json;
+        document.dispatchEvent(new CustomEvent('fc:update', { detail: json }));
+        Log.debug(`update ${token} published (${why})`);
+    };
+    publish('load');
+    document.addEventListener('fc:update-request', () => publish('request'));
 }
 async function mcRead(detail) {
     let d;
@@ -3774,7 +4149,7 @@ function platformMain() {
         last = location.href;
         const id = provider.albumId(location);
         current = id ? { provider, id } : null;
-        if (id) { if (document.body) mountButton(provider, id); }
+        if (id) { if (document.body) { mountButton(provider, id); checkOnLoad(provider, id); } }
         else unmountButton();
     };
     check();
@@ -3788,7 +4163,12 @@ function platformMain() {
 // and can ask for it again with a 'first-contact:request' event on document.
 
 function mbMain() {
-    if (/^\/release\/[0-9a-f-]{36}\/?$/i.test(location.pathname)) { mbReader(); return; }
+    if (/^\/release\/[0-9a-f-]{36}\/?$/i.test(location.pathname)) {
+        mbReader();
+        const upd = (location.hash.match(/[#&]fc-update=([a-z0-9]+)/i) || [])[1];
+        if (upd) mbUpdate(upd);
+        return;
+    }
     if (!/^\/release\/add\/?$/.test(location.pathname)) return;
     const mc = (location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1];
     if (mc) { mbConsolidate(mc); return; }

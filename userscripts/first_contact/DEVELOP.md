@@ -31,6 +31,21 @@ On a release page (`/release/<mbid>`) First Contact runs as a reader only (`mbRe
 
 `mc:read` reads an album page headless with the same provider code as an import. The readers that parse the album page (Bandcamp, Qobuz, Beatport, 7digital, Ototoy) get it fetched with `GM_xmlhttpRequest`, parsed, and marked with its origin (`doc.fcOrigin`, which `originOf(doc)` gives them in place of `location.origin`); The album page is fetched with the browser's cookies (a bot check's clearance). A page refused all the same (403, a *Just a moment…* or *Human Verification* page) ends the read, unless the reader can do without it (`withoutPage`: Beatport, and 7digital, whose `fromApi` finds the release and its tracks in the API's search by the words of the address and the release's id, [#747](https://github.com/majkinetor/musicbrainz-userscripts/issues/747)): it then gets an empty page marked `fcRefused`. Beatport fetches a release page it needs the same way, with the browser's cookies, since Cloudflare refuses a request without its clearance cookie (403, *Just a moment…*). When it refuses all the same, the release comes from Platform Check ([#745](https://github.com/majkinetor/musicbrainz-userscripts/issues/745)): `pc:beatport-release` `{ id, req }`, answered by `pc:beatport-release-result` `{ req, release, tracks }` (Beatport's API, `/catalog/releases/<id>/` and its `tracks/`, with PC's login) or `{ req, error }`. The API's objects are the page data's, so the reader takes them as `__NEXT_DATA__`. Spotify isn't read: its token comes from its web player.
 
+## Already in MusicBrainz?
+
+[#801](https://github.com/majkinetor/musicbrainz-userscripts/issues/801). `checkAlbum`, through the manager to the *MusicBrainz server* setting's ws/2, one request a second (`mbWs`, 503 asked again twice):
+
+1. `/ws/2/url?resource=…&inc=release-rels`, every form of the album's links in one request (`albumLinks`): the read's `url` and `urls`, Harmony's form of the page, the page itself; Apple Music under every storefront, Amazon Music under every domain, Tidal with and without `/browse`.
+2. With a barcode, `/ws/2/release?query=barcode:(…)` with and without leading zeros (12, 13, 14 digits).
+3. `/ws/2/release?query=release:"<title>" AND artistname:"<first artist>"` (the title alone for Various Artists), kept when the title is 85% the same (`titleClose`).
+4. `/ws/2/release/<id>?inc=media` for up to four releases found by link only, for their formats and track counts.
+
+`sameAlbum` is Mission Control's `ccSameRelease`: the barcode (leading zeros aside), the format in kind (`fmtKind`, a copy of `ccFmtKind`) and the track count, each where both give one. A release found by its title only must also have the album's track count. The light: `linked` (any release has a link), `barcode` (one that is this album has the barcode), `similar` (one that is this album), else `none`; *On page load, link only* runs step 1 alone and gives `linked` or `nolink`. A title-only hit that isn't this album is dropped. The results and the album read are kept per album for the page's life (`checks`); *On page load, full* reads 2 s after the button shows and the import takes that read. Consolidate and `mc:read` never check.
+
+**Update this release** stores `{ v: 1, token, created, mbid, source, sourceName, platform, url, rel }` (the finished read, with `relWithForms`) under `fc.handoff.upd.<token>` (pruned with the handoffs) and opens `/release/<mbid>#fc-update=<token>`. There First Contact copies it to the tab's `sessionStorage`, deletes it from the storage, and publishes it as `document.documentElement.dataset.fcUpdate` and the `fc:update` event (again on `fc:update-request`); `{ token, error }` when it isn't stored. Mission Control's side is in [its DEVELOP.md](../mission_control/DEVELOP.md#an-update-from-first-contact).
+
+**Add link only** opens `/release/<mbid>/edit?urls.N.url=…&urls.N.link_type=…&edit_note=…` with the read's links the release lacks.
+
 ## How each platform is read
 
 | Platform | Source |

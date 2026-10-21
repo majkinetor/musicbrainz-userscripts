@@ -13,6 +13,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 ## Features
 
 - **[Import](#import)** a release from the album page into the MusicBrainz release editor.
+- **[Already in MusicBrainz?](#already-in-musicbrainz)**: before the editor opens, the album is looked up in MusicBrainz, so one it has gets its missing parts instead of a second copy.
 - **[Consolidate](#consolidate)**: compare the album with the other platforms in Mission Control, and take the best of each.
 - **[Send to Harmony](#send-to-harmony)**: look the album up on Harmony instead, with every platform that has its barcode.
 - **[Platforms](#platforms)**: what is read from each one.
@@ -54,6 +55,36 @@ When the platform gives no type, or only a plain *album* while the title says ot
 | 2 tracks or more, up to 30 minutes                                            | EP     |
 
 Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Album, and 2 are left for you. The log says which sign decided.
+
+## Already in MusicBrainz?
+
+Before the release editor opens, First Contact looks the album up in MusicBrainz. A light on **Import to MusicBrainz** says what it found:
+
+| Light         | MusicBrainz has                                                    |
+| ------------- | ------------------------------------------------------------------ |
+| green         | a release with this album's link                                   |
+| yellow        | a release with its barcode                                         |
+| orange        | a release with a similar title, the same artist and track count    |
+| empty circle  | none of these (*On page load, link only*: no release has its link) |
+| dashed circle | the check failed; the import goes on without it                    |
+
+A release counts as this album unless its barcode, format (digital, CD, vinyl…) or track count differs. Other editions are listed too, greyed.
+
+When MusicBrainz may have the album, a panel lists those releases before the editor opens. For each:
+
+- **Update this release** opens it with [Mission Control](../mission_control/README.md), which compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.
+- **Add link only** opens its edit page with this album's links and an edit note. It shows only when the release lacks a link.
+
+**Import anyway** opens the release editor as usual. Mission Control adds links only for the platforms Platform Check knows: for Presto Music and Ototoy, use **Add link only**.
+
+The *Check MusicBrainz* [setting](#settings) says when the album is looked up:
+
+| Check MusicBrainz       |                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| On import               | when you click **Import to MusicBrainz**                                          |
+| On page load, link only | its link as the page opens, so the light shows at once; the rest on import        |
+| On page load, full      | the album is read and looked up as the page opens; the import then uses that read |
+| Off                     | never                                                                             |
 
 ## Consolidate
 
@@ -297,14 +328,15 @@ Drag the buttons anywhere; each platform remembers its place, and **⚙︎ → R
 
 ### Import
 
-| Setting                            | Default                   |                                                                                              |
-| ---------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------- |
-| MusicBrainz server                 | musicbrainz.org           | where the release editor opens: musicbrainz.org, beta or test                                |
-| Annotation from *platform*'s notes | on                        | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>* |
-| Close this page after the import   | off                       | the tab closes once the album is sent on; not on a failure                                   |
-| Consolidate button                 | on                        | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                      |
-| Send to Harmony button             | on                        | the [Harmony button](#send-to-harmony) before **⚙︎**                                         |
-| Harmony                            | harmony.pulsewidth.org.uk | which Harmony the [Harmony button](#send-to-harmony) opens: this one or harmony.mybrainz.dev |
+| Setting                            | Default                   |                                                                                                                     |
+| ---------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| MusicBrainz server                 | musicbrainz.org           | where the release editor opens and the album is [looked up](#already-in-musicbrainz): musicbrainz.org, beta or test |
+| Check MusicBrainz                  | On import                 | when the album is [looked up](#already-in-musicbrainz) in MusicBrainz                                               |
+| Annotation from *platform*'s notes | on                        | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*                        |
+| Close this page after the import   | off                       | the tab closes once the album is sent on; not on a failure                                                          |
+| Consolidate button                 | on                        | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                                             |
+| Send to Harmony button             | on                        | the [Harmony button](#send-to-harmony) before **⚙︎**                                                                |
+| Harmony                            | harmony.pulsewidth.org.uk | which Harmony the [Harmony button](#send-to-harmony) opens: this one or harmony.mybrainz.dev                        |
 
 A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
 

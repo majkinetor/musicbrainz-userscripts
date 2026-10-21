@@ -68,7 +68,7 @@ async function importToEditor({ page, context, inject }) {
 
 test.describe('anonymous', () => {
   test.use({
-    gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org' } } },
+    gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', check: 'off' } } },
     pageErrors: 'ignore',   // deezer.com's own scripts throw in an automated browser
   });
 
@@ -105,7 +105,7 @@ test.describe('anonymous', () => {
 // the keys as FC kept them before #736, in fc.settings: moved to the shared mbu.archive on start
 test.describe('with archive.org keys', () => {
   test.use({
-    gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', iaKey: 'AKEY', iaSecret: 'ASECRET' } } },
+    gm: { name: 'First Contact', persist: 'tabs', values: { 'fc.settings': { server: 'test.musicbrainz.org', iaKey: 'AKEY', iaSecret: 'ASECRET', check: 'off' } } },
     pageErrors: 'ignore',
   });
 
@@ -144,7 +144,7 @@ test.describe('with archive.org keys', () => {
 
 test.describe('settings', () => {
   test.use({
-    gm: { name: 'First Contact', values: { 'fc.settings': { server: 'test.musicbrainz.org' } } },
+    gm: { name: 'First Contact', values: { 'fc.settings': { server: 'test.musicbrainz.org', check: 'off' } } },
     pageErrors: 'ignore',
   });
 
