@@ -81,6 +81,12 @@ rk = mbmRankCandidates('Kim', [C('89ad4ac3-39f7-470e-963a-56509c546377', 'Kim')]
 ck(!rk.ranked.length && !rk.best, 'a special-purpose artist is never a candidate');
 rk = mbmRankCandidates('Joni', [C('j1', 'Joni Mitchell', { score: 80 })], {});
 ck(!rk.best, 'a weak candidate that does not even hold the name is never picked', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { sibling: [{ gid: 's3', why: 'producer on “X (deluxe)”' }] });
+ck(rk.best && rk.best.gid === 's3' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => x.text === 'same group' && /deluxe/.test(x.tip)), 'step 4: credited on another release of the group → strong pick, with the release', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { cocredit: [{ gid: 's1', n: 3, of: 'Toto' }] });
+ck(rk.best && rk.best.gid === 's1' && rk.ranked[0].reasons.some(x => x.text === 'co-credit' && /beside Toto on 3 recordings/.test(x.tip)), 'step 4: credited beside the release artist → strong pick', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { known: [{ gid: 's1', why: 'x' }], sibling: [{ gid: 's1', why: 'y' }] });
+ck(!rk.ranked[0].reasons.some(x => x.text === 'same group'), 'step 4: on the release already, the group adds nothing', rk.ranked[0].reasons);
 
 // sort-name guess, shared by Apollo and Credit Hoarder (#623)
 for (const [n, want] of [

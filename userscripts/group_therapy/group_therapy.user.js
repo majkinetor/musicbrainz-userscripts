@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.115735
+// @version      2026.10.21.121209
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4694,6 +4694,12 @@
           if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
           const rel = (c.related || []).find(x => x.gid === k.gid);
           if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
+          // step 4, opt-in: another release of the release group credits it, or a
+          // recording credits it beside the release artist
+          const sib = (c.sibling || []).filter(x => x.gid === k.gid);
+          if (sib.length && !known.length) add(50, 'same group', true, sib.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'On another release of this release group');
+          const co = (c.cocredit || []).find(x => x.gid === k.gid);
+          if (co && !known.length) add(40, 'co-credit', true, 'Credited beside ' + (co.of || 'the release artist') + ' on ' + co.n + ' recording' + (co.n === 1 ? '' : 's'));
           const holds = mbmHolds(k, name);
           if (holds === 'name') add(20, '');
           else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');
@@ -4887,6 +4893,61 @@
     const list = mbmRelatedArtists(j).map(x => ({ ...x, of: artist.name || j.name || '' }));
     _txpRelatedCache.set(artist.gid, list);
     return list;
+  }
+  // #798 step 4, opt-in ("More evidence"): who the other releases of the release
+  // group credit, up to 3 of them, once per page; and who recordings credit beside
+  // the release artist, for a name still left open. Approved on #798.
+  const _txpSiblingCache = new Map();
+  async function txpSiblingEvidence(rgGid, selfGid) {
+    if (!rgGid) return [];
+    if (_txpSiblingCache.has(rgGid)) return _txpSiblingCache.get(rgGid);
+    const out = new Map();   // gid -> { entity, names: Set, why: [] }
+    const note = (kind, e, credited, why) => {
+      if (!e || !e.id || (kind === 'artist' && MBM_SPECIAL_PURPOSE.has(e.id))) return;
+      let k = out.get(e.id);
+      if (!k) { k = { entity: { gid: e.id, name: e.name || '', entityType: kind }, names: new Set([e.name || '']), why: [] }; out.set(e.id, k); }
+      if (credited) k.names.add(credited);
+      if (why && !k.why.includes(why) && k.why.length < 3) k.why.push(why);
+    };
+    const rels = (list, where) => (list || []).forEach(r => { const t = r && r['target-type']; if (['artist', 'label', 'place'].includes(t)) note(t, r[t], r['target-credit'] || '', `${r.type} on ${where}`); });
+    const get = u => mbnFetch(u, { headers: { Accept: 'application/json' } }).then(r => r.json());
+    let list = [];
+    try { const j = await get(`/ws/2/release?release-group=${rgGid}&limit=25&fmt=json`); list = (j && j.releases) || []; }
+    catch (e) { return []; }   // transient: not cached
+    for (const rel of list.filter(r => r && r.id && r.id !== selfGid).slice(0, 3)) {
+      let j = null;
+      try { j = await get(`/ws/2/release/${rel.id}?inc=artist-credits+labels+artist-rels+label-rels+place-rels+recordings+recording-level-rels+work-level-rels+work-rels&fmt=json`); }
+      catch (e) { continue; }
+      if (!j || !j.id) continue;
+      const where = `“${j.title}”` + (j.disambiguation ? ` (${j.disambiguation})` : '') + (j.date ? ' ' + String(j.date).slice(0, 4) : '');
+      (j['artist-credit'] || []).forEach(c => c && note('artist', c.artist, c.name, `release artist of ${where}`));
+      (j['label-info'] || []).forEach(l => l && note('label', l.label, '', `label of ${where}`));
+      rels(j.relations, where);
+      (j.media || []).forEach(m => (m.tracks || []).forEach(t => {
+        const rec = (t && t.recording) || {};
+        (rec['artist-credit'] || t['artist-credit'] || []).forEach(c => c && note('artist', c.artist, c.name, `track artist on ${where}`));
+        rels(rec.relations, where);
+        (rec.relations || []).forEach(r => r && r.work && rels(r.work.relations, where));
+      }));
+    }
+    const res = [...out.values()];
+    _txpSiblingCache.set(rgGid, res);
+    return res;
+  }
+  const _txpCoCache = new Map();
+  async function txpCoCredits(seed, name) {
+    const key = seed + '|' + txpFold(name);
+    if (_txpCoCache.has(key)) return _txpCoCache.get(key);
+    const q = `arid:${seed} AND artistname:"${String(name).replace(/["\\]/g, ' ')}"`;
+    let j = null;
+    try { j = await mbnFetch(`/ws/2/recording?query=${encodeURIComponent(q)}&limit=25&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    catch (e) { return []; }
+    if (!j || j.error || !Array.isArray(j.recordings)) return [];
+    const n = new Map();   // gid -> { gid, name, n: recordings }
+    j.recordings.forEach(rec => mbmCoCreditHits({ recordings: [rec] }, seed, name).forEach(h => n.set(h.gid, { gid: h.gid, name: h.name, n: ((n.get(h.gid) || {}).n || 0) + 1 })));
+    const res = [...n.values()];
+    _txpCoCache.set(key, res);
+    return res;
   }
   // Your picks, remembered per release artist and name, so the next release of the
   // same artist starts from them.
@@ -5409,6 +5470,8 @@
     const LEVEL_RANK = { strong: 3, unique: 2, weak: 1 };
     let cutoff = (() => { try { return GM_getValue(TXP_CUT_KEY, 'unique'); } catch (e) { return 'unique'; } })();
     if (!LEVEL_RANK[cutoff]) cutoff = 'unique';
+    const TXP_DEEP_KEY = 'gt-tp-deep';   // #798 step 4: "More evidence", off by default
+    let deep = (() => { try { return !!GM_getValue(TXP_DEEP_KEY, false); } catch (e) { return false; } })();
     const releaseArtists = () => ((release.artistCredit && release.artistCredit.names) || []).map(n => n && n.artist).filter(a => a && a.gid && !MBM_SPECIAL_PURPOSE.has(a.gid));
     const releaseArtistGids = () => [...new Set(releaseArtists().map(a => a.gid))];
     // What the release already says: its credits, its labels and every relationship
@@ -5435,7 +5498,8 @@
       const related = [];
       for (const a of releaseArtists().slice(0, 4)) for (const r of await txpRelatedOf(a)) if (!related.some(x => x.gid === r.gid)) related.push(r);
       const ev = (release.events || [])[0] || {};
-      return { known: [...known.values()], related, year: (ev.date && ev.date.year) || null, area: (ev.country && ev.country.name) || null };
+      const sibling = deep ? await txpSiblingEvidence((release.releaseGroup && release.releaseGroup.gid) || null, release.gid) : [];
+      return { known: [...known.values()], related, sibling, year: (ev.date && ev.date.year) || null, area: (ev.country && ev.country.name) || null };
     }
     // a person for an instrument or a vocal, a group for an orchestra or a choir
     function txpWantFor(text, rows) {
@@ -5472,14 +5536,30 @@
         hs.forEach(h => { if (!pool.has(h.gid)) pool.set(h.gid, { gid: h.gid, name: h.name, kind, aliases: [], credited: true }); });
         relatedCtx = hs.map(h => ({ gid: h.gid, rel: h.rel, of: (pc.related.find(r => r.gid === h.gid) || {}).of || '' }));
       }
+      // #798 step 4: credited as this name on another release of the group
+      const sibs = ((pc && pc.sibling) || []).filter(k => k.entity.entityType === kind && [...k.names].some(n => mbmSameName(n, text)));
+      sibs.forEach(k => { if (!pool.has(k.entity.gid)) pool.set(k.entity.gid, { gid: k.entity.gid, name: k.entity.name, kind, aliases: [], credited: true }); });
+      const siblingCtx = sibs.map(k => ({ gid: k.entity.gid, why: k.why[0] }));
       const rec = txpRecalled(releaseArtistGids(), text);
       const remembered = rec && rec.kind === kind ? rec.gid : null;
       if (remembered && !pool.has(remembered)) pool.set(remembered, { gid: remembered, name: rec.name, kind, aliases: [], credited: true });
       // only a candidate that carries the name earns the release's evidence
       const knownCtx = known.filter(k => pool.has(k.entity.gid) && (pool.get(k.entity.gid).credited || holds(pool.get(k.entity.gid))))
         .map(k => ({ gid: k.entity.gid, why: k.why[0] }));
-      const r = mbmRankCandidates(text, [...pool.values()].map(c => c.credited ? { ...c, name: holds(c) ? c.name : text, shown: c.name } : c),
-        { remembered, known: knownCtx, related: relatedCtx, unique, want, year: pc && pc.year, area: pc && pc.area });
+      const rank = cocredit => mbmRankCandidates(text, [...pool.values()].map(c => c.credited ? { ...c, name: holds(c) ? c.name : text, shown: c.name } : c),
+        { remembered, known: knownCtx, related: relatedCtx, sibling: siblingCtx, cocredit, unique, want, year: pc && pc.year, area: pc && pc.area });
+      let r = rank([]);
+      // #798 step 4: a name still open asks who recordings credit beside the release artist
+      if (deep && kind === 'artist' && !r.best && r.ranked.length > 1) {
+        const co = [];
+        for (const a of releaseArtists().slice(0, 2)) {
+          for (const h of await txpCoCredits(a.gid, text)) {
+            co.push({ gid: h.gid, n: h.n, of: a.name || '' });
+            if (!pool.has(h.gid)) pool.set(h.gid, { gid: h.gid, name: h.name, kind, aliases: [], credited: true });
+          }
+        }
+        if (co.length) r = rank(co);
+      }
       const ranked = r.ranked.slice(0, 8).map(c => ({ ...c, name: c.shown || c.name, shown: undefined, kind }));
       const entities = {};   // the editor's own objects, so a pick needs no request
       known.forEach(k => { if (ranked.some(c => c.gid === k.entity.gid)) entities[k.entity.gid] = k.entity; });
@@ -5776,7 +5856,7 @@
     function rowEntityType(row) {
       const rt = (row.role || '').toLowerCase().trim();
       const cls = roleCache.get(rt);
-      return (cls && cls.forced) || txpAutoEntityType(row.entity, 'artist');
+      return (cls && cls.forced) || nameKind.get((row.entity || '').toLowerCase().trim()) || txpAutoEntityType(row.entity, 'artist');
     }
     function attachResolution(row) {
       row.key = row.li + ':' + row.pi + ':' + row.si;
@@ -6569,9 +6649,8 @@
           nameKind.set(nk, kind);
           const ent = entityCache.get(nk);
           if (ent && ent.entityType && ent.entityType !== kind) { entityCache.set(nk, null); pickInfo.set(nk, { by: 'you', none: true }); }
-          searchState.set(nk, { term: r.entity.trim(), kind });
-          render(); saveState();
-          txpRunSearch(nk, r.entity.trim());
+          searchState.delete(nk); candCache.delete(nk);   // that kind's candidates
+          render(); saveState(); scheduleMatch();
           return;
         }
         render(); saveState();
@@ -6925,7 +7004,12 @@
     hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), detSel, mbNameLbl, scopeWrap, worksWrap, el('span', 'gt-tp-grow'), cnt, busy, applyBtn);
     // the row: pattern, Freeze, the text; on the right the rarer settings
     const opts = el('span', 'gt-tp-opts');
-    opts.append(cutWrap, annoBtn, applyClearBtn);
+    // #798 step 4: more requests for more evidence, so you turn it on
+    const deepLbl = toggle('gt-tp-deep', 'More evidence', deep, 'More evidence for a name with several candidates\n'
+      + 'On: also who the other releases of this release group credit (3 of them), and who recordings credit beside the release artist\n'
+      + 'A few more MusicBrainz requests\nOff: this release only',
+      v => { deep = v; try { GM_setValue(TXP_DEEP_KEY, deep); } catch (e) {} candCache.clear(); render(); scheduleMatch(); });
+    opts.append(deepLbl, cutWrap, annoBtn, applyClearBtn);
     ctrl.append(pasteWrap, opts);
     const top = el('div', 'gt-tp-top');
     top.append(hdr, ctrl);
