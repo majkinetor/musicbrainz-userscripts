@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.180014
+// @version      2026.10.21.180216
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -2935,7 +2935,7 @@ function mountButton(provider, id) {
     go.dataset.tip = go.dataset.tipBase = `Import to MusicBrainz\nOpens the release editor with this ${provider.name} release filled in`;
     // #801: the light of a check already done for this album, or none
     const c = checks.get(checkKey(provider, id)) || {};
-    const r = c.result || c.linkResult;
+    const r = c.result;
     showLight(r ? r.light : c.busy ? 'busy' : null);
     showHarmony(root, provider);
     showCons(root, provider);
@@ -3287,7 +3287,7 @@ function togglePanel(anchor) {
         + SERVERS.map(h => `<option value="${h}"${h === s.server ? ' selected' : ''}>${h}</option>`).join('')
         + '</select></label>'
         // #801
-        + `<label data-tip="Look the album up in MusicBrainz before the release editor opens\nBy its link, its barcode, and its title and artist. If MusicBrainz may have it, you choose: update that release in Mission Control, add only the link, or import anyway.\n- On import: when you click Import\n- On page load, link only: the link as the page opens, its light on the button; Import checks in full\n- On page load, full: the album is read and checked as the page opens, its light on the button; Import uses that read">Check MusicBrainz <select class="fc-check-mode">`
+        + `<label data-tip="Look the album up in MusicBrainz before the release editor opens\nBy its link, its barcode, and its title and artist. If MusicBrainz may have it, you choose: update that release in Mission Control, add only the link, or import anyway.\n- On import: when you click Import\n- On page load: the album is read and checked as the page opens, its light on the button; Import uses that read">Check MusicBrainz <select class="fc-check-mode">`
         + CHECK_MODES.map(([v, t]) => `<option value="${v}"${v === checkMode() ? ' selected' : ''}>${t}</option>`).join('')
         + '</select></label>'
         + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
@@ -3673,8 +3673,7 @@ async function consolidateCurrent() {
 const CHECK_MODES = [
     ['off', 'Off'],
     ['import', 'On import'],
-    ['link', 'On page load, link only'],
-    ['read', 'On page load, full'],
+    ['load', 'On page load'],
 ];
 const UPDATE_PREFIX = HANDOFF_PREFIX + 'upd.';
 const LIGHTS = {
@@ -3683,12 +3682,11 @@ const LIGHTS = {
     barcode: 'MusicBrainz may have this album\nA release there has its barcode',
     similar: 'MusicBrainz may have this album\nA release there has a similar title and artist, and as many tracks',
     none: 'Not found in MusicBrainz\nNo release there has its link, its barcode, or its title and artist',
-    nolink: 'Its link is not in MusicBrainz\nImport looks for the barcode and the title too',
     failed: 'The MusicBrainz check failed\nSee the log',
 };
 const checks = new Map();   // provider id + album id → { light, releases, raw (the album read, unfinished), relP }
 const checkKey = (provider, id) => provider.id + ' ' + id;
-const checkMode = () => (CHECK_MODES.some(([v]) => v === settings().check) ? settings().check : 'import');
+const checkMode = () => { const m = settings().check; return m === 'link' || m === 'read' ? 'load' : CHECK_MODES.some(([v]) => v === m) ? m : 'import'; };
 
 // ws/2 through the manager: the JSON, null for a 404. One request a second, as MusicBrainz asks; a busy
 // server (503) is asked again twice.
@@ -3789,13 +3787,13 @@ async function checkLinks(links, by) {
         if (!e.how.includes('link')) e.how.push('link');
     }));
 }
-// The light and the releases for an album read (finished), or for its links alone (rel null)
+// The light and the releases for an album read (finished)
 async function checkAlbum(provider, id, rel) {
     const t0 = Date.now(), by = new Map();
     const links = albumLinks(provider, id, rel);
-    Log.info(`MusicBrainz check (${settings().server}): ${links.length} link form(s)${rel ? `, barcode ${rel.barcode || '—'}, "${rel.title}"` : ', the link only'}`);
+    Log.info(`MusicBrainz check (${settings().server}): ${links.length} link form(s), barcode ${rel.barcode || '—'}, "${rel.title}"`);
     await checkLinks(links, by);
-    if (rel) {
+    {
         const d = String(rel.barcode || '').replace(/\D/g, ''), core = bcCore(d);
         const forms = [...new Set([d, core, '0' + core, '00' + core])].filter(x => x.length >= 8 && x.length <= 14);
         if (core) {
@@ -3822,18 +3820,18 @@ async function checkAlbum(provider, id, rel) {
     }
     const releases = [...by.values()];
     releases.forEach(e => {
-        e.same = rel ? sameAlbum(e, rel) : true;
+        e.same = sameAlbum(e, rel);
         // found by its title only, it counts when the track count agrees (not only where one is unknown)
-        if (e.how.length === 1 && e.how[0] === 'title' && !(rel && e.tracks && e.tracks === relTracks(rel))) e.same = false;
+        if (e.how.length === 1 && e.how[0] === 'title' && !(e.tracks && e.tracks === relTracks(rel))) e.same = false;
     });
     const rank = e => (e.how.includes('link') ? 4 : 0) + (e.same ? 2 : 0) + (e.how.includes('barcode') ? 1 : 0);
     releases.sort((a, b) => rank(b) - rank(a));
     const light = releases.some(e => e.links.length) ? 'linked'
         : releases.some(e => e.same && e.how.includes('barcode')) ? 'barcode'
-        : releases.some(e => e.same) ? 'similar' : rel ? 'none' : 'nolink';
+        : releases.some(e => e.same) ? 'similar' : 'none';
     // a title-only hit that isn't this album is noise; another edition by link or barcode is worth a line
     const shown = releases.filter(e => e.same || e.how.some(h => h !== 'title'));
-    Log[light === 'none' || light === 'nolink' ? 'ok' : 'warn'](`MusicBrainz check: ${light} in ${Date.now() - t0} ms${shown.length ? ' · ' + shown.map(e => `${e.id} "${e.title}" ${e.format || '?'}, ${e.tracks == null ? '?' : e.tracks} tracks, barcode ${e.barcode || '—'} [${e.how.join('+')}${e.same ? ', this album' : ''}]`).join(' | ') : ''}`);
+    Log[light === 'none' ? 'ok' : 'warn'](`MusicBrainz check: ${light} in ${Date.now() - t0} ms${shown.length ? ' · ' + shown.map(e => `${e.id} "${e.title}" ${e.format || '?'}, ${e.tracks == null ? '?' : e.tracks} tracks, barcode ${e.barcode || '—'} [${e.how.join('+')}${e.same ? ', this album' : ''}]`).join(' | ') : ''}`);
     return { light, releases: shown };
 }
 
@@ -3860,28 +3858,23 @@ function readAlbum(provider, id, progress) {
     return c.relP;
 }
 const finishedCopy = (raw, provider) => finishRelease(JSON.parse(JSON.stringify(raw)), provider);
-// As the page opens (Check MusicBrainz: On page load): the link, or the album read and checked in full
+// As the page opens (Check MusicBrainz: On page load): the album read and checked
 async function checkOnLoad(provider, id) {
-    const mode = checkMode();
-    if (mode !== 'link' && mode !== 'read') return;
+    if (checkMode() !== 'load') return;
     const key = checkKey(provider, id), c = checks.get(key) || {};
     checks.set(key, c);
-    if (c.result || c.linkResult || c.busy) return;
+    if (c.result || c.busy) return;
     c.busy = true;
     const here = () => current && checkKey(current.provider, current.id) === key;
-    // a read waits for the page to settle: the readers of a page's own data need it drawn
-    if (mode === 'read') { await new Promise(r => setTimeout(r, 2000)); if (!here()) { c.busy = false; return; } }
+    // the read waits for the page to settle: the readers of a page's own data need it drawn
+    await new Promise(r => setTimeout(r, 2000));
+    if (!here()) { c.busy = false; return; }
     showLight('busy');
-    const p = (async () => {
-        const rel = mode === 'read' ? finishedCopy(await readAlbum(provider, id), provider) : null;
-        const r = await checkAlbum(provider, id, rel);
-        if (rel) c.result = r; else c.linkResult = r;
-        return rel ? r : null;
-    })();
-    if (mode === 'read') c.checkP = p;
+    const p = (async () => (c.result = await checkAlbum(provider, id, finishedCopy(await readAlbum(provider, id), provider))))();
+    c.checkP = p;
     try {
         await p;
-        if (here()) showLight((c.result || c.linkResult).light);
+        if (here()) showLight(c.result.light);
     } catch (e) {
         Log.warn(`MusicBrainz check on load failed: ${e.message}`);
         if (here()) showLight('failed');

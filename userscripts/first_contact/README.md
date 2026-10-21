@@ -60,13 +60,13 @@ Without every track's length: 1 track is a Single, 3 to 6 an EP, 7 or more an Al
 
 Before the release editor opens, First Contact looks the album up in MusicBrainz. A light on **Import to MusicBrainz** says what it found:
 
-| Light         | MusicBrainz has                                                    |
-| ------------- | ------------------------------------------------------------------ |
-| green         | a release with this album's link                                   |
-| yellow        | a release with its barcode                                         |
-| orange        | a release with a similar title, the same artist and track count    |
-| empty circle  | none of these (*On page load, link only*: no release has its link) |
-| dashed circle | the check failed; the import goes on without it                    |
+| Light         | MusicBrainz has                                                 |
+| ------------- | --------------------------------------------------------------- |
+| green         | a release with this album's link                                |
+| yellow        | a release with its barcode                                      |
+| orange        | a release with a similar title, the same artist and track count |
+| empty circle  | none of these                                                   |
+| dashed circle | the check failed; the import goes on without it                 |
 
 A release counts as this album unless its barcode, format (digital, CD, vinyl…) or track count differs. Other editions are listed too, greyed. Icons under each release say what agrees with the album, marked ✓ (the link, barcode, title, track count, format and date), and what differs, marked ≠ in amber; hover one to compare the two.
 
@@ -79,12 +79,11 @@ When MusicBrainz may have the album, a panel lists those releases before the edi
 
 The *Check MusicBrainz* [setting](#settings) says when the album is looked up:
 
-| Check MusicBrainz       |                                                                                   |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| On import               | when you click **Import to MusicBrainz**                                          |
-| On page load, link only | its link as the page opens, so the light shows at once; the rest on import        |
-| On page load, full      | the album is read and looked up as the page opens; the import then uses that read |
-| Off                     | never                                                                             |
+| Check MusicBrainz |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| On import         | when you click **Import to MusicBrainz**                                 |
+| On page load      | as the page opens, so the light shows at once; the import uses that read |
+| Off               | never                                                                    |
 
 ## Consolidate
 

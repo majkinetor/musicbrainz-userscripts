@@ -100,12 +100,12 @@ test.describe('on a Deezer album the sandbox has', () => {
     check(seed > 50, `the seed was built (${seed} parameters)`);
   });
 
-  test('On page load, link only: the button wears the light before any click', { tag: ['@web', '@sandbox'] }, async ({ page, inject }) => {
+  test('On page load: the button wears the light before any click', { tag: ['@web', '@sandbox'] }, async ({ page, inject }) => {
     await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });
-    await page.evaluate(() => GM_setValue('fc.settings', { server: 'test.musicbrainz.org', archive: false, check: 'link' }));
+    await page.evaluate(() => GM_setValue('fc.settings', { server: 'test.musicbrainz.org', archive: false, check: 'load' }));
     await inject('first_contact', { waitFor: '__fcTest' });
     const light = await until(() => page.locator('#fc-root .fc-go .fc-light').getAttribute('data-light').catch(() => null), v => v === 'linked', { timeout: 30_000 });
-    check(light === 'linked', `the link is on a release: linked (${light})`);
+    check(light === 'linked', `the album is read and looked up as the page opens: linked (${light})`);
     const tip = await page.locator('#fc-root .fc-go').getAttribute('data-tip');
     check(/MusicBrainz has this album/.test(tip), `the tooltip says so (${tip})`);
   });
