@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.104519
+// @version      2026.10.21.104619
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5156,9 +5156,9 @@
       + '.gt-tp-dd-it{display:flex;align-items:baseline;gap:8px;border:none;background:none;padding:4px 10px;text-align:left;cursor:pointer;font:inherit}.gt-tp-dd-it:hover,.gt-tp-dd-on{background:var(--mbu-bg-hover)}'
       + '.gt-tp-dd-pat{font:12.5px monospace;color:var(--mbu-text)}.gt-tp-dd-ex{font-size:11px;color:var(--mbu-text-weak)}'
       + '.gt-tp-freeze{flex:0 0 auto;height:28px;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:0 7px;font-size:12px;line-height:1}.gt-tp-freeze:hover{background:var(--mbu-bg-hover)}'
-      + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0}'
+      + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0;height:28px}'   /* the open box floats: nothing below moves when it closes, so a click there lands */
       + '.gt-tp-ta{display:block;width:100%;height:28px;box-sizing:border-box;padding:0 80px 0 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px/26px monospace;outline:none;resize:none;overflow:hidden;white-space:pre;background:var(--mbu-bg)}'
-      + '.gt-tp-ta.gt-tp-ta-open{padding:5px 8px;line-height:1.4;overflow:auto;white-space:pre-wrap;border-color:var(--mbu-info)}'
+      + '.gt-tp-ta.gt-tp-ta-open{position:absolute;top:0;left:0;right:0;z-index:7;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:5px 8px;line-height:1.4;overflow:auto;white-space:pre-wrap;border-color:var(--mbu-info)}'
       + '.gt-tp-lines{position:absolute;right:6px;top:5px;border:none;background:var(--mbu-bg);padding:0 2px;font-size:11px;color:var(--mbu-text-weak);cursor:pointer}.gt-tp-paste-open .gt-tp-lines{display:none}'
       + '.gt-tp-opts{flex:none;display:flex;align-items:center;gap:10px;height:28px}'
       + '.gt-tp-opts .gt-tp-cut select{border:none;background:transparent;font-weight:600;cursor:pointer}'
