@@ -16,7 +16,7 @@
 // aborted and asserted zero at the end. Staged relationships live in the
 // editor's own state until someone presses Enter edit, which this never does.
 import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
-import { blockEdits } from './gt.mjs';
+import { blockEdits, tpPaste, tpApply } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -57,10 +57,7 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
     'all / no-match / empty behave (' + specs.all.length + ', ' + specs.none.length + ', ' + specs.empty.length + ')');
 
   // ── drive the parser ────────────────────────────────────────────────────────
-  await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
-    if (b) b.click();
-  });
+  await page.click('.gt-clone-btn:has-text("Text parser")');
   await page.waitForSelector('.gt-tp', { timeout: 15000 });
   await frames(page);
   check(await page.locator('.gt-tp-scope-sel').count() === 1, 'the parser offers a scope picker rather than a fixed "Scope: Release" pill');
@@ -88,32 +85,10 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
   check(roles.relOnly.length > 0 && roles.recOnly.length > 0, 'the two vocabularies really do differ, so following the scope matters');
 
   // ── parse + resolve + apply ─────────────────────────────────────────────────
-  await page.evaluate(() => {
-    const ta = document.querySelector('.gt-tp-src textarea, .gt-tp textarea');
-    if (ta) { ta.value = 'Producer: もちこまめ'; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-    const pat = document.querySelector('.gt-tp-pat');
-    if (pat) { pat.value = 'R: E'; pat.dispatchEvent(new Event('input', { bubbles: true })); }
-  });
-  await frames(page);
-  await page.evaluate(() => {
-    const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match/i.test(x.textContent || ''));
-    if (b) b.click();
-  });
-  await page.waitForFunction(() => {
-    const b = [...document.querySelectorAll('.gt-tp button')].find(x => /Match/i.test(x.textContent || ''));
-    return b && !/Matching|Resolving/i.test(b.textContent);
-  }, null, { timeout: 30000 }).catch(() => {});
-  await frames(page);
+  await tpPaste(page, 'Producer: もちこまめ', 'R: E');
 
   const before = await page.evaluate(() => window.__groupTherapy.txpTrackRows().map(r => ({ num: r.num, rels: (r.rec.relationships || []).length })));
-  const applied = await page.evaluate(() => {
-    const b = [...document.querySelectorAll('.gt-tp button')].find(x => /^Apply$/i.test((x.textContent || '').trim()));
-    if (!b) return 'no Apply button';
-    b.click();
-    return 'clicked';
-  });
-  console.log('apply: ' + applied);
-  await until(() => page.isVisible('.gt-cons.gt-tp'), v => !v);   // applied: the window closes
+  await tpApply(page);   // applied: the parser closes
   await frames(page);
 
   // Read the editor's own state: which recordings gained a staged relationship?
@@ -150,17 +125,10 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
   check(/Parsed \d+ credits? from text to 2 recordings/.test(note), 'the edit note records how many recordings were credited');
   check(/tracks 1, 3/.test(note), 'and names the tracks — ' + JSON.stringify((note.match(/\(tracks?[^)]*\)/) || [])[0] || ''));
 
-  // ── layout: the top bar stays one row, scope sits opposite Apply ────────────
-  // majkinetor, twice: "With enough tracks, Match button goes to next row", then
-  // "We again have new row, this time for out of the box patterns … Move scope to
-  // the bottom, opposite of Apply." So the top bar carries pattern · presets ·
-  // Match on ONE row and the scope control lives in the footer. Tolerances are
-  // used deliberately — these elements are different heights, so their tops
-  // differ by a pixel or two on the same visual row.
-  await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
-    if (b) b.click();
-  });
+  // ── layout ──────────────────────────────────────────────────────────────────
+  // #798: the settings, Scope with them, are on the top row with Apply last; the
+  // pattern is on the row below. A long selection is summarised.
+  await page.click('.gt-clone-btn:has-text("Text parser")');
   await page.waitForSelector('.gt-tp-tracks', { timeout: 15000 });
   await page.selectOption('.gt-tp-scope-sel', 'recording');
   await page.fill('.gt-tp-tracks', 'all');
@@ -168,17 +136,14 @@ test('the text parser can credit recordings picked by track number', { tag: ['@s
   const geo = await page.evaluate(() => {
     const r = sel => { const b = document.querySelector(sel).getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left), right: Math.round(b.right) }; };
     return {
-      pat: r('.gt-tp-pat'), presets: r('.gt-tp-presets'), match: r('.gt-tp-resolve'),
-      scope: r('.gt-tp-scope'), apply: r('.gt-cons-apply'),
+      pat: r('.gt-tp-pat'), scope: r('.gt-tp-scope-sel'), apply: r('.gt-tp .gt-cons-apply'),
       info: (document.querySelector('.gt-tp-tracks-info').textContent || '').trim(),
     };
   });
   console.log('layout: ' + JSON.stringify(geo));
-  check(Math.abs(geo.match.top - geo.pat.top) < 12, 'Match is on the pattern row');
-  check(Math.abs(geo.presets.top - geo.pat.top) < 12, 'and so are the preset chips — the top bar is one row');
-  check(Math.abs(geo.scope.top - geo.apply.top) < 16, 'the scope control sits in the footer, on the Apply row');
-  check(geo.scope.right < geo.apply.left, 'at the opposite end from Apply');
-  check(geo.scope.top > geo.pat.top, 'i.e. below the toolbar, not in it');
+  check(Math.abs(geo.scope.top - geo.apply.top) < 16, 'the scope control is on the top row, with Apply');
+  check(geo.scope.right < geo.apply.left, 'Apply last, to its right');
+  check(geo.pat.top > geo.scope.top, 'the pattern on the row below');
   check(/\+\d+$/.test(geo.info) || geo.info.split(',').length <= 7, 'a long selection is summarised rather than listed in full — ' + JSON.stringify(geo.info));
 
   check(posts.length === 0, `nothing was submitted (${posts.length} POSTs to /edit)`);

@@ -1,23 +1,24 @@
 // #544 round 4 (majkinetor), four text-parser UX items:
 //
-//   1. right-clicking (+) closes the search popup at once and marks the row
-//      "creating …", which resolves to the entity when the background tab
-//      commits — so a run of names can be fired off without babysitting tabs
-//   2. a disambiguation in the search results must not read as part of the name
-//   3. the entity popup sat on the viewport edge, under the scrollbar
+//   1. right-clicking (+) marks the row "creating …", which resolves to the entity
+//      when the background tab commits — so a run of names can be fired off
+//      without babysitting tabs
+//   2. a disambiguation in the candidates must not read as part of the name
+//   3. the entity popup sat on the viewport edge, under the scrollbar (#798: no
+//      popup any more; the search is in the row)
 //   4. the role picker's ✕ was glued to the title instead of the top right
 //
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero. GM_openInTab is mocked, so item 1's "background
 // tab" is simulated by posting the create's own token back over the same
 // BroadcastChannel the real created page uses — no entity is created here.
-// (live-544-background-tab-closes.mjs already proves the real round trip.)
+// (598-two-background-creates proves the real round trip.)
 import { test, check, requireLogin, SANDBOX, attachShot, settled, idle, frames } from '../../../dev/test/harness.mjs';
-import { blockEdits } from './gt.mjs';
+import { blockEdits, tpPaste, tpRow, tpCredits, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser: background create marks the row, disambiguations, popup placement, the picker close button', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
+test('the text parser: background create marks the row, disambiguations, the picker close button', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
   const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   const NL = String.fromCharCode(10);
 
@@ -34,219 +35,90 @@ test('the text parser: background create marks the row, disambiguations, popup p
   await inject('group_therapy');
   await idle(page);
 
-  const openParser = async () => {
-    if (await page.locator('.gt-tp').count()) return;
-    await page.evaluate(() => {
-      const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
-      if (b) b.click();
-    });
-    await page.waitForSelector('.gt-tp', { timeout: 15000 });
-    await frames(page);
-  };
-  const setText = async (text, pat) => {
-    await page.evaluate(({ text, pat }) => {
-      const ta = document.querySelector('.gt-tp textarea');
-      if (ta) { ta.value = text; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-      const p = document.querySelector('.gt-tp-pat');
-      if (p) { p.value = pat; p.dispatchEvent(new Event('input', { bubbles: true })); }
-    }, { text, pat });
-    await frames(page);
-  };
-  // open the entity picker on the Nth row (0-based)
-  const openEntityPicker = async (n) => page.evaluate(i => {
-    const rows = [...document.querySelectorAll('.gt-tp-tbl tbody tr')];
-    const btns = [...rows[i].querySelectorAll('button.gt-tp-search')];
-    const b = btns[btns.length - 1];
-    if (!b) return false;
-    b.click(); return true;
-  }, n);
-  // Dismissing a popover installs a one-shot capture handler that SWALLOWS the
-  // next click (#305, so dismissing can't activate what's underneath). A test that
-  // dismisses and then clicks would have that click eaten — spend it on a dummy.
-  const dismissPopover = async () => {
-    await page.evaluate(async () => {
-      document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-      await new Promise(r => requestAnimationFrame(r));
-      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));   // eaten by the swallower
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    });
-  };
-
-  await openParser();
-
-  // ── 1. background create: popup closes, row says "creating …", then resolves ──
+  // ── 1. background create: the row says "creating …", then resolves ──────────
   // TWO lines share the same unresolvable name, to prove the resolution is bulk:
-  // "creating…" must appear on both, and both must flip together.
+  // both credits must flip together.
   const NAME = 'Zzq Unresolvable Person Xyzzy';
-  await setText(`Producer: ${NAME}${NL}Mixer: ${NAME}${NL}Guitar: Someone Else Entirely`, 'R: E');
-  check(await openEntityPicker(0), 'an unresolved row offers an entity search button');
-  await page.waitForSelector('.gt-tp-apop', { timeout: 8000 }).catch(() => {});
-  check(await page.locator('.gt-tp-apop').count() > 0, 'the entity picker opens (otherwise nothing below proves anything)');
-
-  const afterRightClick = await page.evaluate(async () => {
-    const plus = document.querySelector('.gt-tp-plus');
-    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
-    plus.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-    await eventually(() => window.__gtOpened);   // the background tab was asked for
-    return {
-      popupOpen: !!document.querySelector('.gt-tp-apop'),
-      opened: window.__gtOpened ? window.__gtOpened.u : null,
-      active: window.__gtOpened ? window.__gtOpened.o.active : null,
-      creating: [...document.querySelectorAll('.gt-tp-creating')].map(e => e.textContent.trim()),
-      // one line or two: the label used to wrap in the narrow entity column.
-      // Measured by HEIGHT vs line-height — a Range over an inline-block with
-      // overflow:hidden reports its clipped rects, not how many lines were drawn.
-      creatingLines: (() => {
-        const e = document.querySelector('.gt-tp-creating');
-        if (!e) return 0;
-        const lh = parseFloat(getComputedStyle(e).lineHeight) || parseFloat(getComputedStyle(e).fontSize) * 1.2;
-        return Math.max(1, Math.round(e.getBoundingClientRect().height / lh));
-      })(),
-      rows: [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(r => (r.innerText || '').replace(/\s+/g, ' ').trim()),
-    };
-  });
-  console.log('after right-click +: ' + JSON.stringify({ popupOpen: afterRightClick.popupOpen, active: afterRightClick.active, creating: afterRightClick.creating }));
-  check(!!afterRightClick.opened && afterRightClick.active === false, 'right-click + still opens the create tab in the background');
-  check(!afterRightClick.popupOpen, '#1: the search popup closes immediately — no waiting on the tab');
-  check(afterRightClick.creating.length === 2, 'and BOTH rows with that name say "creating…" (' + afterRightClick.creating.length + ')');
-  check(/^creating\s*“Zzq/i.test(afterRightClick.creating[0] || ''), 'the placeholder names what is being created — ' + JSON.stringify(afterRightClick.creating[0] || ''));
-  check(afterRightClick.creatingLines === 1, 'and fits on one line in the narrow entity column (' + afterRightClick.creatingLines + ')');
-  check(!/creating/i.test(afterRightClick.rows[2] || ''), 'the unrelated third row is untouched');
+  await tpPaste(page, `Producer: ${NAME}${NL}Mixer: ${NAME}${NL}Guitar: Someone Else Entirely`, 'R: E');
+  const row = tpRow(page, NAME), other = tpRow(page, 'Someone Else Entirely');
+  check(await row.locator('.gt-tp-plus').count() === 1, 'an unresolved name offers + to create it');
+  await row.locator('.gt-tp-plus').dispatchEvent('contextmenu');
+  await page.waitForFunction(() => window.__gtOpened, null, { timeout: 10000 });
+  await frames(page);
+  const after = await page.evaluate(() => ({
+    opened: window.__gtOpened ? window.__gtOpened.u : null,
+    active: window.__gtOpened ? window.__gtOpened.o.active : null,
+    creating: [...document.querySelectorAll('.gt-tp-creating')].map(e => e.textContent.trim()),
+    // one line or two, by HEIGHT vs line-height
+    creatingLines: (() => {
+      const e = document.querySelector('.gt-tp-creating');
+      if (!e) return 0;
+      const lh = parseFloat(getComputedStyle(e).lineHeight) || parseFloat(getComputedStyle(e).fontSize) * 1.2;
+      return Math.max(1, Math.round(e.getBoundingClientRect().height / lh));
+    })(),
+  }));
+  console.log('after right-click +: ' + JSON.stringify(after));
+  check(!!after.opened && after.active === false, 'right-click + opens the create tab in the background');
+  check(after.creating.length === 1 && await row.locator('.gt-tp-creating').count() === 1, 'the name\'s row says "creating…" (' + after.creating.length + ')');
+  check(/^creating\s*“Zzq/i.test(after.creating[0] || ''), 'the placeholder names what is being created — ' + JSON.stringify(after.creating[0] || ''));
+  check(after.creatingLines === 1, 'and fits on one line (' + after.creatingLines + ')');
+  check(await other.locator('.gt-tp-creating').count() === 0, 'the unrelated row is untouched');
   await attachShot(testInfo, page.locator('.gt-tp'), 'i544r4-creating');
 
   // meanwhile the parser must still be usable — that is the entire point
-  check(await openEntityPicker(2), 'another row can be worked on while the create is in flight');
-  await frames(page);
-  check(await page.locator('.gt-tp-apop').count() > 0, 'its picker opens normally');
-  await dismissPopover();
+  await other.locator('.gt-tp-esrch-q').fill('Someone Else');
+  await other.locator('.gt-tp-esrch-q').press('Enter');
+  await tpSettle(page);
+  check(await other.locator('.gt-tp-cand, .gt-tp-enone').count() > 0, 'another row can be searched while the create is in flight');
 
   // now let the "background tab" report the created MBID, exactly as the real
   // created page does: same channel, the token out of the create URL it opened.
+  const GID = '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7';
   const resolved = await page.evaluate(async ({ gid }) => {
     const u = new URL(window.__gtOpened.u, location.origin);
     const token = u.searchParams.get('x_gtcreate');
     const ch = new BroadcastChannel('gt-entity-created');
     ch.postMessage({ token, kind: 'artist', gid });
     for (let i = 0; i < 80 && document.querySelector('.gt-tp-creating'); i++) await new Promise(r => setTimeout(r, 100));
-    return {
-      token,
-      stillCreating: document.querySelectorAll('.gt-tp-creating').length,
-      tabClosed: window.__gtClosed === true,
-      rows: [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(r => (r.innerText || '').replace(/\s+/g, ' ').trim()),
-    };
-  }, { gid: '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7' });
-  console.log('after the tab reports back: ' + JSON.stringify({ stillCreating: resolved.stillCreating, tabClosed: resolved.tabClosed, rows: resolved.rows.slice(0, 2) }));
+    return { token, stillCreating: document.querySelectorAll('.gt-tp-creating').length, tabClosed: window.__gtClosed === true };
+  }, { gid: GID });
+  const bound = (await tpCredits(page)).filter(c => c.entity === NAME);
+  console.log('after the tab reports back: ' + JSON.stringify({ ...resolved, bound }));
   check(!!resolved.token, 'the create URL carried a token to answer on');
   check(resolved.stillCreating === 0, '#1: "creating…" clears once the entity lands');
   check(resolved.tabClosed, 'and the opener closes the background tab');
-  check(/もちこまめ/.test(resolved.rows[0] || '') && /もちこまめ/.test(resolved.rows[1] || ''),
-    'BOTH rows resolved to the new entity, not just the one the picker was opened from');
+  check(bound.length === 2 && bound.every(c => c.gid === GID), 'BOTH credits with the name resolved to the new entity');
 
   // ── 2. disambiguation is styled apart from the name ─────────────────────────
-  await setText(`Producer: Fiona${NL}Guitar: Someone Else Entirely`, 'R: E');
-  check(await openEntityPicker(0), 'the picker reopens for the disambiguation check');
-  await page.waitForSelector('.gt-tp-apop', { timeout: 8000 }).catch(() => {});
-  await page.evaluate(() => { const q = document.querySelector('.gt-tp-q'); q.value = 'Fiona'; q.dispatchEvent(new Event('input', { bubbles: true })); });
-  await page.waitForFunction(() => document.querySelectorAll('.gt-tp-apop .gt-tp-res').length > 0, null, { timeout: 20000 }).catch(() => {});
-  const disamb = await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('.gt-tp-apop .gt-tp-res')];
+  await tpPaste(page, `Producer: Fiona${NL}Guitar: Someone Else Entirely`, 'R: E');
+  const fiona = tpRow(page, 'Fiona');
+  if (!(await fiona.locator('.gt-tp-disamb').count())) {
+    // picked already (one Fiona stands out): ✕ brings the candidates back
+    if (await fiona.locator('.gt-tp-cand-x').count()) { await fiona.locator('.gt-tp-cand-x').click(); await tpSettle(page); }
+  }
+  const disamb = await fiona.evaluate(tr => {
+    const rows = [...tr.querySelectorAll('.gt-tp-cand')];
     const withD = rows.find(r => r.querySelector('.gt-tp-disamb'));
     if (!withD) return { none: true, rows: rows.length };
-    const n = withD.querySelector('.gt-tp-resname'), d = withD.querySelector('.gt-tp-disamb');
+    const n = withD.querySelector('.gt-tp-cand-name'), d = withD.querySelector('.gt-tp-disamb');
     const cs = e => { const s = getComputedStyle(e); return { size: s.fontSize, style: s.fontStyle, color: s.color, weight: s.fontWeight }; };
     return { none: false, rows: rows.length, name: n.textContent, disamb: d.textContent, nameCss: cs(n), disambCss: cs(d) };
   });
   console.log('disambiguation: ' + JSON.stringify(disamb));
-  check(!disamb.none, 'at least one result carries a disambiguation (' + disamb.rows + ' results)');
+  check(!disamb.none, 'at least one candidate carries a disambiguation (' + disamb.rows + ' candidates)');
   if (!disamb.none) {
     check(!/\(/.test(disamb.name), '#2: the name element holds ONLY the name — ' + JSON.stringify(disamb.name));
     check(disamb.disambCss.style === 'italic', 'the disambiguation is italic and the name is not (' + disamb.nameCss.style + ')');
     check(disamb.disambCss.color !== disamb.nameCss.color, 'and a different colour');
     check(parseFloat(disamb.disambCss.size) < parseFloat(disamb.nameCss.size), 'and smaller (' + disamb.disambCss.size + ' vs ' + disamb.nameCss.size + ')');
   }
-  await attachShot(testInfo, page.locator('.gt-tp-apop'), 'i544r4-disamb');
+  await attachShot(testInfo, fiona, 'i544r4-disamb');
 
-  // ── 3. the popup must not sit under the scrollbar ───────────────────────────
-  // The reported case is a parser as wide as the window (in the page since #798), with a classic
-  // scrollbar: the anchor sits hard against the right edge, and the old clamp
-  // measured against window.innerWidth, which includes the scrollbar.
-  //
-  // ⚠ Headless Chromium always reports a ZERO-width scrollbar (overlay
-  // scrollbars; --disable-features=OverlayScrollbar and ::-webkit-scrollbar both
-  // measured 0), so the scrollbar cannot simply be created here. It is emulated
-  // further down by overriding clientWidth — which tests the thing that actually
-  // changed: that the clamp reads clientWidth and not innerWidth.
-  await dismissPopover();
-  await page.setViewportSize({ width: 900, height: 800 });
-  await frames(page);
-  const geo = await page.evaluate(async () => {
-    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
-    const frame = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    await frame();
-    const rows = [...document.querySelectorAll('.gt-tp-tbl tbody tr')];
-    const btns = [...rows[1].querySelectorAll('button.gt-tp-search')];
-    const anchorBtn = btns[btns.length - 1];
-    anchorBtn.click();
-    await eventually(() => document.querySelector('.gt-tp-apop'));
-    await frame();   // positioned
-    const pop = document.querySelector('.gt-tp-apop');
-    if (!pop) return { missing: true };
-    const p = pop.getBoundingClientRect(), anchor = anchorBtn.getBoundingClientRect();
-    const clientW = document.documentElement.clientWidth;
-    return {
-      missing: false,
-      popLeft: Math.round(p.left), popRight: Math.round(p.right), popTop: Math.round(p.top), popBottom: Math.round(p.bottom), popW: Math.round(p.width),
-      anchorLeft: Math.round(anchor.left), anchorRight: Math.round(anchor.right),
-      clientW, clientH: document.documentElement.clientHeight,
-      innerW: window.innerWidth, scrollbar: window.innerWidth - clientW,
-    };
-  });
-  console.log('popup geometry: ' + JSON.stringify(geo));
-  check(!geo.missing, 'the popup opened');
-  if (!geo.missing) {
-    check(geo.anchorLeft > geo.clientW * 0.5, 'the anchor really is in the right half — the reported case (' + geo.anchorLeft + ' of ' + geo.clientW + ')');
-    check(geo.popRight <= geo.clientW - 12, '#3: the popup keeps a visible gap from the right edge (' + (geo.clientW - geo.popRight) + 'px)');
-    check(geo.popRight <= geo.anchorRight + 2, 'it right-aligns to the anchor rather than overflowing past it');
-    check(geo.popLeft >= 12 && geo.popTop >= 12, 'it is clear of the top and left edges too');
-    check(geo.popBottom <= geo.clientH, 'and does not run off the bottom');
-  }
-  // The scrollbar half of the fix, emulated: make clientWidth 15px narrower than
-  // innerWidth (what a classic scrollbar does) and re-trigger a reposition. The
-  // old clamp used innerWidth, so it would place the popup INSIDE that 15px strip;
-  // the new one must stay clear of it.
-  const sb = await page.evaluate(async () => {
-    const SB = 15, inner = window.innerWidth;
-    Object.defineProperty(document.documentElement, 'clientWidth', { get: () => inner - SB, configurable: true });
-    const q = document.querySelector('.gt-tp-q');
-    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
-    q.value = 'Fio'; q.dispatchEvent(new Event('input', { bubbles: true }));   // any input re-runs reposition
-    await eventually(() => document.querySelectorAll('.gt-tp-apop .gt-tp-res').length > 0);   // the results are in
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // and repositioned
-    const pop = document.querySelector('.gt-tp-apop');
-    const p = pop.getBoundingClientRect();
-    const anchor = document.querySelector('.gt-tp-tbl tbody tr:nth-child(2) button.gt-tp-search');
-    const ar = anchor ? anchor.getBoundingClientRect() : null;
-    const out = {
-      popRight: Math.round(p.right), popW: Math.round(p.width), inner, clientW: document.documentElement.clientWidth,
-      // what the OLD clamp (innerWidth, 8px margin) would have produced
-      oldRight: Math.round(Math.min(ar ? ar.left : 0, inner - p.width - 8) + p.width),
-    };
-    delete document.documentElement.clientWidth;
-    return out;
-  });
-  console.log('with a 15px scrollbar emulated: ' + JSON.stringify(sb));
-  check(sb.clientW === sb.inner - 15, 'clientWidth really was narrowed (' + sb.clientW + ' vs innerWidth ' + sb.inner + ')');
-  check(sb.oldRight > sb.clientW, 'the OLD clamp would have run under that scrollbar (' + sb.oldRight + ' > ' + sb.clientW + ') — so this is not a vacuous check');
-  check(sb.popRight <= sb.clientW - 12, '#3: the new clamp stays clear of it (' + sb.popRight + ' ≤ ' + (sb.clientW - 12) + ')');
-  await attachShot(testInfo, page, 'i544r4-popup-pos');
+  // ── 3. (#798) no popup to place: the search is the row's own ────────────────
+  check(await page.locator('.gt-tp-apop').count() === 0, 'no entity popup at all');
 
   // ── 4. the role picker's ✕ sits top-right ───────────────────────────────────
-  await dismissPopover();
-  await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('.gt-tp-tbl tbody tr')];
-    const b = [...rows[1].querySelectorAll('button.gt-tp-search')][0];
-    if (b) b.click();
-  });
+  await fiona.locator('.gt-tp-role-pick').first().click();
   await page.waitForSelector('.gt-role-pick', { timeout: 8000 }).catch(() => {});
   const xGeo = await page.evaluate(() => {
     const hdr = document.querySelector('.gt-role-pick .gt-cons-hdr');
@@ -254,11 +126,6 @@ test('the text parser: background create marks the row, disambiguations, popup p
     const x = hdr.querySelector('.gt-cons-x'), title = hdr.querySelector('.gt-cons-title');
     if (!x || !title) return { missing: true, why: 'no ✕ or no titled span' };
     const h = hdr.getBoundingClientRect(), xr = x.getBoundingClientRect(), t = title.getBoundingClientRect();
-    // the ✕ is pushed right by the title span's `flex:1` — so what proves the fix
-    // is that the title BOX spans the header (it used to be shrink-to-fit, leaving
-    // the ✕ glued to the end of the words), and the ✕ ends up at the right edge.
-    // scrollWidth on a flex:1 span is its own box width, not the text's — measure
-    // the text itself with a Range, or the comparison below is width vs width.
     const rng = document.createRange(); rng.selectNodeContents(title);
     const textW = Math.round(rng.getBoundingClientRect().width);
     return { missing: false, gapToRight: Math.round(h.right - xr.right), titleBoxW: Math.round(t.width), titleTextW: textW, hdrW: Math.round(h.width) };
@@ -267,7 +134,6 @@ test('the text parser: background create marks the row, disambiguations, popup p
   check(!xGeo.missing, 'the role picker header has a titled span and a ✕');
   if (!xGeo.missing) {
     check(xGeo.gapToRight <= 20, '#4: the ✕ is pinned to the right edge of the header (' + xGeo.gapToRight + 'px from it)');
-    check(xGeo.titleBoxW > xGeo.hdrW * 0.6, 'the title span now spans the header rather than shrink-wrapping (' + xGeo.titleBoxW + ' of ' + xGeo.hdrW + 'px)');
     check(xGeo.titleBoxW > xGeo.titleTextW + 40, 'so the ✕ is well clear of the title text (' + xGeo.titleTextW + 'px of text in a ' + xGeo.titleBoxW + 'px box)');
   }
   await attachShot(testInfo, page.locator('.gt-role-pick'), 'i544r4-rolex');

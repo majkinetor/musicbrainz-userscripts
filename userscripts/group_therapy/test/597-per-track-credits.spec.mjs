@@ -23,7 +23,7 @@
 // end-to-end half uses the real editor and never submits: every POST to /edit
 // is aborted and asserted zero.
 import { test, check, requireLogin, SANDBOX, settled, idle, frames, until } from '../../../dev/test/harness.mjs';
-import { blockEdits } from './gt.mjs';
+import { blockEdits, tpPaste, tpCredits, tpRow, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -169,46 +169,29 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
   m = await mt('2:2', 'twoCd'); show('txpMatchTracks("2:2", 2-CD)', m);
   check(JSON.stringify(m) === '["2"]', 'and the medium-qualified form is untouched');
 
-  // ── 5. end to end: the column, and Apply putting credits on the right row ──
+  // ── 5. end to end: the role's tracks, and Tracks named in credits off ───────
   console.log('\nEND TO END (real editor, 3 tracks):');
-  await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForSelector('.gt-tp', { timeout: 15000 });
-  await page.evaluate(() => {
-    const set = (el, v) => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
-    set(document.querySelector('.gt-tp-ta'), 'Mbossi Rene: Guitar\nSeckou Keita: Djembe (track 2)');
-    set(document.querySelector('.gt-tp-pat'), 'E: R');
-  });
-  // until both lines are parsed and the second one's track clause is read
-  const cells = await until(() => page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(tr => ({
-    role: (tr.querySelectorAll('td')[3] || {}).innerText,
-    tracks: ((tr.querySelector('.gt-tp-trk') || {}).innerText || '').trim(),
-  }))), c => c.length >= 2 && !!c[1].tracks);
-  console.log('   rows: ' + JSON.stringify(cells));
-  check(cells.length === 2, 'two rows parsed');
-  check(!!cells[1] && cells[1].tracks === '2', 'the tracks column shows "2" for the "(track 2)" row');
-  check(!!cells[1] && !/track/i.test(cells[1].role), 'and its role cell no longer carries the clause — ' + JSON.stringify(cells[1] && cells[1].role));
-  check(!!cells[0] && cells[0].tracks === '', 'the unqualified row claims no tracks — it follows Scope');
-
-  const hdr = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl thead th')].map(t => t.textContent.trim()));
-  check(hdr.includes('tracks'), 'the table has a tracks column — ' + JSON.stringify(hdr));
+  await tpPaste(page, 'Mbossi Rene: Guitar\nSeckou Keita: Djembe (track 2)', 'E: R');
+  const cells = await until(() => tpCredits(page), c => c.length >= 2 && c[1].tracks.length > 0);
+  console.log('   credits: ' + JSON.stringify(cells.map(c => ({ role: c.role, tracks: c.tracks }))));
+  check(cells.length === 2, 'two credits parsed');
+  check(!!cells[1] && cells[1].tracks.join(',') === '2', 'the "(track 2)" credit goes on track 2');
+  check(!!cells[1] && !/track/i.test(cells[1].role), 'and its role no longer carries the clause — ' + JSON.stringify(cells[1] && cells[1].role));
+  check(!!cells[0] && cells[0].tracks.length === 0, 'the unqualified credit claims no tracks — it follows Scope');
+  const chip = await tpRow(page, 'Seckou Keita').locator('.gt-tp-trk-on').textContent().catch(() => '');
+  check(/→ 2/.test(chip || ''), 'its role shows the track it goes on — ' + JSON.stringify(chip));
 
   // Turning detection off has to restore the old behaviour exactly.
-  // ⚠ guarded: on a build without the control, selectOption throws a TimeoutError
-  // that kills the process before the summary is printed — so the remaining
-  // checks report nothing at all and the run looks like a crash rather than a
-  // list of failures. Assert the control exists, then use it.
-  const hasDet = await page.evaluate(() => !!document.querySelector('.gt-tp-det-sel'));
-  check(hasDet, 'the Tracks: auto/off control is in the scope pill');
-  if (hasDet) {
-    await page.selectOption('.gt-tp-det-sel', 'off');
-    const offCells = await until(() => page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].map(tr => ({
-      role: (tr.querySelectorAll('td')[3] || {}).innerText,
-      tracks: ((tr.querySelector('.gt-tp-trk') || {}).innerText || '').trim(),
-    }))), c => c.every(x => x.tracks === ''));
-    console.log('   Tracks: off -> ' + JSON.stringify(offCells));
-    check(offCells.every(c => c.tracks === ''), 'with Tracks: off nothing claims a track');
+  const det0 = await page.$('.gt-tp-det');
+  check(!!det0, 'the "Tracks named in credits" toggle is in the top row');
+  if (det0) {
+    if (await page.evaluate(() => document.querySelector('.gt-tp-det').classList.contains('on'))) await page.click('.gt-tp-det');
+    await tpSettle(page);
+    const offCells = await tpCredits(page);
+    console.log('   Tracks named in credits off -> ' + JSON.stringify(offCells.map(c => ({ role: c.role, tracks: c.tracks }))));
+    check(offCells.every(c => c.tracks.length === 0), 'off: nothing claims a track');
     check(!!offCells[1] && /track 2/i.test(offCells[1].role), 'and the clause is back in the role text, exactly as before #597');
-    await page.selectOption('.gt-tp-det-sel', 'auto');
+    await page.click('.gt-tp-det');
     await frames(page);
   }
 
@@ -216,7 +199,7 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
   // majkinetor: "Vertical move could also have option to paste tracks or specify
   // them as in Text Pattern scope as selecting checkboxes is slow."
   console.log('\nVERTICAL MOVE (⬆ release → recordings):');
-  await page.evaluate(() => { const x = document.querySelector('.gt-tp-x, .gt-cons-x'); if (x) x.click(); });
+  await page.evaluate(() => window.__groupTherapy.closeTextParser());
   await frames(page);
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find(x => /⬆/.test(x.textContent || ''));

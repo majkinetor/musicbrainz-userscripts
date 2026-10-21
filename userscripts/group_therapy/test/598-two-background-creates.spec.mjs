@@ -23,7 +23,7 @@
 //
 // Sandbox only. It deliberately creates TWO artists on test.musicbrainz.org.
 import { test, check, expect, requireLogin, SANDBOX, settled, frames, until, idle } from '../../../dev/test/harness.mjs';
-import { RELEASE } from './gt.mjs';
+import { RELEASE, tpPaste } from './gt.mjs';
 
 // The pending-create store is shared by the opener and both create tabs. A create tab
 // sometimes logs MusicBrainz's React hydration error #418: the script runs at
@@ -76,53 +76,28 @@ test('two background creates at once both submit, post their MBID back, and clos
   await injectInto(page);
   await idle(page);
 
-  // Two lines -> two rows, each with an entity nothing can resolve.
-  await page.evaluate(() => window.__groupTherapy.openTextParser());
-  await page.waitForSelector('.gt-tp', { timeout: 15000 });
-  await page.evaluate((ns) => {
-    const set = (el, v) => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
-    set(document.querySelector('.gt-tp-ta'), 'Mastering: ' + ns[0] + '\nMixer: ' + ns[1]);
-  }, NAMES);
-  await frames(page);
-  await page.evaluate(() => {
-    const p = document.querySelector('.gt-tp-pat');
-    Object.getOwnPropertyDescriptor(Object.getPrototypeOf(p), 'value').set.call(p, 'R: E');
-    p.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-
-  const rows = await until(() => page.evaluate(() => document.querySelectorAll('.gt-tp-tbl tbody tr').length), n => n >= 2);
+  // Two lines -> two rows (one per name), each with a name nothing can resolve.
+  await tpPaste(page, 'Mastering: ' + NAMES[0] + '\nMixer: ' + NAMES[1], 'R: E');
+  const rows = await page.locator('.gt-tp-erow').count();
   console.log('parsed rows: ' + rows);
   expect(rows, 'both pasted lines produced a row').toBeGreaterThanOrEqual(2);
 
-  // Fire the create on a given row: open ITS entity picker (the entity cell's
-  // search button is the last in the row; the first one opens the role picker,
-  // which has no + at all) and right-click the +.
-  // ⚠ No settling pause anywhere in here. The overlap IS the test: the second
+  // Fire the create on a name's row: right-click its +.
+  // ⚠ No settling pause between the two. The overlap IS the test: the second
   // create has to be started while the first tab is still sitting on its
   // /artist/create page, which is the only window in which the old single-slot
   // store could be overwritten under it. A first attempt at this test waited
-  // 1.5s between the two and added a 1.2s settle inside the picker — by then tab
-  // A had already pressed Enter, landed, posted back and closed, the two creates
-  // never overlapped at all, and the whole thing passed against the BROKEN build.
-  // The popover is built synchronously, so + exists the moment it is opened;
-  // waiting for the entity search to come back is not needed and is exactly the
-  // delay that hid the bug.
+  // 1.5s between the two — by then tab A had already pressed Enter, landed,
+  // posted back and closed, the two creates never overlapped at all, and the
+  // whole thing passed against the BROKEN build.
   const fire = async (idx) => {
-    const opened = await page.evaluate((i) => {
-      const row = document.querySelectorAll('.gt-tp-tbl tbody tr')[i];
-      const btns = row ? [...row.querySelectorAll('.gt-tp-search')] : [];
-      if (!btns.length) return false;
-      btns[btns.length - 1].click();
-      return true;
-    }, idx);
-    if (!opened) return false;
-    await page.waitForSelector('.gt-tp-apop .gt-tp-plus', { timeout: 15000 }).catch(() => {});
-    const ok = await page.evaluate(() => {
-      const plus = document.querySelector('.gt-tp-plus');
+    const ok = await page.evaluate(n => {
+      const row = [...document.querySelectorAll('.gt-tp-erow')].find(r => (r.querySelector('.gt-tp-ename') || {}).textContent === n);
+      const plus = row && row.querySelector('.gt-tp-plus');
       if (!plus) return false;
       plus.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
       return true;
-    });
+    }, NAMES[idx]);
     console.log(ms() + '  fired create on row ' + (idx + 1));
     return ok;
   };
@@ -157,20 +132,18 @@ test('two background creates at once both submit, post their MBID back, and clos
   const closedCalls = await page.evaluate(() => window.__gtClosed || 0);
   check(closedCalls === 2, `and both were closed through the GM_openInTab handle (${closedCalls} close calls)`);
 
-  // And both rows really resolved — read the entity cell's link, which only
-  // exists once a real MBID is bound. Asserting on row TEXT would pass on the
-  // pasted line alone, since it already contains the name.
+  // And both names really resolved to a bound MBID, not only the pasted text.
   // Wait for it: the post-back closes the tab FIRST and only then fetches the
   // new entity and binds the row, so "no tabs left" comes a moment before the
-  // last row resolves. Reading at once failed a full run on row 2 alone.
-  const readBound = () => page.evaluate(() => [...document.querySelectorAll('.gt-tp-tbl tbody tr')].slice(0, 2).map(row => {
-    const a = [...row.querySelectorAll('a[href*="/artist/"]')].pop();
-    return a ? { href: a.getAttribute('href'), text: a.textContent.trim() } : null;
-  }));
+  // last row resolves.
+  const readBound = () => page.evaluate(ns => ns.map(n => {
+    const c = window.__groupTherapy.txpCredits().find(x => x.entity === n);
+    return c && c.gid ? { href: '/artist/' + c.gid, text: c.name } : null;
+  }), NAMES);
   const bound = await until(readBound, b => b.every(Boolean), { timeout: 30000 });
-  console.log('resolved cells: ' + JSON.stringify(bound, null, 1));
-  check(bound.every(b => b && /\/artist\/[0-9a-f-]{36}/.test(b.href)), 'both rows are bound to a real MBID, not just showing the pasted text');
-  check(bound[0] && bound[1] && bound[0].href !== bound[1].href, 'the two rows got DIFFERENT MBIDs — neither create overwrote the other');
+  console.log('resolved: ' + JSON.stringify(bound, null, 1));
+  check(bound.every(b => b && /\/artist\/[0-9a-f-]{36}/.test(b.href)), 'both names are bound to a real MBID, not just showing the pasted text');
+  check(bound[0] && bound[1] && bound[0].href !== bound[1].href, 'the two got DIFFERENT MBIDs — neither create overwrote the other');
   check(bound[0] && bound[0].text.includes(NAMES[0]), 'row 1 holds the artist row 1 asked for — ' + JSON.stringify(bound[0] && bound[0].text));
   check(bound[1] && bound[1].text.includes(NAMES[1]), 'row 2 holds the artist row 2 asked for — ' + JSON.stringify(bound[1] && bound[1].text));
 

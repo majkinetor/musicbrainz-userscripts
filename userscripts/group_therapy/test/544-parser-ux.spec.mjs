@@ -9,15 +9,13 @@
 //   6. creating an entity seeds no edit note (CH/Apollo both do)
 //   7. Up/Down do not work in the role picker
 //
-// Order matters here: each step is checked against a freshly rendered table.
-// An earlier draft measured the Pattern cell after opening and closing the role
-// picker and read 0x0 — a detached element, which would have passed every
-// "is it inside its column" check while proving nothing.
+// #798: the parser is in the page, a row per name, with the search in the row;
+// what each item asked for is checked in that layout.
 //
 // Runs against test.musicbrainz.org and never submits: every POST to /edit is
 // aborted and asserted zero.
 import { test, check, requireLogin, SANDBOX, settled, idle, frames } from '../../../dev/test/harness.mjs';
-import { blockEdits } from './gt.mjs';
+import { blockEdits, tpPaste, tpRow, tpCredits, tpSettle } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
@@ -25,10 +23,10 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
 
   const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';
   const NL = String.fromCharCode(10);
+  const GID = '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7';   // もちこまめ
 
   await context.addInitScript(() => {
-    // #544 follow-up: the background create goes through GM_openInTab — record
-    // the call instead of really opening a tab.
+    // the background create goes through GM_openInTab — record the call instead
     window.GM_openInTab = (u, o) => { window.__gtOpened = { u, o }; return { close() {}, closed: false }; };
   });
   for (let a = 1; ; a++) {
@@ -41,82 +39,34 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   await inject('group_therapy');
   await idle(page);
 
-  const openParser = async () => {
-    if (await page.locator('.gt-tp').count()) return;   // already open
-    await page.evaluate(() => {
-      const b = [...document.querySelectorAll('button')].find(x => /text parser/i.test(x.textContent || ''));
-      if (b) b.click();
-    });
-    await page.waitForSelector('.gt-tp', { timeout: 15000 });
-    await frames(page);
-  };
-  const setText = async (text, pat) => {
-    await page.evaluate(({ text, pat }) => {
-      const ta = document.querySelector('.gt-tp textarea');
-      if (ta) { ta.value = text; ta.dispatchEvent(new Event('input', { bubbles: true })); }
-      const p = document.querySelector('.gt-tp-pat');
-      if (p) { p.value = pat; p.dispatchEvent(new Event('input', { bubbles: true })); }
-    }, { text, pat });
-    await frames(page);
-  };
-  // The row's two "search" buttons are, in column order, the RESOLVED ROLE cell
-  // and then the RESOLVED ENTITY cell.
-  const clickSearch = async (which) => page.evaluate((which) => {
-    const row = document.querySelector('.gt-tp-tbl tbody tr');
-    const btns = [...row.querySelectorAll('button.gt-tp-search')];
-    const b = which === 'role' ? btns[0] : btns[btns.length - 1];
-    if (!b) return false;
-    b.click();
-    return true;
-  }, which);
+  // ── 1/2/5. the row's entity side ────────────────────────────────────────────
+  const U = 'Someone Unresolvable Xyzzy';
+  await tpPaste(page, `Producer: もちこまめ${NL}Guitar: ${U}${NL}Mixer: ${U}`, 'R: E');
+  const urow = tpRow(page, U);
+  const plusTip = await urow.locator('.gt-tp-plus').getAttribute('data-tip');
+  console.log('plus tip: ' + JSON.stringify(plusTip));
+  check(/Right-click: in the background/i.test(plusTip || ''), '#1: + advertises background creation');
+  const pickTip = await page.locator('.gt-tp-cand-pick').first().getAttribute('data-tip').catch(() => '');
+  console.log('✓ tip: ' + JSON.stringify(pickTip));
+  check(/every credit with this name/i.test(pickTip || '') && /Right-click: for one credit only/i.test(pickTip || ''), '#5: a click picks for every credit with the name, right-click for one');
 
-  await openParser();
-  await setText(`Producer: もちこまめ${NL}Guitar: Someone Unresolvable Xyzzy`, 'R: E');
-
-  // ── 2/5/6. the entity picker ────────────────────────────────────────────────
-  await setText(`Producer: もちこまめ${NL}Guitar: Someone Unresolvable Xyzzy`, 'R: E');
-  check(await clickSearch('entity'), 'an unresolved row offers an entity search button');
-  await page.waitForSelector('.gt-tp-apop', { timeout: 8000 }).catch(() => {});
-  const pickerOpen = await page.locator('.gt-tp-apop').count() > 0;
-  check(pickerOpen, 'the entity picker opens (otherwise the checks below prove nothing)');
-  if (pickerOpen) {
-    const hint = ((await page.locator('.gt-tp-hint').textContent()) || '').trim();
-    console.log('picker hint: ' + JSON.stringify(hint));
-    check(/^click: every row/i.test(hint), '#5: a plain click now applies to every row with this text');
-    check(/right-click: this row only/i.test(hint), 'and right-click is the single-row case');
-
-    const plusTitle = await page.evaluate(() => ((document.querySelector('.gt-tp-plus') || {}).dataset || {}).tip || '');
-    console.log('plus title: ' + JSON.stringify(plusTitle));
-    check(/Right-click: create it in the background/i.test(plusTitle), '#1: the + button advertises background creation');
-
-    // #2: paste an MBID → resolved and applied, no result row to click
-    const pasted = await page.evaluate(async (gid) => {
-      const q = document.querySelector('.gt-tp-q');
-      q.value = gid;
-      q.dispatchEvent(new Event('input', { bubbles: true }));
-      for (let i = 0; i < 60 && document.querySelector('.gt-tp-apop'); i++) await new Promise(r => setTimeout(r, 100));
-      const row = document.querySelector('.gt-tp-tbl tbody tr');   // the row the picker was opened from
-      return { stillOpen: !!document.querySelector('.gt-tp-apop'), rowText: (row ? row.innerText : '').replace(/\s+/g, ' ').trim() };
-    }, '82ca9599-5a15-4ff5-90d5-59ac8afaf5c7');
-    console.log('after pasting an MBID: ' + JSON.stringify(pasted));
-    check(!pasted.stillOpen, '#2: pasting an MBID resolves it immediately — the picker closes itself');
-    check(/もちこまめ/.test(pasted.rowText), 'and the row now carries that entity — ' + JSON.stringify(pasted.rowText.slice(0, 60)));
-  }
+  // #2: an MBID pasted into the row's search is taken at once, for every credit with the name
+  await urow.locator('.gt-tp-esrch-q').fill(GID);
+  await urow.locator('.gt-tp-esrch-q').press('Enter');
+  await page.waitForFunction(([n, g]) => window.__groupTherapy.txpCredits().filter(c => c.entity === n).every(c => c.gid === g), [U, GID], { timeout: 30000 }).catch(() => {});
+  const pasted = (await tpCredits(page)).filter(c => c.entity === U);
+  console.log('after pasting an MBID: ' + JSON.stringify(pasted.map(c => c.name)));
+  check(pasted.length === 2 && pasted.every(c => c.gid === GID), '#2: pasting an MBID picks it at once, for both credits with the name');
+  check(await urow.locator('.gt-tp-cand-on').count() === 1, 'and the row shows it as the pick');
 
   // ── 7. role picker: Up/Down ─────────────────────────────────────────────────
-  // (No Escape here: it closes the parser window itself, not just the popover.)
-  await frames(page);
-  await openParser();
-  await setText(`Producer: もちこまめ${NL}Guitar: Someone Unresolvable Xyzzy`, 'R: E');
-  check(await clickSearch('role'), 'an unresolved row offers a role search button');
+  await tpRow(page, 'もちこまめ').locator('.gt-tp-role-pick').first().click();
   await page.waitForSelector('.gt-role-pick', { timeout: 8000 }).catch(() => {});
   check(await page.locator('.gt-role-pick').count() > 0, 'the role picker opens');
   const keyNav = await page.evaluate(async () => {
     const search = document.querySelector('.gt-role-search');
-    // it opens prefilled with the row's role text, which filters to one match —
-    // with a single row the arrows legitimately do nothing, so clear it first.
     search.value = '';
-    search.dispatchEvent(new Event('input', { bubbles: true }));   // re-filtered as it is handled
+    search.dispatchEvent(new Event('input', { bubbles: true }));
     await new Promise(r => requestAnimationFrame(r));
     const idx = () => [...document.querySelectorAll('.gt-role-row')].findIndex(r => r.classList.contains('gt-role-active'));
     const press = k => { search.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })); return new Promise(r => requestAnimationFrame(r)); };
@@ -125,9 +75,8 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
     await press('ArrowDown'); const d2 = idx();
     await press('ArrowUp'); const u1 = idx();
     await press('End'); const end = idx();
-    await press('ArrowDown'); const wrapped = idx();   // past the end → back to the top
-    return { start, d1, d2, u1, end, wrapped, total: document.querySelectorAll('.gt-role-row').length,
-             activeName: (document.querySelector('.gt-role-row.gt-role-active .gt-role-name') || {}).textContent };
+    await press('ArrowDown'); const wrapped = idx();
+    return { start, d1, d2, u1, end, wrapped, total: document.querySelectorAll('.gt-role-row').length };
   });
   console.log('role picker keys: ' + JSON.stringify(keyNav));
   check(keyNav.total > 5, `the unfiltered list is long enough to navigate (${keyNav.total} roles)`);
@@ -136,25 +85,46 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   check(keyNav.u1 === 1, 'ArrowUp walks back');
   check(keyNav.end === keyNav.total - 1, 'End jumps to the last role');
   check(keyNav.wrapped === 0, 'and it wraps rather than sticking at the end');
+
+  // ── #544 follow-up 3: the role picker was 920px wide and cut descriptions ───
+  const pickGeo = await page.evaluate(() => {
+    const p = document.querySelector('.gt-role-pick'), b = p.getBoundingClientRect();
+    const d = [...document.querySelectorAll(".gt-role-desc")].find(x => x.textContent.length > 60 && x.textContent.length < 140);
+    const cs = d ? getComputedStyle(d) : null;
+    return {
+      w: Math.round(b.width), vw: window.innerWidth, sampleLen: d ? d.textContent.length : 0,
+      truncatedWithEllipsis: cs ? cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap' : null,
+      fullyVisible: d ? d.scrollHeight <= d.clientHeight + 2 : null,
+    };
+  });
+  console.log('role picker: ' + JSON.stringify(pickGeo));
+  check(pickGeo.w <= 560, `the picker is its own size, not .gt-cons's 920px (${pickGeo.w}px)`);
+  check(pickGeo.w < pickGeo.vw * 0.6, 'and nowhere near full width on a wide screen');
+  check(pickGeo.sampleLen > 60, 'a long description is present to check (otherwise the next check is vacuous)');
+  check(!pickGeo.truncatedWithEllipsis, 'descriptions are not one nowrap ellipsised line');
+  check(pickGeo.fullyVisible, 'and the sampled description fits within its two clamped lines');
   await page.evaluate(() => { const b = document.querySelector('.gt-role-pick .gt-cons-x'); if (b) b.click(); });
   await frames(page);
 
   // ── 4. Freeze matched ───────────────────────────────────────────────────────
-  await setText(`Producer: もちこまめ${NL}Mixer: もちこまめ${NL}nonsense line with no pattern at all`, 'R: E');
-  const froze = await page.evaluate(async () => {
-    // it is icon-only now (#544 follow-up: "next to the pattern input … like
-    // Apollo"), so match the class, not the label text.
-    const btn = document.querySelector('.gt-tp-freeze');
-    if (!btn) return { missing: true };
-    const eventually = async f => { for (let i = 0; i < 400 && !f(); i++) await new Promise(r => setTimeout(r, 25)); return f(); };
-    btn.click();
-    await eventually(() => [...document.querySelectorAll('.gt-tp-ov')].some(i => i.value));
-    return { missing: false, overrides: [...document.querySelectorAll('.gt-tp-ov')].map(i => i.value) };
-  });
+  await tpPaste(page, `Producer: もちこまめ${NL}Mixer: もちこまめ${NL}nonsense line with no pattern at all`, 'R: E');
+  const lineOv = () => page.evaluate(() => [...new Map([...document.querySelectorAll('.gt-tp-line')].map(l => [+l.querySelector('.gt-tp-line-no').textContent, l.querySelector('.gt-tp-ov').value])).entries()].sort((a, b) => a[0] - b[0]).map(e => e[1]));
+  check(await page.locator('.gt-tp-freeze').count() === 1, '#4: the parser offers Freeze');
+  await page.click('.gt-tp-freeze');
+  await frames(page);
+  const froze = await lineOv();
   console.log('after freeze: ' + JSON.stringify(froze));
-  check(!froze.missing, '#4: the parser offers a Freeze matched button');
-  check(!froze.missing && froze.overrides.filter(v => v === 'R: E').length === 2, 'the two matching lines are pinned to the current pattern');
-  check(!froze.missing && froze.overrides.some(v => !v), 'and the line that did not match is left alone');
+  check(froze.filter(v => v === 'R: E').length === 2, 'the two matching lines are pinned to the current pattern');
+  check(froze.some(v => !v), 'and the line that did not match is left alone');
+
+  // ── #544 follow-up 1: Freeze beside the pattern box ─────────────────────────
+  const freezeGeo = await page.evaluate(() => {
+    const f = document.querySelector('.gt-tp-freeze'), pat = document.querySelector('.gt-tp-pat');
+    const r = e => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left) }; };
+    return { inCtrl: !!f.closest('.gt-tp-ctrl'), sameRow: Math.abs(r(f).top - r(pat).top) < 12, after: r(f).left > r(pat).left };
+  });
+  console.log('freeze button: ' + JSON.stringify(freezeGeo));
+  check(freezeGeo.inCtrl && freezeGeo.sameRow && freezeGeo.after, 'Freeze sits right after the pattern box, on its row');
 
   // ── 6. the created entity's edit note ───────────────────────────────────────
   const note = await page.evaluate(() => window.__groupTherapy.txpCreateNote('artist'));
@@ -164,121 +134,43 @@ test('the text parser: seven UX fixes (background create, MBID paste, freeze, cl
   check(/musicbrainz\.org\/release\//.test(note) && !/edit-relationships/.test(note),
     'and names the release being edited, without the /edit-relationships suffix');
 
-  // ── 3. the Pattern cell keeps its caret inside a narrow column ──────────────
-  // Last, because typing into an override re-renders the table and that override
-  // then survives into whatever runs next.
-  // ⚠ Dispatching 'input' rebuilds the table, so the element measured must be
-  // re-queried afterwards — measuring the one captured before the rebuild gives
-  // 0x0 (a detached node), which silently satisfies "is it inside its column".
-  await setText(`Producer: もちこまめ${NL}Guitar: Someone Unresolvable Xyzzy`, 'R: E');
-  const cellGeo = await page.evaluate(async () => {
-    let ov = document.querySelector('.gt-tp-ov');
-    if (!ov) return { missing: true };
-    ov.value = 'R[,] - E[,] a very long pattern';
-    ov.dispatchEvent(new Event('input', { bubbles: true }));      // rebuilds the table, as it is handled
-    await new Promise(r => requestAnimationFrame(r));
-    ov = document.querySelector('.gt-tp-ov');                      // the NEW input
-    if (!ov) return { missing: true, why: 'gone after re-render' };
-    const td = ov.closest('td');
-    // Narrow the PATTERN column the way dragging its header does — the table is
-    // table-layout:fixed with a <colgroup>, so a td's own style.width is ignored
-    // (an earlier version set it and measured a 120px cell, never exercising the
-    // narrow case at all). Column 1 is "pattern".
-    const col = document.querySelector('.gt-tp-tbl colgroup').children[1];
-    col.style.width = '60px';
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // laid out
+  // ── 3. a line's pattern box keeps its caret inside a narrow column ──────────
+  await tpPaste(page, `Producer: もちこまめ${NL}Guitar: ${U}`, 'R: E');
+  await page.evaluate(() => { const c = document.querySelector('.gt-tp-etbl col, .gt-tp-etbl th'); if (c) c.style.width = '300px'; });
+  await frames(page);
+  const ov = page.locator('.gt-tp-line .gt-tp-ov').first();
+  await ov.fill('R[,] - E[,] a very long pattern');
+  await frames(page);
+  const cellGeo = await page.evaluate(() => {
+    const ov = document.querySelector('.gt-tp-line .gt-tp-ov');
+    const line = ov.closest('.gt-tp-line'), td = ov.closest('td');
     ov.focus();
-    const o = ov.getBoundingClientRect(), t = td.getBoundingClientRect();
-    return {
-      inputRight: Math.round(o.right), cellRight: Math.round(t.right),
-      inputW: Math.round(o.width), cellW: Math.round(t.width),
-      value: ov.value, scrolls: ov.scrollWidth > ov.clientWidth,
-    };
+    const o = ov.getBoundingClientRect(), l = line.getBoundingClientRect(), t = td.getBoundingClientRect();
+    return { inputRight: Math.round(o.right), lineRight: Math.round(l.right), cellRight: Math.round(t.right), cellW: Math.round(t.width), inputW: Math.round(o.width), value: ov.value, scrolls: ov.scrollWidth > ov.clientWidth };
   });
-  console.log('pattern cell: ' + JSON.stringify(cellGeo));
-  check(!cellGeo.missing && cellGeo.cellW > 0 && cellGeo.inputW > 0,
-    'the pattern cell is laid out (a detached 0x0 element would satisfy every geometry check below)');
-  check(!cellGeo.missing && cellGeo.cellW < 110,
-    `the column really is narrower than the old fixed 110px input (${cellGeo.cellW}px) — otherwise this proves nothing`);
-  check(!cellGeo.missing && cellGeo.value === 'R[,] - E[,] a very long pattern', 'and the long pattern really is in it');
-  check(!cellGeo.missing && cellGeo.inputRight <= cellGeo.cellRight + 1, '#3: the input stays inside its column, however narrow');
-  check(!cellGeo.missing && cellGeo.scrolls, 'and scrolls its own text, so the caret stays visible while typing');
+  console.log('pattern box: ' + JSON.stringify(cellGeo));
+  check(cellGeo.cellW > 0 && cellGeo.inputW > 0, 'the pattern box is laid out');
+  check(cellGeo.value === 'R[,] - E[,] a very long pattern', 'and the long pattern really is in it');
+  check(cellGeo.inputRight <= cellGeo.cellRight + 1, '#3: the box stays inside its column');
+  check(cellGeo.scrolls, 'and scrolls its own text, so the caret stays visible while typing');
+  await ov.fill('');
+  await tpSettle(page);
 
-
-  // ── #544 follow-up 1: Freeze belongs beside the pattern box, in the header ──
-  await openParser();
-  await setText(`Producer: Karlis Spade (Greenprint)${NL}Mixer: Someone Else Xyzzy`, 'R: E');
-  // the pattern-cell step above left a per-line override behind, and a line
-  // pinned to a non-matching pattern has no resolved cells to click below.
-  await page.evaluate(() => {
-    document.querySelectorAll('.gt-tp-ov').forEach(i => { if (i.value) { i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); } });
-  });
-  await frames(page);
-  const freezeGeo = await page.evaluate(() => {
-    const f = document.querySelector('.gt-tp-freeze'), pat = document.querySelector('.gt-tp-pat'), res = document.querySelector('.gt-tp-resolve');
-    if (!f || !pat) return { missing: true };
-    const r = e => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left) }; };
-    return {
-      inHeader: !!f.closest('.gt-tp-ctrl'),
-      sameRowAsPattern: Math.abs(r(f).top - r(pat).top) < 12,
-      afterPattern: r(f).left > r(pat).left,
-      matchStillSameRow: res ? Math.abs(r(f).top - r(res).top) < 12 : null,
-      ctrlHeight: Math.round(document.querySelector('.gt-tp-ctrl').getBoundingClientRect().height),
-      inFooter: !!document.querySelector('.gt-cons-foot .gt-tp-freeze'),
-    };
-  });
-  console.log('freeze button: ' + JSON.stringify(freezeGeo));
-  check(!freezeGeo.missing && freezeGeo.inHeader && !freezeGeo.inFooter, 'Freeze sits in the header, not the footer');
-  check(freezeGeo.sameRowAsPattern && freezeGeo.afterPattern, 'right next to the pattern box');
-  check(freezeGeo.matchStillSameRow, 'and Match is still on that same row — the bar did not gain a second one');
-
-  // ── #544 follow-up 3: the role picker was 920px wide and cut descriptions ───
-  await page.evaluate(() => document.querySelector('.gt-tp-tbl tbody tr').querySelectorAll('button.gt-tp-search')[0].click());
-  await page.waitForSelector('.gt-role-pick', { timeout: 8000 });
-  await page.evaluate(() => { const q = document.querySelector('.gt-role-search'); q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); });
-  await frames(page);
-  const pickGeo = await page.evaluate(() => {
-    const p = document.querySelector('.gt-role-pick'), b = p.getBoundingClientRect();
-    const d = [...document.querySelectorAll('.gt-role-desc')].find(x => x.textContent.length > 60);
-    const cs = d ? getComputedStyle(d) : null;
-    return {
-      w: Math.round(b.width), h: Math.round(b.height), vw: window.innerWidth,
-      sampleLen: d ? d.textContent.length : 0,
-      truncatedWithEllipsis: cs ? cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap' : null,
-      fullyVisible: d ? d.scrollHeight <= d.clientHeight + 2 : null,
-    };
-  });
-  console.log('role picker: ' + JSON.stringify(pickGeo));
-  check(pickGeo.w <= 560, `the picker is its own size again, not .gt-cons's 920px (${pickGeo.w}px)`);
-  check(pickGeo.w < pickGeo.vw * 0.6, 'and nowhere near full width on a wide screen');
-  check(pickGeo.sampleLen > 60, 'a long description is present to check (otherwise the next check is vacuous)');
-  check(!pickGeo.truncatedWithEllipsis, 'descriptions are no longer one nowrap ellipsised line');
-  check(pickGeo.fullyVisible, 'and the sampled description fits within its two clamped lines');
-  await page.evaluate(() => { const x = document.querySelector('.gt-role-pick .gt-cons-x'); if (x) x.click(); });
-  await frames(page);
-
-  // ── #544 follow-up 2: (+) seeds the SEARCH TEXT, and right-click backgrounds ─
-  await page.evaluate(() => {
-    const row = document.querySelector('.gt-tp-tbl tbody tr');
-    const btns = row.querySelectorAll('button.gt-tp-search');
-    btns[btns.length - 1].click();
-  });
-  await page.waitForSelector('.gt-tp-apop', { timeout: 8000 });
-  const prefill = await page.evaluate(() => document.querySelector('.gt-tp-q').value);
+  // ── #544 follow-up 2: + creates what the search box says; right-click backgrounds
+  await tpPaste(page, `Producer: Karlis Spade (Greenprint)${NL}Mixer: Someone Else Xyzzy`, 'R: E');
+  const krow = tpRow(page, 'Karlis Spade (Greenprint)');
+  const prefill = await krow.locator('.gt-tp-esrch-q').inputValue();
   console.log('search box prefill: ' + JSON.stringify(prefill));
-  check(/Greenprint/.test(prefill), 'the picker opens prefilled with the parsed text');
-  const bg = await page.evaluate(() => {
-    const q = document.querySelector('.gt-tp-q');
-    q.value = 'Karlis Spade';                                   // the user trims the suffix
-    document.querySelector('.gt-tp-plus').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
-    const o = window.__gtOpened;
-    return o ? { active: o.o && o.o.active, url: decodeURIComponent(o.u) } : null;
-  });
+  check(/Greenprint/.test(prefill), 'the row\'s search starts with the parsed text');
+  await krow.locator('.gt-tp-esrch-q').fill('Karlis Spade');   // the user trims the suffix
+  await krow.locator('.gt-tp-esrch-q').press('Enter');
+  await tpSettle(page);
+  await krow.locator('.gt-tp-plus').dispatchEvent('contextmenu');
+  const bg = await page.evaluate(() => { const o = window.__gtOpened; return o ? { active: o.o && o.o.active, url: decodeURIComponent(o.u) } : null; });
   console.log('right-click + → ' + JSON.stringify(bg && { active: bg.active, url: bg.url.slice(0, 90) }));
   check(!!bg, 'right-clicking + goes through GM_openInTab');
   check(bg && bg.active === false, 'with active:false — a real background tab, not a focused one');
-  // decodeURIComponent leaves the form-encoded '+' alone, so match either form
-  check(bg && /edit-artist\.name=Karlis[+ ]Spade(&|$)/.test(bg.url), 'seeded with the EDITED search text, not the raw parsed name — ' + JSON.stringify((bg.url.match(/edit-artist\.name=[^&]*/) || [])[0]));
+  check(bg && /edit-artist\.name=Karlis[+ ]Spade(&|$)/.test(bg.url), 'seeded with the EDITED search text, not the raw parsed name — ' + JSON.stringify(bg && (bg.url.match(/edit-artist\.name=[^&]*/) || [])[0]));
   check(bg && !/Greenprint/.test(bg.url), 'so the discarded "(Greenprint)" suffix is gone');
   check(bg && /edit-artist\.edit_note=/.test(bg.url), 'and it still carries the edit note');
 
