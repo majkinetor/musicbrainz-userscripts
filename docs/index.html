@@ -462,7 +462,8 @@ fetch('./stats.html').then(r => r.ok ? r.text() : Promise.reject(r.status)).then
   const N = new Intl.NumberFormat('en-US');
   const since = new Date(D.months[first] + '-01T00:00:00').toLocaleString('en-US', { month: 'long', year: 'numeric' });
   const el = document.getElementById('usage');
-  el.innerHTML = `<b>${N.format(edits)}</b> edits by <b>${people.size}</b> editors since ${since} · <a href="./stats.html">Stats →</a>`;
+  el.innerHTML = `<b>${N.format(edits)}</b> edits by <b>${people.size}</b> editors since ${since} · <a href="./stats.html">Stats →</a>` +
+    `<br>String Theory makes more MusicBrainz edits than any other tool.`;
   el.hidden = false;
 }).catch(() => {});
 
