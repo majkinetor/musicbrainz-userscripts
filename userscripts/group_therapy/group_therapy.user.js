@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.100221
+// @version      2026.10.21.100338
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5146,6 +5146,7 @@
       + '.gt-tp-bar .gt-tp-scope{background:none;padding:0;font-size:12.5px;gap:10px}'
       + '.gt-tp-bar .gt-tp-scope select{border:none;background:transparent;font-weight:600;font-size:12.5px;color:var(--mbu-text);cursor:pointer}'
       + '.gt-tp-bar .gt-tp-anno,.gt-tp-bar .gt-cons-apply{margin-left:0}'
+      + '.gt-tp-mbname{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}'
       + '.gt-tp-pat{width:180px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:13px monospace;outline:none}'
       + '.gt-tp-pat:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-clr{background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:var(--mbu-text-dim)}'
@@ -5836,7 +5837,17 @@
       + 'Create none: only works already linked; a track with no work is skipped, and counted\n'
       + 'Create needed: a track with no work gets a new one, named after the recording\n'
       + '⚠ Match the existing works first (◎ Match works…), or this makes duplicates';
-    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel);
+    // #798 (majkinetor): "[] Use MB name as credit" — credit every entity by its
+    // MusicBrainz name, not the text's spelling. A preference, remembered.
+    const TXP_MBNAME_KEY = 'gt-tp-mbname';
+    let useMbName = false;
+    try { useMbName = !!GM_getValue(TXP_MBNAME_KEY, false); } catch (e) {}
+    const mbNameLbl = el('label', 'gt-tp-mbname');
+    const mbNameCb = el('input'); mbNameCb.type = 'checkbox'; mbNameCb.checked = useMbName;
+    mbNameLbl.append(mbNameCb, 'Use MB name as credit');
+    mbNameLbl.dataset.tip = 'Credit each entity by its MusicBrainz name\nOff: as the text spells it, when the two differ';
+    mbNameCb.onchange = () => { useMbName = mbNameCb.checked; try { GM_setValue(TXP_MBNAME_KEY, useMbName); } catch (e) {} render(); };
+    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel, mbNameLbl);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
     // credit the wrong recordings.
@@ -6066,7 +6077,10 @@
         const left = el('td');
         const head = el('div', 'gt-tp-ehead');
         const nm = el('span', 'gt-tp-ename', g.text);
-        nm.dataset.tip = ent ? `Right-click: use the picked name, “${ent.name}”, in the text` : 'As credited';
+        // what the credit will read: the text's spelling, or (option on) MusicBrainz's
+        nm.dataset.tip = !ent || ent.name === g.text ? 'As credited'
+          : useMbName ? `Credited as “${ent.name}”, the MusicBrainz name`
+          : `Credited as “${g.text}”\nRight-click: credit as “${ent.name}”, the MusicBrainz name`;
         nm.addEventListener('contextmenu', e => { e.preventDefault(); cleanName(g, ent); });
         head.appendChild(nm);
         head.appendChild(el('span', 'gt-tp-ekind', kind));
@@ -6458,7 +6472,7 @@
       for (const r of rows) {
         const own = !!(r.trackTargets && r.trackTargets.length);
         if (own) r.trackTargets.forEach(t => ownNums.add(t.num));
-        const credit = r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';
+        const credit = !useMbName && r.entity && r.entity !== (r.entityMatch.name || '') ? r.entity : '';   // #798 Use MB name as credit
         const dates = txpNoticeDatePeriod(r.year);   // #574: "in 2021", not "from 2021 to present"
         if (dates) dated++;
         // an instrument-role match carries an attributeId (the "instrument"
