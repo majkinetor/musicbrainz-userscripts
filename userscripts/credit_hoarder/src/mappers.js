@@ -222,6 +222,11 @@ export function getArtistRoles(artist) {
                     artist: artist,
                 });
             }
+            if (actualRole === 'Coordinator' && /^\s*production(\s+coordinat(or|ion))?\s*\]?\s*$/i.test(rolePart[1] || '')) {
+                return Object.assign({}, ENTITY_TYPE_MAP['Production Coordinator'], {
+                    artist: artist,
+                });
+            }
             if (/Additional/.test(rolePart[1])) {
                 additionalAttributes.push('additional');
             }

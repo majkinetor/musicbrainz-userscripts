@@ -32,6 +32,13 @@ test('misc task keeps the role name; mapped roles keep their source role', { tag
   is('Crew [Lighting]', ['misc:lighting']);
   // a modifier word stays in the task (misc takes no assistant attribute, #295)
   is('Coordinator [Assistant]', ['misc+assistant:assistant coordinator']);
+  // production: MB's own production coordinator type (release only; misc on a track)
+  is('Coordinator [Production]', ['production coordinator']);
+  is('Coordinator [Production Coordinator]', ['production coordinator']);
+  is('Coordinator [Production Coordination]', ['production coordinator']);
+  is('Coordinator [Post-Production]', ['misc:post-production coordinator']);
+  const pc = getArtistRoles({ role: 'Coordinator [Production]', name: 'X', anv: '' })[0];
+  check('production coordinator goes on a track as misc with its task', pc.onRecording?.linkType === 'misc' && pc.onRecording.attributes[0].value === 'production coordinator');
   // the other task roles are unchanged: their type already names the role
   is('Engineer [Technical]', ['engineer:technical']);
   is('Mixed By [Concerts]', ['mix:concerts']);

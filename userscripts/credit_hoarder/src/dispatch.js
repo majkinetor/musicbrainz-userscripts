@@ -896,7 +896,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
 
     async function dispatchTracklistArtists() {
         const seenTrackRels = new Set();
-        for (const role of tracklistRels) {
+        for (const trackRole of tracklistRels) {
+            // a release-only type stands in on a track as its recording form (#800)
+            const role = trackRole.onRecording ? Object.assign({}, trackRole, trackRole.onRecording) : trackRole;
             if (WORK_ONLY_ARTIST_RELS.includes(role.linkType)) continue; // handled by dispatchWorks
 
             const mbUrl = confirmedMbUrl(role.artist);
