@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.104911
+// @version      2026.10.21.105153
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5145,7 +5145,6 @@
       + '.gt-tp-tg{display:inline-flex;align-items:center;gap:6px;border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:12.5px;color:var(--mbu-text-dim);white-space:nowrap}.gt-tp-tg:hover,.gt-tp-tg.on{color:var(--mbu-text)}'
       + '.gt-tp-tgdot{flex:none;width:14px;height:14px;border-radius:50%;border:2px solid var(--mbu-border);background:var(--mbu-bg)}'
       + '.gt-tp-tg.on .gt-tp-tgdot{border-color:var(--mbu-warn);background:#e8771d}'
-      + '.gt-tp-cnt-go{cursor:pointer}.gt-tp-cnt-go:hover{text-decoration:underline}'
       + '.gt-tp-ctrl{display:flex;align-items:flex-start;gap:8px;padding:6px 14px;border-bottom:1px solid var(--mbu-border)}'
       + '.gt-tp-combo{position:relative;flex:none;display:flex;align-items:center;width:200px;height:28px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg-sunken)}'
       + '.gt-tp-combo:focus-within{border-color:var(--mbu-info)}'
@@ -5177,7 +5176,12 @@
       + '.gt-tp-scope-sel,.gt-tp-det-sel,.gt-tp-works-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}.gt-tp-bar .gt-tp-cnt-todo{color:var(--mbu-warn)}.gt-tp-bar .gt-tp-cnt-done{color:var(--mbu-ok)}'
+      + '.gt-tp-bar .gt-tp-cnt{display:inline-flex;gap:6px}'
+      + '.gt-tp-pill{display:inline-flex;align-items:center;border:1px solid;border-radius:12px;padding:1px 10px;font-size:12.5px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}'
+      + '.gt-tp-pill-todo{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border);cursor:pointer}'
+      + '.gt-tp-pill-bad{color:var(--mbu-error);background:var(--mbu-error-bg);border-color:var(--mbu-error-border);cursor:pointer}'
+      + '.gt-tp-pill-ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
+      + '.gt-tp-pill-todo:hover,.gt-tp-pill-bad:hover{filter:brightness(.97);text-decoration:underline}'
       // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
@@ -6265,20 +6269,24 @@
       const unparsed = new Set(rows.filter(r => !r.matched || !(r.entity || '').trim()).map(r => r.li)).size;
       // a role is picked once for every credit with its text, so it counts once
       const roleless = new Set(credits.filter(r => !r.crKind && !r.roleMatch).map(r => (r.role || '').toLowerCase().trim())).size;
+      // #798 (majkinetor, option A): one short pill per thing left — amber for a
+      // pick, red for a line that gives nothing — a click goes to the next one;
+      // one green pill when nothing is left
       cnt.textContent = '';
-      const part = (text, todo, tip, sel) => {
-        if (cnt.childNodes.length) cnt.append(' · ');
-        const sp = el('span', todo ? 'gt-tp-cnt-go' : '', text);
-        if (todo) { sp.dataset.tip = tip; sp.onclick = () => jumpTo(sel); }
+      const pill = (cls, text, tip, sel) => {
+        const sp = el('span', 'gt-tp-pill ' + cls, text);
+        sp.dataset.tip = tip;
+        if (sel) sp.onclick = () => jumpTo(sel);
         cnt.appendChild(sp);
       };
+      const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
       if (rows.length) {
-        part(`${picked}/${names.size} picked`, picked < names.size, 'Click: the next name left to pick', '.gt-tp-erow[data-unpicked]');
-        if (roleless) part(`${roleless} role${roleless === 1 ? '' : 's'} to pick`, true, 'Click: the next credit whose role is left to pick', '.gt-tp-erow[data-roleless]');
-        if (unparsed) part(`${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, true, 'Click: the next line not parsed', '.gt-tp-erow[data-unparsed]');
-        if (applied) part(`${applied} applied`, false);
+        const leftNames = names.size - picked;
+        if (leftNames) pill('gt-tp-pill-todo', n(leftNames, 'name', 'names'), `${n(leftNames, 'name', 'names')} left to pick (${picked} of ${names.size} picked)\nClick: the next one`, '.gt-tp-erow[data-unpicked]');
+        if (roleless) pill('gt-tp-pill-todo', n(roleless, 'role', 'roles'), `${n(roleless, 'role', 'roles')} left to pick, for every credit with that role\nClick: the next one`, '.gt-tp-erow[data-roleless]');
+        if (unparsed) pill('gt-tp-pill-bad', n(unparsed, 'line', 'lines'), `${n(unparsed, 'line', 'lines')} the pattern finds no credit in\nClick: the next one`, '.gt-tp-erow[data-unparsed]');
+        if (!leftNames && !roleless && !unparsed && names.size) pill('gt-tp-pill-ok', '✓ all picked', `Every name and role is picked${applied ? `; ${applied} credit${applied === 1 ? '' : 's'} applied` : ''}`);
       }
-      cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0 || roleless > 0);
       // the lines this pattern reads, and those the text's own {{…}} does
       const byText = new Set(), byThis = new Set(), textPats = [];
       rows.forEach(r => {
@@ -6292,7 +6300,6 @@
         + '\n' + textPats.slice(0, 4).map(t => `{{${t}}}`).join('  ') + (textPats.length > 4 ? ' …' : '');
       const nonEmpty = lines.filter(l => l.raw.trim()).length;
       linesLbl.textContent = nonEmpty > 1 ? `${nonEmpty} lines ▾` : '';
-      cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed && !roleless);
       applyBtn.disabled = !ready;
       applyClearBtn.disabled = !ready;
       applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';

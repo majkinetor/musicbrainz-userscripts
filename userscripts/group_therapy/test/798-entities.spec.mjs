@@ -54,6 +54,9 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   let list = await ents();
   console.log('after Match: ' + JSON.stringify(list));
   check(list.length === 3, `a row per name (${list.length})`);
+  const pills = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-cnt .gt-tp-pill')].map(p => p.className.replace('gt-tp-pill ', '') + ':' + p.textContent));
+  check(JSON.stringify(pills) === '["gt-tp-pill-todo:1 name"]', `the status is one pill per thing left: one name to pick (${JSON.stringify(pills)})`);
+  await page.locator('.gt-tp-top').screenshot({ path: 'dev/_798-p.png' });
   const ra = row(list, relArtist);
   check(ra.picked && ra.level === 'strong' && ra.why.some(w => /on release/.test(w)), `the release artist is picked as Strong, saying why (${JSON.stringify(ra)})`);
   const js = row(list, 'John Smith');
@@ -82,7 +85,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   const picked = await jsTr.locator('.gt-tp-cand-on .gt-tp-cand-name').textContent();
   check(picked === firstName, `the pick is the candidate ticked (${picked})`);
   const cntText = await page.textContent('.gt-tp-cnt');
-  check(cntText === '3/3 picked', `the toolbar counts the names picked (${cntText})`);
+  check(cntText === '✓ all picked', `the toolbar says all is picked (${cntText})`);
 
   // the line the credit came from sits under it: its text and its pattern on one row
   check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line is under its credit, for editing');
