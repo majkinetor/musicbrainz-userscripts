@@ -28,6 +28,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
     picked: !!tr.querySelector('.gt-tp-cand-on'),
     level: ((tr.querySelector('.gt-tp-cand-on .gt-tp-lvl') || {}).className || '').replace(/.*gt-tp-lvl-/, ''),
     cands: tr.querySelectorAll('.gt-tp-cand-pick').length,
+    list: [...tr.querySelectorAll('.gt-tp-cand:not(.gt-tp-cand-on) .gt-tp-cand-main')].map(m => m.textContent).join(' | '),
     metas: [...tr.querySelectorAll('.gt-tp-cand-meta')].map(m => m.textContent),
     why: [...tr.querySelectorAll('.gt-tp-why')].map(w => w.textContent),
     below: !!tr.querySelector('.gt-tp-below'),
@@ -87,6 +88,16 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   await jsTr.locator('.gt-tp-cand-x').click();
   list = await until(ents, l => !row(l, 'John Smith').picked);
   check(!row(list, 'John Smith').picked && row(list, 'John Smith').cands >= 2, '✕ shows the candidates again');
+  // a pick from your own search: ✕ brings those results back, no second search
+  await jsTr.locator('.gt-tp-esrch-q').fill('John Smith UK');
+  await jsTr.locator('.gt-tp-esrch-q').press('Enter');
+  const found = row(await until(ents, l => row(l, 'John Smith').cands > 0 && !/Searching/.test(JSON.stringify(l))), 'John Smith').list;
+  await jsTr.locator('.gt-tp-cand-pick').first().click();
+  await until(ents, l => row(l, 'John Smith').picked);
+  check(row(await ents(), 'John Smith').cands === 0, 'the results hide under the pick');
+  await jsTr.locator('.gt-tp-cand-x').click();
+  list = await until(ents, l => !row(l, 'John Smith').picked);
+  check(found && row(list, 'John Smith').list === found, `✕ shows the search's results again\n  got:  ${row(list, 'John Smith').list}\n  want: ${found}`);
   await jsTr.locator('.gt-tp-cand-pick').first().click();
   await until(ents, l => row(l, 'John Smith').picked);
 

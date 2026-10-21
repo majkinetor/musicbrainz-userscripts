@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 09:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 09:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1458,7 +1458,7 @@ The text and the picks last until the page reloads.
 
 #### Matching
 
-Each candidate shows its type, life span and area, and why it ranks where it does (`+ member of band · Toto`, `− born 1990`).
+Each candidate shows its type, life span and area, and why it ranks where it does (`+ already lyricist on this release`, `+ member of band · Toto`, `− born 1990`).
 
 | Dot | Confidence  | Why                                                                               |
 | :-: | ----------- | --------------------------------------------------------------------------------- |

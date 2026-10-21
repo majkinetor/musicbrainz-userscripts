@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.094514
+// @version      2026.10.21.094834
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5392,13 +5392,13 @@
         if (why && !k.why.includes(why)) k.why.push(why);
       };
       ((release.artistCredit && release.artistCredit.names) || []).forEach(n => n && note(n.artist, 'release artist', n.name));
-      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `track ${t.number} artist`, n.name))));
+      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `artist of track ${t.number}`, n.name))));
       (release.labels || []).forEach(l => l && l.label && note({ ...l.label, entityType: 'label' }, 'release label'));
       const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
       document.querySelectorAll('.relationship-item').forEach(item => {
         const rel = relFromNode(item); if (!rel || !looksRel(rel) || rel._status === 3) return;
         const name = (lts[rel.linkTypeID] || {}).name || 'credited';
-        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `${name} here`, val(c) || ''));
+        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `already ${name} on this release`, val(c) || ''));
       });
       const related = [];
       for (const a of releaseArtists().slice(0, 4)) for (const r of await txpRelatedOf(a)) if (!related.some(x => x.gid === r.gid)) related.push(r);
@@ -5475,7 +5475,7 @@
     async function txpPickCandidate(key, text, gid, kind) {
       const cc = candCache.get(key) || {};
       const ent = (cc.entities && cc.entities[gid]) || await txpFetchEntity(gid, kind || cc.kind || 'artist');
-      searchState.delete(key);
+      const st = searchState.get(key); if (st) st.hidden = true;   // back on ✕
       if (!ent) { toast('Could not read that entity from MusicBrainz'); return; }
       entityCache.set(key, ent); pickInfo.set(key, { by: 'you', gid });
       txpRemember(releaseArtistGids(), text, ent);
@@ -5492,6 +5492,9 @@
     }
     function txpUnpick(key) {
       entityCache.set(key, null); pickInfo.set(key, { by: 'you', none: true });
+      // the list the pick came from comes back: your search's results, or the candidates
+      const st = searchState.get(key); if (st) st.hidden = false;
+      if (!candCache.has(key)) scheduleMatch();
       render(); saveState();
     }
 
@@ -6088,7 +6091,7 @@
           c.onclick = () => { if (creating.cancel) creating.cancel('cancelled'); else { pendingCreates.delete(g.key); render(); } };
           list.appendChild(c);
         }
-        if (!creating && ss && (ss.busy || ss.results)) {
+        if (!creating && ss && !ss.hidden && (ss.busy || ss.results)) {
           if (ent) list.appendChild(el('div', 'gt-tp-enone', 'Search results'));
           if (ss.busy) list.appendChild(el('div', 'gt-tp-enone', 'Searching…'));
           else if (!ss.results.length) list.appendChild(el('div', 'gt-tp-enone', 'Nothing found — + creates it'));
@@ -6253,8 +6256,9 @@
         // itself" — total counts only the names that actually need a real
         // lookup (already-cached ones are instant skips, not "work" the
         // button should promise is coming).
-        // #798: a name you picked or cleared is yours; everything else is (re)ranked
-        const todo = entities.filter(([t]) => { const k = t.toLowerCase().trim(); return !candCache.has(k) && (pickInfo.get(k) || {}).by !== 'you'; });
+        // #798: every name gets its candidates once, picked or not, so ✕ on a pick
+        // always has them to show; a pick of yours stays (txpAutoPick)
+        const todo = entities.filter(([t]) => !candCache.has(t.toLowerCase().trim()));
         resolveTotal = todo.length;
         resolveDone = 0;
         const bumpProgress = () => { resolveDone++; busy.textContent = `Matching ${resolveDone}/${resolveTotal}…`; };
@@ -6401,6 +6405,7 @@
     const searchState = new Map();   // name -> { term, kind, results, busy }
     async function txpRunSearch(key, text) {
       const st = searchState.get(key); if (!st) return;
+      st.hidden = false;
       const term = (st.term || '').trim();
       if (!term) { searchState.delete(key); render(); return; }
       const gid = (term.match(GID_RE) || [])[0];

@@ -125,7 +125,7 @@ The text and the picks last until the page reloads.
 
 ### Matching
 
-Each candidate shows its type, life span and area, and why it ranks where it does (`+ member of band · Toto`, `− born 1990`).
+Each candidate shows its type, life span and area, and why it ranks where it does (`+ already lyricist on this release`, `+ member of band · Toto`, `− born 1990`).
 
 | Dot | Confidence  | Why                                                                               |
 | :-: | ----------- | --------------------------------------------------------------------------------- |
