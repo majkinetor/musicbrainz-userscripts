@@ -103,6 +103,16 @@ test('a click, Esc and a scroll close it; typing in a field does too', { tag: ['
   check(await shown(page) === '', 'typing closes it');
 });
 
+test('focus shows the tip only when Tab brought it, not a script\'s focus()', { tag: ['@unit'] }, async ({ page }) => {
+  await page.mouse.move(5, 600);
+  await page.evaluate(() => document.getElementById('field').focus());
+  await page.waitForTimeout(400);
+  check(await shown(page) === '', 'a picker focusing its search box shows no tip');
+  await page.evaluate(() => document.getElementById('field').blur());
+  await page.focus('#outside'); await page.keyboard.press('Shift+Tab');
+  check(/Type a name/.test(await until(() => shown(page), h => !!h)), 'Shift+Tab back onto the box shows it');
+});
+
 test('an icon-only button is named by its tip; a stray title in our window is taken over', { tag: ['@unit'] }, async ({ page }) => {
   await page.hover('#icon'); await until(() => shown(page), h => !!h);
   check(await page.getAttribute('#icon', 'aria-label') === 'Close the window', 'the ✕ gets the tip as its accessible name');

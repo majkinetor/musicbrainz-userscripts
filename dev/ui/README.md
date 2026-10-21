@@ -64,7 +64,7 @@ The text form reads structure out of plain text, so the strings stay readable in
 - the first line is the lead when more follows, and a long paragraph's first sentence leads;
 - `` `code` ``, `**bold**`, and a shortcut in brackets, `(Ctrl+Alt+F)` or `(P)`, drawn as a key.
 
-It opens after 350 ms (at once while moving from one tip to the next), under the element or over it when there's no room, with its arrow at the element, or at the pointer on a wide one. A click, Esc, a scroll, typing or leaving closes it; an interactive one stays while the pointer is on it. Keyboard focus shows it too, and an element with nothing to read of its own (an icon, a ✕) gets the tip as its `aria-label`. It sits over everything, modals included (`--mbu-z-tip`).
+It opens after 350 ms (at once while moving from one tip to the next), under the element or over it when there's no room, with its arrow at the element, or at the pointer on a wide one. A click, Esc, a scroll, typing or leaving closes it; an interactive one stays while the pointer is on it. Tabbing onto an element shows it too (a script's own `focus()`, a picker focusing its search box, doesn't), and an element with nothing to read of its own (an icon, a ✕) gets the tip as its `aria-label`. It sits over everything, modals included (`--mbu-z-tip`).
 
 Several copies run on one page. The first to start serves `data-tip` for all (`data-mbu-tip` on `<html>`); each serves the rich tips its own script registered; they share the one `#mbu-tip` element and its stylesheet. A `title` left inside one of our windows (`ROOTS`, or `.mbu-ui`) is moved to `data-tip` on hover, before the browser shows it; an `<option>` keeps its own.
 
