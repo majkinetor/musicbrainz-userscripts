@@ -77,7 +77,8 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   check(row(list, 'John Smith').picked && row(list, 'John Smith').level === 'you', `✓ picks it, marked as yours (${JSON.stringify(row(list, 'John Smith'))})`);
   const picked = await jsTr.locator('.gt-tp-cand-on .gt-tp-cand-name').textContent();
   check(picked === firstName, `the pick is the candidate ticked (${picked})`);
-  check(/3 ready/.test(await page.textContent('.gt-tp-cnt')), 'and its credit is ready to apply');
+  const cntText = await page.textContent('.gt-tp-cnt');
+  check(/^3\/3 picked · 3 credits ready$/.test(cntText), `the toolbar counts names picked and credits ready (${cntText})`);
 
   // the line the credit came from sits under it: its text and its pattern on one row
   check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line is under its credit, for editing');

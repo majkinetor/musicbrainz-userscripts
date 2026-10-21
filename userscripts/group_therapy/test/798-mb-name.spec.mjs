@@ -19,7 +19,7 @@ test('the text parser: Use MB name as credit', { tag: ['@sandbox', '@login'] }, 
     if (await cb.isChecked() !== mbName) await cb.click();
     await page.fill('.gt-tp-ta', 'Mastering: bob ludwig');
     await page.dispatchEvent('.gt-tp-ta', 'input');
-    await until(() => page.evaluate(() => /1 ready/.test(document.querySelector('.gt-tp-cnt').textContent)), Boolean, { timeout: 120000 });
+    await until(() => page.evaluate(() => /1 credit ready/.test(document.querySelector('.gt-tp-cnt').textContent)), Boolean, { timeout: 120000 });
     const tip = await page.getAttribute('.gt-tp-ename', 'data-tip');
     await page.click('.gt-tp .gt-cons-apply');
     await frames(page);

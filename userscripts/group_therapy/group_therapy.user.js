@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.100338
+// @version      2026.10.21.100940
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5162,7 +5162,7 @@
       + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font-size:12px;font-family:inherit;padding:6px 0}'
       + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
-      + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}'
+      + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}.gt-tp-bar .gt-tp-cnt-todo{color:var(--mbu-warn)}.gt-tp-bar .gt-tp-cnt-done{color:var(--mbu-ok)}'
       // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
@@ -6204,10 +6204,21 @@
 
       const rows = parsedRows().map(attachResolution);
       renderUnparsed(rows);
-      const matched = rows.filter(r => r.matched).length;
-      const ready = rows.filter(r => r.matched && r.roleMatch && r.entityMatch && !appliedKeys.has(r.key)).length;
+      // #798: counted in what you act on — names picked, credits ready, lines not
+      // parsed — not in lines the pattern read, which looked done when it wasn't
+      const credits = rows.filter(r => r.matched && (r.entity || '').trim());
+      const names = new Map();
+      credits.forEach(r => { const k = r.entity.toLowerCase().trim(); names.set(k, (names.get(k) !== false) && !!r.entityMatch); });
+      const picked = [...names.values()].filter(Boolean).length;
+      const ready = credits.filter(r => r.roleMatch && r.entityMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
-      cnt.textContent = rows.length ? `${matched}/${rows.length} matched` + (ready ? ` · ${ready} ready` : '') + (applied ? ` · ${applied} applied` : '') : '';
+      const unparsed = new Set(rows.filter(r => !r.matched || !(r.entity || '').trim()).map(r => r.li)).size;
+      cnt.textContent = !rows.length ? '' : [
+        `${picked}/${names.size} picked`, `${ready} credit${ready === 1 ? '' : 's'} ready`,
+        unparsed && `${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, applied && `${applied} applied`,
+      ].filter(Boolean).join(' · ');
+      cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0);
+      cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed);
       applyBtn.disabled = !ready;
       applyClearBtn.disabled = !ready;
       applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';
