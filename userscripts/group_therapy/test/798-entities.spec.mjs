@@ -69,11 +69,17 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   // ✓ picks a candidate for every row with the name; the line table follows
   const jsTr = page.locator('.gt-tp-erow', { has: page.locator('.gt-tp-ename', { hasText: 'John Smith' }) });
   const firstName = await jsTr.locator('.gt-tp-cand-name').first().textContent();
+  check(!(await page.locator('.gt-tp-tbl').count()), 'one table: the lines are not a table of their own');
   await jsTr.locator('.gt-tp-cand-pick').first().click();
   list = await until(ents, l => row(l, 'John Smith').picked);
   check(row(list, 'John Smith').picked && row(list, 'John Smith').level === 'you', `✓ picks it, marked as yours (${JSON.stringify(row(list, 'John Smith'))})`);
-  const lineEnt = await page.evaluate(() => [...document.querySelectorAll('.gt-tp-row')][1].querySelector('a.gt-tp-resolved')?.textContent || '');
-  check(lineEnt.startsWith(firstName), `the line's entity is the pick (${lineEnt})`);
+  const picked = await jsTr.locator('.gt-tp-cand-on .gt-tp-cand-name').textContent();
+  check(picked === firstName, `the pick is the candidate ticked (${picked})`);
+  check(/3 ready/.test(await page.textContent('.gt-tp-cnt')), 'and its credit is ready to apply');
+
+  // a line number opens the line's pattern and text, in the table
+  await jsTr.locator('.gt-tp-role-line').click();
+  check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line opens under its credit, for editing');
 
   // ✕ brings the candidates back, and nothing re-picks it on its own
   await jsTr.locator('.gt-tp-cand-x').click();
