@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 10:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 10:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1431,7 +1431,10 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 
 ### Text parser
 
-**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns). It opens under the toolbar, in the page, so the release's tracks and credits stay in reach as you scroll; its own toolbar, with **Apply**, stays on top.
+**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns). It opens under the toolbar, in the page, so the release's tracks and credits stay in reach as you scroll. Its two top rows stay on top:
+
+- the settings, the status and **Apply**. Each part of the status (`2/6 picked · 1 role to pick · 1 line not parsed`) takes you to the next of its kind;
+- the [pattern](#patterns) (its ▾ has the usual ones), 🔒 Freeze, the pasted text (one line until you click it), **Cutoff**, **Load annotation** and **Apply & clear annotation**.
 
 <img src="../group_therapy/screenshots/text-parser.png" />
 
@@ -1458,7 +1461,7 @@ The text and the picks last until the page reloads.
 
 #### Matching
 
-Each candidate shows its type, life span and area, and why it ranks where it does (`+ already lyricist on this release`, `+ member of band · Toto`, `− born 1990`).
+Each candidate shows its type, life span and area, and why it ranks where it does (`+ on release`, `+ related`, `− born 1990`); its tooltip has the detail (*Already lyricist on this release*, *member of band · Toto*).
 
 | Dot | Confidence  | Why                                                                               |
 | :-: | ----------- | --------------------------------------------------------------------------------- |
@@ -1496,7 +1499,7 @@ A bracket after `R` or `E` splits it into rows: `[,]` on commas, `[&]` on " & ",
 
 `{{}}` alone on a line ends a block. `{{…}}` can sit anywhere in a line and is cut out of its text, so credits printed in several shapes go in as one paste, each line kept as printed. Art Station's [AI scan](../art_station/README.md#ai-scan) writes them. **🔒 Freeze matched** pins the top pattern on the lines it matches, like in Apollo, and leaves lines with their own pattern alone.
 
-**Tracks**: with **Tracks: auto** (the default), a clause after the role or the name, like `(1)`, `(A1 B2)`, `(tracks 2 6 9)`, `[tracks 1-3]` or `on tracks 2 and 6`, sends that row to those tracks; every other row follows Scope. Write the numbers without commas, so `[,]` leaves the list whole: `Lyricist: Mimmo Epifani (tracks 1-3 5-11)`.
+**Tracks**: with **Tracks named in credits** on (the default), a clause after the role or the name, like `(1)`, `(A1 B2)`, `(tracks 2 6 9)`, `[tracks 1-3]` or `on tracks 2 and 6`, sends that credit to those tracks; every other credit follows Scope. A split never cuts inside brackets, so `Lyricist: Mimmo Epifani (tracks 1-3, 5-11)` read with `R: E[,]` stays one name.
 
 A clause counts only when every number is a track on this release, so `(2003)` stays a year. A line with two track lists is marked **⚠ split line** and stays release-level.
 

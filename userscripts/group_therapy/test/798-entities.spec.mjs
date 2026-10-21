@@ -51,7 +51,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   console.log('after Match: ' + JSON.stringify(list));
   check(list.length === 3, `a row per name (${list.length})`);
   const ra = row(list, relArtist);
-  check(ra.picked && ra.level === 'strong' && ra.why.some(w => /release artist/.test(w)), `the release artist is picked as Strong, saying why (${JSON.stringify(ra)})`);
+  check(ra.picked && ra.level === 'strong' && ra.why.some(w => /on release/.test(w)), `the release artist is picked as Strong, saying why (${JSON.stringify(ra)})`);
   const js = row(list, 'John Smith');
   check(!js.picked && js.cands >= 2, `a common name is left with its candidates (${js.cands})`);
   check(js.metas.some(m => /Person/.test(m)), 'each candidate says its type, life span and area');
@@ -78,7 +78,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   const picked = await jsTr.locator('.gt-tp-cand-on .gt-tp-cand-name').textContent();
   check(picked === firstName, `the pick is the candidate ticked (${picked})`);
   const cntText = await page.textContent('.gt-tp-cnt');
-  check(/^3\/3 picked · 3 credits ready$/.test(cntText), `the toolbar counts names picked and credits ready (${cntText})`);
+  check(cntText === '3/3 picked', `the toolbar counts the names picked (${cntText})`);
 
   // the line the credit came from sits under it: its text and its pattern on one row
   check(await jsTr.locator('.gt-tp-line .gt-tp-raw').inputValue() === 'Guitar: John Smith', 'the line is under its credit, for editing');
@@ -111,7 +111,7 @@ test('the text parser: in the page, entities with candidates, cutoff, remembered
   list = await ents();
   const again = row(list, 'John Smith');
   console.log('after reload: ' + JSON.stringify(again));
-  check(again.picked && again.why.some(w => /your earlier pick/.test(w)), `your pick comes back on the next Match, as your earlier pick (${JSON.stringify(again)})`);
+  check(again.picked && again.why.some(w => /your pick/.test(w)), `your pick comes back on the next Match, as your earlier pick (${JSON.stringify(again)})`);
 
   check(posts.length === 0, `nothing was submitted (${posts.length})`);
 });

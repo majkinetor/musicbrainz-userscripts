@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.101057
+// @version      2026.10.21.102218
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4681,28 +4681,28 @@
           if (!k || !k.gid || [...MBM_SPECIAL_PURPOSE].includes(k.gid)) continue;   // an array here, a Set in the inlined block
           const reasons = [];
           let points = 0, strong = false;
-          const add = (p, text, isStrong) => { points += p; if (text) reasons.push({ text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
-          if (c.remembered && c.remembered === k.gid) add(100, 'your earlier pick', true);
+          const add = (p, text, isStrong, tip) => { points += p; if (text) reasons.push({ text, tip: tip || text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
+          if (c.remembered && c.remembered === k.gid) add(100, 'your pick', true, 'You picked it for this name before');
           const known = (c.known || []).filter(x => x.gid === k.gid);
-          if (known.length) add(80, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 2).join(' · ') || 'on this release', true);
+          if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
           const rel = (c.related || []).find(x => x.gid === k.gid);
-          if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'the release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''), true);
+          if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
           const holds = mbmHolds(k, name);
           if (holds === 'name') add(20, '');
-          else if (holds === 'alias') add(15, 'alias');
-          if (c.unique && c.unique === k.gid) add(40, 'only one with this name');
+          else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');
+          if (c.unique && c.unique === k.gid) add(40, 'unique', false, 'The only one in MusicBrainz with this name or alias');
           const t = String(k.type || '').toLowerCase();
           if (c.want && t) {
               const isGroup = GROUPS.includes(t);
-              if (c.want === 'person' && isGroup) add(-25, 'a ' + t);
-              else if (c.want === 'group' && t === 'person') add(-25, 'a person');
+              if (c.want === 'person' && isGroup) add(-25, 'a ' + t, false, 'A ' + t + ', for a role a person plays');
+              else if (c.want === 'group' && t === 'person') add(-25, 'a person', false, 'A person, for a group\'s credit');
               else if ((c.want === 'person' && t === 'person') || (c.want === 'group' && isGroup)) add(5, '');
           }
           if (c.year) {
-              if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin);
-              else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end);
+              if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin, false, (t === 'person' ? 'Born ' : 'Founded ') + k.begin + ', after the release (' + c.year + ')');
+              else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end, false, (t === 'person' ? 'Died ' : 'Ended ') + k.end + ', before the release (' + c.year + ')');
           }
-          if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area);
+          if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area, false, 'From ' + k.area + ', the release\'s country');
           if (typeof k.score === 'number') points += k.score / 20;
           const level = strong ? 'strong' : (c.unique && c.unique === k.gid) ? 'unique' : 'weak';
           ranked.push({ ...k, points: Math.round(points * 10) / 10, level, reasons });
@@ -5135,41 +5135,51 @@
       + '.gt-tp-ents-title{font-weight:700;font-size:13px;flex:1}'
       + '.gt-tp-cut{font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:5px}'
       + '.gt-tp-cut select{font:inherit;font-size:12px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
-      + '.gt-tp-ctrl{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--mbu-border);flex-wrap:wrap}'
       // #539 follow-up (majkinetor): "With enough tracks, Match button goes to
       // next row" — a long "→ 12 tracks: 1, 2, 3 …" pushed the button off the
       // end. Scope and Match now travel as ONE right-hand group that shrinks
       // (the track list truncates) instead of wrapping the button away.
-      + '.gt-cons.gt-tp .gt-tp-bar{position:sticky;top:0;z-index:5;flex-wrap:wrap;gap:6px 14px;padding:7px 14px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);box-shadow:0 2px 6px rgba(0,0,0,.08);border-radius:7px 7px 0 0}'
+      // #798 the toolbar and the row under it stay on top together, Credit Hoarder's way
+      + '.gt-cons.gt-tp .gt-tp-top{position:sticky;top:0;z-index:5;background:var(--mbu-bg);box-shadow:0 2px 6px rgba(0,0,0,.08);border-radius:7px 7px 0 0}'
+      + '.gt-cons.gt-tp .gt-tp-bar{flex-wrap:wrap;gap:6px 16px;padding:7px 14px;background:var(--mbu-bg-raised);border-bottom:2px solid var(--mbu-accent);border-radius:7px 7px 0 0}'
+      + '.gt-tp-tg{display:inline-flex;align-items:center;gap:6px;border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:12.5px;color:var(--mbu-text-dim);white-space:nowrap}.gt-tp-tg:hover,.gt-tp-tg.on{color:var(--mbu-text)}'
+      + '.gt-tp-tgdot{flex:none;width:14px;height:14px;border-radius:50%;border:2px solid var(--mbu-border);background:var(--mbu-bg)}'
+      + '.gt-tp-tg.on .gt-tp-tgdot{border-color:var(--mbu-warn);background:#e8771d}'
+      + '.gt-tp-cnt-go{cursor:pointer}.gt-tp-cnt-go:hover{text-decoration:underline}'
+      + '.gt-tp-ctrl{display:flex;align-items:flex-start;gap:8px;padding:6px 14px;border-bottom:1px solid var(--mbu-border)}'
+      + '.gt-tp-combo{position:relative;flex:none;display:flex;align-items:center;width:200px;height:28px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg-sunken)}'
+      + '.gt-tp-combo:focus-within{border-color:var(--mbu-info)}'
+      + '.gt-tp-pat{flex:1;min-width:0;height:100%;box-sizing:border-box;padding:0 8px;border:none;background:transparent;font:12.5px monospace;outline:none}'
+      + '.gt-tp-clr{flex:none;background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:0 4px}.gt-tp-clr:hover{color:var(--mbu-error)}'
+      + '.gt-tp-ddbtn{flex:none;height:100%;border:none;border-left:1px solid var(--mbu-border);background:none;padding:0 7px;cursor:pointer;color:var(--mbu-text-dim);font-size:11px}'
+      + '.gt-tp-dd{position:absolute;top:calc(100% + 4px);left:-1px;width:280px;z-index:6;display:flex;flex-direction:column;padding:4px 0;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}'
+      + '.gt-tp-dd-it{display:flex;align-items:baseline;gap:8px;border:none;background:none;padding:4px 10px;text-align:left;cursor:pointer;font:inherit}.gt-tp-dd-it:hover,.gt-tp-dd-on{background:var(--mbu-bg-hover)}'
+      + '.gt-tp-dd-pat{font:12.5px monospace;color:var(--mbu-text)}.gt-tp-dd-ex{font-size:11px;color:var(--mbu-text-weak)}'
+      + '.gt-tp-freeze{flex:0 0 auto;height:28px;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:0 7px;font-size:12px;line-height:1}.gt-tp-freeze:hover{background:var(--mbu-bg-hover)}'
+      + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0}'
+      + '.gt-tp-ta{display:block;width:100%;height:28px;box-sizing:border-box;padding:0 80px 0 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px/26px monospace;outline:none;resize:none;overflow:hidden;white-space:pre;background:var(--mbu-bg)}'
+      + '.gt-tp-ta.gt-tp-ta-open{padding:5px 8px;line-height:1.4;overflow:auto;white-space:pre-wrap;border-color:var(--mbu-info)}'
+      + '.gt-tp-lines{position:absolute;right:6px;top:5px;border:none;background:var(--mbu-bg);padding:0 2px;font-size:11px;color:var(--mbu-text-weak);cursor:pointer}.gt-tp-paste-open .gt-tp-lines{display:none}'
+      + '.gt-tp-opts{flex:none;display:flex;align-items:center;gap:10px;height:28px}'
+      + '.gt-tp-opts .gt-tp-cut select{border:none;background:transparent;font-weight:600;cursor:pointer}'
+      + '.gt-tp-opts .gt-tp-anno,.gt-tp-opts .gt-cons-btn{height:28px;box-sizing:border-box;padding:0 10px;font-size:12px;font-weight:400;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font-family:inherit}'
       + '.gt-tp-bar .gt-tp-title{flex:none}'
       + '.gt-tp-bar .gt-tp-grow{flex:1}'
       + '.gt-tp-bar .gt-tp-scope{background:none;padding:0;font-size:12.5px;gap:10px}'
       + '.gt-tp-bar .gt-tp-scope select{border:none;background:transparent;font-weight:600;font-size:12.5px;color:var(--mbu-text);cursor:pointer}'
-      + '.gt-tp-bar .gt-tp-anno,.gt-tp-bar .gt-cons-apply{margin-left:0}'
-      + '.gt-tp-mbname{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}'
-      + '.gt-tp-pat{width:180px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:13px monospace;outline:none}'
-      + '.gt-tp-pat:focus{border-color:var(--mbu-info)}'
-      + '.gt-tp-clr{background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:var(--mbu-text-dim)}'
-      + '.gt-tp-presets{display:flex;gap:4px;flex-wrap:wrap}'
-      + '.gt-tp-chip{font:11px monospace;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:11px;padding:2px 9px;cursor:pointer;color:var(--mbu-text)}.gt-tp-chip:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-info)}'
+      + '.gt-tp-bar .gt-cons-apply{margin-left:0}'
       + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-radius:11px;padding:3px 10px;min-width:0}'
       + '.gt-tp-scope-lbl{color:var(--mbu-text-weak)}'
       + '.gt-tp-scope-sel,.gt-tp-det-sel,.gt-tp-works-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
-      + '.gt-tp-src{padding:0 14px}'
-      + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font-size:12px;font-family:inherit;padding:6px 0}'
-      + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
       + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}.gt-tp-bar .gt-tp-cnt-todo{color:var(--mbu-warn)}.gt-tp-bar .gt-tp-cnt-done{color:var(--mbu-ok)}'
       // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
-      + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
       + '.gt-tp-bar .gt-tp-busy{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}'
-      + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
       // #544: disambiguation must not read as part of the name — smaller, grey,
       // italic, in the results AND in the resolved table cell.
       + '.gt-tp-disamb{color:var(--mbu-text-weak);font-size:11px;font-style:italic;font-weight:400}'
@@ -5396,14 +5406,14 @@
         if (credited) k.names.add(credited);
         if (why && !k.why.includes(why)) k.why.push(why);
       };
-      ((release.artistCredit && release.artistCredit.names) || []).forEach(n => n && note(n.artist, 'release artist', n.name));
-      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `artist of track ${t.number}`, n.name))));
-      (release.labels || []).forEach(l => l && l.label && note({ ...l.label, entityType: 'label' }, 'release label'));
+      ((release.artistCredit && release.artistCredit.names) || []).forEach(n => n && note(n.artist, 'The release artist', n.name));
+      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `Artist of track ${t.number}`, n.name))));
+      (release.labels || []).forEach(l => l && l.label && note({ ...l.label, entityType: 'label' }, 'The release label'));
       const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
       document.querySelectorAll('.relationship-item').forEach(item => {
         const rel = relFromNode(item); if (!rel || !looksRel(rel) || rel._status === 3) return;
         const name = (lts[rel.linkTypeID] || {}).name || 'credited';
-        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `already ${name} on this release`, val(c) || ''));
+        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `Already ${name} on this release`, val(c) || ''));
       });
       const related = [];
       for (const a of releaseArtists().slice(0, 4)) for (const r of await txpRelatedOf(a)) if (!related.some(x => x.gid === r.gid)) related.push(r);
@@ -5800,8 +5810,28 @@
     const ctrl = el('div', 'gt-tp-ctrl');
     const patIn = el('input', 'gt-tp-pat'); patIn.type = 'text'; patIn.value = pattern;
     const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
-    const presets = el('span', 'gt-tp-presets');
-    TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
+    patIn.placeholder = 'pattern';
+    patIn.dataset.tip = 'The pattern every line is read with\n`R` is the role, `E` the entity; ▾ has the usual ones';
+    // #798: the presets under ▾, each with a line it reads
+    const TXP_PRESET_EX = { 'R: E': 'Mastering: Nick Robbins', 'R: E[,]': 'Bass: Ann, Bob', 'R[,] - E[,]': 'Bass, Guitar - Ann', 'E[,] - R[,]': 'Ann - Bass, Guitar', 'R by E[&]': 'Produced by Ann & Bob' };
+    const combo = el('span', 'gt-tp-combo');
+    const ddBtn = el('button', 'gt-tp-ddbtn', '▾'); ddBtn.type = 'button'; ddBtn.dataset.tip = 'The usual patterns';
+    let dd = null;
+    const closeDd = () => { if (dd) { dd.remove(); dd = null; document.removeEventListener('mousedown', ddOut, true); } };
+    const ddOut = e => { if (dd && !combo.contains(e.target)) closeDd(); };
+    ddBtn.onclick = () => {
+      if (dd) { closeDd(); return; }
+      dd = el('div', 'gt-tp-dd');
+      TXP_PRESETS.forEach(pp => {
+        const it = el('button', 'gt-tp-dd-it' + (pp === pattern ? ' gt-tp-dd-on' : '')); it.type = 'button';
+        it.append(el('span', 'gt-tp-dd-pat', pp), el('span', 'gt-tp-dd-ex', TXP_PRESET_EX[pp] || ''));
+        it.onclick = () => { patIn.value = pp; onPatternChange(); closeDd(); };
+        dd.appendChild(it);
+      });
+      combo.appendChild(dd);
+      document.addEventListener('mousedown', ddOut, true);
+    };
+    combo.append(patIn, patClr, ddBtn);
     // #798: no Match button — matching runs by itself after each change; this
     // says when it is working
     const busy = el('span', 'gt-tp-busy');
@@ -5822,16 +5852,22 @@
     // its own at all, and the two are useful in every combination.
     // ⚠ its own class, NOT a second .gt-tp-scope-sel — Playwright's page.* helpers
     // are strict, so a duplicate class makes verify-539's selectOption throw.
-    const detSel = el('select', 'gt-tp-det-sel');
-    [['auto', 'Tracks: auto'], ['off', 'Tracks: off']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; detSel.appendChild(o); });
-    detSel.value = scope.tracks;
-    detSel.dataset.tip = 'Tracks named in a credit\n'
+    // #798: on/off settings as Credit Hoarder's round toggles
+    const toggle = (cls, label, on, tip, onChange) => {
+      const b = el('button', 'gt-tp-tg ' + cls + (on ? ' on' : '')); b.type = 'button';
+      b.append(el('span', 'gt-tp-tgdot'), label);
+      b.dataset.tip = tip;
+      b.onclick = () => { const v = !b.classList.contains('on'); b.classList.toggle('on', v); onChange(v); };
+      return b;
+    };
+    const detSel = toggle('gt-tp-det', 'Tracks named in credits', scope.tracks === 'auto', 'Tracks named in a credit\n'
       + 'Auto: a credit that names its own tracks, like “Lead vocals (tracks 2,6,9)”, goes on those recordings, whatever Scope says; the rest follows Scope. '
-      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row';
+      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row',
+      v => { scope.tracks = v ? 'auto' : 'off'; render(); saveState(); });   // #597
     // #777: where a work role goes when a credit lands on recordings — "create
     // needed", as in Credit Hoarder, makes the work a track lacks.
     const worksSel = el('select', 'gt-tp-works-sel');
-    [['none', 'Works: create none'], ['needed', 'Works: create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
+    [['none', 'create none'], ['needed', 'create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
     worksSel.value = scope.works;
     worksSel.dataset.tip = 'Work roles\nA role works have and recordings don\'t (lyricist, composer, librettist, translator) goes on the works of its tracks.\n'
       + 'Create none: only works already linked; a track with no work is skipped, and counted\n'
@@ -5842,12 +5878,11 @@
     const TXP_MBNAME_KEY = 'gt-tp-mbname';
     let useMbName = false;
     try { useMbName = !!GM_getValue(TXP_MBNAME_KEY, false); } catch (e) {}
-    const mbNameLbl = el('label', 'gt-tp-mbname');
-    const mbNameCb = el('input'); mbNameCb.type = 'checkbox'; mbNameCb.checked = useMbName;
-    mbNameLbl.append(mbNameCb, 'Use MB name as credit');
-    mbNameLbl.dataset.tip = 'Credit each entity by its MusicBrainz name\nOff: as the text spells it, when the two differ';
-    mbNameCb.onchange = () => { useMbName = mbNameCb.checked; try { GM_setValue(TXP_MBNAME_KEY, useMbName); } catch (e) {} render(); };
-    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel, mbNameLbl);
+    const mbNameLbl = toggle('gt-tp-mbname', 'Use MB name as credit', useMbName, 'Credit each entity by its MusicBrainz name\nOff: as the text spells it, when the two differ',
+      v => { useMbName = v; try { GM_setValue(TXP_MBNAME_KEY, useMbName); } catch (e) {} render(); });
+    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope:'), scopeSel, tracksIn, tracksInfo);
+    const worksWrap = el('span', 'gt-tp-scope');
+    worksWrap.append(el('span', 'gt-tp-scope-lbl', 'Works:'), worksSel);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
     // credit the wrong recordings.
@@ -5878,30 +5913,28 @@
     }
     scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); scheduleMatch(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
-    detSel.onchange = () => { scope.tracks = detSel.value; render(); saveState(); };   // #597
     worksSel.onchange = () => { scope.works = worksSel.value; if (scope.works === 'needed') txpWorksWarning(); saveState(); };   // #777
-    // #539 follow-up (majkinetor): "We again have new row, this time for out of
-    // the box patterns … Move scope to the bottom, opposite of Apply." So the
-    // top bar is back to what it was — pattern · presets · ⚡ Match — and the
-    // scope control lives in the footer instead, at the opposite end from
-    // Apply. It belongs there anyway: it is part of deciding what Apply does,
-    // not part of writing the pattern.
     // #544 (majkinetor): "Freeze matched should be next to the pattern input in
     // the header (like Apollo)". Icon-only, per the standing toolbar rule — the
     // top bar has twice been one control too wide (#539), and the tooltip
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
     freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
-    ctrl.append(patIn, patClr, freezeBtn, presets);
+    ctrl.append(combo, freezeBtn);
 
-    const src = el('div', 'gt-tp-src');
-    const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
+    // #798: the pasted text in the row, one line while you review the table, the
+    // whole of it while you edit (focus); "n lines ▾" opens it
+    const pasteWrap = el('span', 'gt-tp-pastewrap');
     const ta = el('textarea', 'gt-tp-ta');
-    // #522 follow-up (majkinetor, live): "move copyright help text into the
-    // textbox hint when its empty" — folded into the placeholder instead of
-    // a permanent line taking up space even once you're pasting real text.
-    ta.placeholder = 'Paste credit text here, one credit per line…\n\nA ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern. Each entity resolves against artists or labels depending on its role — a label-only role like "distributed by" is searched as a label; an ambiguous one auto-detects against this release\'s own credited artists, with a toggle to override.';
-    src.append(srcTgl, ta);
+    ta.placeholder = 'Paste credits, one per line — © and ℗ lines are read too';
+    ta.rows = 1;
+    const linesLbl = el('button', 'gt-tp-lines', ''); linesLbl.type = 'button'; linesLbl.dataset.tip = 'Show all the text';
+    linesLbl.onclick = () => ta.focus();
+    const fitTa = () => { ta.style.height = ''; if (ta.classList.contains('gt-tp-ta-open')) ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(window.innerHeight * 0.5)) + 'px'; };
+    ta.addEventListener('focus', () => { ta.classList.add('gt-tp-ta-open'); pasteWrap.classList.add('gt-tp-paste-open'); fitTa(); });
+    ta.addEventListener('blur', () => { ta.classList.remove('gt-tp-ta-open'); pasteWrap.classList.remove('gt-tp-paste-open'); fitTa(); ta.scrollTop = 0; });
+    ta.addEventListener('input', fitTa);
+    pasteWrap.append(ta, linesLbl);
 
     // #798: one table, the entities'. Above it, only the lines that gave no
     // credit, to fix their pattern or text
@@ -5923,8 +5956,8 @@
       + '- Unique name: the only one in MusicBrainz with this name\n'
       + '- Weak: the best guess, when it clearly leads\n'
       + 'A match below it waits on its row for ✓. Your own picks stay.';
-    cutWrap.append('Cutoff', cutSel);
-    entsHdr.append(entsTitle, cutWrap);
+    cutWrap.append('Cutoff:', cutSel);
+    entsHdr.append(entsTitle);
     const etbl = el('table', 'gt-tp-etbl');
     const TXP_ECOL_KEY = 'gt-tp-ecol';
     let ecolW = '48%';
@@ -5968,7 +6001,7 @@
       if (c.disambiguation) main.appendChild(el('span', 'gt-tp-disamb', `(${c.disambiguation})`));
       const meta = [c.type, lifeOf(c), c.area].filter(Boolean).join(' · ');
       if (meta) main.appendChild(el('span', 'gt-tp-cand-meta', meta));
-      (c.reasons || []).forEach(x => main.appendChild(el('span', 'gt-tp-why' + (x.sign < 0 ? ' gt-tp-why-neg' : ''), (x.sign < 0 ? '− ' : '+ ') + x.text)));
+      (c.reasons || []).forEach(x => { const w = el('span', 'gt-tp-why' + (x.sign < 0 ? ' gt-tp-why-neg' : ''), (x.sign < 0 ? '− ' : '+ ') + x.text); if (x.tip && x.tip !== x.text) w.dataset.tip = x.tip; main.appendChild(w); });
       if (opts.below) main.appendChild(el('span', 'gt-tp-below', 'below cutoff'));
       row.appendChild(main);
       if (opts.onClear) {
@@ -6073,6 +6106,8 @@
         const allRoles = g.rows.every(r => r.roleMatch || r.crKind);
         const st = ent && allRoles ? 'ok' : (ent || creating || (cc && cc.ranked.length)) ? 'amber' : cc ? 'red' : '';
         const tr = el('tr', 'gt-tp-erow' + (st ? ' gt-tp-st-' + st : ''));
+        if (!ent) tr.dataset.unpicked = '1';
+        if (!allRoles) tr.dataset.roleless = '1';
         // the credit: name, kind, + to create it; its roles with their lines
         const left = el('td');
         const head = el('div', 'gt-tp-ehead');
@@ -6158,6 +6193,15 @@
     }
 
     const cnt = el('span', 'gt-tp-cnt');
+    // #798: each part of the status takes you to the next of its kind, below what
+    // is in view (round to the first after the last)
+    const jumpTo = sel => {
+      const left = [...panel.querySelectorAll(sel)];
+      if (!left.length) return;
+      const edge = top.getBoundingClientRect().bottom + 8;
+      const next = left.find(r => r.getBoundingClientRect().top > edge + 4) || left[0];
+      window.scrollTo({ top: window.scrollY + next.getBoundingClientRect().top - edge, behavior: 'smooth' });
+    };
     // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
     applyClearBtn.dataset.tip = 'Apply the resolved rows, then clear the release\'s annotation\nSubmitted for you, with its own edit note';
@@ -6204,8 +6248,8 @@
 
       const rows = parsedRows().map(attachResolution);
       renderUnparsed(rows);
-      // #798: counted in what you act on — names picked, credits ready, lines not
-      // parsed — not in lines the pattern read, which looked done when it wasn't
+      // #798: counted in what you act on — names picked, lines not parsed — not in
+      // lines the pattern read, which looked done when it wasn't
       const credits = rows.filter(r => r.matched && (r.entity || '').trim());
       const names = new Map();
       credits.forEach(r => { const k = r.entity.toLowerCase().trim(); names.set(k, (names.get(k) !== false) && !!r.entityMatch); });
@@ -6213,12 +6257,25 @@
       const ready = credits.filter(r => r.roleMatch && r.entityMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
       const unparsed = new Set(rows.filter(r => !r.matched || !(r.entity || '').trim()).map(r => r.li)).size;
-      cnt.textContent = !rows.length ? '' : [
-        `${picked}/${names.size} picked`, `${ready} credit${ready === 1 ? '' : 's'} ready`,
-        unparsed && `${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, applied && `${applied} applied`,
-      ].filter(Boolean).join(' · ');
-      cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0);
-      cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed);
+      // a role is picked once for every credit with its text, so it counts once
+      const roleless = new Set(credits.filter(r => !r.crKind && !r.roleMatch).map(r => (r.role || '').toLowerCase().trim())).size;
+      cnt.textContent = '';
+      const part = (text, todo, tip, sel) => {
+        if (cnt.childNodes.length) cnt.append(' · ');
+        const sp = el('span', todo ? 'gt-tp-cnt-go' : '', text);
+        if (todo) { sp.dataset.tip = tip; sp.onclick = () => jumpTo(sel); }
+        cnt.appendChild(sp);
+      };
+      if (rows.length) {
+        part(`${picked}/${names.size} picked`, picked < names.size, 'Click: the next name left to pick', '.gt-tp-erow[data-unpicked]');
+        if (roleless) part(`${roleless} role${roleless === 1 ? '' : 's'} to pick`, true, 'Click: the next credit whose role is left to pick', '.gt-tp-erow[data-roleless]');
+        if (unparsed) part(`${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, true, 'Click: the lines not parsed', '.gt-tp-unp');
+        if (applied) part(`${applied} applied`, false);
+      }
+      cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0 || roleless > 0);
+      const nonEmpty = lines.filter(l => l.raw.trim()).length;
+      linesLbl.textContent = nonEmpty > 1 ? `${nonEmpty} lines ▾` : '';
+      cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed && !roleless);
       applyBtn.disabled = !ready;
       applyClearBtn.disabled = !ready;
       applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';
@@ -6609,8 +6666,6 @@
       // onTextChange, which must DROP position-keyed state, precisely because
       // there the text has changed underneath it.)
       overrides: lines.map(l => (l && l.override) || ''),
-      // "State should be kept completely": whether the paste box was rolled up
-      srcOpen: ta.style.display !== 'none',
       // #544 follow-up (majkinetor): 'Button "load and remove annotation" is lost
       // when exiting / returning.' "Apply & clear annotation" only shows once the
       // text CAME FROM the annotation, and that flag was a plain local — so
@@ -6662,8 +6717,6 @@
       const split = txpSplitCompoundCopyrightLines(ta.value);
       if (split !== ta.value) { ta.value = split; onTextChange(); }
     }, 0));
-    const setSrcOpen = (open) => { ta.style.display = open ? '' : 'none'; srcTgl.textContent = (open ? '▾' : '▸') + ' Paste credit text'; };
-    srcTgl.onclick = () => { setSrcOpen(ta.style.display === 'none'); saveState(); };
     // #544 freeze: per LINE, since the override is a line's property — a line
     // that expanded into several rows is frozen once.
     freezeBtn.onclick = () => {
@@ -6704,8 +6757,14 @@
     hdr.textContent = '';
     hdr.classList.add('gt-tp-bar');
     // Apply last on the right (majkinetor), so ✕ goes first on the left
-    hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), scopeWrap, cnt, busy, el('span', 'gt-tp-grow'), annoBtn, applyClearBtn, applyBtn);
-    panel.append(hdr, ctrl, src, body, ents);
+    hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), detSel, mbNameLbl, scopeWrap, worksWrap, el('span', 'gt-tp-grow'), cnt, busy, applyBtn);
+    // the row: pattern, Freeze, the text; on the right the rarer settings
+    const opts = el('span', 'gt-tp-opts');
+    opts.append(cutWrap, annoBtn, applyClearBtn);
+    ctrl.append(pasteWrap, opts);
+    const top = el('div', 'gt-tp-top');
+    top.append(hdr, ctrl);
+    panel.append(top, body, ents);
     // #798: under Group Therapy's toolbar, where the button that opened it is
     const bar = document.querySelector('.gt-toolbar');
     if (bar) bar.after(panel); else (document.getElementById('content') || document.body).prepend(panel);
@@ -6724,7 +6783,6 @@
       loadedFromAnnotation = !!saved.loadedFromAnnotation;   // #544: brings "Apply & clear annotation" back with its text
       (saved.candCache || []).forEach(([k, v]) => candCache.set(k, v));   // #798
       (saved.pickInfo || []).forEach(([k, v]) => pickInfo.set(k, v));
-      if (saved.srcOpen === false) setSrcOpen(false);
     }
     // #544 follow-up: whatever was last on screen is what comes back, whichever
     // control changed it — see closeTextParser.

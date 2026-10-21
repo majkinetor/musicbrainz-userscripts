@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.101100
+// @version      2026.10.21.102223
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -131,8 +131,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.21.101100 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.21.085014\n  · Art Station v2026.10.20.231231\n  · Credit Hoarder v2026.10.21.085228\n  · Falcon v2026.10.20.143006\n  · First Contact v2026.10.21\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.101057\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.223959\n  · Platform Check v2026.10.20.142620");
+  console.log('%c String Theory %c v2026.10.21.102223 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.21.102218\n  · Art Station v2026.10.20.231231\n  · Credit Hoarder v2026.10.21.102221\n  · Falcon v2026.10.20.143006\n  · First Contact v2026.10.21\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.102218\n  · ISRC Scout v2026.10.20.120000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.20.223959\n  · Platform Check v2026.10.20.142620");
 } catch (e) {}
 
 function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
@@ -140,7 +140,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.21.085014"],["art_station","Art Station","2026.10.20.231231"],["credit_hoarder","Credit Hoarder","2026.10.21.085228"],["falcon","Falcon","2026.10.20.143006"],["first_contact","First Contact","2026.10.21"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.101057"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.223959"],["platform_check","Platform Check","2026.10.20.142620"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.21.102218"],["art_station","Art Station","2026.10.20.231231"],["credit_hoarder","Credit Hoarder","2026.10.21.102221"],["falcon","Falcon","2026.10.20.143006"],["first_contact","First Contact","2026.10.21"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.102218"],["isrc_scout","ISRC Scout","2026.10.20.120000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.20.223959"],["platform_check","Platform Check","2026.10.20.142620"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -500,28 +500,28 @@ function mbmRankCandidates(name, cands, ctx) {
         if (!k || !k.gid || [...MBM_SPECIAL_PURPOSE].includes(k.gid)) continue;   // an array here, a Set in the inlined block
         const reasons = [];
         let points = 0, strong = false;
-        const add = (p, text, isStrong) => { points += p; if (text) reasons.push({ text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
-        if (c.remembered && c.remembered === k.gid) add(100, 'your earlier pick', true);
+        const add = (p, text, isStrong, tip) => { points += p; if (text) reasons.push({ text, tip: tip || text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
+        if (c.remembered && c.remembered === k.gid) add(100, 'your pick', true, 'You picked it for this name before');
         const known = (c.known || []).filter(x => x.gid === k.gid);
-        if (known.length) add(80, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 2).join(' · ') || 'on this release', true);
+        if (known.length) add(80, 'on release', true, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 3).join('\n') || 'Already on this release');
         const rel = (c.related || []).find(x => x.gid === k.gid);
-        if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'the release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''), true);
+        if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'release artist' : 'related', true, rel.rel === 'self' ? 'The release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''));
         const holds = mbmHolds(k, name);
         if (holds === 'name') add(20, '');
-        else if (holds === 'alias') add(15, 'alias');
-        if (c.unique && c.unique === k.gid) add(40, 'only one with this name');
+        else if (holds === 'alias') add(15, 'alias', false, 'Has this name as an alias');
+        if (c.unique && c.unique === k.gid) add(40, 'unique', false, 'The only one in MusicBrainz with this name or alias');
         const t = String(k.type || '').toLowerCase();
         if (c.want && t) {
             const isGroup = GROUPS.includes(t);
-            if (c.want === 'person' && isGroup) add(-25, 'a ' + t);
-            else if (c.want === 'group' && t === 'person') add(-25, 'a person');
+            if (c.want === 'person' && isGroup) add(-25, 'a ' + t, false, 'A ' + t + ', for a role a person plays');
+            else if (c.want === 'group' && t === 'person') add(-25, 'a person', false, 'A person, for a group\'s credit');
             else if ((c.want === 'person' && t === 'person') || (c.want === 'group' && isGroup)) add(5, '');
         }
         if (c.year) {
-            if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin);
-            else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end);
+            if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin, false, (t === 'person' ? 'Born ' : 'Founded ') + k.begin + ', after the release (' + c.year + ')');
+            else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end, false, (t === 'person' ? 'Died ' : 'Ended ') + k.end + ', before the release (' + c.year + ')');
         }
-        if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area);
+        if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area, false, 'From ' + k.area + ', the release\'s country');
         if (typeof k.score === 'number') points += k.score / 20;
         const level = strong ? 'strong' : (c.unique && c.unique === k.gid) ? 'unique' : 'weak';
         ranked.push({ ...k, points: Math.round(points * 10) / 10, level, reasons });
@@ -3902,7 +3902,7 @@ return { ST_ICONS, stIcon, stColor };
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*/edit_annotation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.21.085014","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.21.085014","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.21.102218","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.21.102218","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -20752,7 +20752,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 if (__stOff.indexOf("credit_hoarder") < 0 && __stRuns("credit_hoarder", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.metal-archives\\.com(?::\\d+)?/albums/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.21.085228","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.21.085228","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.21.102221","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.21.102221","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -46421,7 +46421,7 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.101057","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.101057","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.102218","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.21.102218","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
@@ -49670,41 +49670,51 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       + '.gt-tp-ents-title{font-weight:700;font-size:13px;flex:1}'
       + '.gt-tp-cut{font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:5px}'
       + '.gt-tp-cut select{font:inherit;font-size:12px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
-      + '.gt-tp-ctrl{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--mbu-border);flex-wrap:wrap}'
       // #539 follow-up (majkinetor): "With enough tracks, Match button goes to
       // next row" — a long "→ 12 tracks: 1, 2, 3 …" pushed the button off the
       // end. Scope and Match now travel as ONE right-hand group that shrinks
       // (the track list truncates) instead of wrapping the button away.
-      + '.gt-cons.gt-tp .gt-tp-bar{position:sticky;top:0;z-index:5;flex-wrap:wrap;gap:6px 14px;padding:7px 14px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);box-shadow:0 2px 6px rgba(0,0,0,.08);border-radius:7px 7px 0 0}'
+      // #798 the toolbar and the row under it stay on top together, Credit Hoarder's way
+      + '.gt-cons.gt-tp .gt-tp-top{position:sticky;top:0;z-index:5;background:var(--mbu-bg);box-shadow:0 2px 6px rgba(0,0,0,.08);border-radius:7px 7px 0 0}'
+      + '.gt-cons.gt-tp .gt-tp-bar{flex-wrap:wrap;gap:6px 16px;padding:7px 14px;background:var(--mbu-bg-raised);border-bottom:2px solid var(--mbu-accent);border-radius:7px 7px 0 0}'
+      + '.gt-tp-tg{display:inline-flex;align-items:center;gap:6px;border:none;background:none;padding:0;cursor:pointer;font:inherit;font-size:12.5px;color:var(--mbu-text-dim);white-space:nowrap}.gt-tp-tg:hover,.gt-tp-tg.on{color:var(--mbu-text)}'
+      + '.gt-tp-tgdot{flex:none;width:14px;height:14px;border-radius:50%;border:2px solid var(--mbu-border);background:var(--mbu-bg)}'
+      + '.gt-tp-tg.on .gt-tp-tgdot{border-color:var(--mbu-warn);background:#e8771d}'
+      + '.gt-tp-cnt-go{cursor:pointer}.gt-tp-cnt-go:hover{text-decoration:underline}'
+      + '.gt-tp-ctrl{display:flex;align-items:flex-start;gap:8px;padding:6px 14px;border-bottom:1px solid var(--mbu-border)}'
+      + '.gt-tp-combo{position:relative;flex:none;display:flex;align-items:center;width:200px;height:28px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg-sunken)}'
+      + '.gt-tp-combo:focus-within{border-color:var(--mbu-info)}'
+      + '.gt-tp-pat{flex:1;min-width:0;height:100%;box-sizing:border-box;padding:0 8px;border:none;background:transparent;font:12.5px monospace;outline:none}'
+      + '.gt-tp-clr{flex:none;background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:0 4px}.gt-tp-clr:hover{color:var(--mbu-error)}'
+      + '.gt-tp-ddbtn{flex:none;height:100%;border:none;border-left:1px solid var(--mbu-border);background:none;padding:0 7px;cursor:pointer;color:var(--mbu-text-dim);font-size:11px}'
+      + '.gt-tp-dd{position:absolute;top:calc(100% + 4px);left:-1px;width:280px;z-index:6;display:flex;flex-direction:column;padding:4px 0;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}'
+      + '.gt-tp-dd-it{display:flex;align-items:baseline;gap:8px;border:none;background:none;padding:4px 10px;text-align:left;cursor:pointer;font:inherit}.gt-tp-dd-it:hover,.gt-tp-dd-on{background:var(--mbu-bg-hover)}'
+      + '.gt-tp-dd-pat{font:12.5px monospace;color:var(--mbu-text)}.gt-tp-dd-ex{font-size:11px;color:var(--mbu-text-weak)}'
+      + '.gt-tp-freeze{flex:0 0 auto;height:28px;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:0 7px;font-size:12px;line-height:1}.gt-tp-freeze:hover{background:var(--mbu-bg-hover)}'
+      + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0}'
+      + '.gt-tp-ta{display:block;width:100%;height:28px;box-sizing:border-box;padding:0 80px 0 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px/26px monospace;outline:none;resize:none;overflow:hidden;white-space:pre;background:var(--mbu-bg)}'
+      + '.gt-tp-ta.gt-tp-ta-open{padding:5px 8px;line-height:1.4;overflow:auto;white-space:pre-wrap;border-color:var(--mbu-info)}'
+      + '.gt-tp-lines{position:absolute;right:6px;top:5px;border:none;background:var(--mbu-bg);padding:0 2px;font-size:11px;color:var(--mbu-text-weak);cursor:pointer}.gt-tp-paste-open .gt-tp-lines{display:none}'
+      + '.gt-tp-opts{flex:none;display:flex;align-items:center;gap:10px;height:28px}'
+      + '.gt-tp-opts .gt-tp-cut select{border:none;background:transparent;font-weight:600;cursor:pointer}'
+      + '.gt-tp-opts .gt-tp-anno,.gt-tp-opts .gt-cons-btn{height:28px;box-sizing:border-box;padding:0 10px;font-size:12px;font-weight:400;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);color:var(--mbu-text);cursor:pointer;font-family:inherit}'
       + '.gt-tp-bar .gt-tp-title{flex:none}'
       + '.gt-tp-bar .gt-tp-grow{flex:1}'
       + '.gt-tp-bar .gt-tp-scope{background:none;padding:0;font-size:12.5px;gap:10px}'
       + '.gt-tp-bar .gt-tp-scope select{border:none;background:transparent;font-weight:600;font-size:12.5px;color:var(--mbu-text);cursor:pointer}'
-      + '.gt-tp-bar .gt-tp-anno,.gt-tp-bar .gt-cons-apply{margin-left:0}'
-      + '.gt-tp-mbname{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}'
-      + '.gt-tp-pat{width:180px;padding:5px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:13px monospace;outline:none}'
-      + '.gt-tp-pat:focus{border-color:var(--mbu-info)}'
-      + '.gt-tp-clr{background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:2px 4px}.gt-tp-clr:hover{color:var(--mbu-text-dim)}'
-      + '.gt-tp-presets{display:flex;gap:4px;flex-wrap:wrap}'
-      + '.gt-tp-chip{font:11px monospace;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:11px;padding:2px 9px;cursor:pointer;color:var(--mbu-text)}.gt-tp-chip:hover{background:var(--mbu-bg-raised);border-color:var(--mbu-info)}'
+      + '.gt-tp-bar .gt-cons-apply{margin-left:0}'
       + '.gt-tp-scope{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mbu-text-dim);background:var(--mbu-bg-raised);border-radius:11px;padding:3px 10px;min-width:0}'
       + '.gt-tp-scope-lbl{color:var(--mbu-text-weak)}'
       + '.gt-tp-scope-sel,.gt-tp-det-sel,.gt-tp-works-sel{font:inherit;font-size:11px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
       + '.gt-tp-tracks{font:inherit;font-size:11px;width:130px;border:1px solid var(--mbu-border);border-radius:5px;padding:1px 6px}'
       + '.gt-tp-tracks-info{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}'
-      + '.gt-cons-hdr .gt-tp-anno{margin-left:auto;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font-size:12px;font-family:inherit;color:var(--mbu-text)}.gt-cons-hdr .gt-tp-anno:hover{background:var(--mbu-bg-raised)}'
-      + '.gt-tp-src{padding:0 14px}'
-      + '.gt-tp-srctgl{display:block;background:none;border:none;color:var(--mbu-info);cursor:pointer;font-size:12px;font-family:inherit;padding:6px 0}'
-      + '.gt-tp-ta{width:100%;box-sizing:border-box;min-height:70px;padding:6px 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px monospace;outline:none;resize:vertical}.gt-tp-ta:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-body{padding-top:8px;overflow:auto}'
       + '.gt-tp-bar .gt-tp-cnt{font-size:12.5px;font-weight:600;color:var(--mbu-text-dim)}.gt-tp-bar .gt-tp-cnt-todo{color:var(--mbu-warn)}.gt-tp-bar .gt-tp-cnt-done{color:var(--mbu-ok)}'
       // #525: moved up into .gt-tp-ctrl (top bar, right-aligned after the
       // Scope pill via its margin-left:auto) to match Match Works' own
       // toolbar convention — same bold-purple "primary" treatment as its
       // ⚡ Match button (.gt-wm-btn.primary).
-      + '.gt-tp-freeze{flex:0 0 auto;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:4px;padding:3px 7px;font-size:12px;line-height:1}'
       + '.gt-tp-bar .gt-tp-busy{font-size:12px;color:var(--mbu-text-dim);white-space:nowrap}'
-      + '.gt-tp-freeze:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}'
       // #544: disambiguation must not read as part of the name — smaller, grey,
       // italic, in the results AND in the resolved table cell.
       + '.gt-tp-disamb{color:var(--mbu-text-weak);font-size:11px;font-style:italic;font-weight:400}'
@@ -49931,14 +49941,14 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         if (credited) k.names.add(credited);
         if (why && !k.why.includes(why)) k.why.push(why);
       };
-      ((release.artistCredit && release.artistCredit.names) || []).forEach(n => n && note(n.artist, 'release artist', n.name));
-      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `artist of track ${t.number}`, n.name))));
-      (release.labels || []).forEach(l => l && l.label && note({ ...l.label, entityType: 'label' }, 'release label'));
+      ((release.artistCredit && release.artistCredit.names) || []).forEach(n => n && note(n.artist, 'The release artist', n.name));
+      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `Artist of track ${t.number}`, n.name))));
+      (release.labels || []).forEach(l => l && l.label && note({ ...l.label, entityType: 'label' }, 'The release label'));
       const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
       document.querySelectorAll('.relationship-item').forEach(item => {
         const rel = relFromNode(item); if (!rel || !looksRel(rel) || rel._status === 3) return;
         const name = (lts[rel.linkTypeID] || {}).name || 'credited';
-        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `already ${name} on this release`, val(c) || ''));
+        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `Already ${name} on this release`, val(c) || ''));
       });
       const related = [];
       for (const a of releaseArtists().slice(0, 4)) for (const r of await txpRelatedOf(a)) if (!related.some(x => x.gid === r.gid)) related.push(r);
@@ -50335,8 +50345,28 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     const ctrl = el('div', 'gt-tp-ctrl');
     const patIn = el('input', 'gt-tp-pat'); patIn.type = 'text'; patIn.value = pattern;
     const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
-    const presets = el('span', 'gt-tp-presets');
-    TXP_PRESETS.forEach(p => { const c = el('button', 'gt-tp-chip', p); c.type = 'button'; c.onclick = () => { patIn.value = p; onPatternChange(); }; presets.appendChild(c); });
+    patIn.placeholder = 'pattern';
+    patIn.dataset.tip = 'The pattern every line is read with\n`R` is the role, `E` the entity; ▾ has the usual ones';
+    // #798: the presets under ▾, each with a line it reads
+    const TXP_PRESET_EX = { 'R: E': 'Mastering: Nick Robbins', 'R: E[,]': 'Bass: Ann, Bob', 'R[,] - E[,]': 'Bass, Guitar - Ann', 'E[,] - R[,]': 'Ann - Bass, Guitar', 'R by E[&]': 'Produced by Ann & Bob' };
+    const combo = el('span', 'gt-tp-combo');
+    const ddBtn = el('button', 'gt-tp-ddbtn', '▾'); ddBtn.type = 'button'; ddBtn.dataset.tip = 'The usual patterns';
+    let dd = null;
+    const closeDd = () => { if (dd) { dd.remove(); dd = null; document.removeEventListener('mousedown', ddOut, true); } };
+    const ddOut = e => { if (dd && !combo.contains(e.target)) closeDd(); };
+    ddBtn.onclick = () => {
+      if (dd) { closeDd(); return; }
+      dd = el('div', 'gt-tp-dd');
+      TXP_PRESETS.forEach(pp => {
+        const it = el('button', 'gt-tp-dd-it' + (pp === pattern ? ' gt-tp-dd-on' : '')); it.type = 'button';
+        it.append(el('span', 'gt-tp-dd-pat', pp), el('span', 'gt-tp-dd-ex', TXP_PRESET_EX[pp] || ''));
+        it.onclick = () => { patIn.value = pp; onPatternChange(); closeDd(); };
+        dd.appendChild(it);
+      });
+      combo.appendChild(dd);
+      document.addEventListener('mousedown', ddOut, true);
+    };
+    combo.append(patIn, patClr, ddBtn);
     // #798: no Match button — matching runs by itself after each change; this
     // says when it is working
     const busy = el('span', 'gt-tp-busy');
@@ -50357,16 +50387,22 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     // its own at all, and the two are useful in every combination.
     // ⚠ its own class, NOT a second .gt-tp-scope-sel — Playwright's page.* helpers
     // are strict, so a duplicate class makes verify-539's selectOption throw.
-    const detSel = el('select', 'gt-tp-det-sel');
-    [['auto', 'Tracks: auto'], ['off', 'Tracks: off']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; detSel.appendChild(o); });
-    detSel.value = scope.tracks;
-    detSel.dataset.tip = 'Tracks named in a credit\n'
+    // #798: on/off settings as Credit Hoarder's round toggles
+    const toggle = (cls, label, on, tip, onChange) => {
+      const b = el('button', 'gt-tp-tg ' + cls + (on ? ' on' : '')); b.type = 'button';
+      b.append(el('span', 'gt-tp-tgdot'), label);
+      b.dataset.tip = tip;
+      b.onclick = () => { const v = !b.classList.contains('on'); b.classList.toggle('on', v); onChange(v); };
+      return b;
+    };
+    const detSel = toggle('gt-tp-det', 'Tracks named in credits', scope.tracks === 'auto', 'Tracks named in a credit\n'
       + 'Auto: a credit that names its own tracks, like “Lead vocals (tracks 2,6,9)”, goes on those recordings, whatever Scope says; the rest follows Scope. '
-      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row';
+      + 'Every number in the brackets must be a track of this release, so “(2003)” is left alone.\nOff: Scope decides for every row',
+      v => { scope.tracks = v ? 'auto' : 'off'; render(); saveState(); });   // #597
     // #777: where a work role goes when a credit lands on recordings — "create
     // needed", as in Credit Hoarder, makes the work a track lacks.
     const worksSel = el('select', 'gt-tp-works-sel');
-    [['none', 'Works: create none'], ['needed', 'Works: create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
+    [['none', 'create none'], ['needed', 'create needed']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; worksSel.appendChild(o); });
     worksSel.value = scope.works;
     worksSel.dataset.tip = 'Work roles\nA role works have and recordings don\'t (lyricist, composer, librettist, translator) goes on the works of its tracks.\n'
       + 'Create none: only works already linked; a track with no work is skipped, and counted\n'
@@ -50377,12 +50413,11 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     const TXP_MBNAME_KEY = 'gt-tp-mbname';
     let useMbName = false;
     try { useMbName = !!GM_getValue(TXP_MBNAME_KEY, false); } catch (e) {}
-    const mbNameLbl = el('label', 'gt-tp-mbname');
-    const mbNameCb = el('input'); mbNameCb.type = 'checkbox'; mbNameCb.checked = useMbName;
-    mbNameLbl.append(mbNameCb, 'Use MB name as credit');
-    mbNameLbl.dataset.tip = 'Credit each entity by its MusicBrainz name\nOff: as the text spells it, when the two differ';
-    mbNameCb.onchange = () => { useMbName = mbNameCb.checked; try { GM_setValue(TXP_MBNAME_KEY, useMbName); } catch (e) {} render(); };
-    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope'), scopeSel, tracksIn, tracksInfo, detSel, worksSel, mbNameLbl);
+    const mbNameLbl = toggle('gt-tp-mbname', 'Use MB name as credit', useMbName, 'Credit each entity by its MusicBrainz name\nOff: as the text spells it, when the two differ',
+      v => { useMbName = v; try { GM_setValue(TXP_MBNAME_KEY, useMbName); } catch (e) {} render(); });
+    scopeWrap.append(el('span', 'gt-tp-scope-lbl', 'Scope:'), scopeSel, tracksIn, tracksInfo);
+    const worksWrap = el('span', 'gt-tp-scope');
+    worksWrap.append(el('span', 'gt-tp-scope-lbl', 'Works:'), worksSel);
     // What did that selector actually match? Shown before anything is applied,
     // because "1-3" meaning something other than you thought is a silent way to
     // credit the wrong recordings.
@@ -50413,30 +50448,28 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     }
     scopeSel.onchange = () => { scope.kind = scopeSel.value; roleCache.clear(); refreshScopeUi(); render(); saveState(); scheduleMatch(); };
     tracksIn.oninput = () => { scope.spec = tracksIn.value; refreshScopeUi(); saveState(); };
-    detSel.onchange = () => { scope.tracks = detSel.value; render(); saveState(); };   // #597
     worksSel.onchange = () => { scope.works = worksSel.value; if (scope.works === 'needed') txpWorksWarning(); saveState(); };   // #777
-    // #539 follow-up (majkinetor): "We again have new row, this time for out of
-    // the box patterns … Move scope to the bottom, opposite of Apply." So the
-    // top bar is back to what it was — pattern · presets · ⚡ Match — and the
-    // scope control lives in the footer instead, at the opposite end from
-    // Apply. It belongs there anyway: it is part of deciding what Apply does,
-    // not part of writing the pattern.
     // #544 (majkinetor): "Freeze matched should be next to the pattern input in
     // the header (like Apollo)". Icon-only, per the standing toolbar rule — the
     // top bar has twice been one control too wide (#539), and the tooltip
     // carries the meaning.
     const freezeBtn = el('button', 'gt-tp-freeze', '🔒'); freezeBtn.type = 'button';
     freezeBtn.dataset.tip = 'Freeze what matched\nThis pattern sticks to every line that matches it on the default pattern; try another one on what is left.';
-    ctrl.append(patIn, patClr, freezeBtn, presets);
+    ctrl.append(combo, freezeBtn);
 
-    const src = el('div', 'gt-tp-src');
-    const srcTgl = el('button', 'gt-tp-srctgl', '▾ Paste credit text'); srcTgl.type = 'button';
+    // #798: the pasted text in the row, one line while you review the table, the
+    // whole of it while you edit (focus); "n lines ▾" opens it
+    const pasteWrap = el('span', 'gt-tp-pastewrap');
     const ta = el('textarea', 'gt-tp-ta');
-    // #522 follow-up (majkinetor, live): "move copyright help text into the
-    // textbox hint when its empty" — folded into the placeholder instead of
-    // a permanent line taking up space even once you're pasting real text.
-    ta.placeholder = 'Paste credit text here, one credit per line…\n\nA ©/(C)/copyright or ℗/(P)/phonographic copyright line ("© 2020 Some Label", "℗ & © 2020 Some Label") is recognized automatically alongside your pattern. Each entity resolves against artists or labels depending on its role — a label-only role like "distributed by" is searched as a label; an ambiguous one auto-detects against this release\'s own credited artists, with a toggle to override.';
-    src.append(srcTgl, ta);
+    ta.placeholder = 'Paste credits, one per line — © and ℗ lines are read too';
+    ta.rows = 1;
+    const linesLbl = el('button', 'gt-tp-lines', ''); linesLbl.type = 'button'; linesLbl.dataset.tip = 'Show all the text';
+    linesLbl.onclick = () => ta.focus();
+    const fitTa = () => { ta.style.height = ''; if (ta.classList.contains('gt-tp-ta-open')) ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(window.innerHeight * 0.5)) + 'px'; };
+    ta.addEventListener('focus', () => { ta.classList.add('gt-tp-ta-open'); pasteWrap.classList.add('gt-tp-paste-open'); fitTa(); });
+    ta.addEventListener('blur', () => { ta.classList.remove('gt-tp-ta-open'); pasteWrap.classList.remove('gt-tp-paste-open'); fitTa(); ta.scrollTop = 0; });
+    ta.addEventListener('input', fitTa);
+    pasteWrap.append(ta, linesLbl);
 
     // #798: one table, the entities'. Above it, only the lines that gave no
     // credit, to fix their pattern or text
@@ -50458,8 +50491,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       + '- Unique name: the only one in MusicBrainz with this name\n'
       + '- Weak: the best guess, when it clearly leads\n'
       + 'A match below it waits on its row for ✓. Your own picks stay.';
-    cutWrap.append('Cutoff', cutSel);
-    entsHdr.append(entsTitle, cutWrap);
+    cutWrap.append('Cutoff:', cutSel);
+    entsHdr.append(entsTitle);
     const etbl = el('table', 'gt-tp-etbl');
     const TXP_ECOL_KEY = 'gt-tp-ecol';
     let ecolW = '48%';
@@ -50503,7 +50536,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       if (c.disambiguation) main.appendChild(el('span', 'gt-tp-disamb', `(${c.disambiguation})`));
       const meta = [c.type, lifeOf(c), c.area].filter(Boolean).join(' · ');
       if (meta) main.appendChild(el('span', 'gt-tp-cand-meta', meta));
-      (c.reasons || []).forEach(x => main.appendChild(el('span', 'gt-tp-why' + (x.sign < 0 ? ' gt-tp-why-neg' : ''), (x.sign < 0 ? '− ' : '+ ') + x.text)));
+      (c.reasons || []).forEach(x => { const w = el('span', 'gt-tp-why' + (x.sign < 0 ? ' gt-tp-why-neg' : ''), (x.sign < 0 ? '− ' : '+ ') + x.text); if (x.tip && x.tip !== x.text) w.dataset.tip = x.tip; main.appendChild(w); });
       if (opts.below) main.appendChild(el('span', 'gt-tp-below', 'below cutoff'));
       row.appendChild(main);
       if (opts.onClear) {
@@ -50608,6 +50641,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
         const allRoles = g.rows.every(r => r.roleMatch || r.crKind);
         const st = ent && allRoles ? 'ok' : (ent || creating || (cc && cc.ranked.length)) ? 'amber' : cc ? 'red' : '';
         const tr = el('tr', 'gt-tp-erow' + (st ? ' gt-tp-st-' + st : ''));
+        if (!ent) tr.dataset.unpicked = '1';
+        if (!allRoles) tr.dataset.roleless = '1';
         // the credit: name, kind, + to create it; its roles with their lines
         const left = el('td');
         const head = el('div', 'gt-tp-ehead');
@@ -50693,6 +50728,15 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     }
 
     const cnt = el('span', 'gt-tp-cnt');
+    // #798: each part of the status takes you to the next of its kind, below what
+    // is in view (round to the first after the last)
+    const jumpTo = sel => {
+      const left = [...panel.querySelectorAll(sel)];
+      if (!left.length) return;
+      const edge = top.getBoundingClientRect().bottom + 8;
+      const next = left.find(r => r.getBoundingClientRect().top > edge + 4) || left[0];
+      window.scrollTo({ top: window.scrollY + next.getBoundingClientRect().top - edge, behavior: 'smooth' });
+    };
     // #550: no ↗ any more — nothing opens, the annotation edit is submitted here.
     const applyClearBtn = el('button', 'gt-cons-btn', 'Apply & clear annotation'); applyClearBtn.type = 'button';
     applyClearBtn.dataset.tip = 'Apply the resolved rows, then clear the release\'s annotation\nSubmitted for you, with its own edit note';
@@ -50739,8 +50783,8 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
 
       const rows = parsedRows().map(attachResolution);
       renderUnparsed(rows);
-      // #798: counted in what you act on — names picked, credits ready, lines not
-      // parsed — not in lines the pattern read, which looked done when it wasn't
+      // #798: counted in what you act on — names picked, lines not parsed — not in
+      // lines the pattern read, which looked done when it wasn't
       const credits = rows.filter(r => r.matched && (r.entity || '').trim());
       const names = new Map();
       credits.forEach(r => { const k = r.entity.toLowerCase().trim(); names.set(k, (names.get(k) !== false) && !!r.entityMatch); });
@@ -50748,12 +50792,25 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const ready = credits.filter(r => r.roleMatch && r.entityMatch && !appliedKeys.has(r.key)).length;
       const applied = rows.filter(r => appliedKeys.has(r.key)).length;
       const unparsed = new Set(rows.filter(r => !r.matched || !(r.entity || '').trim()).map(r => r.li)).size;
-      cnt.textContent = !rows.length ? '' : [
-        `${picked}/${names.size} picked`, `${ready} credit${ready === 1 ? '' : 's'} ready`,
-        unparsed && `${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, applied && `${applied} applied`,
-      ].filter(Boolean).join(' · ');
-      cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0);
-      cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed);
+      // a role is picked once for every credit with its text, so it counts once
+      const roleless = new Set(credits.filter(r => !r.crKind && !r.roleMatch).map(r => (r.role || '').toLowerCase().trim())).size;
+      cnt.textContent = '';
+      const part = (text, todo, tip, sel) => {
+        if (cnt.childNodes.length) cnt.append(' · ');
+        const sp = el('span', todo ? 'gt-tp-cnt-go' : '', text);
+        if (todo) { sp.dataset.tip = tip; sp.onclick = () => jumpTo(sel); }
+        cnt.appendChild(sp);
+      };
+      if (rows.length) {
+        part(`${picked}/${names.size} picked`, picked < names.size, 'Click: the next name left to pick', '.gt-tp-erow[data-unpicked]');
+        if (roleless) part(`${roleless} role${roleless === 1 ? '' : 's'} to pick`, true, 'Click: the next credit whose role is left to pick', '.gt-tp-erow[data-roleless]');
+        if (unparsed) part(`${unparsed} line${unparsed === 1 ? '' : 's'} not parsed`, true, 'Click: the lines not parsed', '.gt-tp-unp');
+        if (applied) part(`${applied} applied`, false);
+      }
+      cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0 || roleless > 0);
+      const nonEmpty = lines.filter(l => l.raw.trim()).length;
+      linesLbl.textContent = nonEmpty > 1 ? `${nonEmpty} lines ▾` : '';
+      cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed && !roleless);
       applyBtn.disabled = !ready;
       applyClearBtn.disabled = !ready;
       applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';
@@ -51144,8 +51201,6 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       // onTextChange, which must DROP position-keyed state, precisely because
       // there the text has changed underneath it.)
       overrides: lines.map(l => (l && l.override) || ''),
-      // "State should be kept completely": whether the paste box was rolled up
-      srcOpen: ta.style.display !== 'none',
       // #544 follow-up (majkinetor): 'Button "load and remove annotation" is lost
       // when exiting / returning.' "Apply & clear annotation" only shows once the
       // text CAME FROM the annotation, and that flag was a plain local — so
@@ -51197,8 +51252,6 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       const split = txpSplitCompoundCopyrightLines(ta.value);
       if (split !== ta.value) { ta.value = split; onTextChange(); }
     }, 0));
-    const setSrcOpen = (open) => { ta.style.display = open ? '' : 'none'; srcTgl.textContent = (open ? '▾' : '▸') + ' Paste credit text'; };
-    srcTgl.onclick = () => { setSrcOpen(ta.style.display === 'none'); saveState(); };
     // #544 freeze: per LINE, since the override is a line's property — a line
     // that expanded into several rows is frozen once.
     freezeBtn.onclick = () => {
@@ -51239,8 +51292,14 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
     hdr.textContent = '';
     hdr.classList.add('gt-tp-bar');
     // Apply last on the right (majkinetor), so ✕ goes first on the left
-    hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), scopeWrap, cnt, busy, el('span', 'gt-tp-grow'), annoBtn, applyClearBtn, applyBtn);
-    panel.append(hdr, ctrl, src, body, ents);
+    hdr.append(xb, el('span', 'gt-cons-title gt-tp-title', 'Text parser:'), detSel, mbNameLbl, scopeWrap, worksWrap, el('span', 'gt-tp-grow'), cnt, busy, applyBtn);
+    // the row: pattern, Freeze, the text; on the right the rarer settings
+    const opts = el('span', 'gt-tp-opts');
+    opts.append(cutWrap, annoBtn, applyClearBtn);
+    ctrl.append(pasteWrap, opts);
+    const top = el('div', 'gt-tp-top');
+    top.append(hdr, ctrl);
+    panel.append(top, body, ents);
     // #798: under Group Therapy's toolbar, where the button that opened it is
     const bar = document.querySelector('.gt-toolbar');
     if (bar) bar.after(panel); else (document.getElementById('content') || document.body).prepend(panel);
@@ -51259,7 +51318,6 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
       loadedFromAnnotation = !!saved.loadedFromAnnotation;   // #544: brings "Apply & clear annotation" back with its text
       (saved.candCache || []).forEach(([k, v]) => candCache.set(k, v));   // #798
       (saved.pickInfo || []).forEach(([k, v]) => pickInfo.set(k, v));
-      if (saved.srcOpen === false) setSrcOpen(false);
     }
     // #544 follow-up: whatever was last on screen is what comes back, whichever
     // control changed it — see closeTextParser.

@@ -66,7 +66,7 @@ const smiths = [C('s1', 'John Smith', { type: 'Person', score: 100 }), C('s2', '
 let rk = mbmRankCandidates('John Smith', smiths, {});
 ck(!rk.best && rk.ranked.length === 3, 'three same-named, no evidence → no pick', rk.best);
 rk = mbmRankCandidates('John Smith', smiths, { related: [{ gid: 's2', rel: 'member of band', of: 'Toto' }] });
-ck(rk.best && rk.best.gid === 's2' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => /member of band · Toto/.test(x.text)), 'a member of the release artist → strong pick, with the reason', rk.best);
+ck(rk.best && rk.best.gid === 's2' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => x.text === 'related' && /member of band · Toto/.test(x.tip)), 'a member of the release artist → strong pick, with the reason', rk.best);
 rk = mbmRankCandidates('John Smith', smiths, { known: [{ gid: 's1', why: 'track 4 producer' }], related: [{ gid: 's2', rel: 'member of band', of: 'Toto' }] });
 ck(!rk.best && rk.ranked[0].gid === 's1', 'already credited ranks above a related artist, but two backed candidates are left to you', rk.best);
 rk = mbmRankCandidates('John Smith', smiths, { remembered: 's3', known: [{ gid: 's1', why: 'x' }] });
