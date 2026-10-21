@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-21 14:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-21 15:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1603,6 +1603,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | [YouTube Music](#youtube-music-1) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
 | [Amazon Music](#amazon-music-1)   |             |      ✓      | the album, when linked (by position + title)                                          |
 | HDtracks                        |      ✓      |             | the album                                                                             |
+| [Presto Music](#presto-music-1)   |      ✓      |             | the album, shop or streaming link; by position                                        |
 | [7digital](#7digital-1)           |      ✓      |             | the album: each track searched by title                                               |
 | SoundExchange                   |      ✓      |             | a title and artist search                                                             |
 
@@ -1750,6 +1751,10 @@ Amazon Music shows no ISRCs; its links come from the release's linked album, by 
 #### 7digital
 
 Each track is searched by its title, keeping the linked album's results; a long album takes some seconds. 7digital tracks have no pages, so there are no links. No login is needed.
+
+#### Presto Music
+
+The ISRCs come from Presto's streaming app, which shares the shop's product numbers, so a shop link works too, on a CD as on a download. An album Presto doesn't stream has none; the log says so. Presto doesn't say where each disc starts, so a set takes this release's discs in order when it has as many tracks.
 
 #### Spotify
 

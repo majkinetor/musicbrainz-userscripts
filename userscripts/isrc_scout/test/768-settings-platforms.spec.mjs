@@ -26,7 +26,7 @@ test('the settings window, and a platform switched off leaves the editor', { tag
   await page.click('#ii-cfg-to-platforms');
   check(await page.evaluate(() => document.getElementById('ii-cfg-main').hidden && !document.getElementById('ii-cfg-platforms').hidden), 'Platforms opens its own view');
   const n = await page.evaluate(() => document.querySelectorAll('#ii-plat-grid input[data-platform]').length);
-  check(n === 15 && await page.evaluate(() => [...document.querySelectorAll('#ii-plat-grid input')].every(i => i.checked)), `15 platforms, all on by default (${n})`);
+  check(n === 16 && await page.evaluate(() => [...document.querySelectorAll('#ii-plat-grid input')].every(i => i.checked)), `16 platforms, all on by default (${n})`);
   await attachShot(info, page.locator('#ii-setup-pane'), 'platforms');
 
   // the release's import buttons, before: one that shows is switched off
@@ -42,7 +42,7 @@ test('the settings window, and a platform switched off leaves the editor', { tag
     } else check(false, 'the release shows an import button to switch off');
     await page.click('#ii-plat-grid input[data-platform="soundexchange"]');
     check(await until(() => page.evaluate(() => getComputedStyle(document.getElementById('ii-sx-group')).display), d => d === 'none') === 'none', 'switching SoundExchange off hides its search');
-    check(/of 15 on/.test(await page.evaluate(() => document.getElementById('ii-cfg-platforms-n').textContent)), 'the count says how many are on');
+    check(/of 16 on/.test(await page.evaluate(() => document.getElementById('ii-cfg-platforms-n').textContent)), 'the count says how many are on');
     // a click outside closes the window, and doesn't press what it lands on
     await page.mouse.click(200, 500);
     check(await until(() => page.evaluate(() => !document.getElementById('ii-setup-pane').classList.contains('open'))), 'a click outside closes it');

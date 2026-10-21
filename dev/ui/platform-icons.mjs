@@ -53,6 +53,9 @@ export const PLATFORM_ICONS = {
     // ── Volumo — violet disc + V (stand-in) ──
     volumo: { color: '#7c4dff', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' },
 
+    // ── Presto Music — navy disc + P monogram (stand-in) ──
+    presto: { color: '#1f3a5f', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#1f3a5f"/><path d="M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z" fill="#fff"/></svg>' },
+
     // ── HDtracks — red disc + HD monogram (stand-in) ──
     hdtracks: { color: '#e63329', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' },
 

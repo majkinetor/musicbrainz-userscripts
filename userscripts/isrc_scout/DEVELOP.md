@@ -16,6 +16,7 @@ ISRC Scout has two independent provider systems, and a provider can support one 
 | Beatport | `beatport.com` release page | none | behind Cloudflare, read in a background tab; see [Beatport](#beatport) |
 | Tidal | `openapi.tidal.com` | app token, baked in | a client-credentials catalogue token, no user login; see [Tidal](#tidal) |
 | Volumo | `volumo.com/api/v1` | none | one call returns every track's ISRC |
+| Presto Music | `ajax-www.prestomusic.com/api/app/6/tracks/<code>` | none | CORS-open, no bot check; the code is the shop's product number (`/<section>/products/<code>`) or the streaming album's. Works hold the tracks, numbered across the set (`absTrack`, no discs); `singleFieldTrackTitle` is *Composer: Work: Movement*. A product that doesn't stream answers HTTP 404 with `{status:"error", code:54, message}` |
 | HDtracks | `hdtracks.azurewebsites.net/api/v1` | none | CORS-open; one album call returns every ISRC inline. The album id is a 24-character ObjectId; a barcode (from a legacy `valbum_code` link) is resolved to it by search first |
 | Apple Music | `amp-api.music.apple.com/v1/catalog` | the web player's token | the album's tracklist, read anonymously with the bearer token from the web player's JS, mapped by position. A legacy `itunes.apple.com/…/album/id…` link is the same album |
 | SoundCloud | `api-v2.soundcloud.com` | public `client_id` | each track's `publisher_metadata.isrc`, by position; the `client_id` is lifted from the web player's JS. A track URL is a one-track release. A distributed set's barcode (`upc_or_ean`) is only logged |

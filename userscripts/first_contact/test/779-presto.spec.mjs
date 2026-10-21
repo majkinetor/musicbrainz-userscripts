@@ -152,6 +152,8 @@ test('Presto Music streaming live: the button and the album', { tag: ['@web'] },
   const rel = await page.evaluate(() => { const p = window.__fcTest.providers.find(x => x.id === 'presto'); return p.fetchRelease(p.albumId(location)); });
   const tracks = rel.mediums.flatMap(m => m.tracks);
   check(tracks.length === 48 && tracks.every(t => t.isrc && t.lengthMs), `48 tracks with ISRCs and lengths: ${tracks.length}`);
+  const vinyl = await page.evaluate(() => window.__fcTest.providers.find(x => x.id === 'presto').fromStream('9885069').then(() => 'imported', e => e.message));
+  check(/doesn't stream/.test(vinyl), `a product that doesn't stream (a 404 that says so): ${vinyl}`);
   check(rel.mediums[0].format === 'Digital Media' && rel.labels[0].catno === '2756801961' && /\/classical\/products\/9888521--/.test((rel.urls[1] || {}).url), `a download, its cat. no and the store link: ${rel.mediums[0].format} ${rel.labels[0].catno} ${JSON.stringify(rel.urls)}`);
 });
 
