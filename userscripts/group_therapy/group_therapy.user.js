@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.091059
+// @version      2026.10.21.091331
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5198,7 +5198,7 @@
       + '.gt-tp-below{font-size:10.5px;color:var(--mbu-warn)}'
       + '.gt-tp-enone{color:var(--mbu-text-weak);font-size:11.5px;padding:2px 0}'
       + '.gt-tp-esrch{display:flex;gap:4px;margin-top:3px}'
-      + '.gt-tp-esrch-go{flex:none;width:30px;height:24px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);cursor:pointer;font-size:12px}'
+      + '.gt-tp-esrch-go{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:24px;padding:0;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-text-dim);cursor:pointer}.gt-tp-esrch-go:hover{color:var(--mbu-info);border-color:var(--mbu-info)}'
       + '.gt-tp-esrch-q{flex:1;min-width:0;height:24px;box-sizing:border-box;padding:2px 7px;border:1px solid var(--mbu-border);border-radius:4px;font:inherit;font-size:12px;outline:none;background:var(--mbu-bg);color:var(--mbu-text)}.gt-tp-esrch-q:focus{border-color:var(--mbu-info)}'
       + '.gt-tp-esrch-kind{flex:none;height:24px;font:inherit;font-size:11.5px;border:1px solid var(--mbu-border);border-radius:4px;background:var(--mbu-bg)}'
       // a line's pattern and text, opened from its number or listed as not parsed
@@ -6104,7 +6104,9 @@
         right.appendChild(list);
         if (!creating) {
           const sr = el('div', 'gt-tp-esrch');
-          const go = el('button', 'gt-tp-esrch-go', '🔍'); go.type = 'button'; go.dataset.tip = 'Search';
+          const go = el('button', 'gt-tp-esrch-go'); go.type = 'button'; go.dataset.tip = 'Search MusicBrainz';
+          // Credit Hoarder's search icon
+          go.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>';
           const q = el('input', 'gt-tp-esrch-q'); q.type = 'text'; q.value = ss ? ss.term : g.text;
           q.placeholder = 'search, or paste an MBID / URL…';
           q.dataset.fkey = 'es:' + g.key;
