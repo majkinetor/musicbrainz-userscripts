@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.104817
+// @version      2026.10.21.104911
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -5149,6 +5149,8 @@
       + '.gt-tp-ctrl{display:flex;align-items:flex-start;gap:8px;padding:6px 14px;border-bottom:1px solid var(--mbu-border)}'
       + '.gt-tp-combo{position:relative;flex:none;display:flex;align-items:center;width:200px;height:28px;box-sizing:border-box;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg-sunken)}'
       + '.gt-tp-combo:focus-within{border-color:var(--mbu-info)}'
+      + '.gt-tp-patwarn{display:none;flex:none;padding:0 3px;color:var(--mbu-warn);cursor:help}'
+      + '.gt-tp-combo.gt-tp-combo-warn{border-color:var(--mbu-warn);background:var(--mbu-warn-bg)}.gt-tp-combo-warn .gt-tp-patwarn{display:inline}'
       + '.gt-tp-pat{flex:1;min-width:0;height:100%;box-sizing:border-box;padding:0 8px;border:none;background:transparent;font:12.5px monospace;outline:none}'
       + '.gt-tp-clr{flex:none;background:none;border:none;color:var(--mbu-text-weak);cursor:pointer;padding:0 4px}.gt-tp-clr:hover{color:var(--mbu-error)}'
       + '.gt-tp-ddbtn{flex:none;height:100%;border:none;border-left:1px solid var(--mbu-border);background:none;padding:0 7px;cursor:pointer;color:var(--mbu-text-dim);font-size:11px}'
@@ -5818,7 +5820,10 @@
       combo.appendChild(dd);
       document.addEventListener('mousedown', ddOut, true);
     };
-    combo.append(patIn, patClr, ddBtn);
+    // #798 (majkinetor): warn when the text sets patterns of its own ({{…}}), which
+    // this one then doesn't read
+    const patWarn = el('span', 'gt-tp-patwarn', '⚠');
+    combo.append(patIn, patWarn, patClr, ddBtn);
     // #798: no Match button — matching runs by itself after each change; this
     // says when it is working
     const busy = el('span', 'gt-tp-busy');
@@ -6274,6 +6279,17 @@
         if (applied) part(`${applied} applied`, false);
       }
       cnt.classList.toggle('gt-tp-cnt-todo', picked < names.size || unparsed > 0 || roleless > 0);
+      // the lines this pattern reads, and those the text's own {{…}} does
+      const byText = new Set(), byThis = new Set(), textPats = [];
+      rows.forEach(r => {
+        if (r.crKind || !lines[r.li] || (lines[r.li].override || '').trim()) return;
+        if (r.textPat) { byText.add(r.li); if (!textPats.includes(r.textPat)) textPats.push(r.textPat); } else byThis.add(r.li);
+      });
+      combo.classList.toggle('gt-tp-combo-warn', byText.size > 0);
+      patWarn.dataset.tip = !byText.size ? '' : (byThis.size
+        ? `The text sets its own pattern for ${byText.size} line${byText.size === 1 ? '' : 's'}; this one reads the other ${byThis.size}`
+        : 'The text sets its own pattern for every line, so this one is not used')
+        + '\n' + textPats.slice(0, 4).map(t => `{{${t}}}`).join('  ') + (textPats.length > 4 ? ' …' : '');
       const nonEmpty = lines.filter(l => l.raw.trim()).length;
       linesLbl.textContent = nonEmpty > 1 ? `${nonEmpty} lines ▾` : '';
       cnt.classList.toggle('gt-tp-cnt-done', !!names.size && picked === names.size && !unparsed && !roleless);
