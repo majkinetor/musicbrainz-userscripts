@@ -67,6 +67,8 @@ First Contact reads the platforms for Mission Control on a release MusicBrainz a
 
 The button with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon opens the album in Harmony's lookup instead, which finds it by barcode on the platforms ticked in [Harmony's settings](https://harmony.pulsewidth.org.uk/settings); [Falcon](../falcon/README.md) works there as usual. Open those settings once: until then Harmony looks an album link up only on its own platform, and a barcode nowhere.
 
+The *Harmony* setting picks which Harmony opens: [harmony.pulsewidth.org.uk](https://harmony.pulsewidth.org.uk/) or [harmony.mybrainz.dev](https://harmony.mybrainz.dev/). Each keeps its own settings.
+
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
 | Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy | the album link, at once             |
@@ -292,13 +294,14 @@ Drag the buttons anywhere; each platform remembers its place, and **⚙︎ → R
 
 ### Import
 
-| Setting                            | Default         |                                                                                              |
-| ---------------------------------- | --------------- | -------------------------------------------------------------------------------------------- |
-| MusicBrainz server                 | musicbrainz.org | where the release editor opens: musicbrainz.org, beta or test                                |
-| Annotation from *platform*'s notes | on              | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>* |
-| Close this page after the import   | off             | the tab closes once the album is sent on; not on a failure                                   |
-| Consolidate button                 | on              | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                      |
-| Send to Harmony button             | on              | the [Harmony button](#send-to-harmony) before **⚙︎**                                         |
+| Setting                            | Default                   |                                                                                              |
+| ---------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------- |
+| MusicBrainz server                 | musicbrainz.org           | where the release editor opens: musicbrainz.org, beta or test                                |
+| Annotation from *platform*'s notes | on                        | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>* |
+| Close this page after the import   | off                       | the tab closes once the album is sent on; not on a failure                                   |
+| Consolidate button                 | on                        | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                      |
+| Send to Harmony button             | on                        | the [Harmony button](#send-to-harmony) before **⚙︎**                                         |
+| Harmony                            | harmony.pulsewidth.org.uk | which Harmony the [Harmony button](#send-to-harmony) opens: this one or harmony.mybrainz.dev |
 
 A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
 

@@ -30,7 +30,7 @@ Open Falcon with **Ctrl+Alt+F** or its corner icon (right-click: **Options**). T
 
 ### From Harmony
 
-On a [Harmony] *Release Actions* page, **Send N to Falcon** (bottom-right) opens MusicBrainz with the batch queued: links for every entity, the recordings' ISRCs, and the front cover.
+On a Harmony *Release Actions* page ([harmony.pulsewidth.org.uk][Harmony] or [harmony.mybrainz.dev](https://harmony.mybrainz.dev/)), **Send N to Falcon** (bottom-right) opens MusicBrainz with the batch queued: links for every entity, the recordings' ISRCs, and the front cover.
 
 <img src="./screenshots/harmony.png" width="400">
 

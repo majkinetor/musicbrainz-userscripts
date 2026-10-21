@@ -40,6 +40,7 @@ test('patterns read as a manager reads them', { tag: ['@unit', '@critical'] }, a
 test('on the other sites only the member that belongs there starts', { tag: ['@unit', '@critical'] }, async () => {
   for (const [url, want] of [
     ['https://harmony.pulsewidth.org.uk/release?url=https%3A%2F%2Fwww.deezer.com%2Falbum%2F1', ['falcon']],
+    ['https://harmony.mybrainz.dev/release/actions?release_mbid=x', ['falcon']],
     ['https://www.deezer.com/en/album/302127', ['first_contact']],
     ['https://open.spotify.com/album/4aawyAB9vmqN3uQ7FjRGTy', ['first_contact']],
     ['https://www.beatport.com/release/x/123', ['first_contact', 'isrc_scout']],

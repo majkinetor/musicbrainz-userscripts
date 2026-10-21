@@ -96,3 +96,18 @@ test('Send to Harmony: greyed out on YouTube Music; the setting hides it', { tag
   await opt.check();
   check(await until(() => b.isVisible(), v => v), 'on: it is back');
 });
+
+// #799: ⚙︎ → Harmony picks the instance Send to Harmony opens
+test('Send to Harmony: the Harmony setting picks harmony.mybrainz.dev', { tag: ['@unit'] }, async ({ page, context, inject }) => {
+  await context.route('https://harmony.mybrainz.dev/release?*', r => r.fulfill({ contentType: 'text/html', body: '<title>Harmony</title>' }));
+  await stub(page, 'https://www.deezer.com/en/album/6575789');
+  await inject('first_contact', { waitFor: '__fcTest' });
+  await page.locator('#fc-root .fc-more').click();
+  const sel = page.locator('#fc-panel .fc-harmony-host');
+  check(await sel.inputValue() === 'harmony.pulsewidth.org.uk', `harmony.pulsewidth.org.uk by default: ${await sel.inputValue()}`);
+  await sel.selectOption('harmony.mybrainz.dev');
+  await page.keyboard.press('Escape');
+  await page.locator('#fc-root .fc-harmony').click();
+  const sent = await until(() => page.evaluate(() => window.__fcLastHarmony), v => !!v);
+  check(sent === 'https://harmony.mybrainz.dev/release?url=https%3A%2F%2Fwww.deezer.com%2Falbum%2F6575789&category=preferred', `sent to harmony.mybrainz.dev: ${sent}`);
+});
