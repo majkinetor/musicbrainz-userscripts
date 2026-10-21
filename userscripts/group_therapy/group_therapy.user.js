@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.20.234121
+// @version      2026.10.21.085014
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4658,6 +4658,45 @@
       }
       return out;
   }
+  function mbmRankCandidates(name, cands, ctx) {
+      const c = ctx || {};
+      const GROUPS = ['group', 'orchestra', 'choir'];
+      const ranked = [];
+      for (const k of cands || []) {
+          if (!k || !k.gid || [...MBM_SPECIAL_PURPOSE].includes(k.gid)) continue;   // an array here, a Set in the inlined block
+          const reasons = [];
+          let points = 0, strong = false;
+          const add = (p, text, isStrong) => { points += p; if (text) reasons.push({ text, sign: p < 0 ? -1 : 1 }); if (isStrong) strong = true; };
+          if (c.remembered && c.remembered === k.gid) add(100, 'your earlier pick', true);
+          const known = (c.known || []).filter(x => x.gid === k.gid);
+          if (known.length) add(80, known.map(x => x.why).filter((w, i, a) => w && a.indexOf(w) === i).slice(0, 2).join(' · ') || 'on this release', true);
+          const rel = (c.related || []).find(x => x.gid === k.gid);
+          if (rel && !(rel.rel === 'self' && known.length)) add(60, rel.rel === 'self' ? 'the release artist' : (rel.rel || 'related') + (rel.of ? ' · ' + rel.of : ''), true);
+          const holds = mbmHolds(k, name);
+          if (holds === 'name') add(20, '');
+          else if (holds === 'alias') add(15, 'alias');
+          if (c.unique && c.unique === k.gid) add(40, 'only one with this name');
+          const t = String(k.type || '').toLowerCase();
+          if (c.want && t) {
+              const isGroup = GROUPS.includes(t);
+              if (c.want === 'person' && isGroup) add(-25, 'a ' + t);
+              else if (c.want === 'group' && t === 'person') add(-25, 'a person');
+              else if ((c.want === 'person' && t === 'person') || (c.want === 'group' && isGroup)) add(5, '');
+          }
+          if (c.year) {
+              if (k.begin && k.begin > c.year) add(-40, (t === 'person' ? 'born ' : 'founded ') + k.begin);
+              else if (k.end && k.end < c.year - 1) add(-30, (t === 'person' ? 'died ' : 'ended ') + k.end);
+          }
+          if (c.area && k.area && mbmSameName(c.area, k.area)) add(5, 'from ' + k.area);
+          if (typeof k.score === 'number') points += k.score / 20;
+          const level = strong ? 'strong' : (c.unique && c.unique === k.gid) ? 'unique' : 'weak';
+          ranked.push({ ...k, points: Math.round(points * 10) / 10, level, reasons });
+      }
+      ranked.sort((a, b) => b.points - a.points);
+      const top = ranked[0], next = ranked[1];
+      const best = top && (top.level !== 'weak' || mbmHolds(top, name)) && (!next || top.points - next.points >= 30) ? { gid: top.gid, level: top.level } : null;
+      return { ranked, best };
+  }
   function mbmGuessSortName(name) {
       if (!name || !name.trim()) return name;
       name = name.trim().replace(/\s+/g, ' ');
@@ -4782,6 +4821,67 @@
     }
     _txpLabelAliasCache.set(key, out);
     return out;
+  }
+  // ── #798 candidates on evidence ─────────────────────────────────────────────
+  // The identity search's whole answer, not only its verdict: every holder of the
+  // name becomes a candidate on the row, with what ws/2 says about it.
+  const _txpIdentityCache = new Map();
+  async function txpIdentityJson(name, kind) {
+    const key = kind + '|' + txpFold(name); if (!txpFold(name)) return null;
+    if (_txpIdentityCache.has(key)) return _txpIdentityCache.get(key);
+    const q = mbmIdentityQuery(name, kind); if (!q) return null;
+    let j = null;
+    try { j = await mbnFetch(`/ws/2/${kind}?query=${encodeURIComponent(q)}&fmt=json&limit=${MBM_EXACT_LIMIT}`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    catch (e) { return null; }   // transient: not cached
+    if (!j || j.error || typeof j.count !== 'number') return null;
+    _txpIdentityCache.set(key, j);
+    return j;
+  }
+  const txpYear = s => { const m = String(s || '').match(/^(\d{4})/); return m ? +m[1] : null; };
+  // a ws/2 search hit → a candidate
+  const txpCandFromWs = (a, kind) => ({
+    gid: a.id, name: a.name || '', kind, aliases: a.aliases || [], type: a.type || null,
+    begin: txpYear(a['life-span'] && a['life-span'].begin), end: txpYear(a['life-span'] && a['life-span'].end),
+    area: (a.area && a.area.name) || null, disambiguation: a.disambiguation || '', score: typeof a.score === 'number' ? a.score : null,
+  });
+  // an entity the editor already holds (a credit, a relationship's end) → a candidate
+  function txpCandFromEntity(e) {
+    const kind = e.entityType;
+    const types = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities[kind + '_type']) || {};
+    const by = d => (d && typeof d === 'object') ? d.year || null : txpYear(d);
+    return { gid: e.gid, name: val(e.name) || '', kind, aliases: [], type: e.typeID != null && types[e.typeID] ? types[e.typeID].name : null,
+      begin: by(e.begin_date), end: by(e.end_date), area: (e.area && e.area.name) || null, disambiguation: e.comment || '', score: null };
+  }
+  // The release artists' related artists (members, collaborators): one request per
+  // real release artist, for the page's life. Approved on #798.
+  const _txpRelatedCache = new Map();
+  async function txpRelatedOf(artist) {
+    if (!artist || !artist.gid || MBM_SPECIAL_PURPOSE.has(artist.gid)) return [];
+    if (_txpRelatedCache.has(artist.gid)) return _txpRelatedCache.get(artist.gid);
+    let j = null;
+    try { j = await mbnFetch(`/ws/2/artist/${artist.gid}?inc=aliases+artist-rels&fmt=json`, { headers: { Accept: 'application/json' } }).then(r => r.json()); }
+    catch (e) { return []; }
+    if (!j || !j.id) return [];
+    const list = mbmRelatedArtists(j).map(x => ({ ...x, of: artist.name || j.name || '' }));
+    _txpRelatedCache.set(artist.gid, list);
+    return list;
+  }
+  // Your picks, remembered per release artist and name, so the next release of the
+  // same artist starts from them.
+  const TXP_PICKS_KEY = 'gt-tp-picks';
+  const txpPicks = () => { try { return JSON.parse(GM_getValue(TXP_PICKS_KEY, '{}')) || {}; } catch (e) { return {}; } };
+  function txpRemember(artistGids, name, ent) {
+    if (!ent || !ent.gid || !artistGids.length || !txpFold(name)) return;
+    const all = txpPicks();
+    artistGids.forEach(a => { const k = a + '|' + txpFold(name); delete all[k]; all[k] = { gid: ent.gid, name: val(ent.name) || '', kind: ent.entityType }; });
+    const keys = Object.keys(all);
+    keys.slice(0, Math.max(0, keys.length - 3000)).forEach(k => delete all[k]);   // oldest first out
+    try { GM_setValue(TXP_PICKS_KEY, JSON.stringify(all)); } catch (e) {}
+  }
+  function txpRecalled(artistGids, name) {
+    const all = txpPicks();
+    for (const a of artistGids) { const p = all[a + '|' + txpFold(name)]; if (p) return p; }
+    return null;
   }
   // #522 follow-up (majkinetor): "take a look at kellnerd's parse-copyright-notice
   // and incorporate some form of copyright note parsing" — copyright/phonographic
@@ -5011,8 +5111,38 @@
     if (document.getElementById('gt-tp-style')) return;
     const s = el('style'); s.id = 'gt-tp-style';
     s.textContent =
-      '.gt-cons.gt-tp{width:min(1040px,96vw);resize:both;overflow:hidden;max-width:98vw;max-height:94vh;min-width:640px;min-height:340px}'
-      + '.gt-cons.gt-tp.gt-tp-max{position:fixed;left:10px;right:10px;top:10px;bottom:10px;width:auto;height:auto;max-width:none;max-height:none;margin:0}'
+      // #798: in the page, under the toolbar, not a modal: the page scrolls under it,
+      // so the release's tracks and credits stay in reach while reviewing
+      '.gt-cons.gt-tp{width:auto;max-width:none;max-height:none;margin:0 0 14px;box-shadow:none;border:1px solid var(--mbu-info);border-radius:7px}'
+      + '.gt-tp .gt-cons-body{overflow:visible}'
+      // #798 the entities: one row per credited name, its candidates beside it (as Credit Hoarder's review table)
+      + '.gt-tp-ents{padding:10px 14px;border-top:1px solid var(--mbu-border)}'
+      + '.gt-tp-ents-hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px}'
+      + '.gt-tp-ents-title{font-weight:700;font-size:13px;flex:1}'
+      + '.gt-tp-cut{font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:5px}'
+      + '.gt-tp-cut select{font:inherit;font-size:12px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);padding:1px 3px}'
+      + '.gt-tp-etbl{width:100%;border-collapse:collapse;table-layout:fixed}'
+      + '.gt-tp-etbl th{text-align:left;font-size:12px;padding:5px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border)}'
+      + '.gt-tp-etbl td{vertical-align:top;padding:6px 8px;border-bottom:1px solid var(--mbu-border);font-size:12px}'
+      + '.gt-tp-erow.gt-tp-st-ok td{background:var(--mbu-ok-bg)}.gt-tp-erow.gt-tp-st-amber td{background:var(--mbu-warn-bg)}.gt-tp-erow.gt-tp-st-red td{background:var(--mbu-error-bg)}'
+      + '.gt-tp-ename{font-size:13px;font-weight:600;color:var(--mbu-text)}'
+      + '.gt-tp-ekind{margin-left:6px;font-size:10px;text-transform:uppercase;color:var(--mbu-text-weak)}'
+      + '.gt-tp-eroles{margin-top:3px;color:var(--mbu-text-dim);font-size:11.5px}'
+      + '.gt-tp-cands{display:flex;flex-direction:column;gap:4px}'
+      + '.gt-tp-cand{display:flex;align-items:flex-start;gap:8px;padding:4px 6px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg)}'
+      + '.gt-tp-cand.gt-tp-cand-on{border-color:var(--mbu-ok-border);background:var(--mbu-ok-bg)}'
+      + '.gt-tp-cand-pick{flex:none;min-width:30px;height:26px;border:1px solid var(--mbu-ok-border);border-radius:5px;background:var(--mbu-bg);color:var(--mbu-ok);cursor:pointer;font-size:14px;line-height:1}.gt-tp-cand-pick:hover{background:var(--mbu-ok-bg)}'
+      + '.gt-tp-cand-x{flex:none;min-width:30px;height:26px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);color:var(--mbu-text-dim);cursor:pointer;font-size:13px;line-height:1}.gt-tp-cand-x:hover{color:var(--mbu-error);border-color:var(--mbu-error-border)}'
+      + '.gt-tp-cand-main{flex:1;min-width:0}'
+      + '.gt-tp-cand-name{font-weight:600;color:var(--mbu-info);text-decoration:none}.gt-tp-cand-name:hover{text-decoration:underline}'
+      + '.gt-tp-cand-meta{font-size:11px;color:var(--mbu-text-dim);margin-top:1px}'
+      + '.gt-tp-why{display:inline-block;font-size:10.5px;border-radius:9px;padding:0 7px;margin:2px 4px 0 0;border:1px solid var(--mbu-ok-border);color:var(--mbu-ok);background:var(--mbu-bg)}'
+      + '.gt-tp-why.gt-tp-why-neg{border-color:var(--mbu-error-border);color:var(--mbu-error)}'
+      + '.gt-tp-lvl{flex:none;display:inline-block;width:9px;height:9px;border-radius:50%;margin-top:8px}'
+      + '.gt-tp-lvl-strong{background:var(--mbu-ok)}.gt-tp-lvl-unique{background:var(--mbu-warn)}.gt-tp-lvl-weak{background:var(--mbu-error)}.gt-tp-lvl-you{background:var(--mbu-text-weak)}'
+      + '.gt-tp-below{font-size:10.5px;color:var(--mbu-warn);margin-left:6px}'
+      + '.gt-tp-esearch{margin-top:5px;padding:4px 10px;border:1px solid var(--mbu-border);border-radius:5px;background:var(--mbu-bg);cursor:pointer;font:inherit;font-size:12px;color:var(--mbu-info)}.gt-tp-esearch:hover{border-color:var(--mbu-info)}'
+      + '.gt-tp-enone{color:var(--mbu-text-weak);font-size:11.5px}'
       + '.gt-tp-ctrl{display:flex;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--mbu-border);flex-wrap:wrap}'
       // #539 follow-up (majkinetor): "With enough tracks, Match button goes to
       // next row" — a long "→ 12 tracks: 1, 2, 3 …" pushed the button off the
@@ -5138,6 +5268,9 @@
   function onTxpKey(e) {
     if (e.key !== 'Escape') return;
     if (document.querySelector('.gt-role-pick') || popEl) return;
+    // #798: in the page now, so Escape in one of MusicBrainz's own fields is theirs
+    const f = document.activeElement;
+    if (txpEl && f && f !== document.body && !txpEl.contains(f)) return;
     e.stopPropagation(); closeTextParser();
   }
   // #544 follow-up (majkinetor): "Maximized state is still not remembered."
@@ -5264,6 +5397,123 @@
     // parsed on its own; a line's pattern OVERRIDE still applies to every
     // piece of that same line uniformly.
     const splitPairs = raw => raw.includes(';') ? raw.split(/\s*;\s*/).filter(s => s.trim()) : [raw];
+
+    // ── #798 candidates on the release's evidence ────────────────────────────
+    // candCache: per name (lowercased, like entityCache) its ranked candidates;
+    // pickInfo: who chose the name's entity — 'auto' (at or above the cutoff) or
+    // 'you' (a pick, or ✕ with none: then nothing is picked for it automatically).
+    const candCache = new Map();   // name -> { kind, ranked, best }
+    const pickInfo = new Map();    // name -> { by: 'auto' | 'you', level?, none? }
+    const TXP_CUT_KEY = 'gt-tp-cutoff';
+    const LEVEL_RANK = { strong: 3, unique: 2, weak: 1 };
+    let cutoff = (() => { try { return GM_getValue(TXP_CUT_KEY, 'unique'); } catch (e) { return 'unique'; } })();
+    if (!LEVEL_RANK[cutoff]) cutoff = 'unique';
+    const releaseArtists = () => ((release.artistCredit && release.artistCredit.names) || []).map(n => n && n.artist).filter(a => a && a.gid && !MBM_SPECIAL_PURPOSE.has(a.gid));
+    const releaseArtistGids = () => [...new Set(releaseArtists().map(a => a.gid))];
+    // What the release already says: its credits, its labels and every relationship
+    // on the page, each with why it counts. Read at Match time, so this session's
+    // own additions count too.
+    async function txpReleaseContext() {
+      const known = new Map();   // gid -> { entity, names: Set, why: [] }
+      const note = (e, why, credited) => {
+        if (!e || !e.gid || !['artist', 'label', 'place'].includes(e.entityType) || (e.entityType === 'artist' && MBM_SPECIAL_PURPOSE.has(e.gid))) return;
+        let k = known.get(e.gid);
+        if (!k) { k = { entity: e, names: new Set([val(e.name) || '']), why: [] }; known.set(e.gid, k); }
+        if (credited) k.names.add(credited);
+        if (why && !k.why.includes(why)) k.why.push(why);
+      };
+      ((release.artistCredit && release.artistCredit.names) || []).forEach(n => n && note(n.artist, 'release artist', n.name));
+      (release.mediums || []).forEach(m => (m.tracks || []).forEach(t => ((t.artistCredit && t.artistCredit.names) || []).forEach(n => n && note(n.artist, `track ${t.number} artist`, n.name))));
+      (release.labels || []).forEach(l => l && l.label && note({ ...l.label, entityType: 'label' }, 'release label'));
+      const lts = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.link_type) || {};
+      document.querySelectorAll('.relationship-item').forEach(item => {
+        const rel = relFromNode(item); if (!rel || !looksRel(rel) || rel._status === 3) return;
+        const name = (lts[rel.linkTypeID] || {}).name || 'credited';
+        [[rel.entity0, rel.entity0_credit], [rel.entity1, rel.entity1_credit]].forEach(([e, c]) => note(e, `${name} here`, val(c) || ''));
+      });
+      const related = [];
+      for (const a of releaseArtists().slice(0, 4)) for (const r of await txpRelatedOf(a)) if (!related.some(x => x.gid === r.gid)) related.push(r);
+      const ev = (release.events || [])[0] || {};
+      return { known: [...known.values()], related, year: (ev.date && ev.date.year) || null, area: (ev.country && ev.country.name) || null };
+    }
+    // a person for an instrument or a vocal, a group for an orchestra or a choir
+    function txpWantFor(text, rows) {
+      if (/\b(orchestra|choir|chorus|ensemble|quartet|quintet|philharmoni\w*|symphon\w*)\b/i.test(text)) return 'group';
+      const k = text.toLowerCase().trim();
+      const instr = rows.some(r => (r.entity || '').toLowerCase().trim() === k && !r.crKind && (roleCache.get((r.role || '').toLowerCase().trim()) || {}).instrumentMatch);
+      return instr ? 'person' : null;
+    }
+    async function txpCandidatesFor(text, kind, pc, want) {
+      const pool = new Map();
+      let unique = null;
+      if (kind === 'artist' || kind === 'label') {
+        const j = await txpIdentityJson(text, kind);
+        if (j) {
+          const idn = mbmExactIdentity(j, text, kind === 'label' ? { scoreGap: 20 } : undefined);
+          if (idn.status === 'unique') unique = idn.hit.id;
+          const list = j.artists || j.labels || [];
+          list.filter(a => mbmHolds(a, text)).slice(0, 12).forEach(a => pool.set(a.id, txpCandFromWs(a, kind)));
+        }
+      }
+      if (!pool.size) {
+        // places, or no holder found: MusicBrainz's own search, as before #798
+        const l = await ({ artist: txpSearchArtist, label: txpSearchLabel, place: txpSearchPlace }[kind] || txpSearchArtist)(text, 5);
+        const exact = l.filter(c => txpSameName(c.name, text));
+        if (exact.length === 1 && !unique) unique = exact[0].gid;
+        (exact.length ? exact : l.slice(0, 3)).forEach(c => pool.set(c.gid, txpCandFromEntity({ ...c, entityType: kind })));
+      }
+      const holds = c => mbmHolds(c, text);
+      const known = (pc ? pc.known : []).filter(k => k.entity.entityType === kind);
+      known.filter(k => [...k.names].some(n => mbmSameName(n, text))).forEach(k => { if (!pool.has(k.entity.gid)) pool.set(k.entity.gid, { ...txpCandFromEntity(k.entity), credited: true }); });
+      let relatedCtx = [];
+      if (kind === 'artist' && pc) {
+        const hs = mbmContextHolders(pc.related, text, [...pool.values()].map(c => ({ id: c.gid, name: c.name, aliases: c.aliases })));
+        hs.forEach(h => { if (!pool.has(h.gid)) pool.set(h.gid, { gid: h.gid, name: h.name, kind, aliases: [], credited: true }); });
+        relatedCtx = hs.map(h => ({ gid: h.gid, rel: h.rel, of: (pc.related.find(r => r.gid === h.gid) || {}).of || '' }));
+      }
+      const rec = txpRecalled(releaseArtistGids(), text);
+      const remembered = rec && rec.kind === kind ? rec.gid : null;
+      if (remembered && !pool.has(remembered)) pool.set(remembered, { gid: remembered, name: rec.name, kind, aliases: [], credited: true });
+      // only a candidate that carries the name earns the release's evidence
+      const knownCtx = known.filter(k => pool.has(k.entity.gid) && (pool.get(k.entity.gid).credited || holds(pool.get(k.entity.gid))))
+        .map(k => ({ gid: k.entity.gid, why: k.why[0] }));
+      const r = mbmRankCandidates(text, [...pool.values()].map(c => c.credited ? { ...c, name: holds(c) ? c.name : text, shown: c.name } : c),
+        { remembered, known: knownCtx, related: relatedCtx, unique, want, year: pc && pc.year, area: pc && pc.area });
+      const ranked = r.ranked.slice(0, 8).map(c => ({ ...c, name: c.shown || c.name, shown: undefined, kind }));
+      const entities = {};   // the editor's own objects, so a pick needs no request
+      known.forEach(k => { if (ranked.some(c => c.gid === k.entity.gid)) entities[k.entity.gid] = k.entity; });
+      return { kind, ranked, best: r.best, entities };
+    }
+    const txpEntityOf = async (key, gid) => {
+      const cc = candCache.get(key) || {};
+      return (cc.entities && cc.entities[gid]) || await txpFetchEntity(gid, cc.kind || 'artist');
+    };
+    // pick the name's best candidate when it reaches the cutoff; drop an automatic
+    // pick that no longer does
+    async function txpAutoPick(key) {
+      const pi = pickInfo.get(key);
+      if (pi && pi.by === 'you') return;
+      const cc = candCache.get(key);
+      const best = cc && cc.best;
+      if (best && LEVEL_RANK[best.level] >= LEVEL_RANK[cutoff]) {
+        if (pi && pi.gid === best.gid && entityCache.get(key)) return;
+        const ent = await txpEntityOf(key, best.gid);
+        if (ent) { entityCache.set(key, ent); pickInfo.set(key, { by: 'auto', level: best.level, gid: best.gid }); return; }
+      }
+      if (pi && pi.by === 'auto') { entityCache.delete(key); pickInfo.delete(key); }
+      else if (!entityCache.get(key)) entityCache.set(key, null);
+    }
+    async function txpPickCandidate(key, text, gid) {
+      const ent = await txpEntityOf(key, gid);
+      if (!ent) { toast('Could not read that entity from MusicBrainz'); return; }
+      entityCache.set(key, ent); pickInfo.set(key, { by: 'you', gid });
+      txpRemember(releaseArtistGids(), text, ent);
+      render(); saveState();
+    }
+    function txpUnpick(key) {
+      entityCache.set(key, null); pickInfo.set(key, { by: 'you', none: true });
+      render(); saveState();
+    }
 
     // #522 follow-up (majkinetor): "Copyright is always bundled together
     // with other credits. The line can be recognized by mentioned symbols
@@ -5557,20 +5807,13 @@
       return [!r.roleMatch && 'role?', !r.entityMatch && 'entity?'].filter(Boolean).join(' ');
     };
 
-    txpEl = el('div', 'gt-cons-ov');
+    // #798: the panel itself goes in the page, under Group Therapy's toolbar — no
+    // overlay, and so no maximize: the page is the window
     const panel = el('div', 'gt-cons gt-tp'), hdr = el('div', 'gt-cons-hdr');
+    txpEl = panel;
     hdr.appendChild(el('span', 'gt-cons-title', 'Text parser'));
     const annoBtn = el('button', 'gt-tp-anno', 'Load annotation'); annoBtn.type = 'button';
     hdr.appendChild(annoBtn);
-    // #522 follow-up (majkinetor): "Add resizable columns and maximize
-    // button" — same maximize/restore toggle Match Works already has.
-    const maxBtn = el('button', 'gt-cons-x', '⛶'); maxBtn.type = 'button'; maxBtn.dataset.tip = 'Maximize or restore';
-    maxBtn.onclick = () => {
-      if (panel.classList.toggle('gt-tp-max')) { panel._savedW = panel.style.width; panel._savedH = panel.style.height; panel.style.width = ''; panel.style.height = ''; maxBtn.textContent = '❐'; maxBtn.dataset.tip = 'Restore'; }
-      else { panel.style.width = panel._savedW || ''; panel.style.height = panel._savedH || ''; maxBtn.textContent = '⛶'; maxBtn.dataset.tip = 'Maximize'; }
-      saveState();   // #544 follow-up: maximizing changed the window and saved nothing
-    };
-    hdr.appendChild(maxBtn);
     const xb = el('button', 'gt-cons-x', '✕'); xb.type = 'button'; xb.onclick = closeTextParser; hdr.appendChild(xb);
 
     const ctrl = el('div', 'gt-tp-ctrl');
@@ -5711,6 +5954,111 @@
     const tbody = el('tbody');
     tbl.append(colgroup, thead, tbody);
     body.appendChild(tbl);
+
+    // #798: the entities, as in Credit Hoarder's review table — one row per name,
+    // the credit on the left, MusicBrainz's candidates for it on the right
+    const ents = el('div', 'gt-tp-ents');
+    const entsHdr = el('div', 'gt-tp-ents-hdr');
+    const entsTitle = el('span', 'gt-tp-ents-title', 'Entities');
+    const cutWrap = el('label', 'gt-tp-cut');
+    const cutSel = el('select', 'gt-tp-cut-sel');
+    [['strong', 'Strong'], ['unique', 'Unique name'], ['weak', 'Weak']].forEach(([v, t]) => { const o = el('option', '', t); o.value = v; cutSel.appendChild(o); });
+    cutSel.value = cutoff;
+    cutWrap.dataset.tip = 'The lowest confidence picked for you\n'
+      + '- Strong: the release backs it: already credited here, a release artist’s member or collaborator, or your earlier pick\n'
+      + '- Unique name: the only one in MusicBrainz with this name\n'
+      + '- Weak: the best guess, when it clearly leads\n'
+      + 'A match below it waits on its row for ✓. Your own picks stay.';
+    cutWrap.append('Cutoff', cutSel);
+    entsHdr.append(entsTitle, cutWrap);
+    const etbl = el('table', 'gt-tp-etbl');
+    etbl.innerHTML = '<colgroup><col style="width:34%"><col></colgroup><thead><tr><th>Credited</th><th>MusicBrainz</th></tr></thead>';
+    const etbody = el('tbody'); etbl.appendChild(etbody);
+    ents.append(entsHdr, etbl);
+    cutSel.onchange = async () => {
+      cutoff = cutSel.value;
+      try { GM_setValue(TXP_CUT_KEY, cutoff); } catch (e) {}
+      for (const k of candCache.keys()) await txpAutoPick(k);
+      render(); saveState();
+    };
+    const LEVEL_TIP = { strong: 'Strong: the release backs it', unique: 'Unique name: the only one with this name', weak: 'Weak: a best guess', you: 'Picked by you' };
+    const lifeOf = c => (c.begin || c.end) ? `${c.begin || '?'}–${c.end || ''}` : '';
+    function candRow(c, opts) {
+      const row = el('div', 'gt-tp-cand' + (opts.on ? ' gt-tp-cand-on' : ''));
+      if (opts.onPick) {
+        const b = el('button', 'gt-tp-cand-pick', '✓'); b.type = 'button'; b.dataset.tip = 'Pick this one\nFor every row with this name';
+        b.onclick = opts.onPick; row.appendChild(b);
+      }
+      const lvl = opts.level || (c.level !== 'weak' || c === opts.best ? c.level : null);
+      if (lvl) { const d = el('span', 'gt-tp-lvl gt-tp-lvl-' + lvl); d.dataset.tip = LEVEL_TIP[lvl] || ''; row.appendChild(d); }
+      const main = el('div', 'gt-tp-cand-main');
+      const a = el('a', 'gt-tp-cand-name', c.name || ''); a.href = `/${c.kind || 'artist'}/${c.gid}`; a.target = '_blank'; a.rel = 'noopener';
+      main.appendChild(a);
+      if (c.disambiguation) main.appendChild(el('span', 'gt-tp-disamb', ` (${c.disambiguation})`));
+      if (opts.below) main.appendChild(el('span', 'gt-tp-below', 'below cutoff'));
+      const meta = [c.type, lifeOf(c), c.area].filter(Boolean).join(' · ');
+      if (meta) main.appendChild(el('div', 'gt-tp-cand-meta', meta));
+      if ((c.reasons || []).length) {
+        const w = el('div');
+        c.reasons.forEach(x => w.appendChild(el('span', 'gt-tp-why' + (x.sign < 0 ? ' gt-tp-why-neg' : ''), (x.sign < 0 ? '− ' : '+ ') + x.text)));
+        main.appendChild(w);
+      }
+      row.appendChild(main);
+      if (opts.onClear) {
+        const x = el('button', 'gt-tp-cand-x', '✕'); x.type = 'button'; x.dataset.tip = 'Not this one\nShow the candidates again';
+        x.onclick = opts.onClear; row.appendChild(x);
+      }
+      return row;
+    }
+    function renderEntities(rows) {
+      etbody.textContent = '';
+      const groups = new Map();
+      rows.filter(r => r.matched && (r.entity || '').trim()).forEach(r => {
+        const k = r.entity.toLowerCase().trim();
+        if (!groups.has(k)) groups.set(k, { key: k, text: r.entity, rows: [] });
+        groups.get(k).rows.push(r);
+      });
+      entsTitle.textContent = groups.size ? `Entities — ${groups.size}` : 'Entities';
+      ents.style.display = groups.size ? '' : 'none';
+      for (const g of groups.values()) {
+        const r0 = g.rows[0], cc = candCache.get(g.key), ent = entityCache.get(g.key) || null, pi = pickInfo.get(g.key) || {};
+        const creating = pendingCreates.get(g.key);
+        const st = ent ? 'ok' : (creating || (cc && cc.ranked.length)) ? 'amber' : cc ? 'red' : '';
+        const tr = el('tr', 'gt-tp-erow' + (st ? ' gt-tp-st-' + st : ''));
+        const left = el('td');
+        left.appendChild(el('span', 'gt-tp-ename', g.text));
+        left.appendChild(el('span', 'gt-tp-ekind', r0.entityType || ''));
+        const roles = [];
+        g.rows.forEach(r => { const t = `${(r.roleMatch && r.roleMatch.name) || r.role || '?'} (line ${r.li + 1})`; if (!roles.includes(t)) roles.push(t); });
+        left.appendChild(el('div', 'gt-tp-eroles', roles.join(' · ')));
+        const own = g.rows.filter(r => entityOverride.has(r.key)).length;
+        if (own) left.appendChild(el('div', 'gt-tp-eroles', `${own} row${own > 1 ? 's' : ''} picked on their own`));
+        const right = el('td');
+        const list = el('div', 'gt-tp-cands');
+        if (ent) {
+          const c = (cc && cc.ranked.find(x => x.gid === ent.gid)) || txpCandFromEntity(ent);
+          list.appendChild(candRow({ ...c, kind: ent.entityType || c.kind }, { on: true, level: pi.by === 'you' ? 'you' : pi.level || c.level, onClear: () => txpUnpick(g.key) }));
+        } else if (creating) {
+          list.appendChild(el('div', 'gt-tp-enone', `creating “${trunc(creating.name, 40)}”…`));
+        } else if (cc) {
+          if (!cc.ranked.length) list.appendChild(el('div', 'gt-tp-enone', 'No candidates — search, or create it'));
+          cc.ranked.forEach(c => list.appendChild(candRow(c, {
+            best: cc.best && cc.best.gid === c.gid ? c : null,
+            below: !!(cc.best && cc.best.gid === c.gid && LEVEL_RANK[cc.best.level] < LEVEL_RANK[cutoff]),
+            onPick: () => txpPickCandidate(g.key, g.text, c.gid),
+          })));
+        } else {
+          list.appendChild(el('div', 'gt-tp-enone', '⚡ Match finds the candidates'));
+        }
+        right.appendChild(list);
+        const sb = el('button', 'gt-tp-esearch', '🔍 Search or create…'); sb.type = 'button';
+        sb.dataset.tip = 'Search MusicBrainz, paste an MBID or URL, or create it';
+        sb.onclick = () => txpPickEntity(r0, sb);
+        right.appendChild(sb);
+        tr.append(left, right);
+        etbody.appendChild(tr);
+      }
+    }
 
     const foot = el('div', 'gt-cons-foot');
     const cnt = el('span', 'gt-tp-cnt');
@@ -5910,6 +6258,7 @@
       applyBtn.disabled = !ready;
       applyClearBtn.disabled = !ready;
       applyClearBtn.style.display = loadedFromAnnotation ? '' : 'none';
+      renderEntities(rows);   // #798
 
       if (activeFkey) {
         const restored = tbody.querySelector(`[data-fkey="${activeFkey}"]`);
@@ -5962,26 +6311,19 @@
         // itself" — total counts only the names that actually need a real
         // lookup (already-cached ones are instant skips, not "work" the
         // button should promise is coming).
-        resolveTotal = entities.filter(([t]) => !entityCache.has(t.toLowerCase().trim())).length;
+        // #798: a name you picked or cleared is yours; everything else is (re)ranked
+        const todo = entities.filter(([t]) => { const k = t.toLowerCase().trim(); return !candCache.has(k) && (pickInfo.get(k) || {}).by !== 'you'; });
+        resolveTotal = todo.length;
         resolveDone = 0;
         const bumpProgress = () => { resolveDone++; resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`; };
         resolveBtn.textContent = `Resolving ${resolveDone}/${resolveTotal}`;
-        for (const [text, entityType] of entities) {
+        const pc = todo.length ? await txpReleaseContext() : null;
+        for (const [text, entityType] of todo) {
           const key = text.toLowerCase().trim();
-          if (entityCache.has(key)) continue;
           try {
-            let hit = entityType === 'artist' ? await txpResolveByExactAlias(text)
-              : entityType === 'place' ? null                      // no alias resolver for places; exact-name search below covers it
-              : await txpResolveLabelByExactAlias(text);
-            if (!hit) {
-              const cands = entityType === 'artist' ? await txpSearchArtist(text, 5)
-                : entityType === 'place' ? await txpSearchPlace(text, 5)
-                : await txpSearchLabel(text, 5);
-              const exact = cands.filter(c => (c.name || '').toLowerCase().trim() === key);
-              if (exact.length === 1) { const full = await txpFetchEntity(exact[0].gid || exact[0].id, entityType); if (full) hit = { entity: full }; }
-            }
-            entityCache.set(key, hit ? hit.entity : null);
-          } catch (e) { entityCache.set(key, null); }
+            candCache.set(key, await txpCandidatesFor(text, entityType, pc, txpWantFor(text, rows)));
+            await txpAutoPick(key);
+          } catch (e) { try { console.warn('[Group Therapy] #798 candidates failed for', text, e); } catch (_) {} }
           // #524 follow-up (majkinetor): "'Resolve all' should update the
           // table as it goes... to avoid the looks of 'nothing happens'" —
           // each entity is a real network round-trip, so re-render after
@@ -6177,7 +6519,7 @@
               const ent = await txpFetchEntity(d.gid, kind);
               // #544: resolve in BULK, exactly as a left click in the picker does —
               // every row with this text flips from "creating…" to the new entity.
-              if (ent) { entityCache.set(pendKey, ent); render(); saveState(); toast(`Created ${kind} “${ent.name || name}”`); }
+              if (ent) { entityCache.set(pendKey, ent); pickInfo.set(pendKey, { by: 'you', gid: ent.gid }); txpRemember(releaseArtistGids(), r.entity || name, ent); render(); saveState(); toast(`Created ${kind} “${ent.name || name}”`); }
               else { render(); toast(`Created the ${kind}, but could not read it back — click the row to search for it`); }
             };
           } catch (e) { /* no BroadcastChannel — falls through to the timeout */ }
@@ -6260,8 +6602,10 @@
       };
       renderChrome();
       const pick = (entity, bulk) => {
-        if (bulk) entityCache.set((r.entity || '').toLowerCase().trim(), entity);
+        const k = (r.entity || '').toLowerCase().trim();
+        if (bulk) { entityCache.set(k, entity); pickInfo.set(k, { by: 'you', gid: entity.gid }); }
         else entityOverride.set(r.key, entity);
+        txpRemember(releaseArtistGids(), r.entity || '', entity);   // #798
         closePopover(); render(); saveState();
       };
       // #544 (majkinetor): "Disambiguation in search results should have
@@ -6347,6 +6691,10 @@
       };
       const run = async () => { try { await runSearch(); } finally { reposition(); } };
       reposition();
+      // #798: the parser scrolls with the page now, and the popover follows its anchor
+      const myPop = popEl;
+      const onScroll = () => { if (popEl !== myPop) { window.removeEventListener('scroll', onScroll, true); return; } reposition(); };
+      window.addEventListener('scroll', onScroll, { capture: true, passive: true });
       let t = null;
       q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 300); });
       q.addEventListener('paste', () => setTimeout(run, 0));
@@ -6512,10 +6860,7 @@
       // onTextChange, which must DROP position-keyed state, precisely because
       // there the text has changed underneath it.)
       overrides: lines.map(l => (l && l.override) || ''),
-      // "State should be kept completely" — the window's own two states reset
-      // on every reopen as well: whether it was maximized, and whether the paste
-      // box was rolled up. Both are one flag each and both are visible.
-      maximized: panel.classList.contains('gt-tp-max'),
+      // "State should be kept completely": whether the paste box was rolled up
       srcOpen: ta.style.display !== 'none',
       // #544 follow-up (majkinetor): 'Button "load and remove annotation" is lost
       // when exiting / returning.' "Apply & clear annotation" only shows once the
@@ -6529,6 +6874,8 @@
       entityCache: [...entityCache.entries()],
       entityOverride: [...entityOverride.entries()],
       appliedKeys: [...appliedKeys],
+      candCache: [...candCache.entries()],   // #798
+      pickInfo: [...pickInfo.entries()],
     });
     const onTextChange = () => {
       const newLines = ta.value.split('\n').map((raw, i) => ({ raw, override: (lines[i] && lines[i].override) || '' }));
@@ -6603,9 +6950,11 @@
       annoBtn.disabled = false; annoBtn.textContent = 'Load annotation';
     };
 
-    panel.append(hdr, ctrl, src, body, foot);
-    txpEl.appendChild(panel); document.body.appendChild(txpEl);
-    txpEl.addEventListener('mousedown', e => { if (e.target === txpEl) closeTextParser(); });
+    panel.append(hdr, ctrl, src, body, ents, foot);
+    // #798: under Group Therapy's toolbar, where the button that opened it is
+    const bar = document.querySelector('.gt-toolbar');
+    if (bar) bar.after(panel); else (document.getElementById('content') || document.body).prepend(panel);
+    try { panel.scrollIntoView({ block: 'nearest' }); } catch (e) {}
     document.addEventListener('keydown', onTxpKey, true);
     if (saved) {
       if (saved.text) {
@@ -6618,7 +6967,8 @@
       (saved.entityOverride || []).forEach(([k, v]) => entityOverride.set(k, v));
       (saved.appliedKeys || []).forEach(k => appliedKeys.add(k));
       loadedFromAnnotation = !!saved.loadedFromAnnotation;   // #544: brings "Apply & clear annotation" back with its text
-      if (saved.maximized) maxBtn.onclick();          // same path the button takes, so the saved size handling matches
+      (saved.candCache || []).forEach(([k, v]) => candCache.set(k, v));   // #798
+      (saved.pickInfo || []).forEach(([k, v]) => pickInfo.set(k, v));
       if (saved.srcOpen === false) setSrcOpen(false);
     }
     // #544 follow-up: whatever was last on screen is what comes back, whichever

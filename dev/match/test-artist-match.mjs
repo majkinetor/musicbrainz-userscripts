@@ -1,7 +1,7 @@
 // Unit tests for dev/match/artist-match.mjs (#613). node dev/match/test-artist-match.mjs
 import {
     mbmFold, mbmSameName, mbmHolds, mbmIdentityQuery, mbmExactIdentity,
-    mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmGuessSortName, MBM_SPECIAL_PURPOSE, MBM_EXACT_LIMIT,
+    mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmRankCandidates, mbmGuessSortName, MBM_SPECIAL_PURPOSE, MBM_EXACT_LIMIT,
 } from './artist-match.mjs';
 
 let fail = 0;
@@ -59,6 +59,28 @@ const recs = { recordings: [
 ] };
 const hits = mbmCoCreditHits(recs, 'ctx', 'joni');
 ck(hits.length === 1 && hits[0].gid === 'j1', 'co-credit: the artist credited as the name next to the context artist, deduped', hits);
+
+// #798 ranking on release evidence
+const C = (gid, name, extra = {}) => ({ gid, name, aliases: [], ...extra });
+const smiths = [C('s1', 'John Smith', { type: 'Person', score: 100 }), C('s2', 'John Smith', { type: 'Person', score: 100 }), C('s3', 'John Smith', { type: 'Group', score: 90 })];
+let rk = mbmRankCandidates('John Smith', smiths, {});
+ck(!rk.best && rk.ranked.length === 3, 'three same-named, no evidence → no pick', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { related: [{ gid: 's2', rel: 'member of band', of: 'Toto' }] });
+ck(rk.best && rk.best.gid === 's2' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => /member of band · Toto/.test(x.text)), 'a member of the release artist → strong pick, with the reason', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { known: [{ gid: 's1', why: 'track 4 producer' }], related: [{ gid: 's2', rel: 'member of band', of: 'Toto' }] });
+ck(!rk.best && rk.ranked[0].gid === 's1', 'already credited ranks above a related artist, but two backed candidates are left to you', rk.best);
+rk = mbmRankCandidates('John Smith', smiths, { remembered: 's3', known: [{ gid: 's1', why: 'x' }] });
+ck(!rk.best && rk.ranked[0].gid === 's3', 'your earlier pick ranks first; the release backs another, so no pick', rk.best);
+rk = mbmRankCandidates('Don Abi', [C('a1', 'Abiodun', { aliases: [{ name: 'Don Abi' }] }), C('a2', 'Don Abiola')], { unique: 'a1' });
+ck(rk.best && rk.best.gid === 'a1' && rk.best.level === 'unique', 'the only holder → unique pick', rk.best);
+rk = mbmRankCandidates('Kim', [C('k1', 'Kim', { type: 'Person', begin: 1990 }), C('k2', 'Kim', { type: 'Person', begin: 1950 })], { year: 1975, want: 'person' });
+ck(rk.ranked[0].gid === 'k2' && rk.ranked[1].reasons.some(x => x.text === 'born 1990' && x.sign < 0), 'born after the release ranks lower, and says so', rk.ranked.map(x => x.gid));
+rk = mbmRankCandidates('Kim', [C('k1', 'Kim', { type: 'Group' }), C('k2', 'Kim', { type: 'Person' })], { want: 'person' });
+ck(rk.ranked[0].gid === 'k2' && rk.ranked[1].reasons.some(x => x.text === 'a group'), 'a group ranks below a person for an instrument role', rk.ranked.map(x => x.gid));
+rk = mbmRankCandidates('Kim', [C('89ad4ac3-39f7-470e-963a-56509c546377', 'Kim')], { unique: '89ad4ac3-39f7-470e-963a-56509c546377' });
+ck(!rk.ranked.length && !rk.best, 'a special-purpose artist is never a candidate');
+rk = mbmRankCandidates('Joni', [C('j1', 'Joni Mitchell', { score: 80 })], {});
+ck(!rk.best, 'a weak candidate that does not even hold the name is never picked', rk.best);
 
 // sort-name guess, shared by Apollo and Credit Hoarder (#623)
 for (const [n, want] of [

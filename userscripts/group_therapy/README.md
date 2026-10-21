@@ -98,24 +98,39 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 
 ## Text parser
 
-**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns).
+**✎ Text parser…** turns credit text (liner notes, a credits block, or the release's annotation via **Load annotation**) into relationships, reading each line with a [pattern](#patterns). It opens under the toolbar, in the page, so the release's tracks and credits stay in reach as you scroll.
 
 <img src="https://github.com/user-attachments/assets/443f6ae0-ea8d-4f62-805d-4bb1d2ebdfcf" />
 
 - **Copyright lines** (©, ℗, *licensed to/from*, *distributed by*, *marketed by*) are recognised without a pattern. One year becomes both the begin and end date, as [MusicBrainz asks](https://musicbrainz.org/relationship/2ed5a497-4f85-4b3f-831e-d341ad28c544). Several holders on one line (`℗ 2012 Shady/Aftermath/Interscope`) become one row each, and a line with two markers is split in two when pasted.
-- **⚡ Match** resolves roles and entities where it can (including *mastered by* → *mastering*). A role that exists only for labels picks a label; an ambiguous one defaults to a label, or an artist when the name is one of the release's artists.
+- **⚡ Match** resolves roles (including *mastered by* → *mastering*) and finds each name's [candidates](#entities). A role that exists only for labels picks a label; an ambiguous one defaults to a label, or an artist when the name is one of the release's artists.
 - Instruments and vocal types resolve to the *instrument* or *vocal* role plus that attribute: *Flute*, *Lead Vocals*, *Backing Vocals* → *background vocals*. A leading *Guest*, *Additional*, *Solo*, *Co-*, *Executive*, *Assistant* or *Associate* is added as an attribute when the role allows it: *Guest Vocals*, *Co-Producer*, *Executive Producer*.
 - Row colours: plain is ready, amber is matched but unresolved, red didn't match.
-- **search** on a row opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click: in the background). A pick resolves every row with the same name; a right-click only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
+- **search** on a row, or **Search or create…** under [Entities](#entities), opens a picker: search, paste an MBID or URL, or **+** to create the artist or label (right-click: in the background). A pick resolves every row with the same name; a right-click only that row. A role picked for a row applies to every row with the same role text and the same kind of entity, so *produced at* picked for a studio leaves its line's producer an artist's *producer*.
 - A line's text can be edited in place, and **✕** removes it.
 - **Scope** sends the credits to the release (default) or to recordings chosen with a [track selector](#track-selector); the roles offered follow the scope.
 - **Works**: a work role going to tracks goes on their works. *create none* (default) skips a track without one; *create needed* creates it, named after the recording, so match existing works first with **◎ Match works…** or it makes duplicates.
-- **Apply** stages the rows. After **Load annotation**, **Apply & clear annotation** also opens the annotation editor, emptied.
+- **Apply** stages the rows. After **Load annotation**, **Apply & clear annotation** also clears the release's annotation, with its own edit note.
 
 The text and the resolutions last until the page reloads.
 
 > [!NOTE]
 > Only single-line credits are parsed; grouped multi-line blocks are not.
+
+### Entities
+
+Under the lines, **Entities** has a row per name: the credit on the left, its MusicBrainz candidates on the right, each with its type, life span and area, and why it ranks where it does (`+ member of band · Toto`, `− born 1990`). **✓** picks one for every row with that name; **✕** on a pick brings the candidates back.
+
+| Dot | Confidence  | Why                                                                               |
+| :-: | ----------- | --------------------------------------------------------------------------------- |
+|  🟢  | Strong      | credited on this release, a release artist's member or collaborator, or your pick |
+|  🟡  | Unique name | the only artist or label in MusicBrainz with this name or alias                   |
+|  🔴  | Weak        | the best guess                                                                    |
+|  ⚪  | You         | picked by you                                                                     |
+
+**Cutoff** (default *Unique name*) is the lowest confidence picked for you, and only when the candidate clearly leads the next one. A match below it waits on its row, marked *below cutoff*. Your picks are remembered for the release artist, so the next release of that artist starts from them.
+
+The candidates also rank on the role and the release: a person for an instrument or a vocal, a group for an orchestra or a choir; someone born after the release or gone long before it ranks lower, and one from the release's country higher.
 
 ### Patterns
 

@@ -1,6 +1,6 @@
 // #544 round 5 (majkinetor), three follow-ups to round 4:
 //
-//   1. "Maximized state is still not remembered."
+//   1. "Maximized state is still not remembered." (no maximize since #798)
 //   2. 'Button "load and remove annotation" is lost when exiting / returning'
 //   3. "The new `creating ...` placeholder stays forever if there is error/tab
 //      closed. I should be able to cancel it like in CH"
@@ -19,7 +19,7 @@ import { blockEdits, ensureAnnotation } from './gt.mjs';
 
 test.use({ gm: { name: 'Group Therapy' } });
 
-test('the text parser remembers maximized and the annotation button, and a create can be cancelled', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
+test('the text parser remembers the annotation button, and a create can be cancelled', { tag: ['@sandbox', '@login'] }, async ({ page, context, inject }, testInfo) => {
   await ensureAnnotation(page);
   const RELEASE = '3a37a35f-1e06-457f-9b2a-46155c5c03ce';   // has an annotation — needed by check 2
   const NL = String.fromCharCode(10);
@@ -64,28 +64,9 @@ test('the text parser remembers maximized and the annotation button, and a creat
     }, { text, pat });
     await frames(page);
   };
-  const isMax = () => page.evaluate(() => !!document.querySelector('.gt-tp.gt-tp-max') || !!document.querySelector('.gt-tp .gt-tp-max') || !!(document.querySelector('.gt-cons.gt-tp') || {}).classList?.contains('gt-tp-max'));
-
-  // ── 1. maximize, close, reopen — with NOTHING else touched in between ───────
+  // ── 1. (#798: the parser is in the page, so there is no maximized state to keep)
   await openParser();
   await setText(`Producer: Someone Unresolvable Xyzzy${NL}Mixer: Another Unresolvable Xyzzy`, 'R: E');
-  check(!await isMax(), 'the parser starts restored, not maximized');
-  // From here to closeParser, the ONLY thing touched is the maximize button — which
-  // is the whole point: round 3's version of this test froze a pattern in between,
-  // and the freeze is what did the saving.
-  await page.evaluate(() => {
-    const b = [...document.querySelectorAll('.gt-tp .gt-cons-x')].find(x => x.textContent.includes('⛶') || x.textContent.includes('❐'));
-    if (b) b.click();
-  });
-  await frames(page);
-  check(await isMax(), 'clicking ⛶ maximizes the window');
-  await attachShot(testInfo, page.locator('.gt-tp'), 'i544r5-maximized');
-  await closeParser();
-  check(await page.locator('.gt-tp').count() === 0, 'the window really closed (otherwise nothing below is a test)');
-  await openParser();
-  const backMax = await isMax();
-  console.log('after maximize → close → reopen: maximized=' + backMax);
-  check(backMax, '#544.1: THE FIX — the maximized state comes back with no other action in between');
 
   // ── 2. "Apply & clear annotation" survives a close ──────────────────────────
   const annoLoaded = await page.evaluate(async () => {

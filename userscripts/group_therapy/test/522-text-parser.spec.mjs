@@ -511,16 +511,16 @@ test('the text parser end to end: parse, resolve, apply, and the fixes from live
   check(afterRawEdit.taValue.includes('Fixed Artist'), `editing the raw cell updates the source textarea (got ${JSON.stringify(afterRawEdit.taValue)})`);
   check(afterRawEdit.artistCell === 'Fixed Artist 522', `the row re-parses from the edited text (got "${afterRawEdit.artistCell}")`);
 
-  // 19. maximize button toggles a near-fullscreen class and back.
-  const maxBefore = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
-  await page.click('.gt-cons.gt-tp .gt-cons-x[data-tip="Maximize or restore"]');
-  await frames(page);
-  const maxAfter = await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'));
-  console.log('maximize toggle:', { maxBefore, maxAfter });
-  check(!maxBefore && maxAfter, `the maximize button adds the near-fullscreen class (before ${maxBefore}, after ${maxAfter})`);
-  await page.click('.gt-cons.gt-tp .gt-cons-x[data-tip="Restore"]');
-  await frames(page);
-  check(!(await page.evaluate(() => document.querySelector('.gt-cons.gt-tp').classList.contains('gt-tp-max'))), 'clicking it again restores');
+  // 19. #798: the parser is in the page, under the toolbar — not a modal, so
+  // the page scrolls under it and there is nothing to maximize.
+  const inline = await page.evaluate(() => {
+    const p = document.querySelector('.gt-cons.gt-tp');
+    return { afterBar: document.querySelector('.gt-toolbar').nextElementSibling === p, overlay: !!p.closest('.gt-cons-ov'),
+      position: getComputedStyle(p).position, maxBtn: !!p.querySelector('.gt-cons-x[data-tip]') };
+  });
+  console.log('inline panel:', JSON.stringify(inline));
+  check(inline.afterBar && !inline.overlay && inline.position === 'static', `the parser sits in the page under the toolbar (${JSON.stringify(inline)})`);
+  check(!inline.maxBtn, 'and has no maximize button');
 
   // 20. resizable columns — dragging a header's resize handle changes its
   // <col> width.
