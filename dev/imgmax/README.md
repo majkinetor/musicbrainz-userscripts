@@ -53,7 +53,7 @@ A store page goes to its resolver; any other page to its `og:image`; an image UR
 | Tidal          | the web player's API, in your country and then others             | `origin.jpg`                               |
 | Qobuz          | the API when it answers (adds booklets), else the cover's address | `_org`                                     |
 | Beatport       | the page's data                                                   | `0x0`, the stored size                     |
-| Discogs        | the site's own API (full size), else the public API (600 px)      | as given                                   |
+| Discogs        | the site's own API, else the public API (max 600 px)      | as given                                   |
 | Amazon         | the product page                                                  | the image without size modifiers           |
 | VGMdb          | the scan gallery, captions as types                               | `media.vgm.io`                             |
 | 7digital, Juno | the page's `og:image`                                             | `_800`, `/full/…-BIG`                      |
