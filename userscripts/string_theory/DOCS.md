@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-22 21:56 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-22 22:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -430,7 +430,7 @@ Each cover shows its size and resolution, and with *Show each cover's file type 
 
 - **Set type**: tick one or more types; right-click a type to set only that one.
 - **Set comment**: Enter moves to the next cover's comment. With [Mammoth](../mammoth) installed, the comment field gets its 🦣 memory.
-- **Remove**, or a cover's hover **✕**: the cover moves under the gallery to *Marked for removal*, with a **REMOVE** ribbon, until **Enter edit** removes it. **↺ keep** on one, or **↺ Keep** on a selection, brings it back. A cover whose removal is open for votes stays in the gallery, dashed red, with a **removal open · 6 days** chip that opens the edit.
+- **Remove**, or the trash can on a cover's hover: the cover moves under the gallery to *Marked for removal*, with a **REMOVE** ribbon, until **Enter edit** removes it. **↺ keep** on one, or **↺ Keep** on a selection, brings it back. A cover whose removal is open for votes stays in the gallery, dashed red, with a **removal open · 6 days** chip that opens the edit.
 - **✓ only this** on a new cover marks every other new cover for removal; the release's own covers stay.
 - **Download** as a zip, [named by type](#file-names--types).
 - **Report** in HTML or Markdown: inline, captioned, or a table (position, file, resolution, size) that also serves as the archive's `README.md`.

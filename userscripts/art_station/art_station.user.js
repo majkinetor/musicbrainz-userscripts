@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.20.231231
+// @version      2026.10.22
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1306,6 +1306,8 @@
     return a.order - b.order;   // position (committed order) — new covers have low order, so still lead
   }
 
+  // one trash can for every "mark for removal" button: the toolbar's Delete, the card's and the lightbox's
+  const trashSvg = px => `<svg viewBox="0 0 24 24" width="${px}" height="${px}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6M14 11v6"/></svg>`;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   function bar(n) {
@@ -1335,7 +1337,7 @@
       <button class="as-btn as-bk-cmt" data-tip="Set a comment on the selection"><span class="as-bi">✎</span><span class="mbu-bt">Comment ▾</span></button>
       <button class="as-btn as-bk-dl" data-tip="Download the selected ${ITEMS}"><span class="as-bi">⬇</span><span class="mbu-bt">Download</span></button>
       <button class="as-btn as-bk-report" data-tip="A report of the selection\nMarkdown or HTML, ready to post"><span class="as-bi">📋</span><span class="mbu-bt">Report</span></button>
-      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal"><span class="as-bi">🗑️</span><span class="mbu-bt">Delete</span></button>` : ''}`;
+      <button class="as-btn as-bk-rm" data-tip="Mark the selected ${ITEMS} for removal"><span class="as-bi">${trashSvg(16)}</span><span class="mbu-bt">Delete</span></button>` : ''}`;
   }
   function section(type, items) {
     const label = type === null ? ('All ' + ITEMS) : type;
@@ -1456,7 +1458,7 @@
         ${it._del && !it._mcOffer ? '<span class="as-newban as-rmban">REMOVE</span>' : it._new ? '<span class="as-newban">NEW</span>' : ''}
         ${it._pdf ? '<span class="as-pdfban" data-tip="A PDF: opens in a new tab">PDF</span>' : ''}
         ${provBadge(it)}${rmOpenChip(it)}
-        ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" data-tip="Mark this ${ITEM} for removal">✕</button>` : ''}
+        ${!it._del && !it._rmOpen ? `<button class="as-tbtn as-rmone" data-tip="Mark this ${ITEM} for removal">${trashSvg(15)}</button>` : ''}
         ${it._del ? (it._mcOffer ? (it._mcDup ? '' : `<button class="as-tbtn as-undo"${_mcChecking ? ' disabled data-tip="Checking for duplicates…"' : ' data-tip="Take this image in"'}>＋ take in</button>`) : '<button class="as-tbtn as-undo" data-tip="Keep this image">↺ keep</button>') : ''}
         ${it._mcDup && it._del ? `<span class="as-mcdup" data-tip="The same picture as ${esc(it._mcDup.replace(/^= /, ''))}">${esc(it._mcDup)}</span>` : ''}
         ${onlyBtn(it)}
@@ -4713,7 +4715,7 @@
     let ov = document.getElementById('as-lb');
     if (!ov) {
       ov = document.createElement('div'); ov.id = 'as-lb';
-      ov.innerHTML = `<button class="as-lb-del" data-tip="Mark for removal (Del)">🗑️</button>
+      ov.innerHTML = `<button class="as-lb-del" data-tip="Mark for removal (Del)">${trashSvg(20)}</button>
         <div class="as-lb-top"><button class="as-lb-play" data-tip="Slideshow (P)">▶ Play</button><button class="as-lb-x" data-tip="Close (Esc)">✕</button></div>
         <button class="as-lb-nav as-lb-prev" data-tip="Previous (←)">‹</button>
         <img class="as-lb-img" alt="">
@@ -7340,7 +7342,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   /* lightbox actions: Delete top-left, Download (size menu) top-centre. No z-index, so a
      ZOOMED image paints over them — same as Play/✕. The download wrapper lifts only while
      its menu is open so the menu stays usable. */
-  .as-lb-del{position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:var(--mbu-text-on-accent);background:transparent;border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
+  .as-lb-del{display:flex;align-items:center;justify-content:center;position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:var(--mbu-text-on-accent);background:transparent;border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
   .as-lb-del:hover{background:var(--as-warn)}
   /* Download moved into the bottom bar (right of the resolution): at the top it
      was painted over by the image even at 0 zoom. In-flow now; its size menu
