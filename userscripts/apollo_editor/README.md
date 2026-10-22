@@ -200,6 +200,16 @@ The options sit beside **Guess case**, or open with a right-click on the release
 
 Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 
+A **Casing** changes the letters without guessing; IV and the separator don't apply to it, and ABC only to Title Case.
+
+| Casing     | Capitals                                          |
+| ---------- | ------------------------------------------------- |
+| Title Case | every word but small ones: *The Sound of Silence* |
+| lowercase  | none                                              |
+| UPPERCASE  | every letter                                      |
+
+**○** by a mode in the list makes it the **default** (**◉**): guess case in that mode runs on every track when the tracklist first opens, before the default [Search and Replace](#search-and-replace). A casing can't be the default.
+
 ### Search and Replace
 
 <img width="600" src="./screenshots/search.png" />

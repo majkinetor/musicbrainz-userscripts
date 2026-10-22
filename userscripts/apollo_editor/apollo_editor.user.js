@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.125104
+// @version      2026.10.22.113305
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1557,7 +1557,7 @@
   const SKEY = 'apolloEditor.settings.v1';
   // MusicBrainz's own guess-case options seed Apollo's once (#785); a page without cookies (about:blank) throws
   function pageCookies() { try { return document.cookie || ''; } catch (e) { return ''; } }
-  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
+  function loadSettings() { const d = { apolloEnabled: true, colWidths: {}, applyMode: 'all', altRows: false, gridCols: false, gridRows: true, replaceReleaseInfo: true, replaceTracklist: true, replaceRecordings: true, modifyAnnotation: true, modifyDuplicates: true, autoMatch: true, autoMatchRec: true, autoMatchOnV: 1, autoMatchLabel: true, autoMatchArtist: true, autoMatchRG: true, discogsUrlMatch: true, recLenTol: 5, recIgnoreCase: true, recIgnorePunct: true, recTitleTol: 1, recCutoff: 'near', recDetailedHl: true, recPunctSize: 3, recHlColor: '#e53935', lastTool: '', layout: 'normal', lastView: 'apollo', zenMode: true, autoConfirmSeed: true, keepCaretColumn: true, hoverHighlight: false, srRegex: false, srTemplates: [], srSeedV: 0, srHistory: [], srDefault: '', srHistoryOpen: false, archive: true, archiveMenu: true, gcMode: 'auto', gcDefault: '', gcSep: '/', gcKeepUC: !/(?:^|;\s*)guesscase_keepuppercase=(?:false|0)(?:;|$)/.test(pageCookies()), gcRoman: /(?:^|;\s*)guesscase_roman=(?:true|1)(?:;|$)/.test(pageCookies()) }; try { const stored = JSON.parse(gmLoad(SKEY) || '{}'); const s = Object.assign(d, stored); if (stored.gridCols === undefined && stored.grid !== undefined) s.gridCols = stored.grid; if (stored.autoMatchOnV === undefined) { s.autoMatch = true; s.autoMatchRec = true; }   /* tracklist + recordings auto-match became on by default; the whole object is saved, so an existing install has the old false stored and needs flipping once (autoMatchOnV, from the defaults, marks it done on the next save) */ return s; } catch (e) { return d; } }
   function saveSettings() { try { gmSave(SKEY, JSON.stringify(SETTINGS)); } catch (e) {} }
   let SETTINGS = loadSettings();
   try { srSeedTemplates(); } catch (e) {}   // #375 seed the default S&R templates once
@@ -3965,25 +3965,46 @@ Click: open the label`;
   function setLength(entry, v) { const t = koTrack(entry.mi, entry.ti); try { if (typeof t.formattedLength === 'function') t.formattedLength(v); else { const ed = getEditor(); const ms = ed.utils && ed.utils.unformatTrackLength ? ed.utils.unformatTrackLength(v) : null; if (ms != null && !isNaN(ms)) t.length(ms); } } catch (e) { Log.cat('Tracklist').warn('set length failed', v, e.message); } }
   // Guess case: the shared block (#785), MusicBrainz's own with more modes and our rules; the mode
   // follows the release's language (Auto) unless one is chosen
-  function gcOpts() {
+  // #803: the list also has plain casings, which Aa applies instead of a guess (they can't be the default)
+  const GC_CASINGS = ['Title Case', 'lowercase', 'UPPERCASE'];
+  const GC_SMALL_WORDS = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 'of', 'in', 'on', 'at', 'to', 'by', 'as', 'up', 'via', 'vs', 'from', 'with', 'into', 'onto', 'over', 'per']);
+  const gcIsCasing = m => GC_CASINGS.includes(m);
+  const gcModeOf = m => (mbuGuessCase.modes.includes(m) || gcIsCasing(m) ? m : 'auto');   // 'auto', a guess mode or a casing
+  function gcOpts(mode) {
+    const m = gcModeOf(mode === undefined ? SETTINGS.gcMode : mode);
     const o = { entity: 'track', keepUpperCase: SETTINGS.gcKeepUC !== false, romanUpper: !!SETTINGS.gcRoman, separator: SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep };
-    if (mbuGuessCase.modes.includes(SETTINGS.gcMode)) o.mode = SETTINGS.gcMode;
+    if (mbuGuessCase.modes.includes(m)) o.mode = m;
     else { o.language = null; try { o.language = u(release().languageID) || null; } catch (e) { /* no release yet */ } }   // Auto: the language, so a Cyrillic title (or part) gets Sentence whatever it is
     return o;
   }
-  function guessTitleStr(entry) {
-    const name = u(koTrack(entry.mi, entry.ti).name) || '';
-    try { return mbuGuessCase(name, gcOpts()); } catch (e) { Log.cat('Tool').warn('guess case failed', name, e.message); return name; }
+  // a plain casing changes every letter. Title Case: every word starts with a capital but the small words
+  // (of, the, …) between the first and the last; a word with a capital inside (KoRn, BEAUTY) stays when ABC is on.
+  function gcCasing(s, m) {
+    if (m === 'lowercase') return s.toLowerCase();
+    if (m === 'UPPERCASE') return s.toUpperCase();
+    const keep = SETTINGS.gcKeepUC !== false, re = /[\p{L}\p{N}][\p{L}\p{M}\p{N}'’]*/gu;
+    const words = [...s.matchAll(re)], last = words.length - 1;
+    let i = -1;
+    return s.replace(re, w => {
+      i++;
+      if (keep && /\p{Lu}/u.test(w.slice(1))) return w;
+      const lw = w.toLowerCase();
+      if (i > 0 && i < last && GC_SMALL_WORDS.has(lw)) return lw;
+      return lw.charAt(0).toUpperCase() + lw.slice(1);
+    });
   }
-  function applyGuessTitle(entry) {
-    const t = koTrack(entry.mi, entry.ti), orig = u(t.name) || '', g = guessTitleStr(entry);
+  // the guess (or casing) for a title: the picked mode, or `mode` (the default's) when given
+  function gcGuess(s, entity, mode) {
+    const m = gcModeOf(mode === undefined ? SETTINGS.gcMode : mode);
+    try { return gcIsCasing(m) ? gcCasing(s, m) : mbuGuessCase(s, Object.assign(gcOpts(m), { entity: entity || 'track' })); } catch (e) { Log.cat('Tool').warn('guess case failed', s, m, e.message); return s; }
+  }
+  function guessTitleStr(entry, mode) { return gcGuess(u(koTrack(entry.mi, entry.ti).name) || '', 'track', mode); }
+  function applyGuessTitle(entry, mode) {
+    const t = koTrack(entry.mi, entry.ti), orig = u(t.name) || '', g = guessTitleStr(entry, mode);
     if (g === orig) return;
     setTitle(entry, g);
     try { if (typeof t.nameModified === 'function') t.nameModified(true); } catch (e) { /* as MB's own guess case marks it */ }
-    Log.cat('Tool').debug('guess case', JSON.stringify(orig), '→', JSON.stringify(g), gcOpts());
-  }
-  function gcGuess(s, entity) {
-    try { return mbuGuessCase(s, Object.assign(gcOpts(), { entity })); } catch (e) { Log.cat('Tool').warn('guess case failed', s, e.message); return s; }
+    Log.cat('Tool').debug('guess case', JSON.stringify(orig), '→', JSON.stringify(g), gcModeOf(mode === undefined ? SETTINGS.gcMode : mode), gcOpts(mode));
   }
   // #785: MusicBrainz's own guess-case buttons (a track's and a medium's Aa, "Guess case" under the tracklist,
   // the release title's Aa) give the same guess as Apollo's, with Apollo's options. Knockout reads $root's
@@ -4076,15 +4097,85 @@ Click: open the label`;
   }
   // MusicBrainz's guess-case options (the dialog by the release title, the box under the tracklist) become
   // Apollo's: its mode list is swapped for Apollo's, and its two checkboxes are kept in step with Apollo's
+  // #803: the mode list is Apollo's own, in two columns (Guess and Casing | Languages), so a guess mode
+  // can carry the default's ○/◉. A hidden <select> holds the value, as the native one did.
+  const gcAutoMode = () => { let lang = null; try { lang = u(release().languageID); } catch (e) { /* no release yet */ } return mbuGuessCase.modeFor(lang); };
+  const gcLabel = m => (m === 'auto' ? 'Auto (' + gcAutoMode() + ')' : m);
+  const gcDefault = () => (SETTINGS.gcDefault && !gcIsCasing(SETTINGS.gcDefault) ? gcModeOf(SETTINGS.gcDefault) : '');
   function gcModeSelect() {
-    const sel = document.createElement('select'); sel.className = 'tc-gc-lang';
-    const autoMode = () => { let lang = null; try { lang = u(release().languageID); } catch (e) { /* no release yet */ } return mbuGuessCase.modeFor(lang); };
-    sel.append(new Option('Auto (' + autoMode() + ')', 'auto'), ...mbuGuessCase.modes.map(m => new Option(m, m)));
-    sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
-    sel.dataset.tip = "Guess case mode\nAuto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence, whatever the language.";
-    sel.onfocus = () => { sel.options[0].text = 'Auto (' + autoMode() + ')'; sel.value = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto'; };
-    sel.onchange = () => { SETTINGS.gcMode = sel.value; saveSettings(); Log.cat('Tool').info('guess case mode', sel.value); gcOptionsChanged(); };
-    return sel;
+    const wrap = document.createElement('span'); wrap.className = 'tc-gc-combo';
+    const sel = document.createElement('select'); sel.className = 'tc-gc-lang'; sel.hidden = true; sel.tabIndex = -1;
+    sel.append(new Option('Auto', 'auto'), ...mbuGuessCase.modes.map(m => new Option(m, m)), ...GC_CASINGS.map(m => new Option(m, m)));
+    sel.value = gcModeOf(SETTINGS.gcMode);
+    sel.onchange = () => { SETTINGS.gcMode = gcModeOf(sel.value); saveSettings(); Log.cat('Tool').info('guess case mode', SETTINGS.gcMode); gcOptionsChanged(); };
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tc-gc-cb'; btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
+    btn.dataset.tip = "Guess case mode\nAuto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence, whatever the language.\nCasing: Title Case, lowercase or UPPERCASE, with no guessing\n○ in the list: make a mode the default, which runs on every track when the Tracklist opens";
+    btn.onclick = () => gcListToggle(wrap);
+    wrap.append(sel, btn);
+    gcComboShow(wrap);
+    return wrap;
+  }
+  function gcComboShow(wrap) {
+    const sel = wrap.querySelector('select.tc-gc-lang'), btn = wrap.querySelector('.tc-gc-cb'), m = gcModeOf(SETTINGS.gcMode);
+    if (sel.value !== m) sel.value = m;
+    btn.textContent = gcLabel(m);
+    if (m === gcDefault()) { const d = document.createElement('span'); d.className = 'tc-gc-cbdef'; d.textContent = '◉'; btn.appendChild(d); }
+  }
+  let _gcList = null;
+  function gcListToggle(wrap) {
+    const was = _gcList && _gcList.wrap; if (_gcList) _gcList.close(); if (was === wrap) return;
+    const btn = wrap.querySelector('.tc-gc-cb'), cur = gcModeOf(SETTINGS.gcMode);
+    const list = document.createElement('div'); list.className = 'tc-gc-list'; list.setAttribute('role', 'listbox');
+    const col = title => { const c = document.createElement('div'); c.className = 'tc-gc-col'; list.appendChild(c); if (title) c.appendChild(head(title)); return c; };
+    const head = title => { const h = document.createElement('div'); h.className = 'tc-gc-gh'; h.textContent = title; return h; };
+    const row = (host, m) => {
+      const r = document.createElement('div'); r.className = 'tc-gc-row' + (m === cur ? ' cur' : ''); r.setAttribute('role', 'option'); r.setAttribute('aria-selected', String(m === cur));
+      const p = document.createElement('button'); p.type = 'button'; p.className = 'tc-gc-pick'; p.textContent = gcLabel(m); p.dataset.gcMode = m;
+      p.onclick = () => { close(); const sel = wrap.querySelector('select.tc-gc-lang'); sel.value = m; sel.dispatchEvent(new Event('change', { bubbles: true })); btn.focus(); };
+      r.appendChild(p);
+      if (!gcIsCasing(m)) {   // casings can't be the default
+        const on = m === gcDefault(), what = m === 'auto' ? 'guess case in Auto' : 'guess case in ' + m;
+        const d = document.createElement('button'); d.type = 'button'; d.className = 'tc-gc-def' + (on ? ' on' : ''); d.textContent = on ? '◉' : '○'; d.setAttribute('aria-pressed', String(on));
+        d.dataset.tip = on ? 'The default: ' + what + ' runs on every track when the Tracklist opens\nClick: unset' : 'Make it the default\nThen ' + what + ' runs on every track when the Tracklist opens';
+        d.setAttribute('aria-label', on ? 'Unset the default' : 'Make ' + m + ' the default');
+        d.onclick = e => { e.stopPropagation(); SETTINGS.gcDefault = on ? '' : m; saveSettings(); Log.cat('Tool').info('guess case default', SETTINGS.gcDefault || '(none)'); close(); gcOptionsChanged(); gcListToggle(wrap); };
+        r.appendChild(d);
+      }
+      host.appendChild(r);
+    };
+    const left = col('Guess'); ['auto', 'Sentence'].forEach(m => row(left, m));
+    left.appendChild(head('Casing')); GC_CASINGS.forEach(m => row(left, m));
+    const right = col('Languages'); mbuGuessCase.modes.filter(m => m !== 'Sentence').forEach(m => row(right, m));
+    const hint = document.createElement('div'); hint.className = 'tc-gc-hint'; hint.textContent = '○ default: runs when the Tracklist opens'; list.appendChild(hint);
+    wrap.appendChild(list);   // inside the combo, so a popup holding it (the title's options) counts a click in it as its own
+    const r = btn.getBoundingClientRect(), h = list.offsetHeight, w = list.offsetWidth;
+    list.style.left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8)) + 'px';
+    list.style.top = (r.bottom + 4 + h > window.innerHeight - 8 && r.top - 4 - h > 8 ? r.top - 4 - h : r.bottom + 4) + 'px';
+    btn.setAttribute('aria-expanded', 'true');
+    // an outside mousedown closes it and eats the click that follows, so it doesn't land on what was under the list
+    const eat = e => { e.preventDefault(); e.stopPropagation(); };
+    const off = e => { if (wrap.contains(e.target)) return; close(); window.addEventListener('click', eat, true); setTimeout(() => window.removeEventListener('click', eat, true), 400); };
+    const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); btn.focus(); } };
+    const scroll = e => { if (!list.contains(e.target)) close(); };
+    const close = () => { list.remove(); btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('mousedown', off, true); document.removeEventListener('keydown', esc, true); window.removeEventListener('scroll', scroll, true); if (_gcList && _gcList.wrap === wrap) _gcList = null; };
+    setTimeout(() => { document.addEventListener('mousedown', off, true); document.addEventListener('keydown', esc, true); window.addEventListener('scroll', scroll, true); }, 0);
+    _gcList = { wrap, close };
+    const first = list.querySelector('.tc-gc-row.cur .tc-gc-pick'); if (first) first.focus({ preventScroll: true });
+  }
+  // #803: the default guess mode runs once per page, on every track, when the Tracklist first has tracks
+  // (before the default S&R, so a pattern can still fix what the guess gets wrong)
+  let _gcDefaultAppliedOnce = false;
+  function gcApplyDefaultOnStart() {
+    if (_gcDefaultAppliedOnce) return;
+    const m = gcDefault(); if (!m) { _gcDefaultAppliedOnce = true; return; }
+    if (!MODEL || !MODEL.tracks || !MODEL.tracks.length) return;   // not loaded yet: try on the next pass
+    _gcDefaultAppliedOnce = true;
+    try {
+      let n = 0;
+      MODEL.tracks.forEach(t => { const before = u(koTrack(t.mi, t.ti).name); applyGuessTitle(t, m); t.title = u(koTrack(t.mi, t.ti).name); if (t.title !== before) n++; t.guessTitle = guessTitleStr(t); });
+      rerender();
+      Log.cat('Tool').info('Applied default guess case:', m, '→', n, 'of', MODEL.tracks.length, 'titles changed');
+    } catch (e) { Log.cat('Tool').warn('default guess case failed', e.message); }
   }
   // the mode list and the two options, in the tool's row and in the release title's options
   function gcOptionsBox() {
@@ -4101,13 +4192,19 @@ Click: open the label`;
     si.dataset.tip = 'Separator\n' + sl.dataset.tip; si.setAttribute('aria-label', 'Separator');
     sl.append(si);   // no caption: the tooltip names it
     box.appendChild(sl);
+    gcSyncControls(box);
     return box;
   }
+  // the combos, toggles and separators under `root` as the settings are
+  function gcSyncControls(root) {
+    const mode = gcModeOf(SETTINGS.gcMode), casing = gcIsCasing(mode);
+    root.querySelectorAll('.tc-gc-combo').forEach(gcComboShow);
+    // a plain casing: IV and the separator don't apply, and ABC only to Title Case
+    root.querySelectorAll('input[data-gc-sep]').forEach(i => { const v = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep; if (i.value !== v && document.activeElement !== i) i.value = v; i.disabled = casing; });
+    root.querySelectorAll('button[data-gc-key]').forEach(b => { const v = b.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; b.classList.toggle('on', v); b.setAttribute('aria-pressed', String(v)); b.disabled = casing && (b.dataset.gcKey === 'gcRoman' || mode !== 'Title Case'); });
+  }
   function gcOptionsChanged() {
-    const mode = mbuGuessCase.modes.includes(SETTINGS.gcMode) ? SETTINGS.gcMode : 'auto';
-    document.querySelectorAll('select.tc-gc-lang').forEach(s => { if (s.value !== mode) s.value = mode; });
-    document.querySelectorAll('input[data-gc-sep]').forEach(i => { const v = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep; if (i.value !== v && document.activeElement !== i) i.value = v; });
-    document.querySelectorAll('button[data-gc-key]').forEach(b => { const v = b.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; b.classList.toggle('on', v); b.setAttribute('aria-pressed', String(v)); });
+    gcSyncControls(document);
     document.querySelectorAll('input[data-gc-key]').forEach(c => { const v = c.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; if (c.checked !== v) c.click(); });
     recomputeGuesses();
   }
@@ -6381,8 +6478,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-toolopts{display:flex;align-items:center;gap:6px;min-width:0}
     .tc-gco,.tc-sro,.tc-colso,.tc-medo{display:flex;align-items:center;gap:8px}
     /* #785 the guess-case mode list, themed as the external links' type combo; its options sit by it */
-    select.tc-gc-lang,.tc-opt .tc-gco select.tc-gc-lang,.tc-toolopts .tc-gco select.tc-gc-lang{-webkit-appearance:none;-moz-appearance:none;appearance:none;font:12px Arial;color:var(--mbu-accent-deep-text);background-color:var(--mbu-bg);background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:none;padding:2px 22px 2px 7px;height:auto;margin:0;cursor:pointer}
-    select.tc-gc-lang:hover,select.tc-gc-lang:focus-visible,.tc-opt .tc-gco select.tc-gc-lang:hover{border-color:var(--mbu-accent);outline:none}
+    .tc-gc-combo .tc-gc-cb,.tc-opt .tc-gco .tc-gc-combo .tc-gc-cb,.tc-toolopts .tc-gco .tc-gc-combo .tc-gc-cb{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;text-align:left;line-height:normal;min-height:0;text-transform:none;letter-spacing:normal;font:12px Arial;color:var(--mbu-accent-deep-text);background-color:var(--mbu-bg);background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='10'%20height='7'%20viewBox='0%200%2010%207'%3E%3Cpath%20d='M1%201l4%204%204-4'%20fill='none'%20stroke='%235a3e94'%20stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:none;padding:2px 22px 2px 7px;height:auto;margin:0;cursor:pointer}
+    .tc-gc-combo .tc-gc-cb:hover,.tc-gc-combo .tc-gc-cb:focus-visible,.tc-gc-combo .tc-gc-cb[aria-expanded="true"],.tc-opt .tc-gco .tc-gc-combo .tc-gc-cb:hover{border-color:var(--mbu-accent);outline:none}
+    /* #803 the mode list: Guess and Casing | Languages; a guess mode's ○ shows on hover, the default's ◉ always (as S&R's) */
+    .tc-gc-combo{position:relative;display:inline-flex}
+    .tc-gc-combo select.tc-gc-lang{display:none}
+    .tc-gc-cbdef{color:var(--mbu-warn);font-size:10px}
+    .tc-gc-list{position:fixed;z-index:calc(var(--mbu-z-pop) + 1);display:grid;grid-template-columns:auto auto;background:var(--mbu-bg);border:1px solid var(--mbu-border-strong);border-radius:var(--mbu-radius);box-shadow:var(--mbu-shadow-lg);padding:4px;font:12px Arial;color:var(--mbu-text);text-align:left}
+    .tc-gc-col{display:flex;flex-direction:column;min-width:120px}
+    .tc-gc-col+.tc-gc-col{border-left:1px solid var(--mbu-border);margin-left:4px;padding-left:4px}
+    .tc-gc-gh{font:700 10px Arial;letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-dim);padding:5px 8px 3px}
+    .tc-gc-gh:not(:first-child){margin-top:4px}
+    .tc-gc-row{display:flex;align-items:center;border-radius:4px}
+    .tc-gc-row:hover,.tc-gc-row:focus-within{background:var(--mbu-bg-hover)}
+    .tc-gc-row.cur{background:var(--mbu-accent-soft)}
+    .tc-gc-list button.tc-gc-pick{flex:1;border:none;background:none;color:var(--mbu-text);font:12px Arial;text-align:left;padding:4px 8px;margin:0;cursor:pointer;white-space:nowrap;min-height:0;height:auto;box-shadow:none;text-transform:none;letter-spacing:normal}
+    .tc-gc-row.cur button.tc-gc-pick{font-weight:bold;color:var(--mbu-accent-deep-text)}
+    .tc-gc-list button.tc-gc-def{visibility:hidden;border:none;background:none;color:var(--mbu-accent-text);font-size:12px;width:24px;height:22px;padding:0;margin:0;border-radius:4px;cursor:pointer;line-height:1;min-height:0;box-shadow:none}
+    .tc-gc-row:hover .tc-gc-def,.tc-gc-row:focus-within .tc-gc-def,.tc-gc-def.on{visibility:visible}
+    .tc-gc-def:hover{color:var(--mbu-warn);background:var(--mbu-bg-raised)}
+    .tc-gc-def.on{color:var(--mbu-warn)}
+    .tc-gc-hint{grid-column:1 / -1;border-top:1px solid var(--mbu-border);margin-top:4px;padding:5px 8px 2px;font-size:11px;color:var(--mbu-text-dim)}
+    .tc-gco .tc-gc-tg:disabled,.tc-gco input.tc-gc-sep:disabled{opacity:.4;cursor:default}
     .tc-gco label{display:inline-flex;align-items:center;gap:4px;font:12px Arial;color:var(--mbu-text);white-space:nowrap;cursor:pointer}
     .tc-gco input[type=checkbox]{margin:0;accent-color:var(--mbu-accent)}
     .tc-gco input.tc-gc-sep,.tc-opt .tc-gco input.tc-gc-sep,.tc-toolopts .tc-gco input.tc-gc-sep{width:30px;box-sizing:border-box;font:bold 11px Arial;line-height:normal;text-align:center;padding:3px 0;border:1px solid var(--mbu-accent);border-radius:4px;background:var(--mbu-bg);color:var(--mbu-accent-text);margin:0;height:20px}
@@ -8079,6 +8196,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     await matchReleaseInfo();
     if (SETTINGS.autoMatch !== false) { await matchModel(onProgress); restore(true); riRematchWithTracks(); } else { tagDiscogsForAll(); tagPlatformForAll(); refreshStatus(); }   // #227: tag 'set' artists even when not matching
     enrichResolvedAliasesSoon();   // batch-fetch aliases for resolved artists (existing releases too) — coalesced, see #575
+    gcApplyDefaultOnStart();   // #803: the default guess case first, so the default S&R can fix what it gets wrong
     srApplyDefaultOnStart();   // #410: run the marked default S&R once, now the tracklist is rendered
   }
   /* #685: a rebuild removes and re-adds every row (mirror mode the whole section),
