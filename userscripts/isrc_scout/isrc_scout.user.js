@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.160000
+// @version      2026.10.22.105926
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -8960,6 +8960,13 @@
       const map = {}, used = {};
       const keys = d.keys || [];
       const dups = RELEASE ? mcDups() : new Map();   // never submit an ISRC that's on >1 recording, as Submit
+      // what is on the recordings already (an earlier apply that Mission Control stopped waiting for) is done:
+      // said in doneKeys, so Mission Control counts it as applied instead of offering it again
+      const already = keys.filter(k => {
+        if (k.startsWith('link:')) { const l = mcLinks[k], t = l && RELEASE && RELEASE.tracks.find(x => x.recId === l.rec); return !!(t && (t.recUrls || []).includes(l.url)); }
+        const t = RELEASE && RELEASE.tracks.find(x => x.recId === k), f = mcFound[k];
+        return !!(t && f && t.existing.includes(f.isrc));
+      });
       keys.filter(k => !k.startsWith('link:')).forEach(rid => {
         const t = RELEASE && RELEASE.tracks.find(x => x.recId === rid), f = mcFound[rid];
         if (!t || !f || t.existing.includes(f.isrc)) return;
@@ -8974,7 +8981,7 @@
       });
       const n = Object.keys(map).length, nl = links.length;
       const plural = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
-      if (!n && !nl) { reply({ ok: true, sent: 0, note: 'nothing left to add' }); return; }
+      if (!n && !nl) { reply({ ok: true, sent: 0, doneKeys: already, note: 'nothing left to add' + (already.length ? ': ' + already.length + ' already on MusicBrainz' : '') }); return; }
       const note = [noteHeader(), '', 'Release: ' + MB_ROOT + '/release/' + mbid,
         'Added ' + n + ' ISRC' + (n === 1 ? '' : 's') + ': ' + Object.keys(used).sort().map(s => s + ' (' + used[s] + ')').join(', '), via].join('\n');
       if (d.dry) {
@@ -8982,27 +8989,32 @@
         reply({ ok: true, sent: 0, note: 'dry run: ' + [n && plural(n, 'ISRC'), nl && plural(nl, 'link')].filter(Boolean).join(' and ') + ' would be submitted' });
         return;
       }
-      const done = [], errs = [], doneKeys = [];
-      let sentN = 0, again = false;
+      const done = [], errs = [], doneKeys = already.slice();
+      let sentN = 0, again = false, stage = '';
       repeatWatch = note => mcSend('mc:progress', { id: 'is', run: d.run, state: 'busy', note });   // #748
-      if (n) {
-        try {
-          await submitIsrcs(map, note);
-          Object.entries(map).forEach(([rid, isrcs]) => { const t = RELEASE.tracks.find(x => x.recId === rid); if (t) t.existing.push(...isrcs); });
-          try { updateBtnStatus(); } catch (x) { /* the page button only */ }
-          Log.info('Mission Control apply: submitted ' + n + ' ISRC(s) ' + JSON.stringify(map));
-          done.push(plural(n, 'ISRC')); sentN += n; doneKeys.push(...Object.keys(map));
-        } catch (x) { Log.err('Mission Control apply (ISRCs) failed: ' + errText(x)); errs.push('ISRCs: ' + errText(x) + (x.repeated ? ' (repeated ' + x.repeated + ' times)' : '')); if (x.transient) again = true; }
-      }
-      if (nl) {
-        try {
-          await TrackLinks.submitRels(links.map(l => ({ recGid: l.rec, url: l.url, linkTypeID: l.linkTypeID })), TrackLinks.noteFor(links.map(l => ({ name: l.name })), links.map(l => l.url)) + '\n' + via);
-          links.forEach(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); if (t) (t.recUrls = t.recUrls || []).push(l.url); });
-          Log.info('Mission Control apply: linked ' + nl + ' recording link(s) ' + JSON.stringify(links.map(l => l.url)));
-          done.push(plural(nl, 'link')); sentN += nl; doneKeys.push(...keys.filter(k => k.startsWith('link:') && links.includes(mcLinks[k])));
-        } catch (x) { Log.err('Mission Control apply (links) failed: ' + errText(x)); errs.push('links: ' + errText(x) + (x.repeated ? ' (repeated ' + x.repeated + ' times)' : '')); if (x.transient) again = true; }
-      }
-      repeatWatch = null;
+      // a submit of many links takes longer than Mission Control waits for a silent provider: say every 5 s it is still going
+      const beat = setInterval(() => mcSend('mc:progress', { id: 'is', run: d.run, state: 'busy', note: stage }), 5000);
+      try {
+        if (n) {
+          stage = 'submitting ' + plural(n, 'ISRC');
+          try {
+            await submitIsrcs(map, note);
+            Object.entries(map).forEach(([rid, isrcs]) => { const t = RELEASE.tracks.find(x => x.recId === rid); if (t) t.existing.push(...isrcs); });
+            try { updateBtnStatus(); } catch (x) { /* the page button only */ }
+            Log.info('Mission Control apply: submitted ' + n + ' ISRC(s) ' + JSON.stringify(map));
+            done.push(plural(n, 'ISRC')); sentN += n; doneKeys.push(...Object.keys(map));
+          } catch (x) { Log.err('Mission Control apply (ISRCs) failed: ' + errText(x)); errs.push('ISRCs: ' + errText(x) + (x.repeated ? ' (repeated ' + x.repeated + ' times)' : '')); if (x.transient) again = true; }
+        }
+        if (nl) {
+          stage = 'submitting ' + plural(nl, 'link');
+          try {
+            await TrackLinks.submitRels(links.map(l => ({ recGid: l.rec, url: l.url, linkTypeID: l.linkTypeID })), TrackLinks.noteFor(links.map(l => ({ name: l.name })), links.map(l => l.url)) + '\n' + via);
+            links.forEach(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); if (t) (t.recUrls = t.recUrls || []).push(l.url); });
+            Log.info('Mission Control apply: linked ' + nl + ' recording link(s) ' + JSON.stringify(links.map(l => l.url)));
+            done.push(plural(nl, 'link')); sentN += nl; doneKeys.push(...keys.filter(k => k.startsWith('link:') && links.includes(mcLinks[k])));
+          } catch (x) { Log.err('Mission Control apply (links) failed: ' + errText(x)); errs.push('links: ' + errText(x) + (x.repeated ? ' (repeated ' + x.repeated + ' times)' : '')); if (x.transient) again = true; }
+        }
+      } finally { clearInterval(beat); repeatWatch = null; }
       // #748: doneKeys, what went through though another part failed (MC shows it as done); retry, when what failed may
       // go through later (a busy server), for MC's Retry
       reply({ ok: !errs.length, sent: sentN, doneKeys, retry: !!errs.length && again, note: [done.length && done.join(' and ') + ' submitted', errs.join('; ')].filter(Boolean).join(' · ') });
