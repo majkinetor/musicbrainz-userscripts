@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-22 22:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-22 22:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2109,6 +2109,8 @@ For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolid
 <img src="../mission_control/screenshots/consolidate.png" />
 
 Once saved, Mission Control opens on the release and probes for what the editor can't take: the ISRCs and recording links (ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving** chooses which start taken in. With *…and Execute once the probe has finished*, Execute runs itself after a 5-second countdown on the button; a click stops it.
+
+A click on a section's heading opens or closes it; a right-click opens every section when one is closed, and closes them all otherwise.
 
 A track's versions show on the right too. **▾ → Copy as Markdown** beside **Add release** copies the comparison as tables. **✕** shows the editor under it; the corner icon brings Mission Control back.
 

@@ -212,6 +212,17 @@ test.describe('the consolidation page', () => {
       'the note names the release and asks it to compare itself; it carries no consolidation, only the After saving ticks');
     check(page.url().includes('/release/add'), 'a dry run stays on the consolidation');
     await page.evaluate(() => { const st = window.__mccTest.state(); st.inMb.releases = st.inMb.releases.filter(e => !/727$/.test(e.id)); window.__mccTest.setDry(false); sessionStorage.removeItem('mc.after'); window.__mccTest.paint(); });
+    // a section's heading opens and closes it; a right-click opens them all when one is closed, else closes them all
+    const relS = page.locator('#mcc-root .mcc-sect[data-sect="release"]'), trk = page.locator('#mcc-root .mcc-sect[data-sect="tracks"]');
+    const closed = l => l.evaluate(x => x.classList.contains('closed'));
+    await relS.locator('.mcc-sect-h b').click();
+    check(await closed(relS) && !(await page.locator('#mcc-root .mcc-fields').isVisible()) && !(await closed(trk)), 'a click on Release\'s heading closes it alone');
+    await trk.locator('.mcc-sect-h b').click({ button: 'right' });
+    check(!(await closed(relS)) && !(await closed(trk)) && await page.locator('#mcc-root .mcc-sect.closed, #mcc-root .mcc-inmb.closed').count() === 0, 'a right-click with one closed opens every section');
+    await trk.locator('.mcc-sect-h b').click({ button: 'right' });
+    check(await closed(relS) && await closed(trk), 'a right-click with all open closes every section');
+    await relS.locator('.mcc-sect-h b').click({ button: 'right' });
+    check(!(await closed(relS)) && !(await closed(trk)), 'and another opens them again');
     if (inMb && inMb.releases.length) {
       const b = page.locator('#mcc-root .mcc-inmb');
       check(await b.count() === 1 && await b.locator('a[href^="/release/"]').count() === inMb.releases.length, 'the banner links each release MusicBrainz has (' + inMb.releases.length + ')');

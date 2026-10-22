@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.22.224440
+// @version      2026.10.22.224929
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -3500,6 +3500,7 @@ const CC = {
     pick: {},             // field → the value taken by hand
     rowPick: {},          // row id → the platform whose version is taken by hand
     extraTake: {},        // extra row id → taken in
+    closed: new Set(['others']),   // the sections closed: same, others, release, tracks (other editions start closed)
     open: new Set(),      // rows opened into their versions
     seen: new Set(),      // rows that differ already shown once: the ccDiffOpen setting opens each only then
     sel: null,            // the row in the inspector
@@ -3536,7 +3537,7 @@ function ccStyle() {
         + '.mcc-src.source{cursor:default}'
         + '.mcc-icos{display:inline-flex;gap:2px;align-items:center;vertical-align:middle}.mcc-icos svg{display:block}.mcc-abbr{font-size:9px;font-weight:700;border:1px solid var(--mbu-border);border-radius:3px;padding:0 2px;line-height:12px}'
         + '.mcc-sect{background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius-lg);margin:0 0 14px;overflow:hidden}'
-        + '.mcc-sect-h{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--mbu-accent-soft);border-bottom:1px solid var(--mbu-border)}.mcc-sect-h b{font-size:14px}.mcc-sect-h .hint{flex:1;font-size:12px;color:var(--mbu-text-dim)}'
+        + '.mcc-sect-h{cursor:pointer;user-select:none;display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--mbu-accent-soft);border-bottom:1px solid var(--mbu-border)}.mcc-sect-h b{font-size:14px}.mcc-sect.closed>:not(.mcc-sect-h){display:none}.mcc-sect.closed .mcc-sect-h{border-bottom:0}.mcc-center svg.chev{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-center [data-cc="sect"][aria-expanded="true"] svg.chev{transform:rotate(90deg)}.mcc-sect-h .hint{flex:1;font-size:12px;color:var(--mbu-text-dim)}'
         + '.mcc-chip{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--mbu-border);white-space:nowrap}.mcc-chip.ok{background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border);color:var(--mbu-ok)}'
         + '.mcc-chip-btn{font:inherit;font-size:11px;cursor:pointer}.mcc-chip-btn:hover{filter:brightness(1.15)}.mcc-chip-btn .mcc-caret{display:inline-block;min-width:10px;text-align:center}'
         + '.mcc-chip.warn{background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border);color:var(--mbu-warn)}'
@@ -3559,8 +3560,8 @@ function ccStyle() {
         + '.mcc-tbl .hl{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}.mcc-tbl tr.extra td.ttl{text-decoration:line-through;color:var(--mbu-text-weak)}.mcc-tbl tr.extra.on td.ttl{text-decoration:none;color:var(--mbu-text)}'
         + '.mcc-tbl .why{color:var(--mbu-text-weak)}.mcc-tbl td.car{width:20px;color:var(--mbu-text-weak);text-align:right}'
         + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-bg);border-radius:var(--mbu-radius-lg);margin:0 0 14px;overflow:hidden;container-type:inline-size}.mcc-inmb.other{border-color:var(--mbu-border)}'
-        + '.mcc-inmb-tog.same{background:var(--mbu-warn-bg)}.mcc-inmb-tog.same:hover{background:var(--mbu-warn-bg);filter:brightness(.97)}.mcc-inmb-tog.same.open{border-bottom-color:var(--mbu-warn-border)}.mcc-inmb-tog.same>svg:not(.chev){color:var(--mbu-warn)}'
-        + '.mcc-inmb-tog{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px}.mcc-inmb-tog:hover{background:var(--mbu-bg-hover)}.mcc-inmb-tog .s{font-size:12px;color:var(--mbu-text-dim)}.mcc-inmb-tog svg{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-inmb-tog.open svg.chev{transform:rotate(90deg)}.mcc-inmb-tog.open{border-bottom:1px solid var(--mbu-divider)}'
+        + '.mcc-inmb-tog.same{background:var(--mbu-warn-bg)}.mcc-inmb-tog.same:hover{background:var(--mbu-warn-bg);filter:brightness(.97)}.mcc-inmb:not(.closed) .mcc-inmb-tog.same{border-bottom-color:var(--mbu-warn-border)}.mcc-inmb-tog.same>svg:not(.chev){color:var(--mbu-warn)}'
+        + '.mcc-inmb-tog{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px}.mcc-inmb-tog:hover{background:var(--mbu-bg-hover)}.mcc-inmb-tog .s{font-size:12px;color:var(--mbu-text-dim)}.mcc-inmb-tog svg{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-inmb:not(.closed) .mcc-inmb-tog{border-bottom:1px solid var(--mbu-divider)}.mcc-inmb.closed>:not(.mcc-inmb-tog){display:none}'
         + '.mcc-inmb .mcc-n{border-color:var(--mbu-border);color:var(--mbu-text-dim)}'
         + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 84px 100px 24px 120px 88px;column-gap:10px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
         + '.mcc-ing.ch{font-size:11px;color:var(--mbu-text-dim);padding-block:5px;border-bottom:1px solid var(--mbu-divider)}.mcc-ing.ch>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.mcc-ing.ch svg{color:var(--mbu-text-weak)}'
@@ -4139,7 +4140,7 @@ function ccPaintSide() { const s = CC.ui && CC.ui.querySelector('.mcc-side'); if
 function ccFieldsHtml(m) {
     const f = m.fields;
     const differ = CC_FIELDS.filter(([k]) => f[k].groups.length > 1).length;
-    let h = '<section class="mcc-sect" data-sect="release"><div class="mcc-sect-h"><b>Release</b><span class="hint">the value most platforms give is taken; click another to take it instead</span>'
+    let h = '<section class="mcc-sect' + (CC.closed.has('release') ? ' closed' : '') + '" data-sect="release"><div class="mcc-sect-h"' + ccSectHead('release') + '>' + ccInSvg('chev', 14, 'chev') + '<b>Release</b><span class="hint">the value most platforms give is taken; click another to take it instead</span>'
         + (differ ? '<span class="mcc-chip warn">' + differ + ' differ</span>' : '<span class="mcc-chip ok">all agree</span>') + '</div><div class="mcc-fields">';
     CC_FIELDS.forEach(([k, label]) => {
         const v = f[k], n = v.groups.length;
@@ -4180,7 +4181,7 @@ function ccTracksHtml(m) {
     // a row that differs, the first time it shows, opens into its versions when the setting says so; closed by hand, it stays closed
     t.rows.forEach(r => { if (r.versions.length > 1 && !CC.seen.has(r.id)) { CC.seen.add(r.id); if (S.ccDiffOpen) CC.open.add(r.id); } });
     const agree = t.rows.filter(r => r.versions.length === 1).length, differ = t.rows.length - agree;
-    let h = '<section class="mcc-sect" data-sect="tracks"><div class="mcc-sect-h"><b>Tracks</b><span class="hint">one row per track, the version most platforms have · a row that differs opens into its versions</span>'
+    let h = '<section class="mcc-sect' + (CC.closed.has('tracks') ? ' closed' : '') + '" data-sect="tracks"><div class="mcc-sect-h"' + ccSectHead('tracks') + '>' + ccInSvg('chev', 14, 'chev') + '<b>Tracks</b><span class="hint">one row per track, the version most platforms have · a row that differs opens into its versions</span>'
         + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" data-tip="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
         + '<table class="mcc-tbl"><thead><tr><th>#</th><th>Title</th><th>Len</th><th>ISRC</th><th>Agree</th><th></th></tr></thead><tbody>';
     const nM = new Set(t.rows.map(r => r.mi)).size;
@@ -4266,6 +4267,14 @@ function ccMenuOutside(e) {
     setTimeout(() => document.removeEventListener('click', swallow, true), 400);
 }
 function ccMenuKey(e) { if (e.key === 'Escape') { e.stopPropagation(); ccMenu(false); } }
+// a section's heading opens and closes it; a right-click opens or closes them all (all open when one is closed)
+function ccToggleSect(id, all) {
+    const ids = [...CC.ui.querySelectorAll('[data-cc="sect"]')].map(x => x.dataset.s);
+    if (all) { const open = ids.some(x => CC.closed.has(x)); ids.forEach(x => open ? CC.closed.delete(x) : CC.closed.add(x)); Log.cat('Consolidation').info('every section ' + (open ? 'opened' : 'closed')); }
+    else { CC.closed.has(id) ? CC.closed.delete(id) : CC.closed.add(id); Log.cat('Consolidation').info('section ' + id + ' ' + (CC.closed.has(id) ? 'closed' : 'opened')); }
+    ccPaintCenter();
+}
+const ccSectHead = id => ' data-cc="sect" data-s="' + id + '" aria-expanded="' + !CC.closed.has(id) + '" data-tip="Open or close this section\nRight-click: open or close every section"';
 function ccOnClick(e) {
     const t = e.target;
     const a = t.closest('[data-cc]');
@@ -4300,8 +4309,7 @@ function ccOnClick(e) {
         case 'tick': CC.ticks[a.dataset.t] = a.checked; Log.cat('Consolidation').info('after saving: ' + a.dataset.t + ' ' + (a.checked ? 'on' : 'off')); ccPaintInspector(); return;
         case 'open': ccOpenEditor(); return;
         case 'update': ccUpdateRelease(a.dataset.id); return;
-        case 'same': CC.sameClosed = !CC.sameClosed; Log.cat('Consolidation').info('this album in MusicBrainz ' + (CC.sameClosed ? 'hidden' : 'shown')); ccPaintCenter(); return;
-        case 'others': CC.othersOpen = !CC.othersOpen; Log.cat('Consolidation').info('other editions ' + (CC.othersOpen ? 'shown' : 'hidden')); ccPaintCenter(); return;
+        case 'sect': ccToggleSect(a.dataset.s); return;
         case 'more': ccMenu(); return;
         case 'md': {
             ccMenu(false);
@@ -4377,6 +4385,7 @@ function ccOpen() {
     CC.ui = ui;
     document.documentElement.style.overflow = 'hidden';
     ui.addEventListener('click', ccOnClick);
+    ui.addEventListener('contextmenu', e => { const a = e.target.closest('[data-cc="sect"]'); if (!a) return; e.preventDefault(); ccToggleSect(a.dataset.s, true); });
     clearInterval(ccClock);
     ccClock = setInterval(() => {
         if (!CC.ui) return;
@@ -4540,14 +4549,12 @@ function ccInMbHtml() {
     const album = '<div class="mcc-ing alb" data-tip="What the platforms give for this album: each release is compared with it"><div class="t"><span>This album</span>' + plat(took) + '</div><span></span>'
         + cell(fIco(fmt), fmt) + cell(ccInSvg('tracks'), src.tracks ? String(src.tracks) : '', { cls: 'num mono' }) + cell(ccInSvg('barcode'), src.barcode, { cls: 'mono' }) + '<span></span></div>';
     let h = '';
-    // this album starts open; a click on the heading closes it, as Other editions
-    if (same.length) h += '<div class="mcc-inmb"><button type="button" class="mcc-inmb-tog same' + (CC.sameClosed ? '' : ' open') + '" data-cc="same" aria-expanded="' + !CC.sameClosed + '">' + ccInSvg('chev', 14, 'chev') + ccInSvg('dup')
+    if (same.length) h += '<div class="mcc-inmb' + (CC.closed.has('same') ? ' closed' : '') + '"><button type="button" class="mcc-inmb-tog same"' + ccSectHead('same') + '>' + ccInSvg('chev', 14, 'chev') + ccInSvg('dup')
         + '<b>MusicBrainz already has this album</b><span class="mcc-n">' + same.length + '</span><span class="s">update it with what it lacks instead of adding it again</span></button>'
-        + '<div class="mcc-inmb-rows"' + (CC.sameClosed ? ' hidden' : '') + '>' + heads + album + same.map(row).join('') + '</div></div>';
-    // other editions start closed: a click on the heading shows them
-    if (other.length) h += '<div class="mcc-inmb other"><button type="button" class="mcc-inmb-tog' + (CC.othersOpen ? ' open' : '') + '" data-cc="others" aria-expanded="' + !!CC.othersOpen + '">' + ccInSvg('chev', 14, 'chev') + ccInSvg('stack')
+        + '<div class="mcc-inmb-rows">' + heads + album + same.map(row).join('') + '</div></div>';
+    if (other.length) h += '<div class="mcc-inmb other' + (CC.closed.has('others') ? ' closed' : '') + '"><button type="button" class="mcc-inmb-tog"' + ccSectHead('others') + '>' + ccInSvg('chev', 14, 'chev') + ccInSvg('stack')
         + '<b>Other editions</b><span class="mcc-n">' + other.length + '</span><span class="s">another barcode, format or track count</span></button>'
-        + '<div class="mcc-inmb-rows"' + (CC.othersOpen ? '' : ' hidden') + '>' + (same.length ? '' : heads + album) + other.map(row).join('') + '</div></div>';
+        + '<div class="mcc-inmb-rows">' + (same.length ? '' : heads + album) + other.map(row).join('') + '</div></div>';
     return h;
 }
 function consolidateMain(token) {
