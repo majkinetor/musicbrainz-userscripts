@@ -957,7 +957,10 @@ const STATE = { recordings: new Map(), poolOrder: [], groups: [], poolFilter: ''
     // #529: per-recording release tables, expanded on demand. The Map doubles as
     // the cache — a missing key means "never asked" (renders "loading…"), null
     // means the lookup failed, so a failed fetch doesn't retry on every render.
-    expandedReleases: new Set(), releaseDetails: new Map(), collapsedGroups: new Set() };
+    expandedReleases: new Set(), releaseDetails: new Map(), collapsedGroups: new Set(),
+    expandedIds: new Set() };   // "<gid>:isrc" / "<gid>:acoustid" whose long id list is unfolded
+// A row shows this many identifiers of a kind before folding the unshared rest.
+const ID_FOLD = 3;
 
 function addToPool(rec) {
     if (STATE.recordings.has(rec.gid)) return false;
@@ -1176,6 +1179,7 @@ function clearBoard() {
     // behind makes a re-grouped recording come back mysteriously pre-expanded.
     // releaseDetails is a CACHE keyed by gid, so that one deliberately survives.
     STATE.expandedReleases.clear();
+    STATE.expandedIds.clear();
     STATE.collapsedGroups.clear();
     Log.info('Cleared board — ' + n + ' group(s) dissolved, every member returned to the pool');
 }
@@ -3568,6 +3572,7 @@ function fsStyle() {
         + '.fs-idv{border-radius:3px;padding:1px 4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.45}'
         + 'a.fs-idv,a.fs-idtag{color:inherit;text-decoration:none}a.fs-idv:hover,a.fs-idtag:hover{text-decoration:underline}'
         + '.fs-idnone{padding:1px 0;line-height:1.45}'
+        + '.fs-idmore{padding:1px 4px;line-height:1.45;cursor:pointer;color:var(--mbu-info);font-family:system-ui,sans-serif}.fs-idmore:hover{text-decoration:underline}'
         + '.fs-idunk{color:var(--mbu-info);cursor:help;font-weight:700}'
         + '.fs-grow .fs-t,.fs-grow .fs-artistcol,.fs-grow .fs-rel,.fs-grow .fs-len,.fs-grow .fs-star,.fs-grow .fs-acts,.fs-grow .fs-exp{line-height:1.45;padding-top:1px}'
         + '.fs-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .1s}'
@@ -3933,6 +3938,11 @@ function storeReleaseDetails(gid, rows) {
     rec.allReleases = list;
     if (!rec.releases || !rec.releases.length) rec.releases = list;
 }
+function toggleIdList(gid, kind) {
+    const key = gid + ':' + kind;
+    if (!STATE.expandedIds.delete(key)) STATE.expandedIds.add(key);
+    renderGroups();
+}
 async function toggleReleaseDetails(gid) {
     resumeBackground('you expanded a recording');
     if (STATE.expandedReleases.has(gid)) { STATE.expandedReleases.delete(gid); renderGroups(); return; }
@@ -4084,8 +4094,16 @@ function groupCardHtml(group, embed) {
             const title = label + ' ' + escapeHtml(v) + (cls ? ' — shared with another recording in this group' : ' — only on this recording') + (isAcoustid ? ' · open on acoustid.org' : '');
             return isAcoustid ? '<a class="fs-idv fs-idlink ' + cls + '" href="' + acidUrl(v) + '" target="_blank" rel="noopener" data-tip="' + title + '">' + shown + '</a>'
                 : '<span class="fs-idv ' + cls + '" data-tip="' + title + '">' + shown + '</span>';
-        }).join('');
-        return '<span class="fs-isrc">' + tags + '</span>';
+        });
+        // majkinetor: a recording with dozens of AcoustIDs stretched its row to a
+        // screen of unshared ids. The shared ones (sorted first) always show; the
+        // unshared rest folds behind "+N more" past ID_FOLD lines, per row and kind.
+        const keep = Math.max(ID_FOLD, vals.filter(v => idColor.has(v)).length);
+        if (tags.length <= keep + 1) return '<span class="fs-isrc">' + tags.join('') + '</span>';
+        const key = rec.gid + ':' + kind, open = STATE.expandedIds.has(key);
+        const more = tags.length - keep;
+        const toggle = '<span class="fs-idmore" data-act="toggle-ids" data-kind="' + kind + '" data-tip="' + (open ? 'Show only the first ' + keep : 'Show ' + more + ' more ' + label + 's, none shared with this group') + '">' + (open ? 'less' : '+' + more + ' more') + '</span>';
+        return '<span class="fs-isrc">' + (open ? tags : tags.slice(0, keep)).join('') + toggle + '</span>';
     };
     const rows = ordered.map(m => {
         const rs = releasesSummary(m);
@@ -4723,6 +4741,7 @@ function wireDelegatedEvents() {
             renderGroups(); return;
         }
         if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+        if (act === 'toggle-ids' && row) { toggleIdList(row.dataset.gid, e.target.dataset.kind); return; }
         if (act === 'toggle-all-details') { toggleAllDetails(card.dataset.gid); return; }
         if (act === 'toggle-card') {
             const id = card.dataset.gid;
@@ -5207,6 +5226,7 @@ if (SCOPE.type === 'release') {
             const row = t.closest('.fs-grow');
             if (act === 'mc-open') { mcOpen(key); return; }
             if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+            if (act === 'toggle-ids' && row) { toggleIdList(row.dataset.gid, t.dataset.kind); return; }
             if (act === 'toggle-all-details') {   // the group isn't on the board (toggleAllDetails finds it there): one recording at a time
                 const all = groupAllExpanded(g);
                 g.memberGids.filter(gid => all || !STATE.expandedReleases.has(gid)).forEach(gid => toggleReleaseDetails(gid));

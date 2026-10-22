@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-22 21:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-22 19:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1315,7 +1315,7 @@ In a group:
 - the **target**, the recording that survives, is on top with a gold ★; another row's ☆ makes it the target;
 - ↩ returns a recording to the pool, ✕ drops it altogether;
 - 🗑 deletes the group and returns its members to the pool; **Clear board** does it for every group;
-- a shared ISRC or AcoustID is tinted, one colour per value;
+- a shared ISRC or AcoustID is tinted, one colour per value; past three, the unshared rest folds behind *+N more*;
 - an AcoustID opens acoustid.org, where a wrong link can be fixed; ↻ then reloads the group's AcoustIDs, keeping its members;
 - a length outside the tolerance is flagged amber, with the spread next to the title;
 - a warning next to the title says when the members can't be one recording, or may not be: *live + studio*, *N places* (recorded at different places, or at one place on different dates), or *disamb.* (their disambiguations differ);
