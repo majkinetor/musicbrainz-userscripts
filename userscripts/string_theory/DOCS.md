@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-22 16:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-22 16:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -224,7 +224,7 @@ Only in Auto:
 | Spanish, Italian, Portuguese | Sentence                                                                      |
 | Dutch                        | Sentence, *IJ* as one capital: *IJsland*                                      |
 
-Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
+In every Guess and Language mode, Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 
 A **Casing** changes the letters without guessing; IV and the separator don't apply to it, and ABC only to Title Case.
 

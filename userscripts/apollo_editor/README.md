@@ -204,7 +204,7 @@ Only in Auto:
 | Spanish, Italian, Portuguese | Sentence                                                                      |
 | Dutch                        | Sentence, *IJ* as one capital: *IJsland*                                      |
 
-Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
+In every Guess and Language mode, Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 
 A **Casing** changes the letters without guessing; IV and the separator don't apply to it, and ABC only to Title Case.
 
