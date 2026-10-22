@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.22
+// @version      2026.10.22.113305
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -3966,7 +3966,7 @@ Click: open the label`;
   // Guess case: the shared block (#785), MusicBrainz's own with more modes and our rules; the mode
   // follows the release's language (Auto) unless one is chosen
   // #803: the list also has plain casings, which Aa applies instead of a guess (they can't be the default)
-  const GC_CASINGS = ['Title Case', 'Capitalized', 'lowercase', 'UPPERCASE'];
+  const GC_CASINGS = ['Title Case', 'lowercase', 'UPPERCASE'];
   const GC_SMALL_WORDS = new Set(['a', 'an', 'the', 'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 'of', 'in', 'on', 'at', 'to', 'by', 'as', 'up', 'via', 'vs', 'from', 'with', 'into', 'onto', 'over', 'per']);
   const gcIsCasing = m => GC_CASINGS.includes(m);
   const gcModeOf = m => (mbuGuessCase.modes.includes(m) || gcIsCasing(m) ? m : 'auto');   // 'auto', a guess mode or a casing
@@ -3977,9 +3977,8 @@ Click: open the label`;
     else { o.language = null; try { o.language = u(release().languageID) || null; } catch (e) { /* no release yet */ } }   // Auto: the language, so a Cyrillic title (or part) gets Sentence whatever it is
     return o;
   }
-  // a plain casing changes every letter. Capitalized: every word starts with a capital; Title Case: the
-  // same but for the small words (of, the, …) between the first and the last. Both keep a word with a
-  // capital inside (KoRn, BEAUTY) when ABC is on.
+  // a plain casing changes every letter. Title Case: every word starts with a capital but the small words
+  // (of, the, …) between the first and the last; a word with a capital inside (KoRn, BEAUTY) stays when ABC is on.
   function gcCasing(s, m) {
     if (m === 'lowercase') return s.toLowerCase();
     if (m === 'UPPERCASE') return s.toUpperCase();
@@ -3990,7 +3989,7 @@ Click: open the label`;
       i++;
       if (keep && /\p{Lu}/u.test(w.slice(1))) return w;
       const lw = w.toLowerCase();
-      if (m === 'Title Case' && i > 0 && i < last && GC_SMALL_WORDS.has(lw)) return lw;
+      if (i > 0 && i < last && GC_SMALL_WORDS.has(lw)) return lw;
       return lw.charAt(0).toUpperCase() + lw.slice(1);
     });
   }
@@ -4110,7 +4109,7 @@ Click: open the label`;
     sel.value = gcModeOf(SETTINGS.gcMode);
     sel.onchange = () => { SETTINGS.gcMode = gcModeOf(sel.value); saveSettings(); Log.cat('Tool').info('guess case mode', SETTINGS.gcMode); gcOptionsChanged(); };
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tc-gc-cb'; btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
-    btn.dataset.tip = "Guess case mode\nAuto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence, whatever the language.\nCasing: Title Case, Capitalized, lowercase or UPPERCASE, with no guessing\n○ in the list: make a mode the default, which runs on every track when the Tracklist opens";
+    btn.dataset.tip = "Guess case mode\nAuto follows the release's language: English, French, Turkish, Spanish, Italian, Portuguese and Dutch have their own, any other is Sentence. A title in Cyrillic gets Sentence, whatever the language.\nCasing: Title Case, lowercase or UPPERCASE, with no guessing\n○ in the list: make a mode the default, which runs on every track when the Tracklist opens";
     btn.onclick = () => gcListToggle(wrap);
     wrap.append(sel, btn);
     gcComboShow(wrap);
@@ -4200,9 +4199,9 @@ Click: open the label`;
   function gcSyncControls(root) {
     const mode = gcModeOf(SETTINGS.gcMode), casing = gcIsCasing(mode);
     root.querySelectorAll('.tc-gc-combo').forEach(gcComboShow);
-    // a plain casing: IV and the separator don't apply, and ABC only to Title Case and Capitalized
+    // a plain casing: IV and the separator don't apply, and ABC only to Title Case
     root.querySelectorAll('input[data-gc-sep]').forEach(i => { const v = SETTINGS.gcSep == null ? '/' : SETTINGS.gcSep; if (i.value !== v && document.activeElement !== i) i.value = v; i.disabled = casing; });
-    root.querySelectorAll('button[data-gc-key]').forEach(b => { const v = b.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; b.classList.toggle('on', v); b.setAttribute('aria-pressed', String(v)); b.disabled = casing && (b.dataset.gcKey === 'gcRoman' || !/^(Title Case|Capitalized)$/.test(mode)); });
+    root.querySelectorAll('button[data-gc-key]').forEach(b => { const v = b.dataset.gcKey === 'gcKeepUC' ? SETTINGS.gcKeepUC !== false : !!SETTINGS.gcRoman; b.classList.toggle('on', v); b.setAttribute('aria-pressed', String(v)); b.disabled = casing && (b.dataset.gcKey === 'gcRoman' || mode !== 'Title Case'); });
   }
   function gcOptionsChanged() {
     gcSyncControls(document);

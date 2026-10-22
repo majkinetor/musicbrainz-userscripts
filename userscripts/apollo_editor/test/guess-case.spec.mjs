@@ -131,12 +131,10 @@ test('#803: casings, and the list in two columns with the default on guess modes
 
   await abc(true); await pick('Title Case');
   check(await until(guess, g => g === 'The QUICK Brown Fox of KoRn') === 'The QUICK Brown Fox of KoRn', 'Title Case: small words lowercase, capitals kept with ABC');
-  await pick('Capitalized');
-  check(await until(guess, g => g === 'The QUICK Brown Fox Of KoRn') === 'The QUICK Brown Fox Of KoRn', 'Capitalized: every word');
   const dis = await page.evaluate(() => [...document.querySelectorAll('.tc-gco button.tc-gc-tg')].map(b => b.disabled).concat(document.querySelector('.tc-gco input.tc-gc-sep').disabled));
-  check(JSON.stringify(dis) === '[false,true,true]', `Capitalized: ABC stays, IV and the separator grey out (${dis})`);
+  check(JSON.stringify(dis) === '[false,true,true]', `Title Case: ABC stays, IV and the separator grey out (${dis})`);
   await abc(false);
-  check(await until(guess, g => g === 'The Quick Brown Fox Of Korn') === 'The Quick Brown Fox Of Korn', 'ABC off: capitals not kept');
+  check(await until(guess, g => g === 'The Quick Brown Fox of Korn') === 'The Quick Brown Fox of Korn', 'ABC off: capitals not kept');
   await pick('lowercase');
   check(await until(guess, g => g === 'the quick brown fox of korn') === 'the quick brown fox of korn', 'lowercase');
   await pick('UPPERCASE');
@@ -153,7 +151,7 @@ test('#803: casings, and the list in two columns with the default on guess modes
   }), v => !!v);
   check(await page.evaluate(() => [...document.querySelectorAll('.tc-gcpop .tc-gc-tg')].every(b => b.disabled)), 'a box opened under UPPERCASE shows ABC and IV greyed out');
   check(list && list.cols === 2 && list.heads.join() === 'Guess,Casing,Languages', `two columns: Guess and Casing, Languages (${JSON.stringify(list && list.heads)})`);
-  check(list && list.rows.filter(r => /Case|Capitalized|lowercase|UPPERCASE/.test(r.m)).every(r => !r.def) && list.rows.filter(r => /^(auto|Sentence|Dutch)$/.test(r.m)).every(r => r.def), 'casings have no ○, guess modes have one');
+  check(list && list.rows.filter(r => /Title Case|lowercase|UPPERCASE/.test(r.m)).every(r => !r.def) && list.rows.filter(r => /^(auto|Sentence|Dutch)$/.test(r.m)).every(r => r.def), 'casings have no ○, guess modes have one');
   await page.evaluate(() => { const r = [...document.querySelectorAll('.tc-gc-list .tc-gc-row')].find(x => x.querySelector('.tc-gc-pick').dataset.gcMode === 'Dutch'); r.querySelector('.tc-gc-def').click(); });
   check(await until(() => page.evaluate(() => window.__apolloEditor.settings.gcDefault), v => v === 'Dutch') === 'Dutch', 'a ○ makes the mode the default');
   await page.evaluate(() => { const r = [...document.querySelectorAll('.tc-gc-list .tc-gc-row')].find(x => x.querySelector('.tc-gc-pick').dataset.gcMode === 'Dutch'); r.querySelector('.tc-gc-pick').click(); });
