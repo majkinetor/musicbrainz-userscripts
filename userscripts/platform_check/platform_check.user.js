@@ -5488,7 +5488,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         // match, preferred over the text search (which can pick a different pressing of
         // the same title). Falls through to the text search when there's no UPC hit.
         if (barcode) {
-            const bu = `https://api.discogs.com/database/search?barcode=${encodeURIComponent(barcode)}&type=release&per_page=25`;
+            const bu = `https://api.discogs.com/database/search?barcode=${encodeURIComponent(barcode)}&type=release&per_page=5`;
             appendLog(label, `Barcode ${barcode}: ${bu}`);
             const br = await gmGet(bu);
             if (br.ok) {
