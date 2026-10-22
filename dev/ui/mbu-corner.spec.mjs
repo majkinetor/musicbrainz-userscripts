@@ -9,7 +9,7 @@ test.use({ profile: 'fresh', gm: false });
 test('launchers in one corner stack by order, and a hidden one leaves no gap', { tag: ['@cosmetic', '@unit'] }, async ({ page }) => {
   await page.setContent('<!doctype html><html><head></head><body></body></html>');
   await page.addScriptTag({ content: UI_JS });
-  const at = () => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-mb-corner]')].map(el => [el.id, el.style.display === 'none' ? null : { bottom: el.style.bottom, right: el.style.right }])));
+  const at = () => page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-mb-corner]')].map(el => [el.id, el.style.display === 'none' ? null : { bottom: el.style.bottom, right: el.style.right, left: el.style.left }])));
   await page.evaluate(() => {
     const add = (id, order, h) => {
       const el = document.createElement('div'); el.id = id;
@@ -33,4 +33,12 @@ test('launchers in one corner stack by order, and a hidden one leaves no gap', {
   const c = await at();
   check(c.apollo.right === '14px' && c.falcon.right === '62px' && c.fusion.right === '110px', `a row by order from the corner (${JSON.stringify(c)})`);
   check(c.apollo.bottom === '14px' && c.fusion.bottom === '14px', 'all on the bottom edge');
+  // the left side (#802): the same corner mirrored, the lowest order still nearest it
+  await page.evaluate(() => { window.mbuShared = k => (k === 'cornerFlow' ? 'row' : k === 'cornerSide' ? 'left' : undefined); mbRestackCorner('br'); });
+  const d = await at();
+  check(d.apollo.left === '14px' && d.falcon.left === '62px' && d.fusion.left === '110px', `a row from the bottom-left corner (${JSON.stringify(d)})`);
+  check(d.apollo.right === 'auto' && d.fusion.right === 'auto', 'the right side let go');
+  await page.evaluate(() => { window.mbuShared = k => (k === 'cornerSide' ? 'left' : undefined); mbRestackCorner('br'); });
+  const e = await at();
+  check(e.apollo.left === '14px' && e.fusion.left === '14px' && e.apollo.bottom === '14px' && e.fusion.bottom === '120px', `a column on the left edge (${JSON.stringify(e)})`);
 });

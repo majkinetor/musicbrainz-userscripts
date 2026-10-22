@@ -148,10 +148,10 @@ const startupLog = `try {\n  console.log('%c String Theory %c v${version} ', 'ba
 // once here; an off member's body doesn't run, so its standalone copy (if installed) can claim the page.
 // The menu goes only in the top frame, or a manager lists it again for every iframe.
 const OFF_KEY = 'string_theory.off';
-// The corner launchers' layout: a column (the default) or a row along the page's edge. It's a shared
-// setting (mbuShared 'cornerFlow': the page's localStorage, which every script's mbRestackCorner reads,
-// standalone copies too); the menu entry flips it and restacks the corners at once, with the same
-// mbRestackCorner and mbuShared the members carry.
+// The corner launchers' layout: a column (the default) or a row along the page's edge, on the right
+// (the default) or the left. They're shared settings (mbuShared 'cornerFlow' and 'cornerSide': the page's
+// localStorage, which every script's mbRestackCorner reads, standalone copies too); each menu entry flips
+// one and restacks the corners at once, with the same mbRestackCorner and mbuShared the members carry.
 const SHARED = (UI_JS.match(/function mbuShared\(key, value\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!SHARED) throw new Error('mbuShared not found in dev/ui/ui-components.mjs');
 const RESTACK = (UI_JS.match(/function mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
@@ -182,11 +182,19 @@ var __stOff = __stReadOff();
     var row = mbuShared('cornerFlow') === 'row';
     put('st-flow', row ? '↔ Launchers in a row' : '↕ Launchers in a column', flipFlow,
       'The round launchers in the page corner — click to put them in a ' + (row ? 'column' : 'row'));
+    var left = mbuShared('cornerSide') === 'left';
+    put('st-side', left ? '← Launchers on the left' : '→ Launchers on the right', flipSide,
+      'The round launchers in the page corner — click to move them to the ' + (left ? 'right' : 'left'));
   }
   ${SHARED.replace(/\n/g, '\n  ').trimEnd()}
   ${RESTACK.replace(/\n/g, '\n  ').trimEnd()}
   function flipFlow() {
     mbuShared('cornerFlow', mbuShared('cornerFlow') === 'row' ? null : 'row');
+    ['br', 'bl', 'tr', 'tl'].forEach(mbRestackCorner);
+    draw();
+  }
+  function flipSide() {
+    mbuShared('cornerSide', mbuShared('cornerSide') === 'left' ? null : 'left');
     ['br', 'bl', 'tr', 'tl'].forEach(mbRestackCorner);
     draw();
   }

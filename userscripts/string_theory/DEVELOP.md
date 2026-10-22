@@ -31,5 +31,5 @@ The pre-commit hook rebuilds it whenever a member (or this folder's `build.mjs` 
 
 - The scripts left out of a page by their own `@match` are named in the console at the *debug* level: `String Theory: not for this page (their own @match) — …`.
 - The on/off list is the GM value `string_theory.off` (folder names). The build wraps each body in a check against it and adds the menu, which goes only in the top frame.
-- The launchers' layout is `mbu.cornerFlow` in MusicBrainz's `localStorage`, read by every script's `mbRestackCorner` ([shared storage](../../DEVELOP.md#shared-storage)).
+- The launchers' layout is `mbu.cornerFlow` (column or row) and `mbu.cornerSide` (right or left) in MusicBrainz's `localStorage`, read by every script's `mbRestackCorner` ([shared storage](../../DEVELOP.md#shared-storage)).
 - All members share **one** userscript-manager storage namespace (one each when installed separately). Each script prefixes its keys, but it's a shared surface.
