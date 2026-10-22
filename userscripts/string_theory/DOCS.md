@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-22 22:10 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-22 22:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2100,7 +2100,7 @@ Click a card's icon or title to switch it off: Execute leaves it out, and your s
 
 For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:
 
-1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** groups them by barcode: the album's own lane first and taken in, with those without a barcode that have as many tracks; another lane is another release, left out until you select it. If MusicBrainz already has the album (same barcode, format and track count), a banner names it with [Update this release](#update-this-release), and other editions under it.
+1. [Platform Check](../platform_check/README.md) finds the album on the other platforms. **Sources** groups them by barcode: the album's own lane first and taken in, with those without a barcode that have as many tracks; another lane is another release, left out until you select it. If MusicBrainz already has the album (same barcode, format and track count), a banner lists it, compared with this album: date, format, tracks and barcode in columns, with the platforms linked to it. Its title opens it in a new tab; [Update](#update-this-release) updates it. **Other editions** under it, closed until clicked, highlight what sets each apart.
 2. First Contact reads each platform taken in. One without a barcode whose track lengths mostly differ is unselected as *another tracklist*, unless you selected it. Spotify's link is added but its data isn't compared.
 3. **Release** shows each field's values with the platforms giving them; the most given is taken (a tie goes by Platform Check's order). Click another to take it. Where another value differs from the one taken, the differing part is highlighted.
 4. **Tracks** lines the tracklists up. A track whose platforms differ in title, ISRC or length (by over a second) says how many versions it has; click it to see them and take one. **N differ** opens or closes them all. A track only one platform has is left out; click it to take it in, at the end.
@@ -2114,7 +2114,7 @@ A track's versions show on the right too. **▾ → Copy as Markdown** beside **
 
 #### Update this release
 
-**Update this release**, in the banner, opens that release here; Mission Control probes and [compares it with the platforms](#compare-with-the-platforms) at once, offering what it lacks as after saving a new release. What you picked by hand isn't carried over.
+**Update**, in the banner, opens that release here; Mission Control probes and [compares it with the platforms](#compare-with-the-platforms) at once, offering what it lacks as after saving a new release. What you picked by hand isn't carried over.
 
 [First Contact](../first_contact/README.md#already-in-musicbrainz) offers it too, when MusicBrainz already has the album you are about to import: the release opens in a new tab, compared with the platforms and with that album, though the release has neither its link nor its barcode.
 

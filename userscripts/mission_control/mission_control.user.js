@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.22.215639
+// @version      2026.10.22.222751
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -972,6 +972,8 @@ const FORMAT_KINDS = [
     ['other', /^\s*other\s*$/i],
 ];
 // #753: a click on it shows or hides the execution order, so it is there with no format too
+const fmtKind = format => (format && FORMAT_KINDS.find(([, re]) => re.test(format.split('+')[0])) || ['disc'])[0];
+const fmtGlyph = (format, size) => '<svg width="' + size + '" height="' + size + '" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">' + FORMAT_ICONS[fmtKind(format)] + '</svg>';
 function fmtIcon(format) {
     const first = (format || '').split('+')[0];
     const k = (format && FORMAT_KINDS.find(([, re]) => re.test(first)) || ['disc'])[0];
@@ -3556,7 +3558,23 @@ function ccStyle() {
         + '.mcc-tbl tr.ver.on .r{background:var(--mbu-accent);border-color:var(--mbu-accent);box-shadow:inset 0 0 0 2px var(--mbu-bg)}.mcc-tbl tr.ver{cursor:pointer}'
         + '.mcc-tbl .hl{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}.mcc-tbl tr.extra td.ttl{text-decoration:line-through;color:var(--mbu-text-weak)}.mcc-tbl tr.extra.on td.ttl{text-decoration:none;color:var(--mbu-text)}'
         + '.mcc-tbl .why{color:var(--mbu-text-weak)}.mcc-tbl td.car{width:20px;color:var(--mbu-text-weak);text-align:right}'
-        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-warn-bg);border-radius:var(--mbu-radius-lg);padding:10px 12px;margin:0 0 14px}.mcc-inmb ul{margin:6px 0 0;padding-left:18px}.mcc-inmb li{margin:2px 0}.mcc-inmb.other{border-color:var(--mbu-border);background:var(--mbu-bg)}.mcc-inmb .mcc-upd{padding:2px 10px;margin-left:6px;font-size:12px}'
+        + '.mcc-inmb{border:1px solid var(--mbu-warn-border);background:var(--mbu-bg);border-radius:var(--mbu-radius-lg);margin:0 0 14px;overflow:hidden;container-type:inline-size}.mcc-inmb.other{border-color:var(--mbu-border)}'
+        + '.mcc-inmb-h{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--mbu-warn-bg);border-bottom:1px solid var(--mbu-warn-border)}.mcc-inmb-h b{display:block}.mcc-inmb-h .s{font-size:12px;color:var(--mbu-text-dim)}'
+        + '.mcc-inmb-badge{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--mbu-warn-border);background:var(--mbu-bg);color:var(--mbu-warn)}'
+        + '.mcc-inmb-tog{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px}.mcc-inmb-tog:hover{background:var(--mbu-bg-hover)}.mcc-inmb-tog .s{font-size:12px;color:var(--mbu-text-dim)}.mcc-inmb-tog svg{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-inmb-tog.open svg.chev{transform:rotate(90deg)}.mcc-inmb-tog.open{border-bottom:1px solid var(--mbu-divider)}'
+        + '.mcc-inmb .mcc-n{border-color:var(--mbu-border);color:var(--mbu-text-dim)}'
+        + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 92px 112px 40px 132px 84px;column-gap:12px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
+        + '.mcc-ing.ch{font-size:11px;color:var(--mbu-text-dim);padding-block:5px;border-bottom:1px solid var(--mbu-divider)}.mcc-ing.ch>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.mcc-ing.ch svg{color:var(--mbu-text-weak)}'
+        + '.mcc-ing.alb{font-size:12px;color:var(--mbu-text-dim);padding-block:5px;background:var(--mbu-bg-sunken);border-bottom:1px solid var(--mbu-divider)}.mcc-ing.alb .t>span:first-child{font-style:italic}'
+        + '.mcc-ing.r{padding-block:7px}.mcc-ing.r+.mcc-ing.r{border-top:1px solid var(--mbu-divider)}'
+        + '.mcc-ing .t{display:flex;align-items:baseline;gap:6px;min-width:0}.mcc-ing .t a.ttl{font-weight:600;flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+        + '.mcc-ing .dis{font-size:12px;color:var(--mbu-text-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+        + '.mcc-ing .pl{display:flex;gap:4px;align-items:center;margin-left:auto;flex:none;align-self:center}.mcc-ing .pl a{display:grid;place-items:center;width:20px;height:20px;border-radius:5px}.mcc-ing .pl a:hover{background:var(--mbu-bg-hover)}.mcc-ing .pl svg{display:block}'
+        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-end}.mcc-ing .none{color:var(--mbu-text-weak)}'
+        + '.mcc-ing .diff{color:var(--mbu-warn);font-weight:600}.mcc-ing .diff .v{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}'
+        + '.mcc-ing .act{display:flex;gap:4px;align-items:center;justify-content:flex-end}.mcc-ing .mcc-upd{padding:3px 10px;font-size:12px;border-color:var(--mbu-warn-border)}'
+        + '@container (max-width:640px){.mcc-ing.ch{display:none}.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px 120px 40px 136px minmax(0,1fr);row-gap:3px}.mcc-ing .t{grid-column:1/-1}.mcc-ing .num{justify-content:flex-start}.mcc-ing .c .m{display:inline}}'
+        + '@container (max-width:440px){.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px minmax(0,1fr) auto}.mcc-ing>:nth-child(5){grid-column:1/-1}.mcc-ing.r>:nth-child(6){grid-column:1/-1;justify-content:flex-start}}'
         + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
         + '.mcc-insp dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0 0 12px;font-size:12px}.mcc-insp dt{color:var(--mbu-text-weak)}.mcc-insp dd{margin:0;word-break:break-word}'
@@ -4281,6 +4299,7 @@ function ccOnClick(e) {
         case 'tick': CC.ticks[a.dataset.t] = a.checked; Log.cat('Consolidation').info('after saving: ' + a.dataset.t + ' ' + (a.checked ? 'on' : 'off')); ccPaintInspector(); return;
         case 'open': ccOpenEditor(); return;
         case 'update': ccUpdateRelease(a.dataset.id); return;
+        case 'others': CC.othersOpen = !CC.othersOpen; Log.cat('Consolidation').info('other editions ' + (CC.othersOpen ? 'shown' : 'hidden')); ccPaintCenter(); return;
         case 'more': ccMenu(); return;
         case 'md': {
             ccMenu(false);
@@ -4471,19 +4490,60 @@ function ccUpdateRelease(mbid) {
     if (CC.dry) { Log.cat('Consolidation').info('dry run: the release is not opened'); return; }
     location.assign('/release/' + mbid);
 }
+// the panel's own glyphs: the column heads and, in a narrow panel, each value
+const CC_INMB_SVG = {
+    dup: '<path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/><rect x="8" y="8" width="12" height="12" rx="2"/><path d="m11 14 2 2 4-4"/>',
+    rel: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
+    date: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    tracks: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+    barcode: '<path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14"/>',
+    up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+    chev: '<path d="m9 6 6 6-6 6"/>',
+    stack: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+};
+const ccInSvg = (k, size, cls) => '<svg' + (cls ? ' class="' + cls + '"' : '') + ' width="' + (size || 14) + '" height="' + (size || 14) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + CC_INMB_SVG[k] + '</svg>';
+// a release MusicBrainz has, in columns: the title (it opens the release in a new tab) and disambiguation, the
+// platforms linked to it on the right, then date, format, tracks and barcode, each in its own column so a missing
+// one shifts nothing; in another edition, what sets it apart from this album is highlighted
 function ccInMbHtml() {
     const rs = CC.inMb.releases;
     if (CC.inMb.state !== 'done' || !rs.length) return '';
-    const plat = u => { const s = CC.sources.find(x => x.url === u); return s ? ccName(s.key) : u; };
-    const li = e => '<li><a href="/release/' + esc(e.id) + '" target="_blank" rel="noopener">' + esc(e.title) + '</a>' + (e.disamb ? ' <span class="weak">(' + esc(e.disamb) + ')</span>' : '')
-        + (e.date ? ' · ' + esc(e.date) : '') + (e.format ? ' · ' + esc(e.format) : '') + (e.tracks ? ' · ' + e.tracks + ' tracks' : '') + (e.barcode ? ' · <span class="mono">' + esc(e.barcode) + '</span>' : '')
-        + ' <span class="weak">· linked from ' + esc(e.urls.map(plat).join(', ')) + '</span></li>';
+    const src = CC.sources[0] || {}, fmt = ccFormat();
+    const keyOf = u => { const x = CC.sources.find(y => y.url === u); return x ? x.key : null; };
+    const plat = list => '<span class="pl">' + list.map(([k, u]) => '<a href="' + esc(u) + '" target="_blank" rel="noopener" data-tip="' + esc(ccName(k)) + '" aria-label="' + esc(ccName(k)) + '">' + ccIco(k, 16) + '</a>').join('') + '</span>';
+    const cell = (icon, val, o) => {
+        o = o || {};
+        return '<span class="c' + (o.cls ? ' ' + o.cls : '') + (val ? '' : ' none') + '"' + (o.tip ? ' data-tip="' + esc(o.tip) + '"' : '') + '>' + icon.replace('<svg', '<svg class="m"')
+            + (val ? (o.diff ? '<span class="v">' + esc(val) + '</span>' : esc(val)) : '—') + '</span>';
+    };
+    const fIco = f => fmtGlyph(f, 14);
+    const row = e => {
+        const fDiff = !e.same && !!e.format && !/unknown/.test(e.format) && ccFmtKind(e.format) !== ccFmtKind(fmt);
+        const tDiff = !e.same && !!e.tracks && !!src.tracks && e.tracks !== src.tracks;
+        const bDiff = !e.same && !!e.barcode && !!src.barcode && ccBc(e.barcode) !== ccBc(src.barcode);
+        const keys = []; e.urls.forEach(u => { const k = keyOf(u); if (k && !keys.some(x => x[0] === k)) keys.push([k, u]); });
+        return '<div class="mcc-ing r" data-id="' + esc(e.id) + '"><div class="t"><a class="ttl" href="/release/' + esc(e.id) + '" target="_blank" rel="noopener" data-tip="Open the release in a new tab">' + esc(e.title) + '</a>'
+            + (e.disamb ? '<span class="dis" data-tip="' + esc(e.disamb) + '">' + esc(e.disamb) + '</span>' : '') + plat(keys) + '</div>'
+            + cell(ccInSvg('date'), e.date)
+            + cell(fIco(e.format), e.format, { cls: fDiff ? 'diff' : '', diff: fDiff, tip: fDiff ? 'Another format than this album\'s ' + fmt : '' })
+            + cell(ccInSvg('tracks'), e.tracks ? String(e.tracks) : '', { cls: 'num mono' + (tDiff ? ' diff' : ''), diff: tDiff, tip: tDiff ? 'This album has ' + src.tracks + ' tracks' : '' })
+            + cell(ccInSvg('barcode'), e.barcode, { cls: 'mono' + (bDiff ? ' diff' : ''), diff: bDiff, tip: bDiff ? 'Another barcode than this album\'s ' + src.barcode : '' })
+            // #727: Update takes what is consolidated here to it, for what it lacks
+            + '<div class="act">' + (e.same ? '<button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" data-tip="Update this release\nOpen it in this tab: Mission Control probes it, compares it with the platforms and offers what it lacks: the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths.">' + ccInSvg('up') + 'Update</button>' : '')
+            + '</div></div>';
+    };
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
+    const heads = '<div class="mcc-ing ch"><span>' + ccInSvg('rel') + 'Release</span><span>' + ccInSvg('date') + 'Date</span><span>' + fIco(fmt) + 'Format</span><span style="justify-content:flex-end" data-tip="Tracks">' + ccInSvg('tracks') + '</span><span>' + ccInSvg('barcode') + 'Barcode</span><span></span></div>';
+    const took = []; CC.sources.filter(x => x.take && x.url).forEach(x => { if (!took.some(y => y[0] === x.key)) took.push([x.key, x.url]); });
+    const album = '<div class="mcc-ing alb" data-tip="What the platforms give for this album: each release is compared with it"><div class="t"><span>This album</span>' + plat(took) + '</div><span></span>'
+        + cell(fIco(fmt), fmt) + cell(ccInSvg('tracks'), src.tracks ? String(src.tracks) : '', { cls: 'num mono' }) + cell(ccInSvg('barcode'), src.barcode, { cls: 'mono' }) + '<span></span></div>';
     let h = '';
-    // #727: Update this release takes what is consolidated here to it, for what it lacks
-    const upd = e => ' <button type="button" class="mcc-btn mcc-upd" data-cc="update" data-id="' + esc(e.id) + '" data-tip="Open this release in this tab\nMission Control probes it, compares it with the platforms and offers what it lacks: the barcode, catalog numbers, labels, ISRCs, links, release event, track lengths.">Update this release →</button>';
-    if (same.length) h += '<div class="mcc-inmb"><b>MusicBrainz already has this album.</b> Update it with what it lacks, rather than adding the album again.<ul>' + same.map(e => li(e).replace(/<\/li>$/, upd(e) + '</li>')).join('') + '</ul></div>';
-    if (other.length) h += '<div class="mcc-inmb other"><b>Other editions in MusicBrainz</b> <span class="dim">(another barcode, format or track count than ' + esc(ccFormat()) + (CC.sources[0] && CC.sources[0].barcode ? ' ' + esc(CC.sources[0].barcode) : '') + '):</span><ul>' + other.map(li).join('') + '</ul></div>';
+    if (same.length) h += '<div class="mcc-inmb"><div class="mcc-inmb-h"><span class="mcc-inmb-badge">' + ccInSvg('dup', 16) + '</span><div><b>MusicBrainz already has this album</b><span class="s">Update it with what it lacks instead of adding the album again.</span></div></div>'
+        + heads + album + same.map(row).join('') + '</div>';
+    // other editions start closed: a click on the heading shows them
+    if (other.length) h += '<div class="mcc-inmb other"><button type="button" class="mcc-inmb-tog' + (CC.othersOpen ? ' open' : '') + '" data-cc="others" aria-expanded="' + !!CC.othersOpen + '">' + ccInSvg('chev', 14, 'chev') + ccInSvg('stack')
+        + '<b>Other editions</b><span class="mcc-n">' + other.length + '</span><span class="s">another barcode, format or track count</span></button>'
+        + '<div class="mcc-inmb-rows"' + (CC.othersOpen ? '' : ' hidden') + '>' + (same.length ? '' : heads + album) + other.map(row).join('') + '</div></div>';
     return h;
 }
 function consolidateMain(token) {
