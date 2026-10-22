@@ -3988,7 +3988,7 @@ Click: open the label`;
     return o;
   }
   // #804: a Latin title's own language in Auto, or null for the release's. lande on one title is often
-  // wrong; on 111 real titles in 8 languages, 3+ words at 90% with only the languages that have a mode
+  // wrong; on 111 well-known song titles in 8 languages, 3+ words at 90% with only the languages that have a mode
   // (and German, Sentence) gave no wrong mode. Shorter ones (Take On Me → Estonian, Purple Rain → French) don't count.
   const GC_DETECT_LANGS = new Set(['eng', 'fra', 'tur', 'spa', 'ita', 'por', 'nld', 'deu']);
   const _gcDetected = new Map();
