@@ -1976,12 +1976,14 @@ function mbuShared(key, value) {
 // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
 // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
 // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+// The shared setting cornerSide = 'left' (also from the menu) mirrors every corner across the screen: a
+// launcher tagged 'br' sits bottom-left. Its other side is set to auto, so a CSS left/right can't stretch it.
 // On a phone MusicBrainz's page is wider than the screen, so the browser widens the layout
 // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
 // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
 // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
 function mbRestackCorner(corner) {
-    var bottom = corner[0] === 'b', right = corner[1] === 'r';
+    var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
     var vv = window.visualViewport, gapX = 0, gapY = 0;
     if (vv) {
@@ -2013,6 +2015,7 @@ function mbRestackCorner(corner) {
         var r = el.getBoundingClientRect();
         el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : pos)) + 'px';
         el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
+        el.style[right ? 'left' : 'right'] = 'auto';
         pos += (row ? r.width : r.height) + 8;
     });
 }

@@ -64,21 +64,21 @@ test('the layout entry lines the corner launchers up in a row and back', { tag: 
   });
   await inject('string_theory');
   await until(() => page.evaluate(() => document.querySelectorAll('[data-mb-corner="br"]').length), n => n >= 2, { timeout: 30000 });
-  const flow = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption).find(c => /Launchers/.test(c)));
+  const flow = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption).find(c => /Launchers in /.test(c)));
   const at = () => page.evaluate(() => [...document.querySelectorAll('[data-mb-corner="br"]')].filter(e => getComputedStyle(e).display !== 'none')
     .map(e => ({ id: e.id, bottom: e.style.bottom, right: e.style.right })));
   check(await flow() === '↕ Launchers in a column', `a column by default (${await flow()})`);
   const col = await at();
   check(col.every(e => e.right === '14px') && new Set(col.map(e => e.bottom)).size === col.length, `stacked up the right edge (${JSON.stringify(col)})`);
 
-  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers/.test(e.caption)).fn());
+  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers in /.test(e.caption)).fn());
   const row = await at();
   check(await flow() === '↔ Launchers in a row', `relabelled (${await flow()})`);
   check(await page.evaluate(() => localStorage.getItem('mbu.cornerFlow')) === '"row"', 'stored as the shared setting');
   check(row.every(e => e.bottom === '14px') && new Set(row.map(e => e.right)).size === row.length, `in a row along the bottom (${JSON.stringify(row)})`);
   await page.screenshot({ path: info.outputPath('row.png'), clip: { x: 1400 - 260, y: 900 - 80, width: 260, height: 80 } });
 
-  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers/.test(e.caption)).fn());
+  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers in /.test(e.caption)).fn());
   check(JSON.stringify(await at()) === JSON.stringify(col), 'a second click puts them back in the column');
   check(await page.evaluate(() => localStorage.getItem('mbu.cornerFlow')) === null, 'and clears the setting');
   // a standalone launcher follows the shared setting with no String Theory on the page: Falcon on its own
@@ -96,4 +96,45 @@ test('the layout entry lines the corner launchers up in a row and back', { tag: 
   const loaded = await at();
   check(loaded.every(e => e.bottom === '14px') && new Set(loaded.map(e => e.right)).size === loaded.length, `the bundle loads in the row (${JSON.stringify(loaded)})`);
   await page.evaluate(() => localStorage.removeItem('mbu.cornerFlow'));
+});
+
+// The launchers' side (#802): a second entry, → right (the default) or ← left. A click stores it as the shared
+// setting (localStorage 'mbu.cornerSide') and mirrors the corner at once; a launcher keeps its place in the stack.
+test('the side entry moves the corner launchers to the left edge and back', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
+  await page.evaluate(() => {
+    localStorage.removeItem('mbu.cornerSide'); localStorage.removeItem('mbu.cornerFlow');
+    const menu = window.__menu = new Map(); let next = 1;
+    window.GM_registerMenuCommand = (caption, fn) => { const id = next++; menu.set(id, { caption, fn }); return id; };
+    window.GM_unregisterMenuCommand = id => menu.delete(id);
+  });
+  await inject('string_theory');
+  await until(() => page.evaluate(() => document.querySelectorAll('[data-mb-corner="br"]').length), n => n >= 2, { timeout: 30000 });
+  const side = () => page.evaluate(() => [...window.__menu.values()].map(e => e.caption).find(c => /Launchers on /.test(c)));
+  const click = () => page.evaluate(() => [...window.__menu.values()].find(e => /Launchers on /.test(e.caption)).fn());
+  const at = () => page.evaluate(() => [...document.querySelectorAll('[data-mb-corner="br"]')].filter(e => getComputedStyle(e).display !== 'none')
+    .map(e => { const r = e.getBoundingClientRect(); return { id: e.id, bottom: e.style.bottom, left: Math.round(r.left), right: Math.round(innerWidth - r.right) }; }));
+  check(await side() === '→ Launchers on the right', `the right by default (${await side()})`);
+  const right = await at();
+  check(right.every(e => e.right === 14), `on the right edge (${JSON.stringify(right)})`);
+
+  await click();
+  check(await side() === '← Launchers on the left', `relabelled (${await side()})`);
+  check(await page.evaluate(() => localStorage.getItem('mbu.cornerSide')) === '"left"', 'stored as the shared setting');
+  const left = await at();
+  check(left.every(e => e.left === 14), `on the left edge (${JSON.stringify(left)})`);
+  check(JSON.stringify(left.map(e => [e.id, e.bottom])) === JSON.stringify(right.map(e => [e.id, e.bottom])), 'in the same order up the edge');
+  await page.screenshot({ path: info.outputPath('left.png'), clip: { x: 0, y: 900 - 260, width: 120, height: 260 } });
+
+  // a row on the left: along the bottom edge from the bottom-left corner
+  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers in /.test(e.caption)).fn());
+  const row = await at();
+  check(row.every(e => e.bottom === '14px') && Math.min(...row.map(e => e.left)) === 14 && new Set(row.map(e => e.left)).size === row.length, `a row from the bottom-left corner (${JSON.stringify(row)})`);
+  await page.screenshot({ path: info.outputPath('left-row.png'), clip: { x: 0, y: 900 - 80, width: 260, height: 80 } });
+  await page.evaluate(() => [...window.__menu.values()].find(e => /Launchers in /.test(e.caption)).fn());
+
+  await click();
+  check((await at()).every(e => e.right === 14), 'a second click puts them back on the right');
+  check(await page.evaluate(() => localStorage.getItem('mbu.cornerSide')) === null, 'and clears the setting');
 });

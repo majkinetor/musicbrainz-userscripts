@@ -624,19 +624,22 @@
      pixel. The other scripts share it through the ST-UI block
      (dev/ui/ui-components.mjs); Scribe is not on that block, so this is a copy. */
   function mbRestackCorner(corner) {
-    const bottom = corner[0] === 'b', right = corner[1] === 'r';
+    const bottom = corner[0] === 'b';
     const els = [...document.querySelectorAll('[data-mb-corner="' + corner + '"]')]
       .filter(el => getComputedStyle(el).display !== 'none')   // offsetParent is always null for position:fixed — not a usable visibility check here
       .sort((a, b) => (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0));
     // the shared setting cornerFlow = 'row' (the page's localStorage 'mbu.cornerFlow', set from String
     // Theory's menu; mbuShared in dev/ui/ui-components.mjs) lines the stack up along the edge instead
-    let row = false;
-    try { row = JSON.parse(localStorage.getItem('mbu.cornerFlow')) === 'row'; } catch (e) { /* storage blocked */ }
+    // and cornerSide = 'left' mirrors the corner across the screen ('br' sits bottom-left)
+    let row = false, left = false;
+    try { row = JSON.parse(localStorage.getItem('mbu.cornerFlow')) === 'row'; left = JSON.parse(localStorage.getItem('mbu.cornerSide')) === 'left'; } catch (e) { /* storage blocked */ }
+    const right = (corner[1] === 'r') !== left;
     let pos = 14;
     els.forEach(el => {
       const r = el.getBoundingClientRect();
       el.style[bottom ? 'bottom' : 'top'] = (row ? 14 : pos) + 'px';
       el.style[right ? 'right' : 'left'] = (row ? pos : 14) + 'px';
+      el.style[right ? 'left' : 'right'] = 'auto';
       pos += (row ? r.width : r.height) + 8;
     });
   }
@@ -690,12 +693,14 @@
     try { const ee = W.MB.releaseEditor.validation.errorsExist; if (ee && ee.subscribe) ee.subscribe(() => { if (session && session.active && !collapsed) renderSession(); }); } catch (e) {}
   }
   // the window sits bottom-right, beside the corner launchers (Scribe's own among them), not over them:
-  // left of a column of them, above a row
+  // left of a column of them, above a row; with the launchers on the left (cornerSide), it's bottom-left
   function placePanel() {
     const els = [...document.querySelectorAll('[data-mb-corner="br"]')].filter(e => getComputedStyle(e).display !== 'none').map(e => e.getBoundingClientRect());
-    let row = false;
-    try { row = JSON.parse(localStorage.getItem('mbu.cornerFlow')) === 'row'; } catch (e) { /* storage blocked */ }
-    panel.style.right = (!els.length || row ? 12 : Math.round(innerWidth - Math.min(...els.map(r => r.left))) + 8) + 'px';
+    let row = false, left = false;
+    try { row = JSON.parse(localStorage.getItem('mbu.cornerFlow')) === 'row'; left = JSON.parse(localStorage.getItem('mbu.cornerSide')) === 'left'; } catch (e) { /* storage blocked */ }
+    const side = (!els.length || row ? 12 : Math.round(left ? Math.max(...els.map(r => r.right)) : innerWidth - Math.min(...els.map(r => r.left))) + 8) + 'px';
+    panel.style[left ? 'left' : 'right'] = side;
+    panel.style[left ? 'right' : 'left'] = 'auto';
     panel.style.bottom = (!els.length || !row ? 12 : Math.round(innerHeight - Math.min(...els.map(r => r.top))) + 8) + 'px';
   }
   function showPanel() { ensurePanel(); panel.style.display = ''; placePanel(); }

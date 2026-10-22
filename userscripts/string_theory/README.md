@@ -27,7 +27,7 @@
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                            |
 
 - **Turn a script off** in the userscript manager's menu: each bundled script has a ☑/☐ entry with its version, applied from the next page load. A script that is off doesn't run, so its standalone copy can run instead.
-- **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge. Every script follows it, standalone ones too.
+- **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge, and **→ Launchers on the right** (default) or **← Launchers on the left**. Every script follows them, standalone ones too.
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
 - The browser console (F12) lists String Theory's version and each bundled script's.
 
@@ -40,5 +40,5 @@
 
 ## Notes
 
-- **Launchers without String Theory**: each MusicBrainz server keeps its own layout. In the browser console (F12) on its page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, then reload.
+- **Launchers without String Theory**: each MusicBrainz server keeps its own layout. In the browser console (F12) on its page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, `localStorage.setItem('mbu.cornerSide', '"left"')` for the left side or `localStorage.removeItem('mbu.cornerSide')` for the right, then reload.
 - How the bundle is built is in [DEVELOP.md](DEVELOP.md).
