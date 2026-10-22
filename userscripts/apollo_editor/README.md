@@ -173,28 +173,23 @@ The toolbar holds the tools you choose; the rest are in **Tools ▾**, with **Cu
 
 ### Guess case
 
-MusicBrainz's capitalisation, with more languages and rules. **Guess case** in the toolbar does every track; a track's **Aa** on hover shows its guess, a click applies it, a right-click does every track. MusicBrainz's own guess-case buttons give the same guess.
+MusicBrainz's capitalisation, with more languages and rules. MusicBrainz's own guess-case buttons give the same guess.
 
-The options sit beside **Guess case**, or open with a right-click on the release title's **Aa**.
+- **Guess case** in the toolbar does every track.
+- A track's **Aa** on hover shows its guess; a click applies it, a right-click does every track.
+- The options sit beside **Guess case**, or open with a right-click on the release title's **Aa**.
 
-| Option    | Default | What it does                                  |
-| --------- | ------- | --------------------------------------------- |
-| Mode      | Auto    | the capitalisation, below                     |
-| ABC       | on      | keeps capitals: *ABBA*, *KoRn*                |
-| IV        | off     | *part ii* → *Part II*                         |
-| Separator | `/`     | splits a title into parts; empty never splits |
+The mode list has three groups. **○** by a Guess or Language mode makes it the **default** (**◉**): it runs on every track when the tracklist first opens, before the default [Search and Replace](#search-and-replace).
 
-The mode list has three groups: **Guess**, **Languages** and **Casing**.
+| Guess    | Capitals                                                                      |
+| -------- | ----------------------------------------------------------------------------- |
+| Auto     | the release language's mode; English with no language, Sentence for any other |
+| Sentence | only the first word                                                           |
 
-| Guess    | Capitals                                                    |
-| -------- | ----------------------------------------------------------- |
-| Auto     | the language mode for the release's language, else Sentence |
-| Sentence | only the first word                                         |
-
-Only in Auto:
+Auto also looks at the script:
 
 - A title mostly in Cyrillic gets Sentence.
-- Parts in different scripts are guessed apart: *love story / история любви* → *Love Story / История любви*.
+- A title split by the **Separator** has parts in different scripts guessed apart: *love story / история любви* → *Love Story / История любви*.
 
 | Language                     | Capitals                                                                      |
 | ---------------------------- | ----------------------------------------------------------------------------- |
@@ -204,17 +199,20 @@ Only in Auto:
 | Spanish, Italian, Portuguese | Sentence                                                                      |
 | Dutch                        | Sentence, *IJ* as one capital: *IJsland*                                      |
 
-In every Guess and Language mode, Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
+| Casing    | Capitals     |
+| --------- | ------------ |
+| lowercase | none         |
+| UPPERCASE | every letter |
 
-A **Casing** changes the letters without guessing; IV and the separator don't apply to it, and ABC only to Title Case.
+A casing changes the letters without guessing, takes none of the options, and can't be the default.
 
-| Casing     | Capitals                                          |
-| ---------- | ------------------------------------------------- |
-| Title Case | every word but small ones: *The Sound of Silence* |
-| lowercase  | none                                              |
-| UPPERCASE  | every letter                                      |
+| Option    | Default | What it does                                                     |
+| --------- | ------- | ---------------------------------------------------------------- |
+| ABC       | on      | keeps capitals: *ABBA*, *KoRn*                                   |
+| IV        | off     | *part ii* → *Part II*                                            |
+| Separator | `/`     | in Auto, splits a title into parts by script; empty never splits |
 
-**○** by a mode in the list makes it the **default** (**◉**): guess case in that mode runs on every track when the tracklist first opens, before the default [Search and Replace](#search-and-replace). A casing can't be the default.
+Every Guess and Language mode also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 
 ### Search and Replace
 
