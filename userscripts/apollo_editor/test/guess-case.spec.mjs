@@ -117,3 +117,55 @@ test('#153: the in-cell title buttons take no width from the title', { tag: ['@c
   check(r.withBtn.wrapW - r.withBtn.inputW < 8, `the input fills its cell (${r.withBtn.inputW} of ${r.withBtn.wrapW})`);
   check(!r.plain || Math.abs(r.withBtn.inputW - r.plain.inputW) <= 2, `as wide as a row without the button (${r.withBtn.inputW} vs ${r.plain && r.plain.inputW})`);
 });
+
+// #803: the mode list's casings (no guessing), and a guess mode marked as the default runs on every
+// track when the Tracklist opens
+test('#803: casings, and the list in two columns with the default on guess modes only', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
+  await page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[0].name('the QUICK brown fox of KoRn'));
+  const guess = () => page.evaluate(() => { const t = window.__apolloEditor.model.tracks.find(x => /QUICK/i.test(x.title || '')); return t ? t.guessTitle : null; });
+  await until(guess, g => !!g);
+  await page.waitForSelector('.tc-gco .tc-gc-combo .tc-gc-cb', { state: 'attached', timeout: 10000 });
+  const pick = v => page.evaluate(v => { const el = document.querySelector('.tc-gco select.tc-gc-lang'); el.value = v; el.dispatchEvent(new Event('change', { bubbles: true })); }, v);
+  const abc = on => page.evaluate(on => { const c = document.querySelector('.tc-gco button.tc-gc-tg'); if (c.classList.contains('on') !== on) c.click(); }, on);
+
+  await abc(true); await pick('Title Case');
+  check(await until(guess, g => g === 'The QUICK Brown Fox of KoRn') === 'The QUICK Brown Fox of KoRn', 'Title Case: small words lowercase, capitals kept with ABC');
+  await pick('Capitalized');
+  check(await until(guess, g => g === 'The QUICK Brown Fox Of KoRn') === 'The QUICK Brown Fox Of KoRn', 'Capitalized: every word');
+  const dis = await page.evaluate(() => [...document.querySelectorAll('.tc-gco button.tc-gc-tg')].map(b => b.disabled).concat(document.querySelector('.tc-gco input.tc-gc-sep').disabled));
+  check(JSON.stringify(dis) === '[false,true,true]', `Capitalized: ABC stays, IV and the separator grey out (${dis})`);
+  await abc(false);
+  check(await until(guess, g => g === 'The Quick Brown Fox Of Korn') === 'The Quick Brown Fox Of Korn', 'ABC off: capitals not kept');
+  await pick('lowercase');
+  check(await until(guess, g => g === 'the quick brown fox of korn') === 'the quick brown fox of korn', 'lowercase');
+  await pick('UPPERCASE');
+  check(await until(guess, g => g === 'THE QUICK BROWN FOX OF KORN') === 'THE QUICK BROWN FOX OF KORN', 'UPPERCASE');
+  check(await page.evaluate(() => document.querySelector('.tc-gco button.tc-gc-tg').disabled), 'UPPERCASE: ABC greys out too');
+
+  // the list (here in the release title's options): two columns, and ○ on the guess modes only
+  await page.evaluate(() => document.querySelector('input#name').parentElement.querySelector('button.guesscase-title').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })));
+  await page.click('.tc-gcpop .tc-gc-cb');
+  const list = await until(() => page.evaluate(() => {
+    const l = document.querySelector('.tc-gc-list'); if (!l) return null;
+    const rows = [...l.querySelectorAll('.tc-gc-row')].map(r => ({ m: r.querySelector('.tc-gc-pick').dataset.gcMode, def: !!r.querySelector('.tc-gc-def') }));
+    return { cols: l.querySelectorAll('.tc-gc-col').length, heads: [...l.querySelectorAll('.tc-gc-gh')].map(h => h.textContent), rows };
+  }), v => !!v);
+  check(await page.evaluate(() => [...document.querySelectorAll('.tc-gcpop .tc-gc-tg')].every(b => b.disabled)), 'a box opened under UPPERCASE shows ABC and IV greyed out');
+  check(list && list.cols === 2 && list.heads.join() === 'Guess,Casing,Languages', `two columns: Guess and Casing, Languages (${JSON.stringify(list && list.heads)})`);
+  check(list && list.rows.filter(r => /Case|Capitalized|lowercase|UPPERCASE/.test(r.m)).every(r => !r.def) && list.rows.filter(r => /^(auto|Sentence|Dutch)$/.test(r.m)).every(r => r.def), 'casings have no ○, guess modes have one');
+  await page.evaluate(() => { const r = [...document.querySelectorAll('.tc-gc-list .tc-gc-row')].find(x => x.querySelector('.tc-gc-pick').dataset.gcMode === 'Dutch'); r.querySelector('.tc-gc-def').click(); });
+  check(await until(() => page.evaluate(() => window.__apolloEditor.settings.gcDefault), v => v === 'Dutch') === 'Dutch', 'a ○ makes the mode the default');
+  await page.evaluate(() => { const r = [...document.querySelectorAll('.tc-gc-list .tc-gc-row')].find(x => x.querySelector('.tc-gc-pick').dataset.gcMode === 'Dutch'); r.querySelector('.tc-gc-pick').click(); });
+  const shown = await until(() => page.evaluate(() => ({ mode: window.__apolloEditor.settings.gcMode, cb: document.querySelector('.tc-gcpop .tc-gc-cb').textContent, open: !!document.querySelector('.tc-gc-list') })), v => v.mode === 'Dutch');
+  check(shown.mode === 'Dutch' && shown.cb === 'Dutch◉' && !shown.open, `picking a mode closes the list; the default shows its ◉ (${JSON.stringify(shown)})`);
+});
+
+test.describe('#803: the default', () => {
+  test.use({ gm: apolloGm({ gcDefault: 'Sentence', gcMode: 'UPPERCASE' }) });
+  test('runs on every track when the Tracklist opens, in its own mode', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+    await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
+    const name = await until(() => page.evaluate(() => window.MB.releaseEditor.rootField.release().mediums()[0].tracks()[10].name()), n => n === 'Anh đâu em đó');
+    check(name === 'Anh đâu em đó', `the title in Sentence, not in the picked UPPERCASE (${name})`);
+  });
+});
