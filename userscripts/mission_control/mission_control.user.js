@@ -4087,8 +4087,8 @@ function ccSideHtml() {
     let h = '<div class="mcc-h">Sources</div>';
     lanes.forEach(l => {
         h += '<div class="mcc-lane" data-bc="' + esc(l.bc) + '">' + (l.bc ? '<span class="mcc-bc' + (l.own ? ' own' : '') + '" data-tip="' + (l.own ? 'The source\'s barcode' : 'Another barcode\nAnother release') + '">' + esc(l.shown) + '</span>' : l.own ? '<div class="mcc-lane-note">no barcode</div>' : '');   // the other no-barcode lane's note says it
-        if (!l.own && l.bc) h += '<div class="mcc-lane-note">' + esc(l.list.map(s => ccName(s.key) + (s.format ? ': ' + s.format : '')).join(', ')) + ' — another release, not read unless ticked</div>';
-        else if (!l.bc && !l.own) h += '<div class="mcc-lane-note">no barcode shown: taken when the track count is the source\'s (' + srcTracks + ')</div>';
+        if (!l.own && l.bc) h += '<div class="mcc-lane-note">' + esc(l.list.map(s => ccName(s.key) + (s.format ? ': ' + s.format : '')).join(', ')) + ' — another release, not read unless selected</div>';
+        else if (!l.bc && !l.own) h += '<div class="mcc-lane-note">no barcode shown: selected when it matches the source\'s track count (' + srcTracks + '), format, track titles and lengths</div>';
         l.list.forEach(s => {
             const r = s.read;
             const meta = s.role === 'source' ? ['', 'source · ' + s.tracks + ' tracks']
@@ -4109,7 +4109,7 @@ function ccSideHtml() {
     });
     if (CC.pc.state === 'busy') h += '<div class="mcc-lane-note"><span class="mcc-spin"></span> Platform Check is searching the other platforms…</div>';
     if (CC.pc.state === 'none') h += '<div class="mcc-lane-note">Platform Check isn\'t running on this page, so only the source is compared.</div>';
-    h += '<div class="mcc-lane-note">A platform in another barcode lane is another release: it is read only when ticked. Untick one to leave its values out; its link goes with it.</div>';
+    h += '<div class="mcc-lane-note">Unselect a platform to leave out its values and its link.</div>';
     return h;
 }
 function ccPaintSide() { const s = CC.ui && CC.ui.querySelector('.mcc-side'); if (s) s.innerHTML = mbuHtml(ccSideHtml()); }
@@ -4174,7 +4174,7 @@ function ccPaintCenter() {
     const m = ccModel();
     if (!m.fields) { c.innerHTML = mbuHtml('<div class="mcc-note">Nothing read yet.</div>'); return; }
     c.innerHTML = mbuHtml(ccInMbHtml() + ccFieldsHtml(m) + ccTracksHtml(m)
-        + '<div class="mcc-note"><b>What Add release does:</b> MusicBrainz\'s release editor opens in this tab, seeded with what is taken here: the fields, the tracklist, every link of the platforms ticked on the left, and, for Apollo to match artists by, each artist\'s links on all the platforms read. '
+        + '<div class="mcc-note"><b>What Add release does:</b> MusicBrainz\'s release editor opens in this tab, seeded with what is taken here: the fields, the tracklist, every link of the platforms selected on the left, and, for Apollo to match artists by, each artist\'s links on all the platforms read. '
         + (S.consAfter ? 'Once you save it, Mission Control opens on the new release for what the editor can\'t take: the boxes on the right.' : 'Mission Control doesn\'t open after saving (⚙).') + '</div>');
 }
 function ccPaintInspector() {
@@ -4682,7 +4682,7 @@ function fcUpdate(token) {
 function afterPicks(id) {
     if (!AFTER || !picked[id] || !(id in AFTER.ticks) || AFTER.ticks[id]) return;
     picked[id].clear();
-    Log.cat('After saving').info('after saving: ' + id + ' left out, as ticked in the consolidation');
+    Log.cat('After saving').info('after saving: ' + id + ' left out, as selected in the consolidation');
 }
 
 // the ISRCs taken in the consolidation, by track, for ISRC Scout (#702); or those the comparison with the platforms found (#782)
