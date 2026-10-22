@@ -8,7 +8,6 @@ test.use({ gm: { name: 'Mission Control' } });
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';
 
 test('#748: a late answer is still taken; doneKeys from a "nothing left" answer count as done', { tag: ['@sandbox'] }, async ({ page, inject }) => {
-  test.setTimeout(90_000);
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
   await inject('mission_control', { waitFor: '__mcTest' });
@@ -22,8 +21,8 @@ test('#748: a late answer is still taken; doneKeys from a "nothing left" answer 
     document.addEventListener('mc:apply', e => {
       const d = JSON.parse(e.detail); if (d.id !== 'is') return;
       window.__applies.push(d.keys.slice().sort());
-      // the first apply: the links went through, the ISRCs didn't, said after the 15 s wait; the second: the ISRCs are there already
-      if (window.__applies.length === 1) setTimeout(() => send('mc:applied', { id: 'is', run: d.run, release: d.release, ok: false, sent: 2, doneKeys: d.keys.filter(k => k.startsWith('link:')), note: '2 links submitted · ISRCs: submit failed (503)' }), 17_000);
+      // the first apply: the links went through, the ISRCs didn't, said after Mission Control stopped waiting; the second: the ISRCs are there already
+      if (window.__applies.length === 1) setTimeout(() => send('mc:applied', { id: 'is', run: d.run, release: d.release, ok: false, sent: 2, doneKeys: d.keys.filter(k => k.startsWith('link:')), note: '2 links submitted · ISRCs: submit failed (503)' }), 6000);
       else setTimeout(() => send('mc:applied', { id: 'is', run: d.run, release: d.release, ok: true, sent: 0, doneKeys: d.keys, note: 'nothing left to add: ' + d.keys.length + ' already on MusicBrainz' }), 50);
     });
     send('mc:provider', { id: 'is', name: 'ISRC Scout', version: 1, capabilities: ['probe', 'apply'] });
@@ -32,9 +31,10 @@ test('#748: a late answer is still taken; doneKeys from a "nothing left" answer 
   await page.waitForSelector('#mc-root');
   await page.click('#mc-root [data-act="probe"]');
   await until(() => page.evaluate(() => (window.__mcTest.picked().is || []).length), n => n === 4);
+  // a silent provider: given up after 3 s of no word (60 s in use); its answer at 6 s is still taken
+  await page.evaluate(() => window.__mcTest.setApplyWait(3000, 60_000));
   await page.click('#mc-root [data-act="exec"]');
-  // Execute gives up after 15 s; the answer at 17 s is still taken
-  await until(() => page.evaluate(() => window.__mcTest.results().is.applied && window.__mcTest.results().is.applied.note), n => /no answer in 15 s/.test(n || ''), { timeout: 20_000 });
+  await until(() => page.evaluate(() => window.__mcTest.results().is.applied && window.__mcTest.results().is.applied.note), n => /no word for 3 s/.test(n || ''), { timeout: 10_000 });
   check((await page.evaluate(() => window.__mcTest.picked().is.length)) === 4, 'nothing marked while no answer came');
   const left = await until(() => page.evaluate(() => window.__mcTest.picked().is.slice().sort()), v => v.length === 2, { timeout: 10_000 });
   check(JSON.stringify(left) === JSON.stringify(recs.slice().sort()), `the late answer's links are done; the ISRCs are left (${JSON.stringify(left)})`);
