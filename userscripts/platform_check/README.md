@@ -50,6 +50,7 @@ MusicBrainz treats a different barcode or a different format as a different rele
 
 - **Barcodes** are looked up with every zero-padding (UPC-A, EAN-13, 14 digits).
 - **Formats**: only Bandcamp and Discogs report one; the others are digital. The medium is compared (DVD and Blu-ray count as CD), so vinyl on a CD release is withheld, but an edition that includes this release's medium ("Digital, CD" on a CD release) passes.
+- **Discogs by barcode** takes only an edition that carries the barcode itself (not one sharing a label code or matrix number), in this release's medium; when the barcode finds only other media, Discogs is searched by title in this release's format instead.
 - The **Discogs master** is exempt from both: it goes on the release group, which spans every edition.
 
 ## Adding links

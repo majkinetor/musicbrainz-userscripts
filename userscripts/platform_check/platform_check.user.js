@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.20.142620
+// @version      2026.10.22
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5488,19 +5488,32 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         // match, preferred over the text search (which can pick a different pressing of
         // the same title). Falls through to the text search when there's no UPC hit.
         if (barcode) {
-            const bu = `https://api.discogs.com/database/search?barcode=${encodeURIComponent(barcode)}&type=release&per_page=5`;
+            const bu = `https://api.discogs.com/database/search?barcode=${encodeURIComponent(barcode)}&type=release&per_page=25`;
             appendLog(label, `Barcode ${barcode}: ${bu}`);
             const br = await gmGet(bu);
             if (br.ok) {
                 try {
-                    const bres = JSON.parse(br.responseText).results || [];
+                    // Discogs' barcode search matches ANY identifier (label code "LC 0542", matrix,
+                    // rights society…), so keep only results that carry our barcode itself. A digital
+                    // and a physical edition often share the UPC: prefer the MB release's medium, and
+                    // never take another medium here — the text search below filters by format.
+                    const want = normBarcode(barcode);
+                    const mbCats = formatCategories(format);
+                    const bres = (JSON.parse(br.responseText).results || []).filter(r => (r.barcode || []).some(b => normBarcode(b) === want));
+                    appendLog(label, `Barcode ${barcode}: ${bres.length} result(s) carry the barcode itself`);
                     let bbest = null;
-                    for (const r of bres.slice(0, 8)) {
+                    for (const r of bres) {
                         const [artistPart, ...albumParts] = (r.title || '').split(' - ');
                         const sc = scoreCandidate({ title: albumParts.join(' - '), artist: artistPart }, mbTracks, album, artist, isVariousArtists);
-                        if (!bbest || sc > bbest.score) bbest = { score: sc, item: r };
+                        const rCats = formatCategories((r.format || []).join(', '));
+                        const fmtOk = !mbCats.size || !rCats.size ? 1 : [...rCats].some(x => mbCats.has(x)) ? 2 : 0;
+                        appendLog(label, `  barcode cand score=${sc}  id=${r.id}  title="${r.title}"  format=${(r.format || []).join(',')}${fmtOk ? '' : '  (another medium)'}`);
+                        if (sc < 50) continue;   // below the confidence threshold: not the release
+                        if (!bbest || fmtOk > bbest.fmtOk || (fmtOk === bbest.fmtOk && sc > bbest.score)) bbest = { score: sc, fmtOk, item: r };
                     }
-                    if (bbest && bbest.score >= 50) {
+                    if (bbest && !bbest.fmtOk) {
+                        appendLog(label, `Barcode ${barcode}: only another medium than ${format} (${(bbest.item.format || []).join(',')}) — falling back to text search`, 'warn');
+                    } else if (bbest && bbest.score >= 50) {
                         releaseId  = String(bbest.item.id);
                         releaseUrl = `https://www.discogs.com/release/${releaseId}`;
                         source     = 'barcode';
