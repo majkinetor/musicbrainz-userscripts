@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.22.224142
+// @version      2026.10.22.224440
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -3562,7 +3562,7 @@ function ccStyle() {
         + '.mcc-inmb-tog.same{background:var(--mbu-warn-bg)}.mcc-inmb-tog.same:hover{background:var(--mbu-warn-bg);filter:brightness(.97)}.mcc-inmb-tog.same.open{border-bottom-color:var(--mbu-warn-border)}.mcc-inmb-tog.same>svg:not(.chev){color:var(--mbu-warn)}'
         + '.mcc-inmb-tog{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px}.mcc-inmb-tog:hover{background:var(--mbu-bg-hover)}.mcc-inmb-tog .s{font-size:12px;color:var(--mbu-text-dim)}.mcc-inmb-tog svg{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-inmb-tog.open svg.chev{transform:rotate(90deg)}.mcc-inmb-tog.open{border-bottom:1px solid var(--mbu-divider)}'
         + '.mcc-inmb .mcc-n{border-color:var(--mbu-border);color:var(--mbu-text-dim)}'
-        + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 92px 112px 40px 132px 84px;column-gap:12px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
+        + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 84px 100px 24px 120px 88px;column-gap:10px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
         + '.mcc-ing.ch{font-size:11px;color:var(--mbu-text-dim);padding-block:5px;border-bottom:1px solid var(--mbu-divider)}.mcc-ing.ch>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.mcc-ing.ch svg{color:var(--mbu-text-weak)}'
         + '.mcc-ing.alb{padding-block:7px;background:var(--mbu-bg-sunken);border-bottom:1px solid var(--mbu-divider)}.mcc-ing.alb .t>span:first-child{font-weight:600;color:var(--mbu-text-dim);white-space:nowrap}'
         // this album's platforms (a dozen, often) wrap inside the title's column
@@ -3571,7 +3571,7 @@ function ccStyle() {
         + '.mcc-ing .t{display:flex;align-items:baseline;gap:6px;min-width:0}.mcc-ing .t a.ttl{font-weight:600;flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mcc-ing .dis{font-size:12px;color:var(--mbu-text-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mcc-ing .pl{display:flex;gap:2px;align-items:center;margin-left:auto;flex:none;align-self:center}.mcc-ing .pl a{display:block;line-height:0;border-radius:3px}.mcc-ing .pl a:hover{filter:brightness(1.15)}.mcc-ing .pl svg{display:block}'
-        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-end}.mcc-ing .none{color:var(--mbu-text-weak)}'
+        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-start}.mcc-ing .none{color:var(--mbu-text-weak)}'
         + '.mcc-ing .diff{color:var(--mbu-warn);font-weight:600}.mcc-ing .diff .v{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}'
         + '.mcc-ing .act{display:flex;gap:4px;align-items:center;justify-content:flex-end}.mcc-ing .mcc-upd{padding:3px 10px;font-size:12px;border-color:var(--mbu-warn-border)}'
         + '@container (max-width:640px){.mcc-ing.ch{display:none}.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px 120px 40px 136px minmax(0,1fr);row-gap:3px}.mcc-ing .t{grid-column:1/-1}.mcc-ing .num{justify-content:flex-start}.mcc-ing .c .m{display:inline}}'
@@ -4535,7 +4535,7 @@ function ccInMbHtml() {
             + '</div></div>';
     };
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
-    const heads = '<div class="mcc-ing ch"><span>' + ccInSvg('rel') + 'Release</span><span>' + ccInSvg('date') + 'Date</span><span>' + fIco(fmt) + 'Format</span><span style="justify-content:flex-end" data-tip="Tracks">' + ccInSvg('tracks') + '</span><span>' + ccInSvg('barcode') + 'Barcode</span><span></span></div>';
+    const heads = '<div class="mcc-ing ch"><span>' + ccInSvg('rel') + 'Release</span><span>' + ccInSvg('date') + 'Date</span><span>' + fIco(fmt) + 'Format</span><span data-tip="Tracks">' + ccInSvg('tracks') + '</span><span>' + ccInSvg('barcode') + 'Barcode</span><span></span></div>';
     const took = []; CC.sources.filter(x => x.take && x.url).forEach(x => { if (!took.some(y => y[0] === x.key)) took.push([x.key, x.url]); });
     const album = '<div class="mcc-ing alb" data-tip="What the platforms give for this album: each release is compared with it"><div class="t"><span>This album</span>' + plat(took) + '</div><span></span>'
         + cell(fIco(fmt), fmt) + cell(ccInSvg('tracks'), src.tracks ? String(src.tracks) : '', { cls: 'num mono' }) + cell(ccInSvg('barcode'), src.barcode, { cls: 'mono' }) + '<span></span></div>';
