@@ -5,8 +5,7 @@ Mirror local music folders into [MusicBrainz collections](https://musicbrainz.or
 For every configured collection the script walks the folder tree, reads each release's MBID
 from its audio tags (`MUSICBRAINZ_ALBUMID`, as written by [Picard](https://picard.musicbrainz.org/)),
 and makes the MusicBrainz collection match the folder exactly — releases found on disk are
-**added**, collection entries with no folder are **removed**. Everything it does is printed.
-It runs once and exits, so it drops straight into Task Scheduler.
+**added**, collection entries with no folder are **removed**. It is designed to be run within scheduler.
 
 ## Config
 
