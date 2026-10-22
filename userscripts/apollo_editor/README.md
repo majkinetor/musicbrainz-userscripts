@@ -184,19 +184,25 @@ The options sit beside **Guess case**, or open with a right-click on the release
 | IV        | off     | *part ii* → *Part II*                         |
 | Separator | `/`     | splits a title into parts; empty never splits |
 
-| Mode                         | Capitals                                                                      |
+The mode list has three groups: **Guess**, **Languages** and **Casing**.
+
+| Guess    | Capitals                                                    |
+| -------- | ----------------------------------------------------------- |
+| Auto     | the language mode for the release's language, else Sentence |
+| Sentence | only the first word                                         |
+
+Only in Auto:
+
+- A title mostly in Cyrillic gets Sentence.
+- Parts in different scripts are guessed apart: *love story / история любви* → *Love Story / История любви*.
+
+| Language                     | Capitals                                                                      |
 | ---------------------------- | ----------------------------------------------------------------------------- |
 | English                      | every word but small ones: *The Sound of Silence*; keys as *in C-sharp minor* |
 | Turkish                      | as English, with Turkish small words and *İ*/*ı*                              |
 | French                       | Sentence, with French spacing: *Où es-tu ?*                                   |
 | Spanish, Italian, Portuguese | Sentence                                                                      |
 | Dutch                        | Sentence, *IJ* as one capital: *IJsland*                                      |
-| Sentence                     | only the first word                                                           |
-
-**Auto** picks the mode by the release's language, and Sentence for any other language. Only in Auto:
-
-- A title mostly in Cyrillic gets Sentence.
-- Parts in different scripts are guessed apart: *love story / история любви* → *Love Story / История любви*.
 
 Apollo also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 
