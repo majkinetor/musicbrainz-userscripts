@@ -33,7 +33,8 @@ mbuGuessCase.sortName('John Smith', { entity: 'artist', isPerson: true });  // '
 | `keepUpperCase` | `true`          | a word in capitals stays (MusicBrainz's *Keep all-uppercase words uppercased*)                                                                                       |
 | `romanUpper`    | `false`         | roman numerals in capitals (MusicBrainz's *Uppercase Roman numerals*)                                                                                                |
 | `extras`        | `true`          | our rules on top; `false` gives exactly MusicBrainz's result                                                                                                         |
-| `byScript`      | `true`          | with no `mode`, Cyrillic gets Sentence whatever the language (see [Our rules](#our-rules))                                                                           |
+| `byScript`      | `true`          | with no `mode`, a title is guessed by its script and `detect` (see [Our rules](#our-rules))                                                                          |
+| `detect`        | none            | with `byScript`, a function giving a Latin title's (or part's) language, ISO 639-3, or `null` for `language`'s mode                                                  |
 | `separator`     | `'/'`           | what splits a title into parts for `byScript`; empty never splits                                                                                                    |
 
 ## Modes
@@ -55,7 +56,7 @@ With `extras` (the default), on titles (`track`, `recording`, `release`, `releas
 
 - **Version words in brackets lowercased** where MusicBrainz misses them: *official music video*, *lyric video*, *slowed*, *sped up*, *reverb*, *nightcore*, *bootleg*, *mashup*, *flip* and the like (from chaban's [Guess Case Improver](https://github.com/chaban-mb/userscripts)). One written in capitals stays with `keepUpperCase`.
 - **CamelCase kept** with `keepUpperCase`: a word of the input with a capital inside it (*KoRn*, *JoJo*, *DeBarge*) keeps it.
-- **Cyrillic by its script** with `byScript`, when no `mode` is given: a title written mostly in Cyrillic gets Sentence whatever the language, as the guidelines want (a release in English, in several languages or in none would capitalise every word). A title whose parts, split by `separator`, are in different scripts has each part guessed on its own: *love story / история любви* → *Love Story / История любви*. From a [forum thread](https://community.metabrainz.org/t/guess-case-for-cyrillic-need-a-fix/814912).
+- **Per title** with `byScript`, when no `mode` is given: a title written mostly in Cyrillic, Greek or Armenian gets Sentence whatever the language, as the guidelines want for Cyrillic (a release in English, in several languages or in none would capitalise every word). A Latin title gets the mode of the language `detect` names for it, if any ([#804](https://github.com/majkinetor/musicbrainz-userscripts/issues/804)). A title whose parts, split by `separator`, differ has each part guessed on its own: *love story / история любви* → *Love Story / История любви*. From a [forum thread](https://community.metabrainz.org/t/guess-case-for-cyrillic-need-a-fix/814912).
 
 ## Tests
 

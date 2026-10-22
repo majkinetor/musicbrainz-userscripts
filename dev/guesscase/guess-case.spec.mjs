@@ -114,6 +114,14 @@ test('our rules: version words in brackets, CamelCase, the language modes', { ta
     ['love story | история любви', { separator: '|' }, 'Love Story | История любви'],
     ['love story / история любви', { separator: '' }, 'Love story / История любви'],
     ['ac/dc live', {}, 'AC/DC Live'],
+    // #804: Greek and Armenian as Cyrillic; a Latin title in the language `detect` names
+    ['το τρένο φεύγει στις οχτώ', { language: 'eng' }, 'Το τρένο φεύγει στις οχτώ'],
+    ['սիրո երգ', { language: 'eng' }, 'Սիրո երգ'],
+    ['où es-tu', { language: 'eng', detect: () => 'fra' }, 'Où es-tu'],
+    ['the sound of silence / où es-tu', { language: 'eng', detect: p => (/où/.test(p) ? 'fra' : null) }, 'The Sound of Silence / Où es-tu'],
+    ['the sound of silence', { language: 'fra', detect: () => null }, 'The sound of silence'],
+    ['où es-tu', { mode: 'English', detect: () => 'fra' }, 'Où Es-Tu'],
+    ['ich liebe dich', { language: 'eng', detect: () => { throw new Error('x'); } }, 'Ich Liebe Dich'],
   ];
   for (const [t, o, want] of cases) {
     const got = mbuGuessCase(t, o);

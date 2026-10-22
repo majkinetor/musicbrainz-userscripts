@@ -186,10 +186,11 @@ The mode list has three groups. **○** by a Guess or Language mode makes it the
 | Auto     | the release language's mode; English with no language, Sentence for any other |
 | Sentence | only the first word                                                           |
 
-Auto also looks at the script:
+Auto also looks at each title:
 
-- A title mostly in Cyrillic gets Sentence.
-- A title split by the **Separator** has parts in different scripts guessed apart: *love story / история любви* → *Love Story / История любви*.
+- A title mostly in Cyrillic, Greek or Armenian gets Sentence.
+- A title of three words or more gets its own language's mode when Apollo is sure of it, so a French title on an English release gets French. A shorter one keeps the release's mode: one or two words are too few to tell a language by.
+- A title split by the **Separator** has its parts guessed apart: *love story / история любви* → *Love Story / История любви*.
 
 | Language                     | Capitals                                                                      |
 | ---------------------------- | ----------------------------------------------------------------------------- |
@@ -206,11 +207,11 @@ Auto also looks at the script:
 
 A casing changes the letters without guessing, takes none of the options, and can't be the default.
 
-| Option    | Default | What it does                                                     |
-| --------- | ------- | ---------------------------------------------------------------- |
-| ABC       | on      | keeps capitals: *ABBA*, *KoRn*                                   |
-| IV        | off     | *part ii* → *Part II*                                            |
-| Separator | `/`     | in Auto, splits a title into parts by script; empty never splits |
+| Option    | Default | What it does                                                         |
+| --------- | ------- | -------------------------------------------------------------------- |
+| ABC       | on      | keeps capitals: *ABBA*, *KoRn*                                       |
+| IV        | off     | *part ii* → *Part II*                                                |
+| Separator | `/`     | in Auto, splits a title into parts guessed apart; empty never splits |
 
 Every Guess and Language mode also lowercases version words in brackets: *official music video*, *slowed + reverb*, *sped up*, *bootleg*, *mashup*.
 

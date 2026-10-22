@@ -54,6 +54,29 @@ test('#785: in Auto a Cyrillic title, or a part of one, gets Sentence; the separ
   check(await page.evaluate(() => window.__apolloEditor.settings.gcSep) === '|', 'the separator is kept in the settings');
 });
 
+// #804: in Auto each title is looked at on its own: a Latin one of three words or more in the language
+// lande is sure of, a short one in the release's mode, a Greek one in Sentence
+test('#804: in Auto a title gets its own language, Greek gets Sentence', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
+  await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });
+  await page.evaluate(() => { const el = document.querySelector('.tc-gco select.tc-gc-lang'); el.value = 'auto'; el.dispatchEvent(new Event('change', { bubbles: true })); });
+  const want = {
+    'tous les garçons et les filles': 'Tous les garçons et les filles',   // French, sure: French on an English release
+    'take on me': 'Take on Me',                                         // lande says Estonian: not a language with a mode, so the release's
+    'το τρένο φεύγει στις οχτώ': 'Το τρένο φεύγει στις οχτώ',           // Greek: Sentence
+  };
+  const n = await page.evaluate(titles => {
+    const r = window.MB.releaseEditor.rootField.release();
+    r.languageID(120);   // English
+    const ts = r.mediums()[0].tracks(); titles.slice(0, ts.length).forEach((t, i) => ts[i].name(t)); return Math.min(ts.length, titles.length);
+  }, Object.keys(want));
+  check(n === 3, `the release has three tracks to try (${n})`);
+  for (const [t, w] of Object.entries(want).slice(0, n)) {
+    const g = await until(() => page.evaluate(t => { const x = window.__apolloEditor.model.tracks.find(y => y.title === t); return x ? x.guessTitle : null; }, t), v => v === w);
+    check(g === w, `${t} → ${w} (got ${g})`);
+  }
+});
+
 test("#785: MusicBrainz's own guess-case buttons give Apollo's guess", { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   await openApollo(page, inject, { seed: 'seed-saigon', tab: 'tracklist' });
   await page.waitForSelector('.tc-gco select.tc-gc-lang', { state: 'attached', timeout: 10000 });
