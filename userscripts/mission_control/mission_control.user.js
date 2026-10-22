@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.170220
+// @version      2026.10.22
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -42,7 +42,7 @@ Log.cat('System').info(mbuStartupInfo('Mission Control'));
 // consExec: …and Execute once that probe has finished, after a countdown a click cancels (#776)
 // disabled: the providers without a mode (PC, IS, AS) switched off with their step in the header (#753)
 // platforms: the comparison with the platforms (#782), First Contact's reads: as fusion and ch
-const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, v: 3 };
+const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, ccDiffOpen: false, v: 3 };
 // a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion', 'fc']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
@@ -2129,6 +2129,7 @@ function settingsWindow() {
         + chk('reloadAfter', 'Reload the release page after an Execute without errors')
         + chk('consAfter', 'After saving a consolidated release, open Mission Control on it')
         + '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished<span class="mc-cfg-hint">A 5-second countdown runs on the Execute button first. Click it to cancel.</span></span></label>'
+        + '<label><input type="checkbox" data-k="ccDiffOpen"' + (S.ccDiffOpen ? ' checked' : '') + '>Show track differences by default</label>'
         + '</div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
@@ -3469,6 +3470,7 @@ const CC = {
     rowPick: {},          // row id → the platform whose version is taken by hand
     extraTake: {},        // extra row id → taken in
     open: new Set(),      // rows opened into their versions
+    seen: new Set(),      // rows that differ already shown once: the ccDiffOpen setting opens each only then
     sel: null,            // the row in the inspector
     ticks: { is: true, as: true, pc: true },
     ui: null, seeded: false,
@@ -4111,6 +4113,8 @@ function ccFieldsHtml(m) {
 }
 function ccTracksHtml(m) {
     const t = m.tracks;
+    // a row that differs, the first time it shows, opens into its versions when the setting says so; closed by hand, it stays closed
+    t.rows.forEach(r => { if (r.versions.length > 1 && !CC.seen.has(r.id)) { CC.seen.add(r.id); if (S.ccDiffOpen) CC.open.add(r.id); } });
     const agree = t.rows.filter(r => r.versions.length === 1).length, differ = t.rows.length - agree;
     let h = '<section class="mcc-sect" data-sect="tracks"><div class="mcc-sect-h"><b>Tracks</b><span class="hint">one row per track, the version most platforms have · a row that differs opens into its versions</span>'
         + '<span class="mcc-chip ok">' + agree + ' agree</span>' + (differ ? (() => { const all = t.rows.every(r => r.versions.length === 1 || CC.open.has(r.id)); return '<button type="button" class="mcc-chip warn mcc-chip-btn" data-cc="differ" aria-expanded="' + all + '" data-tip="' + (all ? 'Close' : 'Open') + ' every track that differs">' + differ + ' differ <span class="mcc-caret">' + (all ? '▾' : '▸') + '</span></button>'; })() : '') + (t.extras.length ? '<span class="mcc-chip">' + t.extras.length + ' only on one</span>' : '') + '</div>'
@@ -4251,7 +4255,8 @@ function ccSettings() {
     panel.style.width = 'min(640px, 94vw)';
     panel.innerHTML = mbuHtml('<div class="mbu-ov-body">' + mbuCfgHeader({ script: 'mission_control', name: 'Mission Control', version: VERSION, icon: '<img src="' + ICON_URL + '" alt="">', log: true })
         + '<label><input type="checkbox" data-k="consAfter"' + (S.consAfter ? ' checked' : '') + '>After saving a consolidated release, open Mission Control on it</label>'
-        + '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished<span class="mc-cfg-hint">A 5-second countdown runs on the Execute button first. Click it to cancel.</span></span></label>' + '</div>');
+        + '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished<span class="mc-cfg-hint">A 5-second countdown runs on the Execute button first. Click it to cancel.</span></span></label>'
+        + '<label><input type="checkbox" data-k="ccDiffOpen"' + (S.ccDiffOpen ? ' checked' : '') + '>Show track differences by default</label>' + '</div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
     const off = mbuDismissOn(panel, () => ov.remove());

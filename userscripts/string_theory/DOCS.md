@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-22 07:56 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-22 10:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2113,6 +2113,7 @@ A label with another catalog number keeps it. A new label is added with its cata
 | Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through      |
 | After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks |
 | …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown you can stop          |
+| Show track differences by default                               | off     | a consolidation opens every track that differs into its versions       |
 
 ### Shortcuts
 
