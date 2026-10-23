@@ -3572,10 +3572,10 @@ function ccStyle() {
         + '.mcc-ing .t{display:flex;align-items:baseline;gap:6px;min-width:0}.mcc-ing .t a.ttl{font-weight:600;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mcc-ing .dis{font-size:12px;color:var(--mbu-text-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mcc-ing .pl{display:flex;gap:2px;align-items:center;margin-left:auto;flex:none;align-self:center}.mcc-ing .pl a{display:block;line-height:0;border-radius:3px}.mcc-ing .pl a:hover{filter:brightness(1.15)}.mcc-ing .pl svg{display:block}'
-        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-start}.mcc-ing .fmt,.mcc-ing.ch>span:nth-child(3){justify-content:flex-end;text-align:right}.mcc-ing .fmt{white-space:normal}.mcc-ing .none{color:var(--mbu-text-weak)}'
+        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-start}.mcc-ing .fmt,.mcc-ing .dt,.mcc-ing.ch>span:nth-child(2),.mcc-ing.ch>span:nth-child(3){justify-content:flex-end;text-align:right}.mcc-ing .fmt{white-space:normal}.mcc-ing .none{color:var(--mbu-text-weak)}'
         + '.mcc-ing .diff{color:var(--mbu-warn);font-weight:600}.mcc-ing .diff .v{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}'
         + '.mcc-ing .act{display:flex;gap:4px;align-items:center;justify-content:flex-end}.mcc-ing .mcc-upd{padding:3px 10px;font-size:12px;border-color:var(--mbu-warn-border)}'
-        + '@container (max-width:640px){.mcc-ing.ch{display:none}.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px 120px 40px 136px minmax(0,1fr);row-gap:3px}.mcc-ing .fmt{justify-content:flex-start;text-align:left}.mcc-ing .t{grid-column:1/-1}.mcc-ing .num{justify-content:flex-start}.mcc-ing .c .m{display:inline}}'
+        + '@container (max-width:640px){.mcc-ing.ch{display:none}.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px 120px 40px 136px minmax(0,1fr);row-gap:3px}.mcc-ing .fmt,.mcc-ing .dt{justify-content:flex-start;text-align:left}.mcc-ing .t{grid-column:1/-1}.mcc-ing .num{justify-content:flex-start}.mcc-ing .c .m{display:inline}}'
         + '@container (max-width:440px){.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px minmax(0,1fr) auto}.mcc-ing>:nth-child(5){grid-column:1/-1}.mcc-ing.r>:nth-child(6){grid-column:1/-1;justify-content:flex-start}}'
         + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
@@ -4535,7 +4535,7 @@ function ccInMbHtml() {
         const keys = []; e.urls.forEach(u => { const k = keyOf(u); if (k && !keys.some(x => x[0] === k)) keys.push([k, u]); });
         return '<div class="mcc-ing r" data-id="' + esc(e.id) + '"><div class="t"><a class="ttl" href="/release/' + esc(e.id) + '" target="_blank" rel="noopener" data-tip="Open the release in a new tab">' + esc(e.title) + '</a>'
             + (e.disamb ? '<span class="dis" data-tip="' + esc(e.disamb) + '">' + esc(e.disamb) + '</span>' : '') + plat(keys) + '</div>'
-            + cell(ccInSvg('date'), e.date)
+            + cell(ccInSvg('date'), e.date, { cls: 'dt' })
             + cell(fIco(e.format), e.format, { cls: 'fmt' + (fDiff ? ' diff' : ''), diff: fDiff, tip: fDiff ? 'Another format than this album\'s ' + fmt : '' })
             + cell(ccInSvg('tracks'), e.tracks ? String(e.tracks) : '', { cls: 'num mono' + (tDiff ? ' diff' : ''), diff: tDiff, tip: tDiff ? 'This album has ' + src.tracks + ' tracks' : '' })
             + cell(ccInSvg('barcode'), e.barcode, { cls: 'mono' + (bDiff ? ' diff' : ''), diff: bDiff, tip: bDiff ? 'Another barcode than this album\'s ' + src.barcode : '' })
