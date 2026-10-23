@@ -418,6 +418,12 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
   .tr .is{order:5;width:auto;margin-left:40px}
   .tr .lk{order:6;margin-left:auto}
   .detail{padding-left:16px}
+  .hero{gap:20px}
+  .art{flex-basis:100%;display:grid;grid-template-columns:min(140px,40%) minmax(0,1fr);gap:10px 16px;align-items:start}
+  .art .cover,.art .nocover{grid-row:span 2;border-radius:10px;box-shadow:0 8px 20px var(--shadow)}
+  .art .thumbs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .art .under{padding-top:0}
+  h1{font-size:30px}
   .ed-groups .g{grid-template-columns:1fr}
   .facts{gap:16px 24px}
   .card{padding:16px}
