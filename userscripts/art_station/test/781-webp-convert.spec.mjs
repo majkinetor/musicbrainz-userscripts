@@ -63,7 +63,7 @@ test.describe('dropped WebP', () => {
     console.log('encoded first chunks:', JSON.stringify(made));
     const cards = await until(() => page.evaluate(() => [...document.querySelectorAll('.as-card.new')].map(c => ({
       size: (c.querySelector('.as-dim-sz') || {}).textContent || '', px: (c.querySelector('.as-dim-px') || {}).textContent || '',
-      tip: (c.querySelector('.as-thumb') || {}).getAttribute?.('title') || '',
+      tip: (c.querySelector('.as-thumb') || {}).getAttribute?.('data-tip') || '',   // #793: our own tooltip (data-tip), not title
     }))), cs => cs.length >= 2 && cs.every(c => c.px));
     console.log('staged:', JSON.stringify(cards));
     check(cards.length === 2, `the two decodable WebPs are staged, the broken one skipped (got ${cards.length})`);

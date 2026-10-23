@@ -32,7 +32,7 @@ test('#709: the MC finding says the track count and format', { tag: ['@sandbox']
     }, RELEASE);
     console.log(JSON.stringify(r, null, 1));
     check(r.fmt === 'CD', `the sandbox release is a CD (${r.fmt})`);
-    const short = `${r.n - 3} tracks, the release has ${r.n}`, dig = 'Digital, the release is CD', bc = 'barcode not confirmed';
+    const short = `${r.n - 3} tracks, the release has ${r.n}`, dig = 'Digital, the release is CD', bc = 'no barcode to confirm it';   // the MC-lane wording (34cd2504)
     check(r.yt.state === 'withheld' && r.yt.tracks === r.n - 3 && r.yt.mbTracks === r.n, 'YouTube Music carries its track count and the release\'s');
     check(r.yt.why === [short, dig, bc].join(' · ') && r.yt.mismatch.join() === [short, dig].join(), `its why leads with the track count, then the format (${r.yt.why})`);
     check(r.am.why === [dig, bc].join(' · ') && r.am.mismatch.join() === dig, `a matching track count adds nothing (${r.am.why})`);

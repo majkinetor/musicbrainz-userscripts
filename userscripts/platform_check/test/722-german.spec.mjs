@@ -16,7 +16,7 @@ test("in German, the release's format, year, label and barcode are read", { tag:
     await requireLogin(page);
     await idle(page);
     check(await page.evaluate(() => document.documentElement.lang) === 'de', 'MusicBrainz is in German');
-    const src = await functionSource('platform_check', ['parseMbFromDom']);
+    const src = await functionSource('platform_check', ['parseMbFromDom', 'pcPageLabels']);   // parseMbFromDom calls pcPageLabels for the release's catnos (31790e8e)
     const r = await page.evaluate(src => new Function(`const VA_MBID = '89ad4ac3-39f7-470e-963a-56509c546377', VA_NAME_RE = /^various(\\s+artists?)?$/i; const appendLog = () => {};\n${src}\nreturn parseMbFromDom();`)(), src);
     check(!!r, 'the page was read');
     if (!r) return;
