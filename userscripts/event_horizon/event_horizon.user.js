@@ -813,9 +813,11 @@ function render(keepPop) {
     const app = $('#app');
     if (!data) return;
     const { rel: r } = data;
+    // the menu is drawn anew: it keeps where it was scrolled to
+    const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = r.title + ' · Event Horizon';
     app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + artwork(r);
-    if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; $(`[data-pop="${keepPop}"]`).setAttribute('aria-expanded', 'true'); } }
+    if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; $(`[data-pop="${keepPop}"]`).setAttribute('aria-expanded', 'true'); } }
     fitQuiet();
     save();
 }
