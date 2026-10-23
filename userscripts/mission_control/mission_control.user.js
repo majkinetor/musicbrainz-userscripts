@@ -3563,19 +3563,19 @@ function ccStyle() {
         + '.mcc-inmb-tog.same{background:var(--mbu-warn-bg)}.mcc-inmb-tog.same:hover{background:var(--mbu-warn-bg);filter:brightness(.97)}.mcc-inmb:not(.closed) .mcc-inmb-tog.same{border-bottom-color:var(--mbu-warn-border)}.mcc-inmb-tog.same>svg:not(.chev){color:var(--mbu-warn)}'
         + '.mcc-inmb-tog{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px}.mcc-inmb-tog:hover{background:var(--mbu-bg-hover)}.mcc-inmb-tog .s{font-size:12px;color:var(--mbu-text-dim)}.mcc-inmb-tog svg{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-inmb:not(.closed) .mcc-inmb-tog{border-bottom:1px solid var(--mbu-divider)}.mcc-inmb.closed>:not(.mcc-inmb-tog){display:none}'
         + '.mcc-inmb .mcc-n{border-color:var(--mbu-border);color:var(--mbu-text-dim)}'
-        + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 84px 100px 24px 120px 88px;column-gap:10px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
+        + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 84px 88px 24px 120px 88px;column-gap:10px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
         + '.mcc-ing.ch{font-size:11px;color:var(--mbu-text-dim);padding-block:5px;border-bottom:1px solid var(--mbu-divider)}.mcc-ing.ch>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.mcc-ing.ch svg{color:var(--mbu-text-weak)}'
         + '.mcc-ing.alb{padding-block:7px;background:var(--mbu-bg-sunken);border-bottom:1px solid var(--mbu-divider)}.mcc-ing.alb .t>span:first-child{font-weight:600;color:var(--mbu-text-dim);white-space:nowrap}'
         // this album's platforms (a dozen, often) wrap inside the title's column
         + '.mcc-ing.alb .pl{flex:0 1 auto;min-width:0;flex-wrap:wrap;justify-content:flex-end;row-gap:2px}'
         + '.mcc-ing.r{padding-block:7px}.mcc-ing.r+.mcc-ing.r{border-top:1px solid var(--mbu-divider)}'
-        + '.mcc-ing .t{display:flex;align-items:baseline;gap:6px;min-width:0}.mcc-ing .t a.ttl{font-weight:600;flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+        + '.mcc-ing .t{display:flex;align-items:baseline;gap:6px;min-width:0}.mcc-ing .t a.ttl{font-weight:600;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mcc-ing .dis{font-size:12px;color:var(--mbu-text-dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
         + '.mcc-ing .pl{display:flex;gap:2px;align-items:center;margin-left:auto;flex:none;align-self:center}.mcc-ing .pl a{display:block;line-height:0;border-radius:3px}.mcc-ing .pl a:hover{filter:brightness(1.15)}.mcc-ing .pl svg{display:block}'
-        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-start}.mcc-ing .none{color:var(--mbu-text-weak)}'
+        + '.mcc-ing .c{white-space:nowrap;display:flex;align-items:center;gap:5px}.mcc-ing .c .m{display:none;flex:none;color:var(--mbu-text-weak)}.mcc-ing .num{justify-content:flex-start}.mcc-ing .fmt,.mcc-ing.ch>span:nth-child(3){justify-content:flex-end;text-align:right}.mcc-ing .fmt{white-space:normal}.mcc-ing .none{color:var(--mbu-text-weak)}'
         + '.mcc-ing .diff{color:var(--mbu-warn);font-weight:600}.mcc-ing .diff .v{background:var(--mbu-warn-bg);border-radius:3px;padding:0 3px}'
         + '.mcc-ing .act{display:flex;gap:4px;align-items:center;justify-content:flex-end}.mcc-ing .mcc-upd{padding:3px 10px;font-size:12px;border-color:var(--mbu-warn-border)}'
-        + '@container (max-width:640px){.mcc-ing.ch{display:none}.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px 120px 40px 136px minmax(0,1fr);row-gap:3px}.mcc-ing .t{grid-column:1/-1}.mcc-ing .num{justify-content:flex-start}.mcc-ing .c .m{display:inline}}'
+        + '@container (max-width:640px){.mcc-ing.ch{display:none}.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px 120px 40px 136px minmax(0,1fr);row-gap:3px}.mcc-ing .fmt{justify-content:flex-start;text-align:left}.mcc-ing .t{grid-column:1/-1}.mcc-ing .num{justify-content:flex-start}.mcc-ing .c .m{display:inline}}'
         + '@container (max-width:440px){.mcc-ing.r,.mcc-ing.alb{grid-template-columns:96px minmax(0,1fr) auto}.mcc-ing>:nth-child(5){grid-column:1/-1}.mcc-ing.r>:nth-child(6){grid-column:1/-1;justify-content:flex-start}}'
         + '.mcc-fmt-slot{display:inline-flex;flex:none}'
         + '.mcc-note{border:1px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;font-size:12px;color:var(--mbu-text-dim);background:var(--mbu-bg)}'
@@ -4536,7 +4536,7 @@ function ccInMbHtml() {
         return '<div class="mcc-ing r" data-id="' + esc(e.id) + '"><div class="t"><a class="ttl" href="/release/' + esc(e.id) + '" target="_blank" rel="noopener" data-tip="Open the release in a new tab">' + esc(e.title) + '</a>'
             + (e.disamb ? '<span class="dis" data-tip="' + esc(e.disamb) + '">' + esc(e.disamb) + '</span>' : '') + plat(keys) + '</div>'
             + cell(ccInSvg('date'), e.date)
-            + cell(fIco(e.format), e.format, { cls: fDiff ? 'diff' : '', diff: fDiff, tip: fDiff ? 'Another format than this album\'s ' + fmt : '' })
+            + cell(fIco(e.format), e.format, { cls: 'fmt' + (fDiff ? ' diff' : ''), diff: fDiff, tip: fDiff ? 'Another format than this album\'s ' + fmt : '' })
             + cell(ccInSvg('tracks'), e.tracks ? String(e.tracks) : '', { cls: 'num mono' + (tDiff ? ' diff' : ''), diff: tDiff, tip: tDiff ? 'This album has ' + src.tracks + ' tracks' : '' })
             + cell(ccInSvg('barcode'), e.barcode, { cls: 'mono' + (bDiff ? ' diff' : ''), diff: bDiff, tip: bDiff ? 'Another barcode than this album\'s ' + src.barcode : '' })
             // #727: Update takes what is consolidated here to it, for what it lacks
@@ -4547,7 +4547,7 @@ function ccInMbHtml() {
     const heads = '<div class="mcc-ing ch"><span>' + ccInSvg('rel') + 'Release</span><span>' + ccInSvg('date') + 'Date</span><span>' + fIco(fmt) + 'Format</span><span data-tip="Tracks">' + ccInSvg('tracks') + '</span><span>' + ccInSvg('barcode') + 'Barcode</span><span></span></div>';
     const took = []; CC.sources.filter(x => x.take && x.url).forEach(x => { if (!took.some(y => y[0] === x.key)) took.push([x.key, x.url]); });
     const album = '<div class="mcc-ing alb" data-tip="What the platforms give for this album: each release is compared with it"><div class="t"><span>This album</span>' + plat(took) + '</div><span></span>'
-        + cell(fIco(fmt), fmt) + cell(ccInSvg('tracks'), src.tracks ? String(src.tracks) : '', { cls: 'num mono' }) + cell(ccInSvg('barcode'), src.barcode, { cls: 'mono' }) + '<span></span></div>';
+        + cell(fIco(fmt), fmt, { cls: 'fmt' }) + cell(ccInSvg('tracks'), src.tracks ? String(src.tracks) : '', { cls: 'num mono' }) + cell(ccInSvg('barcode'), src.barcode, { cls: 'mono' }) + '<span></span></div>';
     let h = '';
     if (same.length) h += '<div class="mcc-inmb' + (CC.closed.has('same') ? ' closed' : '') + '"><button type="button" class="mcc-inmb-tog same"' + ccSectHead('same') + '>' + ccInSvg('chev', 14, 'chev') + ccInSvg('dup')
         + '<b>MusicBrainz already has this album</b><span class="mcc-n">' + same.length + '</span><span class="s">update it with what it lacks instead of adding it again</span></button>'
