@@ -3563,7 +3563,9 @@ function ccStyle() {
         + '.mcc-inmb-tog.same{background:var(--mbu-warn-bg)}.mcc-inmb-tog.same:hover{background:var(--mbu-warn-bg);filter:brightness(.97)}.mcc-inmb:not(.closed) .mcc-inmb-tog.same{border-bottom-color:var(--mbu-warn-border)}.mcc-inmb-tog.same>svg:not(.chev){color:var(--mbu-warn)}'
         + '.mcc-inmb-tog{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px}.mcc-inmb-tog:hover{background:var(--mbu-bg-hover)}.mcc-inmb-tog .s{font-size:12px;color:var(--mbu-text-dim)}.mcc-inmb-tog svg{flex:none;color:var(--mbu-text-dim);transition:transform .15s}.mcc-inmb:not(.closed) .mcc-inmb-tog{border-bottom:1px solid var(--mbu-divider)}.mcc-inmb.closed>:not(.mcc-inmb-tog){display:none}'
         + '.mcc-inmb .mcc-n{border-color:var(--mbu-border);color:var(--mbu-text-dim)}'
-        + '.mcc-ing{display:grid;grid-template-columns:minmax(0,1fr) 84px 88px 24px 120px 88px;column-gap:10px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
+        // one grid per section, its rows on it: the format column is as wide as its widest value, so the date sits by it
+        + '.mcc-inmb-rows{display:grid;grid-template-columns:minmax(0,1fr) 84px auto 24px 120px 88px;column-gap:10px}'
+        + '.mcc-ing{grid-column:1/-1;display:grid;grid-template-columns:subgrid;column-gap:10px;align-items:center;padding:0 12px}.mcc-ing>*{min-width:0}'
         + '.mcc-ing.ch{font-size:11px;color:var(--mbu-text-dim);padding-block:5px;border-bottom:1px solid var(--mbu-divider)}.mcc-ing.ch>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.mcc-ing.ch svg{color:var(--mbu-text-weak)}'
         + '.mcc-ing.alb{padding-block:7px;background:var(--mbu-bg-sunken);border-bottom:1px solid var(--mbu-divider)}.mcc-ing.alb .t>span:first-child{font-weight:600;color:var(--mbu-text-dim);white-space:nowrap}'
         // this album's platforms (a dozen, often) wrap inside the title's column
@@ -4544,7 +4546,7 @@ function ccInMbHtml() {
             + '</div></div>';
     };
     const same = rs.filter(e => e.same), other = rs.filter(e => !e.same);
-    const heads = '<div class="mcc-ing ch"><span>' + ccInSvg('rel') + 'Release</span><span>' + ccInSvg('date') + 'Date</span><span>' + fIco(fmt) + 'Format</span><span data-tip="Tracks">' + ccInSvg('tracks') + '</span><span>' + ccInSvg('barcode') + 'Barcode</span><span></span></div>';
+    const heads = '<div class="mcc-ing ch"><span>' + ccInSvg('rel') + 'Release</span><span>' + ccInSvg('date') + 'Date</span><span data-tip="Format">' + fIco(fmt) + '</span><span data-tip="Tracks">' + ccInSvg('tracks') + '</span><span>' + ccInSvg('barcode') + 'Barcode</span><span></span></div>';
     const took = []; CC.sources.filter(x => x.take && x.url).forEach(x => { if (!took.some(y => y[0] === x.key)) took.push([x.key, x.url]); });
     const album = '<div class="mcc-ing alb" data-tip="What the platforms give for this album: each release is compared with it"><div class="t"><span>This album</span>' + plat(took) + '</div><span></span>'
         + cell(fIco(fmt), fmt, { cls: 'fmt' }) + cell(ccInSvg('tracks'), src.tracks ? String(src.tracks) : '', { cls: 'num mono' }) + cell(ccInSvg('barcode'), src.barcode, { cls: 'mono' }) + '<span></span></div>';
