@@ -177,13 +177,13 @@ A label with another catalog number keeps it. A new label is added with its cata
 
 ## Settings
 
-| Setting                                                         | Default |                                                                                    |
-| --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------- |
-| Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                                 |
-| Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through                  |
-| After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks             |
-| …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown of 10 seconds (1–60) you can stop |
-| Show track differences by default                               | off     | a consolidation opens every track that differs into its versions                   |
+| Setting                                                         | Default |                                                                                 |
+| --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------- |
+| Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                              |
+| Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through               |
+| After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks          |
+| …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown (10 s by default) you can stop |
+| Show track differences by default                               | off     | a consolidation opens every track that differs into its versions                |
 
 ## Shortcuts
 

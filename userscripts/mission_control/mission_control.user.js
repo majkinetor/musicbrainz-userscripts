@@ -843,7 +843,7 @@ function mcStyle() {
         + '.mc-fxm{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px 6px;margin:6px 0;background:var(--mbu-bg-raised)}'
         + '.mc-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;font-size:11.5px}.mc-kv>span:nth-child(odd){color:var(--mbu-text-weak)}'
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
-        + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}.mc-cfg .mc-cfg-num{width:46px;font:inherit;padding:0 4px;margin:0 2px}'
+        + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}.mc-cfg .mc-cfg-step{display:inline-flex;align-items:center;min-width:0;height:20px;margin:0 3px;border:1px solid var(--mbu-border);border-radius:20px;vertical-align:middle}.mc-cfg .mc-cfg-step button{all:unset;box-sizing:border-box;width:20px;text-align:center;font:600 13px/18px var(--mbu-font);color:var(--mbu-text-weak);cursor:pointer}.mc-cfg .mc-cfg-step button:hover:not(:disabled){color:var(--mbu-accent)}.mc-cfg .mc-cfg-step button:disabled{cursor:default}.mc-cfg .mc-cfg-step b{font:600 11px var(--mbu-font);color:var(--mbu-text);min-width:30px;text-align:center}.mc-cfg label.mc-cfg-dim .mc-cfg-step b{color:inherit}'
         + '#mc-root .mc-act .mc-exec.mc-cd{background:linear-gradient(90deg,color-mix(in srgb,var(--mbu-accent) 35%,var(--mbu-accent-soft)) var(--mc-cd,0%),var(--mbu-accent-soft) 0);border-color:var(--mbu-accent)}'
         // a phone: MusicBrainz's page is wider than the screen, so the browser widens the layout viewport
         // to it and MC (fixed, inset 0) with it, cut off at the sides. Pinning the page's body brings the
@@ -2139,17 +2139,22 @@ function setCardOff(id, off) {
 function consSub(panel) {
     const i = panel.querySelector('[data-k="consExec"]'); if (!i) return;
     i.disabled = !S.consAfter; i.closest('label').classList.toggle('mc-cfg-dim', !S.consAfter);
-    panel.querySelector('[data-k="consExecS"]').disabled = !S.consAfter;
+    panel.querySelectorAll('.mc-cfg-step button').forEach(b => { b.disabled = !S.consAfter; });
 }
 // the Execute setting with its countdown's seconds, in both settings windows
 const consExecHtml = () => '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished'
-    + '<span class="mc-cfg-hint">A countdown of <input type="number" class="mc-cfg-num" data-k="consExecS" min="1" max="60" value="' + S.consExecS + '"' + (S.consAfter ? '' : ' disabled') + '> seconds runs on the Execute button first. Click it to cancel.</span></span></label>';
-// a setting's value from its input: a box ticked or not, or the countdown's seconds (1 to 60)
-function cfgValue(t) {
-    if (t.type !== 'number') return t.checked;
-    const v = Math.max(1, Math.min(60, Math.round(+t.value) || DEFAULTS[t.dataset.k]));
-    t.value = v;
-    return v;
+    + '<span class="mc-cfg-hint">A countdown of <span class="mc-cfg-step">' + ['-', '+'].map(d => '<button type="button" data-step="' + d + '" aria-label="' + (d === '-' ? '5 s shorter' : '5 s longer') + '"' + (S.consAfter ? '' : ' disabled') + '>' + (d === '-' ? '−' : '+') + '</button>').join('<b>' + S.consExecS + ' s</b>')
+    + '</span> runs on the Execute button first. Click it to cancel.</span></span></label>';
+// − and + change the countdown by 5 s, from 5 to 60
+function consStep(panel) {
+    panel.addEventListener('click', e => {
+        const b = e.target.closest('.mc-cfg-step button'); if (!b) return;
+        e.preventDefault();
+        const v = S.consExecS;
+        S.consExecS = b.dataset.step === '+' ? Math.min(60, (Math.floor(v / 5) + 1) * 5) : Math.max(5, (Math.ceil(v / 5) - 1) * 5);
+        b.parentElement.querySelector('b').textContent = S.consExecS + ' s';
+        saveSettings();
+    });
 }
 function settingsWindow() {
     const ov = el('div', 'mbu-ov');
@@ -2167,11 +2172,12 @@ function settingsWindow() {
     document.body.appendChild(ov);
     const done = () => { ov.remove(); };
     const off = mbuDismissOn(panel, done);
+    consStep(panel);
     // #744: the settings close before the log opens: open under it, they took the log's first ✕ or Esc for themselves
     panel.querySelector('.mbu-cfg-log').onclick = () => { off(); Log.open(); };
     panel.addEventListener('change', e => {
         const k = e.target.dataset.k; if (!k) return;
-        S[k] = cfgValue(e.target); saveSettings();
+        S[k] = e.target.checked; saveSettings();
         if (k === 'consAfter') consSub(panel);
     });
 }
@@ -4347,8 +4353,9 @@ function ccSettings() {
     ov.appendChild(panel);
     document.body.appendChild(ov);
     const off = mbuDismissOn(panel, () => ov.remove());
+    consStep(panel);
     panel.querySelector('.mbu-cfg-log').onclick = () => { off(); Log.open(); };   // #744, as in settingsWindow
-    panel.addEventListener('change', e => { const k = e.target.dataset.k; if (!k) return; S[k] = cfgValue(e.target); saveSettings(); if (k === 'consAfter') consSub(panel); ccPaint(); });
+    panel.addEventListener('change', e => { const k = e.target.dataset.k; if (!k) return; S[k] = e.target.checked; saveSettings(); if (k === 'consAfter') consSub(panel); ccPaint(); });
 }
 function ccClose() {
     if (!CC.ui) return;

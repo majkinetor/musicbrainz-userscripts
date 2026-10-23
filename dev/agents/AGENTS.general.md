@@ -47,7 +47,8 @@ The rest applies whoever you post as:
 
 ## Testing and live verification
 
-- **Iterating on looks (layout, spacing, colour) by screenshot: no test suites per tweak** — syntax check, one real-page screenshot, push. Run the full suites (and add the regression checks) when the maintainer says the batch is done, or before merging. Behaviour changes still get their tests as usual.
+- **Never write tests for visual things** (maintainer): layout, spacing, colour, how a control looks or is clicked through. Check them with a real-page screenshot instead. Only behaviour gets tests.
+- **Iterating on looks by screenshot: no test suites per tweak** — syntax check, one real-page screenshot, push. Run the full suites when the maintainer says the batch is done, or before merging.
 - **Run tests in the background** (maintainer), never in the foreground of a turn: a run takes minutes and blocks the chat meanwhile.
 - **Tests run against a sandbox / test instance, never production** — and the harness should guard production writes.
 - **Prove a regression fixture fails on the broken build first** — fixtures have passed for the wrong reason.

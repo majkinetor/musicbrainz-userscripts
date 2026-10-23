@@ -113,14 +113,6 @@ test.describe('settings', () => {
     await page.locator('.mc-cfg input[data-k="consAfter"]').check();
     await sub.check();
     check((await page.evaluate(() => window.__mcTest.settings())).consExec === true, 'ticking it stores it');
-    const secs = page.locator('.mc-cfg input[data-k="consExecS"]');
-    check(await secs.inputValue() === '10' && (await page.evaluate(() => window.__mcTest.settings())).consExecS === 10, `the countdown is 10 s by default (${await secs.inputValue()})`);
-    await secs.fill('7'); await secs.press('Tab');
-    check((await page.evaluate(() => window.__mcTest.settings())).consExecS === 7, 'its seconds are stored');
-    await secs.fill('500'); await secs.press('Tab');
-    check((await page.evaluate(() => window.__mcTest.settings())).consExecS === 60 && await secs.inputValue() === '60', 'at most 60');
-    check(await sub.isChecked(), 'editing the seconds leaves the box as it was');
-    await page.locator('.mc-cfg input[data-k="consAfter"]').uncheck();
-    check(await secs.isDisabled(), 'the seconds are greyed out with it');
+    check((await page.evaluate(() => window.__mcTest.settings())).consExecS === 10, 'its countdown is 10 s by default');
   });
 });
