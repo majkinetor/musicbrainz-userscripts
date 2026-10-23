@@ -7023,9 +7023,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     mbaKeysWire(s, Log.cat('Archive'));
     const amenu = s.querySelector('#tc-s-archivemenu'); if (amenu) { amenu.checked = SETTINGS.archiveMenu !== false; amenu.onchange = () => { SETTINGS.archiveMenu = amenu.checked; saveSettings(); }; }
     const kcaret = s.querySelector('#tc-s-keepcaret'); if (kcaret) { kcaret.checked = SETTINGS.keepCaretColumn !== false; kcaret.onchange = () => { SETTINGS.keepCaretColumn = kcaret.checked; saveSettings(); }; }   // #279
-    const off = e => { if (!s.contains(e.target) && !(anchor && anchor.contains(e.target))) { s.remove(); document.removeEventListener('mousedown', off); } };
-    const lbtn = s.querySelector('.tc-logbtn'); if (lbtn) lbtn.onclick = () => { s.remove(); document.removeEventListener('mousedown', off); openLog(); };
-    setTimeout(() => document.addEventListener('mousedown', off), 0);
+    // Esc or a click outside closes it (a click on the ⚙ too, which the shared dismiss swallows)
+    const off = mbuDismissOn(s, () => s.remove());
+    const lbtn = s.querySelector('.tc-logbtn'); if (lbtn) lbtn.onclick = () => { off(); openLog(); };
   }
 
   /* ── the one shared table ── */
