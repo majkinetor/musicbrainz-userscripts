@@ -12,19 +12,19 @@
 
 ## What's included
 
-| Script                                | What it does                                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------------------ |
-| [Apollo Editor](../apollo_editor)     | A faster release editor: artists and recordings auto-matched                         |
-| [Art Station](../art_station)         | Edit cover art and find it online with parallel edits, retried on errors             |
-| [Credit Hoarder](../credit_hoarder)   | Import credits from several providers with a review phase                            |
-| [Falcon](../falcon)                   | Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs |
-| [First Contact](../first_contact)     | Import a release from a platform's album page                                        |
-| [Fusion](../fusion)                   | Find and merge duplicate recordings from one window                                  |
-| [Group Therapy](../group_therapy)     | Batch operations and various helpers for editing relationships                       |
-| [ISRC Scout](../isrc_scout)           | Fill in a release's missing ISRCs and streaming links                                |
-| [Mammoth](../mammoth)                 | Reusable edit notes on every edit form, and remembered field values                  |
-| [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones          |
-| [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                            |
+| Script                                | What it does                                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [Apollo Editor](../apollo_editor)     | A faster release editor: artists and recordings auto-matched; attach disc IDs from CD rip logs |
+| [Art Station](../art_station)         | Edit cover art and find it online with parallel edits, retried on errors                       |
+| [Credit Hoarder](../credit_hoarder)   | Import credits from several providers with a review phase                                      |
+| [Falcon](../falcon)                   | Batch import entity fields from Harmony or by hand                                             |
+| [First Contact](../first_contact)     | Import a release from a platform's album page                                                  |
+| [Fusion](../fusion)                   | Find and merge duplicate recordings from one window                                            |
+| [Group Therapy](../group_therapy)     | Batch operations and various helpers for editing relationships                                 |
+| [ISRC Scout](../isrc_scout)           | Fill in a release's missing ISRCs and streaming links                                          |
+| [Mammoth](../mammoth)                 | Reusable edit notes on every edit form, and remembered field values                            |
+| [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
+| [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
 - **Turn a script off** in the userscript manager's menu: each bundled script has a ☑/☐ entry with its version, applied from the next page load. A script that is off doesn't run, so its standalone copy can run instead.
 - **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge, and **→ Launchers on the right** (default) or **← Launchers on the left**. Every script follows them, standalone ones too.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.23
+// @version      2026.10.23.125720
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13,6 +13,7 @@
 // @match        https://*.musicbrainz.org/label/*
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release-group/*
+// @match        https://*.musicbrainz.org/cdtoc/attach*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -14686,7 +14687,481 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     fix();
   }
 
+  /* ── #591 #808: attach a disc ID from a CD rip log ────────────────────────────
+   * majkinetor: "Picard is used to add disk id - there is no web option… We
+   * should show each media as drop target above current disk ids if they exist
+   * - you click on it to select a file or drop a file to it and you are done."
+   *
+   * The whole thing turns out to be computable in the browser. A MusicBrainz
+   * disc ID is a SHA-1 over the TOC, so nothing here needs libdiscid, Picard, or
+   * a request to anyone — the log file is read locally and the result is a URL.
+   * Verified against the exact log and disc ID in the issue:
+   *
+   *   toc  1+13+279873+150+19836+…+265363
+   *   id   UHvvp8Oyi0D5QEK.qYfeX7GrcLw-
+   *
+   * The parsers below are ports of Picard's (picard/disc/*.py), deliberately
+   * kept structurally identical so the two stay comparable — same regexes, same
+   * pregap constant, same data-track rule. "Check out the Picard code on how it
+   * formats query params and what kind of logs it processes."
+   */
+  const CD_PREGAP = 150;          // picard.disc.utils.PREGAP_LENGTH
+  const CD_DATA_TRACK_GAP = 11400;  // picard.disc.utils.DATA_TRACK_GAP
+  /* EAC / XLD / fre:ac all write the same table. Two regexes, both Picard's: one
+     to find the header (localised EAC output means the column NAMES cannot be
+     matched, only the shape), then rows until the table ends. */
+  const RE_EAC_HEADER = /^\s*.+\s+\|\s+.+\s+\|\s+.+\s+\|\s+.+\s+\|\s+.+\s*$/;
+  const RE_EAC_ROW = /^\s*(\d+)\s*\|\s*[0-9:.]+\s*\|\s*[0-9:.]+\s*\|\s*(\d+)\s*\|\s*(\d+)\s*$/;
+  const RE_DBPA_ROW = /^Track\s+(\d+):\s+Ripped LBA (\d+) to (\d+)/;
+  const RE_CYANRIP_HEADER = /^cyanrip\s+\d+\.\d+/;
+
+  function parseEacLog(lines) {
+    const out = [];
+    let i = 0;
+    for (; i < lines.length; i++) if (RE_EAC_HEADER.test(lines[i])) { i += 2; break; }   // +1 header, +1 separator
+    for (; i < lines.length; i++) {
+      const m = RE_EAC_ROW.exec(lines[i]);
+      if (!m) { if (out.length) break; continue; }
+      out.push({ number: +m[1], start: +m[2], end: +m[3] });
+    }
+    return out;
+  }
+  function parseDbPowerampLog(lines) {
+    const out = [];
+    let last = 0;
+    for (const line of lines) {
+      const m = RE_DBPA_ROW.exec(line);
+      if (!m) continue;
+      const n = +m[1];
+      // Picard raises here rather than guessing, and so should this: a partial
+      // rip produces a disc ID for a disc that does not exist.
+      if (last + 1 !== n) throw new Error(`non-consecutive track numbers (${last} → ${n}) — this looks like a partial rip, so no disc ID can be calculated`);
+      last = n;
+      out.push({ number: n, start: +m[2], end: +m[3] - 1 });   // dBpoweramp's end is exclusive
+    }
+    return out;
+  }
+  function parseCyanripLog(lines) {
+    const out = [];
+    let cur = null, start = null;
+    for (const line of lines) {
+      const th = /^Track (\d+) ripped/.exec(line);
+      if (th) { cur = +th[1]; start = null; continue; }
+      if (cur == null) continue;
+      const s = /^\s*Start LSN:\s+(\d+)\s*$/.exec(line);
+      if (s) { start = +s[1]; continue; }
+      const e = /^\s*End LSN:\s+(\d+)\s*/.exec(line);
+      if (e && start != null) { out.push({ number: cur, start, end: +e[1] }); cur = null; start = null; }
+    }
+    return out;
+  }
+  /* whipper writes YAML. Picard runs it through a real YAML parser; a userscript
+     has none and is not going to grow one for four keys, so this reads the TOC
+     block by indentation. Narrow on purpose: it only looks inside `TOC:`, and
+     only for the two keys it needs. */
+  function parseWhipperLog(lines) {
+    const out = [];
+    let inToc = false, tocIndent = -1, cur = null;
+    const indentOf = l => l.length - l.replace(/^\s*/, '').length;
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      if (/^\s*TOC:\s*$/.test(line)) { inToc = true; tocIndent = indentOf(line); cur = null; continue; }
+      if (!inToc) continue;
+      const ind = indentOf(line);
+      if (ind <= tocIndent) break;                       // out of the TOC block
+      const num = /^\s*(\d+):\s*$/.exec(line);
+      if (num) { cur = { number: +num[1], start: null, end: null }; out.push(cur); continue; }
+      if (!cur) continue;
+      const s = /^\s*Start sector:\s*(\d+)\s*$/.exec(line);
+      if (s) { cur.start = +s[1]; continue; }
+      const e = /^\s*End sector:\s*(\d+)\s*$/.exec(line);
+      if (e) cur.end = +e[1];
+    }
+    return out.filter(t => t.start != null && t.end != null);
+  }
+  // Tried in order; the first one that yields entries wins. cyanrip is checked
+  // by its header first (Picard does the same) because its "Track N ripped"
+  // lines could otherwise be mistaken for something else.
+  function parseRipLog(text) {
+    const lines = text.split(/\r\n|\r|\n/);
+    const tried = [];
+    const attempt = (name, fn) => {
+      let r = [];
+      try { r = fn(lines); } catch (e) { tried.push(`${name}: ${e.message}`); throw e; }
+      tried.push(`${name}: ${r.length} track(s)`);
+      return r;
+    };
+    if (RE_CYANRIP_HEADER.test(lines[0] || '')) {
+      const r = attempt('cyanrip', parseCyanripLog);
+      if (r.length) return { entries: r, format: 'cyanrip', tried };
+    }
+    for (const [name, fn] of [['EAC/XLD/fre:ac', parseEacLog], ['whipper', parseWhipperLog], ['dBpoweramp', parseDbPowerampLog], ['cyanrip', parseCyanripLog]]) {
+      const r = attempt(name, fn);
+      if (r.length) return { entries: r, format: name, tried };
+    }
+    return { entries: [], format: null, tried };
+  }
+  // picard.disc.utils.calculate_mb_toc_numbers, including its two refusals —
+  // an empty list and a non-standard track sequence both mean the disc ID would
+  // be wrong rather than missing, which is the worse failure.
+  function calcMbToc(entries) {
+    let toc = entries.slice();
+    if (toc.length > 1 && toc[toc.length - 1].start - toc[toc.length - 2].end === CD_DATA_TRACK_GAP + 1) {
+      toc = toc.slice(0, -1);   // a trailing data track is not part of the disc ID
+    }
+    if (!toc.length) throw new Error('no tracks were found in this log');
+    toc.forEach((e, i) => {
+      if (e.number !== i + 1) throw new Error(`non-standard track number sequence (${toc.map(t => t.number).join(', ')})`);
+    });
+    const leadout = toc[toc.length - 1].end + CD_PREGAP + 1;
+    const offsets = toc.map(e => e.start + CD_PREGAP);
+    return { first: 1, last: toc.length, leadout, offsets, dataTrackDropped: toc.length !== entries.length };
+  }
+  /* The disc ID itself: SHA-1 over first track, last track and 100 eight-digit
+     offsets (leadout, then tracks 1..99, zero-padded), base64 with +/= swapped
+     for ._- . Not needed to ATTACH — MusicBrainz recomputes it from the toc
+     parameter — but it is what makes the result checkable by eye against what
+     Picard would have produced, and it is what the page shows afterwards. */
+  async function mbDiscId(first, last, leadout, offsets) {
+    const h8 = n => (n >>> 0).toString(16).toUpperCase().padStart(8, '0');
+    let s = first.toString(16).toUpperCase().padStart(2, '0') + last.toString(16).toUpperCase().padStart(2, '0') + h8(leadout);
+    for (let i = 0; i < 99; i++) s += h8(offsets[i] || 0);
+    const bytes = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-1', bytes));
+    let bin = ''; digest.forEach(b => { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, '.').replace(/\//g, '_').replace(/=/g, '-');
+  }
+  function tocParam(toc) { return [toc.first, toc.last, toc.leadout, ...toc.offsets].join('+'); }
+  /* ⚠ EAC writes UTF-16 by default, and reading one of those as UTF-8 gives a
+     string full of NULs in which none of the regexes above match — the log would
+     look "unrecognised" rather than mis-decoded. Picard sniffs the encoding; this
+     does the same from the BOM, and falls back to counting NULs for the (real)
+     case of a UTF-16 log with no BOM at all. */
+  async function readLogText(file) {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    if (buf[0] === 0xFF && buf[1] === 0xFE) return { text: new TextDecoder('utf-16le').decode(buf.subarray(2)), encoding: 'UTF-16LE (BOM)' };
+    if (buf[0] === 0xFE && buf[1] === 0xFF) return { text: new TextDecoder('utf-16be').decode(buf.subarray(2)), encoding: 'UTF-16BE (BOM)' };
+    const body = (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) ? buf.subarray(3) : buf;
+    const look = body.subarray(0, 1000);
+    let nulls = 0; look.forEach(b => { if (b === 0) nulls++; });
+    if (nulls > look.length / 4) {
+      const odd = look.filter((b, i) => i % 2 === 1 && b === 0).length;
+      const even = look.filter((b, i) => i % 2 === 0 && b === 0).length;
+      return { text: new TextDecoder(odd >= even ? 'utf-16le' : 'utf-16be').decode(body), encoding: 'UTF-16 (no BOM)' };
+    }
+    return { text: new TextDecoder('utf-8').decode(body), encoding: (body === buf ? 'UTF-8' : 'UTF-8 (BOM)') };
+  }
+  // one place that turns a dropped file into everything downstream needs
+  async function discIdFromLog(file) {
+    const { text, encoding } = await readLogText(file);
+    const { entries, format, tried } = parseRipLog(text);
+    if (!entries.length) {
+      const e = new Error('this file is not a CD rip log Apollo recognises (EAC, XLD, fre:ac, whipper, dBpoweramp or cyanrip)');
+      e.tried = tried; throw e;
+    }
+    const toc = calcMbToc(entries);
+    const id = await mbDiscId(toc.first, toc.last, toc.leadout, toc.offsets);
+    return { id, toc, tocString: tocParam(toc), tracks: toc.last, format, encoding, tried };
+  }
+
+  /* ── the Disc IDs tab ─────────────────────────────────────────────────────
+   * Rendered above whatever MusicBrainz already shows, one zone per medium.
+   * Dropping a log on a zone goes to MusicBrainz's own attach page — Apollo
+   * never submits the edit itself, so the edit note and "Enter edit" stay
+   * exactly where they are.
+   */
+  const DISCIDS_PATH_RE = /^\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/discids\/?$/i;
+  // MusicBrainz only allows disc IDs on CD-family formats (medium_format
+  // .has_discids). Matched by name rather than by id: the names are stable and
+  // an id list would be one more thing to keep in step with MusicBrainz.
+  const DISCID_FORMAT_RE = /(^|\b)(cd|cd-r|8cm cd|8cm cd\+g|enhanced cd|hdcd|copy control cd|data cd|dts cd|playstation|dualdisc \(cd side\)|shm-cd|hqcd|cd\+g|blu-spec cd|svcd|vcd|cdv)($|\b)/i;
+  function mediumMayHaveDiscIds(format) { return !format || DISCID_FORMAT_RE.test(format); }
+  // The medium row id is MusicBrainz's internal one, and it is only in this
+  // page's own markup for mediums that ALREADY have a disc ID (the Remove/Move
+  // links carry it). When it is known the drop can go straight to the
+  // confirmation page; when it is not, it goes through MusicBrainz's own medium
+  // picker, which is one extra click and no extra request.
+  function scrapeMediumIds() {
+    const byPosition = {};
+    document.querySelectorAll('#content a[href*="medium"]').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const m = /[?&]medium(?:_id)?=(\d+)/.exec(href);
+      if (!m) return;
+      const head = a.closest('table') && a.closest('table').querySelector('th, .medium');
+      const row = a.closest('tr');
+      let pos = null;
+      // the medium's heading row above this one (tr.subh) links it as a#disc<N>; #722 #723 read
+      // N from that id, as its text ("CD 1", "Vinyl 2") is the format's name, in MB's language
+      for (let el = row && row.previousElementSibling; el; el = el.previousElementSibling) {
+        const d = el.classList.contains('subh') && el.querySelector('a[id^="disc"]');
+        const dm = d && /^disc(\d+)$/.exec(d.id);
+        if (dm) { pos = +dm[1]; break; }
+      }
+      // older markup without the id: the heading row's text
+      for (let el = row && row.previousElementSibling; pos == null && el; el = el.previousElementSibling) {
+        const t = (el.textContent || '').trim();
+        const pm = /(?:medium|cd|disc)\s*(\d+)/i.exec(t);
+        if (pm) { pos = +pm[1]; break; }
+      }
+      if (pos == null && head) { const pm = /(?:medium|cd|disc)\s*(\d+)/i.exec(head.textContent || ''); if (pm) pos = +pm[1]; }
+      if (pos == null) pos = 1;
+      byPosition[pos] = +m[1];
+    });
+    return byPosition;
+  }
+  let _discIdUiBuilt = false;
+  async function ensureDiscIdUi() {
+    if (_discIdUiBuilt) return;
+    const m = DISCIDS_PATH_RE.exec(location.pathname);
+    if (!m) return;
+    _discIdUiBuilt = true;
+    const mbid = m[1].toLowerCase();
+    const host = document.getElementById('content');
+    if (!host) return;
+    /* majkinetor: "Dark theme please". The first cut hardcoded light colours.
+       This page has nothing else of Apollo's on it, so the tokens come with the
+       box. mbuTheme() is what stamps data-mbu-theme on <html>; calling it here
+       means the box follows a dark userstyle. */
+    try { mbuTheme(); } catch (e) {}
+    const box = document.createElement('div');
+    box.id = 'apollo-discid-box';
+    box.className = 'mbu-ui';
+    box.innerHTML = `<style>
+      ${MBU_TOKENS}
+      #apollo-discid-box{margin:10px 0 16px;font:13px var(--mbu-font);color:var(--mbu-text)}
+      #apollo-discid-box h2{color:var(--mbu-text)}
+      #apollo-discid-box .fd-zones{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+      #apollo-discid-box .fd-zone{flex:1 1 220px;min-height:76px;border:2px dashed var(--mbu-border-strong);border-radius:var(--mbu-radius-lg);padding:10px 12px;
+        display:flex;flex-direction:column;justify-content:center;gap:3px;cursor:pointer;color:var(--mbu-text);
+        background:var(--mbu-bg-raised);transition:background .12s,border-color .12s}
+      #apollo-discid-box .fd-zone:hover,#apollo-discid-box .fd-zone.over{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
+      #apollo-discid-box .fd-zone.busy{cursor:progress;opacity:.7}
+      #apollo-discid-box .fd-zone.bad{border-color:var(--mbu-error-border);background:var(--mbu-error-bg)}
+      #apollo-discid-box .fd-zone.off{cursor:not-allowed;opacity:.55;border-style:solid}
+      #apollo-discid-box .fd-t{font-weight:600;color:var(--mbu-text)}
+      #apollo-discid-box .fd-s{font-size:11px;color:var(--mbu-text-dim)}
+      #apollo-discid-box .fd-err{color:var(--mbu-error)}
+      #apollo-discid-box code{font-family:var(--mbu-font-mono);background:var(--mbu-bg-sunken);padding:0 3px;border-radius:3px}
+      #apollo-discid-box a{color:var(--mbu-accent-text)}
+      #apollo-discid-box .fd-foot{font-size:11px;color:var(--mbu-text-dim)}
+    </style>
+    <h2>Disc IDs from a rip log</h2>
+    <div class="fd-zones" id="apollo-discid-zones"><div class="fd-s">Reading this release…</div></div>
+    <p class="fd-foot">Drop an <strong>EAC</strong>, <strong>XLD</strong>, <strong>fre:ac</strong>, <strong>whipper</strong>, <strong>dBpoweramp</strong> or <strong>cyanrip</strong> log on a medium — or click to pick one — and Apollo works out the disc ID and takes you to MusicBrainz's attach page. Nothing is submitted on your behalf. See <a href="/doc/How_to_Add_Disc_IDs">How to Add Disc IDs</a>.</p>`;
+    const heading = [...host.querySelectorAll('h2')].find(h => /disc ids/i.test(h.textContent || ''));
+    host.insertBefore(box, heading || host.firstChild);
+    const zones = box.querySelector('#apollo-discid-zones');
+
+    let mediums = [];
+    try {
+      // one /ws/2 release lookup, through the shared gate, for the
+      // one thing this page does not render: the medium list of a release with
+      // no disc IDs on it yet
+      const res = await mbnFetch(`${ORIGIN}/ws/2/release/${mbid}?inc=media&fmt=json`, { headers: { Accept: 'application/json' } }, { log: wsGateLog });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const j = await res.json();
+      mediums = (j && j.media) || [];
+    } catch (e) {
+      zones.innerHTML = `<div class="fd-s fd-err">Could not read this release's media (${esc(e.message)}).</div>`;
+      return;
+    }
+    const ids = scrapeMediumIds();
+    zones.innerHTML = '';
+    if (!mediums.length) { zones.innerHTML = '<div class="fd-s">This release has no media.</div>'; return; }
+    mediums.forEach(med => {
+      const pos = med.position || 1;
+      const fmt = med.format || '';
+      const tracks = med['track-count'] != null ? med['track-count'] : (med.tracks || []).length;
+      const z = document.createElement('div');
+      z.className = 'fd-zone';
+      z.dataset.position = String(pos);
+      z.dataset.tracks = String(tracks);
+      if (ids[pos]) z.dataset.mediumId = String(ids[pos]);
+      const title = `${fmt || 'Medium'} ${pos}${med.title ? ' — ' + med.title : ''}`;
+      const ok = mediumMayHaveDiscIds(fmt);
+      z.innerHTML = `<div class="fd-t">${esc(title)}</div>`
+        + `<div class="fd-s">${ok ? `${tracks} track${tracks === 1 ? '' : 's'} · drop a rip log or click to choose` : `${esc(fmt)} cannot have disc IDs`}</div>`;
+      if (!ok) { z.classList.add('off'); zones.appendChild(z); return; }
+      const pick = () => {
+        const inp = document.createElement('input');
+        inp.type = 'file'; inp.accept = '.log,.txt,text/plain';
+        inp.onchange = () => { if (inp.files && inp.files[0]) handleRipLog(z, inp.files[0], mbid); };
+        inp.click();
+      };
+      z.onclick = pick;
+      z.ondragover = e => { e.preventDefault(); z.classList.add('over'); };
+      z.ondragleave = () => z.classList.remove('over');
+      z.ondrop = e => {
+        e.preventDefault(); z.classList.remove('over');
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) handleRipLog(z, f, mbid);
+      };
+      zones.appendChild(z);
+    });
+    Log.cat('Disc IDs').info(`disc IDs: ${mediums.length} medium(s) on this release, ${Object.keys(ids).length} with a known medium id`);
+  }
+  const zoneSay = (z, cls, html) => {
+    z.classList.remove('bad', 'busy');
+    if (cls) z.classList.add(cls);
+    const s = z.querySelector('.fd-s'); if (s) s.innerHTML = html;
+  };
+  async function handleRipLog(z, file, mbid) {
+    const pos = +z.dataset.position;
+    z.classList.add('busy');
+    zoneSay(z, 'busy', `Reading ${esc(file.name)}…`);
+    let r;
+    try {
+      r = await discIdFromLog(file);
+    } catch (e) {
+      Log.cat('Disc IDs').warn(`disc IDs: ${file.name} could not be read — ${e.message}${e.tried ? ' [' + e.tried.join('; ') + ']' : ''}`);
+      zoneSay(z, 'bad', `<span class="fd-err">${esc(e.message)}</span>`);
+      return;
+    }
+    Log.cat('Disc IDs').info(`disc IDs: ${file.name} — ${r.format} log, ${r.encoding}, ${r.tracks} track(s)`
+      + `${r.toc.dataTrackDropped ? ', trailing data track dropped' : ''} → ${r.id} (toc ${r.tocString})`);
+    // A mismatch is worth stopping for: a disc ID on the wrong medium is an
+    // edit someone else has to undo.
+    const want = +z.dataset.tracks;
+    if (want && want !== r.tracks) {
+      zoneSay(z, 'bad', `<span class="fd-err">This log has ${r.tracks} track(s), but this medium has ${want}.</span> <a href="#" data-go="1">Attach anyway</a>`);
+      const a = z.querySelector('a[data-go]');
+      if (a) a.onclick = e => { e.preventDefault(); e.stopPropagation(); goAttach(r, mbid, pos, z.dataset.mediumId); };
+      return;
+    }
+    zoneSay(z, null, `${esc(r.format)} log · ${r.tracks} tracks · <code>${esc(r.id)}</code> — opening MusicBrainz…`);
+    await goAttachResolved(r, mbid, pos, z.dataset.mediumId, z);
+  }
+  // Known medium id → straight there. Otherwise resolve it first, and only fall
+  // back to MusicBrainz's own picker if that cannot be done honestly.
+  async function goAttachResolved(r, mbid, pos, knownId, z) {
+    let id = knownId;
+    if (!id) {
+      if (z) zoneSay(z, 'busy', 'Finding this medium on MusicBrainz…');
+      id = await resolveMediumId(mbid, pos, r.tocString);
+    }
+    goAttach(r, mbid, pos, id);
+  }
+  /* Straight to the confirmation when the medium's internal id is known,
+     otherwise to MusicBrainz's own medium picker filtered to this release. The
+     `apollo-medium` parameter is ignored by MusicBrainz and read back by Apollo
+     on that page (see autoPickAttachMedium) to preselect the right one. */
+  /* majkinetor: "It shows me a page to select MBID, which it shouldn't as Falcon
+   * already knows it… When MBID is added we again have page that can be skipped
+   * - select media - Falcon already knows which media was used."
+   *
+   * Both pages are the same page: /cdtoc/attach?toc=…&filter-release.query=<mbid>
+   * renders the release's mediums as RADIOS named `medium` (measured on the
+   * sandbox: value 1123588, row "CD 3: Know"), and the only thing standing
+   * between that and the confirmation is the internal medium id. So fetch that
+   * page once, read the id off the radio, and go straight to the confirmation.
+   *
+   * ⚠ MusicBrainz lists only the mediums whose track count matches the TOC, so
+   * the one dropped on can legitimately be absent. That returns null and the
+   * caller falls back to showing the page rather than guessing at a medium —
+   * attaching a disc ID to the wrong one is an edit someone else has to undo.
+   */
+  async function resolveMediumId(mbid, position, tocString) {
+    const url = `${ORIGIN}/cdtoc/attach?toc=${tocString}&filter-release.query=${mbid}`;
+    let html;
+    try {
+      const res = await mbWebFetch(url, { credentials: 'include' });   // a website page: the gate passes MusicBrainz's browser check
+      if (!res.ok) { Log.cat('Disc IDs').warn(`disc IDs: could not read the medium list (HTTP ${res.status})`); return null; }
+      html = await res.text();
+    } catch (e) { Log.cat('Disc IDs').warn(`disc IDs: could not read the medium list — ${e.message}`); return null; }
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const radios = [...doc.querySelectorAll('input[name="medium"]')];
+    if (!radios.length) { Log.cat('Disc IDs').warn('disc IDs: MusicBrainz offered no medium for this TOC — falling back to its own picker'); return null; }
+    const seen = radios.map(i => {
+      const row = i.closest('tr') || i.closest('li') || i.parentElement;
+      const text = ((row && row.textContent) || '').replace(/\s+/g, ' ').trim();
+      // rows read "CD 3: Know (show tracklist)" — format, then the position
+      const m = /(?:^|\s)(?:CD|Medium|Disc|DVD|Vinyl|Cassette)?\s*(\d+)\s*:/i.exec(text);
+      return { id: i.value, pos: m ? +m[1] : null, text: text.slice(0, 60) };
+    });
+    Log.cat('Disc IDs').info(`disc IDs: MusicBrainz offers ${seen.length} medium(s) for this TOC — ${seen.map(s => `#${s.pos}=${s.id}`).join(', ')}`);
+    const hit = seen.find(s => s.pos === position)
+      // one candidate and no position to read: unambiguous either way
+      || (seen.length === 1 && seen[0].pos == null ? seen[0] : null);
+    if (!hit) { Log.cat('Disc IDs').warn(`disc IDs: none of the offered mediums is #${position} — letting MusicBrainz ask`); return null; }
+    return hit.id;
+  }
+  function goAttach(r, mbid, position, mediumId) {
+    /* ⚠ The toc parameter is NOT percent-encoded, and that is the whole trick.
+     * MusicBrainz validates it with /\A\d+(?: \d+)*\z/ — SPACE separated
+     * (Entity/CDTOC.pm, new_from_toc). Picard sends `1+13+279873+150+…` because
+     * a `+` in a query string decodes to a space, so Perl sees the spaces it
+     * wants. Running the same string through encodeURIComponent turns each `+`
+     * into `%2B`, which decodes to a literal plus, and MusicBrainz answers
+     * "The provided CD TOC is not valid" — majkinetor hit exactly that.
+     * tocString is digits and plus signs only, so there is nothing here that
+     * needs escaping anyway. */
+    const base = `${ORIGIN}/cdtoc/attach?toc=${r.tocString}&id=${encodeURIComponent(r.id)}&tracks=${r.tracks}`;
+    const url = mediumId
+      ? `${base}&medium=${mediumId}`
+      : `${base}&filter-release.query=${mbid}&apollo-medium=${position}`;
+    Log.cat('Disc IDs').info(`disc IDs: opening ${url}`);
+    location.href = url;
+  }
+  /* On the attach page: MusicBrainz lists every medium of the release as its own
+     "attach to this medium" link. Apollo marks the one the drop was aimed at,
+     and follows it when it is unambiguous — the next page is still only a
+     confirmation, so nothing is submitted without the edit being entered by hand. */
+  function autoPickAttachMedium() {
+    if (!/^\/cdtoc\/attach\/?$/.test(location.pathname)) return;
+    const q = new URLSearchParams(location.search);
+    // The confirmation page — the last stop, where the edit note lives.
+    // majkinetor: "That will then leave the user to the final edit note (where
+    // Falcon should add its own signature too)."
+    if (q.get('medium')) return signAttachEditNote();
+    const want = q.get('apollo-medium');
+    if (!want) return;
+    /* ⚠ RADIOS, not links. The first cut looked for a[href*="medium="] and so
+       did nothing at all on this page — which is why majkinetor still had to
+       pick the medium by hand. Measured on the sandbox: the mediums are
+       <input type="radio" name="medium" value="1123588"> in a GET form whose
+       submit button reads "Attach CD TOC". */
+    const radios = [...document.querySelectorAll('input[type="radio"][name="medium"]')];
+    if (!radios.length) { Log.cat('Disc IDs').info(`no medium to choose on this page`); return; }
+    const rowOf = i => ((i.closest('tr') || i.closest('li') || i.parentElement || {}).textContent || '').replace(/\s+/g, ' ').trim();
+    const match = radios.find(i => new RegExp(`(?:^|\\s)(?:CD|Medium|Disc|DVD|Vinyl|Cassette)?\\s*${want}\\s*:`, 'i').test(rowOf(i)))
+      || (radios.length === 1 ? radios[0] : null);
+    if (!match) { Log.cat('Disc IDs').info(`could not tell which of ${radios.length} mediums is #${want} — pick it yourself`); return; }
+    match.checked = true;
+    match.dispatchEvent(new Event('change', { bubbles: true }));
+    const form = match.closest('form');
+    // #722 the form's one submit button (MB translates "Attach CD TOC"); its label only among several
+    const submits = form ? [...form.querySelectorAll('button[type="submit"], input[type="submit"]')] : [];
+    const submit = submits.length === 1 ? submits[0] : submits.find(b => /attach/i.test(b.textContent || b.value || ''));
+    if (!submit) { Log.cat('Disc IDs').info(`medium #${want} selected — press "Attach CD TOC" to continue`); return; }
+    Log.cat('Disc IDs').info(`medium #${want} selected (${match.value}), attaching`);
+    submit.click();
+  }
+  /* The confirmation page is where MusicBrainz asks for the edit note, and it is
+     the only edit in this flow — Apollo never submits it, so signing the note is
+     the only trace it leaves. Appended, never replacing: anything already typed
+     (or seeded) stays. */
+  function signAttachEditNote() {
+    const ta = document.querySelector('textarea.edit-note, textarea[name="edit-note"], textarea[name*="edit_note"], #id-edit-note, .edit-note textarea');
+    if (!ta) { Log.cat('Disc IDs').info(`no edit note box on this page to sign`); return; }
+    const sig = `${apolloAttribution()}${String.fromCharCode(10)}Disc ID computed from a CD rip log.`;
+    if ((ta.value || '').includes(apolloAttribution())) return;   // a re-render must not stack them
+    try {
+      const set = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      const existing = (ta.value || '').trim();
+      set.call(ta, existing ? existing + String.fromCharCode(10) + sig : sig);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.dispatchEvent(new Event('change', { bubbles: true }));
+      Log.cat('Disc IDs').info(`signed the edit note`);
+    } catch (e) { Log.cat('Disc IDs').info(`could not sign the edit note — ${e.message}`); }
+  }
+
   W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, get rgAuto() { return _rgAuto; }, autoSelectReleaseGroup, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  Object.assign(W.__apolloEditor, {   // #591 #808 disc IDs from a rip log
+    parseRipLog, parseEacLog, parseWhipperLog, parseDbPowerampLog, parseCyanripLog,
+    calcMbToc, mbDiscId, tocParam, readLogText, discIdFromLog,
+    ensureDiscIdUi, autoPickAttachMedium, mediumMayHaveDiscIds, scrapeMediumIds, goAttach,
+    resolveMediumId, goAttachResolved, signAttachEditNote });
 
   // #267 auto-confirm a seeded Add/Edit-release submission. When another site seeds the editor,
   // MusicBrainz shows a `.confirm-seed` interstitial with a single submit button; clicking it
@@ -14715,6 +15190,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
       return;
     }
+    // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path
+    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { whenDomReady().then(() => { ensureDiscIdUi(); autoPickAttachMedium(); }); }
     if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { mountArchiveMenus(); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
