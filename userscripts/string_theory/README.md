@@ -36,7 +36,7 @@
 - [Scribe](../scribe/README.md) and [Bandcamp Player Enhanced](../bandcamp_player_enhanced/README.md), from this repo, are not in the bundle
 - [Art Station Picker](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/art_station/as_picker/README.md)
 - [Uncheck checkboxes with Esc](https://github.com/chaban-mb/userscripts/blob/main/docs/USERSCRIPTS.md#musicbrainz-uncheck-checkboxes-with-esc)
-- [Enhanced Cover Art Uploads](https://github.com/ROpdebee/mb-userscripts#mb-enhanced-cover-art-uploads)
+
 
 ## Notes
 
