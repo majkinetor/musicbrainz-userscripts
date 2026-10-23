@@ -50,7 +50,7 @@ test("toolbar collapse", { tag: ['@cosmetic', '@sandbox', '@login'] }, async ({ 
   // every labelled button must be built as icon + label, or there is nothing to collapse
   const markup = await page.evaluate(() => ['falcon-remove-selected', 'falcon-run'].map(id => {
     const b = document.getElementById(id);
-    return { id, icon: !!b?.querySelector('.falcon-bi'), label: !!b?.querySelector('.falcon-bt'), title: (b?.title || '').length };
+    return { id, icon: !!b?.querySelector('.falcon-bi'), label: !!b?.querySelector('.falcon-bt'), title: (b?.dataset.tip || '').length };   // #793: our own tooltip (data-tip), not the browser's title
   }));
   console.log('button markup:', JSON.stringify(markup));
   ck(markup.every(m => m.icon && m.label), `every labelled toolbar button is icon + label (${markup.filter(m => !(m.icon && m.label)).map(m => m.id).join(', ') || 'all ok'})`);
