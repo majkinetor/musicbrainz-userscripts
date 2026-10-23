@@ -56,14 +56,6 @@ Each alias is its own MusicBrainz edit, submitted through `/<entity>/<mbid>/add-
 
 *Automatically send to Picard* calls Picard's `http://127.0.0.1:<port>/openalbum?id=<mbid>` once a run finishes (#578), so Picard reads the release with Falcon's links, ISRCs and cover already on it, once per release per tab. Picard needs *Browser integration* on that port; when it isn't reachable, the log says so. The MusicBrainz URL *Send to Falcon* opens always carries `&tport=<port>`, ticked or not, which is what makes MusicBrainz draw its own tagger button.
 
-## Disc IDs
-
-MusicBrainz has no web route to attach a disc ID; the documented one is Picard, which reads a rip log, works out the disc ID and opens `/cdtoc/attach` (#591). Falcon's log parsers are ports of [Picard's](https://github.com/metabrainz/picard/tree/master/picard/disc). A disc ID is a SHA-1 over the TOC, so it is computed in the browser, without libdiscid, and the log never leaves the machine.
-
-- It refuses where Picard refuses: a partial rip (non-consecutive track numbers), a non-standard track sequence, an unknown file. A trailing data track is dropped as Picard drops it.
-- A drop goes straight to `/cdtoc/attach?toc=…&id=…&tracks=…` with the medium chosen, skipping the release and medium pickers. The medium's internal row id comes from the page's Remove/Move links when it already has a disc ID, else from MusicBrainz's medium list in the background. Landing on the picker anyway, Falcon ticks the medium and presses **Attach CD TOC**; when MusicBrainz doesn't offer the medium (it lists only mediums whose track count matches the TOC), the picker is left up.
-- On the confirmation page Falcon signs the edit note (*Disc ID computed from a CD rip log*), keeping what is there and not signing twice. **Enter edit** is the user's.
-
 ## Handoff
 
 Another script hands Falcon a queue in the [JSON model](README.md#json-model), read as **Import** reads a file: the root `note` becomes the batch edit note, and an item carries whatever a row can.

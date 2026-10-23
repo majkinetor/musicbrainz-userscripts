@@ -53,3 +53,12 @@ The keys are the GM value `mbu.archive`, shared with First Contact ([its notes](
 ### Archive menu
 
 On a page that isn't the release editor, `main()` ends in `mountArchiveMenus()`: it adds a `.tc-wb` button to each `#sidebar ul.external_links > li` whose link isn't on MusicBrainz, MetaBrainz or archive.org. Apollo matches `/release/*` and `/release-group/*` for it, besides the artist and label pages it already ran on. The menu's links are plain `web.archive.org` addresses, so a page view sends nothing: `/web/<url>` (latest snapshot), `/web/http://web.archive.org/screenshot/<url>` (latest screenshot), `/web/*/<url>` (calendar), `/save/<url>`. A link `mbaSavable()` maps (Discogs) gets the same for its API address. Setting: `archiveMenu`. Spec: `test/736-archive-menu.spec.mjs`.
+
+## Disc IDs
+
+MusicBrainz has no web route to attach a disc ID; the documented one is Picard, which reads a rip log, works out the disc ID and opens `/cdtoc/attach` (#591). The log parsers are ports of [Picard's](https://github.com/metabrainz/picard/tree/master/picard/disc). A disc ID is a SHA-1 over the TOC, so it is computed in the browser, without libdiscid, and the log never leaves the machine.
+
+- It refuses where Picard refuses: a partial rip (non-consecutive track numbers), a non-standard track sequence, an unknown file. A trailing data track is dropped as Picard drops it.
+- A drop goes straight to `/cdtoc/attach?toc=…&id=…&tracks=…` with the medium chosen, skipping the release and medium pickers. The medium's internal row id comes from the page's Remove/Move links when it already has a disc ID, else from MusicBrainz's medium list in the background. Landing on the picker anyway, Apollo ticks the medium and presses **Attach CD TOC**; when MusicBrainz doesn't offer the medium (it lists only mediums whose track count matches the TOC), the picker is left up.
+- On the confirmation page Apollo signs the edit note (*Disc ID computed from a CD rip log*), keeping what is there and not signing twice. **Enter edit** is the user's.
+- Apollo runs on `/cdtoc/attach` for the last two. On a release's Disc IDs tab it starts from `main()`, beside the archive menu. Specs: `test/591-rip-log-discid.spec.mjs` (the parsers against Picard's answers, the zones, the attach URL) and `test/722-german-discids.spec.mjs` (mediums told apart by number in another language).
