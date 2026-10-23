@@ -5,7 +5,7 @@
 //
 //   node dev/test/suite-record.mjs --commit <sha the run started on> [--dir test-results/suite]
 //
-// It pushes as the bot (dev/.github-credentials.json), without force: when the nightly pushed
+// It pushes as the bot (C:\ai\_hub\.github-credentials.json, Standard 7), without force: when the nightly pushed
 // meanwhile, it fetches again and adds the run to that.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -20,7 +20,7 @@ const dir = resolve(REPO, opt('--dir', 'test-results/suite'));
 if (!commit) { console.error('usage: suite-record.mjs --commit <sha> [--dir test-results/suite]'); process.exit(2); }
 
 const BRANCH = 'test-history';
-const { username, token } = JSON.parse(readFileSync(join(REPO, 'dev/.github-credentials.json'), 'utf8'));
+const { username, token } = JSON.parse(readFileSync('C:/ai/_hub/.github-credentials.json', 'utf8'));
 const origin = execFileSync('git', ['remote', 'get-url', 'origin'], { cwd: REPO, encoding: 'utf8' }).trim();
 const slug = /github\.com[:/](.+?)(\.git)?$/.exec(origin)[1];
 const url = `https://${username}:${token}@github.com/${slug}.git`;   // used once per push, never stored in a config

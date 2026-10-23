@@ -98,7 +98,7 @@ function Publish-Reports {
         return
     }
 
-    $tokenFile = Join-Path $repo 'dev\.github-credentials.json'
+    $tokenFile = 'C:\ai\_hub\.github-credentials.json'   # the bot token's only home (Standard 7)
     if (-not (Test-Path $tokenFile)) { Write-Log "NOT pushing — $tokenFile is missing"; return }
     $token = (Get-Content -Raw $tokenFile | ConvertFrom-Json).token
     if (-not $token) { Write-Log 'NOT pushing — no token in the credentials file'; return }

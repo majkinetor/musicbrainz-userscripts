@@ -61,12 +61,12 @@ If an issue filed as a bug turns out to be an enhancement after investigation, r
 
 ### 7. AI-driven git work uses a dedicated bot identity
 
-Commits, branches, Issues, PRs, and Discussions created by an AI assistant go through a separate GitHub account, never via the maintainer's authenticated session. The bot's PAT lives at the repo-root path **`dev/.github-credentials.json`** (gitignored — see the root `.gitignore`). Push-with-token URLs are one-shot — never `git push -u` the URL form, which would write the token into `.git/config`.
+Commits, branches, Issues, PRs, and Discussions created by an AI assistant go through a separate GitHub account, never via the maintainer's authenticated session. The bot's PAT lives in one place on the machine, the hub's **`C:\ai\_hub\.github-credentials.json`**, for every project; a project never keeps a copy. Push-with-token URLs are one-shot — never `git push -u` the URL form, which would write the token into `.git/config`.
 
 **This applies to `gh` CLI calls too.** The local `gh` is logged in as the maintainer (for human use); every `gh` write (`gh pr create`, `gh issue comment`, `gh pr close`, …) made by the AI assistant **must** explicitly override the auth with the bot's PAT:
 
 ```powershell
-$env:GH_TOKEN = (Get-Content dev/.github-credentials.json | ConvertFrom-Json).token
+$env:GH_TOKEN = (Get-Content C:\ai\_hub\.github-credentials.json | ConvertFrom-Json).token
 gh pr create --title …      # now authenticated as the bot
 ```
 
