@@ -465,12 +465,12 @@ function coverViewer(list, at) {
 }
 // #784: Art Station's own gallery, in its frame: Art Station keeps the frame over this slot (#mc-as-slot) and gives
 // it the gallery's height (kept across a repaint). Execute enters what the gallery holds; mc:plan says what that is.
-let asPlan = { ops: [], more: 0, n: 0, tile: 0, fit: 0 }, asStaged = null;
+let asPlan = { ops: [], more: 0 }, asStaged = null;
 document.addEventListener('mc:plan', e => {
     let d = null;
     try { d = JSON.parse(e.detail); } catch (x) { return; }
     if (!d || d.id !== 'as' || (d.release && d.release !== RELEASE)) return;
-    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0, n: d.n || 0, tile: d.tile || 0, fit: d.fit || 0 };
+    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0 };
     Log.cat('UI').debug('#784 gallery plan: ' + (asPlan.ops.map(o => o.label).join(' · ') || 'nothing'));
     if (ui) { paintAll(); paintFoot(); }
 });
@@ -804,7 +804,7 @@ function mcStyle() {
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
         + '.mc-pill.warn{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}.mc-pill.idle{color:var(--mbu-text-weak);border-style:dashed}.mc-pill.err{color:var(--mbu-error);border-color:var(--mbu-error)}'
         + '.mc-dot.busy{background:var(--mbu-info)}.mc-dot.add{background:var(--mbu-accent)}.mc-dot.ok{background:var(--mbu-ok)}'
-        + '.mc-row2{display:flex;gap:10px;align-items:flex-start}.mc-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-span{flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-span-top>.mc-sect{margin:0}.mc-span-cols{display:flex;gap:10px;align-items:flex-start}.mc-col>.mc-sect{margin:0}'
+        + '.mc-row2{display:flex;gap:10px;align-items:flex-start}.mc-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-col>.mc-sect{margin:0}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
         // #790: the Tracks table's rules stop at Fusion's card in a slot (its release tables are tables too); :where keeps their specificity
         + '.mc-tbl th:not(:where(.mc-fxslot *)){font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);position:sticky;top:0;white-space:nowrap}'
@@ -1500,69 +1500,26 @@ function fitCards() {
     layoutCards(row);
 }
 const CARD_MIN = 520, CARD_GAP = 10;
-// #784: Art Station's card goes two columns wide when its gallery would take more than two rows in one column (reckoned
-// at one column's width, so the wider card, with fewer rows, doesn't flip back)
-function asWide(colW) {
-    if (providerOff('as') || !asPlan.n || !asPlan.tile) return false;
-    const perRow = Math.max(1, Math.floor((colW - 42) / asPlan.tile));   // less the card's and the gallery's padding
-    return Math.ceil(asPlan.n / perRow) > 2;
-}
 function layoutCards(row) {
     if (row.hidden || !row.clientWidth) return;
     const shown = row._cards.filter(s => !s.hidden);
-    let n = Math.max(1, Math.min(shown.length, Math.floor((row.clientWidth + CARD_GAP) / (CARD_MIN + CARD_GAP))));
-    // the wide card sits over the first two columns, in a span of its own; the other cards flow below and beside it.
-    // It is as wide as its gallery needs (Art Station's fit: its toolbar in one row), when what is left beside it
-    // still takes a card; under it go as many columns as its width takes (k), beside it the rest (n = k + beside)
-    const colW = (row.clientWidth - (n - 1) * CARD_GAP) / n, rowW = row.clientWidth;
-    let isWide = n >= 2 && asWide(colW);
-    // a flip that undoes the one just before it, within a second, is the gallery reporting back the width the last
-    // flip gave it (its card then flips again, and on, the cards blinking up and down): keep the layout as it is
-    const now = Date.now(), fl = row._flips || (row._flips = []);
-    if (row._isWide !== undefined && isWide !== row._isWide) {
-        if (fl.length && now - fl[fl.length - 1] < 1000) { Log.cat('UI').debug('#784 Art Station\'s card kept ' + (row._isWide ? 'wide' : 'narrow') + ': the layout flips back and forth'); isWide = row._isWide; }
-        else fl.push(now);
-    }
-    if (fl.length > 4) fl.shift();
-    row._isWide = isWide;
-    const wide = isWide ? shown.find(s => s.querySelector('[data-card="as"]')) : null;
-    let span = row.querySelector(':scope > .mc-span'), k = 2, spanW = 0;
-    if (wide && asPlan.fit) {
-        const slot = wide.querySelector('#mc-as-slot'), sb = slot && slot.getBoundingClientRect().width;
-        // the card's own padding and borders around the slot, as it is now (the same at any width)
-        if (sb && span && wide.parentNode === span.firstChild) row._asPad = span.getBoundingClientRect().width - sb;
-        const want = Math.ceil(asPlan.fit + (row._asPad || 22));
-        const beside = Math.min(shown.length - 1, Math.floor((rowW - want) / (CARD_MIN + CARD_GAP)));
-        if (want > colW && beside >= 1) { spanW = want; k = Math.max(1, Math.floor((want + CARD_GAP) / (CARD_MIN + CARD_GAP))); n = k + beside; }
-    }
-    let cols = [...row.querySelectorAll('.mc-col')];
+    const n = Math.max(1, Math.min(shown.length, Math.floor((row.clientWidth + CARD_GAP) / (CARD_MIN + CARD_GAP))));
+    const cols = [...row.querySelectorAll('.mc-col')];
     while (cols.length < n) { const c = el('div', 'mc-col'); row.append(c); cols.push(c); }
-    if (wide) {
-        if (!span) { span = el('div', 'mc-span'); span.innerHTML = '<div class="mc-span-top"></div><div class="mc-span-cols"></div>'; row.prepend(span); }
-        span.style.flex = spanW ? '0 0 ' + spanW + 'px' : '';
-        if (wide.parentNode !== span.firstChild) span.firstChild.append(wide);
-        cols.slice(0, k).forEach(c => { if (c.parentNode !== span.lastChild) span.lastChild.append(c); });
-        cols.slice(k).forEach(c => { if (c.parentNode !== row) row.append(c); });
-    } else if (span) {
-        [...span.lastChild.children].reverse().forEach(c => span.after(c));
-        [...span.firstChild.children].forEach(s => cols[0].append(s));
-        span.remove();
-    }
     // heights as they are now; a card that changes column changes width, and the next paint settles it
-    const tall = new Map(shown.map(s => [s, s.offsetHeight])), base = cols.slice(0, n).map((c, i) => wide && i < k ? tall.get(wide) + CARD_GAP : 0);
+    const tall = new Map(shown.map(s => [s, s.offsetHeight])), base = Array(n).fill(0);
     // a placed card keeps its column while results come in and the cards grow, so they don't swap places during
     // a probe; they are placed afresh when the columns change, or when keeping them leaves the columns far apart
-    const key = n + '/' + (wide ? k : 0);
-    if (row._key !== key) { row._key = key; row._cards.forEach(s => { s._mcCol = null; }); }
+    if (row._key !== n) { row._key = n; row._cards.forEach(s => { s._mcCol = null; }); }
     row._cards.forEach(s => { if (s.hidden) s._mcCol = null; });
-    const flow = shown.filter(s => s !== wide), low = a => a.indexOf(Math.min(...a)), hi = a => Math.max(...a);
+    const low = a => a.indexOf(Math.min(...a)), hi = a => Math.max(...a);
     const greedy = base.slice(), stay = base.slice(), pick = new Map();
-    flow.forEach(s => { const i = low(greedy); greedy[i] += tall.get(s) + CARD_GAP; pick.set(s, i); });
-    flow.forEach(s => { if (s._mcCol != null) stay[s._mcCol] += tall.get(s) + CARD_GAP; });
-    const kept = new Map(flow.map(s => [s, s._mcCol]));
-    flow.forEach(s => { if (kept.get(s) == null) { const i = low(stay); stay[i] += tall.get(s) + CARD_GAP; kept.set(s, i); } });
+    shown.forEach(s => { const i = low(greedy); greedy[i] += tall.get(s) + CARD_GAP; pick.set(s, i); });
+    shown.forEach(s => { if (s._mcCol != null) stay[s._mcCol] += tall.get(s) + CARD_GAP; });
+    const kept = new Map(shown.map(s => [s, s._mcCol]));
+    shown.forEach(s => { if (kept.get(s) == null) { const i = low(stay); stay[i] += tall.get(s) + CARD_GAP; kept.set(s, i); } });
     const keep = hi(stay) - hi(greedy) < Math.max(200, hi(stay) / 4);
-    flow.forEach(s => {
+    shown.forEach(s => {
         const i = keep ? kept.get(s) : pick.get(s);
         s._mcCol = i;
         if (s.parentNode !== cols[i]) cols[i].append(s);
@@ -1572,7 +1529,6 @@ function layoutCards(row) {
     cols.slice(n).forEach(c => { [...c.children].forEach(s => cols[0].append(s)); c.remove(); });
     // the cards keep their reading order within a column
     cols.slice(0, n).forEach(c => row._cards.forEach(s => { if (s.parentNode === c) c.append(s); }));
-    if (wide && row._wideDone !== true) { row._wideDone = true; Log.cat('UI').debug('#784 Art Station\'s card wide (' + asPlan.n + ' images, ' + (spanW ? spanW + ' px, as its toolbar' : 'two columns') + ')'); } else if (!wide) row._wideDone = false;
 }
 
 // CH's release-level credits (#680): its finding with no `track`. Info only, like its column.

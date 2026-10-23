@@ -51,15 +51,6 @@ test('#784: the gallery\'s slot, stage and plan; Execute runs what the gallery h
   await page.evaluate(() => { document.getElementById('mc-as-slot').style.height = '345px'; window.__plan({ ops: [{ kind: 'add', label: 'Add Front (upload)' }, { kind: 'add', label: 'Add Back (upload)' }, { kind: 'reorder', label: 'Reorder covers' }], more: 2 }); });
   check(await until(() => page.evaluate(() => document.getElementById('mc-as-slot').style.height), v => v === '345px') === '345px', 'the slot keeps its height across a repaint');
 
-  // a gallery of more than two rows in one column makes the card two columns wide; a small one gives it back
-  const wide = () => page.evaluate(() => { const c = document.querySelector('#mc-root [data-card="as"]'); return { span: !!c.closest('.mc-span'), cols: document.querySelectorAll('#mc-root .mc-col').length, w: Math.round(c.getBoundingClientRect().width) }; });
-  await page.evaluate(() => window.__plan({ ops: [], more: 0, n: 20, tile: 270 }));
-  const w1 = await until(wide, v => v.span);
-  await page.evaluate(() => window.__plan({ ops: [], more: 0, n: 2, tile: 270 }));
-  const w2 = await until(wide, v => !v.span);
-  console.log(JSON.stringify([w1, w2]));
-  check(w1.span && w1.cols >= 2 && !w2.span && w1.w > w2.w * 1.6, `twenty images: two columns wide; two: one (${JSON.stringify([w1, w2])})`);
-
   // the front's source left out: staged out; the gallery's changes alone still run Art Station
   await page.locator('#mc-root [data-card="as"] .mc-pick .mc-tick').first().click();
   check(await until(() => page.evaluate(() => window.__stage.slice(-1)[0]), v => v === false) === false, 'leaving the source out stages the front out');

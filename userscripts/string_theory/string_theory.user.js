@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.23.150147
+// @version      2026.10.23.150732
 // @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
@@ -136,7 +136,7 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.23.150147 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log('%c String Theory %c v2026.10.23.150732 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
   console.log("String Theory bundles:\n  · Apollo Editor v2026.10.23.125720\n  · Art Station v2026.10.23\n  · Credit Hoarder v2026.10.23.061559\n  · Falcon v2026.10.23.125720\n  · First Contact v2026.10.21.180216\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.22.110834\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.23.150140\n  · Platform Check v2026.10.22");
 } catch (e) {}
 
@@ -16212,7 +16212,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
         const k = m.mode === 1 ? 16 : m.mode === 2 ? innerHeight : 1;
         (xs.find(n => n.scrollHeight > n.clientHeight) || document.scrollingElement).scrollBy(m.dx * k, m.dy * k);
       }
-      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0, n: m.n || 0, tile: m.tile || 0, fit: m.fit || 0 }); }
+      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0 }); }
     });
     // the ticks are a self-ending setTimeout chain, not setInterval: in Violentmonkey on Firefox the
     // interval outlived its clearInterval and kept reporting "finding the best cover" after the answer (#680)
@@ -16264,7 +16264,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
       el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + frame.token + '&mc_embed=1';
       frame.el = el; frame.full = false; frame.plan = null;
       old.replaceWith(el);
-      send('mc:plan', { id: 'as', release: rel, ops: [], more: 0, n: 0, tile: 0, fit: 0 });
+      send('mc:plan', { id: 'as', release: rel, ops: [], more: 0 });
       log.info('Mission Control: the gallery shows the archive after the Execute');
     }
     document.addEventListener('mc:apply', async e => {
@@ -18758,23 +18758,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
     const ex = MODEL.filter(it => !it._del && !it._new);
     const moved = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',') !== ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
     const more = plan.filter(o => !(o.kind === 'add' && o.it === _mcBest && _mcFront) && !(o.kind === 'remove' && _mcReplaced && o.id === _mcReplaced.id) && !(o.kind === 'reorder' && !moved && !MODEL.some(x => x._new && !x._del && x !== _mcBest))).length;
-    // n and tile: the images in the gallery and the width a card takes in its row, for the card's width in Mission Control
-    const c = root.querySelector('.as-grid .as-card'), g = c && parseFloat(getComputedStyle(c.parentElement).columnGap) || 0;
-    const n = MODEL.filter(x => !x._sourcing).length, tile = c ? Math.round(c.offsetWidth + g) : 0;
-    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more, n, tile, fit: mcFit(n, tile, g) };
-  }
-  // the frame's width the gallery needs: its toolbar in one row with icon-only buttons, or the row of cards nearest
-  // that, whichever is wider; Mission Control gives its card that width rather than two whole columns.
-  // Reckoned, not toggled: a class flip here would wake the embed's observer, which asks for the plan again
-  function mcFit(n, tile, g) {
-    const bar = root.querySelector('.as-bar'); if (!bar) return 0;
-    const bs = getComputedStyle(bar), rs = getComputedStyle(root), px = (s, ...k) => k.reduce((a, x) => a + (parseFloat(s[x]) || 0), 0);
-    const kids = [...bar.children].filter(k => k.getClientRects().length && !k.matches('.as-sp'));
-    const labels = bar.classList.contains('mbu-compact') ? 0 : [...bar.querySelectorAll('.mbu-bt')].reduce((a, b) => a + b.offsetWidth, 0);
-    const w = kids.reduce((a, k) => a + k.offsetWidth, 0) - labels + (parseFloat(bs.columnGap) || 0) * Math.max(0, kids.length - 1)
-      + px(bs, 'paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth');
-    const k = tile ? Math.max(1, Math.min(n || 1, Math.round((w + g) / tile))) : 0;
-    return Math.ceil(Math.max(w, k * tile - g) + px(rs, 'paddingLeft', 'paddingRight'));
+    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more };
   }
   // #784: Mission Control shows this frame in its cover-art card (mc_embed): the gallery alone, without
   // MusicBrainz's header, tabs and sidebar, and without Enter edit (Execute enters). It tells the release page
@@ -62569,12 +62553,12 @@ function coverViewer(list, at) {
 }
 // #784: Art Station's own gallery, in its frame: Art Station keeps the frame over this slot (#mc-as-slot) and gives
 // it the gallery's height (kept across a repaint). Execute enters what the gallery holds; mc:plan says what that is.
-let asPlan = { ops: [], more: 0, n: 0, tile: 0, fit: 0 }, asStaged = null;
+let asPlan = { ops: [], more: 0 }, asStaged = null;
 document.addEventListener('mc:plan', e => {
     let d = null;
     try { d = JSON.parse(e.detail); } catch (x) { return; }
     if (!d || d.id !== 'as' || (d.release && d.release !== RELEASE)) return;
-    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0, n: d.n || 0, tile: d.tile || 0, fit: d.fit || 0 };
+    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0 };
     Log.cat('UI').debug('#784 gallery plan: ' + (asPlan.ops.map(o => o.label).join(' · ') || 'nothing'));
     if (ui) { paintAll(); paintFoot(); }
 });
@@ -62908,7 +62892,7 @@ function mcStyle() {
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
         + '.mc-pill.warn{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}.mc-pill.idle{color:var(--mbu-text-weak);border-style:dashed}.mc-pill.err{color:var(--mbu-error);border-color:var(--mbu-error)}'
         + '.mc-dot.busy{background:var(--mbu-info)}.mc-dot.add{background:var(--mbu-accent)}.mc-dot.ok{background:var(--mbu-ok)}'
-        + '.mc-row2{display:flex;gap:10px;align-items:flex-start}.mc-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-span{flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-span-top>.mc-sect{margin:0}.mc-span-cols{display:flex;gap:10px;align-items:flex-start}.mc-col>.mc-sect{margin:0}'
+        + '.mc-row2{display:flex;gap:10px;align-items:flex-start}.mc-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-col>.mc-sect{margin:0}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
         // #790: the Tracks table's rules stop at Fusion's card in a slot (its release tables are tables too); :where keeps their specificity
         + '.mc-tbl th:not(:where(.mc-fxslot *)){font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);position:sticky;top:0;white-space:nowrap}'
@@ -63604,69 +63588,26 @@ function fitCards() {
     layoutCards(row);
 }
 const CARD_MIN = 520, CARD_GAP = 10;
-// #784: Art Station's card goes two columns wide when its gallery would take more than two rows in one column (reckoned
-// at one column's width, so the wider card, with fewer rows, doesn't flip back)
-function asWide(colW) {
-    if (providerOff('as') || !asPlan.n || !asPlan.tile) return false;
-    const perRow = Math.max(1, Math.floor((colW - 42) / asPlan.tile));   // less the card's and the gallery's padding
-    return Math.ceil(asPlan.n / perRow) > 2;
-}
 function layoutCards(row) {
     if (row.hidden || !row.clientWidth) return;
     const shown = row._cards.filter(s => !s.hidden);
-    let n = Math.max(1, Math.min(shown.length, Math.floor((row.clientWidth + CARD_GAP) / (CARD_MIN + CARD_GAP))));
-    // the wide card sits over the first two columns, in a span of its own; the other cards flow below and beside it.
-    // It is as wide as its gallery needs (Art Station's fit: its toolbar in one row), when what is left beside it
-    // still takes a card; under it go as many columns as its width takes (k), beside it the rest (n = k + beside)
-    const colW = (row.clientWidth - (n - 1) * CARD_GAP) / n, rowW = row.clientWidth;
-    let isWide = n >= 2 && asWide(colW);
-    // a flip that undoes the one just before it, within a second, is the gallery reporting back the width the last
-    // flip gave it (its card then flips again, and on, the cards blinking up and down): keep the layout as it is
-    const now = Date.now(), fl = row._flips || (row._flips = []);
-    if (row._isWide !== undefined && isWide !== row._isWide) {
-        if (fl.length && now - fl[fl.length - 1] < 1000) { Log.cat('UI').debug('#784 Art Station\'s card kept ' + (row._isWide ? 'wide' : 'narrow') + ': the layout flips back and forth'); isWide = row._isWide; }
-        else fl.push(now);
-    }
-    if (fl.length > 4) fl.shift();
-    row._isWide = isWide;
-    const wide = isWide ? shown.find(s => s.querySelector('[data-card="as"]')) : null;
-    let span = row.querySelector(':scope > .mc-span'), k = 2, spanW = 0;
-    if (wide && asPlan.fit) {
-        const slot = wide.querySelector('#mc-as-slot'), sb = slot && slot.getBoundingClientRect().width;
-        // the card's own padding and borders around the slot, as it is now (the same at any width)
-        if (sb && span && wide.parentNode === span.firstChild) row._asPad = span.getBoundingClientRect().width - sb;
-        const want = Math.ceil(asPlan.fit + (row._asPad || 22));
-        const beside = Math.min(shown.length - 1, Math.floor((rowW - want) / (CARD_MIN + CARD_GAP)));
-        if (want > colW && beside >= 1) { spanW = want; k = Math.max(1, Math.floor((want + CARD_GAP) / (CARD_MIN + CARD_GAP))); n = k + beside; }
-    }
-    let cols = [...row.querySelectorAll('.mc-col')];
+    const n = Math.max(1, Math.min(shown.length, Math.floor((row.clientWidth + CARD_GAP) / (CARD_MIN + CARD_GAP))));
+    const cols = [...row.querySelectorAll('.mc-col')];
     while (cols.length < n) { const c = el('div', 'mc-col'); row.append(c); cols.push(c); }
-    if (wide) {
-        if (!span) { span = el('div', 'mc-span'); span.innerHTML = '<div class="mc-span-top"></div><div class="mc-span-cols"></div>'; row.prepend(span); }
-        span.style.flex = spanW ? '0 0 ' + spanW + 'px' : '';
-        if (wide.parentNode !== span.firstChild) span.firstChild.append(wide);
-        cols.slice(0, k).forEach(c => { if (c.parentNode !== span.lastChild) span.lastChild.append(c); });
-        cols.slice(k).forEach(c => { if (c.parentNode !== row) row.append(c); });
-    } else if (span) {
-        [...span.lastChild.children].reverse().forEach(c => span.after(c));
-        [...span.firstChild.children].forEach(s => cols[0].append(s));
-        span.remove();
-    }
     // heights as they are now; a card that changes column changes width, and the next paint settles it
-    const tall = new Map(shown.map(s => [s, s.offsetHeight])), base = cols.slice(0, n).map((c, i) => wide && i < k ? tall.get(wide) + CARD_GAP : 0);
+    const tall = new Map(shown.map(s => [s, s.offsetHeight])), base = Array(n).fill(0);
     // a placed card keeps its column while results come in and the cards grow, so they don't swap places during
     // a probe; they are placed afresh when the columns change, or when keeping them leaves the columns far apart
-    const key = n + '/' + (wide ? k : 0);
-    if (row._key !== key) { row._key = key; row._cards.forEach(s => { s._mcCol = null; }); }
+    if (row._key !== n) { row._key = n; row._cards.forEach(s => { s._mcCol = null; }); }
     row._cards.forEach(s => { if (s.hidden) s._mcCol = null; });
-    const flow = shown.filter(s => s !== wide), low = a => a.indexOf(Math.min(...a)), hi = a => Math.max(...a);
+    const low = a => a.indexOf(Math.min(...a)), hi = a => Math.max(...a);
     const greedy = base.slice(), stay = base.slice(), pick = new Map();
-    flow.forEach(s => { const i = low(greedy); greedy[i] += tall.get(s) + CARD_GAP; pick.set(s, i); });
-    flow.forEach(s => { if (s._mcCol != null) stay[s._mcCol] += tall.get(s) + CARD_GAP; });
-    const kept = new Map(flow.map(s => [s, s._mcCol]));
-    flow.forEach(s => { if (kept.get(s) == null) { const i = low(stay); stay[i] += tall.get(s) + CARD_GAP; kept.set(s, i); } });
+    shown.forEach(s => { const i = low(greedy); greedy[i] += tall.get(s) + CARD_GAP; pick.set(s, i); });
+    shown.forEach(s => { if (s._mcCol != null) stay[s._mcCol] += tall.get(s) + CARD_GAP; });
+    const kept = new Map(shown.map(s => [s, s._mcCol]));
+    shown.forEach(s => { if (kept.get(s) == null) { const i = low(stay); stay[i] += tall.get(s) + CARD_GAP; kept.set(s, i); } });
     const keep = hi(stay) - hi(greedy) < Math.max(200, hi(stay) / 4);
-    flow.forEach(s => {
+    shown.forEach(s => {
         const i = keep ? kept.get(s) : pick.get(s);
         s._mcCol = i;
         if (s.parentNode !== cols[i]) cols[i].append(s);
@@ -63676,7 +63617,6 @@ function layoutCards(row) {
     cols.slice(n).forEach(c => { [...c.children].forEach(s => cols[0].append(s)); c.remove(); });
     // the cards keep their reading order within a column
     cols.slice(0, n).forEach(c => row._cards.forEach(s => { if (s.parentNode === c) c.append(s); }));
-    if (wide && row._wideDone !== true) { row._wideDone = true; Log.cat('UI').debug('#784 Art Station\'s card wide (' + asPlan.n + ' images, ' + (spanW ? spanW + ' px, as its toolbar' : 'two columns') + ')'); } else if (!wide) row._wideDone = false;
 }
 
 // CH's release-level credits (#680): its finding with no `track`. Info only, like its column.

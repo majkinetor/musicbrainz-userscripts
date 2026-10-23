@@ -430,7 +430,7 @@
         const k = m.mode === 1 ? 16 : m.mode === 2 ? innerHeight : 1;
         (xs.find(n => n.scrollHeight > n.clientHeight) || document.scrollingElement).scrollBy(m.dx * k, m.dy * k);
       }
-      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0, n: m.n || 0, tile: m.tile || 0, fit: m.fit || 0 }); }
+      else if (m.type === 'plan') { frame.plan = m; send('mc:plan', { id: 'as', release: rel, ops: m.ops || [], more: m.more || 0 }); }
     });
     // the ticks are a self-ending setTimeout chain, not setInterval: in Violentmonkey on Firefox the
     // interval outlived its clearInterval and kept reporting "finding the best cover" after the answer (#680)
@@ -482,7 +482,7 @@
       el.src = location.origin + '/release/' + rel + '/cover-art?mc_frame=' + frame.token + '&mc_embed=1';
       frame.el = el; frame.full = false; frame.plan = null;
       old.replaceWith(el);
-      send('mc:plan', { id: 'as', release: rel, ops: [], more: 0, n: 0, tile: 0, fit: 0 });
+      send('mc:plan', { id: 'as', release: rel, ops: [], more: 0 });
       log.info('Mission Control: the gallery shows the archive after the Execute');
     }
     document.addEventListener('mc:apply', async e => {
@@ -3395,23 +3395,7 @@
     const ex = MODEL.filter(it => !it._del && !it._new);
     const moved = ex.slice().sort((a, b) => a.order - b.order).map(it => it.id).join(',') !== ex.slice().sort((a, b) => a._origOrder - b._origOrder).map(it => it.id).join(',');
     const more = plan.filter(o => !(o.kind === 'add' && o.it === _mcBest && _mcFront) && !(o.kind === 'remove' && _mcReplaced && o.id === _mcReplaced.id) && !(o.kind === 'reorder' && !moved && !MODEL.some(x => x._new && !x._del && x !== _mcBest))).length;
-    // n and tile: the images in the gallery and the width a card takes in its row, for the card's width in Mission Control
-    const c = root.querySelector('.as-grid .as-card'), g = c && parseFloat(getComputedStyle(c.parentElement).columnGap) || 0;
-    const n = MODEL.filter(x => !x._sourcing).length, tile = c ? Math.round(c.offsetWidth + g) : 0;
-    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more, n, tile, fit: mcFit(n, tile, g) };
-  }
-  // the frame's width the gallery needs: its toolbar in one row with icon-only buttons, or the row of cards nearest
-  // that, whichever is wider; Mission Control gives its card that width rather than two whole columns.
-  // Reckoned, not toggled: a class flip here would wake the embed's observer, which asks for the plan again
-  function mcFit(n, tile, g) {
-    const bar = root.querySelector('.as-bar'); if (!bar) return 0;
-    const bs = getComputedStyle(bar), rs = getComputedStyle(root), px = (s, ...k) => k.reduce((a, x) => a + (parseFloat(s[x]) || 0), 0);
-    const kids = [...bar.children].filter(k => k.getClientRects().length && !k.matches('.as-sp'));
-    const labels = bar.classList.contains('mbu-compact') ? 0 : [...bar.querySelectorAll('.mbu-bt')].reduce((a, b) => a + b.offsetWidth, 0);
-    const w = kids.reduce((a, k) => a + k.offsetWidth, 0) - labels + (parseFloat(bs.columnGap) || 0) * Math.max(0, kids.length - 1)
-      + px(bs, 'paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth');
-    const k = tile ? Math.max(1, Math.min(n || 1, Math.round((w + g) / tile))) : 0;
-    return Math.ceil(Math.max(w, k * tile - g) + px(rs, 'paddingLeft', 'paddingRight'));
+    return { ops: plan.map(o => ({ kind: o.kind, label: o.label })), more };
   }
   // #784: Mission Control shows this frame in its cover-art card (mc_embed): the gallery alone, without
   // MusicBrainz's header, tabs and sidebar, and without Enter edit (Execute enters). It tells the release page
