@@ -5,8 +5,7 @@
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
-// @match        https://*.musicbrainz.org/robots.txt*
-// @match        https://*.musicbrainz.org/release/*
+// @match        https://*.musicbrainz.org/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -14,7 +13,8 @@
 
 // The viewer lives on /robots.txt: MusicBrainz's web server answers it on its own, so opening the viewer costs MusicBrainz nothing.
 // /robots.txt?release=<mbid> shows that release, and so does MusicBrainz's own /release/<mbid>, where links already point
-// (?mb=1 keeps MusicBrainz's page); its data comes from ws/2 (three requests) and the Cover Art Archive.
+// (?mb=1 keeps MusicBrainz's page). Two settings spare MusicBrainz that page: the viewer leaves it for /robots.txt
+// as it starts, and MusicBrainz's own release links are sent to /robots.txt before they are followed; its data comes from ws/2 (three requests) and the Cover Art Archive.
 (function () {
 'use strict';
 
@@ -426,11 +426,12 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView'];
+const VIEW = ['onMb', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView'];
 const S = {
     cols: { isrc: true, links: true, credits: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     crTracks: true,
+    onMb: { leave: true, links: true },
     thumbs: true,
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
@@ -599,6 +600,7 @@ const copyB = (v, cls = 'mono', text = v) => `<button class="cp ${cls}" type="bu
 // credits grouped by role, in the order MB lists them
 function byRole(cr) { const m = new Map(); for (const c of cr) { const l = m.get(c.role) || []; if (!l.some(x => x.name === c.name)) l.push(c); m.set(c.role, l); } return [...m]; }
 const ON_ROBOTS = location.pathname === '/robots.txt';
+const relRobots = id => '/robots.txt?release=' + id;
 const relUrl = id => ON_ROBOTS ? '/robots.txt?release=' + id : '/release/' + id;
 
 /* ── sections fold ─────────────────────────────────── */
@@ -639,6 +641,7 @@ function settings(r) {
     return `<span class="popwrap gear"><button type="button" data-pop="facts" aria-expanded="false" aria-label="Settings" title="Settings">${GEAR}</button><div class="pop r" id="pop-facts" hidden>
         <div class="h label">Release info</div><div class="hint">What the header shows.</div>${FACTS.map(([k, n]) => opt('fact', k, S.facts.includes(k), n)).join('')}
         <div class="h label" style="margin-top:10px">Under the cover</div>${opt('thumbs', '1', S.thumbs, 'Other covers')}${[['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => opt('extra', k, S.extras.includes(k), n)).join('')}
+        <div class="h label" style="margin-top:10px">On MusicBrainz</div>${opt('onmb', 'leave', S.onMb.leave, 'Leave its release page for the viewer at once')}${opt('onmb', 'links', S.onMb.links, 'Open its release links in the viewer')}
         <div class="h label" style="margin-top:10px">Track providers</div><div class="hint">Each gets a column in the tracklist; the others sit behind +N.</div>${union.map(p => opt('prov', p.key, S.prov.includes(p.key), icon(p, 20) + esc(p.name))).join('') || '<div class="hint">No track links here.</div>'}</div></span>`;
 }
 function under(r) {
@@ -848,6 +851,7 @@ function onClick(ev) {
     else if (d.prov) { S.prov = toggle(S.prov, d.prov); keep = 'facts'; }
     else if (d.thumbs) { S.thumbs = !S.thumbs; keep = 'facts'; }
     else if (d.extra) { S.extras = toggle(S.extras, d.extra); keep = 'facts'; }
+    else if (d.onmb) { S.onMb = { ...S.onMb, [d.onmb]: !S.onMb[d.onmb] }; keep = 'facts'; }
     else if (d.fact) { S.facts = toggle(S.facts, d.fact); keep = 'facts'; }
     else if (d.edview) S.edView = d.edview;
     else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
@@ -884,5 +888,18 @@ async function start() {
     catch (e) { app.innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
 }
 // robots.txt is plain text: replaced once parsed, so the parser adds nothing after us
-if (ON_ROBOTS || PAGE_ID) if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+// MusicBrainz's release page: leaving it at document-start spares loading and running it (its HTML is already asked for)
+if (PAGE_ID && !ON_ROBOTS && S.onMb.leave) location.replace(relRobots(PAGE_ID[1].toLowerCase()) + location.hash);
+else if (ON_ROBOTS || PAGE_ID) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start(); }
+// any other MusicBrainz page: a release link is pointed at the viewer as it is pressed, so MusicBrainz never builds that page
+else if (S.onMb.links) {
+    const RELEASE = new RegExp('^/release/(' + MBID.source + ')/?$', 'i');
+    const point = ev => {
+        const a = ev.target.closest && ev.target.closest('a[href]');
+        if (!a || a.host !== location.host) return;
+        const m = a.pathname.match(RELEASE);
+        if (m && !a.search) a.href = relRobots(m[1].toLowerCase()) + a.hash;
+    };
+    for (const t of ['pointerdown', 'focusin', 'contextmenu']) document.addEventListener(t, point, true);
+}
 })();
