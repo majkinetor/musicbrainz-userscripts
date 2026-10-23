@@ -6,13 +6,15 @@
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
 // @match        https://*.musicbrainz.org/robots.txt*
+// @match        https://*.musicbrainz.org/release/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
 
 // The viewer lives on /robots.txt: MusicBrainz's web server answers it on its own, so opening the viewer costs MusicBrainz nothing.
-// /robots.txt?release=<mbid> shows that release; its data comes from ws/2 (three requests) and the Cover Art Archive.
+// /robots.txt?release=<mbid> shows that release, and so does MusicBrainz's own /release/<mbid>, where links already point
+// (?mb=1 keeps MusicBrainz's page); its data comes from ws/2 (three requests) and the Cover Art Archive.
 (function () {
 'use strict';
 
@@ -596,7 +598,8 @@ const acHtml = ac => ac.map(a => entA('artist', a.artist.id, a.name) + esc(a.joi
 const copyB = (v, cls = 'mono', text = v) => `<button class="cp ${cls}" type="button" data-copy="${esc(v)}" aria-label="Copy ${esc(text)}">${esc(text)}</button>`;
 // credits grouped by role, in the order MB lists them
 function byRole(cr) { const m = new Map(); for (const c of cr) { const l = m.get(c.role) || []; if (!l.some(x => x.name === c.name)) l.push(c); m.set(c.role, l); } return [...m]; }
-const relUrl = id => location.pathname + '?release=' + id;
+const ON_ROBOTS = location.pathname === '/robots.txt';
+const relUrl = id => ON_ROBOTS ? '/robots.txt?release=' + id : '/release/' + id;
 
 /* ── sections fold ─────────────────────────────────── */
 function sect(id, title, tools, body, folded) {
@@ -658,7 +661,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : ''}" aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}<span class="sep"></span>${settings(r)}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : '?mb=1'}" aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}<span class="sep"></span>${settings(r)}</span></div>
             <h1>${esc(r.title)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
@@ -855,10 +858,13 @@ function onClick(ev) {
     const y = scrollY; render(keep); scrollTo(0, y);
 }
 
+// the release itself, not its subpages (/edit, /cover-art, …)
+const PAGE_ID = ON_ROBOTS ? (new URLSearchParams(location.search).get('release') || '').match(MBID)
+    : new URLSearchParams(location.search).has('mb') ? null : location.pathname.match(new RegExp('^/release/(' + MBID.source + ')/?$', 'i'));
 async function start() {
     document.documentElement.innerHTML = `<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Event Horizon</title>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style>${CSS}</style></head>
-        <body><header class="site"><div class="wrap"><a href="${location.pathname}" class="brand">${LOGO}Event Horizon</a>
+        <body><header class="site"><div class="wrap"><a href="/robots.txt" class="brand">${LOGO}Event Horizon</a>
         <form id="go"><input type="search" name="q" placeholder="Paste a MusicBrainz release link or MBID" aria-label="Release link or MBID"></form>
         <nav><a href="${MB}/">MusicBrainz</a></nav></div></header>
         <main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div></body>`;
@@ -870,7 +876,7 @@ async function start() {
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
     addEventListener('resize', fitQuiet);
-    const id = (new URLSearchParams(location.search).get('release') || '').match(MBID);
+    const id = PAGE_ID && (ON_ROBOTS ? PAGE_ID : [PAGE_ID[1]]);
     const app = $('#app');
     if (!id) { app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     app.innerHTML = '<p class="msg">Loading…</p>';
@@ -878,5 +884,5 @@ async function start() {
     catch (e) { app.innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
 }
 // robots.txt is plain text: replaced once parsed, so the parser adds nothing after us
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+if (ON_ROBOTS || PAGE_ID) if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
