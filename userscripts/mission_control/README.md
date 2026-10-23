@@ -161,7 +161,7 @@ For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolid
 
 <img src="./screenshots/consolidate.png" />
 
-Once saved, Mission Control opens on the release and probes for what the editor can't take: the ISRCs and recording links (ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving** chooses which start taken in. With *…and Execute once the probe has finished*, Execute runs itself after a 5-second countdown on the button; a click stops it.
+Once saved, Mission Control opens on the release and probes for what the editor can't take: the ISRCs and recording links (ISRC Scout), the best cover (Art Station), and the artist and label links (Platform Check). **After saving** chooses which start taken in. With *…and Execute once the probe has finished*, Execute runs itself after a countdown on the button, 10 seconds unless set otherwise; a click stops it.
 
 A click on a section's heading opens or closes it; a right-click opens every section when one is closed, and closes them all otherwise.
 
@@ -169,7 +169,7 @@ A track's versions show on the right too. **▾ → Copy as Markdown** beside **
 
 ### Update this release
 
-**Update**, in the banner, opens that release here; Mission Control probes and [compares it with the platforms](#compare-with-the-platforms) at once, offering what it lacks as after saving a new release. What you picked by hand isn't carried over.
+**Update**, in the banner, opens that release here; Mission Control probes and [compares it with the platforms](#compare-with-the-platforms) at once, offering what it lacks as after saving a new release, but Execute never runs by itself. What you picked by hand isn't carried over.
 
 [First Contact](../first_contact/README.md#already-in-musicbrainz) offers it too, when MusicBrainz already has the album you are about to import: the release opens in a new tab, compared with the platforms and with that album, though the release has neither its link nor its barcode.
 
@@ -177,13 +177,13 @@ A label with another catalog number keeps it. A new label is added with its cata
 
 ## Settings
 
-| Setting                                                         | Default |                                                                        |
-| --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
-| Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                     |
-| Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through      |
-| After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks |
-| …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown you can stop          |
-| Show track differences by default                               | off     | a consolidation opens every track that differs into its versions       |
+| Setting                                                         | Default |                                                                                    |
+| --------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------- |
+| Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                                 |
+| Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through                  |
+| After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks             |
+| …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown of 10 seconds (1–60) you can stop |
+| Show track differences by default                               | off     | a consolidation opens every track that differs into its versions                   |
 
 ## Shortcuts
 

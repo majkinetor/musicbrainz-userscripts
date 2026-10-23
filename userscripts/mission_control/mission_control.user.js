@@ -39,10 +39,10 @@ Log.cat('System').info(mbuStartupInfo('Mission Control'));
 // key each: a card's id, or PC's 'pc:release' / 'pc:artist' / 'pc:label'
 // reloadAfter: reload the release page after an Execute without errors
 // consAfter: after saving a consolidated release (#702), open Mission Control on it and probe
-// consExec: …and Execute once that probe has finished, after a countdown a click cancels (#776)
+// consExec: …and Execute once that probe has finished, after a countdown a click cancels (#776); consExecS: its seconds
 // disabled: the providers without a mode (PC, IS, AS) switched off with their step in the header (#753)
 // platforms: the comparison with the platforms (#782), First Contact's reads: as fusion and ch
-const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, ccDiffOpen: false, v: 3 };
+const DEFAULTS = { fusion: 'ask', ch: 'ask', platforms: 'auto', disabled: [], left: true, right: true, linkedOpen: [], autoProbe: true, reloadAfter: true, consAfter: true, consExec: false, consExecS: 10, ccDiffOpen: false, v: 3 };
 // a card and the providers whose selections it holds (Tracks: the per-track ones without a card of their own)
 const CARDS = [['tracks', ['is', 'fusion', 'fc']], ['pc', ['pc']], ['as', ['as']], ['ch', ['ch']]];
 // The cards switched off with the switch in their header: folded, and Execute leaves out what is selected
@@ -339,7 +339,7 @@ function reloadWhenClean() {
 // #776 consExec: after a consolidation opened Mission Control, Execute once the probe has finished
 // (every provider answered, the second ask after the album links changed included), after a
 // countdown on the Execute button that a click cancels, like Falcon's Auto send on Harmony
-const AUTO_EXEC_S = 5, AUTO_EXEC_SETTLE = 1500, AUTO_EXEC_GIVEUP = 180000;
+const AUTO_EXEC_SETTLE = 1500, AUTO_EXEC_GIVEUP = 180000;
 let autoArmed = 0, autoSettle = 0, autoGiveUp = 0, autoTimer = 0, autoEnd = 0;
 function autoExecArm() {
     autoArmed = Date.now();
@@ -359,8 +359,8 @@ function autoExecCheck() {
         if (!ui) { Log.cat('Execute').info('auto execute: Mission Control was closed: no Execute'); return; }
         const n = changeCount();
         if (!n) { Log.cat('Execute').info('auto execute: the probe selected nothing: no Execute'); return; }
-        autoEnd = Date.now() + AUTO_EXEC_S * 1000;
-        Log.cat('Execute').info('auto execute: ' + n + ' change(s) in ' + AUTO_EXEC_S + ' s, click Execute to cancel');
+        autoEnd = Date.now() + S.consExecS * 1000;
+        Log.cat('Execute').info('auto execute: ' + n + ' change(s) in ' + S.consExecS + ' s, click Execute to cancel');
         autoTimer = setInterval(autoExecTick, 100);
         paintExec();
     }, AUTO_EXEC_SETTLE);
@@ -843,7 +843,7 @@ function mcStyle() {
         + '.mc-fxm{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px 6px;margin:6px 0;background:var(--mbu-bg-raised)}'
         + '.mc-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;font-size:11.5px}.mc-kv>span:nth-child(odd){color:var(--mbu-text-weak)}'
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
-        + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}'
+        + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}.mc-cfg .mc-cfg-num{width:46px;font:inherit;padding:0 4px;margin:0 2px}'
         + '#mc-root .mc-act .mc-exec.mc-cd{background:linear-gradient(90deg,color-mix(in srgb,var(--mbu-accent) 35%,var(--mbu-accent-soft)) var(--mc-cd,0%),var(--mbu-accent-soft) 0);border-color:var(--mbu-accent)}'
         // a phone: MusicBrainz's page is wider than the screen, so the browser widens the layout viewport
         // to it and MC (fixed, inset 0) with it, cut off at the sides. Pinning the page's body brings the
@@ -1778,7 +1778,7 @@ function paintExec() {
     ex.textContent = executing ? 'Executing…' : autoTimer ? 'Executing ' + n + ' in ' + Math.max(1, Math.ceil((autoEnd - Date.now()) / 1000)) + '… (click to cancel)' : n ? 'Execute (' + n + ')' : 'Execute';
     execWidth(ex);
     ex.classList.toggle('mc-cd', !!autoTimer);
-    ex.style.setProperty('--mc-cd', autoTimer ? Math.min(100, 100 - (autoEnd - Date.now()) / (AUTO_EXEC_S * 10)).toFixed(1) + '%' : '0%');
+    ex.style.setProperty('--mc-cd', autoTimer ? Math.min(100, 100 - (autoEnd - Date.now()) / (S.consExecS * 10)).toFixed(1) + '%' : '0%');
     ex.dataset.tip = autoTimer ? 'Mission Control applies the selected changes when the countdown ends\nClick: cancel' : 'Apply the selected changes, step by step';
     autoExecCheck();
 }
@@ -2139,6 +2139,17 @@ function setCardOff(id, off) {
 function consSub(panel) {
     const i = panel.querySelector('[data-k="consExec"]'); if (!i) return;
     i.disabled = !S.consAfter; i.closest('label').classList.toggle('mc-cfg-dim', !S.consAfter);
+    panel.querySelector('[data-k="consExecS"]').disabled = !S.consAfter;
+}
+// the Execute setting with its countdown's seconds, in both settings windows
+const consExecHtml = () => '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished'
+    + '<span class="mc-cfg-hint">A countdown of <input type="number" class="mc-cfg-num" data-k="consExecS" min="1" max="60" value="' + S.consExecS + '"' + (S.consAfter ? '' : ' disabled') + '> seconds runs on the Execute button first. Click it to cancel.</span></span></label>';
+// a setting's value from its input: a box ticked or not, or the countdown's seconds (1 to 60)
+function cfgValue(t) {
+    if (t.type !== 'number') return t.checked;
+    const v = Math.max(1, Math.min(60, Math.round(+t.value) || DEFAULTS[t.dataset.k]));
+    t.value = v;
+    return v;
 }
 function settingsWindow() {
     const ov = el('div', 'mbu-ov');
@@ -2149,7 +2160,7 @@ function settingsWindow() {
         + chk('autoProbe', 'Probe as soon as Mission Control opens')
         + chk('reloadAfter', 'Reload the release page after an Execute without errors')
         + chk('consAfter', 'After saving a consolidated release, open Mission Control on it')
-        + '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished<span class="mc-cfg-hint">A 5-second countdown runs on the Execute button first. Click it to cancel.</span></span></label>'
+        + consExecHtml()
         + '<label><input type="checkbox" data-k="ccDiffOpen"' + (S.ccDiffOpen ? ' checked' : '') + '>Show track differences by default</label>'
         + '</div>');
     ov.appendChild(panel);
@@ -2160,7 +2171,7 @@ function settingsWindow() {
     panel.querySelector('.mbu-cfg-log').onclick = () => { off(); Log.open(); };
     panel.addEventListener('change', e => {
         const k = e.target.dataset.k; if (!k) return;
-        S[k] = e.target.checked; saveSettings();
+        S[k] = cfgValue(e.target); saveSettings();
         if (k === 'consAfter') consSub(panel);
     });
 }
@@ -4331,13 +4342,13 @@ function ccSettings() {
     panel.style.width = 'min(640px, 94vw)';
     panel.innerHTML = mbuHtml('<div class="mbu-ov-body">' + mbuCfgHeader({ script: 'mission_control', name: 'Mission Control', version: VERSION, icon: '<img src="' + ICON_URL + '" alt="">', log: true })
         + '<label><input type="checkbox" data-k="consAfter"' + (S.consAfter ? ' checked' : '') + '>After saving a consolidated release, open Mission Control on it</label>'
-        + '<label class="mc-cfg-sub' + (S.consAfter ? '' : ' mc-cfg-dim') + '"><input type="checkbox" data-k="consExec"' + (S.consExec ? ' checked' : '') + (S.consAfter ? '' : ' disabled') + '><span>…and Execute once the probe has finished<span class="mc-cfg-hint">A 5-second countdown runs on the Execute button first. Click it to cancel.</span></span></label>'
+        + consExecHtml()
         + '<label><input type="checkbox" data-k="ccDiffOpen"' + (S.ccDiffOpen ? ' checked' : '') + '>Show track differences by default</label>' + '</div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
     const off = mbuDismissOn(panel, () => ov.remove());
     panel.querySelector('.mbu-cfg-log').onclick = () => { off(); Log.open(); };   // #744, as in settingsWindow
-    panel.addEventListener('change', e => { const k = e.target.dataset.k; if (!k) return; S[k] = e.target.checked; saveSettings(); if (k === 'consAfter') consSub(panel); ccPaint(); });
+    panel.addEventListener('change', e => { const k = e.target.dataset.k; if (!k) return; S[k] = cfgValue(e.target); saveSettings(); if (k === 'consAfter') consSub(panel); ccPaint(); });
 }
 function ccClose() {
     if (!CC.ui) return;
@@ -4736,7 +4747,9 @@ function afterSave() {
     AFTER = a;
     Log.cat('After saving').info((a.mbid ? 'a consolidation updates this release: Mission Control opens, probes and compares it with the platforms' : 'the consolidated release is saved: Mission Control opens and probes') + ' · ' + Object.keys(a.ticks).filter(k => a.ticks[k]).join(', ') + (a.mbid ? '' : ' · ' + (a.isrcs || []).filter(Boolean).length + ' ISRC(s) from the consolidation'));
     open();
-    setTimeout(() => { if (ui && !run) probe(); if (ui && S.consExec) autoExecArm(); }, 700);
+    // an update (a.mbid) saved nothing: its probe only offers what the release lacks, so Execute waits for a click
+    if (a.mbid && S.consExec) Log.cat('Execute').info('auto execute: an update, not a saved consolidation: no Execute');
+    setTimeout(() => { if (ui && !run) probe(); if (ui && S.consExec && !a.mbid) autoExecArm(); }, 700);
 }
 // #801: First Contact found an album on a platform in MusicBrainz, and Update this release opened this release
 // (/release/<mbid>#fc-update=<token>): Mission Control opens, probes and compares the release with the platforms,
@@ -4758,7 +4771,8 @@ function fcUpdate(token) {
             source: { key: ccKey(p.id || h.source), url: h.url, rel: h.rel, provider: p } };
         Log.cat('After saving').info('First Contact found ' + (p.name || h.source) + '\'s album ' + h.url + ' to be this release: Mission Control opens, probes and compares it with the platforms, that album included');
         open();
-        setTimeout(() => { if (ui && !run) probe(); if (ui && S.consExec) autoExecArm(); }, 700);
+        // an update, as Mission Control's own: nothing was consolidated, so no Execute by itself
+        setTimeout(() => { if (ui && !run) probe(); }, 700);
     };
     document.addEventListener('fc:update', e => take(e.detail));
     if (document.documentElement.dataset.fcUpdate) take(document.documentElement.dataset.fcUpdate);

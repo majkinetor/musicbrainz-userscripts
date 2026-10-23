@@ -1,12 +1,13 @@
 // #776: "…and Execute once the probe has finished": after a consolidation opens Mission Control, Execute
 // runs by itself once every provider has answered (the second ask after the album links changed
 // included), after a countdown on the Execute button that a click cancels. Off by default, greyed out
-// while "After saving a consolidated release" is off, and never on a Mission Control opened by hand.
+// while "After saving a consolidated release" is off, and never on a Mission Control opened by hand or by an
+// update of a release MusicBrainz already has (nothing was consolidated). The countdown's seconds are a setting, 10 by default.
 // Stand-in PC and IS providers answer the probe and pretend to apply: nothing is written.
 import { test, check, until } from '../../../dev/test/harness.mjs';
 
 const RELEASE = 'e91b84a9-6b98-4d64-b4fc-753a9c674c4c';   // sandbox copy of "Bad Boys!" (dev/test/sandbox-copies.json)
-const SETTINGS = { consExec: true, reloadAfter: false, v: 2 };
+const SETTINGS = { consExec: true, consExecS: 5, reloadAfter: false, v: 2 };
 
 // providers that answer discover, probe and apply; IS answers late, so the countdown has to wait for it
 async function standIns(page, { isDelay = 1200 } = {}) {
@@ -30,10 +31,13 @@ async function standIns(page, { isDelay = 1200 } = {}) {
     });
   }, isDelay);
 }
-async function afterConsolidation(page, inject) {
+// the note Add release leaves for the saved release, known by its title; an update names the release instead
+async function afterConsolidation(page, inject, { update = false } = {}) {
   await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#content table.medium');
-  await page.evaluate(r => sessionStorage.setItem('mc.after', JSON.stringify({ created: Date.now(), mbid: r, title: '', tracks: 1, isrcs: [], ticks: { is: true, as: true, pc: true } })), RELEASE);
+  await page.evaluate(([r, update]) => sessionStorage.setItem('mc.after', JSON.stringify(update
+    ? { created: Date.now(), mbid: r, title: '', ticks: { is: true, as: true, pc: true }, compare: true }
+    : { created: Date.now(), title: document.querySelector('.releaseheader h1').textContent, tracks: 1, isrcs: [], ticks: { is: true, as: true, pc: true } })), [RELEASE, update]);
   await standIns(page);
   await inject('mission_control', { waitFor: '__mcTest' });
   await page.waitForSelector('#mc-root');
@@ -69,6 +73,14 @@ test.describe('on', () => {
     check(applied === 1, 'a second click executes');
   });
 
+  test('#776: an update of a release MusicBrainz already has doesn\'t execute by itself', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await afterConsolidation(page, inject, { update: true });
+    await until(() => page.evaluate(() => (window.__mcTest.results().is || {}).state), s => s === 'done', { timeout: 8000 });
+    await page.waitForTimeout(3000);
+    check(await label(page) === 'Execute (1)', `no countdown (${await label(page)})`);
+    check(await page.evaluate(() => window.__applied.length) === 0, 'nothing is applied');
+  });
+
   test('#776: Mission Control opened by hand never executes by itself', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await page.goto(`https://test.musicbrainz.org/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#content table.medium');
@@ -101,5 +113,14 @@ test.describe('settings', () => {
     await page.locator('.mc-cfg input[data-k="consAfter"]').check();
     await sub.check();
     check((await page.evaluate(() => window.__mcTest.settings())).consExec === true, 'ticking it stores it');
+    const secs = page.locator('.mc-cfg input[data-k="consExecS"]');
+    check(await secs.inputValue() === '10' && (await page.evaluate(() => window.__mcTest.settings())).consExecS === 10, `the countdown is 10 s by default (${await secs.inputValue()})`);
+    await secs.fill('7'); await secs.press('Tab');
+    check((await page.evaluate(() => window.__mcTest.settings())).consExecS === 7, 'its seconds are stored');
+    await secs.fill('500'); await secs.press('Tab');
+    check((await page.evaluate(() => window.__mcTest.settings())).consExecS === 60 && await secs.inputValue() === '60', 'at most 60');
+    check(await sub.isChecked(), 'editing the seconds leaves the box as it was');
+    await page.locator('.mc-cfg input[data-k="consAfter"]').uncheck();
+    check(await secs.isDisabled(), 'the seconds are greyed out with it');
   });
 });
