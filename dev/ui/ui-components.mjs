@@ -173,7 +173,7 @@ const CSS = [
     '.mbu-logpop-h>.mbu-log-ses{flex-shrink:1;min-width:90px}',
     '.mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}',
     // the session list (#705) and the past session it shows: read-only, so no Clear
-    '.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%;font:12px var(--mbu-font);padding:2px 4px;border:1px solid var(--mbu-border);border-radius:5px}',
+    '.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%}',
     '.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}',
     '.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}',
     '.mbu-log-dbg input{margin:0}',
@@ -361,6 +361,28 @@ const CSS = [
     ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("' + VIDEO_GLYPH('%23fff') + '")}',
     ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}',
     ':is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}',
+    // Pill drop-down and − n + stepper, the settings' controls (mbuControls). A script's own rule for its
+    // select or number field (an id and an element, often) would outrank a class, and these are adopted,
+    // not defaults: :not(#mbu-0):not(#mbu-1) weighs two ids, so they win without !important.
+    'select.mbu-select:not(#mbu-0):not(#mbu-1){-webkit-appearance:none;-moz-appearance:none;appearance:none;box-sizing:border-box;height:22px;max-width:100%;margin:0 2px;',
+    'padding:0 26px 0 12px;border:1px solid var(--mbu-border);border-radius:20px;outline-offset:1px;background-color:transparent;',
+    'background-image:linear-gradient(45deg,transparent 50%,var(--mbu-text-weak) 50%),linear-gradient(135deg,var(--mbu-text-weak) 50%,transparent 50%);',
+    'background-position:calc(100% - 13px) 50%,calc(100% - 8px) 50%;background-size:5px 5px;background-repeat:no-repeat;',
+    'color:var(--mbu-text);font:600 12px var(--mbu-font);line-height:20px;cursor:pointer;vertical-align:middle}',
+    'select.mbu-select:not(#mbu-0):not(#mbu-1):hover{border-color:var(--mbu-accent)}',
+    'select.mbu-select:not(#mbu-0):not(#mbu-1):disabled{opacity:.45;cursor:default;border-color:var(--mbu-border)}',
+    'select.mbu-select:not(#mbu-0):not(#mbu-1) option{background:var(--mbu-bg);color:var(--mbu-text);font-weight:400}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1){display:inline-flex;align-items:center;box-sizing:border-box;height:22px;margin:0 2px;padding:0;',
+    'border:1px solid var(--mbu-border);border-radius:20px;background:transparent;vertical-align:middle;white-space:nowrap;flex:0 0 auto}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1):hover,.mbu-step:not(#mbu-0):not(#mbu-1):focus-within{border-color:var(--mbu-accent)}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1)>button{all:unset;box-sizing:border-box;width:20px;height:20px;text-align:center;',
+    'font:600 13px/20px var(--mbu-font);color:var(--mbu-text-weak);cursor:pointer;user-select:none}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1)>button:hover{color:var(--mbu-accent)}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1)>input{all:unset;box-sizing:content-box;min-width:2ch;height:20px;padding:0 1px;',
+    'font:600 12px/20px var(--mbu-font);color:var(--mbu-text);text-align:center;-moz-appearance:textfield;appearance:textfield;cursor:text}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1)>input::-webkit-inner-spin-button,.mbu-step:not(#mbu-0):not(#mbu-1)>input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1):has(>input:disabled){opacity:.45;border-color:var(--mbu-border)}',
+    '.mbu-step:not(#mbu-0):not(#mbu-1):has(>input:disabled)>button{cursor:default;color:var(--mbu-text-weak)}',
 ].join('');
 
 // ── JS ──────────────────────────────────────────────────────────────────────
@@ -589,6 +611,45 @@ function mbuCfgHeader(o) {
     }
     html += mbuHelpHtml(o.script);
     return html + '</div>';
+}
+
+// Settings controls: in root, every <select> becomes the pill drop-down and every number field the
+// − n + stepper. The field stays the script's own (its value, min, max, step and listeners): − and +
+// step it within them and fire input and change, as typing would. Call it once a window's markup is in;
+// again after a re-render does no harm. Returns root.
+function mbuControls(root) {
+    if (!root || !root.querySelectorAll) return root;
+    Array.prototype.forEach.call(root.querySelectorAll('select'), function (s) { s.classList.add('mbu-select'); });
+    Array.prototype.forEach.call(root.querySelectorAll('input[type=number]'), function (inp) {
+        var p = inp.parentNode;
+        if (!p || (p.classList && p.classList.contains('mbu-step'))) return;
+        var wrap = document.createElement('span');
+        wrap.className = 'mbu-step';
+        p.insertBefore(wrap, inp);
+        var btn = function (down) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.tabIndex = -1;
+            b.textContent = down ? '\u2212' : '+';
+            b.setAttribute('aria-label', down ? 'Less' : 'More');
+            b.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (inp.disabled || inp.readOnly) return;
+                var was = inp.value;
+                try { if (down) inp.stepDown(); else inp.stepUp(); } catch (x) { return; }
+                if (inp.value === was) return;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            return b;
+        };
+        wrap.appendChild(btn(true));
+        wrap.appendChild(inp);
+        wrap.appendChild(btn(false));
+        // as wide as its longest value; a width the script set for the old field would cut it
+        inp.style.width = Math.max(2, String(inp.max || inp.value || '').length) + 0.5 + 'ch';
+    });
+    return root;
 }
 
 // Test hooks. A script puts its test hook on window only when the test harness has
@@ -941,7 +1002,7 @@ function mbuLog(o) {
         root.dataset.mbuLv = vid;
         root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
             + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\\nEsc: empty the box" autocomplete="off">'
-            + (H ? '<select class="mbu-log-ses" data-tip="The session shown\\nThis one, or a past one kept in this browser"></select>' : '')
+            + (H ? '<select class="mbu-log-ses mbu-select" data-tip="The session shown\\nThis one, or a past one kept in this browser"></select>' : '')
             + '<span class="mbu-logpop-sp"></span>'
             + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\\nThis one stays">Clear history</button>' : '')
             + '<label class="mbu-log-dbg" data-tip="Record each step in detail\\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
