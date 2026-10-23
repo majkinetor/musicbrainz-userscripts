@@ -53,7 +53,10 @@ test.describe('Enter edit', () => {
     };
     await openApollo(page, inject, { seed, submit: true });
     await settled(page);
+    // MB won't submit a newly added release whose Tracklist tab was never visited (addingWithoutVisitingTracklist)
+    await page.evaluate(() => document.querySelector('a[href="#tracklist"]').click());   // Apollo hides MB's own tab bar
     await page.evaluate(() => document.querySelector('[data-click="lastTab"]').click());
+    await page.waitForFunction(() => { try { return window.MB.releaseEditor.allowsSubmission(); } catch (e) { return false; } }, null, { timeout: 60000 });
     await page.waitForFunction(() => !!document.getElementById('edit-note-text'));
     await page.evaluate(() => document.querySelector('[data-click="submitEdits"]').click());
     await page.waitForURL(/\/release\/[0-9a-f-]{36}(\?|$|#)/, { timeout: 120_000 });
