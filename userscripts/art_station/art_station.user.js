@@ -4869,7 +4869,7 @@
     // the store it came from, as on the card (#249)
     const prov = it._new && it._provIcon ? `<span class="as-lb-prov" data-tip="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
 ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
-    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}`;
+    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}${rmOpenChip(it)}`;   // #787: its removal open for votes, as on the card
     cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
@@ -7194,7 +7194,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-rmopen{position:absolute;left:6px;bottom:6px;z-index:5;background:var(--mbu-bg);border:1.5px solid var(--mbu-error);font:700 11px var(--mbu-font);border-radius:4px;padding:1px 6px;text-decoration:none;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.35)}
   /* MusicBrainz's a:visited (0,1,1) outranked the chip's colour once its edit was opened */
   /* a light chip with red text reads on any cover and in both themes; the id outranks MusicBrainz's and a theme's link colours */
-  #as-root a.as-rmopen,#as-root a.as-rmopen:link,#as-root a.as-rmopen:visited,#as-root a.as-rmopen:hover{color:var(--mbu-error)!important}
+  #as-root a.as-rmopen,#as-root a.as-rmopen:link,#as-root a.as-rmopen:visited,#as-root a.as-rmopen:hover,#as-lb a.as-rmopen,#as-lb a.as-rmopen:link,#as-lb a.as-rmopen:visited,#as-lb a.as-rmopen:hover{color:var(--mbu-error)!important}
   a.as-rmopen:hover{text-decoration:underline}
   .as-only{position:absolute;top:6px;left:6px;z-index:6;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-accent-text);cursor:pointer;font:600 12px/1 var(--mbu-font);padding:5px 8px;box-shadow:0 1px 3px rgba(0,0,0,.25);opacity:0;transition:opacity .1s}
   .as-card:hover .as-only,.as-only:focus-visible{opacity:1}
@@ -7378,6 +7378,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-lb-type:hover{background:rgba(255,255,255,.2);color:var(--mbu-text-on-accent)}
   .as-lb-type.as-type-add{font-weight:600;border-style:dashed;color:rgba(255,255,255,.6)}
   .as-lb-dim{color:var(--mbu-text-weak)}
+  #as-lb .as-rmopen{position:static;font-size:12px;padding:3px 10px}
   .as-lb-cmtarea{width:0;min-width:100%;display:flex;justify-content:center;align-items:center;min-height:34px}   /* one height for the ✎ button, the text and the input */
   .as-lb-cmt{width:100%;font-size:13px;font-family:inherit;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--mbu-text-on-accent);border-radius:7px;padding:7px 11px;text-align:center}
   .as-lb-cmt-text{font-size:14px;font-family:inherit;color:var(--mbu-text-on-accent);text-align:center;line-height:1.4;padding:4px 8px;cursor:text;max-width:100%;word-break:break-word}

@@ -1,6 +1,6 @@
 // #787: a cover marked for removal waits under the gallery, in Marked for removal, on red with a REMOVE ribbon, and
 // can be selected there to be kept; a cover whose remove edit is open for votes shows a chip linking to that edit (read from the release's open-edits page, by its
-// structure). The open-edits page is a stand-in naming the gallery's first cover; nothing is entered.
+// structure), on the card and full screen. The open-edits page is a stand-in naming the gallery's first cover; nothing is entered.
 import { test, check, until, requireLogin, SANDBOX, idle } from '../../../dev/test/harness.mjs';
 import { RELEASE, blockPosts } from './as.mjs';
 
@@ -35,6 +35,13 @@ test('#787: a removal waits on red under the gallery, a selection of them is kep
     const c = getComputedStyle(a).color; s.remove(); return c;
   }, first);
   check(col !== 'rgb(1, 2, 3)', `a page's link colour doesn't reach the chip (${col})`);
+  // full screen shows it too, in the caption
+  await page.evaluate(id => document.querySelector(`.as-card[data-id="${id}"] .as-thumb`).click(), first);
+  const lbChip = await until(() => page.evaluate(() => { const a = document.querySelector('#as-lb .as-lb-cap .as-rmopen'); return a && a.offsetParent ? { href: a.getAttribute('href'), text: a.textContent, color: getComputedStyle(a).color } : null; }), Boolean);
+  check(lbChip && lbChip.href === '/edit/787000001' && /removal open · \d+ days/.test(lbChip.text), `full screen shows the open removal (${JSON.stringify(lbChip)})`);
+  await page.locator('#as-lb .as-lb-bar').screenshot({ path: 'test-results/as-787-lb.png' });
+  await page.keyboard.press('Escape');
+  await until(() => page.evaluate(() => getComputedStyle(document.getElementById('as-lb')).display === 'none'), Boolean);
 
   // two covers marked for removal: under the gallery, in Marked for removal, on red with the REMOVE ribbon
   const before = await page.evaluate(() => [...document.querySelectorAll('#as-root .as-grid .as-card')].map(c => c.dataset.id));
