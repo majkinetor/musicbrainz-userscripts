@@ -6802,7 +6802,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-settings .tc-tab-pane{display:flow-root}   /* #407: contain child margins so the pinned height captures the full box (constant dialog height across tabs) */
     #tc-settings .tc-tab-pane[hidden]{display:none}
     #tc-settings .tc-tab-pane .tc-s-top{margin-top:0}
-    #tc-settings .tc-s-row.lentol{gap:7px}
+    #tc-settings .tc-s-row.lentol{gap:7px}#tc-settings .tc-s-row.lentol>span{white-space:nowrap}
     /* #695: a round icon like every other corner launcher (Falcon, Fusion); in colour while Apollo is on, monochrome while off */
     #tc-launch{position:fixed;bottom:14px;right:14px;z-index:var(--mbu-z-pop);width:40px;height:40px;border-radius:50%;border:none;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;box-shadow:none;opacity:.85;transition:background .15s,transform .1s,opacity .15s}
     #tc-launch:hover{opacity:1;transform:scale(1.08)}
@@ -6947,7 +6947,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           <div class="tc-s-row"><span>Row layout</span><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="compact"> compact</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="normal"> normal</label><label class="tc-s-rad"><input type="radio" name="tc-s-layout" value="cozy"> cozy</label></div>
           <label><input type="checkbox" id="tc-s-alt"> <span>Alternate row colors</span></label>
           <div class="tc-s-row"><span>Show grid</span><label class="tc-s-rad" data-tip="Lines between the columns"><input type="checkbox" id="tc-s-gridcols"> columns</label><label class="tc-s-rad" data-tip="Lines between the tracks"><input type="checkbox" id="tc-s-gridrows"> rows</label></div>
-          <div class="tc-s-row" data-tip="Enlarge look-alike characters that differ\nPunctuation, confusable and invisible characters (a straight or curly quote, a hyphen or dash, a no-break space, …) grow by this many pixels in the highlight, so they stand out. 0: not enlarged; hovering one still names it."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = no enlargement)</span></div>
+          <div class="tc-s-row lentol" data-tip="Enlarge look-alike characters that differ\nPunctuation, confusable and invisible characters (a straight or curly quote, a hyphen or dash, a no-break space, …) grow by this many pixels in the highlight, so they stand out. 0: not enlarged; hovering one still names it."><span>Enlarge punctuation by</span><input type="number" id="tc-s-punctsize" min="0" max="12" step="1"> <span>px (0 = disabled)</span></div>
           <label data-tip="Keep the caret's column when moving between cells\nWith ↑, ↓ and Enter, so you can fix the casing or edit in place.\nOff: the whole field is selected, and the next key replaces it"><input type="checkbox" id="tc-s-keepcaret"> <span>Keep caret position on row navigation</span></label>
           <label data-tip="Highlight an artist everywhere on hover\nEvery other place the artist hovered in the tracklist appears. Off by default."><input type="checkbox" id="tc-s-hoverhl"> <span>Highlight all instances of an artist on hover</span></label>
         </div>
