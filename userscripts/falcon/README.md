@@ -19,7 +19,6 @@ An importer like [Harmony] hands you 20–50 artists, recordings and labels that
 - **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
 - **[Batch edit note](#batch-edit-note)** on every edit of a run.
 - **[Hands-free Harmony import](#hands-free-import)**, including retries when MusicBrainz errors, and a hand-off to Picard once the run finishes.
-- **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
 - **[Export and import](#json-model)** a run as JSON, with each item's outcome, so a partial batch can be rerun without repeating what went through.
 
 Untouched rows, and aliases and links the entity already has, are skipped. A link in another locale counts as had (a Qobuz page linked as `gb-en` isn't added as `us-en`), and the row says which.
@@ -136,19 +135,6 @@ Two settings, both on by default, carry a finished Harmony import to a finished 
 - **a provider error**, or retries exhausted: Falcon sends what it has, as *Send 43 to Falcon (partial)*, with the reason as the batch's edit note (reloading can't fix a provider).
 
 A partial run can be topped up later; what went through isn't repeated. *Reload release page after import without errors* shows the result on the release page, the corner icon green; a run with failures isn't reloaded, so its queue survives.
-
-## Disc IDs from a rip log
-
-On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Falcon computes its disc ID and opens MusicBrainz's attach page, edit note signed, for you to **Enter edit**.
-
-| Program          | Reads                             |
-| ---------------- | --------------------------------- |
-| EAC, XLD, fre:ac | the TOC table (localised EAC too) |
-| whipper          | the `TOC:` block                  |
-| dBpoweramp       | `Track N: Ripped LBA x to y`      |
-| cyanrip          | `Start LSN` / `End LSN`           |
-
-Like Picard, whose parsers these are, it refuses a partial rip, a non-standard track sequence or an unknown file, and drops a trailing data track. A log whose track count doesn't match the medium asks before continuing.
 
 ## JSON model
 

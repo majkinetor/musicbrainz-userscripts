@@ -70,7 +70,7 @@ Setup (one-time, done by the maintainer):
 1. Create the `claude-ai-milic` GitHub account.
 2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
 3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
-4. Save the token in `dev/.github-credentials.json` (gitignored — never commit):
+4. Save the token in the hub's `C:\ai\_hub\.github-credentials.json`, never in the repo:
 
    ```jsonc
    {
@@ -272,7 +272,7 @@ Already does — logs save every run to `test/logs/<ISO8601>_<mbid>.log`.
 
 ### "Auto-react to GH notifs via a channel into a running Claude session"
 
-Documented in [`/dev/github-notifications/README.md`](../../dev/github-notifications/README.md). The pipeline is repo-wide infrastructure (not discogs_credits-specific), so the operating notes live with the scripts at repo root rather than in this userscript's developer guide.
+The hub runs it for this repo (`C:\ai\_hub\dev\github-notifs`): notifications arrive in the background session *mb-userscripts notifs*.
 
 ---
 

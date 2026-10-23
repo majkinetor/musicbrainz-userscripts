@@ -28,7 +28,9 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   check(r.out.length === 0, `nothing of Art Station's runs past the screen's right edge (${r.vw}px: ${r.out.slice(0, 8).join(' · ')})`);
 
   // full screen: the viewer covers the screen, not the page's 780px, and closing it puts the page back where it was
-  await page.evaluate(() => scrollTo(0, 400));
+  // the sandbox release's page can be just one screen tall: give it room to scroll, or there is no place to put back
+  await page.evaluate(() => { const s = document.createElement('div'); s.style.height = '2000px'; document.body.appendChild(s); scrollTo(0, 400); });
+  check(await page.evaluate(() => Math.round(scrollY)) === 400, 'the page is scrolled before full screen opens');
   await page.evaluate(() => document.querySelector('#as-root .as-thumb').click());
   await page.waitForSelector('#as-lb .as-lb-img', { state: 'visible' });
   const lb = await page.evaluate(() => { const o = document.getElementById('as-lb').getBoundingClientRect(), vv = visualViewport; return { lb: [Math.round(o.left), Math.round(o.right)], iw: innerWidth, vv: [vv.offsetLeft, vv.width] }; });

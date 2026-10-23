@@ -64,7 +64,6 @@ Nothing here ships. A script belongs in its subsystem's folder, next to that fol
 | [`test/`](dev/test/README.md)                               | the test runner and harness                                                                              |
 | [`all-icons-generator/`](dev/all-icons-generator/README.md) | every script's icon side by side, fitted to one box                                                      |
 | `screens/ui/`                                               | generated screenshots; numbers are stable, so never renumber, only append                                |
-| `github-notifications/`, `notif-channel/`                   | GitHub notifications into the assistant's channel                                                        |
 | [`script-metrics/`](dev/script-metrics/README.md)           | edits made with these scripts, counted from the MusicBrainz database dump, in Docker                     |
 | `site-proposals/`, `reports/`                               | design proposals and measurement reports kept for reference                                              |
 | `templates/`                                                | starting points: a script's README in the [compact style](STANDARDS.md#script-readmes)                   |
@@ -165,7 +164,7 @@ One-time setup, by the maintainer:
 
 1. Create the account and add it as a collaborator with write access; accept the invite as the bot.
 2. As the bot, create a classic token at <https://github.com/settings/tokens> with `repo` and `write:discussion`.
-3. Save it:
+3. Save it in the hub's `C:\ai\_hub\.github-credentials.json`, the token's only home on the machine:
 
    ```jsonc
    { "username": "claude-ai-milic", "token": "github_pat_..." }

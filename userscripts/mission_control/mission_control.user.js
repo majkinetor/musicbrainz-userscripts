@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.22.230213
+// @version      2026.10.23.150140
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -173,7 +173,12 @@ document.addEventListener('mc:findings', e => {
     const findings = (Array.isArray(d.findings) ? d.findings : []).map(dropSpecialPurpose);
     results[d.id] = { state: 'done', findings, summary: d.summary || '', best: d.best || null, open: Array.isArray(d.open) ? d.open : null, barcode: d.barcode || null };
     // selected by default: only what the provider is sure of
-    picked[d.id] = new Set(findings.filter(x => x.state === 'new').map(x => x.key));
+    // #810: a label has one catalog number, so of its sure ones only the consolidation's (else the first) is
+    const catOf = x => x.kind === 'catno' && x.label && x.label.mbid;
+    const catPick = new Map();
+    findings.filter(x => x.state === 'new' && catOf(x)).forEach(x => { if (!catPick.has(catOf(x)) || (x.cons && !catPick.get(catOf(x)).cons)) catPick.set(catOf(x), x); });
+    picked[d.id] = new Set(findings.filter(x => x.state === 'new' && (!catOf(x) || catPick.get(catOf(x)) === x)).map(x => x.key));
+    if (findings.some(x => x.state === 'new' && catOf(x) && catPick.get(catOf(x)) !== x)) Log.cat('Probe').debug('catalog numbers: one per label selected, ' + [...catPick.values()].map(x => x.label.name + ' ' + x.code).join(', '));
     afterPicks(d.id);
     const tally = findings.reduce((t, x) => (t[x.state] = (t[x.state] || 0) + 1, t), {});
     Log.cat('Probe').ok('findings ' + d.id + ': ' + findings.length + ' ' + JSON.stringify(tally));
@@ -460,12 +465,12 @@ function coverViewer(list, at) {
 }
 // #784: Art Station's own gallery, in its frame: Art Station keeps the frame over this slot (#mc-as-slot) and gives
 // it the gallery's height (kept across a repaint). Execute enters what the gallery holds; mc:plan says what that is.
-let asPlan = { ops: [], more: 0, n: 0, tile: 0, fit: 0 }, asStaged = null;
+let asPlan = { ops: [], more: 0 }, asStaged = null;
 document.addEventListener('mc:plan', e => {
     let d = null;
     try { d = JSON.parse(e.detail); } catch (x) { return; }
     if (!d || d.id !== 'as' || (d.release && d.release !== RELEASE)) return;
-    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0, n: d.n || 0, tile: d.tile || 0, fit: d.fit || 0 };
+    asPlan = { ops: Array.isArray(d.ops) ? d.ops : [], more: d.more || 0 };
     Log.cat('UI').debug('#784 gallery plan: ' + (asPlan.ops.map(o => o.label).join(' · ') || 'nothing'));
     if (ui) { paintAll(); paintFoot(); }
 });
@@ -799,7 +804,7 @@ function mcStyle() {
         + '.mc-pill.add{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong)}.mc-pill.ok{color:var(--mbu-ok);background:var(--mbu-ok-bg);border-color:var(--mbu-ok-border)}'
         + '.mc-pill.warn{color:var(--mbu-warn);background:var(--mbu-warn-bg);border-color:var(--mbu-warn-border)}.mc-pill.idle{color:var(--mbu-text-weak);border-style:dashed}.mc-pill.err{color:var(--mbu-error);border-color:var(--mbu-error)}'
         + '.mc-dot.busy{background:var(--mbu-info)}.mc-dot.add{background:var(--mbu-accent)}.mc-dot.ok{background:var(--mbu-ok)}'
-        + '.mc-row2{display:flex;gap:10px;align-items:flex-start}.mc-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-span{flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-span-top>.mc-sect{margin:0}.mc-span-cols{display:flex;gap:10px;align-items:flex-start}.mc-col>.mc-sect{margin:0}'
+        + '.mc-row2{display:flex;gap:10px;align-items:flex-start}.mc-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:10px}.mc-col>.mc-sect{margin:0}'
         + '.mc-tbl{width:100%;border-collapse:collapse;font-size:12px}'
         // #790: the Tracks table's rules stop at Fusion's card in a slot (its release tables are tables too); :where keeps their specificity
         + '.mc-tbl th:not(:where(.mc-fxslot *)){font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--mbu-text-weak);text-align:left;padding:6px 8px;background:var(--mbu-bg-raised);border-bottom:1px solid var(--mbu-border);position:sticky;top:0;white-space:nowrap}'
@@ -843,7 +848,7 @@ function mcStyle() {
         + '.mc-fxm{border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:2px 8px 6px;margin:6px 0;background:var(--mbu-bg-raised)}'
         + '.mc-kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 10px;font-size:11.5px}.mc-kv>span:nth-child(odd){color:var(--mbu-text-weak)}'
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
-        + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}'
+        + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label>span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub>input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}'
         + '#mc-root .mc-act .mc-exec.mc-cd{background:linear-gradient(90deg,color-mix(in srgb,var(--mbu-accent) 35%,var(--mbu-accent-soft)) var(--mc-cd,0%),var(--mbu-accent-soft) 0);border-color:var(--mbu-accent)}'
         // a phone: MusicBrainz's page is wider than the screen, so the browser widens the layout viewport
         // to it and MC (fixed, inset 0) with it, cut off at the sides. Pinning the page's body brings the
@@ -1495,58 +1500,35 @@ function fitCards() {
     layoutCards(row);
 }
 const CARD_MIN = 520, CARD_GAP = 10;
-// #784: Art Station's card goes two columns wide when its gallery would take more than two rows in one column (reckoned
-// at one column's width, so the wider card, with fewer rows, doesn't flip back)
-function asWide(colW) {
-    if (providerOff('as') || !asPlan.n || !asPlan.tile) return false;
-    const perRow = Math.max(1, Math.floor((colW - 42) / asPlan.tile));   // less the card's and the gallery's padding
-    return Math.ceil(asPlan.n / perRow) > 2;
-}
 function layoutCards(row) {
     if (row.hidden || !row.clientWidth) return;
     const shown = row._cards.filter(s => !s.hidden);
-    let n = Math.max(1, Math.min(shown.length, Math.floor((row.clientWidth + CARD_GAP) / (CARD_MIN + CARD_GAP))));
-    // the wide card sits over the first two columns, in a span of its own; the other cards flow below and beside it.
-    // It is as wide as its gallery needs (Art Station's fit: its toolbar in one row), when what is left beside it
-    // still takes a card; under it go as many columns as its width takes (k), beside it the rest (n = k + beside)
-    const colW = (row.clientWidth - (n - 1) * CARD_GAP) / n, rowW = row.clientWidth;
-    const wide = n >= 2 && asWide(colW) ? shown.find(s => s.querySelector('[data-card="as"]')) : null;
-    let span = row.querySelector(':scope > .mc-span'), k = 2, spanW = 0;
-    if (wide && asPlan.fit) {
-        const slot = wide.querySelector('#mc-as-slot'), sb = slot && slot.getBoundingClientRect().width;
-        // the card's own padding and borders around the slot, as it is now (the same at any width)
-        if (sb && span && wide.parentNode === span.firstChild) row._asPad = span.getBoundingClientRect().width - sb;
-        const want = Math.ceil(asPlan.fit + (row._asPad || 22));
-        const beside = Math.min(shown.length - 1, Math.floor((rowW - want) / (CARD_MIN + CARD_GAP)));
-        if (want > colW && beside >= 1) { spanW = want; k = Math.max(1, Math.floor((want + CARD_GAP) / (CARD_MIN + CARD_GAP))); n = k + beside; }
-    }
-    let cols = [...row.querySelectorAll('.mc-col')];
+    const n = Math.max(1, Math.min(shown.length, Math.floor((row.clientWidth + CARD_GAP) / (CARD_MIN + CARD_GAP))));
+    const cols = [...row.querySelectorAll('.mc-col')];
     while (cols.length < n) { const c = el('div', 'mc-col'); row.append(c); cols.push(c); }
-    if (wide) {
-        if (!span) { span = el('div', 'mc-span'); span.innerHTML = '<div class="mc-span-top"></div><div class="mc-span-cols"></div>'; row.prepend(span); }
-        span.style.flex = spanW ? '0 0 ' + spanW + 'px' : '';
-        if (wide.parentNode !== span.firstChild) span.firstChild.append(wide);
-        cols.slice(0, k).forEach(c => { if (c.parentNode !== span.lastChild) span.lastChild.append(c); });
-        cols.slice(k).forEach(c => { if (c.parentNode !== row) row.append(c); });
-    } else if (span) {
-        [...span.lastChild.children].reverse().forEach(c => span.after(c));
-        [...span.firstChild.children].forEach(s => cols[0].append(s));
-        span.remove();
-    }
     // heights as they are now; a card that changes column changes width, and the next paint settles it
-    const tall = new Map(shown.map(s => [s, s.offsetHeight])), used = cols.slice(0, n).map((c, i) => wide && i < k ? tall.get(wide) + CARD_GAP : 0);
+    const tall = new Map(shown.map(s => [s, s.offsetHeight])), base = Array(n).fill(0);
+    // a placed card keeps its column while results come in and the cards grow, so they don't swap places during
+    // a probe; they are placed afresh when the columns change, or when keeping them leaves the columns far apart
+    if (row._key !== n) { row._key = n; row._cards.forEach(s => { s._mcCol = null; }); }
+    row._cards.forEach(s => { if (s.hidden) s._mcCol = null; });
+    const low = a => a.indexOf(Math.min(...a)), hi = a => Math.max(...a);
+    const greedy = base.slice(), stay = base.slice(), pick = new Map();
+    shown.forEach(s => { const i = low(greedy); greedy[i] += tall.get(s) + CARD_GAP; pick.set(s, i); });
+    shown.forEach(s => { if (s._mcCol != null) stay[s._mcCol] += tall.get(s) + CARD_GAP; });
+    const kept = new Map(shown.map(s => [s, s._mcCol]));
+    shown.forEach(s => { if (kept.get(s) == null) { const i = low(stay); stay[i] += tall.get(s) + CARD_GAP; kept.set(s, i); } });
+    const keep = hi(stay) - hi(greedy) < Math.max(200, hi(stay) / 4);
     shown.forEach(s => {
-        if (s === wide) return;
-        const k = used.indexOf(Math.min(...used));
-        if (s.parentNode !== cols[k]) cols[k].append(s);
-        used[k] += tall.get(s) + CARD_GAP;
+        const i = keep ? kept.get(s) : pick.get(s);
+        s._mcCol = i;
+        if (s.parentNode !== cols[i]) cols[i].append(s);
     });
     // a hidden card stays in a column, out of the way; empty columns go
     row._cards.filter(s => s.hidden && !s.parentNode.classList.contains('mc-col')).forEach(s => cols[0].append(s));
     cols.slice(n).forEach(c => { [...c.children].forEach(s => cols[0].append(s)); c.remove(); });
     // the cards keep their reading order within a column
     cols.slice(0, n).forEach(c => row._cards.forEach(s => { if (s.parentNode === c) c.append(s); }));
-    if (wide && row._wideDone !== true) { row._wideDone = true; Log.cat('UI').debug('#784 Art Station\'s card wide (' + asPlan.n + ' images, ' + (spanW ? spanW + ' px, as its toolbar' : 'two columns') + ')'); } else if (!wide) row._wideDone = false;
 }
 
 // CH's release-level credits (#680): its finding with no `track`. Info only, like its column.

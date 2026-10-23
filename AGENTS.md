@@ -21,7 +21,7 @@ Entry point for any AI assistant (Claude Code, a cloud agent, a subagent). It's 
 
 - **Bot identity**: before any GitHub write or commit from a local session, read [DEVELOP → Bot identity](DEVELOP.md#bot-identity).
 - **Short names** (the maintainer's, in chat, issues and commits): **AS** Art Station · **BP** Bandcamp Player Enhanced · **CH** Credit Hoarder · **DC** Discogs Credits · **FC** First Contact · **GT** Group Therapy · **IS** ISRC Scout · **MC** Mission Control · **MM** Mammoth · **PC** Platform Check · **ST** String Theory. Apollo Editor, Falcon, Fusion and Scribe go by their names (Apollo for the first).
-- **Notifications** arrive via `notif-channel` (`dev/notif-channel`); treat them per the general rules.
+- **Notifications** arrive as `<channel source="github-notifs">` events in the session *mb-userscripts notifs*, which the hub runs (`C:\ai\_hub\dev\github-notifs`); treat them per the general rules.
 - **Confirm first** a **new MusicBrainz request inside a shipped userscript** (server load). Your own research/test reads of MusicBrainz are fine.
 - **test.musicbrainz.org is yours to change without asking** (maintainer): edits, ISRCs, registering OAuth apps, account settings, whatever a test or a fix needs. Production stays read-only.
 - **Tests run on `test.musicbrainz.org`**; before writing or running one, read [`dev/test/README.md`](dev/test/README.md). The sandbox login is a **separate account DB** (test.metabrainz.org SSO), not prod credentials. The harness is **Chromium-only**.

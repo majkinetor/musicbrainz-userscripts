@@ -2,17 +2,8 @@
 # Per-userscript ignores live in each userscript's own .gitignore
 # (e.g. userscripts/discogs_credits/.gitignore).
 
-# GitHub credentials for the dedicated automation account (claude-ai-milic).
-# Never commit. Its shape and the setup are in DEVELOP.md#bot-identity.
+# The bot token lives in the hub (DEVELOP.md#bot-identity); this only guards a stray copy.
 dev/.github-credentials.json
-
-# State + audit logs for the GH notification → channel pipeline. Each side
-# (the poller and the MCP channel server) writes its own log so both halves
-# are inspectable. Pure local runtime state.
-dev/github-notifications/.notification-state.json
-dev/github-notifications/.notif-poll.log
-dev/notif-channel/.channel.log
-dev/notif-channel/node_modules/
 
 # Repo-level tooling (the shared test runner, #625) installs here; the
 # per-script build packages still live under userscripts/*/.
@@ -20,9 +11,7 @@ dev/notif-channel/node_modules/
 # `pnpm test` output: the HTML report and failure screenshots.
 /test-results/
 
-# Per-developer MCP config. Each contributor copies
-# `dev/notif-channel/mcp.json.template` → `.mcp.json` themselves
-# (see DEVELOP.md). The template is tracked; the live config isn't.
+# Per-developer MCP config.
 /.mcp.json
 
 # Claude Code per-user state: permission allowlist, etc. Machine-specific.

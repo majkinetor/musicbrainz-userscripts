@@ -1,4 +1,4 @@
-// #591 (majkinetor): "Picard is used to add disk id - there is no web option…
+// #591 (majkinetor), moved from Falcon in #808: "Picard is used to add disk id - there is no web option…
 // We should show each media as drop target above current disk ids if they
 // exist - you click on it to select a file or drop a file to it and you are
 // done." — and: "Check out the Picard code on how it formats query params and
@@ -16,7 +16,7 @@
 //
 // Everything is served from fixtures: the release page, the /ws/2 media lookup
 // and the attach page. Nothing is fetched from MusicBrainz and nothing is
-// submitted — the attach route only records the URL Falcon would have opened.
+// submitted — the attach route only records the URL Apollo would have opened.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { test, check, requireLogin, sourceOf, frames, idle, until, settled } from '../../../dev/test/harness.mjs';
 import { dirname, join, resolve } from 'node:path';
@@ -28,7 +28,7 @@ test.use({ gm: false });
 let fail = 0;   // printed by the old abort messages
 
 test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }) => {
-  const code = await readFile(sourceOf('falcon'), 'utf8');
+  const code = await readFile(sourceOf('apollo_editor'), 'utf8');
   const ck = check;
 
   // majkinetor's own attachment, committed next to the test so this does not
@@ -111,7 +111,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
       window.GM_getValue = (k, d) => (store.has(k) ? store.get(k) : d);
       window.GM_setValue = (k, v) => store.set(k, v);
       window.GM_deleteValue = k => store.delete(k);
-      window.GM_info = { script: { name: 'Falcon', version: 't' } };
+      window.GM_info = { script: { name: 'Apollo Editor', version: 't' } };
       window.GM_xmlhttpRequest = () => {};
       window.__opened = [];
       window.GM_openInTab = u => { window.__opened.push(u); return { close() {}, closed: false }; };
@@ -119,7 +119,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
     });
     page.on('load', () => { page.addScriptTag({ content: code }).catch(() => {}); });
     await page.goto(DISCIDS, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => !!window.__falconTest, null, { timeout: 15000 });
+    await page.waitForFunction(() => !!window.__apolloEditor, null, { timeout: 15000 });
     return page;
   };
   // hand a real File to the page, byte for byte
@@ -129,13 +129,13 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   }, [Array.from(bytes), name]);
 
   const page = await open();
-  const have = await page.evaluate(() => typeof window.__falconTest.discIdFromLog === 'function');
+  const have = await page.evaluate(() => typeof window.__apolloEditor.discIdFromLog === 'function');
   ck(have, 'this build can read a CD rip log');
   if (!have) { console.log('no rip-log support on this build — nothing further is measurable'); console.log(`\n${fail + 1} FAILED`); throw new Error('stopped: see the log above'); }
 
   /* ── 1. THE check: majkinetor's log, against Picard's own answer ───────────── */
   await asFile(page, realBytes, 'The.Deadbeats.-.Made.In.The.Shade.log');
-  const real = await page.evaluate(() => window.__falconTest.discIdFromLog(window.__file));
+  const real = await page.evaluate(() => window.__apolloEditor.discIdFromLog(window.__file));
   console.log('\nreal log →', JSON.stringify({ id: real.id, tracks: real.tracks, format: real.format, encoding: real.encoding }));
   console.log('       toc', real.tocString);
   ck(real.id === EXPECT_ID, `the disc ID matches the one Picard produced — ${real.id}`);
@@ -149,7 +149,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
      was (see the raw-toc checks further down). This pins both halves at once. */
   const ninja = await readFile(resolve(LOG_DIR, 'Various.Artists.-.Ninja.Cuts.Disc.3.log'));
   await asFile(page, ninja, 'Various.Artists.-.Ninja.Cuts.Disc.3.log');
-  const n3 = await page.evaluate(() => window.__falconTest.discIdFromLog(window.__file));
+  const n3 = await page.evaluate(() => window.__apolloEditor.discIdFromLog(window.__file));
   console.log('\nNinja Cuts 3 →', n3.id, '·', n3.tracks, 'tracks');
   console.log('         toc', n3.tocString);
   ck(n3.id === '9XSS5W9GpTC6mVNa1ARWrddUGaM-', `the disc ID he saw in the rejected URL, recomputed — ${n3.id}`);
@@ -174,7 +174,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
 
   for (const [name, text] of [['EAC table', eac], ['dBpoweramp', dbpa], ['cyanrip', cyan], ['whipper', whipper]]) {
     await asFile(page, Buffer.from(text, 'utf8'), name.replace(/\W/g, '') + '.log');
-    const r = await page.evaluate(() => window.__falconTest.discIdFromLog(window.__file).catch(e => ({ err: e.message })));
+    const r = await page.evaluate(() => window.__apolloEditor.discIdFromLog(window.__file).catch(e => ({ err: e.message })));
     console.log(`${name.padEnd(12)} → ${r.err ? 'ERROR ' + r.err : r.id + '  (' + r.format + ')'}`);
     ck(!r.err && r.id === EXPECT_ID, `${name}: the same disc gives the same disc ID`);
     ck(!r.err && r.tocString === EXPECT_TOC, `${name}: and the same TOC`);
@@ -190,41 +190,41 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   ];
   for (const [name, text, re] of bad) {
     await asFile(page, Buffer.from(text, 'utf8'), 'bad.log');
-    const r = await page.evaluate(() => window.__falconTest.discIdFromLog(window.__file).then(v => ({ id: v.id }), e => ({ err: e.message })));
+    const r = await page.evaluate(() => window.__apolloEditor.discIdFromLog(window.__file).then(v => ({ id: v.id }), e => ({ err: e.message })));
     ck(!!r.err && re.test(r.err), `${name} is refused — "${(r.err || 'NO ERROR, got ' + r.id).slice(0, 80)}"`);
   }
   // a trailing data track is dropped, exactly as Picard does (gap of 11401)
   const withData = eac + '\r\n' + `        14  |  0:00.00 |  1:00.00 |         ${279723 + 11400}    |    ${279723 + 11400 + 5000}   `;
   await asFile(page, Buffer.from(withData, 'utf8'), 'data.log');
-  const dt = await page.evaluate(() => window.__falconTest.discIdFromLog(window.__file));
+  const dt = await page.evaluate(() => window.__apolloEditor.discIdFromLog(window.__file));
   console.log('\nwith a trailing data track →', dt.id, '· dropped:', dt.toc.dataTrackDropped);
   ck(dt.toc.dataTrackDropped === true, 'a trailing data track is recognised by its 11401-sector gap');
   ck(dt.id === EXPECT_ID, 'and dropped, so the disc ID is the audio disc\'s — the same one again');
 
   /* ── 4. the drop zones ─────────────────────────────────────────────────────── */
-  const zones = await until(() => page.evaluate(() => [...document.querySelectorAll('#falcon-discid-zones .fd-zone')]
+  const zones = await until(() => page.evaluate(() => [...document.querySelectorAll('#apollo-discid-zones .fd-zone')]
     .map(z => ({ pos: z.dataset.position, tracks: z.dataset.tracks, mediumId: z.dataset.mediumId || null, off: z.classList.contains('off'), text: z.textContent.replace(/\s+/g, ' ').trim() }))), z => z.length >= 1, { timeout: 15000 });
   console.log('\nzones:', JSON.stringify(zones, null, 1));
   ck(zones.length === 1 && zones[0].pos === '1', `one medium, one zone (${zones.length})`);
   ck(zones[0].tracks === '13', 'the zone knows how many tracks the medium has');
   ck(zones[0].mediumId === null, 'and has no medium id, because this page shows no disc IDs to scrape one from');
   ck(/drop a rip log/i.test(zones[0].text), `it says what to do — "${zones[0].text}"`);
-  ck(await page.evaluate(() => !!document.querySelector('#falcon-discid-box a[href="/doc/How_to_Add_Disc_IDs"]')),
+  ck(await page.evaluate(() => !!document.querySelector('#apollo-discid-box a[href="/doc/How_to_Add_Disc_IDs"]')),
     "and still points at MusicBrainz's own instructions, since Picard is still the answer for some discs");
 
   // a non-CD medium cannot have disc IDs and must say so rather than fail later
   STATE.media = MEDIA_TWO;
   const page2 = await open();
-  // the zones come after Falcon's /ws/2 media read, which waits its turn at the shared request
+  // the zones come after Apollo's /ws/2 media read, which waits its turn at the shared request
   // gate (#633): read them once they are there, not straight after the page opens
-  const zones2 = await until(() => page2.evaluate(() => [...document.querySelectorAll('#falcon-discid-zones .fd-zone')]
+  const zones2 = await until(() => page2.evaluate(() => [...document.querySelectorAll('#apollo-discid-zones .fd-zone')]
     .map(z => ({ pos: z.dataset.position, off: z.classList.contains('off'), text: z.textContent.replace(/\s+/g, ' ').trim() }))), z => z.length >= 2, { timeout: 15000 });
   console.log('two mediums:', JSON.stringify(zones2, null, 1));
   ck(zones2.length === 2, `a zone per medium (${zones2.length})`);
   ck(zones2[0].off === false && zones2[1].off === true, 'the CD is droppable, the DVD-Video is not');
   ck(/cannot have disc IDs/i.test(zones2[1].text), `and says why — "${zones2[1].text}"`);
   const fmtCheck = await page2.evaluate(() => {
-    const f = window.__falconTest.mediumMayHaveDiscIds;
+    const f = window.__apolloEditor.mediumMayHaveDiscIds;
     return { yes: ['CD', 'CD-R', 'Enhanced CD', 'HDCD', '8cm CD', 'Copy Control CD', 'Data CD', ''].filter(f).length,
       no: ['DVD-Video', 'Vinyl', '12" Vinyl', 'Cassette', 'Digital Media', 'Blu-ray', 'SACD'].filter(f).length };
   });
@@ -237,7 +237,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   attachHits.length = 0;
   await page2.evaluate(() => {
     const r = { id: '9XSS5W9GpTC6mVNa1ARWrddUGaM-', tocString: '1+17+343468+150+10902+38417', tracks: 17 };
-    window.__falconTest.goAttach(r, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, undefined);
+    window.__apolloEditor.goAttach(r, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, undefined);
   });
   await until(() => attachHits.length, n => n > 0);   // it navigates: the request is what shows it went
   console.log('\nattach url (no medium id):', attachHits[0]);
@@ -263,16 +263,16 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
     `MusicBrainz's own validator accepts it — space separated, no stray characters (${JSON.stringify(asPerlSeesIt)})`);
   ck(asPerlSeesIt === '1 17 343468 150 10902 38417', 'each offset survives the round trip intact');
   ck(u1.searchParams.get('filter-release.query') === MBID, "filtered to this release, so no MBID has to be typed in");
-  ck(u1.searchParams.get('falcon-medium') === '1', 'and remembering which medium the drop was aimed at');
+  ck(u1.searchParams.get('apollo-medium') === '1', 'and remembering which medium the drop was aimed at');
 
   // (b) medium id known → straight to the confirmation, skipping the picker
   STATE.page = WITH_IDS;
   const page3 = await open();
-  const scraped = await page3.evaluate(() => window.__falconTest.scrapeMediumIds());
+  const scraped = await page3.evaluate(() => window.__apolloEditor.scrapeMediumIds());
   console.log('scraped medium ids:', JSON.stringify(scraped));
   ck(scraped['1'] === 3374577, `the medium's internal id is read off the page's own Remove/Move links (${JSON.stringify(scraped)})`);
   attachHits.length = 0;
-  await page3.evaluate(() => window.__falconTest.goAttach({ id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, '3374577'));
+  await page3.evaluate(() => window.__apolloEditor.goAttach({ id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 1, '3374577'));
   await until(() => attachHits.length, n => n > 0);   // it navigates: the request is what shows it went
   console.log('attach url (medium id known):', attachHits[0]);
   const u2 = new URL(attachHits[0] || 'https://x/');
@@ -283,25 +283,25 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
      majkinetor: "It shows me a page to select MBID, which it shouldn't as Falcon
      already knows it… When MBID is added we again have page that can be skipped -
      select media - Falcon already knows which media was used."
-     So when the medium id is not on the release page, Falcon resolves it from the
+     So when the medium id is not on the release page, Apollo resolves it from the
      picker itself and goes straight to the confirmation. */
   attachHits.length = 0;
-  const resolved = await page2.evaluate(() => window.__falconTest.resolveMediumId(
+  const resolved = await page2.evaluate(() => window.__apolloEditor.resolveMediumId(
     '9b3fe0b2-d286-437c-b13c-2943f90780b4', 3, '1+17+343468+150'));
   console.log('\nresolved medium for position 3:', resolved);
   ck(resolved === '1123588', `the medium id is read off MusicBrainz's own radio list (${resolved}) — CD 3, not CD 2`);
-  const resolved2 = await page2.evaluate(() => window.__falconTest.resolveMediumId(
+  const resolved2 = await page2.evaluate(() => window.__apolloEditor.resolveMediumId(
     '9b3fe0b2-d286-437c-b13c-2943f90780b4', 2, '1+17+343468+150'));
   ck(resolved2 === '1123587', `and position 2 resolves to the other one (${resolved2}) — the row label is what distinguishes them`);
   // ⚠ the refusal matters more than the match: a disc ID on the wrong medium is
   // an edit another editor has to undo
-  const resolved3 = await page2.evaluate(() => window.__falconTest.resolveMediumId(
+  const resolved3 = await page2.evaluate(() => window.__apolloEditor.resolveMediumId(
     '9b3fe0b2-d286-437c-b13c-2943f90780b4', 9, '1+17+343468+150'));
   ck(resolved3 === null, `a medium MusicBrainz did not offer resolves to nothing rather than to a guess (${JSON.stringify(resolved3)})`);
 
   // end to end: a drop with no known medium id lands on the CONFIRMATION page
   attachHits.length = 0;
-  await page2.evaluate(() => window.__falconTest.goAttachResolved(
+  await page2.evaluate(() => window.__apolloEditor.goAttachResolved(
     { id: 'ID', tocString: '1+17+343468+150', tracks: 17 }, '9b3fe0b2-d286-437c-b13c-2943f90780b4', 3, undefined, null));
   // it may ask the picker first; the last request once the network is quiet is where it landed
   await until(() => attachHits.length, n => n > 0);
@@ -318,7 +318,7 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
     const store = new Map();
     window.GM_getValue = (k, d) => (store.has(k) ? store.get(k) : d);
     window.GM_setValue = (k, v) => store.set(k, v);
-    window.GM_info = { script: { name: 'Falcon', version: 't' } };
+    window.GM_info = { script: { name: 'Apollo Editor', version: 't' } };
     window.GM_xmlhttpRequest = () => {};
     window.__log = [];
     const ci = console.info.bind(console);
@@ -326,29 +326,29 @@ test("#591: rip log discid", { tag: ['@sandbox', '@login'] }, async ({ context }
   });
   pPick.on('load', () => { pPick.addScriptTag({ content: code }).catch(() => {}); });
   attachHits.length = 0;
-  // landing on the picker WITH falcon-medium: Falcon must tick the radio and press Attach
-  await pPick.goto(`https://test.musicbrainz.org/cdtoc/attach?toc=1+17+343468+150&falcon-medium=3&filter-release.query=${MBID}`, { waitUntil: 'load' });
-  // Falcon ticks the medium and presses Attach once the page is in: the confirmation it lands on
+  // landing on the picker WITH apollo-medium: Apollo must tick the radio and press Attach
+  await pPick.goto(`https://test.musicbrainz.org/cdtoc/attach?toc=1+17+343468+150&apollo-medium=3&filter-release.query=${MBID}`, { waitUntil: 'load' });
+  // Apollo ticks the medium and presses Attach once the page is in: the confirmation it lands on
   await pPick.waitForURL(/[?&]medium=\d+/, { timeout: 20000 }).catch(() => {});
   console.log('\nafter the picker:', pPick.url());
   ck(/[?&]medium=1123588/.test(pPick.url()),
-    'landing on the picker anyway, Falcon selects the right medium and presses "Attach CD TOC"');
+    'landing on the picker anyway, Apollo selects the right medium and presses "Attach CD TOC"');
   // …and the confirmation page gets signed
   await pPick.waitForFunction(() => !!document.querySelector('textarea.edit-note'), null, { timeout: 10000 }).catch(() => {});
   await frames(pPick);
   const note = await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).value || '');
   console.log('edit note:', JSON.stringify(note));
-  ck(/Falcon v/.test(note), `the final edit note carries Falcon's signature — "${note.split(String.fromCharCode(10))[0]}"`);
+  ck(/Apollo Editor v/.test(note), `the final edit note carries Apollo's signature — "${note.split(String.fromCharCode(10))[0]}"`);
   ck(/rip log/i.test(note), 'and says where the disc ID came from');
   ck(await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).name) === 'confirm.edit_note',
     "…in MusicBrainz's own edit-note field, by its real name");
   // a re-render must not stack signatures
-  await pPick.evaluate(() => window.__falconTest.signAttachEditNote());
+  await pPick.evaluate(() => window.__apolloEditor.signAttachEditNote());
   const note2 = await pPick.evaluate(() => (document.querySelector('textarea.edit-note') || {}).value || '');
-  ck((note2.match(/Falcon v/g) || []).length === 1, `signing twice does not stack it (${(note2.match(/Falcon v/g) || []).length})`);
+  ck((note2.match(/Apollo Editor v/g) || []).length === 1, `signing twice does not stack it (${(note2.match(/Apollo Editor v/g) || []).length})`);
   // nothing was ever submitted — "Enter edit" is still the user's to press
   ck(await pPick.evaluate(() => document.querySelectorAll('button[type="submit"]').length > 0),
-    'the "Enter edit" button is still there, unpressed — Falcon never submits the edit');
+    'the "Enter edit" button is still there, unpressed — Apollo never submits the edit');
 
   /* ── 6. nothing was submitted ──────────────────────────────────────────────── */
   for (const [n, p] of [['1', page], ['2', page2], ['3', page3]]) {

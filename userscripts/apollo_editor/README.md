@@ -20,6 +20,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Annotation editor](#annotation-editor)**: Markdown with a live preview.
 - **[Highlighting](#highlighting)**: confusable punctuation, invisible characters and missing spaces made visible.
 - **[Archive](#archive)**: the release's links saved on the Internet Archive, and a menu by each external link to its copies there.
+- **[Disc IDs from a rip log](#disc-ids-from-a-rip-log)**, computed in the browser.
 
 Each part is optional, and Apollo's corner icon switches to MusicBrainz's own editor and back.
 
@@ -318,6 +319,19 @@ A Discogs link offers its saved release data. Nothing is sent to archive.org unt
 
 > [!NOTE]
 > Archiving sends the address of every link on the releases you edit to archive.org, and with keys, under your account. Turn **Archive links on the Internet Archive** off in [Settings](#settings) if you don't want that.
+
+## Disc IDs from a rip log
+
+On a release's **Disc IDs** tab, each medium gets a drop zone for a rip log. Apollo computes its disc ID and opens MusicBrainz's attach page, edit note signed, for you to **Enter edit**.
+
+| Program          | Reads                             |
+| ---------------- | --------------------------------- |
+| EAC, XLD, fre:ac | the TOC table (localised EAC too) |
+| whipper          | the `TOC:` block                  |
+| dBpoweramp       | `Track N: Ripped LBA x to y`      |
+| cyanrip          | `Start LSN` / `End LSN`           |
+
+Like Picard, whose parsers these are, it refuses a partial rip, a non-standard track sequence or an unknown file, and drops a trailing data track. A log whose track count doesn't match the medium asks before continuing.
 
 ## Settings
 
