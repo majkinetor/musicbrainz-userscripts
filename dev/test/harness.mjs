@@ -442,7 +442,12 @@ export async function pristine(page, kind, fields = {}) {
     await page.waitForURL(/\/release\/add/, { timeout: 60000 });
     await page.waitForFunction(() => { try { return window.MB.releaseEditor.rootField.release().mediums().length > 0; } catch (e) { return false; } }, null, { timeout: 120000 });
     await idle(page);
+    // MB won't let a newly added release be submitted until the Tracklist tab has been
+    // visited (addingWithoutVisitingTracklist): jumping straight to the edit note leaves
+    // #enter-edit disabled. Visit the tracklist first, then wait for submission to be allowed.
+    await page.locator('a[href="#tracklist"]').first().click();
     await page.locator('a[href="#edit-note"]').first().click();
+    await page.waitForFunction(() => { try { return window.MB.releaseEditor.allowsSubmission(); } catch (e) { return false; } }, null, { timeout: 60000 });
     await page.locator('#enter-edit').click();
   } else {
     const defaults = { name, edit_note: note, ...(kind === 'artist' ? { sort_name: name, comment: 'test' } : {}), ...(kind === 'series' ? { type_id: '2' } : {}) };
