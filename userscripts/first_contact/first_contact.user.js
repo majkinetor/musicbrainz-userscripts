@@ -1294,6 +1294,15 @@ const SPOTIFY = {
             } catch (e) { /* unreadable headers */ }
             return h;
         };
+        /* #817: in Firefox the script runs in a sandbox (exportFunction exists) and the page's own
+           calls into a sandbox-wrapped fetch/XHR hand the player sandbox objects it may not read
+           ("Permission denied to access property length"): the player stops. There only the
+           in-page hook listens, which runs as the page's own code. */
+        if (typeof exportFunction === 'function') {
+            Log.debug('Spotify: sandboxed (Firefox): listening with the in-page hook only');
+            this.inPage();
+            return;
+        }
         const origFetch = w.fetch;
         if (typeof origFetch === 'function') {
             const hook = function (input, init) {
