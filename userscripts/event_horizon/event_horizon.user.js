@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.27
+// @version      2026.10.24.28
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2191,8 +2191,12 @@ function phrase(x) {
     let role = x.type;
     if (x.type === 'instrument') role = rest.join(', ') || 'instruments';
     else if (x.type === 'vocal') role = rest.length ? rest.join(', ') : 'vocals';
-    else if (at.includes('task') && x['attribute-values'] && x['attribute-values'].task) role = x['attribute-values'].task;
-    else if (rest.length) role += ' (' + rest.join(', ') + ')';
+    else {
+        // a task stays beside the type, as MB shows it: "Additional engineer (mastering)"; one repeating a modifier adds nothing
+        const task = at.includes('task') && x['attribute-values'] && x['attribute-values'].task;
+        if (task && !mods.includes(task.toLowerCase())) rest.push(task);
+        if (rest.length) role += ' (' + rest.join(', ') + ')';
+    }
     role = [...mods, role].join(' ');
     return role[0].toUpperCase() + role.slice(1);
 }
