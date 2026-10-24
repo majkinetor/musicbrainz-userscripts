@@ -89,6 +89,16 @@ export const PLATFORM_ICONS = {
 
     soundexchange: { color: '#6f42c1', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
 
+    // ── Wikidata — its barcode of red, green and blue bars, as MusicBrainz's link list shows it ──
+    wikidata: { color: '#339966', svg: '<svg viewBox="0 0 24 24"><g transform="translate(0 3)"><path d="M1 0h2v18H1zM4.5 0h2v18h-2z" fill="#990000"/><path d="M8.5 0h1.4v18H8.5zM11.2 0h1.4v18h-1.4zM13.9 0h1.4v18h-1.4z" fill="#339966"/><path d="M17 0h1.6v18H17zM19.8 0h.9v18h-.9zM22 0h1v18h-1z" fill="#006699"/></g></svg>' },
+
+    // ── Rate Your Music — a blue disc with a white wave over darker water, as MusicBrainz's link list shows it ──
+    rateyourmusic: { color: '#2a7bd1', svg: '<svg viewBox="1 1 22 22"><circle cx="12" cy="12" r="11" fill="#d9ecfa"/><path d="M1.2 13.5c3-3.5 6-4.6 9-2.4s6.4 2.6 11.6-1.2A11 11 0 0 1 1.2 13.5z" fill="#2a7bd1"/><path d="M2.5 17c3.2-2.2 6.4-2.4 9.6-.6s5.6 1.6 8.4-.6A11 11 0 0 1 2.5 17z" fill="#164f8f"/><circle cx="12" cy="12" r="10.6" fill="none" stroke="#164f8f" stroke-width=".8"/></svg>' },
+
+    // ── A review (BBC Music and other review sites) — a speech bubble with lines, as MusicBrainz shows a review link;
+    //    in OUR theme's text colour, like Tidal ──
+    review: { color: '#555555', svg: '<svg viewBox="1 1 22 22"><path d="M3 3h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H10l-5 5v-5H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" style="fill:var(--mbu-text,currentColor)"/><path d="M6 7.5h12M6 10.5h12M6 13.5h8" stroke="var(--mbu-bg,#fff)" stroke-width="1.5" stroke-linecap="round" style="stroke:var(--mbu-bg,#fff)"/></svg>' },
+
     // ── Generic streaming host (unknown provider fallback) ──
     globe: { color: '#6f7d75', svg: '<svg viewBox="2 2 20 20" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' },
 };
