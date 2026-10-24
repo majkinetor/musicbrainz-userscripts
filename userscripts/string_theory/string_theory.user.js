@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.152601
-// @description  Unified bundle of 11 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.24.180300
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor, art_station, credit_hoarder, event_horizon, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -138,20 +138,22 @@
 // ==/UserScript==
 
 // Auto-generated by userscripts/string_theory/build.mjs — do NOT edit by hand.
-// Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
+// Bundles (verbatim, each wrapped in a URL gate and a run-at gate): apollo_editor, art_station, credit_hoarder, event_horizon, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check.
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.24.152601 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.24.170000\n  · Credit Hoarder v2026.10.24.150716\n  · Falcon v2026.10.24.190000\n  · First Contact v2026.10.24.170100\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.22.110834\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.24.170100\n  · Platform Check v2026.10.24");
+  console.log('%c String Theory %c v2026.10.24.180300 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.24.170000\n  · Credit Hoarder v2026.10.24.150716\n  · Event Horizon v2026.10.24.49\n  · Falcon v2026.10.24.190000\n  · First Contact v2026.10.24.170100\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.22.110834\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.24.170100\n  · Platform Check v2026.10.24");
 } catch (e) {}
 
-function __stReadOff() { try { var v = GM_getValue("string_theory.off", []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+var __stDefOff = ["event_horizon"];
+function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+function __stReadOff() { var on = __stList("string_theory.on"); return __stList("string_theory.off").concat(__stDefOff.filter(function (n) { return on.indexOf(n) < 0; })); }
 var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.24.170000"],["credit_hoarder","Credit Hoarder","2026.10.24.150716"],["falcon","Falcon","2026.10.24.190000"],["first_contact","First Contact","2026.10.24.170100"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.22.110834"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.24.170100"],["platform_check","Platform Check","2026.10.24"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.24.170000"],["credit_hoarder","Credit Hoarder","2026.10.24.150716"],["event_horizon","Event Horizon","2026.10.24.49"],["falcon","Falcon","2026.10.24.190000"],["first_contact","First Contact","2026.10.24.170100"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.22.110834"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.24.170100"],["platform_check","Platform Check","2026.10.24"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -163,7 +165,7 @@ var __stOff = __stReadOff();
     ids[id] = got;
   }
   function draw() {
-    var off = GM_getValue("string_theory.off", []);
+    var off = __stReadOff();
     members.forEach(function (m) {
       var on = off.indexOf(m[0]) < 0;
       put('st-' + m[0], (on ? '☑ ' : '☐ ') + m[1] + ' v' + m[2], function () { flip(m[0]); },
@@ -232,11 +234,11 @@ var __stOff = __stReadOff();
     draw();
   }
   function flip(key) {
-    var off = GM_getValue("string_theory.off", []);
-    if (!Array.isArray(off)) off = [];
-    var i = off.indexOf(key);
-    if (i < 0) off.push(key); else off.splice(i, 1);
-    GM_setValue("string_theory.off", off);
+    var k = __stDefOff.indexOf(key) < 0 ? "string_theory.off" : "string_theory.on";
+    var list = __stList(k);
+    var i = list.indexOf(key);
+    if (i < 0) list.push(key); else list.splice(i, 1);
+    GM_setValue(k, list);
     draw();
   }
   try { draw(); } catch (e) { try { console.error('[String Theory] menu failed:', e); } catch (x) {} }
@@ -258,7 +260,7 @@ function __stRuns(name, rules) {
 
 // ── shared blocks, each written once (#786) ──────────────────────────────
 // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
-// used by apollo_editor, art_station, falcon, fusion, group_therapy, isrc_scout, mission_control, platform_check
+// used by apollo_editor, art_station, event_horizon, falcon, fusion, group_therapy, isrc_scout, mission_control, platform_check
 function __st_NET(GM_info) {
 'use strict';
 // <ST-NET> — generated by dev/net/sync-gate.mjs from dev/net/mb-gate.mjs — DO NOT EDIT
@@ -1714,7 +1716,7 @@ return { mbuGuessCase };
 }
 
 // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
-// used by apollo_editor, art_station, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check
+// used by apollo_editor, art_station, event_horizon, falcon, first_contact, fusion, group_therapy, isrc_scout, mammoth, mission_control, platform_check
 function __st_TOKENS(GM_info) {
 'use strict';
 // <ST-TOKENS> — generated by dev/tokens/sync-tokens.mjs from dev/tokens/design-tokens.mjs — DO NOT EDIT
@@ -4003,6 +4005,1646 @@ function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = 
 function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
 // </ST-ICONS>
 return { ST_ICONS, stIcon, stColor };
+}
+
+// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
+// used by event_horizon
+function __st_ICONS_2(GM_info) {
+'use strict';
+// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
+const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"presto":{"color":"#1f3a5f","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#1f3a5f\"/><path d=\"M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
+function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = size || 16; return i.svg.replace(/<svg\b([^>]*)>/, function (m, a) { a = a.replace(/\s(?:width|height)="[^"]*"/g, ''); var ns = /\bxmlns=/.test(a) ? '' : ' xmlns="http://www.w3.org/2000/svg"'; return '<svg' + a + ns + ' width="' + size + '" height="' + size + '">'; }); }
+function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
+// </ST-ICONS>
+return { ST_ICONS, stIcon, stColor };
+}
+
+// <ST-UI> — generated by dev/ui/sync-ui.mjs from dev/ui/ui-components.mjs — DO NOT EDIT
+// used by event_horizon
+function __st_UI_2(GM_info) {
+'use strict';
+// <ST-UI> — generated by dev/ui/sync-ui.mjs from dev/ui/ui-components.mjs — DO NOT EDIT
+const MBU_UI_CSS = '.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}#mbu-toast.mbu-toast-on{opacity:1}#mbu-toast.mbu-toast-act{pointer-events:auto}#mbu-toast .mbu-toast-btn{width:auto;margin-left:10px;padding:2px 9px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font:inherit;cursor:pointer}#mbu-toast .mbu-toast-btn:hover{background:rgba(255,255,255,.18)}#mbu-toast.mbu-toast-ok{background:var(--mbu-ok)}#mbu-toast.mbu-toast-warn{background:var(--mbu-warn)}#mbu-toast.mbu-toast-error{background:var(--mbu-error)}.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}.mbu-cfg-ic img,.mbu-cfg-ic svg{width:22px;height:22px;object-fit:contain;display:block}.mbu-cfg-name{flex:0 0 auto;font-weight:700;color:var(--mbu-accent-text)}.mbu-cfg-ver{flex:0 0 auto;font:400 11px var(--mbu-font);color:var(--mbu-text-weak);white-space:nowrap}.mbu-cfg-sp{flex:1 1 auto;min-width:8px}.mbu-cfg-log{flex:0 0 auto;width:auto;font:400 12px var(--mbu-font);color:var(--mbu-accent-text);cursor:pointer;background:none;border:1px solid transparent;border-radius:var(--mbu-radius);padding:1px 8px;line-height:1.6}.mbu-cfg-log:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border)}#mbu-logpop{position:fixed;top:74px;left:50%;transform:translateX(-50%);z-index:var(--mbu-z-modal);display:flex;flex-direction:column;width:min(860px,94vw);max-height:72vh;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:11px;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font);color:var(--mbu-text);overflow:hidden}.mbu-logpop-h{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid var(--mbu-border-soft);color:var(--mbu-accent-text);cursor:move;user-select:none}.mbu-logpop-sp{margin-left:auto}.mbu-logpop-hclear,.mbu-logpop-clear,.mbu-logpop-copy,.mbu-logpop-x,.mbu-logpop-min,.mbu-logpop-full{width:auto;font-size:12px;color:var(--mbu-accent-text);background:var(--mbu-bg-hover);border:1px solid var(--mbu-border);border-radius:5px;padding:2px 9px;cursor:pointer;font-family:inherit}.mbu-logpop-hclear:hover,.mbu-logpop-clear:hover,.mbu-logpop-copy:hover,.mbu-logpop-x:hover,.mbu-logpop-min:hover,.mbu-logpop-full:hover{background:var(--mbu-accent-soft)}#mbu-logpop.min .mbu-log-list,#mbu-logpop.min .mbu-log-f,#mbu-logpop.min .mbu-logpop-clear,#mbu-logpop.min .mbu-logpop-copy,#mbu-logpop.min .mbu-logpop-x,#mbu-logpop.min .mbu-logpop-full{display:none}#mbu-logpop.min{max-height:none;width:auto!important;height:auto!important}#mbu-logpop.sized{max-height:none}.mbu-logpop-grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;opacity:.6;background:linear-gradient(135deg,transparent 55%,var(--mbu-border-strong) 55%,var(--mbu-border-strong) 62%,transparent 62%,transparent 75%,var(--mbu-border-strong) 75%,var(--mbu-border-strong) 82%,transparent 82%)}.mbu-logpop-grip:hover{opacity:1}#mbu-logpop.min .mbu-logpop-grip,#mbu-logpop.full .mbu-logpop-grip{display:none}#mbu-logpop.full{top:12px!important;left:12px!important;right:12px!important;bottom:12px!important;width:auto!important;height:auto!important;max-height:none;transform:none!important}#mbu-logpop.full .mbu-logpop-h{cursor:default}#mbu-logpop.min .mbu-logpop-sp{display:none}.mbu-log-badge{color:var(--mbu-border-strong);font-size:11px}.mbu-logemb{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--mbu-bg);font:13px var(--mbu-font);color:var(--mbu-text)}.mbu-logemb .mbu-logpop-h{cursor:default;padding:7px 10px}.mbu-logemb .mbu-logpop-h>.mbu-log-q{flex-basis:160px;margin-left:0}.mbu-logemb .mbu-logpop-h>.mbu-log-ses{flex-basis:240px}.mbu-logpop-h{flex-wrap:nowrap}.mbu-logpop-h>*{flex-shrink:0;white-space:nowrap}.mbu-logpop-h>.mbu-log-q{flex-shrink:1;min-width:60px}.mbu-logpop-h>.mbu-log-ses{flex-shrink:1;min-width:90px}.mbu-logpop-h>.mbu-logpop-sp{flex:1 1 0;min-width:0}.mbu-logpop .mbu-log-ses{flex:0 1 260px;min-width:120px;max-width:100%}.mbu-logpop-hclear:disabled{opacity:.5;cursor:default}.mbu-log-dbg{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}.mbu-log-dbg input{margin:0}#mbu-logpop.min .mbu-log-dbg{display:none}.mbu-log-past .mbu-logpop-clear{display:none}#mbu-logpop.min .mbu-log-ses,#mbu-logpop.min .mbu-logpop-hclear{display:none}.mbu-logpop .mbu-log-q{flex:0 1 200px;min-width:80px;margin-left:6px;font:12px var(--mbu-font);padding:2px 8px;border:1px solid var(--mbu-border);border-radius:5px;cursor:text}#mbu-logpop.min .mbu-log-q{display:none}.mbu-logpop .mbu-log-li.mbu-log-nq{display:none}.mbu-log-list{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:9px 13px;display:flex;flex-direction:column;gap:3px}.mbu-log-li{display:flex;gap:9px;white-space:pre-wrap;word-break:break-word}.mbu-log-pre .mbu-log-m{white-space:pre;font:12px/1.35 ui-monospace,Consolas,monospace;word-break:normal}.mbu-log-t{color:var(--mbu-text-weak);flex:0 0 auto;font-variant-numeric:tabular-nums}.mbu-log-c{color:var(--mbu-text-weak);flex:0 0 auto}.mbu-log-list:not(.mbu-log-cats) .mbu-log-c{display:none}.mbu-log-list.mbu-log-cats{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 9px;align-content:start}.mbu-log-cats .mbu-log-li{display:contents}.mbu-log-cats .mbu-log-empty{grid-column:1/-1}.mbu-log-f{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px;padding:5px 13px;border-bottom:1px solid var(--mbu-border-soft);font-size:11px}.mbu-log-f[hidden]{display:none}.mbu-log-fg{display:contents}.mbu-log-fs{width:1px;height:12px;background:var(--mbu-border);margin:0 6px}.mbu-logpop .mbu-log-fb{width:auto;font:inherit;color:var(--mbu-text-weak);background:none;border:1px solid transparent;border-radius:5px;padding:0 6px;line-height:1.6;cursor:pointer}.mbu-logpop .mbu-log-fb:hover{color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb.on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-border)}.mbu-logpop .mbu-log-fb[data-sev=error]{color:var(--mbu-error)}.mbu-logpop .mbu-log-fb[data-sev=warn]{color:var(--mbu-warn)}.mbu-logpop .mbu-log-fb[data-sev=info]{color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-fb[data-sev].on{background:var(--mbu-bg-hover);border-color:currentColor;font-weight:600}.mbu-logpop .mbu-log-fb[data-cat]{border-color:var(--mbu-border-soft);background:var(--mbu-bg-raised);border-radius:999px;padding:0 8px}.mbu-logpop .mbu-log-fb[data-cat].on{color:var(--mbu-accent-text);background:var(--mbu-accent-soft);border-color:var(--mbu-accent)}.mbu-log-m{flex:1 1 auto;color:var(--mbu-text-dim)}.mbu-logpop .mbu-log-m a{color:var(--mbu-accent-text)}.mbu-log-ok .mbu-log-m{color:var(--mbu-ok)}.mbu-log-warn .mbu-log-m{color:var(--mbu-warn)}.mbu-log-error .mbu-log-m{color:var(--mbu-error)}.mbu-log-debug>*{opacity:.85}.mbu-log-debug .mbu-log-m{color:var(--mbu-text-weak)}.mbu-log-empty{color:var(--mbu-text-weak)}.mbu-ov{position:fixed;inset:0;z-index:var(--mbu-z-modal);background:rgba(15,12,28,.45);display:flex;align-items:center;justify-content:center;padding:24px}.mbu-ov-panel{background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius-lg);box-shadow:var(--mbu-shadow-lg);max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}.mbu-ov-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--mbu-border-soft);font-weight:700}.mbu-ov-h .mbu-ov-title{flex:1 1 auto;min-width:0}.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) ::placeholder{color:var(--mbu-text-weak);opacity:1;font-style:italic}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :is(table,td,th,div,span,label)[style*=background]{color:var(--mbu-text)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:not(:where([type=checkbox],[type=radio],[type=range],[type=color],[type=file])),:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select{background:var(--mbu-bg-sunken);color:var(--mbu-text);border-color:var(--mbu-border)}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) input:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) textarea:focus-visible,:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) select:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:1px}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) :where(input[type=checkbox],input[type=radio],input[type=range]){accent-color:var(--mbu-accent)}:root[data-mbu-theme=dark] :where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu){color-scheme:dark;--invert-value:none;--invert:none}:where(.mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu) button{background-color:var(--mbu-bg-raised);color:var(--mbu-text);border-color:var(--mbu-border)}.mbu-compact .mbu-bt{display:none}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input){-webkit-appearance:none;-moz-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:none;border-radius:3px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23888%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E") center/13px no-repeat;opacity:.45;box-shadow:none;flex:0 0 auto;vertical-align:middle}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):hover{opacity:1}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):checked{opacity:1;background-color:var(--mbu-accent);background-image:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2016%2016%27%20fill=%27%23fff%27%3E%3Crect%20x=%271%27%20y=%273.5%27%20width=%2710%27%20height=%279%27%20rx=%271.5%27/%3E%3Cpath%20d=%27M11.5%207L15%204.8v6.4L11.5%209z%27/%3E%3C/svg%3E")}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):focus-visible{outline:1px solid var(--mbu-accent);outline-offset:1px}:is(.mbu-video,body.tc-ri-on #external-links-editor tr.relationship-item .attribute-container input):disabled{cursor:default;opacity:.3}select.mbu-select:not(#mbu-0):not(#mbu-1){-webkit-appearance:none;-moz-appearance:none;appearance:none;box-sizing:border-box;height:22px;max-width:100%;margin:0 2px;padding:0 26px 0 12px;border:1px solid var(--mbu-border);border-radius:20px;outline-offset:1px;background-color:transparent;background-image:linear-gradient(45deg,transparent 50%,var(--mbu-text-weak) 50%),linear-gradient(135deg,var(--mbu-text-weak) 50%,transparent 50%);background-position:calc(100% - 13px) 50%,calc(100% - 8px) 50%;background-size:5px 5px;background-repeat:no-repeat;color:var(--mbu-text);font:600 12px var(--mbu-font);line-height:20px;cursor:pointer;vertical-align:middle}select.mbu-select:not(#mbu-0):not(#mbu-1):hover{border-color:var(--mbu-accent)}select.mbu-select:not(#mbu-0):not(#mbu-1):disabled{opacity:.45;cursor:default;border-color:var(--mbu-border)}select.mbu-select:not(#mbu-0):not(#mbu-1) option{background:var(--mbu-bg);color:var(--mbu-text);font-weight:400}.mbu-step:not(#mbu-0):not(#mbu-1){display:inline-flex;align-items:center;box-sizing:border-box;height:22px;margin:0 2px;padding:0;border:1px solid var(--mbu-border);border-radius:20px;background:transparent;vertical-align:middle;white-space:nowrap;flex:0 0 auto}.mbu-step:not(#mbu-0):not(#mbu-1):hover,.mbu-step:not(#mbu-0):not(#mbu-1):focus-within{border-color:var(--mbu-accent)}.mbu-step:not(#mbu-0):not(#mbu-1)>button{all:unset;box-sizing:border-box;width:20px;height:20px;text-align:center;font:600 13px/20px var(--mbu-font);color:var(--mbu-text-weak);cursor:pointer;user-select:none}.mbu-step:not(#mbu-0):not(#mbu-1)>button:hover{color:var(--mbu-accent)}.mbu-step:not(#mbu-0):not(#mbu-1)>input{all:unset;box-sizing:content-box;min-width:2ch;height:20px;padding:0 1px;font:600 12px/20px var(--mbu-font);color:var(--mbu-text);text-align:center;-moz-appearance:textfield;appearance:textfield;cursor:text}.mbu-step:not(#mbu-0):not(#mbu-1)>input::-webkit-inner-spin-button,.mbu-step:not(#mbu-0):not(#mbu-1)>input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.mbu-step:not(#mbu-0):not(#mbu-1):has(>input:disabled){opacity:.45;border-color:var(--mbu-border)}.mbu-step:not(#mbu-0):not(#mbu-1):has(>input:disabled)>button{cursor:default;color:var(--mbu-text-weak)}';
+// Help link markup. Every script's help link is this, pointing at its own README.
+// `name` is the userscript folder, e.g. mbuHelpHref('art_station').
+function mbuHelpHref(name) {
+    return 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/' + name + '/README.md';
+}
+function mbuHelpHtml(name, label) {
+    return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
+        + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
+}
+function mbuHelpEl(name, label) {
+    var a = document.createElement('a');
+    a.className = 'mbu-help';
+    a.href = mbuHelpHref(name);
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.dataset.tip = 'Open the README in a new tab';
+    a.textContent = label || '? Help';
+    return a;
+}
+
+// The config (settings) icon every script's settings button shows: the gear in text
+// presentation (U+FE0E), so it takes the button's colour instead of an emoji's. #650
+var MBU_CFG_ICON = '\u2699\uFE0E';
+
+// HTML for an innerHTML on a page that enforces Trusted Types (YouTube Music, #650): there a
+// plain string is refused ("This document requires 'TrustedHTML' assignment"). The policy
+// passes the string through; the markup is the script's own. Elsewhere it is the string.
+var _mbuTT;
+function mbuHtml(s) {
+    if (_mbuTT === undefined) {
+        _mbuTT = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) _mbuTT = tt.createPolicy('mbu-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings, as before */ }
+    }
+    return _mbuTT ? _mbuTT.createHTML(String(s)) : String(s);
+}
+
+// The first line of every script's log: the script, its version, and what runs it, so a
+// pasted log says which manager and browser it came from (#282 started it in Art Station):
+//   Log.info(mbuStartupInfo('Fusion'));
+//   -> Fusion v2026.10.1 · Violentmonkey 2.31.0 · firefox 143.0 (win)
+// Inside String Theory GM_info describes the bundle, so the line names it:
+//   -> Fusion (String Theory v2026.10.1) · Tampermonkey 5.3.3 · chrome 140.0 (win)
+// On MusicBrainz it ends with the interface language, which changes what a script reads
+// off the page: "· MusicBrainz in de".
+function mbuStartupInfo(name) {
+    var g = null;
+    try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+    var s = (g && g.script) || {}, p = (g && g.platform) || {};
+    var host = String(s.name || '').replace(/\*$/, ''), ver = s.version || '?';
+    var line = !name ? (host || 'Script') + ' v' + ver
+        : (host && host !== name) ? name + ' (' + host + ' v' + ver + ')'
+        : name + ' v' + ver;
+    if (g) line += ' · ' + (g.scriptHandler || 'unknown manager') + (g.version ? ' ' + g.version : '');
+    if (p.browserName) line += ' · ' + p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '');
+    else { try { line += ' · ' + navigator.userAgent; } catch (e) { /* no navigator */ } }
+    try {
+        if (/(^|\.)musicbrainz\.(org|eu)$/i.test(location.hostname)) {
+            // <html lang>, or MB's lang cookie when the page isn't parsed yet (document-start)
+            var lang = (document.documentElement && document.documentElement.lang) || ((document.cookie.match(/(?:^|;\s*)lang=([^;]+)/) || [])[1]) || 'en';
+            line += ' · MusicBrainz in ' + lang;
+        }
+    } catch (e) { /* no document */ }
+    return line;
+}
+
+// One copy per page (#653). With String Theory and a standalone install of the same script
+// both on, two copies build the same element ids and fight over them: each settings window
+// fills in the other's checkboxes, rows flip between two rule sets. So one copy runs, the
+// one with the higher version, and the other stays off without a word; only the running
+// copy notes it in its log (majkinetor: "disable copy that has lower version without any
+// info (except in log of active copy)"):
+//   if (!mbuClaim('platform_check', 'Platform Check')) return;   // first line of the script
+// The claim is a data- attribute on <html>, which every copy sees whatever its sandbox.
+// It is decided at once, so no script starts late. The copy that starts first takes the
+// page. When it is the older one, the newer copy stays off for this page and leaves a note
+// in localStorage, and from the next page load the older copy finds the note and steps
+// aside. A note whose copy has gone (uninstalled) is cleared by the older copy after the
+// page loads, so it runs again from the load after.
+function mbuClaimVer(v) {
+    return String(v || '').split('.').map(function (n) { return parseInt(n, 10) || 0; });
+}
+function mbuClaimCmp(a, b) {
+    var x = mbuClaimVer(a), y = mbuClaimVer(b);
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (x[i] || 0) - (y[i] || 0); if (d) return d < 0 ? -1 : 1; }
+    return 0;
+}
+function mbuClaim(key, label) {
+    var info = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {};
+    var name = String(info.name || label || key), ver = String(info.version || '0');
+    var mine = (name.slice(-1) === '*' ? 'String Theory' : 'standalone') + ' v' + ver;
+    var root = document.documentElement, attr = 'data-mbu-run-' + key, ev = 'mbu-claim-' + key, noteKey = 'mbu-newer-' + key;
+    var log = function (msg) { try { if (typeof mbuLog !== 'undefined' && mbuLog.active) mbuLog.active.info(msg); else if (typeof mbuToast !== 'undefined' && typeof mbuToast.log === 'function') mbuToast.log('info', msg); else console.info('[' + (label || key) + '] ' + msg); } catch (e) { /* no log */ } };
+    var note = null;
+    try { note = JSON.parse(localStorage.getItem(noteKey) || 'null'); } catch (e) { /* storage blocked */ }
+    // A note older than this copy is spent. This copy's own note stays: it is what keeps the
+    // older copy aside on every later load, not only the next one (#671).
+    var noteCmp = note ? mbuClaimCmp(note.ver, ver) : 1;
+    if (noteCmp < 0) { try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ } }
+    if (noteCmp <= 0) note = null;
+    var held = root && root.getAttribute(attr);
+    var off = function (why) {
+        // tell the running copy (any sandbox hears a DOM event), or the copy that runs after
+        // this one (it reads the attribute), and stay quiet
+        try { if (root) root.setAttribute(attr + '-off', JSON.stringify({ mine: mine, why: why })); } catch (e) { /* no attribute */ }
+        try { document.dispatchEvent(new CustomEvent(ev, { detail: JSON.stringify({ mine: mine, ver: ver, why: why }) })); } catch (e) { /* no event */ }
+        return false;
+    };
+    if (held) {
+        var heldVer = (root.getAttribute(attr + '-ver') || '0');
+        if (mbuClaimCmp(ver, heldVer) > 0) {
+            try { localStorage.setItem(noteKey, JSON.stringify({ ver: ver, mine: mine, at: Date.now() })); } catch (e) { /* storage blocked */ }
+            return off('newer, from the next page load');
+        }
+        return off('older or the same');
+    }
+    if (note) {
+        // a newer copy said it is installed: leave the page to it, unless it never shows up
+        var watch = function () {
+            setTimeout(function () {
+                if (root.getAttribute(attr)) return;
+                try { localStorage.removeItem(noteKey); } catch (e) { /* storage blocked */ }
+                try { console.info('[' + (label || key) + '] the newer copy (' + note.mine + ') did not start: this copy runs again from the next page load'); } catch (e) { /* no console */ }
+            }, 3000);
+        };
+        if (document.readyState === 'complete') watch(); else window.addEventListener('load', watch, { once: true });
+        return off('older: a newer copy runs');
+    }
+    if (root) { root.setAttribute(attr, mine); root.setAttribute(attr + '-ver', ver); }
+    var told = function (o) {
+        log((label || key) + ' is installed twice: ' + mine + ' runs, ' + (o.mine || 'another copy') + ' is switched off'
+            + (o.why === 'newer, from the next page load' ? ' for this page (it is newer and runs from the next page load)' : '') + '.');
+    };
+    document.addEventListener(ev, function (e) { var o = {}; try { o = JSON.parse(e.detail); } catch (x) { /* not ours */ } told(o); });
+    // a copy that stepped aside before this one started (it found a note): log it once the script's log is up
+    var before = root && root.getAttribute(attr + '-off');
+    if (before) setTimeout(function () { var o = {}; try { o = JSON.parse(before); } catch (x) { /* not ours */ } told(o); }, 0);
+    return true;
+}
+
+// Toast. mbuToast(msg) or mbuToast(msg, { ms, kind, at:{x,y}, action:{ label, onClick } }).
+//
+// An action adds one button to the toast (e.g. "Copy log"): the toast is then clickable,
+// stays up longer (12 s unless ms says otherwise), and closes when the button is used.
+//
+// Severity is inferred from a leading warning/tick glyph when not given — Art
+// Station already did that and it is why its toasts reached its log with the
+// right level. Set mbuToast.log = function (level, message) {...} once at
+// startup and every toast mirrors into that script's own log; leave it unset
+// and the toast still shows.
+var _mbuToastT = null;
+function mbuToast(msg, opts) {
+    opts = opts || {};
+    var s = String(msg);
+    var kind = opts.kind || (/^\s*[⚠✗×]/.test(s) ? 'warn' : /[✓✅]/.test(s) ? 'ok' : 'info');
+    try {
+        if (typeof mbuToast.log === 'function') mbuToast.log(kind, s.replace(/^\s*[⚠✗×✓✅]\s*/, ''));
+    } catch (e) { /* a broken log sink must never swallow the toast */ }
+    var el = document.getElementById('mbu-toast');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'mbu-toast';
+        (document.body || document.documentElement).appendChild(el);
+    }
+    el.className = 'mbu-toast-on' + (kind !== 'info' ? ' mbu-toast-' + kind : '') + (opts.action ? ' mbu-toast-act' : '');
+    el.textContent = s;
+    if (opts.action) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'mbu-toast-btn'; b.textContent = opts.action.label || 'OK';
+        b.onclick = function () {
+            try { if (opts.action.onClick) opts.action.onClick(b); } catch (e) { /* the toast still closes */ }
+            clearTimeout(_mbuToastT); _mbuToastT = setTimeout(function () { el.className = ''; }, 900);
+        };
+        el.appendChild(b);
+    }
+    // Anchor above a click point when asked, clamped into the viewport; otherwise
+    // fall back to the centred default by clearing the inline placement.
+    if (opts.at) {
+        var w = el.offsetWidth, h = el.offsetHeight;
+        el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, opts.at.x - w / 2)) + 'px';
+        el.style.top = Math.max(6, Math.min(window.innerHeight - h - 6, opts.at.y - h - 10)) + 'px';
+        el.style.bottom = 'auto';
+        el.style.transform = 'none';
+    } else {
+        el.style.left = ''; el.style.top = ''; el.style.bottom = ''; el.style.transform = '';
+    }
+    clearTimeout(_mbuToastT);
+    _mbuToastT = setTimeout(function () { el.className = ''; }, opts.ms || (opts.action ? 12000 : 2600));
+    return el;
+}
+
+// Config-window title bar.
+//
+//   mbuCfgHeader({ script:'art_station', name:'Art Station', version:'2026.9.2',
+//                  icon:'<svg…>' | '<img…>', log:true, logClass:'as-setup-logbtn' })
+//
+// Returns the markup for the whole bar. 'log' adds the Log button; a script with
+// no log window leaves it out rather than shipping a dead control. logClass /
+// logId are carried through IN ADDITION to the shared class so a script's
+// existing click handler keeps working — adopting the component must not mean
+// rewiring every listener at the same time.
+function mbuCfgHeader(o) {
+    o = o || {};
+    var esc = function (s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    };
+    var html = '<div class="mbu-cfg-h">';
+    if (o.icon) html += '<span class="mbu-cfg-ic">' + o.icon + '</span>';
+    html += '<span class="mbu-cfg-name">' + esc(o.name) + '</span>';
+    if (o.version) html += '<span class="mbu-cfg-ver" data-tip="The installed version">v' + esc(o.version) + '</span>';
+    html += '<span class="mbu-cfg-sp"></span>';
+    if (o.log) {
+        html += '<button type="button" class="mbu-cfg-log' + (o.logClass ? ' ' + esc(o.logClass) : '') + '"'
+            + (o.logId ? ' id="' + esc(o.logId) + '"' : '')
+            + ' data-tip="Open the activity log">Log</button>';
+    }
+    html += mbuHelpHtml(o.script);
+    return html + '</div>';
+}
+
+// Settings controls: in root, every <select> becomes the pill drop-down and every number field the
+// − n + stepper. The field stays the script's own (its value, min, max, step and listeners): − and +
+// step it within them and fire input and change, as typing would. Call it once a window's markup is in;
+// again after a re-render does no harm. Returns root.
+function mbuControls(root) {
+    if (!root || !root.querySelectorAll) return root;
+    Array.prototype.forEach.call(root.querySelectorAll('select'), function (s) { s.classList.add('mbu-select'); });
+    Array.prototype.forEach.call(root.querySelectorAll('input[type=number]'), function (inp) {
+        var p = inp.parentNode;
+        if (!p || (p.classList && p.classList.contains('mbu-step'))) return;
+        var wrap = document.createElement('span');
+        wrap.className = 'mbu-step';
+        p.insertBefore(wrap, inp);
+        var btn = function (down) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.tabIndex = -1;
+            b.textContent = down ? '−' : '+';
+            b.setAttribute('aria-label', down ? 'Less' : 'More');
+            b.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (inp.disabled || inp.readOnly) return;
+                var was = inp.value;
+                try { if (down) inp.stepDown(); else inp.stepUp(); } catch (x) { return; }
+                if (inp.value === was) return;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            return b;
+        };
+        wrap.appendChild(btn(true));
+        wrap.appendChild(inp);
+        wrap.appendChild(btn(false));
+        // as wide as its longest value; a width the script set for the old field would cut it
+        inp.style.width = Math.max(2, String(inp.max || inp.value || '').length) + 0.5 + 'ch';
+    });
+    return root;
+}
+
+// Test hooks. A script puts its test hook on window only when the test harness has
+// marked the page (dev/test/harness.mjs sets window.__mbuTest before any script runs):
+//   if (mbuTestHooks()) window.__fooTest = { … };
+// On a user's page the hooks are never built. (#623)
+function mbuTestHooks() {
+    try { return typeof window !== 'undefined' && window.__mbuTest === true; } catch (e) { return false; }
+}
+
+// Shared settings: the few that belong to all the scripts at once, not to one (the corner
+// launchers' layout). GM storage is private to each script, so these live in the page's
+// localStorage on MusicBrainz's origin, as JSON under 'mbu.<key>'; every script, bundled or
+// standalone, reads the same value. One argument reads (undefined when unset or blocked), two
+// write, and null removes. Per-origin: musicbrainz.org, beta and test each keep their own.
+// Every key is listed in DEVELOP.md → Shared storage.
+function mbuShared(key, value) {
+    var k = 'mbu.' + key;
+    try {
+        if (arguments.length < 2) { var v = localStorage.getItem(k); return v == null ? undefined : JSON.parse(v); }
+        if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(value));
+    } catch (e) { /* storage blocked */ }
+    return value;
+}
+
+// Corner slots (#468). Every floating launcher (Apollo Editor, Art Station, Falcon,
+// Fusion, Scribe) tags its element with data-mb-corner (which screen corner: 'br',
+// 'bl', 'tr', 'tl') and data-mb-corner-order (lower sits closer to the corner), and
+// calls mbRestackCorner(corner) right after it shows, hides, creates or removes it.
+// That recomputes every element in the corner, whichever script owns it and
+// whatever order they loaded in, so two launchers never land on the same pixel.
+// Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
+// (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
+// The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
+// Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+// The shared setting cornerSide = 'left' (also from the menu) mirrors every corner across the screen: a
+// launcher tagged 'br' sits bottom-left. Its other side is set to auto, so a CSS left/right can't stretch it.
+// On a phone MusicBrainz's page is wider than the screen, so the browser widens the layout
+// viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
+// right and down away. Each edge is offset by the gap between it and the visual viewport (what is
+// on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+function mbRestackCorner(corner) {
+    var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
+    var row = mbuShared('cornerFlow') === 'row';
+    var vv = window.visualViewport, gapX = 0, gapY = 0;
+    if (vv) {
+        gapX = Math.max(0, right ? window.innerWidth - vv.offsetLeft - vv.width : vv.offsetLeft);
+        gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
+        var root = document.documentElement;
+        if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
+            root.setAttribute('data-mb-corner-vv', '');
+            var queued = false;
+            var again = function () {
+                if (queued) return;
+                queued = true;
+                requestAnimationFrame(function () { queued = false; ['br', 'bl', 'tr', 'tl'].forEach(function (c) { if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c); }); });
+            };
+            vv.addEventListener('resize', again);
+            vv.addEventListener('scroll', again);
+            // the layout viewport can change alone, with no event: a full-screen view pins the page's body
+            // (780px → the screen's width); the body's size is what moves then
+            window.addEventListener('resize', again);
+            if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
+        }
+    }
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
+        // offsetParent is always null for position:fixed, so it can't tell visibility here
+        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+    var pos = 14;
+    els.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : pos)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
+        el.style[right ? 'left' : 'right'] = 'auto';
+        pos += (row ? r.width : r.height) + 8;
+    });
+}
+
+// Activity log: the session's log lines plus the viewers that show them
+// (#283's viewer, shared since X12 of #623). A script makes its log once:
+//
+//   var LOG = mbuLog({ name: 'Fusion', version: VERSION, key: 'fusion.logwin' });
+//   LOG.info('…'); LOG.warn(…); LOG.err(…) (or .error); LOG.ok(…); LOG.debug(…)
+//   LOG.open(); LOG.close(); LOG.reopen()   // reopen: only if it was left open
+//   LOG.markdown(); LOG.copy(btn); LOG.clear(); LOG.lines(); LOG.messages(); LOG.counts()
+//   LOG.cat('Spotify').info(…)        // the same calls, each line tagged with a category
+//   LOG.pre(text)                     // a block kept as written: line breaks, spacing, monospace (#705)
+//   LOG.mount(el, { tools })          // the viewer inside the script's own panel (#705)
+//
+// Categories (#697) are optional. A tagged line shows its category before the
+// message and in the Markdown ("WARN [Spotify] …"). The viewer grows a row of
+// filters only when there is a choice: the levels once two of them have lines
+// (ok counts as info), the categories once there are two. Click one to see only
+// those lines, click it again to see all; Copy always takes everything.
+//
+// The floating window (open) and a mounted viewer (mount) are the same viewer;
+// mount draws it into an element of the script's, without the title bar's
+// window buttons, and o.tools (an element) sits in its toolbar before Clear.
+// Every viewer has a debug switch: off, LOG.debug() lines are not recorded at all
+// (remembered per script under o.key; LOG.debugOn(), LOG.setDebug(v)).
+//
+// o.name / o.version  the Markdown summary's title (version may be a function)
+// o.subtitle          optional function; its text follows the title (e.g. the release)
+// o.header            the window's title (default 'Activity log')
+// o.key               storage key for the window's open/minimised/position state
+// o.load / o.save     that storage (default GM_getValue / GM_setValue)
+// o.before            called before the window opens (e.g. to inject the script's CSS)
+// o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
+// o.history           opt-in history of past sessions (#705), below
+//
+// A long run keeps only the last o.max lines, and the Markdown says how many went
+// before them; the copies this replaced grew for the whole session. An open
+// viewer appends each new line and drops the oldest row past the cap; the copies
+// rebuilt the whole list with innerHTML on every line, which is quadratic over a
+// long matching run.
+//
+// History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
+//
+//   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+//                 parse: s => entry, nameOf: entries => name, store }
+//
+// A session starts with the page, or with LOG.session(reason) (Falcon: each run).
+// Only a session the script marks with LOG.keep() is stored, so a page that did
+// nothing worth reading back leaves nothing behind; LOG.name(text) names it (the
+// first name stays). It is stored in the page's localStorage under prefix + id,
+// within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
+// its log; a session longer than `lines` keeps its first `head` lines and its
+// end, and says how many went between. The newest `keep` sessions are kept.
+// prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
+// can carry on a session across a navigation. The viewer gets a session list and Clear history.
+//   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
+// parse reads a stored line that is a string (an older format); nameOf names a
+// session stored without a name; store ({ get, set, del, keys }) replaces localStorage.
+function mbuLog(o) {
+    o = o || {};
+    var max = o.max || 20000, buf = [], dropped = 0, warn = 0, error = 0, views = [], bound = {};
+    var LEVELS = ['error', 'warn', 'info', 'debug'];
+    var group = function (sev) { return sev === 'ok' ? 'info' : sev; };
+    var pad = function (n, w) { return String(n).padStart(w || 2, '0'); };
+    var ts = function (d) { return d ? pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3) : '--:--:--.---'; };
+    var str = function (v) {
+        if (typeof v === 'string') return v;
+        if (v instanceof Error) return v.message || String(v);
+        if (v && v.nodeType) return '<' + (v.tagName || 'node').toLowerCase() + '>';
+        try { return typeof v === 'object' ? JSON.stringify(v) : String(v); } catch (e) { return String(v); }
+    };
+    var esc = function (s) {
+        return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+    };
+    // escape, then make http(s) URLs clickable, keeping trailing punctuation out of them
+    var linkify = function (s) {
+        return esc(s).replace(/(https?:\/\/[^\s<]+)/g, function (m) {
+            var t = (m.match(/[.,;:!?)\]]+$/) || [''])[0];
+            var url = m.slice(0, m.length - t.length);
+            return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>' + t;
+        });
+    };
+    var load = o.load || function (k) { try { return GM_getValue(k, undefined); } catch (e) { return undefined; } };
+    var save = o.save || function (k, v) { try { GM_setValue(k, v); } catch (e) { /* no storage: the window just forgets */ } };
+    var state = function () { try { return JSON.parse(load(o.key) || '{}') || {}; } catch (e) { return {}; } };
+    var remember = function (patch) { try { save(o.key, JSON.stringify(Object.assign(state(), patch))); } catch (e) { /* see save */ } };
+    // debug lines are recorded only while the viewer's debug switch is on (default off: majkinetor, #705), per script
+    var dbgOn = null;
+    var debugOn = function () { if (dbgOn === null) dbgOn = state().debug === true; return dbgOn; };
+    var setDebug = function (v) { dbgOn = !!v; remember({ debug: dbgOn }); views.forEach(function (w) { if (w.dbg) w.dbg.checked = dbgOn; }); };
+    var tally = function (e, d) { if (e.sev === 'warn') warn += d; else if (e.sev === 'error') error += d; };
+    var PRE = { info: '', ok: 'OK   ', warn: 'WARN ', error: 'ERR  ', debug: 'DBG  ' };
+    var line = function (e) { return ts(e.t) + '  ' + (PRE[e.sev] || '') + (e.cat ? '[' + e.cat + '] ' : '') + (e.pre ? '\n' : '') + e.msg; };
+    var countOf = function (list) {
+        var c = { warn: 0, error: 0 };
+        list.forEach(function (e) { if (e.sev === 'warn') c.warn++; else if (e.sev === 'error') c.error++; });
+        return c;
+    };
+
+    // ── history (#705) ──
+    var H = o.history || null, hp = H && (H.prefix || ((o.key || 'mbu') + ':session:'));
+    var ID_RE = /^\d{14}-\d+$/, sid = '', kept = false, sname = '', savedName = '', seq = 0, pTimer = 0, lastSaved = '';
+    var store = H && (H.store || {
+        get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+        set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* full or blocked: the session just isn't kept */ } },
+        del: function (k) { try { localStorage.removeItem(k); } catch (e) { /* nothing to do */ } },
+        // one call for all the keys: a userscript reaches localStorage through Firefox's
+        // Xray wrapper, where each call costs, and the page may hold hundreds of keys
+        keys: function () {
+            try { var all = Object.keys(localStorage); if (all.length === localStorage.length) return all; } catch (e) { /* the loop below */ }
+            var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
+        },
+    });
+    var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+    var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
+    // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
+    var idDate = function (id) {
+        var m = /^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)/.exec(id || '');
+        return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6])) : null;
+    };
+    function ids() {
+        if (!H) return [];
+        return store.keys().filter(function (k) { return k && k.indexOf(hp) === 0 && ID_RE.test(k.slice(hp.length)); })
+            .map(function (k) { return k.slice(hp.length); }).sort();   // the id's own timestamp sorts as a string
+    }
+    // a stored line: [time ms | null, sev, cat | 0, msg, pre 1/0]; a string is an older format, read by H.parse
+    function fromStored(x, id) {
+        if (typeof x === 'string') {
+            var p = null;
+            try { p = H.parse ? H.parse(x, idDate(id)) : null; } catch (e) { /* unreadable: kept as text */ }
+            return p ? { t: p.t || null, sev: p.sev || 'info', cat: p.cat || '', msg: String(p.msg == null ? x : p.msg), pre: !!p.pre } : { t: null, sev: 'info', msg: x };
+        }
+        if (!Array.isArray(x)) return null;
+        var e = { t: x[0] != null ? new Date(x[0]) : null, sev: x[1] || 'info', msg: String(x[3] == null ? '' : x[3]) };
+        if (x[2]) e.cat = String(x[2]);
+        if (x[4]) e.pre = true;
+        return e;
+    }
+    function loadSession(id) {
+        if (!H || !id) return null;
+        var raw = store.get(hp + id);
+        if (raw == null) return null;
+        try { return (JSON.parse(raw) || []).map(function (x) { return fromStored(x, id); }).filter(Boolean); } catch (e) { return null; }
+    }
+    // a past session's name doesn't change, so it is read (or mined from its lines) once
+    var names = {};
+    function nameOf(id, entries) {
+        if (id in names) return names[id];
+        var n = store.get(hp + id + ':name');
+        if (!n) { try { n = H.nameOf ? H.nameOf(entries || loadSession(id) || []) || '' : ''; } catch (e) { n = ''; } }
+        return (names[id] = n || '');
+    }
+    // the first `head` lines and the end, and a line saying how many went between
+    function storedWindow() {
+        var cap = H.lines || 400, head = Math.min(H.head || 140, cap - 2);
+        var pack = function (e) { return [e.t ? e.t.getTime() : null, e.sev, e.cat || 0, e.msg, e.pre ? 1 : 0]; };
+        if (buf.length <= cap) return buf.map(pack);
+        var tail = cap - head - 1, cut = buf.length - head - tail;
+        return buf.slice(0, head).map(pack)
+            .concat([[null, 'info', 0, '——— ' + cut + ' line(s) from the middle of this session were dropped to fit the stored-log budget; its start and end are kept in full ———', 0]])
+            .concat(buf.slice(-tail).map(pack));
+    }
+    function flush() {
+        clearTimeout(pTimer); pTimer = 0;
+        if (!H || !sid || !kept) return;
+        try {
+            var payload = JSON.stringify(storedWindow());
+            if (payload === lastSaved) return;
+            lastSaved = payload;
+            store.set(hp + sid, payload);
+            if (sname && savedName !== sname) { store.set(hp + sid + ':name', sname); savedName = sname; }
+        } catch (e) { /* not stored */ }
+    }
+    var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+    function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
+    function prune() {
+        var all = ids().filter(function (id) { return id !== sid; });
+        var excess = all.length + (kept ? 1 : 0) - keepN();
+        if (excess > 0) all.slice(0, excess).forEach(forget);
+    }
+    // past sessions, newest first, without the current one
+    function sessions() {
+        return ids().filter(function (id) { return id !== sid; }).reverse()
+            .map(function (id) { return { id: id, date: idDate(id), name: nameOf(id) }; });
+    }
+    var sessionLabel = function (s) {
+        var d = s.date, when = d ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) : s.id;
+        return when + (s.name ? ' — ' + s.name : '');
+    };
+    function startSession() {
+        flush();
+        sid = newId(); kept = false; sname = ''; savedName = ''; lastSaved = '';
+        reset();
+    }
+    function resume(id) {
+        var entries = loadSession(id);
+        if (!entries) return false;
+        flush();
+        reset();
+        sid = id; kept = true; sname = savedName = store.get(hp + id + ':name') || '';
+        lastSaved = store.get(hp + id) || '';
+        store.set(hp + 'current', sid);
+        entries.forEach(function (e) { push(e); });
+        return true;
+    }
+
+    // ── the live lines ──
+    function reset() {
+        buf = []; dropped = 0; warn = 0; error = 0;
+        views.forEach(function (v) { if (!v.past) v.show(null); v.sessions(); });
+    }
+    function push(e) {
+        buf.push(e); tally(e, 1);
+        // trim in chunks, not one shift per line
+        if (buf.length > max + Math.ceil(max / 10)) {
+            var gone = buf.splice(0, buf.length - max);
+            gone.forEach(function (g) { tally(g, -1); });
+            dropped += gone.length;
+        }
+        views = views.filter(function (v) { return v.el.isConnected; });
+        views.forEach(function (v) { if (!v.past) v.append(e); });
+    }
+    function add(sev, args, cat, pre) {
+        var msg = Array.prototype.map.call(args, str).join(' ');
+        msg = pre ? msg.replace(/\s+$/, '') : msg.replace(/\s+/g, ' ').trim();
+        if (!msg) return;
+        var e = { t: new Date(), sev: sev === 'err' ? 'error' : sev, msg: msg };
+        if (e.sev === 'debug' && !debugOn()) return;
+        if (cat) e.cat = String(cat);
+        if (pre) e.pre = true;
+        push(e);
+        persist();
+    }
+    function title(bare) {
+        var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
+        var t = (o.name || 'Log') + (v ? ' v' + v : '');
+        try { var s = !bare && o.subtitle && o.subtitle(); if (s) t += ' — ' + s; } catch (e) { /* no subtitle */ }
+        return t;
+    }
+    // past: { id, entries } to copy a stored session instead of this one
+    function markdown(past) {
+        var list = past ? past.entries : buf, c = past ? countOf(list) : { warn: warn, error: error };
+        var body = list.length ? list.map(line).join('\n') : '(no activity logged)';
+        if (!past && dropped) body = '(' + dropped + ' earlier line' + (dropped === 1 ? '' : 's') + ' not kept)\n' + body;
+        var n = (c.warn || c.error) ? ' (' + c.warn + ' warning' + (c.warn === 1 ? '' : 's') + ', ' + c.error + ' error' + (c.error === 1 ? '' : 's') + ')' : '';
+        var what = past ? 'log of ' + sessionLabel({ id: past.id, date: idDate(past.id), name: nameOf(past.id, list) }) : 'session log';
+        var fence = String.fromCharCode(96, 96, 96);
+        return '<details><summary>' + title(!!past) + ' — ' + what + n + '</summary>\n\n' + fence + 'log\n' + body + '\n' + fence + '\n\n</details>';
+    }
+    function copy(btn, past) {
+        var md = markdown(past);
+        var done = function (ok) {
+            if (!btn) return;
+            var was = btn.dataset.lbl || btn.textContent; btn.dataset.lbl = was;
+            btn.textContent = ok ? 'Copied ✓' : 'Copy failed';
+            setTimeout(function () { btn.textContent = was; }, 1500);
+        };
+        var fallback = function () {
+            var ok = false;
+            try {
+                var ta = document.createElement('textarea'); ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove();
+            } catch (x) { /* nothing left to try */ }
+            done(ok);
+        };
+        try { navigator.clipboard.writeText(md).then(function () { done(true); }, fallback); } catch (e) { fallback(); }
+    }
+
+    // ── a viewer: the floating window or one mounted in the script's panel ──
+    var vseq = 0;
+    function view(root, floating, tools) {
+        var vid = String(++vseq);
+        root.classList.add('mbu-logpop');
+        root.dataset.mbuLv = vid;
+        root.innerHTML = mbuHtml('<div class="mbu-logpop-h">' + (floating ? '<b>' + esc(o.header || 'Activity log') + '</b> ' : '') + '<span class="mbu-log-badge"></span>'
+            + '<input class="mbu-log-q" type="search" placeholder="Filter" data-tip="Show only the lines with this text\nEsc: empty the box" autocomplete="off">'
+            + (H ? '<select class="mbu-log-ses mbu-select" data-tip="The session shown\nThis one, or a past one kept in this browser"></select>' : '')
+            + '<span class="mbu-logpop-sp"></span>'
+            + (H ? '<button class="mbu-logpop-hclear" type="button" data-tip="Delete every past session\nThis one stays">Clear history</button>' : '')
+            + '<label class="mbu-log-dbg" data-tip="Record each step in detail\nLeave it on when reporting a problem"><input type="checkbox"> debug</label>'
+            + '<button class="mbu-logpop-clear" type="button" data-tip="Clear the log\nThe lines so far are gone">Clear</button>'
+            + '<button class="mbu-logpop-copy" type="button" data-tip="Copy the whole log as Markdown\nReady to paste into a GitHub issue">⧉ Copy</button>'
+            + (floating ? '<button class="mbu-logpop-full" type="button" data-tip="Full screen\nDouble-click: the title bar does the same">⛶</button>'
+                + '<button class="mbu-logpop-min" type="button" data-tip="Minimize">–</button>'
+                + '<button class="mbu-logpop-x" type="button" data-tip="Close">✕</button>' : '') + '</div>'
+            + '<div class="mbu-log-f" hidden></div><style class="mbu-log-fcss"></style>'
+            + '<div class="mbu-log-list"></div>' + (floating ? '<div class="mbu-logpop-grip" data-tip="Resize"></div>' : ''));
+        if (tools) root.querySelector('.mbu-logpop-clear').before(tools);
+        var list = root.querySelector('.mbu-log-list'), badge = root.querySelector('.mbu-log-badge');
+        var qEl = root.querySelector('.mbu-log-q'), q = '', sel = root.querySelector('.mbu-log-ses');
+        var fRow = root.querySelector('.mbu-log-f'), fCss = root.querySelector('.mbu-log-fcss');
+        // what this viewer shows: the live lines, or a past session (read-only)
+        var past = null, src = buf, cats = [], catIx = {}, sevs = {}, fSev = null, fCat = null;
+        var scope = '.mbu-logpop[data-mbu-lv="' + vid + '"] ';
+        var miss = function (e) { return !!q && ((e.cat || '') + ' ' + e.msg).toLowerCase().indexOf(q) < 0; };
+        // note a line's level and category; true when the filter row must change
+        var note = function (e) {
+            var grew = false;
+            if (e.cat && !(e.cat in catIx)) { catIx[e.cat] = cats.length; cats.push(e.cat); grew = true; }
+            if (!sevs[group(e.sev)]) { sevs[group(e.sev)] = true; grew = true; }
+            return grew;
+        };
+        var row = function (e) {
+            var d = document.createElement('div');
+            d._e = e;
+            d.className = 'mbu-log-li mbu-log-' + e.sev + (e.pre ? ' mbu-log-pre' : '');
+            if (miss(e)) d.classList.add('mbu-log-nq');
+            d.dataset.s = group(e.sev);
+            if (e.cat) d.dataset.c = catIx[e.cat];
+            d.innerHTML = mbuHtml('<span class="mbu-log-t">' + ts(e.t) + '</span>'
+                + '<span class="mbu-log-c">' + esc(e.cat || '') + '</span>'
+                + '<span class="mbu-log-m">' + linkify(e.msg) + '</span>');
+            return d;
+        };
+        // the filter row, redrawn when a level or category first appears; hiding is one
+        // rule in the viewer's own <style>, not a walk over the rows
+        var filters = function () {
+            var lv = LEVELS.filter(function (l) { return sevs[l]; });
+            var showL = lv.length > 1, showC = cats.length > 1;
+            if (fSev && !sevs[fSev]) fSev = null;
+            if (fCat != null && !(fCat in catIx)) fCat = null;
+            var b = function (kind, v, on) {
+                return '<button type="button" class="mbu-log-fb' + (on ? ' on' : '') + '" data-' + kind + '="' + esc(v) + '">' + esc(v) + '</button>';
+            };
+            fRow.innerHTML = mbuHtml((showL ? '<span class="mbu-log-fg">' + lv.map(function (l) { return b('sev', l, fSev === l); }).join('') + '</span>' : '')
+                + (showL && showC ? '<span class="mbu-log-fs"></span>' : '')
+                + (showC ? '<span class="mbu-log-fg">' + cats.map(function (c) { return b('cat', c, fCat === c); }).join('') + '</span>' : ''));
+            fRow.hidden = !showL && !showC;
+            list.classList.toggle('mbu-log-cats', cats.length > 0);
+            fCss.textContent = (fSev ? scope + '.mbu-log-li:not([data-s="' + fSev + '"]){display:none}' : '')
+                + (fCat != null ? scope + '.mbu-log-li:not([data-c="' + catIx[fCat] + '"]){display:none}' : '');
+        };
+        var showBadge = function () {
+            var c = past ? countOf(src) : { warn: warn, error: error };
+            badge.textContent = '(' + src.length + ')' + (c.warn || c.error ? ' · ' + c.warn + '⚠ ' + c.error + '✖' : '');
+        };
+        var empty = function () { return '<div class="mbu-log-empty">' + (past ? 'Nothing was kept of this session.' : 'No activity yet.') + '</div>'; };
+        var queued = false, follow = true;
+        var paint = function () { queued = false; showBadge(); if (follow) list.scrollTop = list.scrollHeight; };
+        // all rows at once: on opening, and when the session shown changes
+        var draw = function () {
+            cats = []; catIx = {}; sevs = {};
+            src.forEach(note);
+            var frag = document.createDocumentFragment();
+            src.forEach(function (e) { frag.appendChild(row(e)); });
+            list.innerHTML = mbuHtml(src.length ? '' : empty());
+            if (src.length) list.appendChild(frag);
+            filters(); showBadge();
+            follow = true; list.scrollTop = list.scrollHeight;
+            root.classList.toggle('mbu-log-past', !!past);
+        };
+        list.addEventListener('scroll', function () { follow = list.scrollHeight - list.scrollTop - list.clientHeight < 40; });
+        var qTimer = 0;
+        var refilter = function () {
+            q = qEl.value.trim().toLowerCase();
+            for (var d = list.firstElementChild; d; d = d.nextElementSibling) if (d._e) d.classList.toggle('mbu-log-nq', miss(d._e));
+            follow = true; list.scrollTop = list.scrollHeight;
+        };
+        qEl.addEventListener('input', function () { clearTimeout(qTimer); qTimer = setTimeout(refilter, 120); });
+        fRow.addEventListener('click', function (ev) {
+            var t = ev.target.closest('.mbu-log-fb'); if (!t) return;
+            if (t.dataset.sev) fSev = fSev === t.dataset.sev ? null : t.dataset.sev;
+            else fCat = fCat === t.dataset.cat ? null : t.dataset.cat;
+            filters();
+            follow = true; list.scrollTop = list.scrollHeight;
+        });
+        var v = {
+            el: root, floating: floating, past: null, q: qEl,
+            append: function (e) {
+                var em = list.querySelector('.mbu-log-empty'); if (em) em.remove();
+                if (note(e)) filters();
+                list.appendChild(row(e));
+                while (list.childElementCount > buf.length) list.firstElementChild.remove();
+                if (!queued) { queued = true; requestAnimationFrame(paint); }
+            },
+            // null: the live lines; an id: that past session
+            show: function (id) {
+                var entries = id ? loadSession(id) : null;
+                if (id && !entries) entries = [{ t: null, sev: 'warn', msg: 'This session could not be read (it may have been deleted in another tab).' }];
+                past = id && entries ? id : null; v.past = past;
+                src = past ? entries : buf;
+                if (sel && sel.value !== (past || '')) sel.value = past || '';
+                draw();
+            },
+            // the session list, refreshed when it is opened and when a session starts
+            sessions: function () {
+                if (!sel) return;
+                var all = sessions(), sig = all.map(function (x) { return x.id + '=' + x.name; }).join('|');
+                if (sig === v.sig && !(past && !all.some(function (x) { return x.id === past; }))) return;
+                v.sig = sig;
+                if (past && !all.some(function (s) { return s.id === past; })) { past = null; v.past = null; src = buf; draw(); }
+                sel.innerHTML = mbuHtml('<option value="">Current session</option>' + all.map(function (s) {
+                    return '<option value="' + esc(s.id) + '">' + esc(sessionLabel(s)) + '</option>';
+                }).join(''));
+                sel.value = past || '';
+                var hc = root.querySelector('.mbu-logpop-hclear'); if (hc) hc.disabled = !all.length;
+            },
+            filters: filters,
+        };
+        if (sel) {
+            sel.addEventListener('change', function () { v.show(sel.value || null); });
+            root.querySelector('.mbu-logpop-hclear').onclick = function () { clearHistory(); };
+        }
+        root.querySelector('.mbu-logpop-clear').onclick = function () { clear(); };
+        v.dbg = root.querySelector('.mbu-log-dbg input');
+        v.dbg.checked = debugOn();
+        v.dbg.onchange = function () { setDebug(v.dbg.checked); };
+        root.querySelector('.mbu-logpop-copy').onclick = function () {
+            copy(root.querySelector('.mbu-logpop-copy'), past ? { id: past, entries: src } : null);
+        };
+        v.sessions();
+        draw();
+        views.push(v);
+        return v;
+    }
+
+    var win = null;
+    function open() {
+        close(true);
+        if (typeof o.before === 'function') { try { o.before(); } catch (e) { /* the window still opens */ } }
+        remember({ open: true });
+        var st = state();
+        var pop = document.createElement('div'); pop.id = 'mbu-logpop';
+        document.body.appendChild(pop);
+        var v = view(pop, true);
+        if (st.left != null) { pop.style.left = st.left; pop.style.top = st.top; pop.style.right = 'auto'; pop.style.transform = 'none'; }
+        var restore = { left: pop.style.left, top: pop.style.top, right: pop.style.right, bottom: pop.style.bottom, transform: pop.style.transform };
+        // Escape in a filled filter empties it; anywhere else it closes the window. Only the log:
+        // it listens first (capture, on window) and keeps the key, so the script's own window under
+        // it (ISRC Scout's closes on Escape too) stays open
+        var onKey = function (e) {
+            if (e.key !== 'Escape') return;
+            e.stopPropagation();
+            if (e.target === v.q && v.q.value) { v.q.value = ''; v.q.dispatchEvent(new Event('input')); return; }
+            close();
+        };
+        win = { el: pop, v: v, off: function () { window.removeEventListener('keydown', onKey, true); } };
+        var minBtn = pop.querySelector('.mbu-logpop-min');
+        var setMin = function (m) {
+            minBtn.textContent = m ? '▢' : '–'; minBtn.dataset.tip = m ? 'Restore' : 'Minimize';
+            if (m) { pop.style.left = '14px'; pop.style.bottom = '14px'; pop.style.top = 'auto'; pop.style.right = 'auto'; pop.style.transform = 'none'; }   // dock to the bottom
+            else Object.assign(pop.style, restore);
+        };
+        var fullBtn = pop.querySelector('.mbu-logpop-full');
+        var setFull = function (f) {
+            pop.classList.toggle('full', f);
+            fullBtn.textContent = f ? '❐' : '⛶'; fullBtn.dataset.tip = (f ? 'Restore the size' : 'Full screen') + '\nDouble-click: the title bar does the same';
+        };
+        minBtn.onclick = function () {
+            var m = pop.classList.toggle('min');
+            if (m && pop.classList.contains('full')) { setFull(false); remember({ full: false }); }   // minimising leaves full screen
+            setMin(m); remember({ min: m });
+        };
+        fullBtn.onclick = function () { var f = !pop.classList.contains('full'); setFull(f); remember({ full: f }); };
+        pop.querySelector('.mbu-logpop-h').addEventListener('dblclick', function (e) {
+            if (!e.target.closest('button, input, select') && !pop.classList.contains('min')) fullBtn.click();
+        });
+        // a size the user gave it, from the corner grip
+        if (st.w && st.h) { pop.style.width = st.w; pop.style.height = st.h; pop.classList.add('sized'); }
+        if (st.min) { pop.classList.add('min'); setMin(true); }
+        else if (st.full) setFull(true);
+        pop.querySelector('.mbu-logpop-grip').addEventListener('mousedown', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            var r = pop.getBoundingClientRect();
+            // pin the top-left corner, so only the right and bottom edges move
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.bottom = ''; pop.style.transform = 'none';
+            pop.classList.add('sized');
+            var x0 = e.clientX, y0 = e.clientY;
+            var mv = function (ev) {
+                pop.style.width = Math.max(320, Math.min(window.innerWidth - r.left, r.width + ev.clientX - x0)) + 'px';
+                pop.style.height = Math.max(120, Math.min(window.innerHeight - r.top, r.height + ev.clientY - y0)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                remember({ left: pop.style.left, top: pop.style.top, w: pop.style.width, h: pop.style.height });
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        pop.querySelector('.mbu-logpop-x').onclick = function () { close(); };
+        // floating and non-modal: dragged by its header
+        pop.querySelector('.mbu-logpop-h').addEventListener('mousedown', function (e) {
+            if (e.target.closest('button, input, select') || pop.classList.contains('full')) return;
+            e.preventDefault();
+            var r = pop.getBoundingClientRect();
+            pop.style.left = r.left + 'px'; pop.style.top = r.top + 'px'; pop.style.right = 'auto'; pop.style.transform = 'none';
+            var ox = e.clientX - r.left, oy = e.clientY - r.top;
+            var mv = function (ev) {
+                pop.style.left = Math.max(0, Math.min(window.innerWidth - pop.offsetWidth, ev.clientX - ox)) + 'px';
+                pop.style.top = Math.max(0, Math.min(window.innerHeight - 36, ev.clientY - oy)) + 'px';
+            };
+            var up = function () {
+                document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up);
+                if (!pop.classList.contains('min')) {
+                    restore = { left: pop.style.left, top: pop.style.top, right: 'auto', bottom: '', transform: 'none' };
+                    remember({ left: pop.style.left, top: pop.style.top });
+                }
+            };
+            document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+        });
+        window.addEventListener('keydown', onKey, true);
+        return pop;
+    }
+    // the viewer inside an element of the script's; a second mount there replaces the first
+    function mount(host, opts) {
+        if (!host) return null;
+        views = views.filter(function (v) { if (v.el.parentNode === host) { v.el.remove(); return false; } return true; });
+        var el = document.createElement('div'); el.className = 'mbu-logemb';
+        host.appendChild(el);
+        return view(el, false, opts && opts.tools).el;
+    }
+    // empty the live log: the lines, the counts and the "earlier lines not kept" note
+    function clear() {
+        buf = []; dropped = 0; warn = 0; error = 0;
+        if (H && sid) { store.del(hp + sid); lastSaved = ''; }
+        views.forEach(function (v) { if (!v.past) v.show(null); });
+    }
+    function clearHistory() {
+        if (!H) return;
+        ids().forEach(function (id) { if (id !== sid) forget(id); });
+        views.forEach(function (v) { v.sessions(); });
+    }
+    // quiet: closing to reopen, so the remembered "open" stays as it is
+    function close(quiet) {
+        var stray = document.getElementById('mbu-logpop');
+        if (win) {
+            win.off(); win.el.remove();
+            views = views.filter(function (v) { return v !== win.v; });
+            win = null; if (!quiet) remember({ open: false });
+        }
+        if (stray) stray.remove();   // another script's window: one log window at a time
+    }
+    var api = {
+        info: function () { add('info', arguments); },
+        warn: function () { add('warn', arguments); },
+        err: function () { add('error', arguments); },
+        error: function () { add('error', arguments); },
+        ok: function () { add('ok', arguments); },
+        debug: function () { add('debug', arguments); },
+        add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1)); },
+        // the debug switch: are debug lines recorded?
+        debugOn: function () { return debugOn(); },
+        setDebug: setDebug,
+        pre: function () { add('info', arguments, null, true); },
+        // a logger whose lines carry this category; the same object for the same name
+        cat: function (name) {
+            if (!name) return api;
+            if (!bound[name]) bound[name] = {
+                info: function () { add('info', arguments, name); },
+                warn: function () { add('warn', arguments, name); },
+                err: function () { add('error', arguments, name); },
+                error: function () { add('error', arguments, name); },
+                ok: function () { add('ok', arguments, name); },
+                debug: function () { add('debug', arguments, name); },
+                add: function (sev) { add(sev, Array.prototype.slice.call(arguments, 1), name); },
+                pre: function () { add('info', arguments, name, true); },
+            };
+            return bound[name];
+        },
+        open: open,
+        mount: mount,
+        close: function () { close(); },
+        reopen: function () { if (state().open) open(); },
+        isOpen: function () { return !!win; },
+        markdown: function () { return markdown(); },
+        copy: function (btn) { copy(btn); },
+        clear: clear,
+        lines: function () { return buf.map(line); },
+        entries: function () { return buf.slice(); },
+        messages: function () { return buf.map(function (e) { return e.msg; }); },
+        counts: function () { return { warn: warn, error: error }; },
+        // history (#705); harmless without o.history
+        session: function () { if (H) startSession(); return sid; },
+        resume: function (id) { return H ? resume(id) : false; },
+        keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+        name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
+        sessionId: function () { return sid; },
+        last: function () { return H ? store.get(hp + 'current') : null; },
+        isKept: function () { return kept; },
+        sessions: function () { return H ? sessions() : []; },
+        load: function (id) { return loadSession(id); },
+        forget: function (id) { forget(id); views.forEach(function (v) { v.sessions(); }); },
+        clearHistory: clearHistory,
+        // redraw the session lists (a script showing its mounted viewer again); only a changed list is redrawn
+        refresh: function () { views.forEach(function (v) { v.sessions(); }); },
+        flush: flush,
+    };
+    if (H) sid = newId();
+    mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
+    return api;
+}
+
+// Dismiss-on-outside-click, with the trailing click SWALLOWED.
+//
+//   var off = mbuDismissOn(popoverEl, close);   // off() to detach early
+//
+// #305: a popover torn down on mousedown removes what was under the cursor, so
+// the click that follows lands on whatever the page reflowed into that spot and
+// activates it. Tearing down on click instead just moves the problem. So: close
+// on outside mousedown, then eat exactly one click in the capture phase. This is
+// the single most repeated interaction bug in these scripts and it belongs in
+// one place — it is why #563 says interaction is part of the contract.
+//
+// Esc closes too, innermost first: the handler is registered in capture and stops
+// propagation, so a popover inside a modal does not close the modal as well.
+function mbuDismissOn(el, close, opts) {
+    opts = opts || {};
+    var closed = false;
+    var onDown = function (e) {
+        if (closed || !el || el.contains(e.target)) return;
+        if (opts.ignore && e.target.closest && e.target.closest(opts.ignore)) return;
+        finish();
+        // swallow the click this mousedown will produce, once
+        var eat = function (ev) { ev.stopPropagation(); ev.preventDefault(); document.removeEventListener('click', eat, true); };
+        document.addEventListener('click', eat, true);
+        setTimeout(function () { document.removeEventListener('click', eat, true); }, 400);
+    };
+    var onKey = function (e) {
+        if (closed || e.key !== 'Escape') return;
+        e.stopPropagation();
+        finish();
+    };
+    function finish() {
+        if (closed) return;
+        closed = true;
+        document.removeEventListener('mousedown', onDown, true);
+        document.removeEventListener('keydown', onKey, true);
+        try { close(); } catch (err) { /* a throwing closer must not leave listeners behind */ }
+    }
+    document.addEventListener('mousedown', onDown, true);
+    document.addEventListener('keydown', onKey, true);
+    return finish;
+}
+
+// Collapse a toolbar to icon-only when its buttons would wrap.
+//
+//   mbuFitToolbar(barEl)            // call on build, and on resize
+//
+// Measured by SUMMING child widths rather than reading scrollWidth or comparing
+// offsetTop: a bar with flex:1 spacers never overflows its own scroll box, so
+// both of those report "fits" right up until it visibly wraps. Art Station
+// learned that the hard way (#234) and it is the only reason this is a helper
+// rather than one CSS rule.
+//
+// opts.gap    inter-item gap in px (default 11)
+// opts.pad    horizontal padding to leave (default 24)
+// opts.spacer selector for flexible spacers, which must not count (default .mbu-sp)
+function mbuFitToolbar(bar, opts) {
+    if (!bar) return false;
+    opts = opts || {};
+    var gap = opts.gap == null ? 11 : opts.gap;
+    var pad = opts.pad == null ? 24 : opts.pad;
+    var spacer = opts.spacer || '.mbu-sp';
+    bar.classList.remove('mbu-compact');            // measure at full labels
+    var kids = [].slice.call(bar.children);
+    var need = gap * Math.max(0, kids.length - 1);
+    for (var i = 0; i < kids.length; i++) {
+        if (kids[i].matches && kids[i].matches(spacer)) continue;
+        need += kids[i].offsetWidth;
+    }
+    var compact = need > bar.clientWidth - pad;
+    bar.classList.toggle('mbu-compact', compact);
+    return compact;
+}
+
+// Publish the components on a shared namespace. Three reasons, in order:
+//
+//  1. it is the cross-userscript contract #563 is about — another script (or a
+//     future one) gets the standard widgets without copying them, the same way
+//     Mammoth already exposes its field-memory through a documented convention;
+//  2. it makes the components testable from outside, which is the only way to
+//     assert the *behaviour* half of the contract rather than just the markup;
+//  3. it costs nothing when several scripts do it — the definitions are
+//     byte-identical, so first writer wins and the rest are no-ops.
+//
+// Guarded per key, never clobbering: a script that loaded first keeps its copy,
+// and a page that defines an unrelated window.MBU is left alone.
+// Theme recognition. #564: "we don't have to conform to Stylus vars, we could
+// probably use them as a recognition signal to enable our own dark theme."
+//
+// That is the right way round. Reading --background/--text and hoping every
+// derived colour lands somewhere readable is guesswork that fails one token at a
+// time; knowing WHICH theme we are in lets the token set say so outright, and
+// lets us hand the browser the one thing CSS variables cannot express —
+// color-scheme, which is what actually paints a checkbox dark instead of leaving
+// a white (Firefox: black) box on a dark panel.
+//
+// The signal is the rendered page, not a particular userstyle's variable names:
+// whatever painted the body, we measure its luminance. So this works for Stylus,
+// for a browser extension, for MusicBrainz shipping its own dark mode one day,
+// and for a user who just set --background by hand.
+//
+//   · an explicit --mbu-theme (light|dark) always wins — the escape hatch;
+//   · otherwise the page background decides;
+//   · re-checked when stylesheets arrive, because Stylus often lands after us.
+function mbuThemeOf(bg) {
+    var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(bg || '');
+    if (!m) return null;
+    if (m[4] !== undefined && +m[4] < 0.5) return null;      // transparent tells us nothing
+    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    var L = 0.2126 * f(+m[1]) + 0.7152 * f(+m[2]) + 0.0722 * f(+m[3]);
+    return L < 0.35 ? 'dark' : 'light';
+}
+// #569 (chaban-mb) — write only when the value actually changes.
+//
+// The DOM does not do this for you. classList.add of a token already present,
+// classList.toggle to the state it is already in, setAttribute with the value it
+// already has: each one re-sets the attribute and dispatches a mutation record.
+// Harmless once; these run from 2Hz heartbeats and from observers that react to
+// each other, and the measured idle cost on the release editor was 66 records a
+// second, of which 93% came from writes that changed nothing (see
+// dev/ui/measure-569-idle-mutations.mjs).
+//
+// Semantically these are exact no-ops: they skip a write ONLY when the value is
+// already the one being written, so nothing that reads the DOM afterwards can
+// tell the difference. That is the whole reason they are safe to sprinkle around
+// a 2Hz loop.
+function mbuCls(el, token, on) {
+    if (!el || !el.classList) return;
+    if (el.classList.contains(token) !== !!on) el.classList.toggle(token, !!on);
+}
+function mbuAttr(el, name, value) {
+    if (!el) return;
+    if (value === null || value === undefined || value === false) {
+        if (el.hasAttribute(name)) el.removeAttribute(name);
+    } else if (el.getAttribute(name) !== String(value)) {
+        el.setAttribute(name, String(value));
+    }
+}
+// For IDL properties (disabled, title, textContent, style.display …). Reading
+// them is cheap; writing them is not, and textContent in particular replaces
+// every child node.
+//
+// ⚠ textContent is the one to think twice about: its getter concatenates the
+// text of ALL descendants, so on an element with child ELEMENTS the comparison
+// can match while the DOM shape is wrong, and the guard then skips a write that
+// would have flattened it. Only use it where the target holds text and nothing
+// else.
+function mbuProp(obj, prop, value) {
+    if (!obj) return;
+    if (obj[prop] !== value) obj[prop] = value;
+}
+
+// #569: the one element mbuTheme resolves --background through. Looked up by id
+// rather than kept in a variable, so the seven scripts of a bundle share ONE
+// probe instead of adding seven, and so it heals itself if anything removes it.
+// It lives in <body>: a permanent stray node under <html>, outside head and
+// body, is the sort of thing another script's document scan trips over.
+function mbuProbe() {
+    var p = document.getElementById('mbu-theme-probe');
+    if (p) return p;
+    if (!document.body) return null;
+    p = document.createElement('span');
+    p.id = 'mbu-theme-probe';
+    p.setAttribute('aria-hidden', 'true');
+    p.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;background:var(--background)';
+    document.body.appendChild(p);
+    return p;
+}
+function mbuTheme() {
+    var root = document.documentElement;
+    try {
+        var cs = getComputedStyle(root);
+        var forced = (cs.getPropertyValue('--mbu-theme') || '').trim();
+        var t = (forced === 'dark' || forced === 'light') ? forced
+            : (mbuThemeOf(getComputedStyle(document.body).backgroundColor)
+                || mbuThemeOf(cs.backgroundColor)
+                || mbuThemeOf(cs.getPropertyValue('--mbu-bg'))
+                || 'light');
+        if (root.getAttribute('data-mbu-theme') !== t) root.setAttribute('data-mbu-theme', t);
+
+        // Should we adopt the userstyle's OWN shades, or use our own palette?
+        // Only if its --background actually agrees with the theme we detected.
+        // A userstyle can paint the page dark with ordinary rules and still leave
+        // --background at a light value for its own purposes; taking that on
+        // trust hands us a light surface under a correct dark theme, which is
+        // indistinguishable from the bug it looks like. Measured, not assumed.
+        var seed = null;
+        var raw = (cs.getPropertyValue('--background') || '').trim();
+        if (raw) {
+            // Resolved through a real element, because --background may itself be
+            // a var(), a named colour, or anything else CSS accepts.
+            //
+            // #569 (chaban-mb): this used to CREATE and REMOVE that element on
+            // every call, as a direct child of <html>. mbuTheme re-runs whenever
+            // the root or body class changes, Mammoth watches the whole document
+            // for childList changes and reacts by toggling classes on <html>, and
+            // those class changes wake mbuTheme again — a self-feeding loop,
+            // measured at 12 root-node mutations a second on an idle page, which
+            // is what makes DevTools blink.
+            //
+            // One element, created once and left in place, breaks it: the value
+            // is still resolved LIVE on every call (a cached reading would freeze
+            // the theme at whatever it was before Stylus injected, which is the
+            // bug this whole function exists to avoid) but nothing is added to or
+            // removed from the DOM to read it.
+            var probe = mbuProbe();
+            var got = null;
+            if (probe) {
+                got = mbuThemeOf(getComputedStyle(probe).backgroundColor);
+            } else {
+                // No <body> yet — document-start. Fall back to the transient
+                // element for these first one or two calls; the idle loop this
+                // avoids cannot exist before the page has a body anyway.
+                var tmp = document.createElement('span');
+                tmp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;background:var(--background)';
+                document.documentElement.appendChild(tmp);
+                got = mbuThemeOf(getComputedStyle(tmp).backgroundColor);
+                tmp.remove();
+            }
+            if (got === t) seed = 'theme';
+        }
+        // guarded: setAttribute dispatches a mutation record even when the value
+        // is unchanged, and this runs several times a second
+        if (seed) { if (root.getAttribute('data-mbu-seed') !== seed) root.setAttribute('data-mbu-seed', seed); }
+        else if (root.hasAttribute('data-mbu-seed')) root.removeAttribute('data-mbu-seed');
+        return t;
+    } catch (e) { return 'light'; }
+}
+// A document-start script runs before the document is parsed: documentElement can
+// still be null, and <head> and <body> don't exist. Observing a null root threw, the
+// catch below swallowed it, and nothing (the watches, the re-checks) was ever set up,
+// so such a script never read the theme at all (#625). It starts on the parsed page.
+function mbuThemeStart() { try {
+    mbuTheme();
+    // Stylus and friends inject after us often enough that a one-shot read is
+    // wrong about half the time. Watch for stylesheets ARRIVING — head childList
+    // plus the root's own attributes — and never the whole subtree: this runs on
+    // the release editor, where a subtree observer calling getComputedStyle is a
+    // layout thrash on every keystroke.
+    var _mbuThemeT = 0;
+    var _mbuThemeSoon = function () {
+        clearTimeout(_mbuThemeT);
+        _mbuThemeT = setTimeout(mbuTheme, 150);
+    };
+    var _mbuThemeObs = new MutationObserver(_mbuThemeSoon);
+    _mbuThemeObs.observe(document.documentElement, { attributeFilter: ['style', 'class'] });
+    // ⚠ #569: characterData, not just childList. Until the idle thrash was fixed
+    // this function ran several times a second whether or not anything had
+    // changed — Apollo re-added a body class at 2Hz, which woke this observer,
+    // which is how a theme change was ever noticed. That accidental polling was
+    // LOAD-BEARING: with the thrash gone and only head-childList watched, a
+    // userstyle that REWRITES ITSELF (Stylus editing it live, or one switching
+    // palette) adds and removes no nodes, so nothing woke us and the theme went
+    // stale. Caught by verify-569-theme-still-tracks.mjs, which passes on the
+    // pre-fix build and failed on the first version of this one.
+    if (document.head) _mbuThemeObs.observe(document.head, { childList: true, subtree: true, characterData: true });
+    if (document.body) _mbuThemeObs.observe(document.body, { attributeFilter: ['style', 'class'] });
+    // …and the case that produces no DOM mutation at all: the OS flipping to dark
+    // under a userstyle with a prefers-color-scheme query. Nothing above can see
+    // that, and nothing did before either — it was simply never noticed while the
+    // page was re-checking itself several times a second.
+    try {
+        var _mbuMq = matchMedia('(prefers-color-scheme: dark)');
+        if (_mbuMq.addEventListener) _mbuMq.addEventListener('change', _mbuThemeSoon);
+        else if (_mbuMq.addListener) _mbuMq.addListener(_mbuThemeSoon);
+    } catch (e) {}
+    setTimeout(mbuTheme, 400);
+    setTimeout(mbuTheme, 2000);
+} catch (e) { /* no observer, no theme switching — the light defaults still apply */ } }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mbuThemeStart, { once: true });
+else mbuThemeStart();
+
+try {
+    var _mbuNs = (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
+    if (!_mbuNs.MBU) _mbuNs.MBU = {};
+    if (!_mbuNs.MBU.theme) _mbuNs.MBU.theme = mbuTheme;
+    if (!_mbuNs.MBU.helpHref) _mbuNs.MBU.helpHref = mbuHelpHref;
+    if (!_mbuNs.MBU.helpHtml) _mbuNs.MBU.helpHtml = mbuHelpHtml;
+    if (!_mbuNs.MBU.helpEl) _mbuNs.MBU.helpEl = mbuHelpEl;
+    if (!_mbuNs.MBU.toast) _mbuNs.MBU.toast = mbuToast;
+    if (!_mbuNs.MBU.cfgHeader) _mbuNs.MBU.cfgHeader = mbuCfgHeader;
+    if (!_mbuNs.MBU.dismissOn) _mbuNs.MBU.dismissOn = mbuDismissOn;
+    if (!_mbuNs.MBU.fitToolbar) _mbuNs.MBU.fitToolbar = mbuFitToolbar;
+    if (!_mbuNs.MBU.tip) _mbuNs.MBU.tip = mbuTip;
+} catch (e) { /* a locked-down page must not stop the script loading */ }
+
+// Tooltips: our own, never the browser's title (dev/ui/tooltip.mjs, STANDARDS → Standard 14).
+function mbuTipV() { return 13; }
+function mbuTipCssText() { return "#mbu-tip{position:fixed;left:0;top:0;z-index:var(--mbu-z-tip,2147483647);box-sizing:border-box;max-width:min(330px,calc(100vw - 16px));padding:7px 11px 8px;background:var(--mbu-bg,#fff);color:var(--mbu-text,#222);border:1px solid var(--mbu-border,#cfc6e6);border-radius:9px;box-shadow:0 6px 24px rgba(40,20,80,.2),0 1px 3px rgba(40,20,80,.12);font:12.5px/1.45 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);text-align:left;white-space:normal;overflow-wrap:break-word;letter-spacing:normal;text-transform:none;pointer-events:none;visibility:hidden;opacity:0;transform:translateY(-3px);transition:opacity .12s ease,transform .12s ease,visibility 0s linear .12s}#mbu-tip.mbu-tip-up{transform:translateY(3px)}#mbu-tip.mbu-tip-on{visibility:visible;opacity:1;transform:none;transition:opacity .12s ease,transform .12s ease}#mbu-tip.mbu-tip-act.mbu-tip-on{pointer-events:auto}#mbu-tip.mbu-tip-wide{max-width:min(460px,calc(100vw - 16px))}#mbu-tip:has(.mbu-tip-dl){max-width:min(480px,calc(100vw - 16px))}#mbu-tip::before{content:\"\";position:absolute;left:calc(var(--mbu-tip-ax,50%) - 5px);top:-5px;width:8px;height:8px;background:inherit;border:1px solid var(--mbu-border,#cfc6e6);border-right:0;border-bottom:0;transform:rotate(45deg)}#mbu-tip.mbu-tip-up::before{top:auto;bottom:-5px;border:1px solid var(--mbu-border,#cfc6e6);border-left:0;border-top:0}#mbu-tip.mbu-tip-card:not(.mbu-tip-up)::before{background:var(--mbu-bg-raised,#faf9fe)}#mbu-tip .mbu-tip-lead{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-p{margin:0;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-lead+*,#mbu-tip .mbu-tip-p+*,#mbu-tip .mbu-tip-ul+*,#mbu-tip .mbu-tip-rows+*{margin-top:5px}#mbu-tip>.mbu-tip-p:first-child:last-child{color:var(--mbu-text,#222)}#mbu-tip .mbu-tip-warn{color:var(--mbu-warn,#a05a00)}#mbu-tip .mbu-tip-rows{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:start;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-rows>.mbu-tip-kk,#mbu-tip .mbu-tip-rows>.mbu-tip-dl{min-height:18px}#mbu-tip .mbu-tip-rows>.mbu-tip-k{line-height:18px}#mbu-tip .mbu-tip-rows>:nth-child(odd){justify-self:start}#mbu-tip .mbu-tip-rows>.mbu-tip-span{grid-column:2;justify-self:stretch;margin:-2px 0 0}#mbu-tip .mbu-tip-k{display:inline-block;padding:0;border:0;background:none;color:var(--mbu-text-weak,#888);font:600 11.5px/1.5 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-kk{display:inline-flex;align-items:center;gap:3px;color:var(--mbu-accent-text,#5f3ec0);white-space:nowrap}#mbu-tip .mbu-tip-dl{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--mbu-text,#222);white-space:nowrap}#mbu-tip .mbu-tip-dl i{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}#mbu-tip .mbu-tip-on{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip .mbu-tip-dl.mbu-tip-on::after{content:\"◂\";margin-left:-2px;font-size:11px}#mbu-tip .mbu-tip-off{opacity:.45}#mbu-tip .mbu-tip-sym{letter-spacing:.2px}#mbu-tip .mbu-tip-mouse{display:block;flex:none;position:relative}#mbu-tip .mbu-tip-mouse rect[fill=none],#mbu-tip .mbu-tip-mouse path[stroke]{stroke:var(--mbu-text-weak,#888);stroke-width:1}#mbu-tip .mbu-tip-kx{font:600 10px/1 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);color:var(--mbu-text-weak,#888)}#mbu-tip .mbu-tip-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}#mbu-tip .mbu-tip-o{display:inline-block;padding:0 7px;border-radius:999px;background:var(--mbu-accent-soft,#ece4ff);color:var(--mbu-accent-text,#5f3ec0);font:600 11px/1.6 var(--mbu-font,-apple-system,Segoe UI,Roboto,Arial,sans-serif);white-space:nowrap}#mbu-tip .mbu-tip-ul{margin:0;padding:0 0 0 15px;color:var(--mbu-text-dim,#555)}#mbu-tip .mbu-tip-ul li{margin:1px 0;padding:0}#mbu-tip code{font:11.5px var(--mbu-font-mono,ui-monospace,Consolas,monospace);padding:0 4px;border-radius:4px;background:var(--mbu-bg-sunken,#f4f2f9)}#mbu-tip b{font-weight:600;color:var(--mbu-text,#222)}#mbu-tip a{color:var(--mbu-accent-text,#5f3ec0)}#mbu-tip.mbu-tip-card{padding:0;width:380px;max-width:min(380px,calc(100vw - 16px));overflow:visible}#mbu-tip .mbu-tip-ch{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--mbu-border-soft,#e2dcef);background:var(--mbu-bg-raised,#faf9fe);border-radius:9px 9px 0 0}#mbu-tip .mbu-tip-ca{margin-left:auto;font-size:11px;color:var(--mbu-text-weak,#999);white-space:nowrap}#mbu-tip .mbu-tip-cb{padding:8px 11px;display:flex;flex-direction:column;gap:6px}#mbu-tip .mbu-tip-cf{display:flex;gap:10px;padding:6px 11px;border-top:1px solid var(--mbu-border-soft,#e2dcef);font-size:11px;color:var(--mbu-text-weak,#999)}#mbu-tip .mbu-tip-cf>:last-child:not(:first-child){margin-left:auto}@media (prefers-reduced-motion:reduce){#mbu-tip,#mbu-tip.mbu-tip-on{transition:none;transform:none}}"; }
+function mbuTipRoots() { return ".mbu-ov,.mbu-ui,#mbu-logpop,.mbu-logemb,.discogs-bar,.discogs-review-panel-li,#as-root,#as-setup,.as-pop,#as-switch-wrap,#ii-btn,.fs-launch,#tc-bar,#tc-nav-bar,#tc-settings,#tc-anno-wrap,.tc-panel,.tc-toolcfg,.tc-acpop,.tc-recpop,.tc-lppop,.tc-tpppop,.tc-tpp-mpop,.tc-anno-help-pop,.tc-mirror,.tc-addrow,.tc-medopts,.tc-tools,#tc-recwrap,#tc-ri-toolbar,.tc-fmt-flat,.gt-toolbar,.gt-cons,.gt-menu,.gt-pop,.gt-cfg-pop,.gt-wm-pop,#ii-modal,#ii-sxpanel,#mb-pc-panel,#mb-provider-modal-card,.fs-cons,#fs-settings,.fs-overlay,.mmth-pop,.mmth-cfg,.mmth-side,.mmth-pinbar,.mmthf-pop,.mmthf-bar,#falcon-panel,#falcon-launcher,#falcon-item-popup,#falcon-add-page,.falcon-bar,.falcon-addmenu"; }
+function mbuTipEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+}
+function mbuTipLabel(line) {
+    var m = /^([^\s:.,;!?()][^:.,;!?()]{0,40}?): (\S[\s\S]*)$/.exec(line);
+    if (!m || m[1].split(/\s+/).length > 3 || /https?$/i.test(m[1])) return null;
+    return { label: m[1], text: m[2], key: mbuTipIsKey(m[1]) };
+}
+function mbuTipIsKey(label) {
+    return /click|drag|wheel|scroll|hover|double|press|paste|\bkey\b|^(esc|escape|enter|return|tab|space|ctrl|shift|alt|cmd|meta|del|delete|backspace|f\d{1,2})\b|\+|^[↑↓←→]/i.test(label);
+}
+function mbuTipInline(s) {
+    return mbuTipEsc(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/\(((?:(?:Ctrl|Alt|Shift|Cmd|Meta)\+)+[^\s()]+)\)/g, function (m, k) { return mbuTipKbd(k); })
+        .replace(/\s\((Esc|Enter|Space|Tab|[A-Z0-9]|[↑↓←→])\)(?=$|[\s.,;])/g, ' <kbd class="mbu-tip-k">$1</kbd>');
+}
+function mbuTipCap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function mbuTipMod(k) { return { ctrl: 'C', alt: 'A', shift: '⇧', cmd: '⌘', meta: '⌘' }[String(k).toLowerCase()] || k; }
+function mbuTipKbd(combo) {
+    var parts = String(combo).split(/\s*\+\s*/);
+    var key = parts.pop();
+    return '<kbd class="mbu-tip-k mbu-tip-sym"><span class="mbu-tip-sr">' + mbuTipEsc(combo) + '</span><span aria-hidden="true">'
+        + parts.concat('').map(mbuTipMod).join('+') + mbuTipEsc(key.length === 1 ? key.toUpperCase() : mbuTipCap(key)) + '</span></kbd>';
+}
+function mbuTipKey(label) {
+    // two ways to do the same, "Middle-click / Alt+click": each drawn, a grey slash between
+    var alts = String(label).split(/\s+\/\s+/);
+    if (alts.length > 1) return '<span class="mbu-tip-kk">' + alts.map(mbuTipKey).join('<span class="mbu-tip-kx">/</span>') + '</span>';
+    var m = /^((?:(?:ctrl|alt|shift|cmd|meta)\s*[+-]\s*)*)(left|right|middle|double)?[- ]?(click|drag|wheel|scroll)$/i.exec(String(label).trim());
+    if (!m) return /^(?:(?:ctrl|alt|shift|cmd|meta)\s*\+\s*)+\S/i.test(label) ? mbuTipKbd(label) : '<span class="mbu-tip-k">' + mbuTipEsc(mbuTipCap(label)) + '</span>';
+    var mods = m[1] ? m[1].split(/\s*[+-]\s*/).filter(Boolean) : [];
+    var btn = (m[2] || '').toLowerCase(), act = m[3].toLowerCase();
+    var wheel = btn === 'middle' || act === 'wheel' || act === 'scroll';
+    var fill = wheel ? '' : btn === 'right' ? 'M6 1C8.8 1 11 3.2 11 6v1H6z' : 'M6 1C3.2 1 1 3.2 1 6v1h5z';
+    var svg = '<svg class="mbu-tip-mouse" viewBox="0 0 12 16" width="10" height="13" aria-hidden="true">'
+        + (fill ? '<path d="' + fill + '" fill="currentColor"/>' : '')
+        + '<rect x="1" y="1" width="10" height="14" rx="5" fill="none" stroke="currentColor" stroke-width="1.3"/>'
+        + '<path d="M1 7h10' + (wheel ? '' : 'M6 1v6') + '" stroke="currentColor" stroke-width="1.1"/>'
+        + (wheel ? '<rect x="5" y="2.6" width="2" height="3.4" rx="1" fill="currentColor"/>' : '')
+        + '</svg>';
+    var extra = btn === 'double' ? '×2' : act === 'drag' ? 'drag' : (act === 'wheel' || act === 'scroll') ? '↕' : '';
+    return '<span class="mbu-tip-kk"><span class="mbu-tip-sr">' + mbuTipEsc(mbuTipCap(label)) + '</span>'
+        + (mods.length ? '<kbd class="mbu-tip-k mbu-tip-sym" aria-hidden="true">' + mods.map(mbuTipMod).join('+') + '</kbd>' : '')
+        + svg + (extra ? '<span class="mbu-tip-kx" aria-hidden="true">' + extra + '</span>' : '') + '</span>';
+}
+function mbuTipText(src) {
+    var raw = String(src == null ? '' : src).replace(/\r/g, '').replace(/^\s+|\s+$/g, '');
+    if (!raw) return '';
+    var lines = [];
+    // the shapes the old title texts took, read as the rows they mean:
+    //   "… — click to open it"              → "…" + "Click: open it"
+    //   "… (right-click: guess case all)"   → "…" + "Right-click: guess case all"
+    //   "Ctrl-click", "Alt-click"           → "Ctrl+click", "Alt+click"
+    raw = raw.replace(/\b(Ctrl|Alt|Shift|Cmd)-(click|drag)/gi, '$1+$2')
+        .replace(/\s*\(((?:(?:right|middle|double|ctrl|alt|shift|cmd)[-+ ]?)+click|(?:ctrl|alt|shift|cmd)\+\w+):\s*([^()\n]+)\)(?=\s*(?:$|\n))/gim, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/\s+[—–-]\s+((?:(?:right|middle|double|ctrl|alt|shift)[-+ ]?)?click) to ([^\n·]+)/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; })
+        .replace(/[.;]\s+((?:right|middle|double|ctrl|alt|shift)[-+ ]?click|click) to ([^\n·.]+)\.?(?=\s*(?:$|\n))/gi, function (m, k, t) { return '\n' + mbuTipCap(k) + ': ' + t; });
+    raw.split('\n').forEach(function (line) {
+        line = line.replace(/\s+$/, '');
+        // ' · Label: ' starts a new line; so does '. Label: ' once the line itself opened with a label
+        var parts = line.split(/\s+·\s+/), out = [parts[0]];
+        for (var i = 1; i < parts.length; i++) {
+            if (mbuTipLabel(parts[i])) out.push(parts[i]); else out[out.length - 1] += ' · ' + parts[i];
+        }
+        out.forEach(function (seg) {
+            if (!mbuTipLabel(seg)) { lines.push(seg); return; }
+            var bits = seg.split(/(?<=\.)\s+(?=[A-Z][\w+-]*(?:\s[\w+-]+)?:\s)/);
+            bits.forEach(function (b) { lines.push(b); });
+        });
+    });
+    // blocks: lead / paragraph / rows / bullets
+    var blocks = [], rowRun = [];
+    var flushRows = function () {
+        if (!rowRun.length) return;
+        var keyed = rowRun.filter(function (r) { return r.key; }).length;
+        if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+        else blocks.push({ t: 'p', s: rowRun[0].line });
+        rowRun = [];
+    };
+    lines.forEach(function (line, n) {
+        if (!line.trim()) { flushRows(); return; }
+        var b = /^\s*[-•]\s+(.*)$/.exec(line);
+        if (b) {
+            flushRows();
+            var last = blocks[blocks.length - 1];
+            if (last && last.t === 'ul') last.items.push(b[1]); else blocks.push({ t: 'ul', items: [b[1]] });
+            return;
+        }
+        // a level row, "{#2f6fd6} Exact: …": a dot in the colour before the label; "{#… on}" marks the
+        // chosen level, "{#… off}" dims one past it (a cutoff's table)
+        var lv = /^\{(#[0-9a-f]{3,8})(?: (on|off))?\}\s*(\S[\s\S]*)$/i.exec(line);
+        if (lv) {
+            var ll = mbuTipLabel(lv[3]) || { label: lv[3], text: '' };
+            rowRun.push({ label: ll.label, text: ll.text, dot: lv[1], st: lv[2] ? lv[2].toLowerCase() : '', line: line });
+            return;
+        }
+        var l = mbuTipLabel(line);
+        // the first line is a row only as a key or when a label follows: alone, "Release group: when…" is a sentence
+        if (l && (l.key || blocks.length || rowRun.length || (lines[n + 1] && mbuTipLabel(lines[n + 1])))) { l.line = line; rowRun.push(l); return; }
+        flushRows();
+        blocks.push({ t: 'p', s: line });
+    });
+    flushRows();
+    // one long paragraph: its first sentence becomes the lead
+    if (blocks.length === 1 && blocks[0].t === 'p' && blocks[0].s.length > 110) {
+        var m = /^(.{12,110}?[.!?])\s+(?=[A-Z(“"'])([\s\S]+)$/.exec(blocks[0].s);
+        if (m) blocks = [{ t: 'p', s: m[1].replace(/\.$/, '') }, { t: 'p', s: m[2] }];
+    }
+    var lead = blocks.length > 1 && blocks[0].t === 'p';
+    var rowsHtml = function (bl) {
+        return bl.rows.map(function (r) {
+            if (r.dot) {
+                var c = r.st ? ' mbu-tip-' + r.st : '';
+                return '<span class="mbu-tip-dl' + c + '"><i style="background:' + r.dot + '"></i>' + mbuTipEsc(mbuTipCap(r.label)) + '</span>'
+                    + '<span class="mbu-tip-dt' + c + '">' + mbuTipInline(r.text) + '</span>';
+            }
+            return (r.key ? mbuTipKey(r.label) : '<span class="mbu-tip-o">' + mbuTipEsc(mbuTipCap(r.label)) + '</span>') + '<span>' + mbuTipInline(r.text) + '</span>';
+        }).join('');
+    };
+    var html = function (bl, i, span) {
+        var sp = span ? ' mbu-tip-span' : '';
+        if (bl.t === 'ul') return '<ul class="mbu-tip-ul' + sp + '">' + bl.items.map(function (x) { return '<li>' + mbuTipInline(x) + '</li>'; }).join('') + '</ul>';
+        if (bl.t === 'rows') return span ? rowsHtml(bl) : '<div class="mbu-tip-rows">' + rowsHtml(bl) + '</div>';
+        var warn = /^⚠/.test(bl.s);
+        return '<div class="' + (lead && i === 0 ? 'mbu-tip-lead' : 'mbu-tip-p') + (warn ? ' mbu-tip-warn' : '') + sp + '">' + mbuTipInline(bl.s) + '</div>';
+    };
+    // rows with a note between them stay one grid, the note under the row before it, so their labels line up
+    var first = -1, last = -1;
+    blocks.forEach(function (bl, i) { if (bl.t === 'rows') { if (first < 0) first = i; last = i; } });
+    var out = '';
+    for (var i = 0; i < blocks.length; i++) {
+        if (i === first && last > first) {
+            out += '<div class="mbu-tip-rows">';
+            for (; i <= last; i++) out += html(blocks[i], i, true);
+            out += '</div>';
+            i = last;
+        } else out += html(blocks[i], i, false);
+    }
+    return out;
+}
+function mbuTipCard(o) {
+    o = o || {};
+    var h = '';
+    if (o.head || o.title || o.aside) {
+        h += '<div class="mbu-tip-ch">' + (o.head || '') + (o.title ? '<b>' + mbuTipEsc(o.title) + '</b>' : '')
+            + (o.aside ? '<span class="mbu-tip-ca">' + mbuTipEsc(o.aside) + '</span>' : '') + '</div>';
+    }
+    if (o.body) h += '<div class="mbu-tip-cb">' + o.body + '</div>';
+    if (o.foot || o.footAside) h += '<div class="mbu-tip-cf"><span>' + (o.foot || '') + '</span>' + (o.footAside ? '<span>' + o.footAside + '</span>' : '') + '</div>';
+    return h;
+}
+function mbuTipS() {
+    return mbuTipS.s || (mbuTipS.s = {
+        me: Math.random().toString(36).slice(2, 10), lead: false, els: typeof WeakMap === 'function' ? new WeakMap() : null, prov: [],
+        cur: null, curOpts: null, pend: null, showT: 0, hideT: 0, liveT: 0, warm: 0, quiet: null, tab: false, mx: -1, my: -1, obs: null,
+    });
+}
+function mbuTip(el, content, opts) {
+    if (!el) return el;
+    var _mbuTip = mbuTipS();
+    mbuTipStart();
+    opts = opts || {};
+    if (typeof content === 'function') {
+        if (_mbuTip.els) _mbuTip.els.set(el, { fn: content, opts: opts });
+        el.setAttribute('data-mbu-tip-own', '');
+        el.removeAttribute('title');
+        return el;
+    }
+    if (content == null || content === '') el.removeAttribute('data-tip'); else el.setAttribute('data-tip', String(content));
+    if (opts.place) el.setAttribute('data-tip-place', opts.place);
+    if (opts.wide) el.setAttribute('data-tip-wide', '');
+    el.removeAttribute('title');
+    if (_mbuTip.cur === el) mbuTipRender();
+    return el;
+}
+function mbuTipOn(selector, fn, opts) {
+    mbuTipS().prov.push({ sel: selector, fn: fn, opts: opts || {} });
+    mbuTipStart();
+}
+function mbuTipShowFor(el, content, opts) {
+    if (!el || content == null || content === '') { mbuTipHide(true); return; }
+    mbuTipStart();
+    var o = opts || {};
+    var fn = typeof content === 'function' ? content : function () { return content; };
+    var S = mbuTipS();
+    if (S.cur === el) { S.curOpts.fn = fn; if (!mbuTipRender()) mbuTipHide(true); return; }
+    mbuTipShow({ el: el, fn: fn, opts: o });
+}
+function mbuTipHtml(s) {
+    if (mbuTipHtml.tt === undefined) {
+        mbuTipHtml.tt = null;
+        try {
+            var tt = (typeof window !== 'undefined' && window.trustedTypes) || null;
+            if (tt && tt.createPolicy) mbuTipHtml.tt = tt.createPolicy('mbu-tip-' + Math.random().toString(36).slice(2, 8), { createHTML: function (x) { return x; } });
+        } catch (e) { /* the page allows no new policy: plain strings */ }
+    }
+    return mbuTipHtml.tt ? mbuTipHtml.tt.createHTML(String(s)) : String(s);
+}
+function mbuTipCss() {
+    var s = document.getElementById('mbu-tip-css');
+    if (s && +s.getAttribute('data-v') >= mbuTipV()) return;
+    if (!s) { s = document.createElement('style'); s.id = 'mbu-tip-css'; (document.head || document.documentElement).appendChild(s); }
+    s.setAttribute('data-v', String(mbuTipV()));
+    s.textContent = mbuTipCssText();
+}
+function mbuTipEl() {
+    var t = document.getElementById('mbu-tip');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'mbu-tip';
+        t.setAttribute('role', 'tooltip');
+        (document.body || document.documentElement).appendChild(t);
+    }
+    // Falcon's panel, Group Therapy's menus and others sit at the top z-index too; at an equal one
+    // the later element is drawn over, so the tip moves to the end of the page when it is not there
+    // (majkinetor, with a screenshot: Falcon's panel over a tip)
+    var host = t.parentNode;
+    if (host && host.lastElementChild !== t) host.appendChild(t);
+    return t;
+}
+function mbuTipFind(node) {
+    var _mbuTip = mbuTipS();
+    var tip = document.getElementById('mbu-tip');
+    for (var el = node && node.nodeType === 1 ? node : node && node.parentElement; el && el !== document.documentElement; el = el.parentElement) {
+        if (el === tip) return null;
+        var reg = _mbuTip.els && _mbuTip.els.get(el);
+        if (reg) return { el: el, fn: reg.fn, opts: reg.opts };
+        for (var i = 0; i < _mbuTip.prov.length; i++) {
+            var p = _mbuTip.prov[i];
+            try { if (el.matches(p.sel)) return { el: el, fn: p.fn, opts: p.opts }; } catch (e) { /* a bad selector matches nothing */ }
+        }
+        if (!_mbuTip.lead) continue;
+        if (el.hasAttribute('data-mbu-tip-own')) return null;   // another copy's rich tip
+        if (el.hasAttribute('data-tip')) return { el: el, opts: { place: el.getAttribute('data-tip-place'), wide: el.hasAttribute('data-tip-wide') } };
+        // an <option> keeps its title: the browser draws a dropdown's list, where no page tooltip reaches
+        if (el.hasAttribute('title') && el.getAttribute('title') && el.namespaceURI === 'http://www.w3.org/1999/xhtml' && !/^(OPTION|OPTGROUP)$/.test(el.tagName)) {
+            var root = null;
+            try { root = el.closest(mbuTipRoots()); } catch (e) { /* no roots */ }
+            if (root) {
+                el.setAttribute('data-tip', el.getAttribute('title'));
+                el.removeAttribute('title');
+                return { el: el, opts: {} };
+            }
+        }
+    }
+    return null;
+}
+function mbuTipRender() {
+    var _mbuTip = mbuTipS();
+    var a = _mbuTip.cur, o = _mbuTip.curOpts || {}, t = mbuTipEl(), c;
+    if (!a) return false;
+    if (o.fn) {
+        try { c = o.fn(a); } catch (e) { c = null; }
+        if (c == null || c === '') return false;
+        if (typeof c === 'string') t.innerHTML = mbuTipHtml(c);
+        else { t.textContent = ''; t.appendChild(c); }
+    } else {
+        var s = a.getAttribute('data-tip');
+        if (!s) return false;
+        var h = mbuTipText(s);
+        t.innerHTML = mbuTipHtml(h);
+        // an element with nothing to read of its own is named by its tip
+        if (!a.getAttribute('aria-label') && !/[\p{L}\p{N}]/u.test(a.textContent || '') && !a.querySelector('img[alt]:not([alt=""])')) {
+            a.setAttribute('aria-label', s.split('\n')[0]);
+        }
+    }
+    t.className = 'mbu-ui' + (o.card ? ' mbu-tip-card' : '') + (o.interactive ? ' mbu-tip-act' : '') + (o.wide ? ' mbu-tip-wide' : '');
+    t.setAttribute('data-owner', _mbuTip.me);
+    mbuTipPlace(t, a, o.place);
+    return true;
+}
+function mbuTipPlace(t, a, place) {
+    var _mbuTip = mbuTipS();
+    var r = a.getBoundingClientRect();
+    if (!r.width && !r.height && a.firstElementChild) r = a.firstElementChild.getBoundingClientRect();
+    t.style.left = '0px'; t.style.top = '0px';
+    var w = t.offsetWidth, h = t.offsetHeight, vw = document.documentElement.clientWidth || window.innerWidth, vh = window.innerHeight, gap = 8, m = 6;
+    var below = place !== 'above';
+    if (below && r.bottom + gap + h > vh - m && r.top - gap - h >= m) below = false;
+    else if (!below && r.top - gap - h < m && r.bottom + gap + h <= vh - m) below = true;
+    var top = below ? r.bottom + gap : r.top - gap - h;
+    // a wide element (a row, a long field): the arrow points where the pointer is
+    var cx = r.left + r.width / 2;
+    if (r.width > 220 && _mbuTip.mx >= r.left && _mbuTip.mx <= r.right) cx = _mbuTip.mx;
+    var left = Math.max(m, Math.min(vw - w - m, Math.round(cx - w / 2)));
+    t.style.left = left + 'px';
+    t.style.top = Math.max(m, Math.round(top)) + 'px';
+    t.style.setProperty('--mbu-tip-ax', Math.max(12, Math.min(w - 12, Math.round(cx - left))) + 'px');
+    t.classList.toggle('mbu-tip-up', !below);
+}
+function mbuTipShow(found) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.hideT); clearTimeout(_mbuTip.showT);
+    if (_mbuTip.cur && _mbuTip.cur !== found.el) mbuTipHide(true);
+    mbuTipCss();
+    _mbuTip.cur = found.el;
+    _mbuTip.curOpts = { fn: found.fn, interactive: !!found.opts.interactive, card: !!found.opts.card, wide: !!found.opts.wide, place: found.opts.place };
+    if (!mbuTipRender()) { _mbuTip.cur = null; return; }
+    var t = mbuTipEl();
+    found.el.setAttribute('aria-describedby', 'mbu-tip');
+    // next frame, so the transition runs from the hidden state
+    requestAnimationFrame(function () { if (_mbuTip.cur === found.el) t.classList.add('mbu-tip-on'); });
+    // the element can go (a re-render) or change its text while the tip is up
+    clearInterval(_mbuTip.liveT);
+    _mbuTip.liveT = setInterval(function () { if (!_mbuTip.cur || !_mbuTip.cur.isConnected) mbuTipHide(true); }, 300);
+    try {
+        if (!_mbuTip.obs) _mbuTip.obs = new MutationObserver(function () { if (_mbuTip.cur && !mbuTipRender()) mbuTipHide(true); });
+        _mbuTip.obs.disconnect();
+        if (!found.fn) _mbuTip.obs.observe(found.el, { attributes: true, attributeFilter: ['data-tip'] });
+    } catch (e) { /* no observer: the text is read again on the next hover */ }
+}
+function mbuTipHide(now) {
+    var _mbuTip = mbuTipS();
+    clearTimeout(_mbuTip.showT); clearTimeout(_mbuTip.hideT);
+    _mbuTip.pend = null;
+    var hide = function () {
+        var a = _mbuTip.cur;
+        if (!a) return;
+        _mbuTip.cur = null;
+        clearInterval(_mbuTip.liveT);
+        try { if (_mbuTip.obs) _mbuTip.obs.disconnect(); } catch (e) { /* gone */ }
+        if (a.getAttribute('aria-describedby') === 'mbu-tip') a.removeAttribute('aria-describedby');
+        var t = document.getElementById('mbu-tip');
+        if (t && t.getAttribute('data-owner') === _mbuTip.me) t.classList.remove('mbu-tip-on');
+        _mbuTip.warm = Date.now();
+    };
+    if (now) hide();
+    else _mbuTip.hideT = setTimeout(hide, _mbuTip.curOpts && _mbuTip.curOpts.interactive ? 220 : 70);
+}
+function mbuTipStart() {
+    if (mbuTipStart.done || typeof document === 'undefined') return;
+    var _mbuTip = mbuTipS();
+    var root = document.documentElement;
+    if (!root) { document.addEventListener('DOMContentLoaded', mbuTipStart, { once: true }); return; }
+    mbuTipStart.done = true;
+    if (!root.hasAttribute('data-mbu-tip')) { root.setAttribute('data-mbu-tip', _mbuTip.me); _mbuTip.lead = true; }
+    var inTip = function (n) { var t = document.getElementById('mbu-tip'); return !!(t && n && t.contains(n)); };
+    window.addEventListener('mousemove', function (e) { _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; }, { passive: true, capture: true });
+    window.addEventListener('mouseover', function (e) {
+        _mbuTip.mx = e.clientX; _mbuTip.my = e.clientY; _mbuTip.over = e.target;   // :hover can read false in a page that has not seen a real move
+        if (inTip(e.target)) { if (_mbuTip.cur) clearTimeout(_mbuTip.hideT); return; }
+        var f = mbuTipFind(e.target);
+        if (!f) { if (_mbuTip.cur && !_mbuTip.cur.contains(e.target)) mbuTipHide(); return; }
+        if (f.el === _mbuTip.cur) { clearTimeout(_mbuTip.hideT); return; }
+        if (f.el === _mbuTip.quiet || (_mbuTip.pend && _mbuTip.pend.el === f.el)) return;
+        clearTimeout(_mbuTip.showT);
+        _mbuTip.pend = f;
+        var warm = _mbuTip.cur || Date.now() - _mbuTip.warm < 450;
+        _mbuTip.showT = setTimeout(function () {
+            _mbuTip.pend = null;
+            if (f.el.isConnected && f.el.contains(_mbuTip.over)) mbuTipShow(f);
+        }, warm ? 40 : (f.opts.delay != null ? f.opts.delay : 350));
+    }, true);
+    window.addEventListener('mouseout', function (e) {
+        var to = e.relatedTarget;
+        var q = _mbuTip.quiet;
+        if (q && q.contains(e.target) && !(to && q.contains(to))) _mbuTip.quiet = null;
+        var p = _mbuTip.pend;
+        if (p && p.el.contains(e.target) && !(to && p.el.contains(to))) { clearTimeout(_mbuTip.showT); _mbuTip.pend = null; }
+        var a = _mbuTip.cur;
+        if (!a) return;
+        if (to && (a.contains(to) || (_mbuTip.curOpts.interactive && inTip(to)))) return;
+        if (a.contains(e.target) || inTip(e.target)) mbuTipHide();
+    }, true);
+    window.addEventListener('mousedown', function (e) {
+        if (inTip(e.target)) return;
+        clearTimeout(_mbuTip.showT); _mbuTip.pend = null;
+        var f = mbuTipFind(e.target);
+        _mbuTip.quiet = f ? f.el : null;   // no tip again on the element just clicked until the pointer leaves it
+        _mbuTip.tab = false;
+        if (_mbuTip.cur) mbuTipHide(true);
+    }, true);
+    document.addEventListener('keydown', function (e) {
+        if (!/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) _mbuTip.tab = e.key === 'Tab';
+        if (!_mbuTip.cur) return;
+        var interactive = _mbuTip.curOpts && _mbuTip.curOpts.interactive;
+        // typing closes a plain tip, as it does the browser's; modifiers alone don't
+        if (e.key !== 'Escape') { if (!interactive && !/^(Shift|Control|Alt|Meta|CapsLock)$/.test(e.key)) mbuTipHide(true); return; }
+        mbuTipHide(true);
+        if (interactive) e.stopPropagation();   // a card is a popover: Esc closes it and nothing else
+    }, true);
+    window.addEventListener('scroll', function (e) { if (_mbuTip.cur && !inTip(e.target)) mbuTipHide(true); }, true);
+    window.addEventListener('blur', function () { if (_mbuTip.cur) mbuTipHide(true); });
+    document.addEventListener('focusin', function (e) {
+        var el = e.target, vis = false;
+        try { vis = el.matches(':focus-visible'); } catch (x) { /* old browser */ }
+        // a text box is :focus-visible even when a script focuses it (a picker opening), so only Tab's focus shows the tip
+        if (!vis || !_mbuTip.tab) return;
+        var f = mbuTipFind(el);
+        if (f && f.el === el) { clearTimeout(_mbuTip.showT); _mbuTip.showT = setTimeout(function () { if (document.activeElement === el) mbuTipShow(f); }, 150); }
+    }, true);
+    document.addEventListener('focusout', function (e) {
+        if (_mbuTip.cur && _mbuTip.cur === e.target && !(e.relatedTarget && inTip(e.relatedTarget))) mbuTipHide();
+    }, true);
+}
+mbuTipStart();
+// </ST-UI>
+return { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart };
 }
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -33572,6 +35214,1102 @@ ${lines}
   }
 })();
 })(); } catch (e) { try { console.error('[String Theory] credit_hoarder failed while starting — the other scripts carry on:', e); } catch (x) {} } });
+})(typeof GM_info !== 'undefined' ? GM_info : undefined);
+
+// ===== event_horizon (@run-at document-start) =====================================
+if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.24.49","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.24.49","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  (f=>f())(function(){ try { (function(){
+// Event Horizon takes over MusicBrainz's own release page, /release/<mbid> (not its subpages): the page is hidden
+// from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
+// back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
+// the Cover Art Archive.
+(function () {
+'use strict';
+var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
+var { ST_ICONS, stIcon, stColor } = __st_ICONS_2(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
+var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI_2(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';
+
+// <ST-NET> is __st_NET, at the top of the bundle (#786)
+
+// <ST-ICONS> is __st_ICONS_2, at the top of the bundle (#786)
+
+// The shared tokens and UI components: the corner launchers, the settings window's header, tooltips.
+// <ST-TOKENS> is __st_TOKENS, at the top of the bundle (#786)
+// <ST-UI> is __st_UI_2, at the top of the bundle (#786)
+
+const FORMAT_ICONS = {
+    digital: '<path d="M8 25h16a6 6 0 0 0 .8-11.95A9 9 0 0 0 7.4 15.2 5 5 0 0 0 8 25z"/>',
+    vinyl: '<circle cx="14" cy="17" r="11.5"/><circle cx="14" cy="17" r="7.5" stroke-width="1.5"/><circle cx="14" cy="17" r="3.2" fill="currentColor"/><path d="M28 3v11l-6 6"/><circle cx="28" cy="3.5" r=".6" fill="currentColor"/>',
+    cassette: '<rect x="3" y="7" width="26" height="18" rx="2.5"/><circle cx="11" cy="15" r="2.6"/><circle cx="21" cy="15" r="2.6"/><path d="M11 12.4h10M9 25l2-4h10l2 4"/>',
+    reel: '<circle cx="9" cy="12" r="6.5"/><circle cx="23" cy="12" r="6.5"/><circle cx="9" cy="12" r="1.6" fill="currentColor"/><circle cx="23" cy="12" r="1.6" fill="currentColor"/><path d="M9 18.5l3 8.5h8l3-8.5"/>',
+    usb: '<rect x="10" y="12" width="12" height="17" rx="2.5"/><path d="M12 12V4h8v8"/><path d="M14.5 7.5h0M17.5 7.5h0" stroke-width="2.4"/>',
+    other: '<rect x="4" y="4" width="24" height="24" rx="5"/><path d="M11 16h0M16 16h0M21 16h0" stroke-width="3"/>',
+    disc: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3.5"/><path d="M16 7a9 9 0 0 1 9 9" opacity=".55"/>',
+};
+const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
+
+const CSS = `
+:root{
+  --bg:#f7f5f8;--surface:#fff;--text:#231c2b;--muted:#7a6b85;--soft:#5d4f68;--border:#e8e0ec;--line:#eee7f0;
+  --chip:#efe8f2;--chip-text:#4a3b55;--accent:#ba478f;--accent2:#eb743b;--link:#8c2f6c;--link-hover:#5f1d49;
+  --isrc-bg:#fff4ec;--isrc:#9a4317;--isrc-dim:#c98a63;--hover:#fbf9fc;--shadow:rgba(60,20,60,.22);
+  --warn-bg:#fde8e8;--warn:#a42828;--toast-bg:#231c2b;--toast-text:#fff;color-scheme:light
+}
+:root[data-eh-theme=dark]{
+  --bg:#17131b;--surface:#211b27;--text:#efe9f3;--muted:#a596b0;--soft:#c3b6cc;--border:#362d3e;--line:#2c2434;
+  --chip:#2c2434;--chip-text:#d9cde2;--accent:#d062a8;--link:#e891c8;--link-hover:#f6c0e1;
+  --isrc-bg:#3a261a;--isrc:#f3a36f;--isrc-dim:#a7724f;--hover:#271f2e;--shadow:rgba(0,0,0,.5);
+  --warn-bg:#3d1c1c;--warn:#f19a9a;--toast-bg:#efe9f3;--toast-text:#17131b;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+a{color:var(--link);text-decoration:none}a:hover{color:var(--link-hover);text-decoration:underline}
+button{font:inherit;color:inherit}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.wrap{max-width:var(--eh-w,1280px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1,h2{text-wrap:balance}
+h2{margin:0;font-size:24px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;background:var(--chip);color:var(--chip-text);font-size:13px;font-weight:600;border:1px solid transparent;cursor:default}
+button.chip{cursor:pointer}
+button.chip:hover{border-color:var(--accent)}
+button.chip[aria-pressed="false"]{background:transparent;border-color:var(--border);color:var(--muted)}
+button.chip[aria-pressed="true"]{border-color:var(--accent)}
+.chip svg{flex:none}
+.iso{display:inline-block;font:600 11px 'JetBrains Mono',monospace;padding:2px 6px;border-radius:5px;background:var(--chip);color:var(--chip-text);vertical-align:1px}
+.seg{display:inline-flex;flex-wrap:wrap;max-width:100%;border:1px solid var(--border);border-radius:9px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:0 12px;height:30px;font-size:13px;font-weight:600;cursor:pointer;color:var(--soft);white-space:nowrap}
+.seg button+button{border-left:1px solid var(--border)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.count{font-size:12px;font-weight:700;background:var(--chip);color:var(--chip-text);border-radius:999px;padding:1px 7px}
+
+.site{background:var(--surface);border-bottom:1px solid var(--border)}
+.site .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--text);font-weight:800;font-size:17px}
+.site form{flex:1 1 320px;display:flex}
+.site input{width:100%;height:40px;border-radius:10px;border:1px solid var(--border);padding:0 14px;font:15px Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+.site nav{display:flex;gap:20px;font-weight:600;font-size:14px}
+
+main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
+.msg{font-size:16px;color:var(--soft)}
+.msg.err{color:var(--warn)}
+.sec{display:flex;flex-direction:column;gap:16px}
+.secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.secthead .aside{font-size:14px;color:var(--soft)}
+.fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
+.fold .cv{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;border:1px solid var(--border);color:var(--soft);flex:none}
+.fold:hover .cv{border-color:var(--accent);color:var(--text)}
+.cv svg{transition:transform .15s}
+[aria-expanded="true"]>.cv svg{transform:rotate(90deg)}
+.folded-note{font-size:14px;color:var(--muted)}
+
+.hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
+.art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
+.art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block}
+.art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
+.art .thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.art .thumbs button{border:0;cursor:pointer;color:var(--accent);padding:0}
+.art .thumbs img,.art .thumbs a,.art .thumbs button{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
+.facts-col{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
+.kicker{display:flex;align-items:center;gap:8px;min-width:0}
+.kicker>span:not(.acts){white-space:nowrap}
+.kicker.ico .ab .abt{display:none}
+.kicker.ico .ab{padding:0 8px}
+.kicker svg{color:var(--accent)}
+.kicker .acts{margin-left:auto;display:flex;gap:6px;align-items:center}
+.kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
+.kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.kicker .ab svg{width:15px;height:15px;color:inherit}
+.ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft);cursor:pointer;display:grid;place-items:center;position:relative}
+.ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text);text-decoration:none}
+.ib.primary,.kicker .ib.primary svg{color:var(--accent)}
+.kicker .ib svg{color:inherit}
+.kicker .sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.gear>button{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft);cursor:pointer;display:grid;place-items:center}
+.gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
+.gear>button svg{color:inherit}
+.art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
+.stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
+.stars .off{color:var(--border)}
+h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.disamb{font-size:16px;color:var(--muted);font-weight:600;margin-top:-8px}
+.by{font-size:16px;font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
+.facts>div{min-width:0}
+.facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
+.facts .sub{font-size:13px;font-weight:500;color:var(--muted)}
+.facts .wide{grid-column:1/-1;min-width:0}
+.facts .wide .v,.facts .wide>div{min-width:0;max-width:100%}
+.ev{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.ev .d+span:not(.iso)::before{content:'· ';color:var(--muted)}
+.lab{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.lab .cat{font-size:13px;font-weight:500;margin:0}
+button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}
+button.tx:hover{color:var(--text)}
+button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
+button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.more>summary{cursor:pointer;color:var(--muted);font-size:14px}
+.cp{border:0;background:none;padding:0;cursor:copy;font:inherit;color:inherit;border-bottom:1px dashed transparent;text-align:left}
+.cp:hover{border-bottom-color:var(--accent);color:var(--link)}
+.cp.mono{font:500 14px 'JetBrains Mono',ui-monospace,monospace}
+.lab .cp.mono{font-size:13px;color:var(--muted)}
+
+.mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--chip);color:var(--chip-text);font:800 9px Manrope,system-ui,sans-serif;letter-spacing:-.02em;text-transform:uppercase}
+.quiet a.qi{opacity:.9}
+.quiet a.qi:hover{opacity:1}
+.rl-one{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
+.rl-one .icons{display:flex;flex-wrap:nowrap;gap:0;align-items:flex-end;overflow:hidden;min-width:0;flex:0 1 auto}
+.rl-one a.qi{display:inline-grid;place-items:center;width:calc(var(--rl-size,28px) + 8px);height:calc(var(--rl-size,28px) + 8px);flex:none}
+.rl-one .kg{display:flex;flex-direction:column;gap:4px;flex:none;padding-left:28px}
+.rl-one .kg:first-child{padding-left:0}
+.rl-one .kg .label{font-size:11px}
+.rl-one .ki{display:flex;gap:4px}
+.rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
+.lnk{font-size:13px;font-weight:700;background:none;border:0;color:var(--link);cursor:pointer;padding:0 4px}
+
+.popwrap{position:relative;display:inline-flex}
+.pop{position:absolute;top:calc(100% + 6px);left:0;z-index:15;min-width:280px;max-width:min(360px,calc(100vw - 32px));max-height:440px;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 40px var(--shadow);padding:8px}
+.pop.r{left:auto;right:0}
+.pop .h{padding:8px 10px 4px}
+.pop .hint{padding:0 10px 8px;font-size:13px;color:var(--muted)}
+.pop a.row,.pop button.opt{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:600;font-size:14px;border:0;background:none;cursor:pointer;text-align:left;text-transform:none;letter-spacing:0}
+.pop a.row:hover,.pop button.opt:hover{background:var(--hover);text-decoration:none}
+.pop .r{margin-left:auto;display:flex;gap:4px}
+.box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);display:grid;place-items:center;flex:none;font-size:12px;color:#fff}
+[aria-pressed="true"]>.box{background:var(--accent);border-color:var(--accent)}
+
+.ed-filter{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.ed-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:10px;background:var(--chip)}
+.ed-seg button{all:unset;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.ed-seg button:hover{color:var(--text)}
+.ed-seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px var(--shadow)}
+.ed-seg .n{opacity:.7}
+.ed-sw{all:unset;display:inline-flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.ed-sw i{position:relative;width:32px;height:18px;border-radius:9px;background:var(--border);transition:background .15s}
+.ed-sw i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+.ed-sw[aria-checked=true]{color:var(--text)}
+.ed-sw[aria-checked=true] i{background:var(--accent)}
+.ed-sw[aria-checked=true] i::after{left:16px}
+.ed-div{width:1px;height:20px;background:var(--border)}
+.ed-views{display:inline-flex;gap:2px}
+.ed-views button{all:unset;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;color:var(--muted);cursor:pointer}
+.ed-views button:hover{background:var(--chip);color:var(--text)}
+.ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
+.ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
+.ed-row{display:grid;grid-auto-flow:column;grid-auto-columns:120px;gap:14px;overflow-x:auto;padding:6px 4px 12px;scroll-snap-type:x mandatory}
+.ed-row .tile{scroll-snap-align:start}
+.ed-groups{display:flex;flex-direction:column;gap:18px}
+.ed-groups .g{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:start}
+.ed-groups .g .gl{display:flex;align-items:center;gap:8px;font-weight:700;padding-top:6px}
+.ed-groups .g .gl svg{color:var(--accent)}
+.ed-groups .covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px}
+.ed-groups .tile .cap{font-size:12px}
+.ed-folded{display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px}
+.stack{display:flex}
+.stack img{width:44px;height:44px;border-radius:6px;object-fit:cover;border:2px solid var(--surface);margin-left:-14px;box-shadow:0 2px 6px var(--shadow);background:var(--chip)}
+.stack :first-child{margin-left:0}
+.tile{display:flex;flex-direction:column;gap:6px;color:var(--text);min-width:0}
+.tile:hover{text-decoration:none}
+.tile .c{position:relative;aspect-ratio:1;border-radius:10px;background:var(--chip);display:grid;place-items:center;color:var(--muted)}
+.tile .c img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block}
+.tile.cur .c{outline:3px solid var(--accent);outline-offset:3px}
+.tile .fb{position:absolute;left:6px;bottom:6px;width:24px;height:24px;border-radius:7px;background:rgba(20,14,24,.72);color:#fff;display:grid;place-items:center}
+.tile .st{position:absolute;right:6px;top:6px;font:700 10px Manrope,system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--warn-bg);color:var(--warn)}
+.tile .nc{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.tile .t1{font-weight:700;font-size:14px;line-height:1.25}
+.tile .cap{font-size:13px;color:var(--muted);line-height:1.35}
+.tile .cap i{display:block;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.tl{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--hover);border:0;border-top:1px solid var(--line);font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+.tl>.disc:first-child{border-top:0}
+.disc .cv{width:24px;height:24px;border-radius:7px;border:1px solid var(--border);display:grid;place-items:center;color:var(--soft)}
+.disc:hover .cv{border-color:var(--accent)}
+.disc .fi{color:var(--accent);display:flex}
+.disc .tot{margin-left:auto;font:500 13px 'JetBrains Mono',ui-monospace,monospace;color:var(--muted)}
+.tr{display:flex;align-items:center;gap:16px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer}
+.tr:hover{background:var(--hover)}
+.tr .n{width:28px;flex:none;color:var(--muted);font-size:14px}
+.tr .ti{flex:1 1 auto;min-width:0}
+.tr .ti a.t{font-weight:700;font-size:16px;color:var(--text)}
+.tr .ti .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.tr .is{flex:none;width:168px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.tr .lk{flex:none;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.tr .ln{flex:none;width:52px;text-align:right;font-size:14px}
+.isrc{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;padding:4px 0;color:var(--muted);white-space:nowrap;display:inline-block}
+.isrc .d{opacity:.5}
+.tr:hover .isrc{color:var(--isrc)}
+.isrc+.plus{font-size:12px;color:var(--muted);margin-left:4px}
+.hide-isrc .is{display:none}
+.hide-links .lk .slots,.hide-links .lk .popwrap{display:none}
+.hide-credits .sub{display:none}
+.hide-len .ln,.hide-len .tot{display:none}
+.slots{display:flex;gap:2px}
+.slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
+.tr:hover .slot{filter:none;opacity:1}
+.slot.off{opacity:0;pointer-events:none}
+.more{height:calc(var(--pl-size,22px) + 4px);min-width:34px;padding:0 8px;border-radius:8px;border:1px dashed var(--border);background:none;font-weight:700;font-size:12px;color:var(--soft);cursor:pointer}
+.more:hover{border-color:var(--accent);color:var(--text)}
+.more.ph{visibility:hidden}
+.detail{position:relative;padding:6px 16px 20px 60px;font-size:14px;background:var(--hover)}
+.detail .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 48px;padding-right:44px}
+.detail .grp{display:grid;align-content:start;grid-template-columns:7.5em minmax(0,1fr);gap:3px 12px;margin:0}
+.detail .grp h4{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:14px;min-width:0}
+.detail .grp h4 .tag{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);padding:2px 7px;border-radius:5px}
+.detail .grp h4 a{font-weight:600;color:var(--text);border-bottom:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
+.detail .grp h4 a:hover{border-color:var(--accent);text-decoration:none}
+.detail .grp dt{text-align:right;color:var(--muted);overflow-wrap:anywhere}
+.detail .grp dd{margin:0;font-weight:600;overflow-wrap:anywhere;min-width:0}
+.detail .grp dd.stk{display:flex;flex-direction:column;gap:4px}
+.detail .grp.bn{grid-template-columns:fit-content(55%) minmax(0,1fr)}
+.detail .grp.bn dt{color:var(--text);font-weight:600}
+.detail .grp.bn dd{color:var(--muted);font-weight:400}
+.detail .grp.ls{grid-template-columns:1fr}
+.detail .none{grid-column:1/-1}
+.and{color:var(--muted);font-weight:400}
+.dis{color:var(--muted);font-size:.85em;font-weight:400;margin-left:.3em}
+.dm-below .hasd{display:inline-flex;flex-direction:column;vertical-align:top;max-width:100%;min-width:0}
+.dm-below .dis{margin:0;line-height:1.2;width:max-content;max-width:min(100%,32ch);white-space:normal}
+.dm-tip .dis{display:none}
+.dm-tip .hasd{border-bottom:1px dotted var(--muted);cursor:help}
+.detail .gtools{position:absolute;top:2px;right:10px;display:flex;flex-direction:column;gap:2px;z-index:3}
+.dwrap{position:relative}
+.dmenu{display:none;position:absolute;top:0;right:34px;min-width:160px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.dmenu.open{display:block;z-index:5}
+.crdis{display:inline-flex;align-items:center;gap:2px}
+.crdis .dmenu{top:100%;right:0;margin-top:4px}
+.dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
+.dmenu button svg{flex:none}
+.dmenu button:hover{background:var(--hover)}
+.dmenu button[aria-checked=true]{color:var(--accent);font-weight:700}
+.detail .gsw{border:0;background:none;color:var(--muted);width:30px;height:28px;display:grid;place-items:center;cursor:pointer;padding:0}
+.detail .gsw:hover{color:var(--accent)}
+.detail .gsw:focus-visible{outline:2px solid var(--accent);border-radius:6px}
+.detail .pls{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.detail .pls a{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;font-weight:600}
+.detail .pls.nm a{height:30px;padding:0 10px 0 5px;border-radius:999px;border:1px solid var(--border);background:var(--surface)}
+.detail .pls .sep{width:1px;height:18px;background:var(--border);margin:0 6px}
+.pl-hov .detail .pls a{filter:grayscale(1);opacity:.55}
+.pl-hov .detail .pls a:hover,.pl-hov .detail .pls a:focus-visible{filter:none;opacity:1}
+.rl-one.pl-hov a.qi{filter:grayscale(1);opacity:.55}
+.rl-one.pl-hov a.qi:hover,.rl-one.pl-hov a.qi:focus-visible{filter:none;opacity:1}
+.crl{display:grid;grid-template-columns:minmax(90px,auto) 1fr;gap:5px 14px;align-items:baseline;margin:0}
+.crl dt{color:var(--muted);font-size:13px}
+.crl dd{margin:0;font-weight:600}
+.none{color:var(--muted)}
+.tl-foot{display:flex;flex-wrap:wrap;gap:16px;padding:12px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.tl-foot .cp{margin-left:auto;color:var(--link);font-weight:600}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px}
+.card .cols{columns:2 340px;column-gap:40px}
+.card .grp{break-inside:avoid;padding-bottom:18px}
+.card .grp>.label{margin-bottom:10px}
+.cline{break-inside:avoid;display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:12px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.cline:first-of-type{border-top:0}
+.cline .role{color:var(--muted)}
+.cline .who{font-weight:600}
+.dm-below .cline .ents{display:flex;flex-direction:column;gap:4px}
+.dm-below .cline .sep{display:none}
+.dm-below .cline .hasd{display:inline-flex;flex-direction:column;vertical-align:top}
+.dm-below .cline .dis{width:auto;min-width:0}
+.dm-below .cline .ent{display:grid;grid-template-columns:auto 1fr;align-items:baseline}
+.dm-below .cline .ent .who,.dm-below .cline .ent .hasd{display:contents}
+.dm-below .cline .ent .dis{grid-row:2;grid-column:1/-1;width:auto;min-width:0}
+.dm-below .cline .ent .trk{grid-row:1;grid-column:2}
+.cline .trk{font:500 12px 'JetBrains Mono',ui-monospace,monospace;color:var(--muted);margin-left:4px}
+
+.artgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.artgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
+.artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.artgrid figcaption{font-size:13px;color:var(--soft)}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
+
+@media (max-width:600px){.detail .grp{grid-template-columns:fit-content(9em) minmax(0,1fr);gap:3px 10px}.detail .cols{padding-right:34px}.detail .gtools{right:4px}}
+@media (max-width:700px){
+  .tr{flex-wrap:wrap;gap:6px 12px}
+  .tr .ti{flex-basis:calc(100% - 100px)}
+  .tr .is{order:5;width:auto;margin-left:40px}
+  .tr .lk{order:6;margin-left:auto}
+  .detail{padding-left:16px}
+  .hero{gap:20px}
+  .art{flex-basis:100%;display:grid;grid-template-columns:min(140px,40%) minmax(0,1fr);gap:10px 16px;align-items:start}
+  .art .cover,.art .nocover{grid-row:span 2;border-radius:10px;box-shadow:0 8px 20px var(--shadow)}
+  .art .thumbs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .art .under{padding-top:0}
+  h1{font-size:24px}
+  .ed-groups .g{grid-template-columns:1fr}
+  .facts{gap:16px 24px}
+  .card{padding:16px}
+  .cline{grid-template-columns:1fr}
+}
+.sk{display:block;background:linear-gradient(90deg,var(--chip) 0%,var(--chip) 35%,var(--hover) 50%,var(--chip) 65%,var(--chip) 100%);background-size:300% 100%;animation:sk 1.8s linear infinite;border-radius:8px}
+@keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
+.sk-page .info{flex:1 1 0;min-width:0}
+.sk-cover{aspect-ratio:1;border-radius:16px;display:grid;place-items:center}
+.sk-orbit{width:84px;height:84px;overflow:visible}
+.sk-orbit path{transform-origin:64px 64px;animation:skspin 1.6s ease-in-out infinite alternate}
+@keyframes skspin{from{transform:rotate(-30deg)}to{transform:rotate(0deg)}}
+.sk-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.sk-thumbs .sk{aspect-ratio:1}
+.sk.k{width:180px;height:12px;margin-top:20px}.sk.ti{width:min(420px,90%);height:56px;margin:18px 0 14px;border-radius:12px}.sk.by{width:240px;height:24px}
+.sk-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:40px}.sk-f{display:grid;gap:10px}.sk-f .l{width:70px;height:10px}.sk-f .v{width:120px;height:18px}
+.sk-st{margin-top:36px;color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sk-st b{color:var(--text);font-weight:600}
+.sk-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:skp 1s ease-in-out infinite}@keyframes skp{50%{opacity:.25}}
+.sk-st.err{color:var(--warn)}
+.sk-b{font:600 13px Manrope,system-ui,sans-serif;height:30px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.sk-b:hover{border-color:var(--accent)}
+.sk-sec{margin-top:48px}.sk.h{width:260px;height:26px}
+.sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
+.sk-rows{margin-top:16px;display:grid}.sk-r{display:grid;grid-template-columns:28px 1fr 120px 60px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.sk-r .sk{height:14px}
+@media (max-width:700px){.sk-r{grid-template-columns:20px 1fr 50px}.sk-r .sk:nth-child(3){display:none}}
+@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}`;
+
+/* ── state ─────────────────────────────────────────── */
+// what the viewer shows is a setting, kept by the manager; what is open on this page is not
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width'];
+const S = {
+    cols: { isrc: true, links: true, credits: true, len: true },
+    prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
+    plOrder: [], // the settings' platform order, shown or not; prov follows it
+    crTracks: true,
+    byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1280,
+    on: true,
+    thumbs: true,
+    extras: ['rating', 'tags'],
+    facts: ['released', 'labels', 'barcode', 'length', 'links'],
+    fold: [], discFold: [], edView: 'grid',
+    ed: { kinds: new Set(), official: false },
+    open: new Set(),
+};
+const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
+try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
+const save = () => { try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
+const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const MB = location.origin;
+const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+/* ── data ──────────────────────────────────────────── */
+async function ws(path) {
+    const r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } });
+    if (!r) throw new Error('cancelled');
+    if (r.status === 404) throw new Error('MusicBrainz has no such release.');
+    if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
+    return r.json();
+}
+// ISO codes by their English names (eng → English, Latn → Latin); an unknown code stays as it is
+const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en'], { type, fallback: 'code' }).of(code); } catch (e) { return code; } };
+async function caa(id) {
+    try { const r = await fetch('https://coverartarchive.org/release/' + id); return r.ok ? (await r.json()).images || [] : []; } catch (e) { return []; }
+}
+// platforms by host; the rest fall back to their name as a monogram
+const HOSTS = [
+    ['spotify', 'Spotify', /spotify\.com/], ['apple', 'Apple Music', /music\.apple\.com|itunes\.apple/], ['deezer', 'Deezer', /deezer\.com/],
+    ['tidal', 'Tidal', /tidal\.com/], ['qobuz', 'Qobuz', /qobuz\.com/], ['beatport', 'Beatport', /beatport\.com/], ['bandcamp', 'Bandcamp', /bandcamp\.com/],
+    ['ytmusic', 'YouTube Music', /music\.youtube\.com/], ['youtube', 'YouTube', /youtube\.com|youtu\.be/], ['audiomack', 'Audiomack', /audiomack\.com/],
+    ['soundcloud', 'SoundCloud', /soundcloud\.com/], ['sevendigital', '7digital', /7digital\.com/], ['hdtracks', 'HDtracks', /hdtracks\.com/],
+    ['amazonmusic', 'Amazon Music', /music\.amazon\./], ['amazon', 'Amazon', /amazon\./], ['discogs', 'Discogs', /discogs\.com/], ['allmusic', 'AllMusic', /allmusic\.com/],
+    ['mora', 'mora', /mora\.jp/], ['ototoy', 'OTOTOY', /ototoy\.jp/], ['pandora', 'Pandora', /pandora\.com/], ['jaxsta', 'Jaxsta', /jaxsta\.com/],
+    ['wikidata', 'Wikidata', /wikidata\.org/], ['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
+];
+const KIND = t => /free streaming/.test(t) ? 'free' : /streaming/.test(t) ? 'listen' : /purchase|amazon/.test(t) ? 'buy' : 'info';
+const region = u => (u.match(/music\.apple\.com\/(\w\w)\//) || u.match(/amazon\.(co\.uk|de|fr|nl|com)/) || u.match(/qobuz\.com\/(\w\w-\w\w)\//) || [])[1] || '';
+function platforms(urls) {
+    const m = new Map();
+    for (const { type, url } of urls) {
+        let host = url; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
+        const [key, name] = HOSTS.find(([, , re]) => re.test(url)) || ['globe', host];
+        const kind = KIND(type), id = key === 'globe' ? name : key;
+        const p = m.get(id) || { key, name, kinds: [], urls: [] };
+        if (!p.kinds.includes(kind)) p.kinds.push(kind);
+        if (!p.urls.some(x => x.url === url)) p.urls.push({ url, type, region: region(url) });
+        m.set(id, p);
+    }
+    return [...m.values()];
+}
+const urlsOf = rels => platforms(rels.filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource })));
+const ms = n => n == null ? '' : `${Math.floor(n / 60000)}:${String(Math.round(n / 1000) % 60).padStart(2, '0')}`;
+// a relationship as MB phrases it on its pages: "Guitar", "Assistant engineer", "Vocals"
+const MODS = ['additional', 'assistant', 'associate', 'co', 'executive', 'guest', 'solo'];
+function phrase(x) {
+    const at = x.attributes || [], mods = at.filter(a => MODS.includes(a)), rest = at.filter(a => !MODS.includes(a) && a !== 'task');
+    let role = x.type;
+    if (x.type === 'instrument') role = rest.join(', ') || 'instruments';
+    else if (x.type === 'vocal') role = rest.length ? rest.join(', ') : 'vocals';
+    else {
+        // a task stays beside the type, as MB shows it: "Additional engineer (mastering)"
+        const task = at.includes('task') && x['attribute-values'] && x['attribute-values'].task;
+        if (task) rest.push(task);
+        if (rest.length) role += ' (' + rest.join(', ') + ')';
+    }
+    role = [...mods, role].join(' ');
+    return role[0].toUpperCase() + role.slice(1);
+}
+const creditsOf = rels => rels.filter(x => x['target-type'] === 'artist').map(x => ({ role: phrase(x), name: x['target-credit'] || x.artist.name, id: x.artist.id, dis: x.artist.disambiguation || '' }));
+function release(r, rg, images) {
+    const ac = r['artist-credit'] || [], mainIds = ac.map(a => a.artist.id);
+    return {
+        id: r.id, asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
+        langName: r['text-representation'] && nameOf('language', r['text-representation'].language),
+        script: r['text-representation'] && nameOf('script', r['text-representation'].script),
+        lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
+        title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {},
+        credits: creditsOf(r.relations || []), front: (r['cover-art-archive'] || {}).front, images,
+        genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
+        events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
+        labels: (r['label-info'] || []).map(l => ({ name: l.label && l.label.name, id: l.label && l.label.id, catno: l['catalog-number'] })),
+        links: urlsOf(r.relations || []),
+        media: (r.media || []).map(m => ({
+            format: m.format, position: m.position, title: m.title,
+            tracks: (m.tracks || []).map(t => {
+                const rec = t.recording, rels = rec.relations || [];
+                const people = rels.filter(x => x['target-type'] === 'artist');
+                const workRels = rels.filter(x => x['target-type'] === 'work'), work = workRels[0];
+                return {
+                    n: t.number, title: t.title, rid: rec.id, len: ms(t.length), lenMs: t.length || 0, isrcs: rec.isrcs || [],
+                    feat: (t['artist-credit'] || []).filter(a => !mainIds.includes(a.artist.id)).map(a => a.name),
+                    cr: creditsOf(rels), credits: people.length,
+                    work: work && { id: work.work.id, title: work.work.title }, wcr: work ? creditsOf(work.work.relations || []) : [],
+                    works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []) })),
+                    links: urlsOf(rels),
+                };
+            }),
+        })),
+    };
+}
+const edition = e => ({
+    id: e.id, status: e.status, disambig: e.disambiguation,
+    thumb: (e['cover-art-archive'] || {}).front ? `https://coverartarchive.org/release/${e.id}/front-250` : '',
+    formats: (e.media || []).map(m => m.format), date: e.date || '',
+    where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
+    labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
+});
+const preload = url => new Promise(ok => { const i = new Image(); i.onload = i.onerror = ok; i.src = url; setTimeout(ok, 5000); });
+async function load(id, step = () => {}) {
+    const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
+    const covers = caa(id).then(async x => { if (x.some(i => i.front)) await preload(`https://coverartarchive.org/release/${id}/front-500`); step('covers'); return x; });
+    const r = await ws(`release/${id}?inc=${inc}`);
+    step('release');
+    const rgId = r['release-group'].id;
+    const [rg, eds, images] = await Promise.all([
+        ws(`release-group/${rgId}?inc=ratings`),
+        ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step('editions'); return x; }),
+        covers,
+    ]);
+    return { rel: release(r, rg, images), editions: (eds.releases || []).map(edition), edCount: eds['release-count'] || 0 };
+}
+
+/* ── icons ─────────────────────────────────────────── */
+const FK = [['digital', /digital|download/i], ['vinyl', /vinyl|"|shellac|flexi|acetate/i], ['reel', /reel/i], ['cassette', /cassette|tape/i], ['usb', /usb/i], ['other', /^\s*other\s*$/i]];
+const fmtKind = f => (f && (FK.find(([, re]) => re.test(f)) || ['disc'])[0]) || 'other';
+const KIND_NAME = { disc: 'CD', vinyl: 'Vinyl', digital: 'Digital', usb: 'USB', cassette: 'Cassette', reel: 'Reel', other: 'Unknown' };
+const fmtSvg = (k, size = 18, sw = 2.4) => `<svg width="${size}" height="${size}" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${FORMAT_ICONS[k] || FORMAT_ICONS.disc}</svg>`;
+const EXTRA = {
+    youtube: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#FF0000"/><path d="M10 9v6l5-3z" fill="#fff"/></svg>',
+};
+const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: 'P', jaxsta: 'Jx', ebay: 'eb', bol: 'bol', wikidata: 'WD' };
+function icon(p, size = 20) {
+    if (p.key !== 'globe' && ST_ICONS[p.key]) return stIcon(p.key, size).replace('<svg', '<svg aria-hidden="true"');
+    if (EXTRA[p.key]) return EXTRA[p.key].replace('<svg', `<svg width="${size}" height="${size}" aria-hidden="true"`);
+    const t = MONO[p.key] || p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2);
+    return `<span class="mgram" style="width:${size}px;height:${size}px;font-size:${Math.round(size * (t.length > 2 ? .34 : .42))}px" aria-hidden="true">${esc(t)}</span>`;
+}
+const ORDER = ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic', 'youtube', 'amazonmusic', 'amazon', 'beatport', 'bandcamp', 'soundcloud', 'audiomack', 'pandora', 'hdtracks', 'sevendigital', 'mora', 'ototoy', 'discogs', 'allmusic', 'jaxsta'];
+const rank = p => { const i = ORDER.indexOf(p.key); return i < 0 ? 99 : i; };
+const sortP = ps => [...ps].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['info', 'Info']];
+const primaryKind = p => p.kinds.includes('listen') ? 'listen' : p.kinds.includes('free') ? 'free' : p.kinds.includes('buy') ? 'buy' : 'info';
+const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
+const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
+const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
+const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
+const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ACTS = [
+    ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
+    ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
+    ['add-cover-art', 'Art', 'Add cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
+    ['edits', 'History', 'Edit history', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
+];
+
+/* ── formatting ────────────────────────────────────── */
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fdate = d => { if (!d) return '—'; const [y, m, dd] = d.split('-'); return [dd && +dd, m && MON[m - 1], y].filter(Boolean).join(' '); };
+const fmtName = f => f ? f.replace('Digital Media', 'Digital').replace(/^12" Vinyl$/, '12″ vinyl').replace(/^10" Vinyl$/, '10″ vinyl').replace('USB Flash Drive', 'USB drive') : 'Unknown format';
+function fmtSummary(fs) {
+    const out = [];
+    for (const f of fs) { const n = fmtName(f), last = out[out.length - 1]; if (last && last[1] === n) last[0]++; else out.push([1, n]); }
+    return out.map(([c, n]) => (c > 1 ? c + '×' : '') + n).join(' + ') || 'No media';
+}
+const isrcHtml = i => i.length === 12 ? `<span class="isrc" data-tip="${esc(i)}">${i.slice(0, 2)}<span class="d">-</span>${i.slice(2, 5)}<span class="d">-</span>${i.slice(5, 7)}<span class="d">-</span>${i.slice(7)}</span>` : `<span class="isrc">${esc(i)}</span>`;
+const dur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
+const total = tracks => dur(tracks.reduce((s, t) => s + t.lenMs, 0));
+const CHEV = '<span class="cv"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></span>';
+const andList = ns => ns.length < 2 ? ns.join('') : ns.slice(0, -1).join(', ') + ' <span class="and">and</span> ' + ns[ns.length - 1];
+const entA = (type, id, name) => id ? `<a href="${MB}/${type}/${id}">${esc(name)}</a>` : esc(name);
+const artistA = c => entA('artist', c.id, c.name);
+const acHtml = ac => ac.map(a => entA('artist', a.artist.id, a.name) + esc(a.joinphrase || '')).join('');
+const copyB = (v, cls = 'mono', text = v) => `<button class="cp ${cls}" type="button" data-copy="${esc(v)}" aria-label="Copy ${esc(text)}">${esc(text)}</button>`;
+// credits grouped by role, in the order MB lists them
+function byRole(cr) { const m = new Map(); for (const c of cr) { const l = m.get(c.role) || []; if (!l.some(x => x.name === c.name)) l.push(c); m.set(c.role, l); } return [...m]; }
+const relUrl = id => '/release/' + id;
+
+/* ── sections fold ─────────────────────────────────── */
+function sect(id, title, tools, body, folded) {
+    const shut = S.fold.includes(id);
+    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}">${CHEV}<h2>${title}</h2></button>${shut ? '' : `<div class="tools">${tools}</div>`}</div>${shut ? folded : body}</section>`;
+}
+
+/* ── hero ──────────────────────────────────────────── */
+const FACTS = [['released', 'Released'], ['labels', 'Labels'], ['barcode', 'Barcode'], ['length', 'Length'], ['mbid', 'MBID'], ['asin', 'ASIN'], ['packaging', 'Packaging'], ['lang', 'Language / script'], ['quality', 'Data quality'], ['links', 'Release links']];
+function facts(r) {
+    const byDate = [];
+    for (const v of r.events) { const l = byDate.find(x => x.date === v.date); l ? l.ev.push(v) : byDate.push({ date: v.date, ev: [v] }); }
+    const tracks = r.media.flatMap(m => m.tracks);
+    const labA = l => entA('label', l.id, l.name || '[no label]');
+    // past two rows, the first stays and the rest fold behind "+N more"
+    const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
+    const F = {
+        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${esc(l.ev.map(v => v.area).filter(Boolean).join(', '))}</span></div>`))],
+        labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`))],
+        barcode: ['Barcode', r.barcode && `<span>${copyB(r.barcode)}</span>`],
+        length: ['Length', `<span>${total(tracks)} <span class="sub">· ${tracks.length} track${tracks.length === 1 ? '' : 's'}</span></span>`],
+        mbid: ['MBID', `<span>${copyB(r.id)}</span>`],
+        asin: ['ASIN', r.asin && `<span>${copyB(r.asin)}</span>`],
+        packaging: ['Packaging', r.packaging && esc(r.packaging)],
+        lang: ['Language', r.langName && `<span>${esc(r.langName)}</span>${r.script ? `<span class="sub">${esc(r.script)} script</span>` : ''}`],
+        quality: ['Data quality', esc(r.quality || 'normal')],
+        links: ['', r.links.length && rlQuiet(r)],
+    };
+    return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k) && F[k][1]).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
+}
+function under(r) {
+    const on = k => S.extras.includes(k);
+    const v = r.rating.value, n = r.rating['votes-count'] || 0;
+    const tip = v != null ? `${v} from ${n} vote${n === 1 ? '' : 's'} (release group)` : '';
+    const stars = on('rating') && v != null ? `<span class="stars" data-tip="${esc(tip)}" aria-label="Rated ${esc(tip)}">${'★'.repeat(Math.round(v))}<span class="off">${'★'.repeat(5 - Math.round(v))}</span></span>` : '';
+    const tags = on('tags') && r.genres.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}</div>` : '';
+    return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
+}
+const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
+function hero(r) {
+    const fk = fmtKind(r.media[0] && r.media[0].format);
+    const rest = r.images.filter(i => !i.front);
+    const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
+    return `<section class="hero">
+        <div class="art">
+            ${r.front ? `<img class="cover" src="https://coverartarchive.org/release/${r.id}/front-500" alt="Front cover">` : `<div class="nocover">${fmtSvg(fk, 96, 1.4)}</div>`}
+            ${thumbs ? `<div class="thumbs"${S.thumbs ? '' : ' hidden'}>${thumbs}</div>` : ''}
+            ${under(r)}
+        </div>
+        <div class="facts-col">
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}</span></div>
+            <h1>${esc(r.title)}</h1>
+            ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
+            <div class="by">by ${acHtml(r.ac)}</div>
+            ${facts(r)}
+        </div>
+    </section>`;
+}
+function rlQuiet(r) {
+    if (!r.links.length) return '—';
+    const ps = KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k)));
+    const kindOf = p => KINDS.find(([k]) => k === primaryKind(p))[1];
+    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => plA(p, S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `)).join('')}</span></span>` : ''; }).join('');
+    const rows = ps.map((p, i) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r"><span class="iso">${kindOf(p)}</span></span></a>`).join('');
+    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r" id="pop-rlmore" hidden><div class="h label">More sites</div>${rows}</div></span></div>`;
+}
+
+/* ── editions ──────────────────────────────────────── */
+function edTile(e, curId) {
+    const k = fmtKind(e.formats[0]);
+    const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
+    const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
+    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-tip="${esc(fmtSummary(e.formats) + ' · ' + (e.where.join(', ') || 'no country') + ' · ' + (e.date || 'no date') + (e.disambig ? ' · ' + e.disambig : '') + ' · ' + e.labels.join(', '))}">
+        <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
+        <span class="t1">${esc(fmtSummary(e.formats))}</span>
+        <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
+    </a>`;
+}
+function editions(r, eds, count) {
+    if (eds.length < 2) return '';
+    const all = [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+    const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
+    const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
+    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official'));
+    const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
+    const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>']];
+    const views = `<span class="ed-div"></span><span class="ed-views" role="group" aria-label="Editions view">${EDV.map(([v, n, d]) => `<button type="button" data-edview="${v}" aria-pressed="${S.edView === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
+    // folded: a format opens the section filtered to it
+    const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
+        <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
+        <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
+    let body;
+    if (S.edView === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else if (S.edView === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
+            const es = shown.filter(e => fmtKind(e.formats[0]) === k);
+            return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id)).join('')}</div></div>`;
+        }).join('')}</div>`;
+    else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    const more = count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. <a href="${MB}/release-group/${r.rgId}">All on MusicBrainz</a></div>` : '';
+    return sect('ed', `${count} editions of this ${esc((r.type || 'release').toLowerCase())}`, '', filters + body + more, folded);
+}
+
+/* ── tracklist ─────────────────────────────────────── */
+function trackLinks(t, ctx) {
+    const ps = sortP(t.links), slotKeys = ctx.slots;
+    const slots = slotKeys.map(k => { const p = ps.find(x => x.key === k); return p ? `<a class="slot" style="--pl-size:${S.plSize}px" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}">${icon(p, S.plSize)}</a>` : '<span class="slot off" style="--pl-size:${S.plSize}px"></span>'; });
+    const rest = ps.filter(p => !slotKeys.includes(p.key));
+    const more = rest.length
+        ? `<span class="popwrap"><button class="more" style="--pl-size:${S.plSize}px" type="button" data-pop="tk-${t.key}" aria-expanded="false" aria-label="${rest.length} more sites">+${rest.length}</button><div class="pop r" id="pop-tk-${t.key}" hidden><div class="h label">Also on</div>${popRows(rest)}</div></span>`
+        : `<span class="popwrap"><span class="more ph" style="--pl-size:${S.plSize}px">+0</span></span>`;
+    return `<span class="slots">${slots.join('')}</span>${more}`;
+}
+// a credited name; the disambiguation below it, in brackets or only in the tooltip (S.dis)
+const crName = c => {
+    if (!c.dis) return artistA(c);
+    const n = c.id ? `<a href="${MB}/artist/${c.id}" class="hasd" data-tip="${esc(c.name + ' (' + c.dis + ')')}">` : `<span class="hasd" data-tip="${esc(c.dis)}">`;
+    return n + esc(c.name) + `<span class="dis">${esc(S.dis === 'brackets' ? '(' + c.dis + ')' : c.dis)}</span>` + (c.id ? '</a>' : '</span>');
+};
+// each person once, their roles beside them
+function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
+function crGroup(tag, type, ent, cr, extra = '') {
+    const head = `<h4><span class="tag">${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    const rows = !cr.length ? '<div class="none">None yet</div>'
+        : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
+        : byRole(cr).map(([role, cs]) => `<dt>${esc(role)}</dt><dd${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? ' class="stk"' : ''}>${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? cs.map(c => `<div>${crName(c)}</div>`).join('') : andList(cs.map(crName))}</dd>`).join('');
+    return `<dl class="grp${S.byName ? ' bn' : ''}">${head}${rows}${extra}</dl>`;
+}
+const IC_ROLE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h5.5l6.5 6.5-5 5-7-6.5z"/><circle cx="5.3" cy="5.8" r="1"/></svg>';
+const IC_NAME = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 14c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5"/></svg>';
+// the disambiguation modes, for the credits' menu
+const DIS = [
+    ['below', 'Below name', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2.5 5h11"/><path d="M4.5 9.5h7M5.5 12.5h5" stroke-width="1.2" opacity=".7"/></svg>'],
+    ['brackets', 'In brackets', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 2.5c-2 2.5-2 8.5 0 11M11 2.5c2 2.5 2 8.5 0 11M7 8h2"/></svg>'],
+    ['tip', 'Tooltip', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3h11v7h-6l-3 3v-3h-2z"/></svg>'],
+];
+// the disambiguation menu: its button (class cls) and the choices
+const byNameB = cls => `<button class="${cls}" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name" data-tip="${S.byName ? 'Grouped by name\nClick to group by role' : 'Grouped by role\nClick to group by name'}">${S.byName ? IC_NAME : IC_ROLE}</button>`;
+function disMenu(cls) {
+    const cur = DIS.find(x => x[0] === S.dis) || DIS[0];
+    return `<div class="dwrap"><button class="${cls}" type="button" data-dismenu aria-haspopup="menu" aria-label="Disambiguation: ${cur[1]}" data-tip="Disambiguation: ${cur[1]}\nClick to choose how it shows">${cur[2]}</button>`
+        + `<div class="dmenu" role="menu"><div class="dmh">Disambiguation</div>${DIS.map(([k, n, ic]) => `<button type="button" role="menuitemradio" data-dism="${k}" aria-checked="${k === S.dis}">${ic}${n}</button>`).join('')}</div></div>`;
+}
+function detail(t) {
+    const ps = sortP(t.links).filter(p => primaryKind(p) !== 'info');
+    const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
+    const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
+    const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
+    const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? (S.byName ? `<dt>${esc(t.work.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(t.work.iswcs.join(', '))}</dd>`) : '';
+    const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
+    const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
+    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.join('')}${listen}</div></div>`;
+}
+const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : S.byName ? `<dt>${esc(w.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(w.iswcs.join(', '))}</dd>`;
+function tracklist(r) {
+    const multi = r.media.length > 1;
+    const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi })));
+    const unionMap = new Map(); for (const t of tracks) for (const p of t.links) if (!unionMap.has(p.key)) unionMap.set(p.key, p);
+    // a column for each provider you picked that any track here has
+    const ctx = { slots: S.prov.filter(k => unionMap.has(k)).sort((a, b) => rank({ key: a }) - rank({ key: b })) };
+    const withIsrc = tracks.filter(t => t.isrcs.length).length, credits = tracks.reduce((s, t) => s + t.credits, 0);
+    const cls = Object.entries(S.cols).filter(([, v]) => !v).map(([k]) => 'hide-' + k).join(' ');
+    const row = t => {
+        const sub = [t.feat.length ? 'with ' + t.feat.join(', ') : '', t.credits ? t.credits + ' credits' : ''].filter(Boolean).join(' · ');
+        return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
+            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
+            <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : isrcHtml(t.isrcs[0]) + `<span class="plus">+${t.isrcs.length - 1} more</span>`) : '<span style="color:var(--muted);font-size:13px">no ISRC</span>'}</span>
+            <span class="lk">${trackLinks(t, ctx)}</span>
+            <span class="ln mono">${esc(t.len)}</span></div>${S.open.has(t.key) ? detail(t) : ''}`;
+    };
+    let rows = '';
+    r.media.forEach((m, mi) => {
+        const shut = S.discFold.includes(mi), ts = tracks.filter(t => t.mi === mi);
+        rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
+        if (!shut) rows += ts.map(row).join('');
+    });
+    const toggles = [['isrc', 'ISRCs'], ['links', 'Platforms'], ['credits', 'Credits'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k]}">${n}</button>`).join('');
+    rowKeys = tracks.map(t => t.key);
+    const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
+    // open: arrows apart (expand); all open: arrows together (collapse)
+    const rowsB = `<button class="ib" type="button" data-rows="${allOpen ? 0 : 1}" aria-label="${allOpen ? 'Close all tracks' : 'Open all tracks'}" data-tip="${allOpen ? 'Close all tracks' : 'Open all tracks\nShows every track\'s credits'}">${SVG(allOpen ? '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>' : '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>')}</button>`;
+    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}<span class="ed-div"></span>${rowsB}`;
+    const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
+    const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
+        <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
+    return sect('tl', 'Tracklist', tools, body, `<div class="folded-note">${tracks.length} tracks · ${total(tracks)}</div>`);
+}
+
+/* ── release credits ───────────────────────────────── */
+// "1–3, 8": runs of consecutive tracks folded into ranges
+function ranges(idx, all) {
+    const out = []; let a = null, b = null;
+    for (const i of idx.sort((x, y) => x - y)) { if (b !== null && i === b + 1) b = i; else { if (a !== null) out.push([a, b]); a = b = i; } }
+    if (a !== null) out.push([a, b]);
+    return out.map(([x, y]) => x === y ? all[x] : all[x] + '–' + all[y]).join(', ');
+}
+function creditsCard(r) {
+    const multi = r.media.length > 1;
+    const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, pos: multi ? `${mi + 1}.${t.n}` : t.n })));
+    const pos = tracks.map(t => t.pos);
+    const m = new Map();
+    tracks.forEach((t, i) => { for (const c of [...t.cr, ...t.wcr]) { const k = c.role + '\u0000' + c.name; const e = m.get(k) || { role: c.role, name: c.name, id: c.id, dis: c.dis, idx: [] }; if (!e.idx.includes(i)) e.idx.push(i); m.set(k, e); } });
+    const byR = new Map(); for (const e of m.values()) { const l = byR.get(e.role) || []; l.push(e); byR.set(e.role, l); }
+    const trk = e => e.idx.length === tracks.length ? '' : `<span class="trk">${ranges(e.idx, pos)}</span>`;
+    const byN = new Map(); for (const e of m.values()) { const l = byN.get(e.name) || []; l.push(e); byN.set(e.name, l); }
+    const trackLinesN = [...byN].sort((a, b) => a[0].localeCompare(b[0])).map(([, es]) => `<div class="cline"><span class="who">${crName(es[0])}</span><span>${es.map(e => `<span class="role">${esc(e.role)}</span>${trk(e)}`).join(', ')}</span></div>`).join('');
+    const relLinesN = byPerson(r.credits).map(e => `<div class="cline"><span class="who">${crName(e.c)}</span><span class="role">${esc(e.roles.join(', '))}</span></div>`).join('');
+    const trackLinesR = [...byR].sort((a, b) => a[0].localeCompare(b[0])).map(([role, es]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="ents">${es.map(e => `<span class="ent"><span class="who">${crName(e)}</span>${trk(e)}</span>`).join('<span class="sep">, </span>')}</span></div>`).join('');
+    const relLinesR = byRole(r.credits).map(([role, cs]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${andList(cs.map(crName))}</span></div>`).join('');
+    const relLines = S.byName ? relLinesN : relLinesR, trackLines = S.byName ? trackLinesN : trackLinesR;
+    const n = r.credits.length + m.size;
+    if (!n) return '';
+    const body = `<div class="card dm-${S.dis}"><div class="cols">
+        ${relLines ? `<div class="grp"><div class="label">On the release</div>${relLines}</div>` : ''}
+        ${S.crTracks ? `<div class="grp"><div class="label">On the tracks · numbers say which, none means all</div>${trackLines || '<div class="folded-note">None yet</div>'}</div>` : ''}
+    </div></div>`;
+    return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${byNameB('ib')}${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
+}
+
+/* ── artwork ───────────────────────────────────────── */
+function artwork(r) {
+    if (!r.images.length) return '';
+    const body = `<div class="artgrid">${r.images.map(i => `<figure><a href="${esc(i.image)}" target="_blank" rel="noopener"><img src="${esc(thumbOf(i))}" alt="" loading="lazy"></a><figcaption>${esc([i.types.join(', '), i.comment].filter(Boolean).join(' · ') || 'Untyped')}</figcaption></figure>`).join('')}</div>`;
+    const n = `${r.images.length} image${r.images.length === 1 ? '' : 's'}`;
+    return sect('art', 'Artwork', `<span class="aside">${n}</span>`, body, `<div class="folded-note">${n}</div>`);
+}
+
+/* ── page ──────────────────────────────────────────── */
+let data = null;
+function render(keepPop) {
+    const app = $('#app');
+    document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
+    if (!data) return;
+    const { rel: r } = data;
+    // the menu is drawn anew: it keeps where it was scrolled to
+    const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
+    document.title = r.title + ' · Event Horizon';
+    app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + artwork(r);
+    // The action buttons stay on the kicker's row: when their names don't fit, only the icons show.
+    const kick = app.querySelector('.kicker');
+    if (kick) {
+        const fit = () => { kick.classList.remove('ico'); if (kick.scrollWidth > kick.clientWidth + 1) kick.classList.add('ico'); };
+        fit();
+        if (window.ResizeObserver) new window.ResizeObserver(fit).observe(kick.parentElement || kick);
+    }
+    if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
+    fitQuiet();
+    save();
+}
+// the release links stay on one row; what doesn't fit goes behind +N
+function fitQuiet() {
+    const box = $('.rl-one'); if (!box) return;
+    const more = box.querySelector('.popwrap'), ic = [...box.querySelectorAll('a.qi')], gs = [...box.querySelectorAll('.kg')];
+    ic.forEach(x => { x.hidden = false; }); gs.forEach(g => { g.hidden = false; }); more.hidden = true;
+    const left = box.getBoundingClientRect().left, avail = box.getBoundingClientRect().width;
+    let shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail);
+    if (shown >= 0) {
+        shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail - 48);
+        ic.slice(shown).forEach(x => { x.hidden = true; });
+        gs.forEach(g => { g.hidden = !g.querySelector('a.qi:not([hidden])'); });
+        more.hidden = false; more.querySelector('button').textContent = '+' + (ic.length - shown);
+    } else shown = ic.length;
+    more.querySelectorAll('.row').forEach(x => { x.hidden = +x.dataset.i < shown; });
+}
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1600); }
+let rowKeys = [];
+function onClick(ev) {
+    if (!ehOn) return;
+    const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
+    const navId = nav && !nav.target && navTo(nav.href);
+    if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
+    // a click anywhere on a section's header row, outside its tools, folds the section
+    const hd = ev.target.closest('.secthead');
+    const b = ev.target.closest('button,[data-pop]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
+    const openPop = $('.pop:not([hidden])');
+    if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
+    const tr = ev.target.closest('.tr');
+    if (tr && !ev.target.closest('a,button,.pop')) { const k = tr.dataset.row; S.open.has(k) ? S.open.delete(k) : S.open.add(k); const y = scrollY; render(); scrollTo(0, y); return; }
+    if (!b) return;
+    const d = b.dataset;
+    let keep;
+    if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); return; }
+    if (d.copy) {
+        const label = b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, '');
+        try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
+        return;
+    }
+    if (d.col) S.cols[d.col] = !S.cols[d.col];
+    else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
+    else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
+    else if (d.fold) S.fold = toggle(S.fold, d.fold);
+    else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
+    else if (d.edview) S.edView = d.edview;
+    else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
+    else if ('edkind' in d) S.ed.kinds = new Set(d.edkind ? [d.edkind] : []);
+    else if ('crtracks' in d) S.crTracks = !S.crTracks;
+    else if ('byname' in d) { S.byName = !S.byName; save(); }
+    else if ('dismenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
+    else if (d.dism) { S.dis = d.dism; save(); }
+    else if ('edoff' in d) S.ed.official = !S.ed.official;
+    else return;
+    const y = scrollY; render(keep); scrollTo(0, y);
+}
+
+// a release page's URL on this site → its MBID; not its subpages (/edit, /cover-art, …)
+const RELEASE = new RegExp('^/release/(' + MBID.source + ')/?$', 'i');
+function navTo(href) {
+    const u = new URL(href, location.href);
+    const m = u.origin === location.origin && u.pathname.match(RELEASE);
+    return m ? m[1].toLowerCase() : null;
+}
+const PAGE_ID = navTo(location.href);
+
+/* ── EH / native ───────────────────────────────────── */
+
+let mbBody = null, mbTitle = '', ehBody = null, ehOn = false;
+const HIDE = 'body{visibility:hidden!important}';
+// MusicBrainz's own stylesheets go off while the viewer shows, and back on with its page
+const mbSheets = on => { for (const n of document.querySelectorAll('link[rel~="stylesheet"],style')) if (!/^(eh-|mbu)/.test(n.id)) n.disabled = !on; };
+function build() {
+    const head = document.head || document.documentElement;
+    head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}</style>`);
+    ehBody = document.createElement('body');
+    ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
+    document.addEventListener('click', onClick);
+    // a click outside the disambiguation menu, or Escape, closes it
+    const dmClose = () => document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open'));
+    document.addEventListener('click', ev => { if (!ev.target.closest || !ev.target.closest('.dwrap')) dmClose(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') dmClose(); });
+    document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
+    addEventListener('resize', () => { if (ehOn) fitQuiet(); });
+    // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
+    addEventListener('popstate', () => { if (!ehOn) location.reload(); else show(navTo(location.href)); });
+}
+function setOn(on) {
+    // navigated inside EH: reload for MusicBrainz's page of this release, and stay off there
+    if (!on && navTo(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
+    const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
+    if (first) build();
+    ehOn = on;
+    document.body.replaceWith(on ? ehBody : mbBody);
+    if (first) show(PAGE_ID);
+    if (on) document.documentElement.setAttribute('data-eh-theme', theme);
+    else document.documentElement.removeAttribute('data-eh-theme');
+    mbSheets(!on);
+    if (ehBody) for (const id of ['eh-css', 'eh-font']) document.getElementById(id).disabled = !on;
+    document.title = on ? (data ? data.rel.title + ' · Event Horizon' : 'Event Horizon') : mbTitle;
+    const h = document.getElementById('eh-hide'); if (h) h.remove();
+    const l = document.getElementById('eh-launch');
+    if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
+}
+// the settings window: the shared overlay and header
+const CI = {
+    released: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+    labels: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    barcode: '<path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14"/>',
+    length: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    mbid: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
+    asin: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/>',
+    packaging: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+    lang: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    quality: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+    links: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+    thumbs: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
+    rating: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
+    tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+};
+const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}#eh-cfg .mbu-cfg-h{cursor:move;user-select:none}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
+    + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
+    + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
+    + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .pane{height:230px;overflow-y:auto;padding-top:2px}'
+    + '.eh-cfg .cr{display:grid;grid-template-columns:108px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
+    + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .none{padding-top:5px;color:var(--mbu-text-weak);font-style:italic}.eh-cfg .sw{margin-top:3px}'
+    + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
+    + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
+    + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px}'
+    + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
+    + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
+    + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
+    + '.eh-cfg .chip.p{padding-left:3px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:16px;height:16px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}.eh-cfg .chip[draggable=true]{cursor:grab}.eh-cfg .chip.drag{opacity:.4}.eh-cfg .chip.over{box-shadow:-3px 0 0 var(--mbu-accent)}'
+    + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
+    + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
+// the settings' order: plOrder first (seeded by the picks), then the usual order
+function plSorted(ps) {
+    const o = [...S.plOrder, ...S.prov.filter(k => !S.plOrder.includes(k))];
+    const at = p => { const i = o.indexOf(p.key); return i < 0 ? 1e3 + ps.indexOf(p) : i; };
+    return [...ps].sort((a, b) => at(a) - at(b));
+}
+// prov in the settings' order
+const plFollow = () => { const o = plSorted(cfgProviders()).map(p => p.key); S.prov = [...S.prov].sort((a, b) => (o.indexOf(a) + 1 || 1e3) - (o.indexOf(b) + 1 || 1e3)); };
+// providers to offer: this release's, else those picked and the usual ones; with cfgAll every known one
+let cfgAll = false;
+function cfgProviders() {
+    const um = new Map();
+    if (data) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
+    if (!data || cfgAll) for (const k of [...S.prov, ...ORDER, ...(cfgAll ? HOSTS.map(h => h[0]) : [])]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
+    return sortP([...um.values()]);
+}
+function cfgBody() {
+    const chip = (g, k, on, label, tip) => `<button type="button" class="chip" data-g="${g}" data-k="${k}" aria-pressed="${on}"${tip ? ` data-tip="${esc(tip)}"` : ''}>${CI[k] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${CI[k]}</svg>` : ''}${label}</button>`;
+    const row = (label, html, tip) => `<div class="cr"><div class="cl">${label}</div><div class="chips"${tip ? ` data-tip="${esc(tip)}"` : ''}>${html}</div></div>`;
+    const ps = cfgProviders();
+    // count and number only the picks this release has; the rest stay saved for other releases
+    const all = plSorted(ps), shown = all.map(p => p.key).filter(k => S.prov.includes(k));
+    const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
+    const tabs = [['release', 'Release'], ['platforms', `Platforms <span class="n">${shown.length}</span>`], ['general', 'General']];
+    const panes = {
+        release: row('Info', FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join(''))
+            + row('Under the cover', chip('thumbs', 'thumbs', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')),
+        platforms: row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
+            + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
+            + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
+        general: `<div class="cr"><div class="cl">Start on load</div><div><button type="button" class="sw" role="switch" data-g="on" aria-checked="${S.on}" aria-label="Start on load" data-tip="On: a release page opens in Event Horizon\nOff: MusicBrainz's page; the launcher switches"></button></div></div>`
+            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
+    };
+    return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
+}
+let cfgTab = 'release';
+function openCfg() {
+    if (document.getElementById('eh-cfg')) return;
+    const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
+    ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO, log: true })}<div class="eh-cfg-b">${cfgBody()}</div></div><div class="foot"><span>Applies at once</span><button type="button" class="reset">Reset to defaults</button></div></div>`;
+    document.documentElement.append(ov);
+    const panel = ov.firstChild, b = panel.querySelector('.eh-cfg-b');
+    mbuDismissOn(panel, () => ov.remove());
+    // drag by the header; the page behind stays usable
+    panel.querySelector('.mbu-cfg-h').addEventListener('pointerdown', e => {
+        if (e.button || e.target.closest('button,a,input,select')) return;
+        const r = panel.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+        Object.assign(panel.style, { position: 'fixed', margin: 0, left: r.left + 'px', top: r.top + 'px' });
+        const move = ev => {
+            panel.style.left = Math.max(0, Math.min(innerWidth - r.width, ev.clientX - dx)) + 'px';
+            panel.style.top = Math.max(0, Math.min(innerHeight - 40, ev.clientY - dy)) + 'px';
+        };
+        const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+        addEventListener('pointermove', move); addEventListener('pointerup', up);
+        e.preventDefault();
+    });
+    panel.querySelector('.mbu-cfg-log').onclick = () => { ov.remove(); LOG.open(); };
+    // drag a shown platform onto another to put it before that one
+    let dragK = null;
+    const overOf = ev => { const t = ev.target.closest && ev.target.closest('.chip[draggable=true]'); return t && t.dataset.k !== dragK ? t : null; };
+    const clearOver = () => b.querySelectorAll('.chip.over').forEach(x => x.classList.remove('over'));
+    panel.addEventListener('dragstart', ev => { const t = ev.target.closest && ev.target.closest('.chip[draggable=true]'); if (!t) return; dragK = t.dataset.k; t.classList.add('drag'); ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', dragK); });
+    panel.addEventListener('dragover', ev => { if (!dragK) return; const t = overOf(ev); clearOver(); if (t) { ev.preventDefault(); t.classList.add('over'); } });
+    panel.addEventListener('dragend', () => { dragK = null; clearOver(); b.querySelectorAll('.chip.drag').forEach(x => x.classList.remove('drag')); });
+    panel.addEventListener('drop', ev => {
+        const t = overOf(ev); if (!dragK || !t) return; ev.preventDefault();
+        const vis = plSorted(cfgProviders()).map(p => p.key).filter(k => k !== dragK); vis.splice(vis.indexOf(t.dataset.k), 0, dragK);
+        S.plOrder = [...vis, ...S.plOrder.filter(k => !vis.includes(k))]; plFollow(); dragK = null;
+        save(); b.innerHTML = cfgBody();
+        if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
+    });
+    panel.addEventListener('click', ev => {
+        const tb = ev.target.closest('[data-tab]');
+        if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = cfgBody(); return; }
+        if (ev.target.closest('.reset')) { Object.assign(S, JSON.parse(DEFAULTS)); }
+        else {
+            const t = ev.target.closest('[data-g]'); if (!t) return;
+            const { g, k } = t.dataset;
+            if (g === 'all') { cfgAll = !cfgAll; b.innerHTML = cfgBody(); return; }
+            else if (g === 'on') S.on = !S.on;
+            else if (g === 'fact') S.facts = toggle(S.facts, k);
+            else if (g === 'thumbs') S.thumbs = !S.thumbs;
+            else if (g === 'extra') S.extras = toggle(S.extras, k);
+            else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
+            else if (g === 'plNames' || g === 'plHover') S[g] = !S[g];
+            else if (g === 'plSize') S.plSize = +k;
+            else if (g === 'width') S.width = +k;
+        }
+        save();
+        b.innerHTML = cfgBody();
+        if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
+    });
+}
+const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
+function launcher() {
+    const st = document.createElement('style'); st.id = 'eh-launch-css';
+    st.textContent = '#eh-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+        + '#eh-launch:hover{opacity:1;transform:scale(1.08)}#eh-launch svg{width:34px;height:34px;display:block;pointer-events:none}';
+    const btn = document.createElement('button');
+    btn.id = 'eh-launch'; btn.type = 'button'; btn.setAttribute('aria-label', 'Event Horizon');
+    btn.innerHTML = LOGO;
+    btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '50';
+    btn.onclick = () => setOn(!ehOn);
+    btn.oncontextmenu = ev => {
+        ev.preventDefault();
+        if (document.getElementById('eh-cfg')) closeCfg(); else openCfg();
+    };
+    // outside both bodies, so it stays through every swap
+    const mbu = document.createElement('style'); mbu.id = 'eh-mbu'; mbu.textContent = MBU_TOKENS + MBU_UI_CSS + CFG_CSS;
+    document.documentElement.append(st, mbu, btn);
+    try { mbuThemeStart(); } catch (e) {}
+    mbRestackCorner('br');
+}
+let LOG;
+function start() {
+    LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin' });
+    mbBody = document.body; mbTitle = document.title;
+    launcher();
+    let off = false; try { off = !!sessionStorage.getItem('eh-off'); sessionStorage.removeItem('eh-off'); } catch (e) {}
+    setOn(S.on && !off);
+}
+let showing = 0;
+// the page's shape while it loads, so nothing jumps when the data lands
+function skeleton() {
+    const sk = (cls, st = '') => `<span class="sk ${cls}"${st ? ` style="${st}"` : ''}></span>`;
+    const fact = `<div class="sk-f">${sk('l')}${sk('v')}</div>`;
+    return `<div class="sk-page" aria-busy="true"><div class="hero"><div class="art"><div class="sk sk-cover">${LOGO.replace('<svg', '<svg class="sk-orbit"')}</div><div class="sk-thumbs">${sk('t').repeat(3)}</div></div>
+        <div class="info">${sk('k')}${sk('ti')}${sk('by')}<div class="sk-facts">${fact.repeat(5)}</div>
+        <div class="sk-st" role="status"><span class="sk-dot"></span><span><b>release</b> · <b>editions</b> · <b>covers</b></span></div></div></div>
+        <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
+        <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
+}
+async function show(id) {
+    const app = $('#app'), n = ++showing;
+    if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
+    app.innerHTML = skeleton();
+    scrollTo(0, 0);
+    const st = app.querySelector('.sk-st span:last-child');
+    // each part is bold while it loads and ticked when done
+    const done = new Set();
+    const step = k => { done.add(k); if (n === showing && st) st.innerHTML = ['release', 'editions', 'covers'].map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
+    LOG.info('Loading release ' + id);
+    const t0 = Date.now();
+    try { const d = await load(id, step); if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); } }
+    catch (e) {
+        LOG.err('Loading ' + id + ' failed: ' + e.message);
+        if (n !== showing) return;
+        const box = app.querySelector('.sk-st');
+        box.className = 'sk-st err';
+        box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${id === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;
+        box.querySelector('[data-retry]').onclick = () => show(id);
+        const mb = box.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => setOn(false);
+    }
+}
+if (PAGE_ID) {
+    // hide MusicBrainz's page before it paints; the style goes once the viewer or the page itself is shown
+    if (S.on) {
+        const hide = () => { const h = document.documentElement; if (!h) return false; const st = document.createElement('style'); st.id = 'eh-hide'; st.textContent = HIDE; h.appendChild(st); return true; };
+        if (!hide()) { const mo = new MutationObserver(() => { if (hide()) mo.disconnect(); }); mo.observe(document, { childList: true }); }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+}
+})();
+})(); } catch (e) { try { console.error('[String Theory] event_horizon failed while starting — the other scripts carry on:', e); } catch (x) {} } });
 })(typeof GM_info !== 'undefined' ? GM_info : undefined);
 
 // ===== falcon (@run-at document-end) ============================================

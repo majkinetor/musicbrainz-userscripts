@@ -19,6 +19,7 @@
 apollo_editor
 art_station
 credit_hoarder
+event_horizon            # off until turned on in the menu (DEFAULT_OFF in build.mjs)
 falcon
 first_contact
 fusion

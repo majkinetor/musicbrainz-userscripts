@@ -148,6 +148,10 @@ const startupLog = `try {\n  console.log('%c String Theory %c v${version} ', 'ba
 // once here; an off member's body doesn't run, so its standalone copy (if installed) can claim the page.
 // The menu goes only in the top frame, or a manager lists it again for every iframe.
 const OFF_KEY = 'string_theory.off';
+// Members that start off until turned on in the menu (new, still settling). Their "on" is kept apart,
+// in ON_KEY, so an off list a user already has doesn't switch them on.
+const DEFAULT_OFF = ['event_horizon'].filter(n => MEMBERS.includes(n));
+const ON_KEY = 'string_theory.on';
 // The corner launchers' layout: a column (the default) or a row along the page's edge, on the right
 // (the default) or the left. They're shared settings (mbuShared 'cornerFlow' and 'cornerSide': the page's
 // localStorage, which every script's mbRestackCorner reads, standalone copies too); each menu entry flips
@@ -156,7 +160,9 @@ const SHARED = (UI_JS.match(/function mbuShared\(key, value\) \{[\s\S]*?\n\}\n/)
 if (!SHARED) throw new Error('mbuShared not found in dev/ui/ui-components.mjs');
 const RESTACK = (UI_JS.match(/function mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!RESTACK) throw new Error('mbRestackCorner not found in dev/ui/ui-components.mjs');
-const toggles = `function __stReadOff() { try { var v = GM_getValue(${JSON.stringify(OFF_KEY)}, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+const toggles = `var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
+function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+function __stReadOff() { var on = __stList(${JSON.stringify(ON_KEY)}); return __stList(${JSON.stringify(OFF_KEY)}).concat(__stDefOff.filter(function (n) { return on.indexOf(n) < 0; })); }
 var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
@@ -173,7 +179,7 @@ var __stOff = __stReadOff();
     ids[id] = got;
   }
   function draw() {
-    var off = GM_getValue(${JSON.stringify(OFF_KEY)}, []);
+    var off = __stReadOff();
     members.forEach(function (m) {
       var on = off.indexOf(m[0]) < 0;
       put('st-' + m[0], (on ? '☑ ' : '☐ ') + m[1] + ' v' + m[2], function () { flip(m[0]); },
@@ -199,11 +205,11 @@ var __stOff = __stReadOff();
     draw();
   }
   function flip(key) {
-    var off = GM_getValue(${JSON.stringify(OFF_KEY)}, []);
-    if (!Array.isArray(off)) off = [];
-    var i = off.indexOf(key);
-    if (i < 0) off.push(key); else off.splice(i, 1);
-    GM_setValue(${JSON.stringify(OFF_KEY)}, off);
+    var k = __stDefOff.indexOf(key) < 0 ? ${JSON.stringify(OFF_KEY)} : ${JSON.stringify(ON_KEY)};
+    var list = __stList(k);
+    var i = list.indexOf(key);
+    if (i < 0) list.push(key); else list.splice(i, 1);
+    GM_setValue(k, list);
     draw();
   }
   try { draw(); } catch (e) { try { console.error('[String Theory] menu failed:', e); } catch (x) {} }
