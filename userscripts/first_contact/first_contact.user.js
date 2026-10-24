@@ -144,6 +144,16 @@ function saveSettings(s) { GM_setValue('fc.settings', s); }
 
 /* ── network ─────────────────────────────────────────────────────────────── */
 
+// #828: what the manager knows about a failed request (status, its error text, where a redirect led), for the message
+function gmFailDetail(url, r) {
+    if (!r) return '';
+    const bits = [];
+    if (r.status) bits.push(`HTTP ${r.status}${r.statusText ? ' ' + r.statusText : ''}`);
+    if (r.error) bits.push(String(r.error));
+    if (r.finalUrl && r.finalUrl !== url) bits.push(`redirected to ${r.finalUrl}`);
+    return bits.length ? ': ' + bits.join(' · ') : '';
+}
+
 // A GET through the manager (no CORS): the response text, or throws. `headers` add to the request;
 // an error carries the HTTP status (`e.status`) for a caller that retries on one.
 // `cookies`: send the browser's cookies for that site (a Cloudflare clearance), which an anonymous request lacks.
@@ -154,11 +164,11 @@ function gmText(url, headers, cookies) {
             method: 'GET', url, headers: Object.assign({ Accept: 'application/json' }, headers || {}), timeout: 20000, anonymous: !cookies,
             onload: r => {
                 Log.debug(`GET ${url} → ${r.status}, ${(r.responseText || '').length} b in ${Date.now() - t0} ms`);
-                if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status} for ${url}`), { status: r.status }));
+                if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status}${r.statusText ? ' ' + r.statusText : ''} for ${url}${r.finalUrl && r.finalUrl !== url ? ` (redirected to ${r.finalUrl})` : ''}`), { status: r.status }));
                 resolve(r.responseText || '');
             },
-            onerror: () => reject(new Error(`network error for ${url}`)),
-            ontimeout: () => reject(new Error(`timeout for ${url}`)),
+            onerror: r => { Log.debug(`${url} failed: ${JSON.stringify({ status: r && r.status, statusText: r && r.statusText, error: r && r.error, finalUrl: r && r.finalUrl })}`); reject(new Error(`network error for ${url}${gmFailDetail(url, r)}`)); },
+            ontimeout: () => reject(new Error(`timeout for ${url} (no answer in 20 s)`)),
         });
     });
 }
@@ -179,8 +189,8 @@ function gmPostJson(url, body, headers) {
                 if (r.status < 200 || r.status >= 300) return reject(Object.assign(new Error(`HTTP ${r.status} for ${url}${j && j.error ? ': ' + j.error : ''}`), { status: r.status }));
                 resolve(j);
             },
-            onerror: () => reject(new Error(`network error for ${url}`)),
-            ontimeout: () => reject(new Error(`timeout for ${url}`)),
+            onerror: r => { Log.debug(`${url} failed: ${JSON.stringify({ status: r && r.status, statusText: r && r.statusText, error: r && r.error, finalUrl: r && r.finalUrl })}`); reject(new Error(`network error for ${url}${gmFailDetail(url, r)}`)); },
+            ontimeout: () => reject(new Error(`timeout for ${url} (no answer in 20 s)`)),
         });
     });
 }
