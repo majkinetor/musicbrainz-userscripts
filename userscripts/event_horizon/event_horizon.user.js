@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.090000
+// @version      2026.10.25.100000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1932,6 +1932,11 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .acts{margin-left:auto;display:flex;gap:2px;align-items:center}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 7px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.kicker .srch{display:inline-flex;align-items:center;gap:4px;margin:0}
+.kicker .srch .sf{display:none;gap:4px}
+.kicker .srch.open .sf{display:inline-flex}
+.kicker .srch input,.kicker .srch select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);padding:0 8px;font:inherit;font-size:13px;letter-spacing:0;text-transform:none}
+.kicker .srch input{width:180px}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text)!important;text-decoration:none}
@@ -2407,6 +2412,9 @@ const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" t
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
 const CI_TAG = '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>';
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+// MusicBrainz search, sent as MB's own search form; its field and type unroll beside the button on click
+const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
+const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf"><input name="query" placeholder="Search" required><select name="type">${SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('')}</select><input type="hidden" name="method" value="indexed"></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz">${SVG('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>')}<span class="abt">Search</span></button></form>`;
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
     ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
@@ -2485,7 +2493,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
             <h1>${esc(r.title)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
@@ -2741,7 +2749,7 @@ function rgHero(d) {
             ${under(g)}${tags ? `<div class="under">${tags}</div>` : ''}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${LAYERS(18)}<span>${esc(g.types.join(' · ') || 'Release group')}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}</span></div>
+            <div class="kicker label">${LAYERS(18)}<span>${esc(g.types.join(' · ') || 'Release group')}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
             <h1>${esc(g.title)}</h1>
             ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(g.ac)}</div>
@@ -2832,6 +2840,7 @@ function onClick(ev) {
     if (!b) return;
     const d = b.dataset;
     let keep;
+    if ('srch' in d) { const fm = b.form, o = fm.classList.toggle('open'); if (o) fm.query.focus(); else if (fm.query.value.trim()) fm.submit(); return; }
     if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); return; }
     if (d.copy) {
         const label = b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, '');
