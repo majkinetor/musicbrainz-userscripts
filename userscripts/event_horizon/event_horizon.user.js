@@ -2559,8 +2559,8 @@ const cfgOff = ev => { const w = document.getElementById('eh-cfg'); if (w && !w.
 function closeCfg() { const w = document.getElementById('eh-cfg'); if (w) w.remove(); document.removeEventListener('mousedown', cfgOff); }
 function launcher() {
     const st = document.createElement('style'); st.id = 'eh-launch-css';
-    st.textContent = '#eh-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:3px;background:#17141c;box-shadow:0 2px 8px rgba(0,0,0,.35);cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
-        + '#eh-launch:hover{opacity:1;transform:scale(1.08)}#eh-launch.on{box-shadow:0 0 0 2px #ffc94a,0 2px 8px rgba(0,0,0,.35)}#eh-launch svg{width:34px;height:34px;display:block;pointer-events:none}';
+    st.textContent = '#eh-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+        + '#eh-launch:hover{opacity:1;transform:scale(1.08)}#eh-launch svg{width:34px;height:34px;display:block;pointer-events:none}';
     const btn = document.createElement('button');
     btn.id = 'eh-launch'; btn.type = 'button'; btn.setAttribute('aria-label', 'Event Horizon');
     btn.innerHTML = LOGO;
