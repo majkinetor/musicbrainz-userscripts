@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.29
+// @version      2026.10.24.30
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1880,8 +1880,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg{font-size:16px;color:var(--soft)}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
-.secthead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
-.secthead .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
 .fold .cv{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;border:1px solid var(--border);color:var(--soft);flex:none}
@@ -2568,7 +2568,9 @@ function onClick(ev) {
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     const navId = nav && !nav.target && navTo(nav.href);
     if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
-    const b = ev.target.closest('button,[data-pop]');
+    // a click anywhere on a section's header row, outside its tools, folds the section
+    const hd = ev.target.closest('.secthead');
+    const b = ev.target.closest('button,[data-pop]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
     const tr = ev.target.closest('.tr');
