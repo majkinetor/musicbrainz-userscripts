@@ -2228,7 +2228,6 @@ const ACTS = [
     ['edit-relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
     ['add-cover-art', 'Add cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
     ['edits', 'History', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
-    ['', 'Open on MusicBrainz', '<path d="M14 3h7v7"/><path d="M10 14L21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>'],
 ];
 
 /* ── formatting ────────────────────────────────────── */
@@ -2304,7 +2303,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : ''}"${p ? '' : ' data-native'} aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : ''}" aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}</span></div>
             <h1>${esc(r.title)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
@@ -2474,7 +2473,6 @@ let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1600); }
 function onClick(ev) {
     if (!ehOn) return;
-    if (ev.target.closest('[data-native]') && !ev.ctrlKey && !ev.metaKey && ev.button === 0) { ev.preventDefault(); setOn(false); return; }
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     const navId = nav && !nav.target && navTo(nav.href);
     if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
