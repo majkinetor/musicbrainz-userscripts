@@ -303,11 +303,11 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
 .lab .cp.mono{font-size:13px;color:var(--muted)}
 
 .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--chip);color:var(--chip-text);font:800 9px Manrope,system-ui,sans-serif;letter-spacing:-.02em;text-transform:uppercase}
-.quiet a.qi{filter:grayscale(1);opacity:.7}
-.quiet a.qi:hover{filter:none;opacity:1}
+.quiet a.qi{opacity:.9}
+.quiet a.qi:hover{opacity:1}
 .rl-one{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
 .rl-one .icons{display:flex;flex-wrap:nowrap;gap:0;align-items:flex-end;overflow:hidden;min-width:0;flex:0 1 auto}
-.rl-one a.qi{display:inline-grid;place-items:center;width:28px;height:28px;flex:none}
+.rl-one a.qi{display:inline-grid;place-items:center;width:36px;height:36px;flex:none}
 .rl-one .kg{display:flex;flex-direction:column;gap:4px;flex:none;padding-left:28px}
 .rl-one .kg:first-child{padding-left:0}
 .rl-one .kg .label{font-size:11px}
@@ -682,7 +682,7 @@ function rlQuiet(r) {
     if (!r.links.length) return '—';
     const ps = KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k)));
     const kindOf = p => KINDS.find(([k]) => k === primaryKind(p))[1];
-    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => plA(p, 20, 'qi').replace('<a ', `<a data-i="${i}" `)).join('')}</span></span>` : ''; }).join('');
+    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => plA(p, 28, 'qi').replace('<a ', `<a data-i="${i}" `)).join('')}</span></span>` : ''; }).join('');
     const rows = ps.map((p, i) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r"><span class="iso">${kindOf(p)}</span></span></a>`).join('');
     return `<div class="rl-one quiet"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r" id="pop-rlmore" hidden><div class="h label">More sites</div>${rows}</div></span></div>`;
 }
@@ -725,7 +725,7 @@ function editions(r, eds, count) {
 /* ── tracklist ─────────────────────────────────────── */
 function trackLinks(t, ctx) {
     const ps = sortP(t.links), slotKeys = ctx.slots;
-    const slots = slotKeys.map(k => { const p = ps.find(x => x.key === k); return p ? `<a class="slot" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" title="${esc(tipOf(p))}">${icon(p, 18)}</a>` : '<span class="slot off"></span>'; });
+    const slots = slotKeys.map(k => { const p = ps.find(x => x.key === k); return p ? `<a class="slot" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" title="${esc(tipOf(p))}">${icon(p, 22)}</a>` : '<span class="slot off"></span>'; });
     const rest = ps.filter(p => !slotKeys.includes(p.key));
     const more = rest.length
         ? `<span class="popwrap"><button class="more" type="button" data-pop="tk-${t.key}" aria-expanded="false" aria-label="${rest.length} more sites">+${rest.length}</button><div class="pop r" id="pop-tk-${t.key}" hidden><div class="h label">Also on</div>${popRows(rest)}</div></span>`
@@ -735,7 +735,7 @@ function trackLinks(t, ctx) {
 const crList = cr => cr.length ? `<dl class="crl">${byRole(cr).map(([role, cs]) => `<dt>${esc(role)}</dt><dd>${andList(cs.map(artistA))}</dd>`).join('')}</dl>` : '<div class="none">None yet</div>';
 function detail(t) {
     const ps = sortP(t.links);
-    const block = (k, name) => { const xs = ps.filter(p => p.kinds.includes(k)); return xs.length ? `<div><div class="label" style="margin-top:14px">${name}</div><div class="plrow">${xs.map(p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 18)}${esc(p.name)}${p.urls.length > 1 ? ` <span class="count">${p.urls.length}</span>` : ''}</a>`).join('')}</div></div>` : ''; };
+    const block = (k, name) => { const xs = ps.filter(p => p.kinds.includes(k)); return xs.length ? `<div><div class="label" style="margin-top:14px">${name}</div><div class="plrow">${xs.map(p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}${esc(p.name)}${p.urls.length > 1 ? ` <span class="count">${p.urls.length}</span>` : ''}</a>`).join('')}</div></div>` : ''; };
     return `<div class="detail">
         <div><div class="label">Recording</div>${crList(t.cr)}</div>
         <div><div class="label">Work${t.work ? ` · <a href="${MB}/work/${t.work.id}" style="text-transform:none;letter-spacing:0">${esc(t.work.title)}</a>` : ''}</div>${crList(t.wcr)}
@@ -839,6 +839,9 @@ function fitQuiet() {
 let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1600); }
 function onClick(ev) {
+    const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
+    const navId = nav && !nav.target && navTo(nav.href);
+    if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
     const b = ev.target.closest('button,[data-pop]');
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
@@ -883,22 +886,40 @@ async function start() {
     $('#go').addEventListener('submit', ev => {
         ev.preventDefault();
         const id = (ev.target.q.value.match(MBID) || [])[0];
-        if (id) location.href = relUrl(id.toLowerCase()); else toast('No MBID in that');
+        if (id) { history.pushState(null, '', relUrl(id.toLowerCase())); show(id.toLowerCase()); } else toast('No MBID in that');
     });
     document.addEventListener('click', onClick);
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
     addEventListener('resize', fitQuiet);
-    const id = PAGE_ID && (ON_ROBOTS ? PAGE_ID : [PAGE_ID[1]]);
-    const app = $('#app');
-    if (!id) { app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
+    addEventListener('popstate', () => show(navTo(location.href)));
+    document.documentElement.removeAttribute('style');
+    const id = PAGE_ID && (ON_ROBOTS ? PAGE_ID[0] : PAGE_ID[1]);
+    show(id && id.toLowerCase());
+}
+// a viewer URL on this site → its release MBID
+function navTo(href) {
+    const u = new URL(href, location.href);
+    if (u.origin !== location.origin) return null;
+    const m = u.pathname === '/robots.txt' ? (u.searchParams.get('release') || '').match(MBID)
+        : !ON_ROBOTS && !u.searchParams.has('mb') && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/?$', 'i'));
+    return m ? (m[1] || m[0]).toLowerCase() : null;
+}
+let showing = 0;
+async function show(id) {
+    const app = $('#app'), n = ++showing;
+    if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     app.innerHTML = '<p class="msg">Loading…</p>';
-    try { data = await load(id[0].toLowerCase()); render(); }
-    catch (e) { app.innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
+    scrollTo(0, 0);
+    try { const d = await load(id); if (n === showing) { data = d; render(); } }
+    catch (e) { if (n === showing) app.innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
 }
 // robots.txt is plain text: replaced once parsed, so the parser adds nothing after us
 // MusicBrainz's release page: leaving it at document-start spares loading and running it (its HTML is already asked for)
 if (PAGE_ID && !ON_ROBOTS && S.onMb.leave) location.replace(relRobots(PAGE_ID[1].toLowerCase()) + location.hash);
-else if (ON_ROBOTS || PAGE_ID) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start(); }
+else if (ON_ROBOTS || PAGE_ID) {
+    const hide = () => { const h = document.documentElement; if (!h) return false; h.style.visibility = 'hidden'; h.style.background = '#17141c'; return true; };
+    if (!hide()) { const mo = new MutationObserver(() => { if (hide()) mo.disconnect(); }); mo.observe(document, { childList: true }); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start(); }
 // any other MusicBrainz page: a release link is pointed at the viewer as it is pressed, so MusicBrainz never builds that page
 else if (S.onMb.links) {
     const RELEASE = new RegExp('^/release/(' + MBID.source + ')/?$', 'i');
