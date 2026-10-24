@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.65
+// @version      2026.10.24.66
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2036,7 +2036,9 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tr .ti{flex:1 1 auto;min-width:0}
 .tr .ti a.t{font-weight:700;font-size:16px;color:var(--text)}
 .tr .ti .sub{font-size:13px;color:var(--muted);margin-top:2px}
-.tr .is{flex:none;width:168px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.tr .is .isrow{display:flex;align-items:center;gap:8px}
+.tr .is .pop .isrc{display:block;padding:4px 10px}
+.tr .is{flex:none;width:200px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
 .tr .lk{flex:none;display:flex;gap:6px;align-items:center;justify-content:flex-end}
 .tr .ln{flex:none;width:52px;text-align:right;font-size:14px}
 .isrc{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;padding:4px 0;color:var(--muted);white-space:nowrap;display:inline-block}
@@ -2524,7 +2526,7 @@ function tracklist(r) {
         const sub = [t.feat.length ? 'with ' + t.feat.join(', ') : '', t.credits ? t.credits + ' credits' : ''].filter(Boolean).join(' · ');
         return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
             <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
-            <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : isrcHtml(t.isrcs[0]) + `<span class="plus">+${t.isrcs.length - 1} more</span>`) : '<span style="color:var(--muted);font-size:13px">no ISRC</span>'}</span>
+            <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : '<span style="color:var(--muted);font-size:13px">no ISRC</span>'}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
             <span class="ln mono">${esc(t.len)}</span></div>${S.open.has(t.key) ? detail(t) : ''}`;
     };
