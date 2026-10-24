@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.230200
+// @version      2026.10.25.230300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2110,7 +2110,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .isrc+.plus{font-size:12px;color:var(--muted);margin-left:4px}
 .hide-isrc .is{display:none}
 .hide-links .lk .slots,.hide-links .lk .popwrap{display:none}
-.hide-credits .sub,.hide-mk .mk{display:none}
+.hide-mk .sub,.hide-mk .mk{display:none}
 .hide-len .ln,.hide-len .tot{display:none}
 .slots{display:flex;gap:2px}
 .slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
@@ -2260,7 +2260,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
 const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide'];
 const S = {
-    cols: { mk: true, isrc: true, links: true, credits: true, len: true },
+    cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
@@ -2686,7 +2686,7 @@ function tracklist(r) {
         rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
-    const toggles = [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['credits', 'Credits'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
+    const toggles = [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
     // open: arrows apart (expand); all open: arrows together (collapse)
