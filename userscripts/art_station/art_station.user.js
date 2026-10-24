@@ -3972,7 +3972,8 @@
     const who = (nu._provider && String(nu._provider).trim()) || '', page = (nu._provUrl && String(nu._provUrl).trim()) || '';
     const from = !how && (who || page) ? ` from ${who || 'an external provider'}${page ? ': ' + page : ''}` : '';
     const was = size(old);
-    return `Replaced by ${imgUrl(id)}${size(nu) ? ` (${size(nu)})` : ''}${how}${from}${was ? `\nThis image: ${was}` : ''}`;
+    const edit = nu._editId ? `${location.origin}/edit/${nu._editId}` : (dry ? '‹edit›' : '');
+    return `Replaced by ${imgUrl(id)}${size(nu) ? ` (${size(nu)})` : ''}${how}${from}${edit ? `\nAdded in ${edit}` : ''}${was ? `\nThis image: ${was}` : ''}`;
   };
   // test hook only (#717): the staged sourced covers, with the source lines their edit notes get
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).staged = () => MODEL.filter(x => x._new && !x._sourcing).map(x => ({
@@ -4097,8 +4098,8 @@
     });
     it._signed = signed;
   }
-  // step 2: register on MB. Runs in PARALLEL (#362) — the per-upload `position` only groups the batch, so
-  // the trailing reorder edit is what sets the final order (see buildReorder / runAdds).
+  // step 2: register on MB. Runs beside the other uploads (#362), one POST at a time (#819) — the per-upload `position`
+  // only groups the batch, so the trailing reorder edit is what sets the final order (see buildReorder / runAdds).
   async function registerStep(it, meta, ctl) {
     const form = await addForm();
     const tm = typeMapOf(form, `add-${ART}`);
@@ -4113,6 +4114,15 @@
     p.append(`add-${ART}.comment`, it.comment);
     p.append(`add-${ART}.edit_note`, editNoteFor(meta, it));   // #260 include this cover's source, if any
     if (meta.votable) p.append(`add-${ART}.make_votable`, '1');
+    // #819: one register at a time: the page MusicBrainz redirects to carries the session's "your edit (#N) has been
+    // entered" banner, which a register beside it could take. The uploads before it still overlap.
+    const run = () => registerPost(it, p, ctl);
+    const done = _regGate.then(run, run);
+    _regGate = done.catch(() => {});
+    return done;
+  }
+  let _regGate = Promise.resolve();
+  async function registerPost(it, p, ctl) {
     // #772: through the gate, which passes MusicBrainz's browser check and asks again
     const add = await mbnFetch(`${R}/add-${ART}`, { method: 'POST', body: p, credentials: 'same-origin', signal: ctl && ctl.ac.signal }, { log: (l, m) => asLog[l === 'warn' ? 'warn' : 'info'](m) });
     if (!add || !add.ok) throw new Error('add ' + (add ? add.status : 'failed'));
@@ -4123,6 +4133,13 @@
       asLog.warn(`Upload: MusicBrainz didn't save the edit (HTTP ${add.status}, ${add.url})${why ? ': ' + why : ''}`);
       throw new Error("MusicBrainz didn't save the edit" + (why ? ': ' + why : ''));
     }
+    // #819 the add's edit, from that banner's link, for the note of the removal it replaces
+    try {
+      const doc = new DOMParser().parseFromString(await add.text(), 'text/html');
+      const m = [...doc.querySelectorAll('.banner.flash a[href]')].map(a => (a.getAttribute('href') || '').match(/\/edit\/(\d+)\/?$/)).find(Boolean);
+      it._editId = m ? m[1] : null;
+      asLog.debug(`Upload: edit ${it._editId ? '#' + it._editId : 'number not on the page'}`);
+    } catch (e) { it._editId = null; }
   }
   // why MusicBrainz answered an edit's POST with a page instead of a redirect: the browser check, or the form again
   // with its errors
