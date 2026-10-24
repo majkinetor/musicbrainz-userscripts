@@ -1593,7 +1593,10 @@ async function mergeGroup(group) {
         Log.info('  merging [' + ids.join(', ') + '] → keeping target ' + targetId);
         const addQs = ids.map(id => 'add-to-merge=' + id).join('&');
         const finalUrl = await withMergeLock(async () => {
-            Log.info('  merge session free — submitting group ' + group.id);
+          // #822: a POST MB bounces elsewhere (its browser check, a queue taken from another tab) created
+          // nothing: unless the kept recording now shows the merge pending, pass the check and try once more
+          for (let attempt = 1; ; attempt++) {
+            Log.info('  merge session free — submitting group ' + group.id + (attempt > 1 ? ' (attempt ' + attempt + ')' : ''));
             const gr = await gmGet(location.origin + '/recording/merge_queue?' + addQs, { Accept: 'text/html' });
             if (gr.status < 200 || gr.status >= 400) throw new Error('merge_queue GET failed: HTTP ' + gr.status);
             const mergeUrl = gr.finalUrl || (location.origin + '/recording/merge');
@@ -1614,9 +1617,22 @@ async function mergeGroup(group) {
             const landedGid = (landed.match(/\/recording\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i) || [])[1] || null;
             Log.info('  POST landed at ' + landed + (reRendered ? ' (still the merge form — treating as failure)' : landedGid ? ' (recording page — success)' : ' (NOT a recording page — nothing was merged)'));
             if (reRendered) throw new Error('merge form returned an error (nothing submitted) — check you are logged in with merge privileges');
-            if (!landedGid) throw new Error('MB did not create the merge (landed on ' + (landed || 'an unknown page') + ', not the kept recording) — its merge queue was empty or taken; try again');
+            if (!landedGid) {
+                _pendingCache.delete(group.target);   // read it fresh: the cached answer is from before the POST
+                const meta = await fetchEntityMeta(group.target);
+                Log.info('  kept recording ' + group.target + ' edits pending: ' + (meta ? meta.editsPending : 'unknown'));
+                if (meta && meta.editsPending) { Log.warn('  MB opened the merge but did not land on the recording — counted as merged'); return location.origin + '/recording/' + group.target; }
+                if (attempt < 2) {
+                    Log.warn('  MB did not create the merge (landed on ' + (landed || 'an unknown page') + ') — passing the browser check and trying again');
+                    await mbnReverify(location.origin + '/ws/js/entity/' + group.target, { method: 'GET' }, { log: gateLog });
+                    await new Promise(r => setTimeout(r, 1500));
+                    continue;
+                }
+                throw new Error('MB did not create the merge (landed on ' + (landed || 'an unknown page') + ', not the kept recording) — its merge queue was empty or taken; try again');
+            }
             if (landedGid !== group.target) Log.warn('  landed on recording ' + landedGid + ', expected the target ' + group.target + ' — check the merge in MB');
             return landed;
+          }
         });
         group.state = 'done';
         group.mergedUrl = finalUrl || null;
@@ -4218,7 +4234,7 @@ function groupCardHtml(group, embed) {
         + '<span class="fs-acref' + (group.acRefreshing || group.mcChecking ? ' fs-acref-busy' : '') + '" data-act="refresh-acoustid" data-tip="'
             + (group.mcChecking ? 'Checking ISRCs and AcoustIDs…' : group.acRefreshing ? 'Checking AcoustIDs…' : 'Check this group’s AcoustIDs again on acoustid.org\nAfter fixing a wrong link there') + '">↻</span>'
         + noteBtn
-        + (embed ? (busy || done || group.state === 'error' ? '<span class="fs-mstate ' + stateCls + '">' + stateLabel + '</span>' : '')
+        + (embed ? (busy || done || group.state === 'error' ? '<span class="fs-mstate ' + stateCls + '"' + (group.error ? ' data-tip="' + escapeHtml(group.error) + '"' : '') + '>' + (group.state === 'error' ? '⚠ Merge failed' : stateLabel) + '</span>' : '')
             + '<button class="fs-mcopen" type="button" data-act="mc-open" data-tip="Open in Fusion\nFusion\'s window, with this group on the board" aria-label="Open in Fusion"><img alt="" src="' + ICON_URL + '"></button>'
             : '<button class="fs-mbtn ' + stateCls + '" type="button" data-act="merge-group" ' + (busy || done || tooFew ? 'disabled' : '') + '>' + stateLabel + '</button>'
             + '<span class="fs-kill" data-act="delete-group" data-tip="Delete this group\nIts recordings go back to the pool." ' + (busy ? 'style="display:none"' : '') + '>🗑</span>')
@@ -5303,7 +5319,8 @@ if (SCOPE.type === 'release') {
             await mergeGroup(g);
             if (g.state === 'done') ok++; else errs.push(g.error || 'failed');
         }
-        reply(errs.length ? { ok: false, sent: ok, note: ok + ' merged, ' + errs.length + ' failed: ' + errs[0] } : { ok: true, sent: ok, note: ok + ' merge' + (ok === 1 ? '' : 's') + ' submitted' });
+        // #822: retry, so Mission Control offers its Retry button (the card's state is only a label)
+        reply(errs.length ? { ok: false, retry: true, sent: ok, note: ok + ' merged, ' + errs.length + ' failed: ' + errs[0] } : { ok: true, sent: ok, note: ok + ' merge' + (ok === 1 ? '' : 's') + ' submitted' });
     });
     mcHello();
 }
