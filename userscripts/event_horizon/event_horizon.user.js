@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.020000
+// @version      2026.10.25.030000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2012,6 +2012,20 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
 .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
+.ed-tw{overflow-x:auto}
+.ed-t{width:100%;border-collapse:collapse;font-size:14px}
+.ed-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
+.ed-t tbody tr:not(.gh):hover{background:var(--hover)}
+.ed-t tr.cur td{background:var(--chip)}
+.ed-t .num{text-align:right}
+.ed-t .mono{font-size:13px;color:var(--soft);white-space:nowrap}
+.ed-t .sub{color:var(--muted)}
+.ed-t .ev{white-space:nowrap}.ed-t .iso{display:inline-block;min-width:2.4em;font-weight:700;color:var(--soft)}
+.ed-t .tc{width:52px}
+.ed-t a.tt{display:grid;place-items:center;width:40px;height:40px;border-radius:6px;overflow:hidden;background:var(--chip);color:var(--muted)}
+.ed-t a.tt img{width:100%;height:100%;object-fit:cover}
 .ed-row{display:grid;grid-auto-flow:column;grid-auto-columns:120px;gap:14px;overflow-x:auto;padding:6px 4px 12px;scroll-snap-type:x mandatory}
 .ed-row .tile{scroll-snap-align:start}
 .ed-groups{display:flex;flex-direction:column;gap:18px}
@@ -2208,7 +2222,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width'];
 const S = {
     cols: { isrc: true, links: true, credits: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2219,7 +2233,7 @@ const S = {
     thumbs: true,
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
-    fold: [], discFold: [], edView: 'grid',
+    fold: [], discFold: [], edView: 'grid', rgView: 'table',
     ed: { kinds: new Set(), official: false },
     open: new Set(),
 };
@@ -2331,7 +2345,8 @@ const edition = e => ({
     lang: e['text-representation'] && [nameOf('language', e['text-representation'].language), nameOf('script', e['text-representation'].script)].filter(Boolean),
     counts: (e.media || []).map(m => m['track-count'] || 0),
     events: (e['release-events'] || []).map(v => ({ date: v.date || '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
-    li: (e['label-info'] || []).map(l => ({ name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
+    ac: e['artist-credit'] || [],
+    li: (e['label-info'] || []).map(l => ({ id: l.label && l.label.id, name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
 // The edition tile's tooltip: the release info's look, small (majkinetor, from a mock)
 const ED_TIP = new Map();
@@ -2351,7 +2366,7 @@ function edTip(e, cur) {
         + f('Language', e.lang && e.lang.length && `<span>${esc(e.lang[0])}${e.lang[1] ? ` <span class="sub">· ${esc(e.lang[1])}</span>` : ''}</span>`)
         + '</div></div>';
 }
-mbuTipOn('.tile[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
+mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
@@ -2360,7 +2375,7 @@ async function load(id, step = () => {}) {
     step('release');
     const rgId = r['release-group'].id;
     const rg = await ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`);
-    const eds = ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step('editions'); return x; }, () => null);
+    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits&limit=100`).then(x => { step('editions'); return x; }, () => null);
     return { rel: release(r, rg, []), editions: [], edCount: 0, eds, covers };
 }
 
@@ -2498,23 +2513,45 @@ function edTile(e, curId) {
         <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
     </a>`;
 }
+function edTable(es, curId) {
+    const ST = ['Official', 'Promotion', 'Bootleg', 'Pseudo-Release', 'Withdrawn', 'Expunged', 'Cancelled'];
+    const groups = [...new Set(es.map(e => e.status || ''))].sort((a, b) => (ST.indexOf(a) + 1 || 99) - (ST.indexOf(b) + 1 || 99));
+    const row = e => {
+        ED_TIP.set(e.id, { e, cur: e.id === curId });
+        const k = fmtKind(e.formats[0]);
+        return `<tr${e.id === curId ? ' class="cur"' : ''}>
+            <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
+            <td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}</td>
+            <td>${acHtml(e.ac)}</td>
+            <td>${esc(fmtSummary(e.formats))}</td>
+            <td class="num">${e.counts.join(' + ')}</td>
+            <td>${e.events.map(v => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : ''}${v.date ? fdate(v.date) : ''}</div>`).join('') || '—'}</td>
+            <td>${e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')}</td>
+            <td class="mono">${e.li.map(l => `<div>${esc(l.catno)}</div>`).join('')}</td>
+            <td class="mono">${esc(e.barcode)}</td>
+        </tr>`;
+    };
+    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th></tr></thead>${groups.map(g => `<tbody><tr class="gh"><th colspan="9">${esc(g || 'No status')} <span class="count">${es.filter(e => (e.status || '') === g).length}</span></th></tr>${es.filter(e => (e.status || '') === g).map(row).join('')}</tbody>`).join('')}</table></div>`;
+}
 function editions(r, eds, count) {
     if (eds.length < (r.id ? 2 : 1)) return '';
+    const view = r.id ? S.edView : S.rgView;
     const all = [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
     const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official'));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
-    const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>']];
-    const views = `<span class="ed-div"></span><span class="ed-views" role="group" aria-label="Editions view">${EDV.map(([v, n, d]) => `<button type="button" data-edview="${v}" aria-pressed="${S.edView === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
+    const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
+    const views = `<span class="ed-div"></span><span class="ed-views" role="group" aria-label="Editions view">${EDV.map(([v, n, d]) => `<button type="button" data-edview="${v}" aria-pressed="${view === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><a class="ed-rg" href="${MB}/release-group/${r.rgId}" data-tip="Release group" aria-label="Release group"${r.id ? '' : ' hidden'}><svg viewBox="0 0 16 16" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg></a><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
     let body;
-    if (S.edView === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
-    else if (S.edView === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
+    if (view === 'table') body = edTable(shown, r.id);
+    else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
             return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id)).join('')}</div></div>`;
         }).join('')}</div>`;
@@ -2681,7 +2718,7 @@ function group(g) {
 async function loadRg(id, step = () => {}) {
     const g = await ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`);
     step('group');
-    const eds = ws(`release?release-group=${id}&inc=media+labels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits&limit=100`).then(x => { step('releases'); return x; }, () => null);
     return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
 function rgHero(d) {
@@ -2802,7 +2839,7 @@ function onClick(ev) {
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
-    else if (d.edview) S.edView = d.edview;
+    else if (d.edview) S[data.kind === 'rg' ? 'rgView' : 'edView'] = d.edview;
     else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
     else if ('edkind' in d) S.ed.kinds = new Set(d.edkind ? [d.edkind] : []);
     else if ('crtracks' in d) S.crTracks = !S.crTracks;
