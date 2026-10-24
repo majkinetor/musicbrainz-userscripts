@@ -3340,7 +3340,7 @@ function runMoraImport(moraUrl, getOpts, cancelled, collect) {
     log.info(`Fetching mora package page: ${parsed.pageUrl}`);
     return fetchMoraPackage(parsed.pageUrl)
         .then(({ metaUrl, json }) => {
-            log.debug(`mora packageMeta.json: ${metaUrl}`);
+            logDebug(`mora packageMeta.json: ${metaUrl}`);
             const albumInfo = moraAlbumInfo(json);
             const tracks = extractMoraCredits(json);
             _moraJson = { source: metaUrl, album: albumInfo, tracks };   // Log ▾ → "Copy mora"
@@ -3373,7 +3373,7 @@ function runMelonImport(melonUrl, getOpts, cancelled, collect) {
     return fetchMelonCredits(parsed.id)
         .then(({ album, tracks }) => {
             tracks.filter(t => t.error).forEach(t => log.warn(`Melon song ${t.songId} (${t.disc}.${t.index} "${t.title}"): ${t.error}`));
-            tracks.forEach(t => log.debug(`Melon ${t.disc}.${t.index} "${t.title}": ${t.credits.map(c => c.name + ' (' + c.roles.join(', ') + ')').join('; ') || 'no credits'}`));
+            tracks.forEach(t => logDebug(`Melon ${t.disc}.${t.index} "${t.title}": ${t.credits.map(c => c.name + ' (' + c.roles.join(', ') + ')').join('; ') || 'no credits'}`));
             _melonJson = { source: parsed.pageUrl, album, tracks };   // Log ▾ → "Copy Melon"
             const li = document.createElement('li');
             const pre = document.createElement('pre');
@@ -3405,7 +3405,7 @@ function runAllMusicImport(amUrl, getOpts, cancelled, collect) {
         .then(res => {
             if (!res) { log.warn(`AllMusic API has no release ${parsed.id}`); stopMsg(collect, 'Release not found on AllMusic'); return; }
             const { title, tracks } = res;
-            tracks.forEach(t => log.debug(`AllMusic ${t.disc}.${t.index} "${t.title}": ${t.credits.map(c => c.name + ' (' + c.role + ')').join('; ') || 'no credits'}`));
+            tracks.forEach(t => logDebug(`AllMusic ${t.disc}.${t.index} "${t.title}": ${t.credits.map(c => c.name + ' (' + c.role + ')').join('; ') || 'no credits'}`));
             _allmusicJson = { source: parsed.pageUrl, title, tracks };   // Log ▾ → "Copy AllMusic"
             const li = document.createElement('li');
             const pre = document.createElement('pre');
