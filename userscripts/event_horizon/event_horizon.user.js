@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.210100
+// @version      2026.10.25.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1894,7 +1894,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail{position:fixed;z-index:20;top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent}
 #eh-rail:not(.open)::before{content:"";position:absolute;inset:-24px -12px -24px -56px}
 #eh-rail.open{background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
-#eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:30px;min-width:16px;padding:0 6px;border-radius:8px;cursor:grab}
+#eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:30px;min-width:16px;padding:0 6px;border-radius:8px;cursor:pointer}
 #eh-rail .rr>i{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none}
 #eh-rail .rr.on>i{background:var(--accent)}
 #eh-rail .rr.off>i{background:none;border:1.5px solid var(--border);box-sizing:border-box}
@@ -1902,17 +1902,17 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail.open .gr,#eh-rail.open .nm,#eh-rail.open .eye{display:inline-flex}
 #eh-rail.open .rr:hover{background:var(--hover)}
 #eh-rail .rr.drag{opacity:.5}
-#eh-rail .gr{color:var(--muted);font-size:11px;letter-spacing:-2px}
-#eh-rail .nm{border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
-#eh-rail .rr.on .nm{color:var(--accent)}
-#eh-rail .rr.off .nm{color:var(--muted);text-decoration:line-through}
+#eh-rail .gr{cursor:grab;color:var(--muted);font-size:11px;letter-spacing:-2px}
+#eh-rail .nm{border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text)!important;background:none!important;cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
+#eh-rail .rr.on .nm{color:var(--accent)!important}
+#eh-rail .rr.off .nm{color:var(--muted)!important;text-decoration:line-through}
 #eh-rail .eye{border:0;background:none;padding:2px;color:var(--muted);cursor:pointer}
 #eh-rail .eye:hover{color:var(--accent)}
 #eh-rail .eye svg{width:14px;height:14px}
 #eh-rail[hidden]{display:none}
 @media (max-width:700px){#eh-rail{display:none}}
 /* A dark userstyle (Stylus, kellnerd's theme) colours and inverts buttons and headings with !important; these outrank it. */
-:root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
+:root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2,#eh-rail button,#eh-rail button *{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
 :root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
 :root[data-eh-theme] #app .cv svg,:root[data-eh-theme] #app .cv svg *,:root[data-eh-theme] #app button.ib svg,:root[data-eh-theme] #app button.ib svg *{stroke:currentColor!important;fill:none!important;color:inherit!important}
 :root[data-eh-theme] .secthead button.fold,:root[data-eh-theme] .secthead button.fold h2{background:transparent!important;color:var(--text)!important}
