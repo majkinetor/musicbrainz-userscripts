@@ -1824,7 +1824,7 @@ mbuTipStart();
 
 const FORMAT_ICONS = {
     digital: '<path d="M8 25h16a6 6 0 0 0 .8-11.95A9 9 0 0 0 7.4 15.2 5 5 0 0 0 8 25z"/>',
-    vinyl: '<circle cx="19" cy="16" r="10.5"/><circle cx="19" cy="16" r="6.5" stroke-width="1" opacity=".5"/><circle cx="19" cy="16" r="2.4" fill="currentColor"/><rect x="3" y="4" width="14" height="24" rx="1.5" fill="var(--surface)"/>',
+    vinyl: '<circle cx="14" cy="17" r="11.5"/><circle cx="14" cy="17" r="7.5" stroke-width="1.5"/><circle cx="14" cy="17" r="3.2" fill="currentColor"/><path d="M28 3v11l-6 6"/><circle cx="28" cy="3.5" r=".6" fill="currentColor"/>',
     cassette: '<rect x="3" y="7" width="26" height="18" rx="2.5"/><circle cx="11" cy="15" r="2.6"/><circle cx="21" cy="15" r="2.6"/><path d="M11 12.4h10M9 25l2-4h10l2 4"/>',
     reel: '<circle cx="9" cy="12" r="6.5"/><circle cx="23" cy="12" r="6.5"/><circle cx="9" cy="12" r="1.6" fill="currentColor"/><circle cx="23" cy="12" r="1.6" fill="currentColor"/><path d="M9 18.5l3 8.5h8l3-8.5"/>',
     usb: '<rect x="10" y="12" width="12" height="17" rx="2.5"/><path d="M12 12V4h8v8"/><path d="M14.5 7.5h0M17.5 7.5h0" stroke-width="2.4"/>',
