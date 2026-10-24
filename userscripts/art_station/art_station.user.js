@@ -2391,11 +2391,6 @@
               const m = u.pathname.match(/^\/album\/images\/(?:\d+|original)\/(\d+\/\d+\.(?:jpg|png))$/);
               return m ? [`https://${u.host}/album/images/original/${m[1]}`, `https://${u.host}/album/images/1000/${m[1]}`] : [];
           } },
-          // AllMusic (#832): fastly-s3.allmusic.com/release/<mr>/front/<size>/<c>.jpg → TiVo's image server, f=0 is the upload
-          { host: /^fastly-s3\.allmusic\.com$/, max: u => {
-              const m = u.pathname.match(/^\/release\/mr\d+\/[^/]+\/\d+\/([^/]+)\.jpg$/i);
-              return m ? [`https://rovimusic.rovicorp.com/image.jpg?c=${m[1]}&f=0`] : [];
-          } },
           // Juno: /full/…-BIG
           { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
               const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
