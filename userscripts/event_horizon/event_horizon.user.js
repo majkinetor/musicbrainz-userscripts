@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.21
+// @version      2026.10.24.22
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2029,7 +2029,16 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .dm-below .dis{margin:0;line-height:1.2;width:0;min-width:100%}
 .dm-tip .dis{display:none}
 .dm-tip .hasd{border-bottom:1px dotted var(--muted);cursor:help}
-.detail .gsw{position:absolute;top:2px;right:10px;border:0;background:none;color:var(--muted);width:30px;height:28px;display:grid;place-items:center;cursor:pointer;padding:0}
+.detail .gtools{position:absolute;top:2px;right:10px;display:flex;flex-direction:column;gap:2px;z-index:3}
+.detail .dwrap{position:relative}
+.detail .dmenu{display:none;position:absolute;top:0;right:34px;min-width:160px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.detail .dmenu.open{display:block}
+.detail .dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.detail .dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
+.detail .dmenu button svg{flex:none}
+.detail .dmenu button:hover{background:var(--hover)}
+.detail .dmenu button[aria-checked=true]{color:var(--accent);font-weight:700}
+.detail .gsw{border:0;background:none;color:var(--muted);width:30px;height:28px;display:grid;place-items:center;cursor:pointer;padding:0}
 .detail .gsw:hover{color:var(--accent)}
 .detail .gsw:focus-visible{outline:2px solid var(--accent);border-radius:6px}
 .detail .pls{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
@@ -2062,7 +2071,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
 
-@media (max-width:600px){.detail .grp{grid-template-columns:fit-content(9em) minmax(0,1fr);gap:3px 10px}.detail .cols{padding-right:34px}.detail .gsw{right:4px}}
+@media (max-width:600px){.detail .grp{grid-template-columns:fit-content(9em) minmax(0,1fr);gap:3px 10px}.detail .cols{padding-right:34px}.detail .gtools{right:4px}}
 @media (max-width:700px){
   .tr{flex-wrap:wrap;gap:6px 12px}
   .tr .ti{flex-basis:calc(100% - 100px)}
@@ -2412,6 +2421,12 @@ function crGroup(tag, type, ent, cr, extra = '') {
 }
 const IC_ROLE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h5.5l6.5 6.5-5 5-7-6.5z"/><circle cx="5.3" cy="5.8" r="1"/></svg>';
 const IC_NAME = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 14c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5"/></svg>';
+// the disambiguation modes, for the credits' menu
+const DIS = [
+    ['below', 'Below name', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2.5 5h11"/><path d="M4.5 9.5h7M5.5 12.5h5" stroke-width="1.2" opacity=".7"/></svg>'],
+    ['brackets', 'In brackets', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 2.5c-2 2.5-2 8.5 0 11M11 2.5c2 2.5 2 8.5 0 11M7 8h2"/></svg>'],
+    ['tip', 'Tooltip', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3h11v7h-6l-3 3v-3h-2z"/></svg>'],
+];
 function detail(t) {
     const ps = sortP(t.links).filter(p => primaryKind(p) !== 'info');
     const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
@@ -2419,7 +2434,10 @@ function detail(t) {
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? (S.byName ? `<dt>${esc(t.work.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(t.work.iswcs.join(', '))}</dd>`) : '';
     const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
-    const sw = `<button class="gsw" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name">${S.byName ? IC_NAME : IC_ROLE}</button>`;
+    const cur = DIS.find(x => x[0] === S.dis) || DIS[0];
+    const sw = `<div class="gtools"><button class="gsw" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name">${S.byName ? IC_NAME : IC_ROLE}</button>`
+        + `<div class="dwrap"><button class="gsw" type="button" data-dismenu aria-haspopup="menu" aria-label="Disambiguation: ${cur[1]}">${cur[2]}</button>`
+        + `<div class="dmenu" role="menu"><div class="dmh">Disambiguation</div>${DIS.map(([k, n, ic]) => `<button type="button" role="menuitemradio" data-dism="${k}" aria-checked="${k === S.dis}">${ic}${n}</button>`).join('')}</div></div></div>`;
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.join('')}${listen}</div></div>`;
 }
 const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : S.byName ? `<dt>${esc(w.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(w.iswcs.join(', '))}</dd>`;
@@ -2552,6 +2570,8 @@ function onClick(ev) {
     else if (d.edkind) { const k = d.edkind; if (!S.ed.kinds.size) S.ed.kinds = new Set([k]); else if (S.ed.kinds.has(k)) S.ed.kinds.delete(k); else S.ed.kinds.add(k); }
     else if ('crtracks' in d) S.crTracks = !S.crTracks;
     else if ('byname' in d) { S.byName = !S.byName; save(); }
+    else if ('dismenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
+    else if (d.dism) { S.dis = d.dism; save(); }
     else if ('edoff' in d) S.ed.official = !S.ed.official;
     else return;
     const y = scrollY; render(keep); scrollTo(0, y);
@@ -2578,6 +2598,10 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // a click outside the disambiguation menu, or Escape, closes it
+    const dmClose = () => document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open'));
+    document.addEventListener('click', ev => { if (!ev.target.closest || !ev.target.closest('.dwrap')) dmClose(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') dmClose(); });
     document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
     addEventListener('resize', () => { if (ehOn) fitQuiet(); });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
