@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-24 11:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-24 12:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -519,7 +519,7 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 - The edit note starts folded to its first line; click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
 - Uploads go first, then removes and edits, in parallel; one reorder edit runs last and sets the final order.
-- A removed cover that a new one replaces (its rotated copy, or the larger front [Mission Control](../mission_control/README.md) brings) says so in its edit note: the new image's address, size and source, and the removed one's size.
+- A removed cover that a new one replaces (its rotated copy, or the larger front [Mission Control](../mission_control/README.md) brings) says so in its edit note: the new image's address, size and source, the edit that added it, and the removed one's size.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
 - *Automatically repeat failures* (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
 - The log of a page where edits were submitted is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Art Station's.
