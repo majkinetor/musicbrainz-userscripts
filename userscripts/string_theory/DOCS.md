@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-23 16:46 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-24 09:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -521,6 +521,7 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
 - *Automatically repeat failures* (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
+- The log of a page where edits were submitted is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Art Station's.
 
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
@@ -795,7 +796,7 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 The **Log** tab filters by level or worker (`w1`, `w2`, …) and searches; **⧉ Copy** gives Markdown for an issue, and **debug** records each worker's every step.
 
-Each run's log is kept in this browser, so a run whose tab crashed can still be read: pick it beside the filter. **Clear history** deletes them. A long run keeps its start and end.
+The last 10 runs' logs are kept in this browser, so a run whose tab crashed can still be read: pick it beside the filter. **Clear history** deletes Falcon's. A long run keeps its start and end.
 
 ### Attributes
 
@@ -895,7 +896,6 @@ Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?
 | Harmony: Open in new tab                                 | on        | off navigates the Harmony tab                                                                               |
 | Harmony: Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
 | Workers                                                  | 5         | entities processed at once                                                                                  |
-| Keep last N run logs                                     | 10        | the past runs the **Log** tab lists                                                                         |
 
 The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 
@@ -2096,6 +2096,8 @@ A failed step that can be tried again shows **Retry** beside its error; what got
 
 Click a card's icon or title to switch it off: Execute leaves it out, and your selection waits for it.
 
+The log of a page with an Execute in it is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Mission Control's.
+
 ### Consolidate a new release
 
 For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:
@@ -2330,7 +2332,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 ### Notes
 
-The **Log** keeps every lookup, with a filter per platform.
+The **Log** keeps every lookup, with a filter per platform. The log of a page where links were added is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Platform Check's.
 
 
 ---

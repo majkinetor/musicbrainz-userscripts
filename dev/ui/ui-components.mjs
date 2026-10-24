@@ -769,7 +769,7 @@ function mbRestackCorner(corner) {
 //
 // History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
 //
-//   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+//   o.history = { prefix: 'falcon:session:', lines: 400, head: 140,
 //                 parse: s => entry, nameOf: entries => name, store }
 //
 // A session starts with the page, or with LOG.session(reason) (Falcon: each run).
@@ -778,7 +778,9 @@ function mbRestackCorner(corner) {
 // first name stays). It is stored in the page's localStorage under prefix + id,
 // within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
 // its log; a session longer than \`lines\` keeps its first \`head\` lines and its
-// end, and says how many went between. The newest \`keep\` sessions are kept.
+// end, and says how many went between. The newest 10 sessions are kept, not configurable
+// (#811); each script's prefix is its own, and Clear history clears only that script's.
+// Leaving the page (a script's reload after its operation, #811) flushes at once.
 // prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
 // can carry on a session across a navigation. The viewer gets a session list and Clear history.
 //   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
@@ -839,7 +841,7 @@ function mbuLog(o) {
             var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
         },
     });
-    var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+    var keepN = function () { return 10; };   // #811: the last 10 sessions, not configurable
     var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
     // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
     var idDate = function (id) {
@@ -1313,7 +1315,12 @@ function mbuLog(o) {
         refresh: function () { views.forEach(function (v) { v.sessions(); }); },
         flush: flush,
     };
-    if (H) sid = newId();
+    if (H) {
+        sid = newId();
+        // #811: a script reloads the page right after its operation; write the kept session
+        // now rather than trusting the 100 ms timer to beat the unload
+        try { window.addEventListener('pagehide', flush); } catch (e) { /* no window */ }
+    }
     mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
     return api;
 }

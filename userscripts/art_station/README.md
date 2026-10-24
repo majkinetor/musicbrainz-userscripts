@@ -113,6 +113,7 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 - Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
 - *Automatically repeat failures* (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
+- The log of a page where edits were submitted is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Art Station's.
 
 > [!NOTE]
 > *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.

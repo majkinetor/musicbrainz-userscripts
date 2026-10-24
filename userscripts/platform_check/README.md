@@ -184,4 +184,4 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 ## Notes
 
-The **Log** keeps every lookup, with a filter per platform.
+The **Log** keeps every lookup, with a filter per platform. The log of a page where links were added is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Platform Check's.

@@ -93,7 +93,7 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 The **Log** tab filters by level or worker (`w1`, `w2`, …) and searches; **⧉ Copy** gives Markdown for an issue, and **debug** records each worker's every step.
 
-Each run's log is kept in this browser, so a run whose tab crashed can still be read: pick it beside the filter. **Clear history** deletes them. A long run keeps its start and end.
+The last 10 runs' logs are kept in this browser, so a run whose tab crashed can still be read: pick it beside the filter. **Clear history** deletes Falcon's. A long run keeps its start and end.
 
 ## Attributes
 
@@ -193,7 +193,6 @@ Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?
 | Harmony: Open in new tab                                 | on        | off navigates the Harmony tab                                                                               |
 | Harmony: Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
 | Workers                                                  | 5         | entities processed at once                                                                                  |
-| Keep last N run logs                                     | 10        | the past runs the **Log** tab lists                                                                         |
 
 The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
 

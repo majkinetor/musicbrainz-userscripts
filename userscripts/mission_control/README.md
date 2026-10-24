@@ -149,6 +149,8 @@ A failed step that can be tried again shows **Retry** beside its error; what got
 
 Click a card's icon or title to switch it off: Execute leaves it out, and your selection waits for it.
 
+The log of a page with an Execute in it is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Mission Control's.
+
 ## Consolidate a new release
 
 For an album MusicBrainz doesn't have yet. On its page on a platform, **Consolidate** in [First Contact](../first_contact/README.md#consolidate) reads it and opens Mission Control over MusicBrainz's empty release editor:

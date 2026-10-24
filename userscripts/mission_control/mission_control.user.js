@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.23.164613
+// @version      2026.10.24
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -28,7 +28,15 @@ const RELEASE = (location.pathname.match(/^\/release\/([0-9a-fA-F-]{36})\/?$/) |
 const CONS = !RELEASE && /^\/release\/add\/?$/.test(location.pathname) ? (location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1] : null;
 if (!RELEASE && !CONS) return;
 
-const Log = mbuLog({ name: 'Mission Control', version: VERSION, header: 'Mission Control — activity log', key: 'mc.logwin', before: () => mcStyle() });
+// #811: the last 10 page logs with an Execute in them stay in this browser (an Execute reloads the page)
+const Log = mbuLog({ name: 'Mission Control', version: VERSION, header: 'Mission Control — activity log', key: 'mc.logwin', before: () => mcStyle(), history: { prefix: 'mc:session:' } });
+// keep this page's log, named after the release, once it does something worth reading back
+function keepLog() {
+    Log.keep();
+    const h = document.querySelector('.releaseheader h1 bdi') || document.querySelector('.releaseheader h1');
+    const name = h && h.textContent.trim();
+    if (name) Log.name(name);
+}
 Log.cat('System').info(mbuStartupInfo('Mission Control'));
 
 /* ── settings (GM storage, #501) ───────────────────────────────────────────── */
@@ -526,6 +534,7 @@ function markApplied(id, keys) {
 async function execute(dry) {
     if (executing) return;
     executing = true; paintExec();
+    keepLog();   // #811
     let failed = 0, sent = 0;
     try {
         for (const step of STEPS) {
@@ -5219,7 +5228,7 @@ function mbRestackCorner(corner) {
 //
 // History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
 //
-//   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+//   o.history = { prefix: 'falcon:session:', lines: 400, head: 140,
 //                 parse: s => entry, nameOf: entries => name, store }
 //
 // A session starts with the page, or with LOG.session(reason) (Falcon: each run).
@@ -5228,7 +5237,9 @@ function mbRestackCorner(corner) {
 // first name stays). It is stored in the page's localStorage under prefix + id,
 // within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
 // its log; a session longer than `lines` keeps its first `head` lines and its
-// end, and says how many went between. The newest `keep` sessions are kept.
+// end, and says how many went between. The newest 10 sessions are kept, not configurable
+// (#811); each script's prefix is its own, and Clear history clears only that script's.
+// Leaving the page (a script's reload after its operation, #811) flushes at once.
 // prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
 // can carry on a session across a navigation. The viewer gets a session list and Clear history.
 //   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
@@ -5289,7 +5300,7 @@ function mbuLog(o) {
             var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
         },
     });
-    var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+    var keepN = function () { return 10; };   // #811: the last 10 sessions, not configurable
     var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
     // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
     var idDate = function (id) {
@@ -5763,7 +5774,12 @@ function mbuLog(o) {
         refresh: function () { views.forEach(function (v) { v.sessions(); }); },
         flush: flush,
     };
-    if (H) sid = newId();
+    if (H) {
+        sid = newId();
+        // #811: a script reloads the page right after its operation; write the kept session
+        // now rather than trusting the 100 ms timer to beat the unload
+        try { window.addEventListener('pagehide', flush); } catch (e) { /* no window */ }
+    }
     mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
     return api;
 }
