@@ -110,6 +110,7 @@ The edit note carries the statistics per source, with how the entities were matc
 | Metal Archives | the lineup with instruments, work credits, other staff                                   | Metal Archives artist ID                   |          |
 | Qobuz          | composer, lyricist, producer, publisher, performers                                      | names, except the composer and main artist | optional |
 | Apple Music    | composer, writer, lyricist, producer, engineers, arranger, vocals                        | names                                      |          |
+| AllMusic       | performers, instruments, composer                                                        | AllMusic artist ID                         |          |
 | YouTube Music  | writer, producer                                                                         | names                                      |          |
 | Deezer         | composers only                                                                           | names                                      |          |
 | mora           | composer, lyricist, arranger, producer                                                   | names                                      |          |
@@ -123,6 +124,7 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 - **YouTube Music**, for a release linked to an album there, reads each song's *Credits*: *Written by* (a writer, on the work) and *Produced by*. *Performed by* and the label aren't imported; some labels send no credits. Songs are placed on the mediums by their track counts; when those don't add up, the log says so.
 - **mora**, for a release linked to a mora.jp package, reads each track's composer, lyricist, arranger and producer. Several names in one credit are split on `、` and commas.
 - **Melon**, for a release linked to a melon.com album, reads each song page's 작사, 작곡 and 편곡 (lyricist, composer, arranger), a few pages at a time.
+- **AllMusic**, for a release linked to an AllMusic release page, reads each track's performers and composers from TiVo's music API. A first call can take 20 seconds; when the API is down, only AllMusic fails.
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. Check what it finds.
 

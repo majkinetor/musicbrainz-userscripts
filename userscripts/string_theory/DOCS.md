@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-24 18:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-24 18:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -669,6 +669,7 @@ The edit note carries the statistics per source, with how the entities were matc
 | Metal Archives | the lineup with instruments, work credits, other staff                                   | Metal Archives artist ID                   |          |
 | Qobuz          | composer, lyricist, producer, publisher, performers                                      | names, except the composer and main artist | optional |
 | Apple Music    | composer, writer, lyricist, producer, engineers, arranger, vocals                        | names                                      |          |
+| AllMusic       | performers, instruments, composer                                                        | AllMusic artist ID                         |          |
 | YouTube Music  | writer, producer                                                                         | names                                      |          |
 | Deezer         | composers only                                                                           | names                                      |          |
 | mora           | composer, lyricist, arranger, producer                                                   | names                                      |          |
@@ -682,6 +683,7 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 - **YouTube Music**, for a release linked to an album there, reads each song's *Credits*: *Written by* (a writer, on the work) and *Produced by*. *Performed by* and the label aren't imported; some labels send no credits. Songs are placed on the mediums by their track counts; when those don't add up, the log says so.
 - **mora**, for a release linked to a mora.jp package, reads each track's composer, lyricist, arranger and producer. Several names in one credit are split on `、` and commas.
 - **Melon**, for a release linked to a melon.com album, reads each song page's 작사, 작곡 and 편곡 (lyricist, composer, arranger), a few pages at a time.
+- **AllMusic**, for a release linked to an AllMusic release page, reads each track's performers and composers from TiVo's music API. A first call can take 20 seconds; when the API is down, only AllMusic fails.
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. Check what it finds.
 
@@ -1025,7 +1027,7 @@ The *Harmony* setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
-| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs | the album link, at once |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
@@ -1054,6 +1056,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [mora](#mora)                   |                 |  some      | ✓                     |                |
 | [Melon](#melon)                 |                 |            | ✓                     |                |
 | [Bugs](#bugs)                   |                 |            | ✓                     |                |
+| [AllMusic](#allmusic)           |        ✓        |     ✓      | ✓ with catalog number |                |
 | [Presto Music](#presto-music)   | streamed albums |     ✓      | ✓ with catalog number | about          |
 
 #### Deezer
@@ -1228,6 +1231,14 @@ Pages: `music.bugs.co.kr/album/<id>`
 - The label is the album's planning company (기획사), or its distributor (유통사) when there is none.
 - Each track's length is a request to Bugs, so a long album takes a moment.
 - Every artist and every track has its Bugs link.
+
+#### AllMusic
+
+Pages: `www.allmusic.com/album/release/<slug>-mr<id>`
+
+- The data comes from TiVo's music API, which AllMusic is built on. A first call can take 20 seconds, and when the API is down the import stops with an error.
+- The type is Compilation or Live when AllMusic flags it so; the country is left empty.
+- Every artist has its AllMusic link.
 
 #### Presto Music
 
@@ -2315,6 +2326,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 | Qobuz         | looked up and read                                                         | optional |
 | Beatport      |                                                                            | optional |
 | Volumo        | looked up and read                                                         |          |
+| AllMusic      | looked up and read                                                         |          |
 | HDtracks      | looked up and read                                                         |          |
 | 7digital      | looked up and read                                                         |          |
 | SoundCloud    | read from the linked set                                                   |          |

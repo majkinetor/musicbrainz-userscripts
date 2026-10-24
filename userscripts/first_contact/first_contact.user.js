@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.24.200000
+// @version      2026.10.24.210000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -26,6 +26,7 @@
 // @match        https://mora.jp/package/*
 // @match        https://www.melon.com/album/detail.htm*
 // @match        https://music.bugs.co.kr/album/*
+// @match        https://www.allmusic.com/album/release/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -82,6 +83,7 @@
 // @connect      cf.mora.jp
 // @connect      m2.melon.com
 // @connect      music.bugs.co.kr
+// @connect      tivomusicapi-staging-elb.digitalsmiths.net
 // ==/UserScript==
 
 (function () {
@@ -2516,6 +2518,62 @@ const BUGS = {
     },
 };
 
+// AllMusic (#814): a release page (/album/release/<slug>-mr…). The page is behind a bot check, but
+// its data is TiVo's music API, whose staging host answers without a key: /lookup/release?releaseId=MR…
+// gives the barcode, catalogue number, label, format, date and the tracks with their discs, lengths and
+// performers. A cold call can take ~20 s; the host can also be down, which ends the import with an error.
+const ALLMUSIC = {
+    id: 'allmusic',
+    name: 'AllMusic',
+    abbr: 'am',
+    host: /^www\.allmusic\.com$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/album\/release\/(?:[^/]*-)?(mr\d{10})\/?$/i); return m ? m[1].toLowerCase() : null; },
+    FORMATS: [[/^CD$/i, 'CD'], [/vinyl|LP/i, 'Vinyl'], [/cassette/i, 'Cassette'], [/SACD/i, 'SACD'], [/DVD/i, 'DVD'], [/blu-?ray/i, 'Blu-ray'], [/digital|download|stream/i, 'Digital Media']],
+    artist: a => ({ name: a.name, url: /^MN\d+$/i.test(a.id || a.nameId || '') ? `https://www.allmusic.com/artist/${(a.id || a.nameId).toLowerCase()}` : null }),
+
+    async fetchRelease(id, progress) {
+        const j = await gmJson(`https://tivomusicapi-staging-elb.digitalsmiths.net/sd/tivomusicapi/taps/v3/lookup/release?releaseId=${id.toUpperCase()}`);
+        const hit = j && j.hits && j.hits[0];
+        if (!hit) throw new Error(`AllMusic: TiVo's API has no release ${id}`);
+        const alb = (hit.album || [])[0] || {};
+        const albumArtists = (alb.primaryArtists || []).map(this.artist);
+        const fmt = (this.FORMATS.find(([re]) => re.test(hit.format || '')) || [])[1] || '';
+        Log.info(`AllMusic release ${id}: "${hit.title}" by ${albumArtists.map(a => a.name).join(', ') || '—'} · ${hit.format || '—'} · ${hit.releaseDate || '—'} · ${[].concat(hit.label || []).join(', ') || '—'} · ${hit.catalog || '—'} · ${hit.productCode || '—'} · ${(hit.tracks || []).length} tracks`);
+        const various = albumArtists.length === 1 && /^(?:various artists|v\.?\s*a\.?)$/i.test(albumArtists[0].name);
+        const mediums = [], byDisc = new Map();
+        for (const t of hit.tracks || []) {
+            const disc = +t.disc || 1;
+            if (!byDisc.has(disc)) { const m = { format: fmt, name: '', tracks: [] }; byDisc.set(disc, m); mediums.push(m); }
+            const tf = splitFeat(t.title || '');
+            const primary = (t.performers || []).filter(p => /^primary artist$/i.test(p.role || '')).map(this.artist);
+            const credit = creditFromTitle(primary.length ? primary : (various ? [] : albumArtists), tf.feat);
+            byDisc.get(disc).tracks.push({ title: tf.title, lengthMs: t.duration ? t.duration * 1000 : null, isrc: null, url: null, credit });
+            Log.debug(`track ${disc}.${t.phyTrackNum}: "${tf.title}" ${t.duration || '—'}s — ${credit.map(c => c.name + c.join).join('') || '(no artist)'}`);
+        }
+        progress && progress(1, 1);
+        const af = splitFeat(hit.title || alb.title || '');
+        const credit = various || !albumArtists.length ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const [y, m, d] = String(hit.releaseDate || '').split('-').map(x => parseInt(x, 10));
+        const flags = [].concat(hit.flags || alb.flags || []).join(' ');
+        const url = `https://www.allmusic.com/album/release/${id}`;
+        return {
+            source: this.id,
+            url,
+            title: af.title,
+            credit,
+            types: [...(/compilation/i.test(flags) ? ['Compilation'] : []), ...(/live/i.test(flags) ? ['Live'] : [])],
+            status: 'official',
+            packaging: hit.format && !/digital|download|stream/i.test(hit.format) ? null : 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: null,
+            barcode: hit.productCode || null,
+            labels: [].concat(hit.label || []).map((name, i) => ({ name, catno: i ? '' : (hit.catalog || ''), url: null })),
+            urls: [{ url, linkType: 755 }],   // "has an AllMusic page at"
+            mediums,
+        };
+    },
+};
+
 // Presto Music (#779): a UK shop for classical and jazz, CDs, SACDs, vinyl and downloads. Everything is
 // on the product page, server-rendered behind Cloudflare: the title, the artist line (plain text, roles
 // in brackets), the format bought here, Release date / Label / Catalogue number, the barcode in the
@@ -2806,7 +2864,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, BUGS, PRESTO];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, BUGS, ALLMUSIC, PRESTO];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then

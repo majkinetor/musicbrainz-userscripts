@@ -101,7 +101,7 @@ The *Harmony* setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
-| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs | the album link, at once |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
@@ -130,6 +130,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [mora](#mora)                   |                 |  some      | ✓                     |                |
 | [Melon](#melon)                 |                 |            | ✓                     |                |
 | [Bugs](#bugs)                   |                 |            | ✓                     |                |
+| [AllMusic](#allmusic)           |        ✓        |     ✓      | ✓ with catalog number |                |
 | [Presto Music](#presto-music)   | streamed albums |     ✓      | ✓ with catalog number | about          |
 
 ### Deezer
@@ -304,6 +305,14 @@ Pages: `music.bugs.co.kr/album/<id>`
 - The label is the album's planning company (기획사), or its distributor (유통사) when there is none.
 - Each track's length is a request to Bugs, so a long album takes a moment.
 - Every artist and every track has its Bugs link.
+
+### AllMusic
+
+Pages: `www.allmusic.com/album/release/<slug>-mr<id>`
+
+- The data comes from TiVo's music API, which AllMusic is built on. A first call can take 20 seconds, and when the API is down the import stops with an error.
+- The type is Compilation or Live when AllMusic flags it so; the country is left empty.
+- Every artist has its AllMusic link.
 
 ### Presto Music
 

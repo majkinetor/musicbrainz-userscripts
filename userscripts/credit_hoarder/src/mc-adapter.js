@@ -19,6 +19,7 @@ import { getDiscogsReleaseData } from './api-discogs.js';
 import { parseDeezerAlbumUrl, fetchDeezerAlbumPage, extractDeezerCredits } from './sources/deezer.js';
 import { parseMoraPackageUrl, fetchMoraPackage, extractMoraCredits } from './sources/mora.js';
 import { parseMelonAlbumUrl, fetchMelonCredits } from './sources/melon.js';
+import { parseAllMusicReleaseUrl, fetchAllMusicCredits } from './sources/allmusic.js';
 import { parseQobuzAlbumUrl, fetchQobuzAlbumPage, extractQobuzCredits } from './sources/qobuz.js';
 import { parseAppleAlbumUrl, fetchAppleCredits } from './sources/apple.js';
 import { mbpReleaseLinks } from '../../../dev/mbpage/mb-page.mjs';
@@ -62,6 +63,7 @@ const IMPORT_SOURCES = [
     ['Deezer', 'deezer', /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i],
     ['mora', 'mora', /(^|\/\/)mora\.jp\/package\/\d+\/[\w-]+/i],
     ['Melon', 'melon', /(^|\/\/)(www\.|m2\.|m\.app\.)?melon\.com\/album\/detail\.htm\?(?:[^#]*&)?albumId=\d+/i],
+    ['AllMusic', 'allmusic', /(^|\/\/)(www\.)?allmusic\.com\/album\/release\/(?:[^/?#]*-)?mr\d{10}/i],
     ['Apple', 'apple', /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i],
     ['Metal Archives', 'globe', /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i],
     ['YouTube Music', 'ytmusic', /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i],
@@ -97,6 +99,8 @@ async function readSources(links) {
     if (mora) jobs.push(['mora', async () => ({ source: 'mora', perTrack: withMedia(extractMoraCredits((await fetchMoraPackage(mora.pageUrl)).json)) })]);
     const melon = find(/melon\.com\//i) && parseMelonAlbumUrl(find(/melon\.com\//i));
     if (melon) jobs.push(['Melon', async () => ({ source: 'Melon', perTrack: withMedia((await fetchMelonCredits(melon.id)).tracks.map(({ index, credits }) => ({ index, credits }))) })]);
+    const am = find(/allmusic\.com\//i) && parseAllMusicReleaseUrl(find(/allmusic\.com\//i));
+    if (am) jobs.push(['AllMusic', async () => ({ source: 'AllMusic', perTrack: withMedia(((await fetchAllMusicCredits({ id: am.id }))?.tracks || []).map(({ index, credits }) => ({ index, credits }))) })]);
     const apple = find(/(music|itunes)\.apple\.com\//i) && parseAppleAlbumUrl(find(/(music|itunes)\.apple\.com\//i));
     if (apple) jobs.push(['Apple', async () => ({ source: 'Apple', perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) })]);
     log.info('Mission Control probe: credit sources linked: ' + (jobs.map(j => j[0]).join(', ') || 'none'));

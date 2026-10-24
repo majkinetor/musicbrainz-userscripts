@@ -131,6 +131,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 | Qobuz         | looked up and read                                                         | optional |
 | Beatport      |                                                                            | optional |
 | Volumo        | looked up and read                                                         |          |
+| AllMusic      | looked up and read                                                         |          |
 | HDtracks      | looked up and read                                                         |          |
 | 7digital      | looked up and read                                                         |          |
 | SoundCloud    | read from the linked set                                                   |          |
