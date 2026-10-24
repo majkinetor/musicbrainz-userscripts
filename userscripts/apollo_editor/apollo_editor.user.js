@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.23.125720
+// @version      2026.10.24
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -12985,7 +12985,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function activeStepKey() { const n = stepNavEl(); const a = n && n.querySelector('li.ui-tabs-active a'); return a ? (a.getAttribute('href') || '').slice(1) : ''; }
   function vis(el) { return !!(el && el.style.display !== 'none' && !el.disabled); }   // native inline display reflects MB's per-step show/hide
 
-  let _dupesSeen = false;   // #812: the Release step has been left, past the duplicates check (Add release)
   let _navStyled = false;
   function navStyle() {
     if (_navStyled) return; _navStyled = true;
@@ -13152,15 +13151,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // logic of our own. The .mp node stays in the DOM even while the header is hidden.
     const navTitle = document.getElementById('tc-nav-title');
     if (navTitle) mbuCls(navTitle, 'tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
-    // #812: on Add, MB hides Finish on the first step so the duplicates get seen at least once;
-    // leaving that step passes the duplicates check (MB skips the step when there are none), so once
-    // it has been left Apollo keeps Finish on the Release step too (the hidden native button still clicks)
-    if (active && active !== 'information') _dupesSeen = true;
     WIZ_DEFS.forEach(d => {
       const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return;
       const nat = f && d.find(f);
-      const show = vis(nat) || (d.id === 'finish' && _dupesSeen && active === 'information' && nat && !nat.disabled);
-      mbuProp(proxy.style, 'display', (show && changed) ? '' : 'none');
+      // #812: MB hides its native Finish on the FIRST tab of a release ADD (`activeTabIndex() > 0 ||
+      // action === 'edit'`), to push the user past the Duplicates tab. The button still works when
+      // clicked (it only jumps to the edit-note tab — no submit, no skipped validation), so show OUR
+      // Finish on every non-last tab when there are changes, mirroring only MB's "not the last tab"
+      // half. Enter edit keeps MB's own visibility (the edit-note tab alone).
+      const show = changed && (d.id === 'finish' ? (!!nat && active !== 'edit-note') : vis(nat));
+      mbuProp(proxy.style, 'display', show ? '' : 'none');
     });
     // paginators stay in a fixed position — Prev/Next are never hidden, just disabled
     // when MB's native button isn't applicable (Prev on the first step, Next on the last) (#140)
