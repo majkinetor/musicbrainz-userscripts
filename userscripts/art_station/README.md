@@ -110,7 +110,8 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 - Each operation shows its cover and progress; the top bar counts the batch, with the upload rate while images upload.
 - The edit note starts folded to its first line; click it to edit.
 - **Dry run** is in the menu on **Submit edits** (▾): it shows what each edit would send, and submits nothing.
-- Removes, edits and uploads run in parallel; one reorder edit runs last and sets the final order.
+- Uploads go first, then removes and edits, in parallel; one reorder edit runs last and sets the final order.
+- A removed cover that a new one replaces (its rotated copy, or the larger front [Mission Control](../mission_control/README.md) brings) says so in its edit note: the new image's address, size and source, and the removed one's size.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
 - *Automatically repeat failures* (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
 

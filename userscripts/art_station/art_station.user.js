@@ -3957,6 +3957,23 @@
   // replaces the original (the angle stays accurate through repeated rotations — see _rotDeg)
   const rotLine = it => (it && it._rotatedFrom) ? `Rotated ${it._rotDeg || 90}° from this release's existing image ${it._rotatedFrom} (which this edit replaces)` : '';
   const editNoteFor = (m, it) => [m.note && m.note.trim(), sourceLine(it), bestLine(it), rotLine(it), ATTRIBUTION].filter(Boolean).join('\n\n');
+  // #819 the new cover that takes a removed one's place: its rotated copy (#678), or the best front Mission Control
+  // put in for the smaller one (#784)
+  const replacementOf = old => MODEL.find(x => x._new && !x._del && !x._sourcing && (x._rotatedFrom === old.id || (x === _mcBest && _mcReplaced === old)));
+  // #819 a removal that a new cover replaces says by what, in its own edit note. The uploads register before the
+  // removes run, so the new image's id is known; the dry run shows a stand-in for it.
+  const replacedLine = (old, dry) => {
+    const nu = replacementOf(old);
+    if (!nu) return '';
+    const id = nu._signed ? nu._signed.image_id : (dry ? '‹image_id›' : null);
+    if (id == null) return '';
+    const size = it => [it.w && it.h ? `${it.w}×${it.h}` : '', it.bytes ? fmtBytes(it.bytes) : ''].filter(Boolean).join(', ');
+    const how = nu._rotatedFrom === old.id ? `, this image rotated ${nu._rotDeg || 90}°` : '';
+    const who = (nu._provider && String(nu._provider).trim()) || '', page = (nu._provUrl && String(nu._provUrl).trim()) || '';
+    const from = !how && (who || page) ? ` from ${who || 'an external provider'}${page ? ': ' + page : ''}` : '';
+    const was = size(old);
+    return `Replaced by ${imgUrl(id)}${size(nu) ? ` (${size(nu)})` : ''}${how}${from}${was ? `\nThis image: ${was}` : ''}`;
+  };
   // test hook only (#717): the staged sourced covers, with the source lines their edit notes get
   if (mbuTestHooks()) (window.__asTest || (window.__asTest = {})).staged = () => MODEL.filter(x => x._new && !x._sourcing).map(x => ({
     provider: x._provider || '', provUrl: x._provUrl || '', provImageUrl: x._provImageUrl || '', provMaxFrom: x._provMaxFrom || '',
@@ -4019,7 +4036,7 @@
     try { form = await getPostForm(`${R}/remove-${ART}/${it.id}`); }
     catch (e) { if (/\b404\b/.test(String((e && e.message) || e))) return { noop: true, note: 'already removed (not on the release)' }; throw e; }
     const p = new URLSearchParams(); copyHidden(form, p);
-    p.append('confirm.edit_note', editNote(meta));
+    p.append('confirm.edit_note', [meta.note && meta.note.trim(), replacedLine(it, meta.dry), ATTRIBUTION].filter(Boolean).join('\n\n'));   // #819
     if (meta.votable) p.append('confirm.make_votable', '1');
     return { method: 'POST', url: form._action, body: p };
   }
