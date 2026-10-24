@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.080000
+// @version      2026.10.25.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2024,6 +2024,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t .sub{color:var(--muted)}
 .ed-t .ev{display:flex!important;flex-wrap:nowrap;align-items:center;gap:8px;white-space:nowrap;line-height:1.3}.ed-t .ev+.ev{margin-top:4px}.ed-t .iso{flex:none;min-width:2.8em;text-align:center;font-weight:700;color:var(--soft)}
 .ed-t .tc{width:52px}
+.ed-t .lk{white-space:normal;min-width:60px}.ed-t .lk a{display:inline-flex;margin:2px 6px 2px 0;vertical-align:middle}
 .ed-t a.tt{display:grid;place-items:center;width:40px;height:40px;border-radius:6px;overflow:hidden;background:var(--chip);color:var(--muted)}
 .ed-t a.tt img{width:100%;height:100%;object-fit:cover}
 .ed-row{display:grid;grid-auto-flow:column;grid-auto-columns:120px;gap:14px;overflow-x:auto;padding:6px 4px 12px;scroll-snap-type:x mandatory}
@@ -2345,7 +2346,7 @@ const edition = e => ({
     lang: e['text-representation'] && [nameOf('language', e['text-representation'].language), nameOf('script', e['text-representation'].script)].filter(Boolean),
     counts: (e.media || []).map(m => m['track-count'] || 0),
     events: (e['release-events'] || []).map(v => ({ date: v.date || '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
-    ac: e['artist-credit'] || [],
+    ac: e['artist-credit'] || [], links: urlsOf(e.relations || []),
     li: (e['label-info'] || []).map(l => ({ id: l.label && l.label.id, name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
 // The edition tile's tooltip: the release info's look, small (majkinetor, from a mock)
@@ -2375,7 +2376,7 @@ async function load(id, step = () => {}) {
     step('release');
     const rgId = r['release-group'].id;
     const rg = await ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`);
-    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits&limit=100`).then(x => { step('editions'); return x; }, () => null);
+    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, () => null);
     return { rel: release(r, rg, []), editions: [], edCount: 0, eds, covers };
 }
 
@@ -2529,9 +2530,10 @@ function edTable(es, curId) {
             <td>${e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')}</td>
             <td class="mono">${e.li.map(l => `<div>${esc(l.catno)}</div>`).join('')}</td>
             <td class="mono">${esc(e.barcode)}</td>
+            <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
         </tr>`;
     };
-    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th></tr></thead>${groups.map(g => `<tbody><tr class="gh"><th colspan="9">${esc(g || 'No status')} <span class="count">${es.filter(e => (e.status || '') === g).length}</span></th></tr>${es.filter(e => (e.status || '') === g).map(row).join('')}</tbody>`).join('')}</table></div>`;
+    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th><th>Links</th></tr></thead>${groups.map(g => `<tbody><tr class="gh"><th colspan="10">${esc(g || 'No status')} <span class="count">${es.filter(e => (e.status || '') === g).length}</span></th></tr>${es.filter(e => (e.status || '') === g).map(row).join('')}</tbody>`).join('')}</table></div>`;
 }
 function editions(r, eds, count) {
     if (eds.length < (r.id ? 2 : 1)) return '';
@@ -2720,7 +2722,7 @@ function group(g) {
 async function loadRg(id, step = () => {}) {
     const g = await ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`);
     step('group');
-    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
     return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
 function rgHero(d) {
