@@ -2053,7 +2053,26 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
   .facts{gap:16px 24px}
   .card{padding:16px}
   .cline{grid-template-columns:1fr}
-}`;
+}
+.sk{display:block;background:linear-gradient(90deg,var(--chip) 0%,var(--hover) 40%,var(--chip) 80%);background-size:300% 100%;animation:sk 1.4s ease-in-out infinite;border-radius:8px}
+@keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
+.sk-page .info{flex:1 1 0;min-width:0}
+.sk-cover{aspect-ratio:1;border-radius:16px;display:grid;place-items:center}
+.sk-orbit{width:84px;height:84px}
+.sk-orbit path{transform-origin:64px 64px;animation:skspin 2.4s linear infinite}
+@keyframes skspin{to{transform:rotate(345deg)}}
+.sk-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.sk-thumbs .sk{aspect-ratio:1}
+.sk.k{width:180px;height:12px;margin-top:20px}.sk.ti{width:min(420px,90%);height:56px;margin:18px 0 14px;border-radius:12px}.sk.by{width:240px;height:24px}
+.sk-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:40px}.sk-f{display:grid;gap:10px}.sk-f .l{width:70px;height:10px}.sk-f .v{width:120px;height:18px}
+.sk-st{margin-top:36px;color:var(--muted);font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sk-st b{color:var(--text);font-weight:600}
+.sk-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:skp 1s ease-in-out infinite}@keyframes skp{50%{opacity:.25}}
+.sk-st.err{color:var(--warn)}
+.sk-b{font:600 13px Manrope,system-ui,sans-serif;height:30px;padding:0 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.sk-b:hover{border-color:var(--accent)}
+.sk-sec{margin-top:48px}.sk.h{width:260px;height:26px}
+.sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
+.sk-rows{margin-top:16px;display:grid}.sk-r{display:grid;grid-template-columns:28px 1fr 120px 60px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.sk-r .sk{height:14px}
+@media (max-width:700px){.sk-r{grid-template-columns:20px 1fr 50px}.sk-r .sk:nth-child(3){display:none}}
+@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}`;
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
@@ -2165,13 +2184,15 @@ const edition = e => ({
     where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
     labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
 });
-async function load(id) {
+async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
+    step(0);
     const r = await ws(`release/${id}?inc=${inc}`);
+    step(1);
     const rgId = r['release-group'].id;
     const [rg, eds, images] = await Promise.all([
         ws(`release-group/${rgId}?inc=ratings`),
-        ws(`release?release-group=${rgId}&inc=media+labels&limit=100`),
+        ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step(2); return x; }),
         caa(id),
     ]);
     return { rel: release(r, rg, images), editions: (eds.releases || []).map(edition), edCount: eds['release-count'] || 0 };
@@ -2620,13 +2641,33 @@ function start() {
     setOn(S.on);
 }
 let showing = 0;
+// the page's shape while it loads, so nothing jumps when the data lands
+function skeleton() {
+    const sk = (cls, st = '') => `<span class="sk ${cls}"${st ? ` style="${st}"` : ''}></span>`;
+    const fact = `<div class="sk-f">${sk('l')}${sk('v')}</div>`;
+    return `<div class="sk-page" aria-busy="true"><div class="hero"><div class="art"><div class="sk sk-cover">${LOGO.replace('<svg', '<svg class="sk-orbit"')}</div><div class="sk-thumbs">${sk('t').repeat(3)}</div></div>
+        <div class="info">${sk('k')}${sk('ti')}${sk('by')}<div class="sk-facts">${fact.repeat(5)}</div>
+        <div class="sk-st" role="status"><span class="sk-dot"></span><span><b>Release</b> · editions · covers</span></div></div></div>
+        <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
+        <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
+}
 async function show(id) {
     const app = $('#app'), n = ++showing;
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
-    app.innerHTML = '<p class="msg">Loading…</p>';
+    app.innerHTML = skeleton();
     scrollTo(0, 0);
-    try { const d = await load(id); if (n === showing) { data = d; render(); } }
-    catch (e) { if (n === showing) app.innerHTML = `<p class="msg err">${esc(e.message)}</p>`; }
+    const st = app.querySelector('.sk-st span:last-child');
+    const STEPS = ['Release', 'Editions', 'Covers'];
+    const step = i => { if (n === showing && st) st.innerHTML = STEPS.map((x, j) => j === i ? `<b>${x}</b>` : x.toLowerCase()).join(' · '); };
+    try { const d = await load(id, step); if (n === showing) { data = d; render(); } }
+    catch (e) {
+        if (n !== showing) return;
+        const box = app.querySelector('.sk-st');
+        box.className = 'sk-st err';
+        box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${id === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;
+        box.querySelector('[data-retry]').onclick = () => show(id);
+        const mb = box.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => setOn(false);
+    }
 }
 if (PAGE_ID) {
     // hide MusicBrainz's page before it paints; the style goes once the viewer or the page itself is shown
