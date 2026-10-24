@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.73
+// @version      2026.10.24.235413
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2180,7 +2180,25 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
 .sk-rows{margin-top:16px;display:grid}.sk-r{display:grid;grid-template-columns:28px 1fr 120px 60px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.sk-r .sk{height:14px}
 @media (max-width:700px){.sk-r{grid-template-columns:20px 1fr 50px}.sk-r .sk:nth-child(3){display:none}}
-@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}`;
+@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}
+#mbu-tip:has(.ehtip){width:340px;padding:10px 12px 11px;background:var(--surface);color:var(--text);border-color:var(--border);border-radius:10px;font-family:Manrope,system-ui,sans-serif}
+#mbu-tip:has(.ehtip)::before{border-color:var(--border)}
+.ehtip .hd{display:flex;align-items:baseline;gap:8px}
+.ehtip .hd b{font-size:14px;font-weight:800;color:var(--text);min-width:0}
+.ehtip .here{font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap}
+.ehtip .fmt{margin-left:auto;font-size:12.5px;font-weight:700;white-space:nowrap}
+.ehtip .dis{font-size:12px;color:var(--muted);margin-top:1px}
+.ehtip .fs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px 16px;align-items:start;border-top:1px solid var(--border);padding-top:9px;margin-top:8px}
+.ehtip .fs:empty{display:none}
+.ehtip .fs>div{min-width:0}
+.ehtip .lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ehtip .count{font-size:9.5px;margin-left:3px;padding:0 5px;border-radius:999px;background:var(--chip);color:var(--text)}
+.ehtip .v{margin-top:2px;font-size:12.5px;font-weight:600;display:flex;flex-direction:column;gap:3px}
+.ehtip .sub{font-size:11.5px;font-weight:500;color:var(--muted)}
+.ehtip .lab{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 7px}
+.ehtip .ln{color:var(--link)}
+.ehtip .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;color:var(--muted)}
+.ehtip .mono.bc{color:var(--text)}`;
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
@@ -2302,7 +2320,32 @@ const edition = e => ({
     formats: (e.media || []).map(m => m.format), date: e.date || '',
     where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
     labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
+    // for the tile's tooltip
+    title: e.title || '', barcode: e.barcode || '', packaging: e.packaging || '',
+    lang: e['text-representation'] && [nameOf('language', e['text-representation'].language), nameOf('script', e['text-representation'].script)].filter(Boolean),
+    counts: (e.media || []).map(m => m['track-count'] || 0),
+    events: (e['release-events'] || []).map(v => ({ date: v.date || '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
+    li: (e['label-info'] || []).map(l => ({ name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
+// The edition tile's tooltip: the release info's look, small (majkinetor, from a mock)
+const ED_TIP = new Map();
+function edTip(e, cur) {
+    const n = e.counts.reduce((s, x) => s + x, 0);
+    const tracks = n ? ` <span class="sub">· ${e.counts.length > 1 ? e.counts.join(' + ') + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</span>` : '';
+    const byDate = [];
+    for (const v of e.events) { const l = byDate.find(x => x.date === v.date); l ? l.iso.push(v.iso) : byDate.push({ date: v.date, iso: [v.iso] }); }
+    const f = (label, v) => v ? `<div><div class="lbl">${label}</div><div class="v">${v}</div></div>` : '';
+    const st = e.status !== 'Official' ? (e.status || 'No status') : '';
+    return `<div class="ehtip"><div class="hd"><b>${esc(e.title)}</b>${cur ? '<span class="here">you are here</span>' : ''}<span class="fmt">${esc(fmtSummary(e.formats))}${tracks}</span></div>${e.disambig ? `<div class="dis">${esc(e.disambig)}</div>` : ''}<div class="fs">`
+        + f(`Released${e.events.length > 1 ? ` <span class="count">${e.events.length}</span>` : ''}`, byDate.map(l => `<div>${l.date ? fdate(l.date) : 'no date'} <span class="sub">${esc(l.iso.filter(Boolean).join(', '))}</span></div>`).join('') || (e.date && fdate(e.date)))
+        + f(`Label${e.li.length > 1 ? 's' : ''}`, e.li.map(l => `<div class="lab">${l.name ? `<span class="ln">${esc(l.name)}</span>` : ''}${l.catno ? `<span class="mono">${esc(l.catno)}</span>` : ''}</div>`).join(''))
+        + f('Barcode', e.barcode && `<span class="mono bc">${esc(e.barcode)}</span>`)
+        + f('Packaging', e.packaging && esc(e.packaging))
+        + f('Status', st && esc(st))
+        + f('Language', e.lang && e.lang.length && `<span>${esc(e.lang[0])}${e.lang[1] ? ` <span class="sub">· ${esc(e.lang[1])}</span>` : ''}</span>`)
+        + '</div></div>';
+}
+mbuTipOn('.tile[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
@@ -2440,7 +2483,8 @@ function edTile(e, curId) {
     const k = fmtKind(e.formats[0]);
     const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
-    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-tip="${esc(fmtSummary(e.formats) + ' · ' + (e.where.join(', ') || 'no country') + ' · ' + (e.date || 'no date') + (e.disambig ? ' · ' + e.disambig : '') + ' · ' + e.labels.join(', '))}">
+    ED_TIP.set(e.id, { e, cur: e.id === curId });
+    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
         <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
         <span class="t1">${esc(fmtSummary(e.formats))}</span>
         <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
