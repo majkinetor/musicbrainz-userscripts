@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.9
+// @version      2026.10.24.10
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2445,7 +2445,11 @@ function tracklist(r) {
         if (!shut) rows += ts.map(row).join('');
     });
     const toggles = [['isrc', 'ISRCs'], ['links', 'Platforms'], ['credits', 'Credits'], ['len', 'Lengths']].map(([k, n]) => `<button class="chip" type="button" data-col="${k}" aria-pressed="${S.cols[k]}">${S.cols[k] ? '✓ ' : ''}${n}</button>`).join('');
-    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}`;
+    rowKeys = tracks.map(t => t.key);
+    const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
+    // open: arrows apart (expand); all open: arrows together (collapse)
+    const rowsB = `<button class="ib" type="button" data-rows="${allOpen ? 0 : 1}" aria-label="${allOpen ? 'Close all tracks' : 'Open all tracks'}" data-tip="${allOpen ? 'Close all tracks' : 'Open all tracks\nShows every track\'s credits'}">${SVG(allOpen ? '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>' : '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>')}</button>`;
+    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${rowsB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
@@ -2517,6 +2521,7 @@ function fitQuiet() {
 }
 let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1600); }
+let rowKeys = [];
 function onClick(ev) {
     if (!ehOn) return;
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
@@ -2537,6 +2542,7 @@ function onClick(ev) {
         return;
     }
     if (d.col) S.cols[d.col] = !S.cols[d.col];
+    else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
