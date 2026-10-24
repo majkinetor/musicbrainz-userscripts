@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.40
+// @version      2026.10.24.41
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1970,6 +1970,11 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .ed-sw[aria-checked=true]{color:var(--text)}
 .ed-sw[aria-checked=true] i{background:var(--accent)}
 .ed-sw[aria-checked=true] i::after{left:16px}
+.ed-div{width:1px;height:20px;background:var(--border)}
+.ed-views{display:inline-flex;gap:2px}
+.ed-views button{all:unset;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;color:var(--muted);cursor:pointer}
+.ed-views button:hover{background:var(--chip);color:var(--text)}
+.ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
 .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
 .ed-row{display:grid;grid-auto-flow:column;grid-auto-columns:120px;gap:14px;overflow-x:auto;padding:6px 4px 12px;scroll-snap-type:x mandatory}
 .ed-row .tile{scroll-snap-align:start}
@@ -2411,12 +2416,13 @@ function editions(r, eds, count) {
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
     const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official'));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
-    const tools = `<span class="seg" role="group" aria-label="Editions view">${[['grid', 'Grid'], ['row', 'Row'], ['format', 'By format']].map(([v, n]) => `<button type="button" data-edview="${v}" aria-pressed="${S.edView === v}">${n}</button>`).join('')}</span>`;
+    const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>']];
+    const views = `<span class="ed-div"></span><span class="ed-views" role="group" aria-label="Editions view">${EDV.map(([v, n, d]) => `<button type="button" data-edview="${v}" aria-pressed="${S.edView === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button></div>`;
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
     let body;
     if (S.edView === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
     else if (S.edView === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
@@ -2425,7 +2431,7 @@ function editions(r, eds, count) {
         }).join('')}</div>`;
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
     const more = count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. <a href="${MB}/release-group/${r.rgId}">All on MusicBrainz</a></div>` : '';
-    return sect('ed', `${count} editions of this ${esc((r.type || 'release').toLowerCase())}`, tools, filters + body + more, folded);
+    return sect('ed', `${count} editions of this ${esc((r.type || 'release').toLowerCase())}`, '', filters + body + more, folded);
 }
 
 /* ── tracklist ─────────────────────────────────────── */
