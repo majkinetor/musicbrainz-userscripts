@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.68
+// @version      2026.10.24.69
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1904,6 +1904,11 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .cv svg{transition:transform .15s}
 [aria-expanded="true"]>.cv svg{transform:rotate(90deg)}
 .folded-note{font-size:14px;color:var(--muted)}
+.rgc{display:grid;grid-template-columns:fit-content(14em) minmax(0,1fr);gap:10px 14px;margin:0;font-size:14px}
+.rgc dt{text-align:right;color:var(--muted);font-weight:600}
+.rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
+.rgc .rga{color:var(--muted)}
+.secthead .rgt{font-weight:600}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
@@ -2265,7 +2270,7 @@ function release(r, rg, images) {
         langName: r['text-representation'] && nameOf('language', r['text-representation'].language),
         script: r['text-representation'] && nameOf('script', r['text-representation'].script),
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
-        title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {},
+        title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
         credits: creditsOf(r.relations || []), front: (r['cover-art-archive'] || {}).front, images,
         genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
         events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
@@ -2303,7 +2308,7 @@ async function load(id, step = () => {}) {
     const r = await ws(`release/${id}?inc=${inc}`);
     step('release');
     const rgId = r['release-group'].id;
-    const rg = await ws(`release-group/${rgId}?inc=ratings`);
+    const rg = await ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`);
     const eds = ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step('editions'); return x; }, () => null);
     return { rel: release(r, rg, []), editions: [], edCount: 0, eds, covers };
 }
@@ -2580,6 +2585,25 @@ function creditsCard(r) {
     return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${byNameB('ib')}${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
 }
 
+/* ── release group ─────────────────────────────────── */
+// MB's phrase for each side of a release group relationship: [forward, backward]
+const RG_PHRASE = { 'single from': ['single from', 'associated singles/EPs'], cover: ['cover of', 'covers'], 'included in': ['included in', 'includes'], compilation: ['compiles', 'included in'], 'DJ-mix': ['DJ-mix of', 'DJ-mixed by'], remix: ['remix of', 'remixes'], 'live performance': ['live performance of', 'live performances'], 'mashes up': ['mashes up', 'mashed up in'], 'first album release': ['first release of', 'first released as'], 'part of set': ['part of', 'includes'] };
+const rgAttrs = x => [...(x.attributes || []).map(a => (x['attribute-values'] || {})[a] ? `${a}: ${x['attribute-values'][a]}` : a), x['ordering-key'] != null && x['target-type'] === 'series' ? `order: ${x['ordering-key']}` : ''].filter(Boolean).map(a => `<span class="rga">(${esc(a)})</span>`).join(' ');
+function rgCard(r) {
+    const groups = new Map(), add = (k, h) => { const l = groups.get(k) || []; l.push(h); groups.set(k, l); };
+    for (const x of r.rg.rels) {
+        if (x['target-type'] === 'release_group') {
+            const p = RG_PHRASE[x.type] || [x.type, x.type], g = x['release_group'];
+            add(p[x.direction === 'backward' ? 1 : 0], `${entA('release-group', g.id, g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''} ${rgAttrs(x)}`);
+        } else if (x['target-type'] === 'series') add('part of', `${entA('series', x.series.id, x.series.name)} ${rgAttrs(x)}`);
+        else if (x['target-type'] === 'url') add(x.type, `<a href="${esc(x.url.resource)}" target="_blank" rel="noopener">${esc(x.url.resource.replace(/^https?:\/\/(www\.)?/, ''))}</a>`);
+    }
+    if (!groups.size) return '';
+    const n = r.rg.rels.length;
+    const body = `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>`;
+    return sect('rg', `Release group <a class="rgt" href="${MB}/release-group/${r.rgId}">${esc(r.rg.title)}</a>`, `<span class="aside">${n} relationship${n === 1 ? '' : 's'}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
+}
+
 /* ── artwork ───────────────────────────────────────── */
 function artwork(r) {
     if (!r.images.length) return '';
@@ -2598,7 +2622,7 @@ function render(keepPop) {
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = r.title + ' · Event Horizon';
-    app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + artwork(r);
+    app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
     // Every row's platforms take the widest row's width, so the ISRCs line up.
     for (const tl of app.querySelectorAll('.tl')) {
         const lks = [...tl.querySelectorAll('.tr .lk')], w = Math.max(0, ...lks.map(e => e.offsetWidth));
