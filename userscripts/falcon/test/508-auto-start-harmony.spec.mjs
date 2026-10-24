@@ -18,7 +18,7 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
   const ck = check;
 
 
-  async function bootWithToken({ autoStart }) {
+  async function bootWithToken({ autoStart, cancel }) {
     const page = await context.newPage();
     const errs = []; page.on('pageerror', e => { if (!mbNoise(e.message)) errs.push(e.message); });
     await page.route('**/recording/*/edit*', async (route, request) => {
@@ -31,6 +31,7 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
     await page.addInitScript((autoStart) => {
       const store = new Map();
       store.set('falcon:autoStartHarmonyImport', autoStart);
+      store.set('falcon:autoStartDelayS', 5);   // #829: the shortest countdown
       window.GM_getValue = (k, d) => store.has(k) ? store.get(k) : d;
       window.GM_setValue = (k, v) => store.set(k, v);
       window.GM_deleteValue = k => store.delete(k);
@@ -55,6 +56,17 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
     await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
     // on: until start() has taken the item; off: until it is seeded and the page idle
     const queueState = () => page.evaluate(() => window.__falconTest.getQueue().map(i => i.status));
+    const runLbl = () => page.evaluate(() => (document.querySelector('#falcon-run .falcon-bt') || {}).textContent || '');
+    if (autoStart) {
+      // #829: a countdown runs on Start first
+      const lbl = await until(runLbl, l => /^Start in \d/.test(l));
+      ck(/^Start in \d/.test(lbl), '#829: Start counts down before the auto start — ' + JSON.stringify(lbl));
+      ck((await queueState())[0] === 'queued', '#829: and the item waits for it');
+      if (cancel) {
+        await page.click('#falcon-run');
+        return { state: await queueState(), lbl: await runLbl(), errs, page };
+      }
+    }
     let state = await until(queueState, s => s.length > 0 && (!autoStart || s[0] !== 'queued'));
     if (!autoStart) { await idle(page); state = await queueState(); }
     return { state, errs, page };
@@ -65,6 +77,14 @@ test("#508: auto start harmony", { tag: ['@sandbox', '@login'] }, async ({ conte
     const { state, errs } = await bootWithToken({ autoStart: true });
     console.log('autoStart=ON, token scheme, item status after boot:', JSON.stringify(state));
     ck(state.length === 1 && state[0] !== 'queued', `the item left 'queued' on its own — start() was auto-triggered (got "${state[0]}")`);
+    ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
+  }
+
+  // 1b. #829: a click on Start during the countdown cancels it; nothing starts
+  {
+    const { state, lbl, errs } = await bootWithToken({ autoStart: true, cancel: true });
+    ck(lbl === 'Start', '#829: the click cancels the countdown and Start reads normally — ' + JSON.stringify(lbl));
+    ck(state[0] === 'queued', '#829: and the item stays queued — ' + JSON.stringify(state));
     ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));
   }
 
