@@ -1,18 +1,19 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.000000
+// @version      2026.10.26.000100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release-group/*
+// @match        https://*.musicbrainz.org/artist/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
 
-// Event Horizon takes over MusicBrainz's own release and release group pages, /release/<mbid> and /release-group/<mbid>
+// Event Horizon takes over MusicBrainz's own release, release group and artist pages, /release/<mbid>, /release-group/<mbid> and /artist/<mbid>
 // (not their subpages), and moves between them in place: the page is hidden
 // from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
 // back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
@@ -2196,6 +2197,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .artgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.disco-h:first-child{margin-top:0}.art .apic{object-fit:cover;object-position:top}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -2815,6 +2817,92 @@ function annotation(g) {
     return sect('an', 'Annotation', '', `<div class="anno">${annoHtml(g.annotation)}</div>`, `<div class="folded-note">${esc(g.annotation.slice(0, 120))}${g.annotation.length > 120 ? '…' : ''}</div>`);
 }
 
+/* ── artist page ───────────────────────────────────── */
+// where an artist's picture comes from: the first of its URL relationships one of these knows, in this order
+const ART_IMG = [
+    { name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/artist\/(\d+)/, get: async m => {
+        const r = await fetch('https://api.discogs.com/artists/' + m[1]);
+        if (!r.ok) return null;
+        const im = (await r.json()).images || [], i = im.find(x => x.type === 'primary') || im[0];
+        return i && i.uri ? i.uri : null;
+    } },
+];
+async function artistImage(rels) {
+    const urls = rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource);
+    for (const p of ART_IMG) for (const u of urls) {
+        const m = u.match(p.re);
+        if (!m) continue;
+        try { const src = await p.get(m); if (src) return { src, from: p.name, url: u }; } catch (e) { LOG.warn(p.name + ' image failed: ' + e.message); }
+    }
+    return null;
+}
+const AR_ACTS = [
+    ['edit', 'Edit', 'Edit artist', ACTS[0][3]],
+    ['tags', 'Tags', 'Tags', CI_TAG],
+    ['edits', 'History', 'Edit history', ACTS[3][3]],
+];
+function artist(a) {
+    const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {};
+    return {
+        id: a.id, title: a.name, sort: a['sort-name'], disambig: a.disambiguation, type: a.type || '', gender: a.gender || '',
+        area: a.area, begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, beginArea: a['begin-area'], endArea: a['end-area'],
+        rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        ipis: a.ipis || [], isnis: a.isnis || [], links: urlsOf(a.relations || []), rels: a.relations || [], img: null,
+    };
+}
+async function loadArtist(id, step = () => {}) {
+    const a = await ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
+    step('artist');
+    const g = artist(a);
+    const disc = ws(`release-group?artist=${id}&limit=100`).then(x => { step('discography'); return x; }, () => null);
+    const img = artistImage(g.rels).then(x => { step('image'); return x; });
+    const wiki = mbnFetch(`${MB}/artist/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => r.json()).then(x => x.wikipediaExtract || null, () => null);
+    return { kind: 'artist', g, disc, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+}
+const areaA = x => x ? entA('area', x.id, x.name) : '';
+function arHero(d) {
+    const g = d.g, person = g.type === 'Person' || g.type === 'Character', on = k => S.extras.includes(k);
+    const when = (date, area) => [date && fdate(date), area && areaA(area)].filter(Boolean).join(' · ');
+    const F = [
+        [person ? 'Born' : 'Formed', when(g.begin, g.beginArea)],
+        [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : '')],
+        ['Area', g.area && areaA(g.area)],
+        ['Gender', g.gender && esc(g.gender)],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && g.aliases.slice(0, 8).map(a => `<div>${esc(a)}</div>`).join('') + (g.aliases.length > 8 ? `<div class="aside">+${g.aliases.length - 8} more</div>` : '')],
+        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
+        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ];
+    const tags = on('tags') && g.tags.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${g.tags.map(t => `<span class="chip tag">${esc(t)}</span>`).join('')}</div>` : '';
+    const pic = g.img ? `<a href="${esc(g.img.url)}" target="_blank" rel="noopener" data-tip="Image from ${esc(g.img.from)}"><img class="cover apic" src="${esc(g.img.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"></a>` : `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}</div>`;
+    return `<section class="hero">
+        <div class="art">${pic}${under(g)}${tags ? `<div class="under">${tags}</div>` : ''}</div>
+        <div class="facts-col">
+            <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/artist/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <h1>${esc(g.title)}</h1>
+            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
+            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+        </div>
+    </section>`;
+}
+// the release groups by type, albums first, each type by date
+const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
+function discography(d) {
+    const x = d.discX;
+    if (!x) return '';
+    const rgs = x['release-groups'] || [], m = new Map();
+    for (const g of rgs) { const k = [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified'; const l = m.get(k) || []; l.push(g); m.set(k, l); }
+    const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
+    const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
+    const body = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => `<h3 class="disco-h">${esc(k)} <span class="count">${l.length}</span></h3><div class="disco">${l.sort((a, b) => (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9')).map(tile).join('')}</div>`).join('');
+    const total = x['release-group-count'] || rgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > rgs.length ? ` · first ${rgs.length} shown` : ''}`;
+    return sect('dg', `Discography <span class="count">${total}</span>`, `<span class="aside">${n}</span>`, body, `<div class="folded-note">${n}</div>`);
+}
+
 /* ── artwork ───────────────────────────────────────── */
 function artwork(r) {
     if (!r.images.length) return '';
@@ -2833,11 +2921,12 @@ function render(keepPop) {
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = titleOf(data);
-    app.innerHTML = data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
+    app.innerHTML = data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
     // a group without its own cover shows its first release's, else the format's mark
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    for (const im of app.querySelectorAll('[data-dgcover]')) im.onerror = () => { im.outerHTML = `<span class="dn">${LAYERS(48, 1)}</span>`; };
     // Every row's platforms take the widest row's width, so the ISRCs line up.
     for (const tl of app.querySelectorAll('.tl')) {
         const lks = [...tl.querySelectorAll('.tr .lk')], w = Math.max(0, ...lks.map(e => e.offsetWidth));
@@ -2858,7 +2947,7 @@ function render(keepPop) {
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const SEC_NAME = { dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -2965,7 +3054,7 @@ function onClick(ev) {
 }
 
 // a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
-const PAGE = new RegExp('^/(release|release-group)/(' + MBID.source + ')/?$', 'i');
+const PAGE = new RegExp('^/(release|release-group|artist)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
     const m = u.origin === location.origin && u.pathname.match(PAGE);
@@ -3201,8 +3290,8 @@ function skeleton() {
 }
 async function show(key) {
     const app = $('#app'), n = ++showing;
-    const isRg = !!key && key.startsWith('release-group/'), id = key && key.split('/')[1];
-    const parts = isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
+    const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', id = key && key.split('/')[1];
+    const parts = isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
@@ -3212,12 +3301,14 @@ async function show(key) {
     // each part is bold while it loads and ticked when done
     const done = new Set();
     const step = k => { done.add(k); if (n === showing && st) st.innerHTML = parts.map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
-    LOG.info('Loading ' + (isRg ? 'release group ' : 'release ') + id);
+    LOG.info('Loading ' + kind.replace('-', ' ') + ' ' + id);
     const t0 = Date.now();
     try {
-        const d = await (isRg ? loadRg : load)(id, step);
+        const d = await (isAr ? loadArtist : isRg ? loadRg : load)(id, step);
         if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
         d.eds.then(x => { if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (isRg ? 0 : 1)) render(); } });
+        if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
+        if (d.img) d.img.then(x => { if (n === showing && data === d && x) { d.g.img = x; render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
     }
