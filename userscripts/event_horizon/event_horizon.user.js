@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.23.1
+// @version      2026.10.24.1
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1895,7 +1895,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
 .art .thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.art .thumbs img,.art .thumbs a{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
+.art .thumbs button{border:0;cursor:pointer;color:var(--accent);padding:0}
+.art .thumbs img,.art .thumbs a,.art .thumbs button{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
 .facts-col{flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:18px;padding-top:8px}
 .kicker{display:flex;align-items:center;gap:8px}
 .kicker svg{color:var(--accent)}
@@ -2107,6 +2108,8 @@ async function ws(path) {
     if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
     return r.json();
 }
+// ISO codes by their English names (eng → English, Latn → Latin); an unknown code stays as it is
+const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en'], { type, fallback: 'code' }).of(code); } catch (e) { return code; } };
 async function caa(id) {
     try { const r = await fetch('https://coverartarchive.org/release/' + id); return r.ok ? (await r.json()).images || [] : []; } catch (e) { return []; }
 }
@@ -2154,7 +2157,7 @@ function release(r, rg, images) {
     const ac = r['artist-credit'] || [], mainIds = ac.map(a => a.artist.id);
     return {
         id: r.id, asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
-        lang: r['text-representation'] && [r['text-representation'].language, r['text-representation'].script].filter(Boolean).join(' / '),
+        lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
         title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {},
         credits: creditsOf(r.relations || []), front: (r['cover-art-archive'] || {}).front, images,
         genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
@@ -2185,16 +2188,17 @@ const edition = e => ({
     where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
     labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
 });
+const preload = url => new Promise(ok => { const i = new Image(); i.onload = i.onerror = ok; i.src = url; setTimeout(ok, 5000); });
 async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
-    step(0);
+    const covers = caa(id).then(async x => { if (x.some(i => i.front)) await preload(`https://coverartarchive.org/release/${id}/front-500`); step('covers'); return x; });
     const r = await ws(`release/${id}?inc=${inc}`);
-    step(1);
+    step('release');
     const rgId = r['release-group'].id;
     const [rg, eds, images] = await Promise.all([
         ws(`release-group/${rgId}?inc=ratings`),
-        ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step(2); return x; }),
-        caa(id),
+        ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step('editions'); return x; }),
+        covers,
     ]);
     return { rel: release(r, rg, images), editions: (eds.releases || []).map(edition), edCount: eds['release-count'] || 0 };
 }
@@ -2294,7 +2298,7 @@ const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small
 function hero(r) {
     const fk = fmtKind(r.media[0] && r.media[0].format);
     const rest = r.images.filter(i => !i.front);
-    const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<a href="#s-art">+${rest.length - 3}</a>` : '') : '';
+    const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
     return `<section class="hero">
         <div class="art">
             ${r.front ? `<img class="cover" src="https://coverartarchive.org/release/${r.id}/front-500" alt="Front cover">` : `<div class="nocover">${fmtSvg(fk, 96, 1.4)}</div>`}
@@ -2490,6 +2494,7 @@ function onClick(ev) {
         return;
     }
     if (d.col) S.cols[d.col] = !S.cols[d.col];
+    else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.edview) S.edView = d.edview;
@@ -2644,7 +2649,7 @@ function skeleton() {
     const fact = `<div class="sk-f">${sk('l')}${sk('v')}</div>`;
     return `<div class="sk-page" aria-busy="true"><div class="hero"><div class="art"><div class="sk sk-cover">${LOGO.replace('<svg', '<svg class="sk-orbit"')}</div><div class="sk-thumbs">${sk('t').repeat(3)}</div></div>
         <div class="info">${sk('k')}${sk('ti')}${sk('by')}<div class="sk-facts">${fact.repeat(5)}</div>
-        <div class="sk-st" role="status"><span class="sk-dot"></span><span><b>Release</b> · editions · covers</span></div></div></div>
+        <div class="sk-st" role="status"><span class="sk-dot"></span><span><b>release</b> · <b>editions</b> · <b>covers</b></span></div></div></div>
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
@@ -2654,8 +2659,9 @@ async function show(id) {
     app.innerHTML = skeleton();
     scrollTo(0, 0);
     const st = app.querySelector('.sk-st span:last-child');
-    const STEPS = ['Release', 'Editions', 'Covers'];
-    const step = i => { if (n === showing && st) st.innerHTML = STEPS.map((x, j) => j === i ? `<b>${x}</b>` : x.toLowerCase()).join(' · '); };
+    // each part is bold while it loads and ticked when done
+    const done = new Set();
+    const step = k => { done.add(k); if (n === showing && st) st.innerHTML = ['release', 'editions', 'covers'].map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
     try { const d = await load(id, step); if (n === showing) { data = d; render(); } }
     catch (e) {
         if (n !== showing) return;
