@@ -84,6 +84,9 @@ export const PLATFORM_ICONS = {
     // ── Amazon Music — cyan disc, Amazon's smile (#644) ──
     amazonmusic: { color: '#25D1DA', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
 
+    // ── Amazon — orange rounded square, the white smile and its arrow (the store, not Amazon Music) ──
+    amazon: { color: '#FF6600', svg: '<svg viewBox="2 2 20 20"><rect x="2" y="2" width="20" height="20" rx="4.5" fill="#FF6600"/><path d="M5.6 11.6c3.9 2.6 9 2.7 12.4.4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M15.6 10.9l2.6 1-.6 2.6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
+
     soundexchange: { color: '#6f42c1', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' },
 
     // ── Generic streaming host (unknown provider fallback) ──
