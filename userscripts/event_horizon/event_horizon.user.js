@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.55
+// @version      2026.10.24.56
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1888,7 +1888,9 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
 /* A dark userstyle (Stylus, kellnerd's theme) colours and inverts buttons and headings with !important; these outrank it. */
-:root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2{filter:none!important}
+:root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
+:root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
+:root[data-eh-theme] #app .cv svg,:root[data-eh-theme] #app .cv svg *,:root[data-eh-theme] #app button.ib svg,:root[data-eh-theme] #app button.ib svg *{stroke:currentColor!important;fill:none!important;color:inherit!important}
 :root[data-eh-theme] .secthead button.fold,:root[data-eh-theme] .secthead button.fold h2{background:transparent!important;color:var(--text)!important}
 :root[data-eh-theme] .tl button.disc{background:var(--hover)!important;color:var(--text)!important}
 :root[data-eh-theme] .tl button.disc .cv,:root[data-eh-theme] button.ib{background:transparent!important;color:var(--soft)!important;border-color:var(--border)!important}

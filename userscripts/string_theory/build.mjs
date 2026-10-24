@@ -79,7 +79,7 @@ const out = [
   ['name', NAME],
   ['namespace', 'https://github.com/majkinetor/musicbrainz-userscripts'],
   ['version', version],
-  ['description', `Unified bundle of ${MEMBERS.length} MusicBrainz userscripts (${MEMBERS.join(', ')}). Built by userscripts/string_theory/build.mjs — do not hand-edit.`],
+  ['description', `Unified bundle of ${MEMBERS.length} MusicBrainz userscripts (${parts.map(p => `${p.n} ${verOf(p.meta)}`).join(', ')}). Built by userscripts/string_theory/build.mjs — do not hand-edit.`],
   ['author', 'majkinetor'],
   ['icon', ICON],
   ['homepageURL', HOMEPAGE],
