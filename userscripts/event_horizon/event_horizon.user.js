@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.25
+// @version      2026.10.24.26
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2024,7 +2024,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .detail .grp.bn dd{color:var(--muted);font-weight:400}
 .detail .grp.ls{grid-template-columns:1fr}
 .detail .none{grid-column:1/-1}
-.detail .dis{color:var(--muted);font-size:.85em;font-weight:400;margin-left:.3em}
+.dis{color:var(--muted);font-size:.85em;font-weight:400;margin-left:.3em}
 .dm-below .hasd{display:inline-flex;flex-direction:column;vertical-align:top;max-width:100%;min-width:0}
 .dm-below .dis{margin:0;line-height:1.2;width:0;min-width:100%}
 .dm-tip .dis{display:none}
@@ -2064,6 +2064,10 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .cline:first-of-type{border-top:0}
 .cline .role{color:var(--muted)}
 .cline .who{font-weight:600}
+.dm-below .cline .ents{display:flex;flex-direction:column;gap:4px}
+.dm-below .cline .sep{display:none}
+.dm-below .cline .hasd{display:inline-flex;flex-direction:column;vertical-align:top}
+.dm-below .cline .dis{width:auto;min-width:0}
 .cline .trk{font:500 12px 'JetBrains Mono',ui-monospace,monospace;color:var(--muted);margin-left:4px}
 
 .artgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
@@ -2500,7 +2504,7 @@ function creditsCard(r) {
     const byN = new Map(); for (const e of m.values()) { const l = byN.get(e.name) || []; l.push(e); byN.set(e.name, l); }
     const trackLinesN = [...byN].sort((a, b) => a[0].localeCompare(b[0])).map(([, es]) => `<div class="cline"><span class="who">${crName(es[0])}</span><span>${es.map(e => `<span class="role">${esc(e.role)}</span>${trk(e)}`).join(', ')}</span></div>`).join('');
     const relLinesN = byPerson(r.credits).map(e => `<div class="cline"><span class="who">${crName(e.c)}</span><span class="role">${esc(e.roles.join(', '))}</span></div>`).join('');
-    const trackLinesR = [...byR].sort((a, b) => a[0].localeCompare(b[0])).map(([role, es]) => `<div class="cline"><span class="role">${esc(role)}</span><span>${es.map(e => `<span class="who">${crName(e)}</span>${trk(e)}`).join(', ')}</span></div>`).join('');
+    const trackLinesR = [...byR].sort((a, b) => a[0].localeCompare(b[0])).map(([role, es]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="ents">${es.map(e => `<span class="ent"><span class="who">${crName(e)}</span>${trk(e)}</span>`).join('<span class="sep">, </span>')}</span></div>`).join('');
     const relLinesR = byRole(r.credits).map(([role, cs]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${andList(cs.map(crName))}</span></div>`).join('');
     const relLines = S.byName ? relLinesN : relLinesR, trackLines = S.byName ? trackLinesN : trackLinesR;
     const n = r.credits.length + m.size;
