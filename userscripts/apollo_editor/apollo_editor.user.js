@@ -12985,6 +12985,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function activeStepKey() { const n = stepNavEl(); const a = n && n.querySelector('li.ui-tabs-active a'); return a ? (a.getAttribute('href') || '').slice(1) : ''; }
   function vis(el) { return !!(el && el.style.display !== 'none' && !el.disabled); }   // native inline display reflects MB's per-step show/hide
 
+  let _dupesSeen = false;   // #812: the Release step has been left, past the duplicates check (Add release)
   let _navStyled = false;
   function navStyle() {
     if (_navStyled) return; _navStyled = true;
@@ -13151,7 +13152,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // logic of our own. The .mp node stays in the DOM even while the header is hidden.
     const navTitle = document.getElementById('tc-nav-title');
     if (navTitle) mbuCls(navTitle, 'tc-nav-title-pending', !!document.querySelector('.releaseheader h1 .mp'));
-    WIZ_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); mbuProp(proxy.style, 'display', (vis(nat) && changed) ? '' : 'none'); });
+    // #812: on Add, MB hides Finish on the first step so the duplicates get seen at least once;
+    // leaving that step passes the duplicates check (MB skips the step when there are none), so once
+    // it has been left Apollo keeps Finish on the Release step too (the hidden native button still clicks)
+    if (active && active !== 'information') _dupesSeen = true;
+    WIZ_DEFS.forEach(d => {
+      const proxy = document.querySelector('#tc-nav-wiz [data-wiz="' + d.id + '"]'); if (!proxy) return;
+      const nat = f && d.find(f);
+      const show = vis(nat) || (d.id === 'finish' && _dupesSeen && active === 'information' && nat && !nat.disabled);
+      mbuProp(proxy.style, 'display', (show && changed) ? '' : 'none');
+    });
     // paginators stay in a fixed position — Prev/Next are never hidden, just disabled
     // when MB's native button isn't applicable (Prev on the first step, Next on the last) (#140)
     PAGE_DEFS.forEach(d => { const proxy = document.querySelector('#tc-nav-pager [data-page="' + d.id + '"]'); if (!proxy) return; const nat = f && d.find(f); mbuProp(proxy, 'disabled', !vis(nat)); });
