@@ -1920,8 +1920,8 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
 .facts .wide{flex-basis:100%;min-width:0}
 .facts .wide .v,.facts .wide>div{min-width:0;max-width:100%}
 .ev{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-.ev .d{min-width:100px}
-.lab .cat{font-size:13px;font-weight:500}
+.ev .d+span:not(.iso)::before{content:'· ';color:var(--muted)}
+.lab .cat{font-size:13px;font-weight:500;margin-left:1em}
 .more>summary{cursor:pointer;color:var(--muted);font-size:14px}
 .cp{border:0;background:none;padding:0;cursor:copy;font:inherit;color:inherit;border-bottom:1px dashed transparent;text-align:left}
 .cp:hover{border-bottom-color:var(--accent);color:var(--link)}
