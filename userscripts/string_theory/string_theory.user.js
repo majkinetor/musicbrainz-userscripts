@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.000930
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.24.230000, credit_hoarder 2026.10.24.232217, event_horizon 2026.10.25.010000, falcon 2026.10.24.190000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.24.230000, mammoth 2026.10.20.120000, mission_control 2026.10.24.230000, platform_check 2026.10.24.230000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.25.001356
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.24.230000, credit_hoarder 2026.10.24.232217, event_horizon 2026.10.25.020000, falcon 2026.10.24.190000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.24.230000, mammoth 2026.10.20.120000, mission_control 2026.10.24.230000, platform_check 2026.10.24.230000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -146,8 +146,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.25.000930 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.24.230000\n  · Credit Hoarder v2026.10.24.232217\n  · Event Horizon v2026.10.25.010000\n  · Falcon v2026.10.24.190000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.24.230000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.24.230000\n  · Platform Check v2026.10.24.230000");
+  console.log('%c String Theory %c v2026.10.25.001356 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.24.230000\n  · Credit Hoarder v2026.10.24.232217\n  · Event Horizon v2026.10.25.020000\n  · Falcon v2026.10.24.190000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.24.230000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.24.230000\n  · Platform Check v2026.10.24.230000");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -157,7 +157,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.24.230000"],["credit_hoarder","Credit Hoarder","2026.10.24.232217"],["event_horizon","Event Horizon","2026.10.25.010000"],["falcon","Falcon","2026.10.24.190000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.24.230000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.24.230000"],["platform_check","Platform Check","2026.10.24.230000"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.24.230000"],["credit_hoarder","Credit Hoarder","2026.10.24.232217"],["event_horizon","Event Horizon","2026.10.25.020000"],["falcon","Falcon","2026.10.24.190000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.24.230000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.24.230000"],["platform_check","Platform Check","2026.10.24.230000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -33735,10 +33735,11 @@ ${lines}
 })(typeof GM_info !== 'undefined' ? GM_info : undefined);
 
 // ===== event_horizon (@run-at document-start) =====================================
-if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.25.010000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.25.010000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.25.020000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.25.020000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
-// Event Horizon takes over MusicBrainz's own release page, /release/<mbid> (not its subpages): the page is hidden
+// Event Horizon takes over MusicBrainz's own release and release group pages, /release/<mbid> and /release-group/<mbid>
+// (not their subpages), and moves between them in place: the page is hidden
 // from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
 // back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
 // the Cover Art Archive.
@@ -33835,6 +33836,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .cv svg{transition:transform .15s}
 [aria-expanded="true"]>.cv svg{transform:rotate(90deg)}
 .folded-note{font-size:14px;color:var(--muted)}
+.anno{font-size:15px;line-height:1.6;max-width:72ch;overflow-wrap:anywhere}.anno p{margin:0 0 10px}.anno p:last-child{margin:0}
+.chip.tag{background:none;border-color:var(--chip)}
 .rgc{display:grid;grid-template-columns:fit-content(14em) minmax(0,1fr);gap:10px 14px;margin:0;font-size:14px}
 .rgc dt{text-align:right;color:var(--muted);font-weight:600}
 .rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
@@ -34161,7 +34164,7 @@ const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 async function ws(path) {
     const r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } });
     if (!r) throw new Error('cancelled');
-    if (r.status === 404) throw new Error('MusicBrainz has no such release.');
+    if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
     if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
     return r.json();
 }
@@ -34313,6 +34316,8 @@ const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
 const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
 const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
+const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
+const CI_TAG = '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>';
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
@@ -34422,7 +34427,7 @@ function edTile(e, curId) {
     </a>`;
 }
 function editions(r, eds, count) {
-    if (eds.length < 2) return '';
+    if (eds.length < (r.id ? 2 : 1)) return '';
     const all = [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
@@ -34434,7 +34439,7 @@ function editions(r, eds, count) {
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><a class="ed-rg" href="${MB}/release-group/${r.rgId}" data-tip="Release group on MusicBrainz" aria-label="Release group on MusicBrainz"><svg viewBox="0 0 16 16" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg></a><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><a class="ed-rg" href="${MB}/release-group/${r.rgId}" data-tip="Release group" aria-label="Release group"${r.id ? '' : ' hidden'}><svg viewBox="0 0 16 16" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg></a><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
     let body;
     if (S.edView === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
     else if (S.edView === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
@@ -34442,8 +34447,8 @@ function editions(r, eds, count) {
             return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id)).join('')}</div></div>`;
         }).join('')}</div>`;
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
-    const more = count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. <a href="${MB}/release-group/${r.rgId}">All on MusicBrainz</a></div>` : '';
-    return sect('ed', `${count} editions of this ${esc((r.type || 'release').toLowerCase())}`, '', filters + body + more, folded);
+    const more = count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. <button class="lnk" type="button" data-mbgo="${MB}/release-group/${r.rgId}">All on MusicBrainz's page</button></div>` : '';
+    return sect('ed', `${count} ${r.id ? 'editions' : 'release' + (count === 1 ? '' : 's')} of this ${esc((r.type || 'release').toLowerCase())}`, '', filters + body + more, folded);
 }
 
 /* ── tracklist ─────────────────────────────────────── */
@@ -34566,9 +34571,10 @@ function creditsCard(r) {
 // MB's phrase for each side of a release group relationship: [forward, backward]
 const RG_PHRASE = { 'single from': ['single from', 'associated singles/EPs'], cover: ['cover of', 'covers'], 'included in': ['included in', 'includes'], compilation: ['compiles', 'included in'], 'DJ-mix': ['DJ-mix of', 'DJ-mixed by'], remix: ['remix of', 'remixes'], 'live performance': ['live performance of', 'live performances'], 'mashes up': ['mashes up', 'mashed up in'], 'first album release': ['first release of', 'first released as'], 'part of set': ['part of', 'includes'] };
 const rgAttrs = x => [...(x.attributes || []).map(a => (x['attribute-values'] || {})[a] ? `${a}: ${x['attribute-values'][a]}` : a), x['ordering-key'] != null && x['target-type'] === 'series' ? `order: ${x['ordering-key']}` : ''].filter(Boolean).map(a => `<span class="rga">(${esc(a)})</span>`).join(' ');
-function rgCard(r) {
+function rgCard(r, own) {
     const groups = new Map(), add = (k, h) => { const l = groups.get(k) || []; l.push(h); groups.set(k, l); };
-    for (const x of r.rg.rels) {
+    const rels = own ? r.rg.rels.filter(x => x['target-type'] !== 'url') : r.rg.rels;
+    for (const x of rels) {
         if (x['target-type'] === 'release_group') {
             const p = RG_PHRASE[x.type] || [x.type, x.type], g = x['release_group'];
             add(p[x.direction === 'backward' ? 1 : 0], `${entA('release-group', g.id, g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''} ${rgAttrs(x)}`);
@@ -34576,9 +34582,69 @@ function rgCard(r) {
         else if (x['target-type'] === 'url') add(x.type, `<a href="${esc(x.url.resource)}" target="_blank" rel="noopener">${esc(x.url.resource.replace(/^https?:\/\/(www\.)?/, ''))}</a>`);
     }
     if (!groups.size) return '';
-    const n = r.rg.rels.length;
+    const n = rels.length;
     const body = `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>`;
+    if (own) return sect('rg', 'Relationships', `<span class="aside">${n}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
     return sect('rg', 'Release group', `<a class="rgt" href="${MB}/release-group/${r.rgId}">${esc(r.rg.title)}</a><span class="aside">${n} relationship${n === 1 ? '' : 's'}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
+}
+
+/* ── release group page ────────────────────────────── */
+const RG_ACTS = [
+    ['edit', 'Edit', 'Edit release group', ACTS[0][3]],
+    ['/release/add?release-group=', 'Add', 'Add a release to this group', '<path d="M12 5v14M5 12h14"/>'],
+    ['tags', 'Tags', 'Tags', CI_TAG],
+    ['edits', 'History', 'Edit history', ACTS[3][3]],
+];
+function group(g) {
+    const genres = (g.genres || []).sort((a, b) => b.count - a.count), gn = new Set(genres.map(x => x.name));
+    return {
+        id: g.id, rgId: g.id, title: g.title, disambig: g.disambiguation, ac: g['artist-credit'] || [], type: g['primary-type'],
+        types: [g['primary-type'], ...(g['secondary-types'] || [])].filter(Boolean), first: g['first-release-date'] || '',
+        rating: g.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (g.tags || []).filter(t => !gn.has(t.name)).sort((a, b) => b.count - a.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((g.aliases || []).map(a => a.name))], annotation: g.annotation || '',
+        links: urlsOf(g.relations || []), rg: { title: g.title, rels: g.relations || [] },
+    };
+}
+async function loadRg(id, step = () => {}) {
+    const g = await ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`);
+    step('group');
+    const eds = ws(`release?release-group=${id}&inc=media+labels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
+}
+function rgHero(d) {
+    const g = d.g, on = k => S.extras.includes(k);
+    const F = [
+        ['First released', g.first && `<span>${fdate(g.first)}</span>`],
+        [`Release${d.edCount === 1 ? '' : 's'}`, d.edCount ? `<span>${d.edCount}</span>` : ''],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && g.aliases.map(a => `<div>${esc(a)}</div>`).join('')],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ];
+    const tags = on('tags') && g.tags.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${g.tags.map(t => `<span class="chip tag">${esc(t)}</span>`).join('')}</div>` : '';
+    return `<section class="hero">
+        <div class="art">
+            <img class="cover" data-rgcover src="https://coverartarchive.org/release-group/${g.id}/front-500" alt="Front cover">
+            ${under(g)}${tags ? `<div class="under">${tags}</div>` : ''}
+        </div>
+        <div class="facts-col">
+            <div class="kicker label">${LAYERS(18)}<span>${esc(g.types.join(' · ') || 'Release group')}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}</span></div>
+            <h1>${esc(g.title)}</h1>
+            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <div class="by">by ${acHtml(g.ac)}</div>
+            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+        </div>
+    </section>`;
+}
+// MusicBrainz's wiki markup, as far as a reader needs it: links, bold, italics, paragraphs
+function annoHtml(t) {
+    return esc(t).replace(/\[(https?:\/\/[^\]|\s]+)(?:\|([^\]]+))?\]/g, (m, u, n) => `<a href="${u}" target="_blank" rel="noopener">${n || u}</a>`)
+        .replace(/'''(.+?)'''/g, '<b>$1</b>').replace(/''(.+?)''/g, '<i>$1</i>')
+        .split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+function annotation(g) {
+    if (!g.annotation) return '';
+    return sect('an', 'Annotation', '', `<div class="anno">${annoHtml(g.annotation)}</div>`, `<div class="folded-note">${esc(g.annotation.slice(0, 120))}${g.annotation.length > 120 ? '…' : ''}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -34595,11 +34661,15 @@ function render(keepPop) {
     const app = $('#app');
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
-    const { rel: r } = data;
+    const r = data.rel || data.g;
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
-    document.title = r.title + ' · Event Horizon';
-    app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
+    document.title = titleOf(data);
+    app.innerHTML = data.kind === 'rg' ? rgHero(data) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
+        : hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
+    // a group without its own cover shows its first release's, else the format's mark
+    const gc = app.querySelector('[data-rgcover]');
+    if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
     // Every row's platforms take the widest row's width, so the ISRCs line up.
     for (const tl of app.querySelectorAll('.tl')) {
         const lks = [...tl.querySelectorAll('.tr .lk')], w = Math.max(0, ...lks.map(e => e.offsetWidth));
@@ -34668,17 +34738,19 @@ function onClick(ev) {
     else if ('dismenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     else if (d.dism) { S.dis = d.dism; save(); }
     else if ('edoff' in d) S.ed.official = !S.ed.official;
+    else if (d.mbgo) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.href = d.mbgo; return; }
     else return;
     const y = scrollY; render(keep); scrollTo(0, y);
 }
 
-// a release page's URL on this site → its MBID; not its subpages (/edit, /cover-art, …)
-const RELEASE = new RegExp('^/release/(' + MBID.source + ')/?$', 'i');
+// a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
+const PAGE = new RegExp('^/(release|release-group)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
-    const m = u.origin === location.origin && u.pathname.match(RELEASE);
-    return m ? m[1].toLowerCase() : null;
+    const m = u.origin === location.origin && u.pathname.match(PAGE);
+    return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
+const titleOf = d => d ? (d.rel || d.g).title + ' · Event Horizon' : 'Event Horizon';
 const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
@@ -34704,7 +34776,7 @@ function build() {
     addEventListener('popstate', () => { if (!ehOn) location.reload(); else show(navTo(location.href)); });
 }
 function setOn(on) {
-    // navigated inside EH: reload for MusicBrainz's page of this release, and stay off there
+    // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
     if (!on && navTo(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
     if (first) build();
@@ -34718,7 +34790,7 @@ function setOn(on) {
     else document.documentElement.removeAttribute('data-eh-theme');
     mbSheets(!on);
     if (ehBody) for (const id of ['eh-css', 'eh-font']) document.getElementById(id).disabled = !on;
-    document.title = on ? (data ? data.rel.title + ' · Event Horizon' : 'Event Horizon') : mbTitle;
+    document.title = on ? titleOf(data) : mbTitle;
     const h = document.getElementById('eh-hide'); if (h) h.remove();
     const l = document.getElementById('eh-launch');
     if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
@@ -34770,7 +34842,7 @@ const plFollow = () => { const o = plSorted(cfgProviders()).map(p => p.key); S.p
 let cfgAll = false;
 function cfgProviders() {
     const um = new Map();
-    if (data) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
+    if (data && data.rel) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
     if (!data || cfgAll) for (const k of [...S.prov, ...ORDER, ...(cfgAll ? HOSTS.map(h => h[0]) : [])]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
     return sortP([...um.values()]);
 }
@@ -34894,23 +34966,25 @@ function skeleton() {
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
-async function show(id) {
+async function show(key) {
     const app = $('#app'), n = ++showing;
+    const isRg = !!key && key.startsWith('release-group/'), id = key && key.split('/')[1];
+    const parts = isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
-    app.innerHTML = skeleton();
+    app.innerHTML = skeleton().replace('<b>release</b> · <b>editions</b> · <b>covers</b>', parts.map(x => `<b>${x}</b>`).join(' · '));
     scrollTo(0, 0);
     const st = app.querySelector('.sk-st span:last-child');
     // each part is bold while it loads and ticked when done
     const done = new Set();
-    const step = k => { done.add(k); if (n === showing && st) st.innerHTML = ['release', 'editions', 'covers'].map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
-    LOG.info('Loading release ' + id);
+    const step = k => { done.add(k); if (n === showing && st) st.innerHTML = parts.map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
+    LOG.info('Loading ' + (isRg ? 'release group ' : 'release ') + id);
     const t0 = Date.now();
     try {
-        const d = await load(id, step);
+        const d = await (isRg ? loadRg : load)(id, step);
         if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
-        d.eds.then(x => { if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > 1) render(); } });
+        d.eds.then(x => { if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (isRg ? 0 : 1)) render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
     }
     catch (e) {
@@ -34918,8 +34992,8 @@ async function show(id) {
         if (n !== showing) return;
         const box = app.querySelector('.sk-st');
         box.className = 'sk-st err';
-        box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${id === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;
-        box.querySelector('[data-retry]').onclick = () => show(id);
+        box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${key === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;
+        box.querySelector('[data-retry]').onclick = () => show(key);
         const mb = box.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => setOn(false);
     }
 }
