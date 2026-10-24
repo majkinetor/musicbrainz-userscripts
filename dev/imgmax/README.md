@@ -56,6 +56,7 @@ A store page goes to its resolver; any other page to its `og:image`; an image UR
 | Discogs        | the site's own API, else the public API (max 600 px)      | as given                                   |
 | Amazon         | the product page                                                  | the image without size modifiers           |
 | VGMdb          | the scan gallery, captions as types                               | `media.vgm.io`                             |
+| Melon          | the app's album API                                               | `_org`, the original                       |
 | 7digital, Juno | the page's `og:image`                                             | `_800`, `/full/…-BIG`                      |
 
 Image URLs on SoundCloud, YouTube, Google and Cover Art Archive thumbnails are maximised too.

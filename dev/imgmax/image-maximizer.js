@@ -68,6 +68,11 @@ class ImageMaximizer {
             const m = u.pathname.match(/^(.+)_\d+\.jpg$/);
             return m ? [`https://${u.host}${m[1]}_800.jpg`] : [];
         } },
+        // Melon (#815): _org is the upload (2000 px and more), _1000 the largest rendition
+        { host: /^cdnimg\.melon\.co\.kr$/, max: u => {
+            const m = u.pathname.match(/^(\/.+\/images\/.+\/\d+_\d+)_(?:\d+|org)\.(jpg|png)$/);
+            return m ? [`https://${u.host}${m[1]}_org.${m[2]}`, `https://${u.host}${m[1]}_1000.${m[2]}`] : [];
+        } },
         // Juno: /full/…-BIG
         { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
             const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
@@ -118,6 +123,14 @@ class ImageMaximizer {
             if (art) return [{ url: art, types: ['Front'] }];
             this._log('debug', `Apple: lookup had no artwork for ${id} in ${cc}, reading the page`);
             return this._metaImage(u.href, ['Front']);
+        } },
+        { id: 'melon', name: 'Melon', host: /^(www|m2|m\.app)\.melon\.com$/, async find(u) {
+            const id = u.searchParams.get('albumId');
+            if (!/^\d+$/.test(id || '')) throw new Error('no album id in the URL');
+            const j = await this._json(`https://m2.melon.com/m6/v3/album/info.json?albumId=${id}`);
+            const a = j && j.response && j.response.ALBUMINFO;
+            const art = a && (a.ALBUMIMGLARGE || a.ALBUMIMG);
+            return art ? [{ url: art.replace(/\?.*$/, ''), types: ['Front'] }] : [];
         } },
         { id: 'deezer', name: 'Deezer', host: /(^|\.)deezer\.com$/, async find(u) {
             const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];

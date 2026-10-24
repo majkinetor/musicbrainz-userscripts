@@ -75,7 +75,7 @@ When MusicBrainz may have the album, a panel lists those releases before the edi
 - **Update this release** opens it with [Mission Control](../mission_control/README.md), which compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.
 - **Add link only** opens its edit page with this album's links and an edit note. It shows only when the release lacks a link.
 
-**Import anyway** opens the release editor as usual. Mission Control adds links only for the platforms Platform Check knows: for Presto Music, Ototoy and mora, use **Add link only**.
+**Import anyway** opens the release editor as usual. Mission Control adds links only for the platforms Platform Check knows: for Presto Music, Ototoy, mora and Melon, use **Add link only**.
 
 The *Check MusicBrainz* [setting](#settings) says when the album is looked up:
 
@@ -101,7 +101,7 @@ The *Harmony* setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
-| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora | the album link, at once |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon | the album link, at once |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
@@ -128,6 +128,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [7digital](#7digital)           |        ✓        |     ✓      | ✓                     | ℗ and © lines  |
 | [Ototoy](#ototoy)               |                 |            | ✓                     | album info     |
 | [mora](#mora)                   |                 |  some      | ✓                     |                |
+| [Melon](#melon)                 |                 |            | ✓                     |                |
 | [Presto Music](#presto-music)   | streamed albums |     ✓      | ✓ with catalog number | about          |
 
 ### Deezer
@@ -283,6 +284,15 @@ Pages: `mora.jp/package/<label>/<id>/`
 - mora shows no ISRCs or type, so the type is guessed and the country is Japan. The barcode is filled in only when mora's product code is one; otherwise that code goes in as the catalog number, so check it.
 - The tracklist is one medium: mora doesn't mark discs, so split them in the editor.
 - Every artist has their mora link.
+
+### Melon
+
+Pages: `melon.com/album/detail.htm?albumId=<id>`
+
+- No Melon account is needed.
+- Melon shows no ISRCs or barcode. The type comes from Melon's album type (정규, 싱글, EP, OST…), and the country is South Korea.
+- The label is the album's planning company (기획사), not its distributor.
+- Every artist and every track has its Melon link.
 
 ### Presto Music
 

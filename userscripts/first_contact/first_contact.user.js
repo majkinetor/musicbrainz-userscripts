@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.24.144000
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Presto Music.
+// @version      2026.10.24.170000
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -24,6 +24,7 @@
 // @match        https://*.7digital.com/artist/*
 // @match        https://ototoy.jp/_/default/p/*
 // @match        https://mora.jp/package/*
+// @match        https://www.melon.com/album/detail.htm*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -78,6 +79,7 @@
 // @connect      test.musicbrainz.org
 // @connect      bandcamp.com
 // @connect      cf.mora.jp
+// @connect      m2.melon.com
 // ==/UserScript==
 
 (function () {
@@ -2359,6 +2361,68 @@ const MORA = {
     },
 };
 
+// Melon (#815): Korea's biggest store. The album and its songs come from the app's JSON API on
+// m2.melon.com, read the way Harmony does; no CORS there, so through GM. PLANCNPY is the label
+// (SELLCNPY the distributor). No ISRCs, no barcode.
+const MELON = {
+    id: 'melon',
+    name: 'Melon',
+    abbr: 'mel',
+    host: /^(?:www|m2|m\.app)\.melon\.com$/,
+    albumId(loc) { const id = new URLSearchParams(loc.search).get('albumId'); return /^\/album\/detail\.htm$/.test(loc.pathname) && /^\d+$/.test(id || '') ? id : null; },
+    TYPES: [[/싱글/, ['Single']], [/정규/, ['Album']], [/EP/i, ['EP']], [/베스트|옴니버스/, ['Album', 'Compilation']], [/라이브/, ['Album', 'Live']], [/리믹스/, ['Album', 'Remix']], [/OST/i, ['Album', 'Soundtrack']]],
+    artists: list => (list || []).map(a => ({ name: String(a.ARTISTNAME || '').trim(), url: a.ARTISTID ? `https://www.melon.com/artist/detail.htm?artistId=${a.ARTISTID}` : null })),
+
+    async fetchRelease(id, progress) {
+        const info = ((await gmJson(`https://m2.melon.com/m6/v3/album/info.json?albumId=${id}`)) || {}).response || {};
+        const a = info.ALBUMINFO;
+        if (!a) throw new Error(`Melon: no album ${id}`);
+        const songs = ((await gmJson(`https://m2.melon.com/m6/v2/album/song/list.json?albumId=${id}`)) || {}).response || {};
+        const discs = songs.CDLIST || [];
+        const total = discs.reduce((n, c) => n + (c.SONGLIST || []).length, 0);
+        Log.info(`Melon album ${id}: "${a.ALBUMNAME}" · ${info.ALBUMTYPE || '—'} · ${a.ISSUEDATE || '—'} · label ${info.PLANCNPY || '—'} · ${discs.length} disc(s), ${total} songs`);
+        const mediums = [];
+        let n = 0;
+        discs.forEach(c => {
+            const tracks = [];
+            (c.SONGLIST || []).forEach(s => {
+                n++;
+                if (s.ISSERVICE === false) Log.info(`Melon: song ${s.SONGID} "${s.SONGNAME}" is not in service, kept`);
+                const tf = splitFeat(String(s.SONGNAME || '').trim());
+                const credit = creditFromTitle(this.artists(s.ARTISTLIST), tf.feat);
+                tracks.push({ title: tf.title, lengthMs: s.PLAYTIME ? s.PLAYTIME * 1000 : null, isrc: null, url: `https://www.melon.com/song/detail.htm?songId=${s.SONGID}`, credit });
+                progress && progress(n, total);
+                Log.debug(`track ${c.CDNO}.${s.TRACKNO}: "${tf.title}" — ${credit.map(x => x.name + x.join).join('')}`);
+            });
+            mediums.push({ format: 'Digital Media', name: '', tracks });
+        });
+        const listed = this.artists(a.ARTISTLIST);
+        const af = splitFeat(String(a.ALBUMNAME || '').trim());
+        const credit = listed.length === 1 && /^(?:various artists|v\.?\s*a\.?)$/i.test(listed[0].name)
+            ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }]
+            : creditFromTitle(listed, af.feat);
+        const hit = this.TYPES.find(([re]) => re.test(info.ALBUMTYPE || ''));
+        const [y, m, d] = String(a.ISSUEDATE || '').split('.').map(x => parseInt(x, 10));
+        const url = `https://www.melon.com/album/detail.htm?albumId=${id}`;
+        return {
+            source: this.id,
+            annotation: '',
+            url,
+            title: af.title,
+            credit,
+            types: hit ? hit[1] : [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'KR',   // Melon sells in Korea only
+            barcode: null,
+            labels: info.PLANCNPY ? [{ name: String(info.PLANCNPY).trim(), catno: '', url: null }] : [],
+            urls: [{ url, linkType: 980 }, { url, linkType: 74 }],   // streaming (paid) + download
+            mediums,
+        };
+    },
+};
+
 // Presto Music (#779): a UK shop for classical and jazz, CDs, SACDs, vinyl and downloads. Everything is
 // on the product page, server-rendered behind Cloudflare: the title, the artist line (plain text, roles
 // in brackets), the format bought here, Release date / Label / Catalogue number, the barcode in the
@@ -2649,7 +2713,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, PRESTO];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, PRESTO];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -2666,6 +2730,7 @@ const HARMONY_URLS = {
     spotify: id => `https://open.spotify.com/album/${id}`,
     ototoy: id => `https://ototoy.jp/_/default/p/${id}`,
     mora: id => `https://mora.jp/package/${id}/`,
+    melon: id => `https://www.melon.com/album/detail.htm?albumId=${id}`,
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
 const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);

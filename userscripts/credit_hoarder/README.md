@@ -113,6 +113,7 @@ The edit note carries the statistics per source, with how the entities were matc
 | YouTube Music  | writer, producer                                                                         | names                                      |          |
 | Deezer         | composers only                                                                           | names                                      |          |
 | mora           | composer, lyricist, arranger, producer                                                   | names                                      |          |
+| Melon          | composer, lyricist, arranger                                                             | names                                      |          |
 | Titles         | remixers named in the release's own track titles                                         | names                                      |          |
 
 A source with an artist ID resolves to the exact MusicBrainz artist; a name-only credit goes through matching and your review.
@@ -121,6 +122,7 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 - **Qobuz**: signed in under [Platform Check](../platform_check/README.md), the credits are more reliable and carry the composer's artist ID; otherwise they are names only.
 - **YouTube Music**, for a release linked to an album there, reads each song's *Credits*: *Written by* (a writer, on the work) and *Produced by*. *Performed by* and the label aren't imported; some labels send no credits. Songs are placed on the mediums by their track counts; when those don't add up, the log says so.
 - **mora**, for a release linked to a mora.jp package, reads each track's composer, lyricist, arranger and producer. Several names in one credit are split on `、` and commas.
+- **Melon**, for a release linked to a melon.com album, reads each song page's 작사, 작곡 and 편곡 (lyricist, composer, arranger), a few pages at a time.
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. Check what it finds.
 

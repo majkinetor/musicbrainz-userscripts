@@ -24,6 +24,8 @@
 // @connect      www.deezer.com
 // @connect      mora.jp
 // @connect      cf.mora.jp
+// @connect      www.melon.com
+// @connect      m2.melon.com
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
 // @connect      www.metal-archives.com

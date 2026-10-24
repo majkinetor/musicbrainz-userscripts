@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-24 14:38 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-24 15:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -471,7 +471,7 @@ A URL can be a store's release page or an image. Art Station takes the store's l
 | Store pages                                |                                                           |
 | ------------------------------------------ | --------------------------------------------------------- |
 | Apple Music, Deezer, Spotify, Tidal, Qobuz | the cover; Qobuz adds its digital booklet when it has one |
-| Bandcamp, Beatport, 7digital, Juno         | the cover                                                 |
+| Bandcamp, Beatport, 7digital, Juno, Melon  | the cover                                                 |
 | Discogs, Amazon                            | every image                                               |
 | VGMdb                                      | every scan, typed by its caption                          |
 | any other page                             | its preview image                                         |
@@ -672,6 +672,7 @@ The edit note carries the statistics per source, with how the entities were matc
 | YouTube Music  | writer, producer                                                                         | names                                      |          |
 | Deezer         | composers only                                                                           | names                                      |          |
 | mora           | composer, lyricist, arranger, producer                                                   | names                                      |          |
+| Melon          | composer, lyricist, arranger                                                             | names                                      |          |
 | Titles         | remixers named in the release's own track titles                                         | names                                      |          |
 
 A source with an artist ID resolves to the exact MusicBrainz artist; a name-only credit goes through matching and your review.
@@ -680,6 +681,7 @@ A source with an artist ID resolves to the exact MusicBrainz artist; a name-only
 - **Qobuz**: signed in under [Platform Check](../platform_check/README.md), the credits are more reliable and carry the composer's artist ID; otherwise they are names only.
 - **YouTube Music**, for a release linked to an album there, reads each song's *Credits*: *Written by* (a writer, on the work) and *Produced by*. *Performed by* and the label aren't imported; some labels send no credits. Songs are placed on the mediums by their track counts; when those don't add up, the log says so.
 - **mora**, for a release linked to a mora.jp package, reads each track's composer, lyricist, arranger and producer. Several names in one credit are split on `、` and commas.
+- **Melon**, for a release linked to a melon.com album, reads each song page's 작사, 작곡 and 편곡 (lyricist, composer, arranger), a few pages at a time.
 - **Metal Archives**: guitars and bass default to electric; guests get the *guest* attribute; on a split release, each band's credits stay on its own tracks.
 - **Titles** reads named remixes: *Song (Artist Remix)*, *Track (KiNK Dub)*, *Tune (Tom Moulton Mix)*, *Cut (Remixed by Someone)* each give that recording a remixer. *(Extended Mix)*, *(Radio Edit)*, a bare *(Remix)* and *(Mixed by …)* don't. Check what it finds.
 
@@ -997,7 +999,7 @@ When MusicBrainz may have the album, a panel lists those releases before the edi
 - **Update this release** opens it with [Mission Control](../mission_control/README.md), which compares it with the platforms, this album included, and offers what it lacks: the barcode, labels and catalog numbers, release event, track lengths, ISRCs and links.
 - **Add link only** opens its edit page with this album's links and an edit note. It shows only when the release lacks a link.
 
-**Import anyway** opens the release editor as usual. Mission Control adds links only for the platforms Platform Check knows: for Presto Music, Ototoy and mora, use **Add link only**.
+**Import anyway** opens the release editor as usual. Mission Control adds links only for the platforms Platform Check knows: for Presto Music, Ototoy, mora and Melon, use **Add link only**.
 
 The *Check MusicBrainz* [setting](#settings-2) says when the album is looked up:
 
@@ -1023,7 +1025,7 @@ The *Harmony* setting picks which Harmony opens: [harmony.pulsewidth.org.uk](htt
 
 | Platform                                                                        | Sent                                |
 | ------------------------------------------------------------------------------- | ----------------------------------- |
-| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora | the album link, at once |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon | the album link, at once |
 | Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
 | YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
 
@@ -1050,6 +1052,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [7digital](#7digital)           |        ✓        |     ✓      | ✓                     | ℗ and © lines  |
 | [Ototoy](#ototoy)               |                 |            | ✓                     | album info     |
 | [mora](#mora)                   |                 |  some      | ✓                     |                |
+| [Melon](#melon)                 |                 |            | ✓                     |                |
 | [Presto Music](#presto-music)   | streamed albums |     ✓      | ✓ with catalog number | about          |
 
 #### Deezer
@@ -1205,6 +1208,15 @@ Pages: `mora.jp/package/<label>/<id>/`
 - mora shows no ISRCs or type, so the type is guessed and the country is Japan. The barcode is filled in only when mora's product code is one; otherwise that code goes in as the catalog number, so check it.
 - The tracklist is one medium: mora doesn't mark discs, so split them in the editor.
 - Every artist has their mora link.
+
+#### Melon
+
+Pages: `melon.com/album/detail.htm?albumId=<id>`
+
+- No Melon account is needed.
+- Melon shows no ISRCs or barcode. The type comes from Melon's album type (정규, 싱글, EP, OST…), and the country is South Korea.
+- The label is the album's planning company (기획사), not its distributor.
+- Every artist and every track has its Melon link.
 
 #### Presto Music
 
