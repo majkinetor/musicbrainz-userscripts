@@ -330,6 +330,7 @@ document.addEventListener('falcon:status', e => {
     if (!m || m[2] !== run || !results[m[1]]) return;
     const r = results[m[1]];
     r.falcon = { running: !!d.running, items: d.items || [] }; r.at = Date.now();
+    if (r.falconWait && !d.running && !r.falcon.items.some(i => ['queued', 'active'].includes(i.status))) { r.falconWait = false; Log.cat('Execute').debug('falcon ' + m[1] + ': batch settled'); }
     // the findings of each item Falcon finished (done, or skipped as already there) are linked now
     const fin = (d.items || []).filter(i => i.status === 'done' || i.status === 'skipped');
     const keys = (r.falconKeys || []).filter(k => { const x = (r.findings || []).find(f => f.key === k); return x && fin.some(i => x.entity ? i.mbid === x.entity.mbid : i.entityType === 'release'); });
@@ -340,11 +341,18 @@ document.addEventListener('falcon:status', e => {
 });
 // reloadAfter: an Execute with no errors reloads the release page so it shows the new data. A batch
 // handed to Falcon runs in this page, so the reload waits for it and drops if an item went wrong.
-let reloadPending = false;
+let reloadPending = false, reloadGiveUp = 0;
 function reloadWhenClean() {
     const fs = Object.values(results).map(r => r.falcon).filter(Boolean);
-    if (fs.some(f => f.running)) return;
+    // #825: Falcon's first status comes after Execute returns, so wait on the hand-off itself too
+    const waiting = Object.keys(results).filter(k => results[k].falconWait);
+    if (waiting.length || fs.some(f => f.running)) {
+        Log.cat('Execute').debug('reload after Execute waits for Falcon' + (waiting.length ? ': ' + waiting.join(', ') : ''));
+        if (!reloadGiveUp) reloadGiveUp = setTimeout(() => { if (!reloadPending) return; reloadPending = false; Log.cat('Execute').warn('reload after Execute dropped: Falcon did not finish within 5 minutes'); }, 300000);
+        return;
+    }
     reloadPending = false;
+    clearTimeout(reloadGiveUp); reloadGiveUp = 0;
     if (fs.some(f => f.items.some(i => !['done', 'skipped'].includes(i.status)))) { Log.cat('Execute').warn('reload after Execute dropped: Falcon reported a problem'); return; }
     Log.cat('Execute').info('Execute done without errors: reloading the release page');
     setTimeout(() => location.reload(), 1200);
@@ -547,7 +555,8 @@ async function execute(dry) {
                 results[o.id] = Object.assign(results[o.id] || {}, { applied: o });
                 // a batch handed to Falcon turns linked item by item, as Falcon reports it done (falcon:status)
                 takeApplied(o, dry);
-                if (o.via === 'falcon') results[o.id].falconKeys = o.keys || [];
+                // #825: the batch is Falcon's now; a reload must wait until Falcon reports it settled
+                if (o.via === 'falcon') { results[o.id].falconKeys = o.keys || []; results[o.id].falconWait = true; }
                 if (o.ok && !dry && o.id === 'pc') CMP.picks = {};   // #782: the track changes went with it
                 if (o.ok) { sent += o.sent || 0; Log.cat('Execute').ok(o.id + ': ' + (o.note || 'done')); } else { failed++; Log.cat('Execute').err(o.id + ': ' + (o.note || 'failed')); }
             });
