@@ -1922,6 +1922,7 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
 .ev{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .ev .d{min-width:100px}
 .lab .cat{font-size:13px;font-weight:500}
+.more>summary{cursor:pointer;color:var(--muted);font-size:14px}
 .cp{border:0;background:none;padding:0;cursor:copy;font:inherit;color:inherit;border-bottom:1px dashed transparent;text-align:left}
 .cp:hover{border-bottom-color:var(--accent);color:var(--link)}
 .cp.mono{font:500 14px 'JetBrains Mono',ui-monospace,monospace}
@@ -2263,15 +2264,13 @@ const FACTS = [['released', 'Released'], ['labels', 'Labels'], ['barcode', 'Barc
 function facts(r) {
     const byDate = [];
     for (const v of r.events) { const l = byDate.find(x => x.date === v.date); l ? l.ev.push(v) : byDate.push({ date: v.date, ev: [v] }); }
-    const cats = [...new Set(r.labels.map(l => l.catno).filter(Boolean))];
     const tracks = r.media.flatMap(m => m.tracks);
     const labA = l => entA('label', l.id, l.name || '[no label]');
+    // past two rows, the first stays and the rest fold behind "+N more"
+    const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
     const F = {
-        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, byDate.map(l => `<div class="ev"><span class="d">${fdate(l.date)}</span>${l.ev.map(v => v.iso && v.iso !== 'XW' && v.iso !== 'XE' ? `<span class="iso" title="${esc(v.area)}">${esc(v.iso)}</span>` : `<span>${esc(v.area)}</span>`).join(' ')}</div>`).join('') || '—'],
-        // one catalog number shared by every label is said once
-        labels: [`Label${r.labels.length > 1 ? 's' : ''}`, cats.length === 1 && r.labels.length > 1
-            ? `<div class="lab">${r.labels.map(labA).join(' · ')}</div><div class="lab">${copyB(cats[0], 'mono cat')}</div>`
-            : r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`).join('') || '—'],
+        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div class="ev"><span class="d">${fdate(l.date)}</span>${l.ev.map(v => v.iso && v.iso !== 'XW' && v.iso !== 'XE' ? `<span class="iso" title="${esc(v.area)}">${esc(v.iso)}</span>` : `<span>${esc(v.area)}</span>`).join(' ')}</div>`)) || '—'],
+        labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`)) || '—'],
         barcode: ['Barcode', r.barcode ? `<span>${copyB(r.barcode)}</span>` : '—'],
         length: ['Length', `${tracks.length} tracks · ${total(tracks)}`],
         mbid: ['MBID', `<span>${copyB(r.id)}</span>`],
