@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.7
+// @version      2026.10.24.8
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2085,8 +2085,8 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
 .sk-page .info{flex:1 1 0;min-width:0}
 .sk-cover{aspect-ratio:1;border-radius:16px;display:grid;place-items:center}
 .sk-orbit{width:84px;height:84px;overflow:visible}
-.sk-orbit path{transform-origin:64px 64px;animation:skspin 2.4s linear infinite}
-@keyframes skspin{to{transform:rotate(360deg)}}
+.sk-orbit path{transform-origin:64px 64px;animation:skspin 1.6s ease-in-out infinite alternate}
+@keyframes skspin{from{transform:rotate(-30deg)}to{transform:rotate(0deg)}}
 .sk-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.sk-thumbs .sk{aspect-ratio:1}
 .sk.k{width:180px;height:12px;margin-top:20px}.sk.ti{width:min(420px,90%);height:56px;margin:18px 0 14px;border-radius:12px}.sk.by{width:240px;height:24px}
 .sk-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:40px}.sk-f{display:grid;gap:10px}.sk-f .l{width:70px;height:10px}.sk-f .v{width:120px;height:18px}
