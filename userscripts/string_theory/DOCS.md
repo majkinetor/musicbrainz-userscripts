@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-24 14:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-24 15:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -737,7 +737,7 @@ Open Falcon with **Ctrl+Alt+F** or its corner icon (right-click: **Options**). T
 
 #### From Harmony
 
-On a Harmony *Release Actions* page ([harmony.pulsewidth.org.uk](https://harmony.pulsewidth.org.uk) or [harmony.mybrainz.dev](https://harmony.mybrainz.dev/)), **Send N to Falcon** (bottom-right) opens MusicBrainz with the batch queued: links for every entity, the recordings' ISRCs, and the front cover.
+On a Harmony *Release Actions* page ([harmony.pulsewidth.org.uk](https://harmony.pulsewidth.org.uk) or [harmony.mybrainz.dev](https://harmony.mybrainz.dev/)), **Send N to Falcon** (bottom-right; right-click: **Options**) opens MusicBrainz with the batch queued: links for every entity, the recordings' ISRCs, and the front cover.
 
 <img src="../falcon/screenshots/harmony.png" width="400">
 
@@ -830,12 +830,12 @@ The last 10 runs' logs are kept in this browser, so a run whose tab crashed can 
 
 Two settings, both on by default, carry a finished Harmony import to a finished run:
 
-|                     | Runs on     | Does                     |
-| ------------------- | ----------- | ------------------------ |
-| *Auto send*         | Harmony     | presses *Send to Falcon* |
-| *Auto start import* | MusicBrainz | presses *Start*          |
+|                           | Runs on     | Does                     |
+| ------------------------- | ----------- | ------------------------ |
+| *Auto send*               | Harmony     | presses *Send to Falcon* |
+| *Auto start import after* | MusicBrainz | presses *Start*          |
 
-*Auto send* waits for Harmony to finish, counts down on the button (a click cancels), and stands down when there's nothing to send.
+*Auto send* waits for Harmony to finish, counts down on the button (a click cancels, a right-click cancels and opens the options), and stands down when there's nothing to send. *Auto start import after* counts down on **Start** for its seconds (10 by default); a click on Start cancels.
 
 **When Harmony errors**, the page loads short of actions:
 
@@ -896,7 +896,7 @@ Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?
 | Add covers only when there aren't any                    | on        | a release that already has cover art gets none from the queue                                               |
 | Harmony: Ignore cover art                                | off       | a Harmony import queues no cover art                                                                        |
 | Harmony: Auto send                                       | on        | see [Hands-free import](#hands-free-import)                                                                 |
-| Harmony: Auto start import                               | on        | see [Hands-free import](#hands-free-import)                                                                 |
+| Harmony: Auto start import after … seconds               | on, 10    | see [Hands-free import](#hands-free-import)                                                                 |
 | Harmony: Reload release page after import without errors | on        | see [Hands-free import](#hands-free-import)                                                                 |
 | Harmony: Open in new tab                                 | on        | off navigates the Harmony tab                                                                               |
 | Harmony: Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
