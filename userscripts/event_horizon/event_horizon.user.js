@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.24
+// @version      2026.10.24.25
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2033,6 +2033,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .dwrap{position:relative}
 .dmenu{display:none;position:absolute;top:0;right:34px;min-width:160px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .dmenu.open{display:block;z-index:5}
+.crdis{display:inline-flex;align-items:center;gap:2px}
 .crdis .dmenu{top:100%;right:0;margin-top:4px}
 .dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
@@ -2429,6 +2430,7 @@ const DIS = [
     ['tip', 'Tooltip', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3h11v7h-6l-3 3v-3h-2z"/></svg>'],
 ];
 // the disambiguation menu: its button (class cls) and the choices
+const byNameB = cls => `<button class="${cls}" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name" data-tip="${S.byName ? 'Grouped by name\nClick to group by role' : 'Grouped by role\nClick to group by name'}">${S.byName ? IC_NAME : IC_ROLE}</button>`;
 function disMenu(cls) {
     const cur = DIS.find(x => x[0] === S.dis) || DIS[0];
     return `<div class="dwrap"><button class="${cls}" type="button" data-dismenu aria-haspopup="menu" aria-label="Disambiguation: ${cur[1]}" data-tip="Disambiguation: ${cur[1]}\nClick to choose how it shows">${cur[2]}</button>`
@@ -2441,7 +2443,7 @@ function detail(t) {
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? (S.byName ? `<dt>${esc(t.work.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(t.work.iswcs.join(', '))}</dd>`) : '';
     const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
-    const sw = `<div class="gtools"><button class="gsw" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name" data-tip="${S.byName ? 'Grouped by name\nClick to group by role' : 'Grouped by role\nClick to group by name'}">${S.byName ? IC_NAME : IC_ROLE}</button>${disMenu('gsw')}</div>`;
+    const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.join('')}${listen}</div></div>`;
 }
 const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : S.byName ? `<dt>${esc(w.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(w.iswcs.join(', '))}</dd>`;
@@ -2492,17 +2494,22 @@ function creditsCard(r) {
     const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, pos: multi ? `${mi + 1}.${t.n}` : t.n })));
     const pos = tracks.map(t => t.pos);
     const m = new Map();
-    tracks.forEach((t, i) => { for (const c of [...t.cr, ...t.wcr]) { const k = c.role + '\u0000' + c.name; const e = m.get(k) || { role: c.role, name: c.name, id: c.id, idx: [] }; if (!e.idx.includes(i)) e.idx.push(i); m.set(k, e); } });
+    tracks.forEach((t, i) => { for (const c of [...t.cr, ...t.wcr]) { const k = c.role + '\u0000' + c.name; const e = m.get(k) || { role: c.role, name: c.name, id: c.id, dis: c.dis, idx: [] }; if (!e.idx.includes(i)) e.idx.push(i); m.set(k, e); } });
     const byR = new Map(); for (const e of m.values()) { const l = byR.get(e.role) || []; l.push(e); byR.set(e.role, l); }
-    const trackLines = [...byR].sort((a, b) => a[0].localeCompare(b[0])).map(([role, es]) => `<div class="cline"><span class="role">${esc(role)}</span><span>${es.map(e => `<span class="who">${artistA(e)}</span>${e.idx.length === tracks.length ? '' : `<span class="trk">${ranges(e.idx, pos)}</span>`}`).join(', ')}</span></div>`).join('');
-    const relLines = byRole(r.credits).map(([role, cs]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${andList(cs.map(artistA))}</span></div>`).join('');
+    const trk = e => e.idx.length === tracks.length ? '' : `<span class="trk">${ranges(e.idx, pos)}</span>`;
+    const byN = new Map(); for (const e of m.values()) { const l = byN.get(e.name) || []; l.push(e); byN.set(e.name, l); }
+    const trackLinesN = [...byN].sort((a, b) => a[0].localeCompare(b[0])).map(([, es]) => `<div class="cline"><span class="who">${crName(es[0])}</span><span>${es.map(e => `<span class="role">${esc(e.role)}</span>${trk(e)}`).join(', ')}</span></div>`).join('');
+    const relLinesN = byPerson(r.credits).map(e => `<div class="cline"><span class="who">${crName(e.c)}</span><span class="role">${esc(e.roles.join(', '))}</span></div>`).join('');
+    const trackLinesR = [...byR].sort((a, b) => a[0].localeCompare(b[0])).map(([role, es]) => `<div class="cline"><span class="role">${esc(role)}</span><span>${es.map(e => `<span class="who">${crName(e)}</span>${trk(e)}`).join(', ')}</span></div>`).join('');
+    const relLinesR = byRole(r.credits).map(([role, cs]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${andList(cs.map(crName))}</span></div>`).join('');
+    const relLines = S.byName ? relLinesN : relLinesR, trackLines = S.byName ? trackLinesN : trackLinesR;
     const n = r.credits.length + m.size;
     if (!n) return '';
     const body = `<div class="card dm-${S.dis}"><div class="cols">
         ${relLines ? `<div class="grp"><div class="label">On the release</div>${relLines}</div>` : ''}
         ${S.crTracks ? `<div class="grp"><div class="label">On the tracks · numbers say which, none means all</div>${trackLines || '<div class="folded-note">None yet</div>'}</div>` : ''}
     </div></div>`;
-    return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
+    return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${byNameB('ib')}${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
