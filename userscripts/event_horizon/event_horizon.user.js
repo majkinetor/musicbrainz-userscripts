@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.220000
+// @version      2026.10.25.220100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1902,8 +1902,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail.open .gr,#eh-rail.open .nm,#eh-rail.open .eye{display:inline-flex}
 #eh-rail.open .rr:hover{background:var(--hover)}
 #eh-rail .rr.drag{opacity:.5}
-#eh-rail .gr{cursor:grab;color:var(--muted);font-size:11px;letter-spacing:-2px}
-#eh-rail .nm{border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text)!important;background:none!important;cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
+#eh-rail .gr{align-items:center;line-height:1;cursor:grab;color:var(--muted);font-size:11px;letter-spacing:-2px}
+#eh-rail .nm{align-items:center;line-height:1;border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text)!important;background:none!important;cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
 #eh-rail .rr.on .nm{color:var(--accent)!important}
 #eh-rail .rr.off .nm{color:var(--muted)!important;text-decoration:line-through}
 #eh-rail .eye{border:0;background:none;padding:2px;color:var(--muted);cursor:pointer}
