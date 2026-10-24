@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.200000
+// @version      2026.10.25.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1892,17 +1892,17 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
 #eh-rail{position:fixed;z-index:20;top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent}
-#eh-rail:hover{background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
-#eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:6px;height:26px;padding:0 4px;border-radius:8px;cursor:grab}
+#eh-rail.open{background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
+#eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:30px;min-width:16px;padding:0 6px;border-radius:8px;cursor:grab}
 #eh-rail .rr>i{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none}
 #eh-rail .rr.on>i{background:var(--accent)}
 #eh-rail .rr.off>i{background:none;border:1.5px solid var(--border);box-sizing:border-box}
 #eh-rail .gr,#eh-rail .nm,#eh-rail .eye{display:none}
-#eh-rail:hover .gr,#eh-rail:hover .nm,#eh-rail:hover .eye{display:inline-flex}
-#eh-rail:hover .rr:hover{background:var(--hover)}
+#eh-rail.open .gr,#eh-rail.open .nm,#eh-rail.open .eye{display:inline-flex}
+#eh-rail.open .rr:hover{background:var(--hover)}
 #eh-rail .rr.drag{opacity:.5}
 #eh-rail .gr{color:var(--muted);font-size:11px;letter-spacing:-2px}
-#eh-rail .nm{border:0;background:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
+#eh-rail .nm{border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
 #eh-rail .rr.on .nm{color:var(--accent)}
 #eh-rail .rr.off .nm{color:var(--muted);text-decoration:line-through}
 #eh-rail .eye{border:0;background:none;padding:2px;color:var(--muted);cursor:pointer}
@@ -2858,6 +2858,9 @@ function secRail(app) {
         rail.id = 'eh-rail';
         rail.setAttribute('aria-label', 'Sections');
         app.after(rail);
+        let t = 0;
+        rail.addEventListener('mouseenter', () => { clearTimeout(t); rail.classList.add('open'); });
+        rail.addEventListener('mouseleave', () => { clearTimeout(t); t = setTimeout(() => rail.classList.remove('open'), 400); });
         rail.addEventListener('click', ev => {
             const row = ev.target.closest('[data-sec]'); if (!row) return;
             const k = row.dataset.sec;
@@ -2880,7 +2883,7 @@ function secRail(app) {
     }
     rail.hidden = secs.length < 2;
     rail.innerHTML = secs.map(x => { const k = id(x), off = x.hidden;
-        return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section" data-tip="${off ? 'Show' : 'Hide'}">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('');
+        return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('');
     railSpy();
 }
 // lights the section at the top of the window
