@@ -2,7 +2,7 @@
 // MB may store in other forms, all of them, so Apollo needs no change for a new provider.
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
-const fns = () => loadFunctions('first_contact', ['APPLE_STOREFRONTS', 'AMAZON_TLDS', 'DEEZER', 'BANDCAMP', 'DISCOGS', 'APPLE', 'TIDAL', 'QOBUZ', 'BEATPORT', 'SPOTIFY', 'YTMUSIC', 'VOLUMO', 'HDTRACKS', 'SOUNDCLOUD', 'AMAZON', 'AUDIOMACK', 'SEVENDIGITAL', 'OTOTOY', 'MORA', 'MELON', 'PRESTO', 'PROVIDERS', 'handoffFor']);
+const fns = () => loadFunctions('first_contact', ['APPLE_STOREFRONTS', 'AMAZON_TLDS', 'DEEZER', 'BANDCAMP', 'DISCOGS', 'APPLE', 'TIDAL', 'QOBUZ', 'BEATPORT', 'SPOTIFY', 'YTMUSIC', 'VOLUMO', 'HDTRACKS', 'SOUNDCLOUD', 'AMAZON', 'AUDIOMACK', 'SEVENDIGITAL', 'OTOTOY', 'MORA', 'MELON', 'BUGS', 'PRESTO', 'PROVIDERS', 'handoffFor']);
 const rel = (credit, labels = []) => ({ url: 'https://example.com/album/1', title: 'T', barcode: '', credit, labels, mediums: [{ tracks: [{ title: 'One', isrc: null, url: null, credit }] }] });
 
 test('every provider says what Apollo needs to know about it', { tag: ['@unit', '@critical'] }, async () => {

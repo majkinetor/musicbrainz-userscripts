@@ -73,6 +73,11 @@ class ImageMaximizer {
             const m = u.pathname.match(/^(\/.+\/images\/.+\/\d+_\d+)_(?:\d+|org)\.(jpg|png)$/);
             return m ? [`https://${u.host}${m[1]}_org.${m[2]}`, `https://${u.host}${m[1]}_1000.${m[2]}`] : [];
         } },
+        // Bugs (#816): the size in the path; original is the upload (4096 px on CRASH)
+        { host: /^image\.bugsm\.co\.kr$/, max: u => {
+            const m = u.pathname.match(/^\/album\/images\/(?:\d+|original)\/(\d+\/\d+\.(?:jpg|png))$/);
+            return m ? [`https://${u.host}/album/images/original/${m[1]}`, `https://${u.host}/album/images/1000/${m[1]}`] : [];
+        } },
         // Juno: /full/…-BIG
         { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
             const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
@@ -131,6 +136,11 @@ class ImageMaximizer {
             const a = j && j.response && j.response.ALBUMINFO;
             const art = a && (a.ALBUMIMGLARGE || a.ALBUMIMG);
             return art ? [{ url: art.replace(/\?.*$/, ''), types: ['Front'] }] : [];
+        } },
+        // Bugs (#816): the page's og:image is the 1200 rendition; the max rule takes it to the original
+        { id: 'bugs', name: 'Bugs', host: /^(music|m)\.bugs\.co\.kr$/, async find(u) {
+            if (!/^\/album\/\d+/.test(u.pathname)) throw new Error('not an album page');
+            return this._metaImage(u.href, ['Front']);
         } },
         { id: 'deezer', name: 'Deezer', host: /(^|\.)deezer\.com$/, async find(u) {
             const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];

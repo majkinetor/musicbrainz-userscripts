@@ -57,6 +57,7 @@ A store page goes to its resolver; any other page to its `og:image`; an image UR
 | Amazon         | the product page                                                  | the image without size modifiers           |
 | VGMdb          | the scan gallery, captions as types                               | `media.vgm.io`                             |
 | Melon          | the app's album API                                               | `_org`, the original                       |
+| Bugs           | the page's cover                                                  | `original`, the upload                     |
 | 7digital, Juno | the page's `og:image`                                             | `_800`, `/full/…-BIG`                      |
 
 Image URLs on SoundCloud, YouTube, Google and Cover Art Archive thumbnails are maximised too.

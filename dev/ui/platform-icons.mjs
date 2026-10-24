@@ -70,6 +70,8 @@ export const PLATFORM_ICONS = {
 
     // ── Melon — a green disc + a white leaf-topped note (stand-in, #815) ──
     melon: { color: '#00cd3c', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#00cd3c"/><path d="M10 16.5V8.5l5-1.5v8" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.8" cy="16.5" r="1.7" fill="#fff"/><circle cx="13.8" cy="15" r="1.7" fill="#fff"/></svg>' },
+    // ── Bugs — a red-orange disc + a white lower-case b (stand-in, #816) ──
+    bugs: { color: '#ff3d2e', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff3d2e"/><path d="M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>' },
     // ── mora — a blue disc + a white lower-case m (stand-in, #813) ──
     mora: { color: '#0a7fd3', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0a7fd3"/><path d="M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" transform="translate(1.6 0)"/></svg>' },
 

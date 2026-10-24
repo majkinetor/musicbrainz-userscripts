@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.24.170100
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Presto Music.
+// @version      2026.10.24.200000
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -25,6 +25,7 @@
 // @match        https://ototoy.jp/_/default/p/*
 // @match        https://mora.jp/package/*
 // @match        https://www.melon.com/album/detail.htm*
+// @match        https://music.bugs.co.kr/album/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -80,6 +81,7 @@
 // @connect      bandcamp.com
 // @connect      cf.mora.jp
 // @connect      m2.melon.com
+// @connect      music.bugs.co.kr
 // ==/UserScript==
 
 (function () {
@@ -2442,6 +2444,78 @@ const MELON = {
     },
 };
 
+// Bugs (#816): a Korean store. Everything but the lengths is on the album page, server-rendered: the
+// info table (artist, type, release date, distributor 유통사, agency 기획사), the album text, and the
+// tracklist, a row per track with its disc (disc_id), Bugs track id and linked artists. Each length
+// comes from /player/track/<id>, JSON that needs no account. Harmony reads Bugs' app API instead,
+// whose secret a userscript can't carry. No ISRCs, no barcode.
+const BUGS = {
+    id: 'bugs',
+    name: 'Bugs',
+    abbr: 'bug',
+    host: /^music\.bugs\.co\.kr$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/album\/(\d+)\/?$/); return m ? m[1] : null; },
+    text: el => (el ? el.textContent.replace(/\s+/g, ' ').trim() : ''),
+    TYPES: [[/싱글/, ['Single']], [/정규/, ['Album']], [/EP|미니/i, ['EP']], [/베스트|컴필레이션|옴니버스/, ['Album', 'Compilation']], [/라이브/, ['Album', 'Live']], [/리믹스/, ['Album', 'Remix']], [/OST/i, ['Album', 'Soundtrack']]],
+    artist(a) { const m = (a.getAttribute('href') || '').match(/\/artist\/(\d+)/); return { name: (a.getAttribute('title') || this.text(a)).trim(), url: m ? `https://music.bugs.co.kr/artist/${m[1]}` : null }; },
+    hms(t) { const p = String(t || '').trim().split(':').map(Number); return p.length > 1 && p.every(Number.isFinite) ? p.reduce((a, n) => a * 60 + n, 0) * 1000 : null; },
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const info = {};
+        doc.querySelectorAll('.basicInfo table.info tr').forEach(tr => { const th = tr.querySelector('th'), td = tr.querySelector('td'); if (th && td) info[this.text(th)] = td; });
+        let ld = {};
+        for (const sc of doc.querySelectorAll('script[type="application/ld+json"]')) { try { const j = JSON.parse(sc.textContent); if (j && j['@type'] === 'MusicAlbum') { ld = j; break; } } catch (e) { Log.debug('Bugs: unreadable ld+json: ' + e.message); } }
+        const rawTitle = String(ld.name || '').trim() || this.text(doc.querySelector('header.pgTitle h1'));
+        if (!rawTitle) throw new Error('Bugs: no album on this page');
+        const albumArtists = info['아티스트'] ? [...info['아티스트'].querySelectorAll('a[href*="/artist/"]')].map(a => this.artist(a)) : [];
+        const type = this.text(info['유형']), date = this.text(info['발매일']), agency = this.text(info['기획사']), distributor = this.text(info['유통사']);
+        const rows = [...doc.querySelectorAll('table.trackList tr[rowType="track"]')];
+        Log.info(`Bugs album ${id}: "${rawTitle}" by ${albumArtists.map(a => a.name).join(', ') || '—'} · ${type || '—'} · ${date || '—'} · agency ${agency || '—'} · distributor ${distributor || '—'} · ${rows.length} tracks`);
+        const various = albumArtists.length === 1 && /^(?:various artists|v\.?\s*a\.?)$/i.test(albumArtists[0].name);
+        const mediums = [], byDisc = new Map();
+        let n = 0;
+        for (const tr of rows) {
+            const trackId = tr.getAttribute('trackId');
+            const disc = parseInt((tr.querySelector('input[disc_id]') || { getAttribute: () => '1' }).getAttribute('disc_id'), 10) || 1;
+            if (!byDisc.has(disc)) { const m = { format: 'Digital Media', name: '', tracks: [] }; byDisc.set(disc, m); mediums.push(m); }
+            const tl = tr.querySelector('p.title a');
+            const tf = splitFeat((tl && tl.getAttribute('title')) || this.text(tl));
+            const linked = [...tr.querySelectorAll('p.artist a[href*="/artist/"]')].map(a => this.artist(a));
+            const credit = creditFromTitle(linked.length ? linked : (various ? [] : albumArtists), tf.feat);
+            // the length is only in the player JSON, a request per track to Bugs
+            let lengthMs = null;
+            try { const j = await gmJson(`https://music.bugs.co.kr/player/track/${trackId}`); lengthMs = this.hms(j && j.track && j.track.len); }
+            catch (e) { Log.warn(`Bugs: no length for track ${trackId}: ${e.message}`); }
+            byDisc.get(disc).tracks.push({ title: tf.title, lengthMs, isrc: null, url: `https://music.bugs.co.kr/track/${trackId}`, credit });
+            progress && progress(++n, rows.length);
+            Log.debug(`track ${disc}.${byDisc.get(disc).tracks.length}: "${tf.title}" ${lengthMs == null ? '—' : Math.round(lengthMs / 1000) + 's'} — ${credit.map(c => c.name + c.join).join('') || '(no artist)'}`);
+        }
+        const af = splitFeat(rawTitle);
+        const credit = various || !albumArtists.length ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle(albumArtists, af.feat);
+        const hit = this.TYPES.find(([re]) => re.test(type));
+        const [y, m, d] = date.split(/[.-]/).map(x => parseInt(x, 10));
+        const label = agency || distributor;
+        const url = `https://music.bugs.co.kr/album/${id}`;
+        return {
+            source: this.id,
+            annotation: notesText((doc.querySelector('#albumContents') || {}).innerHTML),   // the album text
+            url,
+            title: af.title,
+            credit,
+            types: hit ? hit[1] : [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'KR',   // Bugs sells in Korea only
+            barcode: null,
+            labels: label ? [{ name: label, catno: '', url: null }] : [],
+            urls: [{ url, linkType: 980 }, { url, linkType: 74 }],   // streaming (paid) + download
+            mediums,
+        };
+    },
+};
+
 // Presto Music (#779): a UK shop for classical and jazz, CDs, SACDs, vinyl and downloads. Everything is
 // on the product page, server-rendered behind Cloudflare: the title, the artist line (plain text, roles
 // in brackets), the format bought here, Release date / Label / Catalogue number, the barcode in the
@@ -2732,7 +2806,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, PRESTO];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, MELON, BUGS, PRESTO];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -2750,6 +2824,7 @@ const HARMONY_URLS = {
     ototoy: id => `https://ototoy.jp/_/default/p/${id}`,
     mora: id => `https://mora.jp/package/${id}/`,
     melon: id => `https://www.melon.com/album/detail.htm?albumId=${id}`,
+    bugs: id => `https://music.bugs.co.kr/album/${id}`,
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
 const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);
