@@ -1904,8 +1904,6 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text);text-decoration:none}
 .ib.primary,.kicker .ib.primary svg{color:var(--accent)}
 .kicker .ib svg{color:inherit}
-.ib[data-tip]:hover::after,.stars[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;white-space:nowrap;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font:600 12px Manrope,system-ui,sans-serif;letter-spacing:0;text-transform:none;z-index:20;box-shadow:0 6px 16px var(--shadow)}
-.stars[data-tip]:hover::after{left:0;right:auto}
 .kicker .sep{width:1px;height:20px;background:var(--border);margin:0 4px}
 .gear>button{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft);cursor:pointer;display:grid;place-items:center}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
@@ -2072,6 +2070,7 @@ const S = {
     ed: { kinds: new Set(), official: false },
     open: new Set(),
 };
+const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
 const save = () => { try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
 const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
@@ -2284,7 +2283,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : ''}"${i ? '' : ' data-native'} aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : ''}"${p ? '' : ' data-native'} aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}</span></div>
             <h1>${esc(r.title)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
@@ -2431,7 +2430,6 @@ function render(keepPop) {
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = r.title + ' · Event Horizon';
     app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + artwork(r);
-    if (document.getElementById('eh-cfg')) openCfg();
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     fitQuiet();
     save();
@@ -2506,13 +2504,12 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
-    document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; if (document.getElementById('eh-cfg')) closeCfg(); else if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
+    document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
     addEventListener('resize', () => { if (ehOn) fitQuiet(); });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     addEventListener('popstate', () => { if (!ehOn) location.reload(); else show(navTo(location.href)); });
 }
-function setOn(on, keep = true) {
-    if (keep) { S.on = on; save(); }
+function setOn(on) {
     if (!on && navTo(location.href) !== PAGE_ID) { location.reload(); return; }
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
     if (first) build();
@@ -2528,35 +2525,76 @@ function setOn(on, keep = true) {
     const l = document.getElementById('eh-launch');
     if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
 }
-// the settings window, by the launcher
-const CFG_CSS = '#eh-cfg{position:fixed;z-index:2147483001;right:14px;bottom:66px;background:var(--mbu-bg);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:8px;padding:10px 14px;width:max-content;min-width:300px;max-width:min(420px,calc(100vw - 28px));max-height:calc(100vh - 90px);overflow:auto;box-sizing:border-box;box-shadow:var(--mbu-shadow-lg);font:13px var(--mbu-font)}'
-    + '#eh-cfg h4{margin:12px 0 4px;font:600 11px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
-    + '#eh-cfg label{display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer}#eh-cfg label svg,#eh-cfg label .mgram{flex:none}#eh-cfg .hint{color:var(--mbu-text-weak);font-size:12px;margin:0 0 4px}';
-function openCfg() {
-    let w = document.getElementById('eh-cfg');
-    const y = w ? w.scrollTop : 0;
-    if (!w) { w = document.createElement('div'); w.id = 'eh-cfg'; w.className = 'mbu-ui'; document.documentElement.append(w); setTimeout(() => document.addEventListener('mousedown', cfgOff), 0); }
-    const box = (g, k, on, label) => `<label><input type="checkbox" data-g="${g}" data-k="${k}"${on ? ' checked' : ''}>${label}</label>`;
-    const r = data && data.rel, um = new Map();
-    if (r) for (const m of r.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p);
-    const union = sortP([...um.values()]);
-    w.innerHTML = mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO })
-        + '<h4>Release info</h4><p class="hint">What the header shows.</p>' + FACTS.map(([k, n]) => box('fact', k, S.facts.includes(k), n)).join('')
-        + '<h4>Under the cover</h4>' + box('thumbs', '1', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => box('extra', k, S.extras.includes(k), n)).join('')
-        + '<h4>Track providers</h4><p class="hint">Each gets a column in the tracklist; the others sit behind +N.</p>'
-        + (union.map(p => box('prov', p.key, S.prov.includes(p.key), icon(p, 20) + esc(p.name))).join('') || '<p class="hint">No track links here.</p>');
-    w.scrollTop = y;
-    w.onchange = ev => {
-        const { g, k } = ev.target.dataset;
-        if (g === 'fact') S.facts = toggle(S.facts, k);
-        else if (g === 'thumbs') S.thumbs = !S.thumbs;
-        else if (g === 'extra') S.extras = toggle(S.extras, k);
-        else if (g === 'prov') S.prov = toggle(S.prov, k);
-        save(); const sy = scrollY; render(); scrollTo(0, sy);
-    };
+// the settings window: the shared overlay and header
+const CI = {
+    released: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+    labels: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    barcode: '<path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14"/>',
+    length: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    mbid: '<path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/>',
+    asin: '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/>',
+    packaging: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
+    lang: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    quality: '<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+    links: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+    thumbs: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
+    rating: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
+    tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+};
+const CFG_CSS = '.eh-cfg{width:min(480px,94vw);font:13px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:8px 12px 10px}.eh-cfg .mbu-cfg-h{margin-bottom:2px}'
+    + '.eh-cfg section{padding:8px 0;border-bottom:1px solid var(--mbu-border-soft)}.eh-cfg section:last-of-type{border:0}'
+    + '.eh-cfg h4{margin:0 0 6px;font:600 11px var(--mbu-font);letter-spacing:.07em;text-transform:uppercase;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .row{display:flex;align-items:center;gap:10px}.eh-cfg .row span{flex:1}'
+    + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
+    + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
+    + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:4px}'
+    + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 12px var(--mbu-font);cursor:pointer;user-select:none}'
+    + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
+    + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
+    + '.eh-cfg .chip.p{padding-left:4px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:18px;height:18px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}'
+    + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
+    + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
+// providers to offer: this release's, else those picked and the usual ones
+function cfgProviders() {
+    const um = new Map();
+    if (data) for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p);
+    else for (const k of [...S.prov, ...ORDER]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
+    return sortP([...um.values()]);
 }
-const cfgOff = ev => { const w = document.getElementById('eh-cfg'); if (w && !w.contains(ev.target) && !ev.target.closest('#eh-launch')) closeCfg(); };
-function closeCfg() { const w = document.getElementById('eh-cfg'); if (w) w.remove(); document.removeEventListener('mousedown', cfgOff); }
+function cfgBody() {
+    const chip = (g, k, on, label, tip) => `<button type="button" class="chip" data-g="${g}" data-k="${k}" aria-pressed="${on}"${tip ? ` data-tip="${esc(tip)}"` : ''}><svg viewBox="0 0 24 24" aria-hidden="true">${CI[k] || ''}</svg>${label}</button>`;
+    const ps = cfgProviders();
+    return `<section><h4>General</h4><div class="row"><span>Start on load</span><button type="button" class="sw" role="switch" data-g="on" aria-checked="${S.on}" aria-label="Start on load" data-tip="On: a release page opens in Event Horizon\nOff: MusicBrainz's page; the launcher switches"></button></div></section>`
+        + `<section><h4>Release info</h4><div class="chips">${FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join('')}</div></section>`
+        + `<section><h4>Under the cover</h4><div class="chips">${chip('thumbs', 'thumbs', S.thumbs, 'Other covers')}${[['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')}</div></section>`
+        + `<section><h4>Track providers</h4><div class="chips" data-tip="Each picked one gets a column in the tracklist, in the order picked; the rest sit behind +N">${ps.map(p => { const i = S.prov.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}">${icon(p, 18)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; }).join('')}</div></section>`;
+}
+function openCfg() {
+    if (document.getElementById('eh-cfg')) return;
+    const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
+    ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO })}<div class="eh-cfg-b">${cfgBody()}</div></div><div class="foot"><span>Applies at once</span><button type="button" class="reset">Reset to defaults</button></div></div>`;
+    document.documentElement.append(ov);
+    const panel = ov.firstChild, b = panel.querySelector('.eh-cfg-b');
+    mbuDismissOn(panel, () => ov.remove());
+    panel.addEventListener('click', ev => {
+        if (ev.target.closest('.reset')) { Object.assign(S, JSON.parse(DEFAULTS)); }
+        else {
+            const t = ev.target.closest('[data-g]'); if (!t) return;
+            const { g, k } = t.dataset;
+            if (g === 'on') S.on = !S.on;
+            else if (g === 'fact') S.facts = toggle(S.facts, k);
+            else if (g === 'thumbs') S.thumbs = !S.thumbs;
+            else if (g === 'extra') S.extras = toggle(S.extras, k);
+            else if (g === 'prov') S.prov = toggle(S.prov, k);
+        }
+        save();
+        b.innerHTML = cfgBody();
+        if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
+    });
+}
+const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
 function launcher() {
     const st = document.createElement('style'); st.id = 'eh-launch-css';
     st.textContent = '#eh-launch{position:fixed;z-index:2147483000;width:40px;height:40px;border-radius:50%;border:none;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
@@ -2568,7 +2606,6 @@ function launcher() {
     btn.onclick = () => setOn(!ehOn);
     btn.oncontextmenu = ev => {
         ev.preventDefault();
-        if (!ehOn) setOn(true);
         if (document.getElementById('eh-cfg')) closeCfg(); else openCfg();
     };
     // outside both bodies, so it stays through every swap
@@ -2580,7 +2617,7 @@ function launcher() {
 function start() {
     mbBody = document.body; mbTitle = document.title;
     launcher();
-    setOn(S.on, false);
+    setOn(S.on);
 }
 let showing = 0;
 async function show(id) {
