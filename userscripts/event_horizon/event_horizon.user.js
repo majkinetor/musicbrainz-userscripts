@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.11
+// @version      2026.10.24.12
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2004,10 +2004,10 @@ h1{margin:0;font-size:clamp(36px,5vw,56px);line-height:1.02;font-weight:800;lett
 .hide-credits .sub{display:none}
 .hide-len .ln,.hide-len .tot{display:none}
 .slots{display:flex;gap:2px}
-.slot{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;filter:grayscale(1);opacity:.55}
+.slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
 .tr:hover .slot{filter:none;opacity:1}
 .slot.off{opacity:0;pointer-events:none}
-.more{height:26px;min-width:34px;padding:0 8px;border-radius:8px;border:1px dashed var(--border);background:none;font-weight:700;font-size:12px;color:var(--soft);cursor:pointer}
+.more{height:calc(var(--pl-size,22px) + 4px);min-width:34px;padding:0 8px;border-radius:8px;border:1px dashed var(--border);background:none;font-weight:700;font-size:12px;color:var(--soft);cursor:pointer}
 .more:hover{border-color:var(--accent);color:var(--text)}
 .more.ph{visibility:hidden}
 .detail{position:relative;padding:6px 16px 20px 60px;font-size:14px;background:var(--hover)}
@@ -2251,7 +2251,7 @@ const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['
 const primaryKind = p => p.kinds.includes('listen') ? 'listen' : p.kinds.includes('free') ? 'free' : p.kinds.includes('buy') ? 'buy' : 'info';
 const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
 const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
-const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" title="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
+const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ACTS = [
@@ -2270,7 +2270,7 @@ function fmtSummary(fs) {
     for (const f of fs) { const n = fmtName(f), last = out[out.length - 1]; if (last && last[1] === n) last[0]++; else out.push([1, n]); }
     return out.map(([c, n]) => (c > 1 ? c + '×' : '') + n).join(' + ') || 'No media';
 }
-const isrcHtml = i => i.length === 12 ? `<span class="isrc" title="${esc(i)}">${i.slice(0, 2)}<span class="d">-</span>${i.slice(2, 5)}<span class="d">-</span>${i.slice(5, 7)}<span class="d">-</span>${i.slice(7)}</span>` : `<span class="isrc">${esc(i)}</span>`;
+const isrcHtml = i => i.length === 12 ? `<span class="isrc" data-tip="${esc(i)}">${i.slice(0, 2)}<span class="d">-</span>${i.slice(2, 5)}<span class="d">-</span>${i.slice(5, 7)}<span class="d">-</span>${i.slice(7)}</span>` : `<span class="isrc">${esc(i)}</span>`;
 const dur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
 const total = tracks => dur(tracks.reduce((s, t) => s + t.lenMs, 0));
 const CHEV = '<span class="cv"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></span>';
@@ -2299,7 +2299,7 @@ function facts(r) {
     // past two rows, the first stays and the rest fold behind "+N more"
     const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
     const F = {
-        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div class="ev"><span class="d">${fdate(l.date)}</span>${l.ev.map(v => v.iso && v.iso !== 'XW' && v.iso !== 'XE' ? `<span class="iso" title="${esc(v.area)}">${esc(v.iso)}</span>` : `<span>${esc(v.area)}</span>`).join(' ')}</div>`)) || '—'],
+        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div class="ev"><span class="d">${fdate(l.date)}</span>${l.ev.map(v => v.iso && v.iso !== 'XW' && v.iso !== 'XE' ? `<span class="iso" data-tip="${esc(v.area)}">${esc(v.iso)}</span>` : `<span>${esc(v.area)}</span>`).join(' ')}</div>`)) || '—'],
         labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`)) || '—'],
         barcode: ['Barcode', r.barcode ? `<span>${copyB(r.barcode)}</span>` : '—'],
         length: ['Length', `${tracks.length} tracks · ${total(tracks)}`],
@@ -2354,7 +2354,7 @@ function edTile(e, curId) {
     const k = fmtKind(e.formats[0]);
     const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
-    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" title="${esc(fmtSummary(e.formats) + ' · ' + (e.where.join(', ') || 'no country') + ' · ' + (e.date || 'no date') + (e.disambig ? ' · ' + e.disambig : '') + ' · ' + e.labels.join(', '))}">
+    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-tip="${esc(fmtSummary(e.formats) + ' · ' + (e.where.join(', ') || 'no country') + ' · ' + (e.date || 'no date') + (e.disambig ? ' · ' + e.disambig : '') + ' · ' + e.labels.join(', '))}">
         <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
         <span class="t1">${esc(fmtSummary(e.formats))}</span>
         <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
@@ -2370,7 +2370,7 @@ function editions(r, eds, count) {
     const tools = `<span class="seg" role="group" aria-label="Editions view">${[['grid', 'Grid'], ['row', 'Row'], ['format', 'By format']].map(([v, n]) => `<button type="button" data-edview="${v}" aria-pressed="${S.edView === v}">${n}</button>`).join('')}</span>`;
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
-        <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" title="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
+        <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     const filters = `<div class="ed-filter">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edkind="${k}" aria-pressed="${!S.ed.kinds.size || S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}<button class="chip" type="button" data-edoff aria-pressed="${S.ed.official}">Official only</button></div>`;
     let body;
@@ -2387,17 +2387,17 @@ function editions(r, eds, count) {
 /* ── tracklist ─────────────────────────────────────── */
 function trackLinks(t, ctx) {
     const ps = sortP(t.links), slotKeys = ctx.slots;
-    const slots = slotKeys.map(k => { const p = ps.find(x => x.key === k); return p ? `<a class="slot" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" title="${esc(tipOf(p))}">${icon(p, 22)}</a>` : '<span class="slot off"></span>'; });
+    const slots = slotKeys.map(k => { const p = ps.find(x => x.key === k); return p ? `<a class="slot" style="--pl-size:${S.plSize}px" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}">${icon(p, S.plSize)}</a>` : '<span class="slot off" style="--pl-size:${S.plSize}px"></span>'; });
     const rest = ps.filter(p => !slotKeys.includes(p.key));
     const more = rest.length
-        ? `<span class="popwrap"><button class="more" type="button" data-pop="tk-${t.key}" aria-expanded="false" aria-label="${rest.length} more sites">+${rest.length}</button><div class="pop r" id="pop-tk-${t.key}" hidden><div class="h label">Also on</div>${popRows(rest)}</div></span>`
-        : `<span class="popwrap"><span class="more ph">+0</span></span>`;
+        ? `<span class="popwrap"><button class="more" style="--pl-size:${S.plSize}px" type="button" data-pop="tk-${t.key}" aria-expanded="false" aria-label="${rest.length} more sites">+${rest.length}</button><div class="pop r" id="pop-tk-${t.key}" hidden><div class="h label">Also on</div>${popRows(rest)}</div></span>`
+        : `<span class="popwrap"><span class="more ph" style="--pl-size:${S.plSize}px">+0</span></span>`;
     return `<span class="slots">${slots.join('')}</span>${more}`;
 }
 // a credited name; the disambiguation below it, in brackets or only in the tooltip (S.dis)
 const crName = c => {
     if (!c.dis) return artistA(c);
-    const n = c.id ? `<a href="${MB}/artist/${c.id}" class="hasd" title="${esc(c.name + ' (' + c.dis + ')')}">` : `<span class="hasd" title="${esc(c.dis)}">`;
+    const n = c.id ? `<a href="${MB}/artist/${c.id}" class="hasd" data-tip="${esc(c.name + ' (' + c.dis + ')')}">` : `<span class="hasd" data-tip="${esc(c.dis)}">`;
     return n + esc(c.name) + `<span class="dis">${esc(S.dis === 'brackets' ? '(' + c.dis + ')' : c.dis)}</span>` + (c.id ? '</a>' : '</span>');
 };
 // each person once, their roles beside them
@@ -2413,7 +2413,7 @@ const IC_ROLE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" str
 const IC_NAME = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 14c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5"/></svg>';
 function detail(t) {
     const ps = sortP(t.links).filter(p => primaryKind(p) !== 'info');
-    const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" title="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
+    const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? (S.byName ? `<dt>${esc(t.work.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(t.work.iswcs.join(', '))}</dd>`) : '';
