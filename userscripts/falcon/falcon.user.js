@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.23.125720
+// @version      2026.10.24
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -663,7 +663,7 @@
   //
   // History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
   //
-  //   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+  //   o.history = { prefix: 'falcon:session:', lines: 400, head: 140,
   //                 parse: s => entry, nameOf: entries => name, store }
   //
   // A session starts with the page, or with LOG.session(reason) (Falcon: each run).
@@ -672,7 +672,9 @@
   // first name stays). It is stored in the page's localStorage under prefix + id,
   // within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
   // its log; a session longer than `lines` keeps its first `head` lines and its
-  // end, and says how many went between. The newest `keep` sessions are kept.
+  // end, and says how many went between. The newest 10 sessions are kept, not configurable
+  // (#811); each script's prefix is its own, and Clear history clears only that script's.
+  // Leaving the page (a script's reload after its operation, #811) flushes at once.
   // prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
   // can carry on a session across a navigation. The viewer gets a session list and Clear history.
   //   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
@@ -733,7 +735,7 @@
               var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
           },
       });
-      var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+      var keepN = function () { return 10; };   // #811: the last 10 sessions, not configurable
       var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
       // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
       var idDate = function (id) {
@@ -1207,7 +1209,12 @@
           refresh: function () { views.forEach(function (v) { v.sessions(); }); },
           flush: flush,
       };
-      if (H) sid = newId();
+      if (H) {
+          sid = newId();
+          // #811: a script reloads the page right after its operation; write the kept session
+          // now rather than trusting the 100 ms timer to beat the unload
+          try { window.addEventListener('pagehide', flush); } catch (e) { /* no window */ }
+      }
       mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
       return api;
   }
@@ -1990,11 +1997,6 @@
     // regardless since #512 put sessions in localStorage.
     get reloadReleaseAfterImport() { return GM_getValue('falcon:reloadReleaseAfterImport', true) === true; },
     set reloadReleaseAfterImport(v) { GM_setValue('falcon:reloadReleaseAfterImport', !!v); },
-    // #512 (majkinetor): "keep configurable number of last runs in local
-    // storage so those can be selected and loaded by datetime".
-    // #705 (majkinetor): "lets reduce default from 20 to 10"
-    get logHistoryCount() { const n = Number(GM_getValue('falcon:logHistoryCount', 10)); return Math.max(1, Math.min(100, isFinite(n) ? n : 10)); },
-    set logHistoryCount(n) { GM_setValue('falcon:logHistoryCount', Math.max(1, Math.min(100, Number(n) || 10))); },
     // #508 follow-up (majkinetor): "Open from Harmony in new tab (on by
     // default)... Implement 'Off' option that doesn't open new tab but
     // opens MB in existing one" — the existing one being the Harmony tab
@@ -2031,6 +2033,10 @@
   // (newSession), that it is worth keeping (once its workers start: "We should have
   // only processing logs"), and when a navigation carries one on (the reattach below).
   const LOG_PERSIST_MAX = 400, LOG_PERSIST_HEAD = 140;
+  // #811: the last 10 runs, as in every script on the shared log's history; the count was a
+  // setting (falcon:logHistoryCount) until then, and its stored value goes
+  const LOG_HISTORY_KEEP = 10;
+  try { GM_deleteValue('falcon:logHistoryCount'); } catch (e) {}
   const LS = (() => { try { return window.localStorage; } catch (e) { return null; } })();
   const LS_PREFIX = 'falcon:session:';
   // a session id is its start, YYYYMMDDHHMMSS-N; falcon:session:current and :midrun
@@ -2059,7 +2065,7 @@
   const Log = mbuLog({
     name: NAME, version: scriptVersion, header: 'Falcon — activity log', key: 'falcon:logwin',
     subtitle: () => { try { return (LS && LS.getItem(sessionNameKey(Log.sessionId()))) || ''; } catch (e) { return ''; } },
-    history: { prefix: LS_PREFIX, keep: () => cfg.logHistoryCount, lines: LOG_PERSIST_MAX, head: LOG_PERSIST_HEAD, parse: parseStoredLine, nameOf: extractReleaseName },
+    history: { prefix: LS_PREFIX, lines: LOG_PERSIST_MAX, head: LOG_PERSIST_HEAD, parse: parseStoredLine, nameOf: extractReleaseName },
   });
   // #512 follow-up (majkinetor): "Logs sometimes do not have a name although in log it
   // is present" — the release name has its own small key, never trimmed with the log
@@ -2077,7 +2083,7 @@
   }
   function pruneOldSessions() {
     const ids = listSessionKeys();
-    const excess = ids.length - cfg.logHistoryCount;
+    const excess = ids.length - LOG_HISTORY_KEEP;
     if (excess > 0) ids.slice(0, excess).forEach(deleteSessionData);
   }
   // #512 follow-up (majkinetor: "I got bunch of historic logs without any processing...
@@ -7019,9 +7025,6 @@
         <label style="display:flex;align-items:center;gap:7px" data-tip="How many entities are worked on at once\nEach worker is its own frame, submitting on its own.">
           <span>Workers</span> <input type="number" id="falcon-worker-count" min="1" max="6" />
         </label>
-        <label style="display:flex;align-items:center;gap:7px" data-tip="How many runs' logs to keep\nPick one in the Log tab's history; older ones are dropped.">
-          <span>Keep last</span> <input type="number" id="falcon-opt-log-history-count" min="1" max="100" /> <span>run logs</span>
-        </label>
       </div>`;
     document.body.appendChild(panel);
     mbuControls(panel);   // the shared − n + steppers
@@ -7591,9 +7594,6 @@
     picardPortIn.value = cfg.picardPort;
     picardCb.onchange = () => { cfg.sendToPicard = picardCb.checked; };
     picardPortIn.onchange = () => { cfg.picardPort = picardPortIn.value; picardPortIn.value = cfg.picardPort; };
-    const logHistoryIn = document.getElementById('falcon-opt-log-history-count');
-    logHistoryIn.value = cfg.logHistoryCount;
-    logHistoryIn.onchange = () => { cfg.logHistoryCount = logHistoryIn.value; logHistoryIn.value = cfg.logHistoryCount; };
     // #705: the shared log viewer (filters, a chip per worker, the debug switch, past runs,
     // Copy as Markdown)
     Log.mount(document.getElementById('falcon-body-log'));

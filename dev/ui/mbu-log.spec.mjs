@@ -245,13 +245,13 @@ test('history: keep, name, head-and-tail window, the newest N, resume, the sessi
   await page.evaluate(() => {
     window.__ls = new Map();
     window.st = { get: k => (__ls.has(k) ? __ls.get(k) : null), set: (k, v) => __ls.set(k, v), del: k => __ls.delete(k), keys: () => [...__ls.keys()] };
-    window.mkH = keep => mbuLog({ name: 'Test', version: '1', key: 'k', load: k => window.__store.get(k), save: (k, v) => window.__store.set(k, v),
-      history: { prefix: 'h:', keep, lines: 10, head: 3, store: st,
+    window.mkH = () => mbuLog({ name: 'Test', version: '1', key: 'k', load: k => window.__store.get(k), save: (k, v) => window.__store.set(k, v),
+      history: { prefix: 'h:', lines: 10, head: 3, store: st,
         parse: s => { const m = /^\[(\d\d):(\d\d):(\d\d)\] (\w+)\s+(?:\[(w\d)\] )?(.*)$/.exec(s); return m && { sev: m[4].toLowerCase(), cat: m[5], msg: m[6] }; } } });
   });
   const keys = () => page.evaluate(() => st.keys().filter(k => /^h:\d/.test(k) && !k.endsWith(':name')).sort());
   const r1 = await page.evaluate(async () => {
-    window.L = mkH(2);
+    window.L = mkH();
     L.info('nothing worth keeping');
     await new Promise(r => setTimeout(r, 150));
     return { stored: st.keys().length };
@@ -266,14 +266,17 @@ test('history: keep, name, head-and-tail window, the newest N, resume, the sessi
   });
   check(r2.n === 10 && r2.first === 'line 0' && /dropped/.test(r2.gap) && r2.last === 'line 19' && r2.cat === 'w1', `stored: the start, a note, the end (${JSON.stringify(r2)})`);
   check(r2.name === 'Run A' && r2.cur === r2.id, 'the first name stays, and the pointer names the session');
-  // a stored session in the old string format, read back through parse
-  await page.evaluate(() => st.set('h:20200101100000-1', JSON.stringify(['[10:00:00] DEBUG [w1] old line', '[10:00:01] ERROR boom'])));
+  // ten older sessions stored already: with Run A that's 11, and keeping one more prunes to the newest 10 (#811)
+  await page.evaluate(() => { for (let n = 1; n <= 10; n++) st.set('h:20200101100000-' + String(n).padStart(2, '0'), JSON.stringify([[null, 'info', 0, 'old ' + n, 0]])); });
   const r3 = await page.evaluate(() => {
     const a = L.sessionId(); L.session(); L.keep(); L.info('run B'); L.flush();
     return { a, b: L.sessionId(), list: L.sessions().map(s => s.id), lines: L.lines() };
   });
   check(r3.lines.length === 1 && /run B/.test(r3.lines[0]), 'a new session starts empty');
-  check(r3.list.length === 1 && r3.list[0] === r3.a && (await keys()).length === 2, `only the newest 2 are kept, the oldest pruned (${JSON.stringify(r3.list)} ${JSON.stringify(await keys())})`);
+  const kept = await keys();
+  check(kept.length === 10 && r3.list.length === 9 && r3.list[0] === r3.a && !kept.includes('h:20200101100000-01') && !kept.includes('h:20200101100000-02') && kept.includes('h:20200101100000-03'),
+    `the newest 10 are kept, not configurable: the two oldest pruned (${JSON.stringify(kept)})`);
+  await page.evaluate(() => { for (let n = 3; n <= 10; n++) L.forget('20200101100000-' + String(n).padStart(2, '0')); });
   await page.evaluate(() => st.set('h:20200101100000-1', JSON.stringify(['[10:00:00] DEBUG [w1] old line', '[10:00:01] ERROR boom'])));
   const old = await page.evaluate(() => L.load('20200101100000-1'));
   check(old[0].sev === 'debug' && old[0].cat === 'w1' && old[0].msg === 'old line' && old[1].sev === 'error', `an old string line is parsed (${JSON.stringify(old)})`);
@@ -305,8 +308,29 @@ test('history: keep, name, head-and-tail window, the newest N, resume, the sessi
   await page.click('#mbu-logpop .mbu-logpop-hclear');
   check(JSON.stringify(await keys()) === JSON.stringify(['h:' + r3.b]), `Clear history leaves only the current session (${JSON.stringify(await keys())})`);
   // a navigation: a new page's log carries on the kept session
-  const r4 = await page.evaluate(() => { L.flush(); const M = mkH(2); const ok = M.resume(M.last()); M.info('after'); return { ok, same: M.sessionId() === L.sessionId(), lines: M.messages() }; });
+  const r4 = await page.evaluate(() => { L.flush(); const M = mkH(); const ok = M.resume(M.last()); M.info('after'); return { ok, same: M.sessionId() === L.sessionId(), lines: M.messages() }; });
   check(r4.ok && r4.same && r4.lines.join('|') === 'run B|live while looking back|after', `resume carries the session on (${JSON.stringify(r4)})`);
+});
+
+// #811: Mission Control, Art Station and Platform Check reload the page right after their operation,
+// so leaving the page writes the kept session at once; and each script's history is its own
+test('history: leaving the page writes the kept session; Clear history clears only its own', { tag: ['@unit'] }, async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const ls = new Map();
+    const st = { get: k => (ls.has(k) ? ls.get(k) : null), set: (k, v) => ls.set(k, v), del: k => ls.delete(k), keys: () => [...ls.keys()] };
+    const mk = (key, prefix) => mbuLog({ name: key, version: '1', key, load: k => window.__store.get(k), save: (k, v) => window.__store.set(k, v), history: { prefix, store: st } });
+    const mc = mk('mc', 'mc:session:'), pc = mk('pc', 'pc:session:');
+    mc.keep(); mc.name('Release M'); pc.keep(); pc.name('Release P');
+    mc.info('execute done: reloading');
+    const before = JSON.parse(st.get('mc:session:' + mc.sessionId())).length;   // the 100 ms timer hasn't run
+    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+    const after = JSON.parse(st.get('mc:session:' + mc.sessionId())).map(x => x[3]);
+    const mcOld = mc.sessionId(); mc.session(); mc.keep();   // the reloaded page's own session
+    mc.clearHistory();
+    return { before, after, mcGone: st.get('mc:session:' + mcOld) === null, pcKept: st.get('pc:session:' + pc.sessionId()) !== null, pcName: st.get('pc:session:' + pc.sessionId() + ':name') };
+  });
+  check(r.before === 0 && r.after.includes('execute done: reloading'), `pagehide writes the line the timer hadn't yet (${JSON.stringify(r)})`);
+  check(r.mcGone && r.pcKept && r.pcName === 'Release P', `Mission Control's Clear history leaves Platform Check's history alone (${JSON.stringify(r)})`);
 });
 
 // #705 (majkinetor): "We have debug option but we shouldn't as component should have its own UI for that",

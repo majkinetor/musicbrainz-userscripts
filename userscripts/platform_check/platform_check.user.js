@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.22
+// @version      2026.10.24
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1719,7 +1719,7 @@ function mbRestackCorner(corner) {
 //
 // History (#705, Falcon's run logs of #512 made shared). Off unless o.history is given:
 //
-//   o.history = { prefix: 'falcon:session:', keep: () => 20, lines: 400, head: 140,
+//   o.history = { prefix: 'falcon:session:', lines: 400, head: 140,
 //                 parse: s => entry, nameOf: entries => name, store }
 //
 // A session starts with the page, or with LOG.session(reason) (Falcon: each run).
@@ -1728,7 +1728,9 @@ function mbRestackCorner(corner) {
 // first name stays). It is stored in the page's localStorage under prefix + id,
 // within 100 ms of each line and at once on LOG.flush(), so a crashed tab keeps
 // its log; a session longer than `lines` keeps its first `head` lines and its
-// end, and says how many went between. The newest `keep` sessions are kept.
+// end, and says how many went between. The newest 10 sessions are kept, not configurable
+// (#811); each script's prefix is its own, and Clear history clears only that script's.
+// Leaving the page (a script's reload after its operation, #811) flushes at once.
 // prefix + 'current' holds the last kept session's id (LOG.last()), so LOG.resume(id)
 // can carry on a session across a navigation. The viewer gets a session list and Clear history.
 //   LOG.sessionId(); LOG.last(); LOG.isKept(); LOG.refresh(); LOG.sessions(); LOG.load(id); LOG.forget(id); LOG.clearHistory(); LOG.flush()
@@ -1789,7 +1791,7 @@ function mbuLog(o) {
             var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) { /* none */ } return out;
         },
     });
-    var keepN = function () { var n = Number(typeof H.keep === 'function' ? H.keep() : H.keep); return n > 0 ? n : 10; };
+    var keepN = function () { return 10; };   // #811: the last 10 sessions, not configurable
     var newId = function () { return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14) + '-' + (++seq); };
     // the id is the session's start in UTC: YYYYMMDDHHMMSS-n
     var idDate = function (id) {
@@ -2263,7 +2265,12 @@ function mbuLog(o) {
         refresh: function () { views.forEach(function (v) { v.sessions(); }); },
         flush: flush,
     };
-    if (H) sid = newId();
+    if (H) {
+        sid = newId();
+        // #811: a script reloads the page right after its operation; write the kept session
+        // now rather than trusting the 100 ms timer to beat the unload
+        try { window.addEventListener('pagehide', flush); } catch (e) { /* no window */ }
+    }
     mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
     return api;
 }
@@ -3238,7 +3245,8 @@ ${MBU_TOKENS}${MBU_UI_CSS}
 // The diagnostic log is the shared activity log (#697); each line's platform is its
 // category, so the window's filters pick one platform out of a scan.
 const PC_LOG = mbuLog({ name: 'Platform Check', version: () => (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?',
-    header: 'Platform Check log', key: 'pc:logwin' });
+    header: 'Platform Check log', key: 'pc:logwin',
+    history: { prefix: 'pc:session:' } });   // #811: the last 10 page logs with an add in them
 if (mbuTestHooks()) window.__pcLog = PC_LOG;   // the specs read the log through it
 // The shared components' stylesheet (the log window, the settings header, the toast),
 // plus the settings modal's narrow-screen rules.
@@ -9028,6 +9036,10 @@ function formatBlocks(platform) {
 //     detect the redirect on), so callers must pass a release mbid.
 function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit' } = {}) {
     const url = `${MB_ORIGIN}/release/${mbid_}/edit`;
+    // #811: an add is what this page's log is kept for (a background add reloads the page), named after the release
+    PC_LOG.keep();
+    const h1 = document.querySelector('h1 bdi') || document.querySelector('h1');
+    if (h1 && h1.textContent.trim()) PC_LOG.name(h1.textContent.trim());
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
             appendLog('System', `Background add needs GM_openInTab — opening in a normal tab instead`, 'warn');

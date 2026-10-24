@@ -29,7 +29,7 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
   await page.addScriptTag({ content: code });
   await page.waitForFunction(() => !!window.__falconTest, { timeout: 5000 });
 
-  // 2. pruneOldSessions caps the count, keeping the NEWEST ones.
+  // 2. pruneOldSessions caps the count at 10 (#811: not configurable), keeping the NEWEST ones.
   const pruneResult = await page.evaluate(() => {
     const t = window.__falconTest;
     localStorage.clear();
@@ -37,14 +37,13 @@ test("#512: historic logs", { tag: ['@sandbox', '@login'] }, async ({ context, p
       const id = `2026081500${String(i).padStart(4, '0')}-1`;
       localStorage.setItem('falcon:session:' + id, JSON.stringify([`line ${i}`]));
     }
-    t.cfg.logHistoryCount = 5;
     t.pruneOldSessions();
     return t.listSessionKeys();
   });
-  console.log('surviving sessions after prune to 5:', JSON.stringify(pruneResult));
-  ck(pruneResult.length === 5, `pruneOldSessions caps to cfg.logHistoryCount (got ${pruneResult.length})`);
+  console.log('surviving sessions after prune to 10:', JSON.stringify(pruneResult));
+  ck(pruneResult.length === 10, `pruneOldSessions caps to 10 (got ${pruneResult.length})`);
   ck(pruneResult[pruneResult.length - 1] === '20260815000025-1', `the newest session (i=25) survives (last kept: ${pruneResult[pruneResult.length - 1]})`);
-  ck(pruneResult[0] === '20260815000021-1', `the oldest surviving one (i=21) is exactly the cutoff for keeping 5 of 25 (first kept: ${pruneResult[0]})`);
+  ck(pruneResult[0] === '20260815000016-1', `the oldest surviving one (i=16) is exactly the cutoff for keeping 10 of 25 (first kept: ${pruneResult[0]})`);
 
   // 3. a stored session in the text format before #705 reads back as log lines
   await page.evaluate(() => { localStorage.clear(); });
