@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.150000
+// @version      2026.10.25.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1936,10 +1936,10 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 .kicker .srch{display:inline-flex;align-items:center;margin:0}
 .kicker .acts:has(>.srch.open)>:not(.srch),.kicker .srch.open>.ab,.kicker .srch:not(.open) .sf{display:none}
-.kicker .srch .sf{display:inline-flex;align-items:center;gap:6px;height:30px;width:min(420px,70vw);padding:0 4px 0 8px;border:1px solid var(--accent);border-radius:8px;background:var(--surface);color:var(--muted)}
+.kicker .srch .sf{display:inline-flex;align-items:center;gap:6px;height:30px;width:min(300px,60vw);padding:0 4px 0 8px;border:1px solid var(--accent);border-radius:8px;background:var(--surface);color:var(--muted)}
 .kicker .srch .sf svg{width:15px;height:15px;flex:none}
 .kicker .srch input,.kicker .srch select{border:0;outline:0;background:none;font:inherit;font-size:13px;letter-spacing:0;text-transform:none;color:var(--text)}
-.kicker .srch input{flex:1;min-width:0}
+.kicker .srch input{flex:1;min-width:0;background:none!important}
 .kicker .srch select{color:var(--muted);font-weight:600}
 .kicker .srch .x{display:grid;place-items:center;width:22px;height:22px;border:0;background:none;color:var(--muted);cursor:pointer;padding:0}
 .kicker .srch .x:hover{color:var(--accent)}
@@ -2903,6 +2903,8 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // the search field folds away once focus leaves it
+    document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
