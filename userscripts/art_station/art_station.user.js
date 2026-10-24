@@ -4614,7 +4614,7 @@
         // with retry: true, so it can offer to try again
         // a clean run closes the dialog: the frame would otherwise stay over the whole window with it (#784)
         if (!errs || !SETTINGS.autoRepeat) { report(errs ? { retry: true } : null); if (!errs) ov.remove(); return; }
-        ov._arGiveUp = why => report({ retry: true, gaveUp: why });
+        ov._arGiveUp = (why, extra) => report(Object.assign({ retry: true, gaveUp: why }, extra));
         mcFramePost({ type: 'progress', note: `${errs} failed: repeating` });
         arSchedule(ov, () => runPlan(ov, plan, meta, plan.filter(o => o._err)));
         return;
@@ -4664,6 +4664,13 @@
     if (!ov || !ov._ar) return;
     arTeardown(ov);
     ov._ar.abandoned = true;
+    // #827: closed while a repeat waits: Mission Control still waits for the outcome, so it hears "cancelled" now
+    if (ov._arGiveUp) {
+      const giveUp = ov._arGiveUp;
+      ov._arGiveUp = null;
+      asLog.warn('Commit: auto-repeat cancelled by user; telling Mission Control');
+      giveUp(null, { cancelled: true });
+    }
     const el = ov.querySelector('.as-cm-ar');
     // #566 follow-up: emptied and made invisible, never removed from the layout —
     // its row is reserved so the buttons above it cannot move.
