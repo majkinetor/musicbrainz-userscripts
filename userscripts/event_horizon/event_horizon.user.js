@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.67
+// @version      2026.10.24.68
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2074,8 +2074,9 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .grp.ls{grid-template-columns:1fr}
 .detail .side{display:flex;flex-direction:column;gap:18px;min-width:0}
 .detail .none{grid-column:1/-1}
-.detail .iswc{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
-.detail .iswc span{font-size:10.5px;font-weight:700;letter-spacing:.06em;margin-right:4px}
+/* the ISWC takes the credit rows' columns: its label under the roles, the code under the names */
+.detail .iswc{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:baseline;margin-top:6px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.detail .iswc span:first-child{justify-self:end;font-size:10.5px;font-weight:700;letter-spacing:.06em}
 .and{color:var(--muted);font-weight:400}
 .dis{color:var(--muted);font-size:.85em;font-weight:400;margin-left:.3em}
 .dm-below .hasd{display:inline-flex;flex-direction:column;vertical-align:top;max-width:100%;min-width:0}
@@ -2508,12 +2509,12 @@ function detail(t) {
     const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
-    const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? `<div class="iswc"><span>ISWC</span> ${esc(t.work.iswcs.join(', '))}</div>` : '';
+    const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? `<div class="iswc"><span>ISWC</span><span>${esc(t.work.iswcs.join(', '))}</span></div>` : '';
     const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
     const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
-const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : `<div class="iswc"><span>ISWC</span> ${esc(w.iswcs.join(', '))}</div>`;
+const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : `<div class="iswc"><span>ISWC</span><span>${esc(w.iswcs.join(', '))}</span></div>`;
 function tracklist(r) {
     const multi = r.media.length > 1;
     const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi })));
