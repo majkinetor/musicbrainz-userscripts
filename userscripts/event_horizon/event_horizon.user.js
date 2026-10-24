@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.8
+// @version      2026.10.24.9
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2609,9 +2609,13 @@ const CI = {
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
 const CFG_CSS = '.eh-cfg{width:min(480px,94vw);font:13px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:8px 12px 10px}.eh-cfg .mbu-cfg-h{margin-bottom:2px}'
-    + '.eh-cfg section{padding:8px 0;border-bottom:1px solid var(--mbu-border-soft)}.eh-cfg section:last-of-type{border:0}'
-    + '.eh-cfg h4{margin:0 0 6px;font:600 11px var(--mbu-font);letter-spacing:.07em;text-transform:uppercase;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .row{display:flex;align-items:center;gap:10px}.eh-cfg .row span{flex:1}'
+    + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -12px;padding:0 8px}'
+    + '.eh-cfg .tab{all:unset;padding:7px 11px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
+    + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .pane{min-height:220px;padding-top:4px}'
+    + '.eh-cfg .cr{display:grid;grid-template-columns:100px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
+    + '.eh-cfg .cl{padding-top:6px;font:600 10.5px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .none{padding-top:5px;color:var(--mbu-text-weak);font-style:italic}.eh-cfg .sw{margin-top:3px}'
     + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
@@ -2626,21 +2630,29 @@ const CFG_CSS = '.eh-cfg{width:min(480px,94vw);font:13px var(--mbu-font)}.eh-cfg
 // providers to offer: this release's, else those picked and the usual ones
 function cfgProviders() {
     const um = new Map();
-    if (data) for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p);
+    if (data) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
     else for (const k of [...S.prov, ...ORDER]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
     return sortP([...um.values()]);
 }
 function cfgBody() {
-    const chip = (g, k, on, label, tip) => `<button type="button" class="chip" data-g="${g}" data-k="${k}" aria-pressed="${on}"${tip ? ` data-tip="${esc(tip)}"` : ''}><svg viewBox="0 0 24 24" aria-hidden="true">${CI[k] || ''}</svg>${label}</button>`;
+    const chip = (g, k, on, label, tip) => `<button type="button" class="chip" data-g="${g}" data-k="${k}" aria-pressed="${on}"${tip ? ` data-tip="${esc(tip)}"` : ''}>${CI[k] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${CI[k]}</svg>` : ''}${label}</button>`;
+    const row = (label, html, tip) => `<div class="cr"><div class="cl">${label}</div><div class="chips"${tip ? ` data-tip="${esc(tip)}"` : ''}>${html}</div></div>`;
     const ps = cfgProviders();
-    return `<section><h4>General</h4><div class="row"><span>Start on load</span><button type="button" class="sw" role="switch" data-g="on" aria-checked="${S.on}" aria-label="Start on load" data-tip="On: a release page opens in Event Horizon\nOff: MusicBrainz's page; the launcher switches"></button></div></section>`
-        + `<section><h4>Release info</h4><div class="chips">${FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join('')}</div></section>`
-        + `<section><h4>Under the cover</h4><div class="chips">${chip('thumbs', 'thumbs', S.thumbs, 'Other covers')}${[['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')}</div></section>`
-        + `<section><h4>Track details</h4><div class="chips">${chip('plNames', 'plNames', S.plNames, 'Platform names')}${chip('plHover', 'plHover', S.plHover, 'Icons on hover', 'Platform icons stay grey until you point at them')}</div>`
-        + `<div class="chips"><span class="label">Icon size</span>${[18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join('')}</div>`
-        + `<div class="chips"><span class="label">Disambiguation</span>${[['below', 'Below name'], ['brackets', 'In brackets'], ['tip', 'Tooltip']].map(([k, n]) => chip('dis', k, S.dis === k, n)).join('')}</div></section>`
-        + `<section><h4>Track providers</h4><div class="chips" data-tip="Each picked one gets a column in the tracklist, in the order picked; the rest sit behind +N">${ps.map(p => { const i = S.prov.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}">${icon(p, 18)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; }).join('')}</div></section>`;
+    const pchip = p => { const i = S.prov.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}">${icon(p, 18)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
+    const tabs = [['release', 'Release'], ['platforms', `Platforms <span class="n">${S.prov.length}</span>`], ['general', 'General']];
+    const panes = {
+        release: row('Info', FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join(''))
+            + row('Under the cover', chip('thumbs', 'thumbs', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')),
+        platforms: row('Show', chip('plNames', 'plNames', S.plNames, 'Names') + chip('plHover', 'plHover', S.plHover, 'Icons on hover', 'Platform icons stay grey until you point at them'))
+            + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
+            + row('Shown', S.prov.map(k => ps.find(p => p.key === k)).filter(Boolean).map(pchip).join('') || '<span class="none">None: click one below</span>', 'Each gets a column in the tracklist, in the order picked; the rest sit behind +N')
+            + row('Available', ps.filter(p => !S.prov.includes(p.key)).map(pchip).join('')),
+        general: `<div class="cr"><div class="cl">Start on load</div><div><button type="button" class="sw" role="switch" data-g="on" aria-checked="${S.on}" aria-label="Start on load" data-tip="On: a release page opens in Event Horizon\nOff: MusicBrainz's page; the launcher switches"></button></div></div>`
+            + row('Disambiguation', [['below', 'Below name'], ['brackets', 'In brackets'], ['tip', 'Tooltip']].map(([k, n]) => chip('dis', k, S.dis === k, n)).join('')),
+    };
+    return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
 }
+let cfgTab = 'release';
 function openCfg() {
     if (document.getElementById('eh-cfg')) return;
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
@@ -2650,6 +2662,8 @@ function openCfg() {
     mbuDismissOn(panel, () => ov.remove());
     panel.querySelector('.mbu-cfg-log').onclick = () => { ov.remove(); LOG.open(); };
     panel.addEventListener('click', ev => {
+        const tb = ev.target.closest('[data-tab]');
+        if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = cfgBody(); return; }
         if (ev.target.closest('.reset')) { Object.assign(S, JSON.parse(DEFAULTS)); }
         else {
             const t = ev.target.closest('[data-g]'); if (!t) return;
