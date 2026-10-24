@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.180000
+// @version      2026.10.25.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1891,6 +1891,25 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg{font-size:16px;color:var(--soft)}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
+#eh-rail{position:fixed;z-index:20;top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent}
+#eh-rail:hover{background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
+#eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:6px;height:26px;padding:0 4px;border-radius:8px;cursor:grab}
+#eh-rail .rr>i{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none}
+#eh-rail .rr.on>i{background:var(--accent)}
+#eh-rail .rr.off>i{background:none;border:1.5px solid var(--border);box-sizing:border-box}
+#eh-rail .gr,#eh-rail .nm,#eh-rail .eye{display:none}
+#eh-rail:hover .gr,#eh-rail:hover .nm,#eh-rail:hover .eye{display:inline-flex}
+#eh-rail:hover .rr:hover{background:var(--hover)}
+#eh-rail .rr.drag{opacity:.5}
+#eh-rail .gr{color:var(--muted);font-size:11px;letter-spacing:-2px}
+#eh-rail .nm{border:0;background:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
+#eh-rail .rr.on .nm{color:var(--accent)}
+#eh-rail .rr.off .nm{color:var(--muted);text-decoration:line-through}
+#eh-rail .eye{border:0;background:none;padding:2px;color:var(--muted);cursor:pointer}
+#eh-rail .eye:hover{color:var(--accent)}
+#eh-rail .eye svg{width:14px;height:14px}
+#eh-rail[hidden]{display:none}
+@media (max-width:700px){#eh-rail{display:none}}
 /* A dark userstyle (Stylus, kellnerd's theme) colours and inverts buttons and headings with !important; these outrank it. */
 :root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
 :root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
@@ -2234,7 +2253,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide'];
 const S = {
     cols: { isrc: true, links: true, credits: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2245,6 +2264,7 @@ const S = {
     thumbs: true,
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
+    secOrder: [], secHide: [], // the rail's section order, and the sections it hides
     fold: [], discFold: [], edView: 'grid', rgView: 'table',
     ed: { kinds: new Set(), official: false },
     open: new Set(),
@@ -2818,8 +2838,57 @@ function render(keepPop) {
         if (window.ResizeObserver) new window.ResizeObserver(fit).observe(kick.parentElement || kick);
     }
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
+    secRail(app);
     fitQuiet();
     save();
+}
+/* ── section rail ──────────────────────────────────── */
+// A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
+// there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
+const SEC_NAME = { wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
+function secRail(app) {
+    const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
+    const at = x => { const i = S.secOrder.indexOf(id(x)); return i < 0 ? 100 + secs.indexOf(x) : i; };
+    secs.sort((a, b) => at(a) - at(b)).forEach(x => { x.hidden = S.secHide.includes(id(x)); app.appendChild(x); });
+    let rail = document.getElementById('eh-rail');
+    if (!rail) {
+        rail = document.createElement('nav');
+        rail.id = 'eh-rail';
+        rail.setAttribute('aria-label', 'Sections');
+        app.after(rail);
+        rail.addEventListener('click', ev => {
+            const row = ev.target.closest('[data-sec]'); if (!row) return;
+            const k = row.dataset.sec;
+            if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, k); const y = scrollY; render(); scrollTo(0, y); return; }
+            S.secHide = S.secHide.filter(x => x !== k); S.fold = S.fold.filter(x => x !== k);
+            render();
+            const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
+        });
+        let drag = null;
+        rail.addEventListener('dragstart', ev => { const row = ev.target.closest('[data-sec]'); drag = row && row.dataset.sec; if (row) row.classList.add('drag'); });
+        rail.addEventListener('dragend', () => { drag = null; rail.querySelectorAll('.drag').forEach(x => x.classList.remove('drag')); });
+        rail.addEventListener('dragover', ev => { if (drag) ev.preventDefault(); });
+        rail.addEventListener('drop', ev => {
+            const row = ev.target.closest('[data-sec]'); if (!drag || !row || row.dataset.sec === drag) return;
+            ev.preventDefault();
+            const ks = [...rail.querySelectorAll('[data-sec]')].map(x => x.dataset.sec).filter(x => x !== drag);
+            ks.splice(ks.indexOf(row.dataset.sec) + (ev.offsetY > row.offsetHeight / 2 ? 1 : 0), 0, drag);
+            S.secOrder = ks; const y = scrollY; render(); scrollTo(0, y);
+        });
+    }
+    rail.hidden = secs.length < 2;
+    rail.innerHTML = secs.map(x => { const k = id(x), off = x.hidden;
+        return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section" data-tip="${off ? 'Show' : 'Hide'}">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('');
+    railSpy();
+}
+// lights the section at the top of the window
+function railSpy() {
+    const rail = document.getElementById('eh-rail'); if (!rail || !ehOn) return;
+    let cur = null;
+    for (const x of document.querySelectorAll('#app>section.sec:not([hidden])')) if (x.getBoundingClientRect().top < innerHeight / 3) cur = x.id.slice(2);
+    rail.querySelectorAll('[data-sec]').forEach(r => r.classList.toggle('on', r.dataset.sec === cur));
 }
 // the release links stay on one row; what doesn't fit goes behind +N
 function fitQuiet() {
@@ -2919,6 +2988,7 @@ function build() {
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') dmClose(); });
     document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; const fm = $('.srch.open'); if (fm) fm.classList.remove('open'); } });
     addEventListener('resize', () => { if (ehOn) fitQuiet(); });
+    addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     addEventListener('popstate', () => { if (!ehOn) location.reload(); else show(navTo(location.href)); });
 }
