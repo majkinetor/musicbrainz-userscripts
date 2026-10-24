@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.10
+// @version      2026.10.24.11
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2614,7 +2614,7 @@ const CI = {
     rating: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
-const CFG_CSS = '.eh-cfg{width:min(480px,94vw);font:13px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:8px 12px 10px}.eh-cfg .mbu-cfg-h{margin-bottom:2px}'
+const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}#eh-cfg .mbu-cfg-h{cursor:move;user-select:none}.eh-cfg{width:min(480px,94vw);font:13px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:8px 12px 10px}.eh-cfg .mbu-cfg-h{margin-bottom:2px}'
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -12px;padding:0 8px}'
     + '.eh-cfg .tab{all:unset;padding:7px 11px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
@@ -2666,6 +2666,19 @@ function openCfg() {
     document.documentElement.append(ov);
     const panel = ov.firstChild, b = panel.querySelector('.eh-cfg-b');
     mbuDismissOn(panel, () => ov.remove());
+    // drag by the header; the page behind stays usable
+    panel.querySelector('.mbu-cfg-h').addEventListener('pointerdown', e => {
+        if (e.button || e.target.closest('button,a,input,select')) return;
+        const r = panel.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+        Object.assign(panel.style, { position: 'fixed', margin: 0, left: r.left + 'px', top: r.top + 'px' });
+        const move = ev => {
+            panel.style.left = Math.max(0, Math.min(innerWidth - r.width, ev.clientX - dx)) + 'px';
+            panel.style.top = Math.max(0, Math.min(innerHeight - 40, ev.clientY - dy)) + 'px';
+        };
+        const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); };
+        addEventListener('pointermove', move); addEventListener('pointerup', up);
+        e.preventDefault();
+    });
     panel.querySelector('.mbu-cfg-log').onclick = () => { ov.remove(); LOG.open(); };
     panel.addEventListener('click', ev => {
         const tb = ev.target.closest('[data-tab]');
