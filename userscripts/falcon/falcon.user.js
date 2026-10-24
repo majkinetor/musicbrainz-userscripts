@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.190000
+// @version      2026.10.25.001000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -3205,6 +3205,11 @@
               const m = u.pathname.match(/^\/image\/thumb\/(.+)\/[^/]+$/);
               return m ? [`https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
           } },
+          // AllMusic (#832): fastly-s3.allmusic.com/release/<mr>/<side>/<size>/<c>.jpg → TiVo's image server, f=0 is the upload
+          { host: /^fastly-s3\.allmusic\.com$/, max: u => {
+              const m = u.pathname.match(/^\/release\/mr\d+\/[^/]+\/\d+\/([^/]+)\.jpg$/i);
+              return m ? [`https://rovimusic.rovicorp.com/image.jpg?c=${m[1]}&f=0`] : [];
+          } },
           // Deezer: 4000x0 at quality 100 gives the stored size (1900 too; 0x0 and 3000x3000 are 403)
           { host: /(^|\.)dzcdn\.net$/, max: u => {
               const m = u.pathname.match(/^(\/images\/\w+\/[0-9a-f]{32})\/\d+x\d+-[^/]+$/);
@@ -3401,6 +3406,24 @@
               }
               const j = await this._json(`https://api.discogs.com/${rel ? 'releases/' + rel : 'masters/' + master}`);
               return ((j && j.images) || []).map(i => ({ url: i.uri })).filter(i => i.url);
+          } },
+          // AllMusic (experiment): the album page's cover is a Rovi image; f= picks its size, 5 the largest
+          { id: 'allmusic', name: 'AllMusic', host: /(^|\.)allmusic\.com$/, async find(u) {
+              if (!/^\/album\//.test(u.pathname)) throw new Error('not an album page');
+              const html = await this._text(u.href);
+              // AllMusic's own image host: /release/<id>/<front|back|…>/<size>/<c>.jpg; c on TiVo's image server with f=0 is the upload (#832)
+              const own = new Map();
+              // the other sides sit in the page's data, with escaped slashes and maybe without the host
+              for (const m of html.replace(/\\+\//g, '/').matchAll(/\/release\/(mr\d+)\/([a-z-]+)\/\d+\/([\w=-]+)\.jpg/g))
+                  own.set(m[2] + m[3], { url: `https://rovimusic.rovicorp.com/image.jpg?c=${m[3]}&f=0`,
+                      types: [{ front: 'Front', back: 'Back', booklet: 'Booklet', medium: 'Medium', tray: 'Tray', spine: 'Spine', obi: 'Obi', sticker: 'Sticker', liner: 'Liner' }[m[2]]].filter(Boolean) });
+              if (own.size) return [...own.values()];
+              // every Rovi image on the page (the cover and its gallery), each once at its largest size
+              const rovi = [...new Set((html.match(/https?:\/\/(?:cps-static|rovimusic)\.rovicorp\.com\/[^"'\s<>\\]+/g) || [])
+                  .map(x => x.replace(/&amp;/g, '&').replace(/([?&]f=)\d+/, '$15')))];
+              if (rovi.length) return rovi.map((url, i) => ({ url, types: i ? [] : ['Front'] }));
+              const og = ImageMaximizer.metaImage(html, u.href);
+              return og ? [{ url: og, types: ['Front'] }] : [];
           } },
           { id: 'amazon', name: 'Amazon', host: /(^|\.)amazon\.(com|ca|de|fr|it|es|nl|pl|se|in|sg|ae|sa|eg|cn|jp|co\.jp|co\.uk|com\.au|com\.br|com\.mx|com\.tr|com\.be)$/, async find(u) {
               const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];

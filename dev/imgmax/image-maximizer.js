@@ -28,6 +28,11 @@ class ImageMaximizer {
             const m = u.pathname.match(/^\/image\/thumb\/(.+)\/[^/]+$/);
             return m ? [`https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
         } },
+        // AllMusic (#832): fastly-s3.allmusic.com/release/<mr>/<side>/<size>/<c>.jpg → TiVo's image server, f=0 is the upload
+        { host: /^fastly-s3\.allmusic\.com$/, max: u => {
+            const m = u.pathname.match(/^\/release\/mr\d+\/[^/]+\/\d+\/([^/]+)\.jpg$/i);
+            return m ? [`https://rovimusic.rovicorp.com/image.jpg?c=${m[1]}&f=0`] : [];
+        } },
         // Deezer: 4000x0 at quality 100 gives the stored size (1900 too; 0x0 and 3000x3000 are 403)
         { host: /(^|\.)dzcdn\.net$/, max: u => {
             const m = u.pathname.match(/^(\/images\/\w+\/[0-9a-f]{32})\/\d+x\d+-[^/]+$/);
@@ -224,6 +229,24 @@ class ImageMaximizer {
             }
             const j = await this._json(`https://api.discogs.com/${rel ? 'releases/' + rel : 'masters/' + master}`);
             return ((j && j.images) || []).map(i => ({ url: i.uri })).filter(i => i.url);
+        } },
+        // AllMusic (experiment): the album page's cover is a Rovi image; f= picks its size, 5 the largest
+        { id: 'allmusic', name: 'AllMusic', host: /(^|\.)allmusic\.com$/, async find(u) {
+            if (!/^\/album\//.test(u.pathname)) throw new Error('not an album page');
+            const html = await this._text(u.href);
+            // AllMusic's own image host: /release/<id>/<front|back|…>/<size>/<c>.jpg; c on TiVo's image server with f=0 is the upload (#832)
+            const own = new Map();
+            // the other sides sit in the page's data, with escaped slashes and maybe without the host
+            for (const m of html.replace(/\\+\//g, '/').matchAll(/\/release\/(mr\d+)\/([a-z-]+)\/\d+\/([\w=-]+)\.jpg/g))
+                own.set(m[2] + m[3], { url: `https://rovimusic.rovicorp.com/image.jpg?c=${m[3]}&f=0`,
+                    types: [{ front: 'Front', back: 'Back', booklet: 'Booklet', medium: 'Medium', tray: 'Tray', spine: 'Spine', obi: 'Obi', sticker: 'Sticker', liner: 'Liner' }[m[2]]].filter(Boolean) });
+            if (own.size) return [...own.values()];
+            // every Rovi image on the page (the cover and its gallery), each once at its largest size
+            const rovi = [...new Set((html.match(/https?:\/\/(?:cps-static|rovimusic)\.rovicorp\.com\/[^"'\s<>\\]+/g) || [])
+                .map(x => x.replace(/&amp;/g, '&').replace(/([?&]f=)\d+/, '$15')))];
+            if (rovi.length) return rovi.map((url, i) => ({ url, types: i ? [] : ['Front'] }));
+            const og = ImageMaximizer.metaImage(html, u.href);
+            return og ? [{ url: og, types: ['Front'] }] : [];
         } },
         { id: 'amazon', name: 'Amazon', host: /(^|\.)amazon\.(com|ca|de|fr|it|es|nl|pl|se|in|sg|ae|sa|eg|cn|jp|co\.jp|co\.uk|com\.au|com\.br|com\.mx|com\.tr|com\.be)$/, async find(u) {
             const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];
