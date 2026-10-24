@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.18
+// @version      2026.10.24.19
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2102,10 +2102,11 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'byName', 'plNames', 'plHover', 'plSize', 'dis'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder'];
 const S = {
     cols: { isrc: true, links: true, credits: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
+    plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
     byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below',
     on: true,
@@ -2634,6 +2635,14 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
     + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
+// the settings' order: plOrder first (seeded by the picks), then the usual order
+function plSorted(ps) {
+    const o = [...S.plOrder, ...S.prov.filter(k => !S.plOrder.includes(k))];
+    const at = p => { const i = o.indexOf(p.key); return i < 0 ? 1e3 + ps.indexOf(p) : i; };
+    return [...ps].sort((a, b) => at(a) - at(b));
+}
+// prov in the settings' order
+const plFollow = () => { const o = plSorted(cfgProviders()).map(p => p.key); S.prov = [...S.prov].sort((a, b) => (o.indexOf(a) + 1 || 1e3) - (o.indexOf(b) + 1 || 1e3)); };
 // providers to offer: this release's, else those picked and the usual ones; with cfgAll every known one
 let cfgAll = false;
 function cfgProviders() {
@@ -2647,16 +2656,15 @@ function cfgBody() {
     const row = (label, html, tip) => `<div class="cr"><div class="cl">${label}</div><div class="chips"${tip ? ` data-tip="${esc(tip)}"` : ''}>${html}</div></div>`;
     const ps = cfgProviders();
     // count and number only the picks this release has; the rest stay saved for other releases
-    const shown = S.prov.filter(k => ps.some(p => p.key === k));
-    const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}"${i >= 0 ? ' draggable="true"' : ''}>${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
+    const all = plSorted(ps), shown = all.map(p => p.key).filter(k => S.prov.includes(k));
+    const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
     const tabs = [['release', 'Release'], ['platforms', `Platforms <span class="n">${shown.length}</span>`], ['general', 'General']];
     const panes = {
         release: row('Info', FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join(''))
             + row('Under the cover', chip('thumbs', 'thumbs', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')),
         platforms: row('Show', chip('plNames', 'plNames', S.plNames, 'Names') + chip('plHover', 'plHover', S.plHover, 'Icons on hover', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
-            + row('Shown', shown.map(k => ps.find(p => p.key === k)).map(pchip).join('') || '<span class="none">None: click one below</span>', 'Each gets a column in the tracklist, in this order; drag to reorder\nThe rest sit behind +N')
-            + row('Available', ps.filter(p => !S.prov.includes(p.key)).map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
+            + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
         general: `<div class="cr"><div class="cl">Start on load</div><div><button type="button" class="sw" role="switch" data-g="on" aria-checked="${S.on}" aria-label="Start on load" data-tip="On: a release page opens in Event Horizon\nOff: MusicBrainz's page; the launcher switches"></button></div></div>`
             + row('Disambiguation', [['below', 'Below name'], ['brackets', 'In brackets'], ['tip', 'Tooltip']].map(([k, n]) => chip('dis', k, S.dis === k, n)).join('')),
     };
@@ -2693,7 +2701,8 @@ function openCfg() {
     panel.addEventListener('dragend', () => { dragK = null; clearOver(); b.querySelectorAll('.chip.drag').forEach(x => x.classList.remove('drag')); });
     panel.addEventListener('drop', ev => {
         const t = overOf(ev); if (!dragK || !t) return; ev.preventDefault();
-        const p = S.prov.filter(k => k !== dragK); p.splice(p.indexOf(t.dataset.k), 0, dragK); S.prov = p; dragK = null;
+        const vis = plSorted(cfgProviders()).map(p => p.key).filter(k => k !== dragK); vis.splice(vis.indexOf(t.dataset.k), 0, dragK);
+        S.plOrder = [...vis, ...S.plOrder.filter(k => !vis.includes(k))]; plFollow(); dragK = null;
         save(); b.innerHTML = cfgBody();
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
     });
@@ -2709,7 +2718,7 @@ function openCfg() {
             else if (g === 'fact') S.facts = toggle(S.facts, k);
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
             else if (g === 'extra') S.extras = toggle(S.extras, k);
-            else if (g === 'prov') S.prov = toggle(S.prov, k);
+            else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
             else if (g === 'plNames' || g === 'plHover') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'dis') S.dis = k;
