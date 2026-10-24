@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.49
+// @version      2026.10.24.50
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1862,7 +1862,7 @@ button{font:inherit;color:inherit}
 .wrap{max-width:var(--eh-w,1280px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 h1,h2{text-wrap:balance}
-h2{margin:0;font-size:24px}
+h2{margin:0;font-size:24px;color:var(--text)}
 .chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;background:var(--chip);color:var(--chip-text);font-size:13px;font-weight:600;border:1px solid transparent;cursor:default}
 button.chip{cursor:pointer}
 button.chip:hover{border-color:var(--accent)}
@@ -2016,7 +2016,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tile .cap i{display:block;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .tl{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden}
-.disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--hover);border:0;border-top:1px solid var(--line);font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+.tl .disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--hover)!important;color:var(--text)!important;border:0;border-top:1px solid var(--line);font-weight:700;font-size:14px;cursor:pointer;text-align:left}
 .tl>.disc:first-child{border-top:0}
 .disc .cv{width:24px;height:24px;border-radius:7px;border:1px solid var(--border);display:grid;place-items:center;color:var(--soft)}
 .disc:hover .cv{border-color:var(--accent)}
