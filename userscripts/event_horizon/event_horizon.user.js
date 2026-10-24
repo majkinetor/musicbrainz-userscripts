@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.35
+// @version      2026.10.24.36
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1900,7 +1900,10 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .facts-col{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
 .kicker{display:flex;align-items:center;gap:8px}
 .kicker svg{color:var(--accent)}
-.kicker .acts{margin-left:auto;display:flex;gap:4px;align-items:center}
+.kicker .acts{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
+.kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.kicker .ab svg{width:15px;height:15px;color:inherit}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft);cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text);text-decoration:none}
 .ib.primary,.kicker .ib.primary svg{color:var(--accent)}
@@ -1916,9 +1919,11 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .disamb{font-size:16px;color:var(--muted);font-weight:600;margin-top:-8px}
 .by{font-size:16px;font-weight:600}
-.facts{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-start}
-.facts .v{margin-top:3px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:4px}
-.facts .wide{flex-basis:100%;min-width:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
+.facts>div{min-width:0}
+.facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
+.facts .sub{font-size:13px;font-weight:500;color:var(--muted)}
+.facts .wide{grid-column:1/-1;min-width:0}
 .facts .wide .v,.facts .wide>div{min-width:0;max-width:100%}
 .ev{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
 .ev .d+span:not(.iso)::before{content:'· ';color:var(--muted)}
@@ -2217,6 +2222,8 @@ function release(r, rg, images) {
     const ac = r['artist-credit'] || [], mainIds = ac.map(a => a.artist.id);
     return {
         id: r.id, asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
+        langName: r['text-representation'] && nameOf('language', r['text-representation'].language),
+        script: r['text-representation'] && nameOf('script', r['text-representation'].script),
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
         title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {},
         credits: creditsOf(r.relations || []), front: (r['cover-art-archive'] || {}).front, images,
@@ -2290,10 +2297,10 @@ const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" ta
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ACTS = [
-    ['edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
-    ['edit-relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
-    ['add-cover-art', 'Add cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
-    ['edits', 'History', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
+    ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
+    ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
+    ['add-cover-art', 'Art', 'Add cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
+    ['edits', 'History', 'Edit history', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
 ];
 
 /* ── formatting ────────────────────────────────────── */
@@ -2334,18 +2341,18 @@ function facts(r) {
     // past two rows, the first stays and the rest fold behind "+N more"
     const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
     const F = {
-        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div class="ev"><span class="d">${fdate(l.date)}</span>${l.ev.map(v => v.iso && v.iso !== 'XW' && v.iso !== 'XE' ? `<span class="iso" data-tip="${esc(v.area)}">${esc(v.iso)}</span>` : `<span>${esc(v.area)}</span>`).join(' ')}</div>`)) || '—'],
-        labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`)) || '—'],
-        barcode: ['Barcode', r.barcode ? `<span>${copyB(r.barcode)}</span>` : '—'],
-        length: ['Length', `${tracks.length} tracks · ${total(tracks)}`],
+        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${esc(l.ev.map(v => v.area).filter(Boolean).join(', '))}</span></div>`))],
+        labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`))],
+        barcode: ['Barcode', r.barcode && `<span>${copyB(r.barcode)}</span>`],
+        length: ['Length', `<span>${total(tracks)}</span><span class="sub">${tracks.length} track${tracks.length === 1 ? '' : 's'}</span>`],
         mbid: ['MBID', `<span>${copyB(r.id)}</span>`],
-        asin: ['ASIN', r.asin ? `<span>${copyB(r.asin)}</span>` : '—'],
-        packaging: ['Packaging', esc(r.packaging || '—')],
-        lang: ['Language / script', esc(r.lang || '—')],
+        asin: ['ASIN', r.asin && `<span>${copyB(r.asin)}</span>`],
+        packaging: ['Packaging', r.packaging && esc(r.packaging)],
+        lang: ['Language', r.langName && `<span>${esc(r.langName)}</span>${r.script ? `<span class="sub">${esc(r.script)} script</span>` : ''}`],
         quality: ['Data quality', esc(r.quality || 'normal')],
-        links: ['', rlQuiet(r)],
+        links: ['', r.links.length && rlQuiet(r)],
     };
-    return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k)).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
+    return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k) && F[k][1]).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
 function under(r) {
     const on = k => S.extras.includes(k);
@@ -2367,7 +2374,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, d], i) => `<a class="ib${i ? '' : ' primary'}" href="${MB}/release/${r.id}${p ? '/' + p : ''}" aria-label="${n}" data-tip="${n}">${SVG(d)}</a>`).join('')}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}${n}</a>`).join('')}</span></div>
             <h1>${esc(r.title)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
