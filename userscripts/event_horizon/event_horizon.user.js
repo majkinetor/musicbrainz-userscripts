@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.14
+// @version      2026.10.24.15
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2615,30 +2615,31 @@ const CI = {
     rating: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
-const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}#eh-cfg .mbu-cfg-h{cursor:move;user-select:none}.eh-cfg{width:min(480px,94vw);font:13px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:8px 12px 10px}.eh-cfg .mbu-cfg-h{margin-bottom:2px}'
-    + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -12px;padding:0 8px}'
-    + '.eh-cfg .tab{all:unset;padding:7px 11px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
+const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}#eh-cfg .mbu-cfg-h{cursor:move;user-select:none}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
+    + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
+    + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .pane{min-height:220px;padding-top:4px}'
-    + '.eh-cfg .cr{display:grid;grid-template-columns:100px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
-    + '.eh-cfg .cl{padding-top:6px;font:600 10.5px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .pane{min-height:150px;padding-top:2px}'
+    + '.eh-cfg .cr{display:grid;grid-template-columns:86px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
+    + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
     + '.eh-cfg .none{padding-top:5px;color:var(--mbu-text-weak);font-style:italic}.eh-cfg .sw{margin-top:3px}'
     + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
     + '.eh-cfg .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}'
     + '.eh-cfg .sw[aria-checked=true]{background:var(--mbu-accent)}.eh-cfg .sw[aria-checked=true]::after{left:16px}'
-    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:4px}'
-    + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 12px var(--mbu-font);cursor:pointer;user-select:none}'
+    + '.eh-cfg .chips{display:flex;flex-wrap:wrap;gap:3px}'
+    + '.eh-cfg .chip{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:20px;border:1px solid var(--mbu-border);background:var(--mbu-bg-raised);color:var(--mbu-text-dim);font:500 11.5px var(--mbu-font);cursor:pointer;user-select:none}'
     + '.eh-cfg .chip:hover{border-color:var(--mbu-accent)}.eh-cfg .chip[aria-pressed=true]{background:var(--mbu-accent-soft);border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
     + '.eh-cfg .chip svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}'
-    + '.eh-cfg .chip.p{padding-left:4px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:18px;height:18px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}'
-    + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
+    + '.eh-cfg .chip.p{padding-left:3px}.eh-cfg .chip.p svg,.eh-cfg .chip.p .mgram{width:16px;height:16px;stroke:none;fill:revert}.eh-cfg .ord{font-size:10px;font-weight:700}'
+    + '.eh-cfg .foot{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid var(--mbu-border-soft);background:var(--mbu-bg-raised);font-size:12px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .mgram{display:inline-grid;place-items:center;border-radius:50%;background:var(--mbu-bg-sunken);color:var(--mbu-text-dim);font-weight:800;text-transform:uppercase}'
     + '.eh-cfg .reset{all:unset;color:var(--mbu-accent-text);cursor:pointer}.eh-cfg .reset:hover{text-decoration:underline}';
-// providers to offer: this release's, else those picked and the usual ones
+// providers to offer: this release's, else those picked and the usual ones; with cfgAll every known one
+let cfgAll = false;
 function cfgProviders() {
     const um = new Map();
     if (data) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
-    else for (const k of [...S.prov, ...ORDER]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
+    if (!data || cfgAll) for (const k of [...S.prov, ...ORDER, ...(cfgAll ? HOSTS.map(h => h[0]) : [])]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
     return sortP([...um.values()]);
 }
 function cfgBody() {
@@ -2647,7 +2648,7 @@ function cfgBody() {
     const ps = cfgProviders();
     // count and number only the picks this release has; the rest stay saved for other releases
     const shown = S.prov.filter(k => ps.some(p => p.key === k));
-    const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}">${icon(p, 18)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
+    const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
     const tabs = [['release', 'Release'], ['platforms', `Platforms <span class="n">${shown.length}</span>`], ['general', 'General']];
     const panes = {
         release: row('Info', FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join(''))
@@ -2655,7 +2656,7 @@ function cfgBody() {
         platforms: row('Show', chip('plNames', 'plNames', S.plNames, 'Names') + chip('plHover', 'plHover', S.plHover, 'Icons on hover', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
             + row('Shown', shown.map(k => ps.find(p => p.key === k)).map(pchip).join('') || '<span class="none">None: click one below</span>', 'Each gets a column in the tracklist, in the order picked; the rest sit behind +N')
-            + row('Available', ps.filter(p => !S.prov.includes(p.key)).map(pchip).join('')),
+            + row('Available', ps.filter(p => !S.prov.includes(p.key)).map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
         general: `<div class="cr"><div class="cl">Start on load</div><div><button type="button" class="sw" role="switch" data-g="on" aria-checked="${S.on}" aria-label="Start on load" data-tip="On: a release page opens in Event Horizon\nOff: MusicBrainz's page; the launcher switches"></button></div></div>`
             + row('Disambiguation', [['below', 'Below name'], ['brackets', 'In brackets'], ['tip', 'Tooltip']].map(([k, n]) => chip('dis', k, S.dis === k, n)).join('')),
     };
@@ -2690,7 +2691,8 @@ function openCfg() {
         else {
             const t = ev.target.closest('[data-g]'); if (!t) return;
             const { g, k } = t.dataset;
-            if (g === 'on') S.on = !S.on;
+            if (g === 'all') { cfgAll = !cfgAll; b.innerHTML = cfgBody(); return; }
+            else if (g === 'on') S.on = !S.on;
             else if (g === 'fact') S.facts = toggle(S.facts, k);
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
             else if (g === 'extra') S.extras = toggle(S.extras, k);
