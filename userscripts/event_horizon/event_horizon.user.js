@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.58
+// @version      2026.10.24.59
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2289,19 +2289,18 @@ const edition = e => ({
     where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
     labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
 });
-const preload = url => new Promise(ok => { const i = new Image(); i.onload = i.onerror = ok; i.src = url; setTimeout(ok, 5000); });
 async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
-    const covers = caa(id).then(async x => { if (x.some(i => i.front)) await preload(`https://coverartarchive.org/release/${id}/front-500`); step('covers'); return x; });
+    // the Cover Art Archive's image list comes after: the page shows without it and fills it in
+    const covers = caa(id).then(x => { step('covers'); return x; });
     const r = await ws(`release/${id}?inc=${inc}`);
     step('release');
     const rgId = r['release-group'].id;
-    const [rg, eds, images] = await Promise.all([
+    const [rg, eds] = await Promise.all([
         ws(`release-group/${rgId}?inc=ratings`),
         ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step('editions'); return x; }),
-        covers,
     ]);
-    return { rel: release(r, rg, images), editions: (eds.releases || []).map(edition), edCount: eds['release-count'] || 0 };
+    return { rel: release(r, rg, []), editions: (eds.releases || []).map(edition), edCount: eds['release-count'] || 0, covers };
 }
 
 /* ── icons ─────────────────────────────────────────── */
@@ -2891,7 +2890,11 @@ async function show(id) {
     const step = k => { done.add(k); if (n === showing && st) st.innerHTML = ['release', 'editions', 'covers'].map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
     LOG.info('Loading release ' + id);
     const t0 = Date.now();
-    try { const d = await load(id, step); if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); } }
+    try {
+        const d = await load(id, step);
+        if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
+        d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
+    }
     catch (e) {
         LOG.err('Loading ' + id + ' failed: ' + e.message);
         if (n !== showing) return;
