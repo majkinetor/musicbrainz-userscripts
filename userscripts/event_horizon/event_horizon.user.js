@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.140000
+// @version      2026.10.25.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2739,7 +2739,9 @@ async function loadRg(id, step = () => {}) {
     const g = await ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`);
     step('group');
     const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
-    return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
+    // the Wikipedia extract MusicBrainz's own page fetches after load: { content (HTML), url }, or none
+    const wiki = mbnFetch(`${MB}/release-group/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => r.json()).then(x => x.wikipediaExtract || null, () => null);
+    return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
 }
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
@@ -2771,6 +2773,11 @@ function annoHtml(t) {
         .replace(/'''(.+?)'''/g, '<b>$1</b>').replace(/''(.+?)''/g, '<i>$1</i>')
         .split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
 }
+function wikipedia(w) {
+    if (!w || !w.content) return '';
+    const text = w.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return sect('wp', 'Wikipedia', '', `<div class="anno">${w.content}</div><div class="folded-note"><a href="${esc(w.url)}" target="_blank" rel="noopener">Continue reading at Wikipedia</a> · content under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA</a></div>`, `<div class="folded-note">${esc(text.slice(0, 120))}${text.length > 120 ? '…' : ''}</div>`);
+}
 function annotation(g) {
     if (!g.annotation) return '';
     return sect('an', 'Annotation', '', `<div class="anno">${annoHtml(g.annotation)}</div>`, `<div class="folded-note">${esc(g.annotation.slice(0, 120))}${g.annotation.length > 120 ? '…' : ''}</div>`);
@@ -2794,7 +2801,7 @@ function render(keepPop) {
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = titleOf(data);
-    app.innerHTML = data.kind === 'rg' ? rgHero(data) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
+    app.innerHTML = data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
         : hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
     // a group without its own cover shows its first release's, else the format's mark
     const gc = app.querySelector('[data-rgcover]');
@@ -3124,6 +3131,7 @@ async function show(key) {
         const d = await (isRg ? loadRg : load)(id, step);
         if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
         d.eds.then(x => { if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (isRg ? 0 : 1)) render(); } });
+        if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
     }
     catch (e) {
