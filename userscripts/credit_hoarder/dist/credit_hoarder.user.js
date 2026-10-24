@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.24.112321
+// @version      2026.10.24.143838
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -22,6 +22,8 @@
 // @connect      www.qobuz.com
 // @connect      deezer.com
 // @connect      www.deezer.com
+// @connect      mora.jp
+// @connect      cf.mora.jp
 // @connect      music.apple.com
 // @connect      amp-api.music.apple.com
 // @connect      www.metal-archives.com
@@ -632,6 +634,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
         tidal: href((rel) => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || "")),
         qobuz: href((rel) => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || "")),
         deezer: href((rel) => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || "")),
+        mora: href((rel) => /(^|\/\/)mora\.jp\/package\/\d+\/[\w-]+/i.test(rel.target?.href_url || "")),
         apple: href((rel) => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || "")),
         // #435; iTunes URLs #436
         metalArchives: href((rel) => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || "")),
@@ -3569,6 +3572,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     if (/tidal\.com\//i.test(url || "")) return "Tidal";
     if (/qobuz\.com\//i.test(url || "")) return "Qobuz";
     if (/deezer\.com\//i.test(url || "")) return "Deezer";
+    if (/mora\.jp\//i.test(url || "")) return "mora";
     if (/(?:music|itunes)\.apple\.com\//i.test(url || "")) return "Apple";
     if (/metal-archives\.com\//i.test(url || "")) return "Metal Archives";
     if (/music\.youtube\.com\/|youtube\.com\/playlist\?(?:[^#]*&)?list=OLAK5uy_/i.test(url || "")) return "YouTube Music";
@@ -7522,6 +7526,87 @@ Its \u{1F517} chip adds the link.`;
     });
   }
 
+  // src/sources/mora.js
+  var MORA_PACKAGE_RE = /^(?:https?:)?\/\/(?:www\.)?mora\.jp\/package\/(\d+)\/([\w-]+)\/?(?:[?#]|$)/i;
+  function parseMoraPackageUrl(url) {
+    const m = MORA_PACKAGE_RE.exec(url || "");
+    return m ? { id: `${m[1]}/${m[2]}`, pageUrl: `https://mora.jp/package/${m[1]}/${m[2]}/` } : null;
+  }
+  function moraMetaUrl(html) {
+    const raw = /<meta[^>]*name="msApplication-Arguments"[^>]*content="([^"]+)"/i.exec(html || "")?.[1];
+    if (!raw) return null;
+    let a;
+    try {
+      a = JSON.parse(raw.replace(/&quot;/g, '"').replace(/&amp;/g, "&"));
+    } catch (e) {
+      return null;
+    }
+    if (!a || !a.materialNo || !a.labelId || !a.mountPoint) return null;
+    const p = String(a.materialNo).padStart(10, "0");
+    return `https://cf.mora.jp/contents/package/${a.mountPoint}/${a.labelId}/${p.slice(0, 4)}/${p.slice(4, 7)}/${p.slice(7)}/packageMeta.json`;
+  }
+  var MORA_FIELDS = [["composer", "composer"], ["lyrics", "lyricist"], ["arranger", "arranger"], ["producer", "producer"]];
+  function splitMoraNames(s) {
+    return String(s || "").split(/\s*(?:、|，|／|\/|,\s)\s*/).map((x) => x.trim()).filter((x) => x && x !== "-");
+  }
+  function extractMoraCredits(json) {
+    return (json && json.trackList || []).map((t, i) => {
+      const byName = /* @__PURE__ */ new Map();
+      for (const [field, rel] of MORA_FIELDS) {
+        for (const name of splitMoraNames(t[field])) {
+          if (!byName.has(name)) byName.set(name, []);
+          const roles = byName.get(name);
+          if (!roles.includes(rel)) roles.push(rel);
+        }
+      }
+      return { index: t.trackNo || i + 1, credits: [...byName].map(([name, roles]) => ({ name, roles })) };
+    });
+  }
+  function moraAlbumInfo(json) {
+    return json ? [json.title, json.artistName].filter(Boolean).join(", ") : "";
+  }
+  function moraToEngine(parsedTracks) {
+    const tracklistRels = [];
+    const tracklist = [];
+    const { positions, multiVolume } = assignVolumePositions(parsedTracks, (t) => t.index);
+    parsedTracks.forEach((t, i) => {
+      const track = { position: positions[i], title: "", type_: "track" };
+      tracklist.push(track);
+      for (const credit of t.credits) {
+        for (const rel of credit.roles) {
+          tracklistRels.push({ linkType: rel, entityType: "artist", attributes: [], artist: { name: credit.name, anv: "", resource_url: "" }, track });
+        }
+      }
+    });
+    return { tracklistRels, tracklist, skipped: [], multiVolume };
+  }
+  function gmGet(url, what) {
+    return new Promise((resolve, reject) => {
+      if (typeof GM_xmlhttpRequest !== "function") {
+        reject(new Error("GM_xmlhttpRequest unavailable"));
+        return;
+      }
+      GM_xmlhttpRequest({
+        method: "GET",
+        url,
+        timeout: 2e4,
+        onload: (r) => r.status >= 200 && r.status < 400 && r.responseText ? resolve(r.responseText) : reject(new Error(`mora ${what} returned ${r.status}`)),
+        onerror: () => reject(new Error(`mora ${what} fetch failed (network)`)),
+        ontimeout: () => reject(new Error(`mora ${what} fetch timed out`))
+      });
+    });
+  }
+  async function fetchMoraPackage(pageUrl) {
+    const metaUrl = moraMetaUrl(await gmGet(pageUrl, "page"));
+    if (!metaUrl) throw new Error("mora page has no package arguments (msApplication-Arguments)");
+    const text = await gmGet(metaUrl, "packageMeta.json");
+    try {
+      return { metaUrl, json: JSON.parse(text) };
+    } catch (e) {
+      throw new Error("mora packageMeta.json: malformed JSON");
+    }
+  }
+
   // src/consolidate.js
   var fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
   var entityKeyOf = (a) => a && a.resource_url ? a.resource_url : `_nourl_${a && (a.name || a.id) || ""}`;
@@ -7753,10 +7838,11 @@ Its \u{1F517} chip adds the link.`;
   var _maJson = null;
   var _qobuzJson = null;
   var _deezerJson = null;
+  var _moraJson = null;
   var _appleJson = null;
   var _ytmJson = null;
   var _consolidatedJson = null;
-  var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0.75 0.75 28.5 28.5" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="71 71 882 882" xmlns="http://www.w3.org/2000/svg"><g transform="translate(512 512) scale(0.86) translate(-512 -512)"><circle cx="512" cy="512" r="496" fill="#333" stroke="#9a9a9a" stroke-width="32"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></g></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="1.25 1.375 21.25 21.25" fill="#1DB954"><path transform="translate(12 12) scale(.875) translate(-12 -12)" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="1.625 1.25 20 20" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="3 3 18 18"><path transform="translate(12 12) scale(.74) translate(-12 -12)" d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="3 3 18 18"><path d="M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z" style="fill:var(--mbu-text,currentColor)"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#01FF95", "svg": '<svg viewBox="0.75 0.75 22.5 22.5"><circle cx="12" cy="12" r="11" fill="#000"/><g transform="translate(12 12) scale(0.84) translate(-12 -12)" fill="none" stroke="#01FF95" stroke-width="2.5"><path d="M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1"/><circle cx="13.9" cy="15.8" r="4.05" stroke-width="2.35"/></g></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="2.25 2.25 19.5 19.5" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "presto": { "color": "#1f3a5f", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#1f3a5f"/><path d="M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundcloud": { "color": "#ff5500", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' }, "audiomack": { "color": "#FFA200", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FFA200"/><path d="M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "sevendigital": { "color": "#07606E", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#07606E"/><path d="M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z" fill="#fff"/></svg>' }, "ytmusic": { "color": "#FF0000", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' }, "amazonmusic": { "color": "#25D1DA", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="2 2 20 20" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
+  var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0.75 0.75 28.5 28.5" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="71 71 882 882" xmlns="http://www.w3.org/2000/svg"><g transform="translate(512 512) scale(0.86) translate(-512 -512)"><circle cx="512" cy="512" r="496" fill="#333" stroke="#9a9a9a" stroke-width="32"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></g></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="1.25 1.375 21.25 21.25" fill="#1DB954"><path transform="translate(12 12) scale(.875) translate(-12 -12)" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="1.625 1.25 20 20" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="3 3 18 18"><path transform="translate(12 12) scale(.74) translate(-12 -12)" d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="3 3 18 18"><path d="M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z" style="fill:var(--mbu-text,currentColor)"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#01FF95", "svg": '<svg viewBox="0.75 0.75 22.5 22.5"><circle cx="12" cy="12" r="11" fill="#000"/><g transform="translate(12 12) scale(0.84) translate(-12 -12)" fill="none" stroke="#01FF95" stroke-width="2.5"><path d="M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1"/><circle cx="13.9" cy="15.8" r="4.05" stroke-width="2.35"/></g></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="2.25 2.25 19.5 19.5" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "presto": { "color": "#1f3a5f", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#1f3a5f"/><path d="M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundcloud": { "color": "#ff5500", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' }, "audiomack": { "color": "#FFA200", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FFA200"/><path d="M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "sevendigital": { "color": "#07606E", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#07606E"/><path d="M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z" fill="#fff"/></svg>' }, "mora": { "color": "#0a7fd3", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0a7fd3"/><path d="M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" transform="translate(1.6 0)"/></svg>' }, "ytmusic": { "color": "#FF0000", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' }, "amazonmusic": { "color": "#25D1DA", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="2 2 20 20" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
   function stIcon(name, size) {
     var i = ST_ICONS[name];
     if (!i) return "";
@@ -7772,6 +7858,7 @@ Its \u{1F517} chip adds the link.`;
     Tidal: stIcon("tidal", 16),
     Qobuz: stIcon("qobuz", 16),
     Deezer: stIcon("deezer", 16),
+    mora: stIcon("mora", 16),
     Apple: stIcon("apple", 16),
     "YouTube Music": stIcon("ytmusic", 16),
     // #648 — the All review's per-entity source badge
@@ -10040,6 +10127,7 @@ Its \u{1F517} chip adds the link.`;
     if (sources.tidal) importSources.push({ name: "Tidal", url: sources.tidal, run: (g, c, collect) => runTidalImport(sources.tidal, g, c, collect) });
     if (sources.qobuz) importSources.push({ name: "Qobuz", url: sources.qobuz, run: (g, c, collect) => runQobuzImport(sources.qobuz, g, c, collect) });
     if (sources.deezer) importSources.push({ name: "Deezer", url: sources.deezer, run: (g, c, collect) => runDeezerImport(sources.deezer, g, c, collect) });
+    if (sources.mora) importSources.push({ name: "mora", url: sources.mora, run: (g, c, collect) => runMoraImport(sources.mora, g, c, collect) });
     if (sources.apple) importSources.push({ name: "Apple", url: sources.apple, run: (g, c, collect) => runAppleImport(sources.apple, g, c, collect) });
     if (sources.metalArchives) importSources.push({ name: "Metal Archives", url: sources.metalArchives, run: (g, c, collect) => runMetalArchivesImport(sources.metalArchives, g, c, collect) });
     if (sources.ytmusic) importSources.push({ name: "YouTube Music", url: sources.ytmusic, run: (g, c, collect) => runYtmImport(sources.ytmusic, g, c, collect) });
@@ -10056,6 +10144,7 @@ Its \u{1F517} chip adds the link.`;
       Tidal: stIcon("tidal", 16),
       Qobuz: stIcon("qobuz", 16),
       Deezer: stIcon("deezer", 16),
+      mora: stIcon("mora", 16),
       Apple: stIcon("apple", 16),
       "YouTube Music": stIcon("ytmusic", 16),
       // #648
@@ -10477,6 +10566,7 @@ Merged, without duplicates, into one review`;
     if (sources.tidal) logMenu.appendChild(mkMenuItem("Copy Tidal", "Copy the raw Tidal credits harvest for this release", (b, l) => bar._copy?.tidal(b, l)));
     if (sources.qobuz) logMenu.appendChild(mkMenuItem("Copy Qobuz", "Copy the parsed Qobuz credits for this release", (b, l) => bar._copy?.qobuz(b, l)));
     if (sources.deezer) logMenu.appendChild(mkMenuItem("Copy Deezer", "Copy the parsed Deezer credits for this release", (b, l) => bar._copy?.deezer(b, l)));
+    if (sources.mora) logMenu.appendChild(mkMenuItem("Copy mora", "Copy the parsed mora credits for this release", (b, l) => bar._copy?.mora(b, l)));
     if (sources.apple) logMenu.appendChild(mkMenuItem("Copy Apple", "Copy the parsed Apple credits for this release", (b, l) => bar._copy?.apple(b, l)));
     if (sources.ytmusic) logMenu.appendChild(mkMenuItem("Copy YouTube Music", "Copy the fetched YouTube Music credits for this release", (b, l) => bar._copy?.ytmusic(b, l)));
     if (importSources.length > 1) logMenu.appendChild(mkMenuItem("Copy all", 'Copy the combined JSON of an "Import all" run \u2014 every source plus the merged, de-duplicated result (#408)', (b, l) => bar._copy?.all(b, l)));
@@ -10702,6 +10792,9 @@ ${lines}
         },
         deezer: (item, label) => {
           if (_deezerJson) copyToClipboard(JSON.stringify(_deezerJson, null, 2), item, label);
+        },
+        mora: (item, label) => {
+          if (_moraJson) copyToClipboard(JSON.stringify(_moraJson, null, 2), item, label);
         },
         apple: (item, label) => {
           if (_appleJson) copyToClipboard(JSON.stringify(_appleJson, null, 2), item, label);
@@ -11052,6 +11145,41 @@ ${lines}
       log.error(err.message || String(err));
     });
   }
+  function runMoraImport(moraUrl, getOpts, cancelled, collect) {
+    const parsed = parseMoraPackageUrl(moraUrl);
+    if (!parsed) {
+      log.error(`Not a mora package URL: ${moraUrl}`);
+      return Promise.resolve();
+    }
+    log.info(`Fetching mora package page: ${parsed.pageUrl}`);
+    return fetchMoraPackage(parsed.pageUrl).then(({ metaUrl, json }) => {
+      log.debug(`mora packageMeta.json: ${metaUrl}`);
+      const albumInfo = moraAlbumInfo(json);
+      const tracks = extractMoraCredits(json);
+      _moraJson = { source: metaUrl, album: albumInfo, tracks };
+      const li = document.createElement("li");
+      const pre = document.createElement("pre");
+      pre.style.cssText = "max-height:400px;overflow:auto;font-size:0.72rem;background:var(--mbu-bg-raised);padding:0.5rem;border:1px solid var(--mbu-border);border-radius:3px;margin:0.3rem 0 0 0;white-space:pre-wrap;word-break:break-all;";
+      pre.textContent = JSON.stringify(_moraJson, null, 2);
+      li.innerHTML = '<details><summary style="cursor:pointer;user-select:none;"><strong></strong></summary></details>';
+      li.querySelector("strong").textContent = `${albumInfo || "mora package"} \xB7 ${tracks.length} tracks \u2014 parsed mora credits`;
+      li.querySelector("details").appendChild(pre);
+      _logs2.appendChild(li);
+      const { tracklistRels, tracklist, skipped, multiVolume } = moraToEngine(tracks);
+      log.info(`mora credits: ${tracklistRels.length} per-track relationship(s) across ${tracklist.length} track(s)`);
+      skipped.forEach((s) => log.info(`Not imported (v1 scope): ${s}`));
+      if (multiVolume) log.warn("Multi-medium mora package \u2014 track numbers repeat per medium; positions may not all match this release's mediums. Review carefully.");
+      if (!tracklistRels.length) {
+        log.warn("No importable mora credits found.");
+        stopMsg(collect, "No importable credits found");
+        return;
+      }
+      const parts = { companies: [], artistRoles: [], tracklistRels, tracklist, sourceUrl: moraUrl, processTracklist: true };
+      return collect ? parts : runSourcePipeline({ ...parts, getOpts, cancelled });
+    }).catch((err) => {
+      log.error(err.message || String(err));
+    });
+  }
   function runAppleImport(appleUrl, getOpts, cancelled, collect) {
     const parsed = parseAppleAlbumUrl(appleUrl);
     if (!parsed) {
@@ -11220,6 +11348,7 @@ ${lines}
       tidal: _tidalJson,
       qobuz: _qobuzJson,
       deezer: _deezerJson,
+      mora: _moraJson,
       apple: _appleJson,
       ytmusic: _ytmJson,
       merged: { companies: merged.companies, artistRoles: merged.artistRoles, tracklistRels: merged.tracklistRels }
@@ -11547,6 +11676,7 @@ ${lines}
     ["Tidal", "tidal", /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i],
     ["Qobuz", "qobuz", /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i],
     ["Deezer", "deezer", /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i],
+    ["mora", "mora", /(^|\/\/)mora\.jp\/package\/\d+\/[\w-]+/i],
     ["Apple", "apple", /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i],
     ["Metal Archives", "globe", /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i],
     ["YouTube Music", "ytmusic", /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i]
@@ -11578,6 +11708,8 @@ ${lines}
     if (qobuz) jobs.push(["Qobuz", async () => ({ source: "Qobuz", perTrack: withMedia(extractQobuzCredits(await fetchQobuzAlbumPage(qobuz.pageUrl))) })]);
     const deezer = find(/deezer\.com\//i) && parseDeezerAlbumUrl(find(/deezer\.com\//i));
     if (deezer) jobs.push(["Deezer", async () => ({ source: "Deezer", perTrack: withMedia(extractDeezerCredits(await fetchDeezerAlbumPage(deezer.pageUrl))) })]);
+    const mora = find(/mora\.jp\//i) && parseMoraPackageUrl(find(/mora\.jp\//i));
+    if (mora) jobs.push(["mora", async () => ({ source: "mora", perTrack: withMedia(extractMoraCredits((await fetchMoraPackage(mora.pageUrl)).json)) })]);
     const apple = find(/(music|itunes)\.apple\.com\//i) && parseAppleAlbumUrl(find(/(music|itunes)\.apple\.com\//i));
     if (apple) jobs.push(["Apple", async () => ({ source: "Apple", perTrack: withMedia((await fetchAppleCredits(apple.storefront, apple.id)).tracks) })]);
     log.info("Mission Control probe: credit sources linked: " + (jobs.map((j) => j[0]).join(", ") || "none"));
@@ -11764,7 +11896,7 @@ ${lines}
       document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
     }).then(() => log.info(`Boot: DOM ready (+${since()}ms)`));
     Promise.all([sourceProbe, domReady]).then(([probe]) => {
-      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.apple || probe.sources.metalArchives || probe.sources.ytmusic);
+      const known = !!(probe.sources.discogs || probe.sources.tidal || probe.sources.qobuz || probe.sources.deezer || probe.sources.mora || probe.sources.apple || probe.sources.metalArchives || probe.sources.ytmusic);
       if (known || probe.failed) {
         bootstrapBar(probe, null, m[1]);
         remixProbe.then((remix) => {
@@ -11783,7 +11915,7 @@ ${lines}
   function bootstrapBar(probe, remix, releaseMbid) {
     {
       const sources = probe.sources;
-      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.apple || sources.metalArchives || sources.ytmusic);
+      const hasProvider = !!(sources.discogs || sources.tidal || sources.qobuz || sources.deezer || sources.mora || sources.apple || sources.metalArchives || sources.ytmusic);
       const remixCount = remix?.count || 0;
       if (!probe.failed) logSourceProbe(sources);
       log.info(`Toolbar: ${probe.failed ? "source probe FAILED" : hasProvider ? "linked source(s) found" : "no linked sources"}, ${remixCount} title-derived remixer(s) \u2014 ${probe.failed || hasProvider || remixCount ? "mounting" : "not mounting (nothing to import)"}`);

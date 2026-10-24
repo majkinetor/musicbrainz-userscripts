@@ -38,6 +38,7 @@ export function sourceNameForUrl(url) {
     if (/tidal\.com\//i.test(url || '')) return 'Tidal';
     if (/qobuz\.com\//i.test(url || '')) return 'Qobuz';
     if (/deezer\.com\//i.test(url || '')) return 'Deezer';
+    if (/mora\.jp\//i.test(url || '')) return 'mora';
     if (/(?:music|itunes)\.apple\.com\//i.test(url || '')) return 'Apple';   // #435; iTunes URLs #436
     if (/metal-archives\.com\//i.test(url || '')) return 'Metal Archives';   // #453
     if (/music\.youtube\.com\/|youtube\.com\/playlist\?(?:[^#]*&)?list=OLAK5uy_/i.test(url || '')) return 'YouTube Music';   // #648; www.youtube.com album #679

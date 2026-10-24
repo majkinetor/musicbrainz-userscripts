@@ -287,6 +287,7 @@ export async function getSourceUrlsForRelease(mbid) {
                 tidal:   href(rel => /(^|\/\/)(www\.|listen\.)?tidal\.com\/(browse\/)?album\/\d+/i.test(rel.target?.href_url || '')),
                 qobuz:   href(rel => /(^|\/\/)(www\.|play\.|open\.)?qobuz\.com\/([a-z]{2}-[a-z]{2}\/)?album\//i.test(rel.target?.href_url || '')),
                 deezer:  href(rel => /(^|\/\/)(www\.)?deezer\.com\/([a-z]{2}\/)?album\/\d+/i.test(rel.target?.href_url || '')),
+                mora:    href(rel => /(^|\/\/)mora\.jp\/package\/\d+\/[\w-]+/i.test(rel.target?.href_url || '')),
                 apple:   href(rel => /(^|\/\/)(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/?#]+\/)?(?:id)?\d+/i.test(rel.target?.href_url || '')),   // #435; iTunes URLs #436
                 metalArchives: href(rel => /(^|\/\/)(www\.)?metal-archives\.com\/albums\/[^/]+\/[^/]+\/\d+/i.test(rel.target?.href_url || '')),   // #453
                 ytmusic: href(rel => /(^|\/\/)((music|www|m)\.)?youtube\.com\/(?:playlist\?(?:[^#]*&)?list=OLAK5uy_|browse\/MPREb_)/i.test(rel.target?.href_url || '')),   // #648; www.youtube.com #679

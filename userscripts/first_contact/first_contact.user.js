@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.21.180216
-// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, Presto Music.
+// @version      2026.10.24.144000
+// @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md
@@ -23,6 +23,7 @@
 // @match        https://audiomack.com/*
 // @match        https://*.7digital.com/artist/*
 // @match        https://ototoy.jp/_/default/p/*
+// @match        https://mora.jp/package/*
 // @match        https://music.amazon.com/*
 // @match        https://music.amazon.co.uk/*
 // @match        https://music.amazon.de/*
@@ -76,6 +77,7 @@
 // @connect      beta.musicbrainz.org
 // @connect      test.musicbrainz.org
 // @connect      bandcamp.com
+// @connect      cf.mora.jp
 // ==/UserScript==
 
 (function () {
@@ -2296,6 +2298,67 @@ const OTOTOY = {
     },
 };
 
+// mora (#813): Sony's Japanese download shop. The package page is a shell; its <meta name=
+// "msApplication-Arguments"> names the package (mountPoint, labelId, materialNo), and the album is the
+// packageMeta.json under cf.mora.jp, read the way Harmony does. No CORS there, so through GM. One
+// tracklist with no disc breaks, no ISRCs; the barcode only when distPartNo or cdPartNo is one.
+const MORA = {
+    id: 'mora',
+    name: 'mora',
+    abbr: 'mor',
+    host: /^mora\.jp$/,
+    albumId(loc) { const m = loc.pathname.match(/^\/package\/(\d+)\/([\w-]+)\/?$/); return m ? `${m[1]}/${m[2]}` : null; },
+    artist(name, no) { return { name: String(name || '').trim(), url: no ? `https://mora.jp/artist/${no}/` : null }; },
+    gtin: s => (/^\d{12,14}$/.test(String(s || '')) ? String(s) : null),
+
+    async fetchRelease(id, progress, doc) {
+        doc = doc || document;
+        const meta = doc.querySelector('meta[name="msApplication-Arguments"]');
+        let args = null;
+        try { args = JSON.parse(meta.getAttribute('content')); } catch (e) { /* below */ }
+        if (!args || !args.materialNo) throw new Error('mora: no package on this page');
+        const p = String(args.materialNo).padStart(10, '0');
+        const base = `https://cf.mora.jp/contents/package/${args.mountPoint}/${args.labelId}/${p.slice(0, 4)}/${p.slice(4, 7)}/${p.slice(7)}/`;
+        Log.info(`mora package ${id}: ${base}packageMeta.json`);
+        const j = await gmJson(base + 'packageMeta.json');
+        const tracks = j.trackList || [];
+        Log.info(`mora: "${j.title}" by ${j.artistName} · ${j.labelcompanyname || '—'} · ${j.startDate || '—'} · cdPartNo ${j.cdPartNo || '—'} · distPartNo ${j.distPartNo || '—'} · ${tracks.length} tracks`);
+        const albumArtist = this.artist(j.artistName, j.artistNo);
+        const various = /^(?:various artists|v\.?\s*a\.?|オムニバス)$/i.test(albumArtist.name);
+        const out = [];
+        tracks.forEach((t, i) => {
+            const tf = splitFeat(String(t.title || '').trim());
+            const credit = creditFromTitle(t.artistName ? [this.artist(t.artistName, t.artistNo)] : (various ? [] : [albumArtist]), tf.feat);
+            if (t.mediaFormatNo == 11) Log.info(`mora: track ${i + 1} is a video`);
+            out.push({ title: tf.title, lengthMs: t.duration ? t.duration * 1000 : null, isrc: null, url: null, credit });
+            progress && progress(i + 1, tracks.length);
+            Log.debug(`track ${i + 1}: "${tf.title}" — ${credit.map(c => c.name + c.join).join('') || '(no artist)'}`);
+        });
+        const barcode = this.gtin(j.distPartNo) || this.gtin(j.cdPartNo);
+        const catno = !barcode && j.cdPartNo ? String(j.cdPartNo) : '';
+        const af = splitFeat(String(j.title || '').trim());
+        const credit = various ? [{ name: 'Various Artists', mbid: VARIOUS_ARTISTS_MBID, join: '' }] : creditFromTitle([albumArtist], af.feat);
+        const [y, m, d] = String(j.startDate || '').split(/[/ ]/).map(x => parseInt(x, 10));
+        const url = `https://mora.jp/package/${id}/`;
+        return {
+            source: this.id,
+            annotation: '',
+            url,
+            title: af.title,
+            credit,
+            types: [],
+            status: 'official',
+            packaging: 'None',
+            date: { year: y || null, month: m || null, day: d || null },
+            country: 'JP',   // mora sells in Japan only
+            barcode,
+            labels: j.labelcompanyname ? [{ name: j.labelcompanyname, catno, url: null }] : [],
+            urls: [{ url, linkType: 74 }],   // 74 = purchase for download
+            mediums: [{ format: 'Digital Media', name: '', tracks: out }],
+        };
+    },
+};
+
 // Presto Music (#779): a UK shop for classical and jazz, CDs, SACDs, vinyl and downloads. Everything is
 // on the product page, server-rendered behind Cloudflare: the title, the artist line (plain text, roles
 // in brackets), the format bought here, Release date / Label / Catalogue number, the barcode in the
@@ -2586,7 +2649,7 @@ const PRESTO = {
     },
 };
 
-const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, PRESTO];
+const PROVIDERS = [DEEZER, BANDCAMP, DISCOGS, APPLE, TIDAL, QOBUZ, BEATPORT, SPOTIFY, YTMUSIC, VOLUMO, HDTRACKS, SOUNDCLOUD, AMAZON, AUDIOMACK, SEVENDIGITAL, OTOTOY, MORA, PRESTO];
 
 /* ── Harmony (#687): the album sent to Harmony's release lookup instead of the editor ── */
 // The album link in the form Harmony reads, for the platforms Harmony looks up by URL; Harmony then
@@ -2602,6 +2665,7 @@ const HARMONY_URLS = {
     beatport: id => `https://www.beatport.com/release/-/${id}`,
     spotify: id => `https://open.spotify.com/album/${id}`,
     ototoy: id => `https://ototoy.jp/_/default/p/${id}`,
+    mora: id => `https://mora.jp/package/${id}/`,
 };
 // Platforms Harmony doesn't know and whose albums never carry a barcode: nothing to send
 const HARMONY_NONE = new Set(['ytmusic', 'amazonmusic']);
@@ -4018,7 +4082,7 @@ function addLinkOnly(e, urls, rel, provider) {
 //   mc:read { url, run }    → mc:read-progress { url, run, n, total } while it reads, then
 //                             mc:read-result { url, run, ok, provider, rel, ms } or { url, run, ok: false, error }
 //   fc:seed { rel, platform, editNote, run } → fc:seeded { run, token }, then the release editor in this tab
-const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy']);   // the readers that parse the album page
+const READ_PAGE = new Set(['bandcamp', 'qobuz', 'beatport', 'sevendigital', 'ototoy', 'mora']);   // the readers that parse the album page
 function mbConsolidate(token) {
     const key = CONS_PREFIX + token;
     let h = GM_getValue(key, null), from = 'storage';

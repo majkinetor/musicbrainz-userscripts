@@ -68,6 +68,9 @@ export const PLATFORM_ICONS = {
     // ── 7digital — the store's teal (its theme colour) + a white 7 (stand-in, #669) ──
     sevendigital: { color: '#07606E', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#07606E"/><path d="M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z" fill="#fff"/></svg>' },
 
+    // ── mora — a blue disc + a white lower-case m (stand-in, #813) ──
+    mora: { color: '#0a7fd3', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0a7fd3"/><path d="M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" transform="translate(1.6 0)"/></svg>' },
+
     // ── YouTube Music — red disc, white ring, play triangle, as MusicBrainz shows it (#639) ──
     ytmusic: { color: '#FF0000', svg: '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' },
 
