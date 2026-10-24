@@ -78,5 +78,15 @@ test.describe('rotate in the viewer (#678)', () => {
     const after = await until(() => counts(page), c => c.neu >= before.neu + 1 && c.del >= 1, { timeout: 30000 });
     check(after.neu === before.neu + 1, `one rotated copy staged (${JSON.stringify(after)})`);
     check(after.del >= 1, `the original is marked for removal (${JSON.stringify(after)})`);
+
+    // #819: the removal's edit note names the image that replaces it (a dry run: the new id isn't known yet)
+    await page.click('.as-lb-x');
+    await until(() => page.evaluate(() => !document.querySelector('.as-commit')?.disabled), Boolean);
+    await page.click('.as-commit');
+    await until(() => page.evaluate(() => !!document.querySelector('#as-commit .as-cm-more')), Boolean);
+    await page.click('#as-commit .as-cm-more');
+    await page.click('#as-commit .as-cm-dryrun');
+    const note = await until(() => page.evaluate(() => [...document.querySelectorAll('#as-commit .as-cm-payload')].map(e => e.textContent).find(t => /remove-cover-art/.test(t)) || ''), t => /confirm\.edit_note/.test(t), { timeout: 20000 });
+    check(/Replaced by https:\/\/coverartarchive\.org\/release\/[0-9a-f-]{36}\/‹image_id›\.jpg \(\d+×\d+, [\d.]+ [KM]?B\), this image rotated 90°/.test(note), `the removal says what replaces it (${note})`);
   });
 });
