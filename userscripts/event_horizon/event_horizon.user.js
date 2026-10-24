@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.5
+// @version      2026.10.24.6
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2644,10 +2644,11 @@ function cfgBody() {
 function openCfg() {
     if (document.getElementById('eh-cfg')) return;
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
-    ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO })}<div class="eh-cfg-b">${cfgBody()}</div></div><div class="foot"><span>Applies at once</span><button type="button" class="reset">Reset to defaults</button></div></div>`;
+    ov.innerHTML = `<div class="mbu-ov-panel eh-cfg mbu-ui" role="dialog" aria-label="Event Horizon settings"><div class="mbu-ov-body">${mbuCfgHeader({ script: 'event_horizon', name: 'Event Horizon', version: VERSION, icon: LOGO, log: true })}<div class="eh-cfg-b">${cfgBody()}</div></div><div class="foot"><span>Applies at once</span><button type="button" class="reset">Reset to defaults</button></div></div>`;
     document.documentElement.append(ov);
     const panel = ov.firstChild, b = panel.querySelector('.eh-cfg-b');
     mbuDismissOn(panel, () => ov.remove());
+    panel.querySelector('.mbu-cfg-log').onclick = () => { ov.remove(); LOG.open(); };
     panel.addEventListener('click', ev => {
         if (ev.target.closest('.reset')) { Object.assign(S, JSON.parse(DEFAULTS)); }
         else {
@@ -2687,7 +2688,9 @@ function launcher() {
     try { mbuThemeStart(); } catch (e) {}
     mbRestackCorner('br');
 }
+let LOG;
 function start() {
+    LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin' });
     mbBody = document.body; mbTitle = document.title;
     launcher();
     setOn(S.on);
@@ -2712,8 +2715,11 @@ async function show(id) {
     // each part is bold while it loads and ticked when done
     const done = new Set();
     const step = k => { done.add(k); if (n === showing && st) st.innerHTML = ['release', 'editions', 'covers'].map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
-    try { const d = await load(id, step); if (n === showing) { data = d; render(); } }
+    LOG.info('Loading release ' + id);
+    const t0 = Date.now();
+    try { const d = await load(id, step); if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); } }
     catch (e) {
+        LOG.err('Loading ' + id + ' failed: ' + e.message);
         if (n !== showing) return;
         const box = app.querySelector('.sk-st');
         box.className = 'sk-st err';
