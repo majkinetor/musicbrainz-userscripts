@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.44
+// @version      2026.10.24.45
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1898,9 +1898,9 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .art .thumbs button{border:0;cursor:pointer;color:var(--accent);padding:0}
 .art .thumbs img,.art .thumbs a,.art .thumbs button{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
 .facts-col{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
-.kicker{display:flex;align-items:center;gap:8px}
+.kicker{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .kicker svg{color:var(--accent)}
-.kicker .acts{margin-left:auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.kicker .acts{margin-left:auto;display:flex;gap:6px;align-items:center}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
@@ -2356,7 +2356,7 @@ function facts(r) {
         released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${esc(l.ev.map(v => v.area).filter(Boolean).join(', '))}</span></div>`))],
         labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`))],
         barcode: ['Barcode', r.barcode && `<span>${copyB(r.barcode)}</span>`],
-        length: ['Length', `<span>${total(tracks)}</span><span class="sub">${tracks.length} track${tracks.length === 1 ? '' : 's'}</span>`],
+        length: ['Length', `<span>${total(tracks)} <span class="sub">· ${tracks.length} track${tracks.length === 1 ? '' : 's'}</span></span>`],
         mbid: ['MBID', `<span>${copyB(r.id)}</span>`],
         asin: ['ASIN', r.asin && `<span>${copyB(r.asin)}</span>`],
         packaging: ['Packaging', r.packaging && esc(r.packaging)],
