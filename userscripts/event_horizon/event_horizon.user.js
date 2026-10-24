@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.23
+// @version      2026.10.24.24
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2030,14 +2030,15 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .dm-tip .dis{display:none}
 .dm-tip .hasd{border-bottom:1px dotted var(--muted);cursor:help}
 .detail .gtools{position:absolute;top:2px;right:10px;display:flex;flex-direction:column;gap:2px;z-index:3}
-.detail .dwrap{position:relative}
-.detail .dmenu{display:none;position:absolute;top:0;right:34px;min-width:160px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
-.detail .dmenu.open{display:block}
-.detail .dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.detail .dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
-.detail .dmenu button svg{flex:none}
-.detail .dmenu button:hover{background:var(--hover)}
-.detail .dmenu button[aria-checked=true]{color:var(--accent);font-weight:700}
+.dwrap{position:relative}
+.dmenu{display:none;position:absolute;top:0;right:34px;min-width:160px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.dmenu.open{display:block;z-index:5}
+.crdis .dmenu{top:100%;right:0;margin-top:4px}
+.dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
+.dmenu button svg{flex:none}
+.dmenu button:hover{background:var(--hover)}
+.dmenu button[aria-checked=true]{color:var(--accent);font-weight:700}
 .detail .gsw{border:0;background:none;color:var(--muted);width:30px;height:28px;display:grid;place-items:center;cursor:pointer;padding:0}
 .detail .gsw:hover{color:var(--accent)}
 .detail .gsw:focus-visible{outline:2px solid var(--accent);border-radius:6px}
@@ -2427,6 +2428,12 @@ const DIS = [
     ['brackets', 'In brackets', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 2.5c-2 2.5-2 8.5 0 11M11 2.5c2 2.5 2 8.5 0 11M7 8h2"/></svg>'],
     ['tip', 'Tooltip', '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 3h11v7h-6l-3 3v-3h-2z"/></svg>'],
 ];
+// the disambiguation menu: its button (class cls) and the choices
+function disMenu(cls) {
+    const cur = DIS.find(x => x[0] === S.dis) || DIS[0];
+    return `<div class="dwrap"><button class="${cls}" type="button" data-dismenu aria-haspopup="menu" aria-label="Disambiguation: ${cur[1]}" data-tip="Disambiguation: ${cur[1]}\nClick to choose how it shows">${cur[2]}</button>`
+        + `<div class="dmenu" role="menu"><div class="dmh">Disambiguation</div>${DIS.map(([k, n, ic]) => `<button type="button" role="menuitemradio" data-dism="${k}" aria-checked="${k === S.dis}">${ic}${n}</button>`).join('')}</div></div>`;
+}
 function detail(t) {
     const ps = sortP(t.links).filter(p => primaryKind(p) !== 'info');
     const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
@@ -2434,10 +2441,7 @@ function detail(t) {
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? (S.byName ? `<dt>${esc(t.work.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(t.work.iswcs.join(', '))}</dd>`) : '';
     const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
-    const cur = DIS.find(x => x[0] === S.dis) || DIS[0];
-    const sw = `<div class="gtools"><button class="gsw" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name">${S.byName ? IC_NAME : IC_ROLE}</button>`
-        + `<div class="dwrap"><button class="gsw" type="button" data-dismenu aria-haspopup="menu" aria-label="Disambiguation: ${cur[1]}">${cur[2]}</button>`
-        + `<div class="dmenu" role="menu"><div class="dmh">Disambiguation</div>${DIS.map(([k, n, ic]) => `<button type="button" role="menuitemradio" data-dism="${k}" aria-checked="${k === S.dis}">${ic}${n}</button>`).join('')}</div></div></div>`;
+    const sw = `<div class="gtools"><button class="gsw" type="button" data-byname aria-pressed="${S.byName}" aria-label="Group by name" data-tip="${S.byName ? 'Grouped by name\nClick to group by role' : 'Grouped by role\nClick to group by name'}">${S.byName ? IC_NAME : IC_ROLE}</button>${disMenu('gsw')}</div>`;
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.join('')}${listen}</div></div>`;
 }
 const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : S.byName ? `<dt>${esc(w.iswcs.join(', '))}</dt><dd>ISWC</dd>` : `<dt>ISWC</dt><dd>${esc(w.iswcs.join(', '))}</dd>`;
@@ -2494,11 +2498,11 @@ function creditsCard(r) {
     const relLines = byRole(r.credits).map(([role, cs]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${andList(cs.map(artistA))}</span></div>`).join('');
     const n = r.credits.length + m.size;
     if (!n) return '';
-    const body = `<div class="card"><div class="cols">
+    const body = `<div class="card dm-${S.dis}"><div class="cols">
         ${relLines ? `<div class="grp"><div class="label">On the release</div>${relLines}</div>` : ''}
         ${S.crTracks ? `<div class="grp"><div class="label">On the tracks · numbers say which, none means all</div>${trackLines || '<div class="folded-note">None yet</div>'}</div>` : ''}
     </div></div>`;
-    return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
+    return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
