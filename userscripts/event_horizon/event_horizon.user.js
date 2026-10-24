@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.130000
+// @version      2026.10.25.130100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2448,8 +2448,9 @@ const relUrl = id => '/release/' + id;
 
 /* ── sections fold ─────────────────────────────────── */
 function sect(id, title, tools, body, folded) {
-    const shut = S.fold.includes(id);
-    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}">${CHEV}<h2>${title}</h2></button>${shut ? folded : `<div class="tools">${tools}</div>`}</div>${shut ? '' : body}</section>`;
+    // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
+    const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
+    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
 
 /* ── hero ──────────────────────────────────────────── */
@@ -2890,6 +2891,15 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // right-click on a section's chevron: fold every section, or open them all when that one is folded
+    document.addEventListener('contextmenu', ev => {
+        const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
+        if (!b) return;
+        ev.preventDefault();
+        const ids = [...document.querySelectorAll('.fold[data-fold]')].map(x => x.dataset.fold);
+        S.fold = S.fold.includes(b.dataset.fold) ? S.fold.filter(x => !ids.includes(x)) : [...new Set([...S.fold, ...ids])];
+        const y = scrollY; render(); scrollTo(0, y);
+    });
     // a click outside the disambiguation menu, or Escape, closes it
     const dmClose = () => document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open'));
     document.addEventListener('click', ev => { if (!ev.target.closest || !ev.target.closest('.dwrap')) dmClose(); });
