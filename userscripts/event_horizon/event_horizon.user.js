@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.220100
+// @version      2026.10.25.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2094,6 +2094,10 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tr .n{width:28px;flex:none;color:var(--muted);font-size:14px}
 .tr .ti{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 .tr .ti a.t{font-weight:700;font-size:16px;color:var(--text)}
+.tr .ti .mk{display:inline-flex;align-items:center;gap:8px;align-self:center}
+.tr .ti .mk>*{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:12px;font-weight:700}
+.tr .ti .mk>.on{color:var(--accent)}
+.tr .ti .mk>a:hover{color:var(--text);text-decoration:none}
 .tr .ti .sub{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap}
 .tr .is .isrow{display:flex;align-items:center;gap:8px}
 .tr .is .pop .isrc{display:block;padding:4px 10px}
@@ -2106,7 +2110,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .isrc+.plus{font-size:12px;color:var(--muted);margin-left:4px}
 .hide-isrc .is{display:none}
 .hide-links .lk .slots,.hide-links .lk .popwrap{display:none}
-.hide-credits .sub{display:none}
+.hide-credits .sub,.hide-credits .mk>span{display:none}
 .hide-len .ln,.hide-len .tot{display:none}
 .slots{display:flex;gap:2px}
 .slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
@@ -2652,6 +2656,14 @@ function detail(t) {
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
 const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : `<div class="iswc"><span>ISWC</span><span>${esc(w.iswcs.join(', '))}</span></div>`;
+// a track's markers after its title: its recording (lit when it has relationships of its own), its works, its credits
+const MK_REC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
+const MK_WORK = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
+const MK_CR = '<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>';
+const mkSvg = d => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const marks = t => `<span class="mk"><a class="${t.cr.length ? 'on' : ''}" href="${MB}/recording/${t.rid}" data-tip="Recording${t.cr.length ? ' · ' + t.cr.length + ' relationship' + (t.cr.length === 1 ? '' : 's') : ', no relationships'}" aria-label="Recording">${mkSvg(MK_REC)}</a>`
+    + t.works.map(w => `<a class="on" href="${MB}/work/${w.id}" data-tip="Work: ${esc(w.title)}" aria-label="Work: ${esc(w.title)}">${mkSvg(MK_WORK)}</a>`).join('')
+    + (t.credits ? `<span class="on" data-tip="${t.credits} credit${t.credits === 1 ? '' : 's'}">${mkSvg(MK_CR)}${t.credits}</span>` : '') + '</span>';
 function tracklist(r) {
     const multi = r.media.length > 1;
     const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi })));
@@ -2661,9 +2673,9 @@ function tracklist(r) {
     const withIsrc = tracks.filter(t => t.isrcs.length).length, credits = tracks.reduce((s, t) => s + t.credits, 0);
     const cls = Object.entries(S.cols).filter(([, v]) => !v).map(([k]) => 'hide-' + k).join(' ');
     const row = t => {
-        const sub = [t.feat.length ? 'with ' + t.feat.join(', ') : '', t.credits ? t.credits + ' credits' : ''].filter(Boolean).join(' · ');
+        const sub = t.feat.length ? 'with ' + t.feat.join(', ') : '';
         return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
-            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
+            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
             <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : '<span style="color:var(--muted);font-size:13px">no ISRC</span>'}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
             <span class="ln mono">${esc(t.len)}</span></div>${S.open.has(t.key) ? detail(t) : ''}`;
