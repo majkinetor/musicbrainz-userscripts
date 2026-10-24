@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.16
+// @version      2026.10.24.17
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2619,8 +2619,8 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .tabs{display:flex;gap:2px;border-bottom:1px solid var(--mbu-border-soft);margin:0 -10px;padding:0 6px}'
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
-    + '.eh-cfg .pane{min-height:150px;padding-top:2px}'
-    + '.eh-cfg .cr{display:grid;grid-template-columns:86px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
+    + '.eh-cfg .pane{height:230px;overflow-y:auto;padding-top:2px}'
+    + '.eh-cfg .cr{display:grid;grid-template-columns:108px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
     + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
     + '.eh-cfg .none{padding-top:5px;color:var(--mbu-text-weak);font-style:italic}.eh-cfg .sw{margin-top:3px}'
     + '.eh-cfg .sw{all:unset;position:relative;width:34px;height:20px;border-radius:20px;background:var(--mbu-border);cursor:pointer;flex:none;transition:background .15s}'
