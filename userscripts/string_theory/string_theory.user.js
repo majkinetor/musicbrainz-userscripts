@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.24.230020
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.24.220000, credit_hoarder 2026.10.24.182102, event_horizon 2026.10.24.72, falcon 2026.10.24.190000, first_contact 2026.10.24.210000, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.22.110834, mammoth 2026.10.20.120000, mission_control 2026.10.24.170100, platform_check 2026.10.24.220000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.24.231119
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.24.220100, credit_hoarder 2026.10.24.182102, event_horizon 2026.10.24.72, falcon 2026.10.24.190000, first_contact 2026.10.24.210000, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.22.110834, mammoth 2026.10.20.120000, mission_control 2026.10.24.170100, platform_check 2026.10.24.220000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -146,8 +146,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.24.230020 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.24.220000\n  · Credit Hoarder v2026.10.24.182102\n  · Event Horizon v2026.10.24.72\n  · Falcon v2026.10.24.190000\n  · First Contact v2026.10.24.210000\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.22.110834\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.24.170100\n  · Platform Check v2026.10.24.220000");
+  console.log('%c String Theory %c v2026.10.24.231119 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.24.220100\n  · Credit Hoarder v2026.10.24.182102\n  · Event Horizon v2026.10.24.72\n  · Falcon v2026.10.24.190000\n  · First Contact v2026.10.24.210000\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.22.110834\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.24.170100\n  · Platform Check v2026.10.24.220000");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -157,7 +157,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.24.220000"],["credit_hoarder","Credit Hoarder","2026.10.24.182102"],["event_horizon","Event Horizon","2026.10.24.72"],["falcon","Falcon","2026.10.24.190000"],["first_contact","First Contact","2026.10.24.210000"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.22.110834"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.24.170100"],["platform_check","Platform Check","2026.10.24.220000"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.24.220100"],["credit_hoarder","Credit Hoarder","2026.10.24.182102"],["event_horizon","Event Horizon","2026.10.24.72"],["falcon","Falcon","2026.10.24.190000"],["first_contact","First Contact","2026.10.24.210000"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.22.110834"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.24.170100"],["platform_check","Platform Check","2026.10.24.220000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -3564,8 +3564,475 @@ return { MBP_COVER_TYPES, mbpCoverTypeId, mbpReleaseLinkList, mbpReleaseJsonLink
 }
 
 // <ST-IMGMAX> — generated by dev/imgmax/sync-imgmax.mjs from dev/imgmax/image-maximizer.js — DO NOT EDIT
-// used by art_station, falcon
+// used by art_station
 function __st_IMGMAX(GM_info) {
+'use strict';
+// <ST-IMGMAX> — generated by dev/imgmax/sync-imgmax.mjs from dev/imgmax/image-maximizer.js — DO NOT EDIT
+class ImageMaximizer {
+    // ── URL rules ────────────────────────────────────────────────────────────────
+    // host → (URL) → bigger URLs, largest first. Measured on the live CDNs (2026-10-11).
+    static RULES = [
+        // Apple: the largest rendition the resizer gives, which is the stored size. The
+        // uploaded original (a1.mzstatic.com/us/r1000/0/<path>) answers 403 for every path
+        // since 2026-10-16; 100000x100000-999 answers 400.
+        { host: /(^|\.)mzstatic\.com$/, max: u => {
+            const m = u.pathname.match(/^\/image\/thumb\/(.+)\/[^/]+$/);
+            return m ? [`https://${u.host}/image/thumb/${m[1]}/9999x9999bb.jpg`] : [];
+        } },
+        // Deezer: 4000x0 at quality 100 gives the stored size (1900 too; 0x0 and 3000x3000 are 403)
+        { host: /(^|\.)dzcdn\.net$/, max: u => {
+            const m = u.pathname.match(/^(\/images\/\w+\/[0-9a-f]{32})\/\d+x\d+-[^/]+$/);
+            return m ? [`https://${u.host}${m[1]}/4000x0-000000-100-0-0.jpg`, `https://${u.host}${m[1]}/1200x1200-000000-80-0-0.jpg`] : [];
+        } },
+        // Spotify: the size is a code inside the id; 82c1 is the upload (1500 px and more), b273 640
+        { host: /(^|\.)(scdn\.co|spotifycdn\.com)$/, max: u => {
+            const m = u.pathname.match(/\/image\/ab67616d[0-9a-f]{8}([0-9a-f]+)$/);
+            return m ? ['000082c1', '0000b273'].map(c => `https://i.scdn.co/image/ab67616d${c}${m[1]}`) : [];
+        } },
+        // Bandcamp: _0 is the original upload, _10 the largest rendition
+        { host: /(^|\.)bcbits\.com$/, max: u => {
+            const m = u.pathname.match(/^\/img\/(a?\d+)_\d+\.(jpg|png|gif)$/);
+            return m ? [`https://f4.bcbits.com/img/${m[1]}_0.${m[2]}`, `https://f4.bcbits.com/img/${m[1]}_10.jpg`] : [];
+        } },
+        // Tidal: origin.jpg is the upload; 1280 the largest rendition (3000 is 403)
+        { host: /^resources\.tidal\.com$/, max: u => {
+            const m = u.pathname.match(/^(\/images\/(?:[0-9a-f]+\/){4}[0-9a-f]+)\/[^/]+$/);
+            return m ? [`https://resources.tidal.com${m[1]}/origin.jpg`, `https://resources.tidal.com${m[1]}/1280x1280.jpg`] : [];
+        } },
+        // Qobuz: _org is the upload, _max the largest rendition
+        { host: /^static\.qobuz\.com$/, max: u => {
+            const m = u.pathname.match(/^(\/images\/covers\/.+?)_(?:\d+|max|org)\.jpg$/);
+            return m ? [`https://static.qobuz.com${m[1]}_org.jpg`, `https://static.qobuz.com${m[1]}_max.jpg`] : [];
+        } },
+        // Beatport: any size is rendered on demand (3000 is an upscale); 0x0 is the stored size
+        { host: /(^|\.)beatport\.com$/, max: u => {
+            const m = u.pathname.match(/^\/image_size\/\d+x\d+\/(.+)$/);
+            return m ? [`https://${u.host}/image_size/0x0/${m[1]}`] : [];
+        } },
+        // Amazon: drop the ._SL500_-style modifiers for the stored image
+        { host: /(^|\.)(media-amazon\.com|ssl-images-amazon\.com|images-amazon\.com)$/, max: u => {
+            const m = u.pathname.match(/^\/images\/I\/([^./]+)(?:\.[^/]*)?\.(jpg|png|gif)$/);
+            return m ? [`https://m.media-amazon.com/images/I/${m[1]}.${m[2]}`] : [];
+        } },
+        // 7digital: 800 is the largest rendition
+        { host: /(^|\.)7static\.com$/, max: u => {
+            const m = u.pathname.match(/^(.+)_\d+\.jpg$/);
+            return m ? [`https://${u.host}${m[1]}_800.jpg`] : [];
+        } },
+        // Melon (#815): _org is the upload (2000 px and more), _1000 the largest rendition
+        { host: /^cdnimg\.melon\.co\.kr$/, max: u => {
+            const m = u.pathname.match(/^(\/.+\/images\/.+\/\d+_\d+)_(?:\d+|org)\.(jpg|png)$/);
+            return m ? [`https://${u.host}${m[1]}_org.${m[2]}`, `https://${u.host}${m[1]}_1000.${m[2]}`] : [];
+        } },
+        // Bugs (#816): the size in the path; original is the upload (4096 px on CRASH)
+        { host: /^image\.bugsm\.co\.kr$/, max: u => {
+            const m = u.pathname.match(/^\/album\/images\/(?:\d+|original)\/(\d+\/\d+\.(?:jpg|png))$/);
+            return m ? [`https://${u.host}/album/images/original/${m[1]}`, `https://${u.host}/album/images/1000/${m[1]}`] : [];
+        } },
+        // Juno: /full/…-BIG
+        { host: /(^|\.)(juno\.co\.uk|junostatic\.com)$/, max: u => {
+            const m = u.pathname.match(/^\/(?:\d+|full)\/(.+?)(?:-(?:TN|MED|BIG))?\.(jpg|png)$/i);
+            return m ? [`https://${u.host}/full/${m[1]}-BIG.${m[2]}`] : [];
+        } },
+        // VGMdb: thumbnails and medium copies live on their own hosts; the full image on media.vgm.io
+        { host: /(^|\.)vgm\.io$/, max: u => /^(thumb|medium)-media\./.test(u.host) ? [`https://media.vgm.io${u.pathname}`] : [] },
+        // Google (YouTube Music, Play): =s0 is the original
+        { host: /^(lh\d|yt\d)\.(googleusercontent|ggpht)\.com$/, max: u => {
+            const m = u.href.match(/^([^=]+)=[^/]*$/);
+            return m ? [`${m[1]}=s0`] : [];
+        } },
+        // YouTube thumbnails
+        { host: /^i\d?\.ytimg\.com$/, max: u => {
+            const m = u.pathname.match(/^\/vi(?:_webp)?\/([^/]+)\/[a-z]*default\.(?:jpg|webp)$/);
+            return m ? [`https://i.ytimg.com/vi/${m[1]}/maxresdefault.jpg`, `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`] : [];
+        } },
+        // SoundCloud: -original, else the 500 px rendition
+        { host: /(^|\.)sndcdn\.com$/, max: u => {
+            const m = u.pathname.match(/^(.+)-(?:t\d+x\d+|large|crop|small|badge|tiny|mini|original)\.(jpg|png)$/);
+            return m ? [`https://${u.host}${m[1]}-original.${m[2]}`, `https://${u.host}${m[1]}-t500x500.${m[2]}`] : [];
+        } },
+        // Cover Art Archive thumbnails → the original (its extension is unknown, so both)
+        { host: /^(coverartarchive\.org|archive\.org|ia\d+\.us\.archive\.org)$/, max: u => {
+            const m = u.href.match(/^(.+\/\d+)-(?:250|500|1200)\.jpg$/);
+            return m ? [`${m[1]}.jpg`, `${m[1]}.png`] : [];
+        } },
+    ];
+
+    // Images a store shows when it has none.
+    static PLACEHOLDERS = [
+        /dzcdn\.net\/images\/cover\/d41d8cd98f00b204e9800998ecf8427e\//,   // Deezer's empty md5
+        /7static\.com\/.*\/0{8}16_\d+\.jpg$/,                              // 7digital
+        /\/images\/I\/(01RmK\+J4pJL|01QFb8SNuTL|01PkLIhTX3L|01MKUOLsA5L|31CTP6oiIBL)\./,   // Amazon
+        /vgmdb\.net\/db\/img\/album-(nocover|nsfw)-medium\.gif$/,
+    ];
+
+    // ── platform resolvers ────────────────────────────────────────────────────────
+    // A resolver turns a store page into its cover image(s): [{ url, types?, comment? }].
+    // `this` is the ImageMaximizer, so a resolver uses this._text / this._json / this._log.
+    static PLATFORMS = [
+        { id: 'apple', name: 'Apple Music', host: /^(music|itunes)\.apple\.com$/, async find(u) {
+            const id = (u.pathname.match(/\/album\/(?:[^/]+\/)?(?:id)?(\d+)/) || [])[1];
+            if (!id) throw new Error('no album id in the URL');
+            const cc = (u.pathname.match(/^\/([a-z]{2})\//) || [])[1] || 'us';
+            const j = await this._json(`https://itunes.apple.com/lookup?id=${id}&country=${cc}&entity=album`);
+            const art = j && j.results && j.results[0] && j.results[0].artworkUrl100;
+            if (art) return [{ url: art, types: ['Front'] }];
+            this._log('debug', `Apple: lookup had no artwork for ${id} in ${cc}, reading the page`);
+            return this._metaImage(u.href, ['Front']);
+        } },
+        { id: 'melon', name: 'Melon', host: /^(www|m2|m\.app)\.melon\.com$/, async find(u) {
+            const id = u.searchParams.get('albumId');
+            if (!/^\d+$/.test(id || '')) throw new Error('no album id in the URL');
+            const j = await this._json(`https://m2.melon.com/m6/v3/album/info.json?albumId=${id}`);
+            const a = j && j.response && j.response.ALBUMINFO;
+            const art = a && (a.ALBUMIMGLARGE || a.ALBUMIMG);
+            return art ? [{ url: art.replace(/\?.*$/, ''), types: ['Front'] }] : [];
+        } },
+        // Bugs (#816): the page's og:image is the 1200 rendition; the max rule takes it to the original
+        { id: 'bugs', name: 'Bugs', host: /^(music|m)\.bugs\.co\.kr$/, async find(u) {
+            if (!/^\/album\/\d+/.test(u.pathname)) throw new Error('not an album page');
+            return this._metaImage(u.href, ['Front']);
+        } },
+        { id: 'deezer', name: 'Deezer', host: /(^|\.)deezer\.com$/, async find(u) {
+            const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];
+            if (!id) throw new Error('no album id in the URL');
+            const j = await this._json(`https://api.deezer.com/album/${id}`);
+            if (j && j.error) throw new Error(j.error.message || 'album not found');
+            return j && j.cover_xl ? [{ url: j.cover_xl, types: ['Front'] }] : [];
+        } },
+        { id: 'spotify', name: 'Spotify', host: /^open\.spotify\.com$/, async find(u) {
+            const id = (u.pathname.match(/\/album\/(\w+)/) || [])[1];
+            if (!id) throw new Error('no album id in the URL');
+            const j = await this._json(`https://open.spotify.com/oembed?url=${encodeURIComponent('https://open.spotify.com/album/' + id)}`);
+            return j && j.thumbnail_url ? [{ url: j.thumbnail_url, types: ['Front'] }] : [];
+        } },
+        { id: 'bandcamp', name: 'Bandcamp', host: /(^|\.)bandcamp\.com$/, async find(u) {
+            const html = await this._text(u.href);
+            // data-tralbum's art_id where the page has it, else the og:image
+            const art = (html.match(/&quot;art_id&quot;:(\d+)/) || html.match(/"art_id":(\d+)/) || [])[1];
+            if (art) return [{ url: `https://f4.bcbits.com/img/a${art}_10.jpg`, types: ['Front'] }];
+            const og = ImageMaximizer.metaImage(html, u.href);
+            return og ? [{ url: og, types: ['Front'] }] : [];
+        } },
+        { id: 'tidal', name: 'Tidal', host: /^(listen\.|store\.|www\.)?tidal\.com$/, async find(u) {
+            const id = (u.pathname.match(/\/album\/(\d+)/) || [])[1];
+            if (!id) throw new Error('no album id in the URL');
+            const headers = { 'x-tidal-token': ImageMaximizer.TIDAL_TOKEN };
+            const countries = [];
+            try { const c = await this._json('https://listen.tidal.com/v1/country/context?countryCode=WW&locale=en_US&deviceType=BROWSER', headers); if (c && c.countryCode) countries.push(c.countryCode); } catch (e) { this._log('debug', 'Tidal: country lookup failed — ' + e.message); }
+            for (const c of ['US', 'GB', 'DE', 'NL', 'CA', 'NZ', 'JP', 'IT']) if (!countries.includes(c)) countries.push(c);
+            let last;
+            for (const cc of countries) {
+                try {
+                    const j = await this._json(`https://api.tidal.com/v1/albums/${id}?countryCode=${cc}`, headers);
+                    if (j && j.cover) return [{ url: `https://resources.tidal.com/images/${j.cover.replace(/-/g, '/')}/1280x1280.jpg`, types: ['Front'] }];
+                } catch (e) { last = e; this._log('debug', `Tidal: album ${id} not in ${cc} — ${e.message}`); }
+            }
+            throw last || new Error('album not found');
+        } },
+        { id: 'qobuz', name: 'Qobuz', host: /(^|\.)qobuz\.com$/, async find(u) {
+            const id = (u.pathname.match(/\/album\/(?:[^/]+\/)?([A-Za-z\d]+)\/?$/) || [])[1];
+            if (!id) throw new Error('no album id in the URL');
+            // the store's covers are addressed by the album id (…/covers/<last 2>/<the 2 before>/<id>);
+            // the API, when it answers, adds the booklets
+            const out = [{ url: `https://static.qobuz.com/images/covers/${id.slice(-2)}/${id.slice(-4, -2)}/${id}_600.jpg`, types: ['Front'] }];
+            try {
+                const j = await this._json(`https://www.qobuz.com/api.json/0.2/album/get?album_id=${id}&offset=0&limit=20`, { 'x-app-id': ImageMaximizer.QOBUZ_APP });
+                if (j && j.image && j.image.large) out[0].url = j.image.large;
+                for (const g of (j && j.goodies) || []) {
+                    if (!g.original_url) continue;
+                    const booklet = /livret|booklet/i.test(g.name || '');
+                    out.push({ url: g.original_url, types: booklet ? ['Booklet'] : [], comment: booklet ? '' : (g.name || '') });
+                }
+            } catch (e) { this._log('debug', `Qobuz: API gave nothing for ${id} (${e.message}); the cover alone, from its URL`); }
+            return out;
+        } },
+        { id: 'beatport', name: 'Beatport', host: /(^|\.)beatport\.com$/, async find(u) {
+            const html = await this._text(u.href);
+            const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+            if (m) {
+                try {
+                    const d = JSON.parse(m[1]), r = d.props && d.props.pageProps && d.props.pageProps.release;
+                    if (r && r.image && r.image.uri) return [{ url: r.image.uri, types: ['Front'] }];
+                } catch (e) { this._log('debug', 'Beatport: page data unreadable — ' + e.message); }
+            }
+            const og = ImageMaximizer.metaImage(html, u.href);
+            return og ? [{ url: og, types: ['Front'] }] : [];
+        } },
+        { id: 'discogs', name: 'Discogs', host: /(^|\.)discogs\.com$/, async find(u) {
+            const rel = (u.pathname.match(/\/release\/(\d+)/) || [])[1], master = (u.pathname.match(/\/master\/(\d+)/) || [])[1];
+            if (!rel && !master) throw new Error('no release id in the URL');
+            if (rel) {
+                // the site's own API has the full-size images (Cloudflare may stop it until the
+                // site has been opened once); the public API caps them at 600 px
+                try {
+                    const q = new URLSearchParams({ operationName: 'ReleaseAllImages', variables: JSON.stringify({ discogsId: +rel, count: 500 }),
+                        extensions: JSON.stringify({ persistedQuery: { version: 1, sha256Hash: ImageMaximizer.DISCOGS_QUERY } }) });
+                    const j = await this._json('https://www.discogs.com/internal/release-page/api/graphql?' + q);
+                    const edges = j && j.data && j.data.release && j.data.release.images && j.data.release.images.edges;
+                    if (edges && edges.length) return edges.map(e => ({ url: e.node.fullsize.sourceUrl }));
+                } catch (e) { this._log('debug', 'Discogs: full-size images unavailable (' + e.message + '), using the public API (600 px)'); }
+            }
+            const j = await this._json(`https://api.discogs.com/${rel ? 'releases/' + rel : 'masters/' + master}`);
+            return ((j && j.images) || []).map(i => ({ url: i.uri })).filter(i => i.url);
+        } },
+        // AllMusic (experiment): the album page's cover is a Rovi image; f= picks its size, 5 the largest
+        { id: 'allmusic', name: 'AllMusic', host: /(^|\.)allmusic\.com$/, async find(u) {
+            if (!/^\/album\//.test(u.pathname)) throw new Error('not an album page');
+            const html = await this._text(u.href);
+            const rovi = (html.match(/https?:\/\/(?:cps-static|rovimusic)\.rovicorp\.com\/[^"'\s<>]+/) || [])[0];
+            if (rovi) return [{ url: rovi.replace(/&amp;/g, '&').replace(/([?&]f=)\d+/, '$15'), types: ['Front'] }];
+            const og = ImageMaximizer.metaImage(html, u.href);
+            return og ? [{ url: og, types: ['Front'] }] : [];
+        } },
+        { id: 'amazon', name: 'Amazon', host: /(^|\.)amazon\.(com|ca|de|fr|it|es|nl|pl|se|in|sg|ae|sa|eg|cn|jp|co\.jp|co\.uk|com\.au|com\.br|com\.mx|com\.tr|com\.be)$/, async find(u) {
+            const asin = (u.pathname.match(/\/(?:gp\/product|dp|albums|hz\/audible\/mlp\/mfpdp)\/([A-Z\d]{10})(?:[/?]|$)/i) || [])[1];
+            if (!asin) throw new Error('no product id in the URL');
+            const tld = u.host.replace(/^.*?amazon\./, '');
+            const html = await this._text(`https://www.amazon.${tld}/dp/${asin}`);
+            if (/validateCaptcha|\/errors\/validateCaptcha/.test(html)) throw new Error('Amazon answered with a captcha; open the page once, then retry');
+            const m = html.match(/'colorImages':\s*\{\s*'initial':\s*(\[[\s\S]*?\])\s*\},?\s*\n/);
+            if (m) {
+                try {
+                    const variant = { MAIN: 'Front', FRNT: 'Front', BACK: 'Back', SIDE: 'Spine' };
+                    return JSON.parse(m[1]).map(i => ({ url: i.hiRes || i.large, types: variant[i.variant] ? [variant[i.variant]] : [] })).filter(i => i.url);
+                } catch (e) { this._log('debug', 'Amazon: image data unreadable — ' + e.message); }
+            }
+            const hi = (html.match(/data-old-hires="([^"]+)"/) || [])[1];
+            if (hi) return [{ url: hi, types: ['Front'] }];
+            const og = ImageMaximizer.metaImage(html, u.href);
+            return og ? [{ url: og }] : [];
+        } },
+        { id: 'vgmdb', name: 'VGMdb', host: /(^|\.)vgmdb\.net$/, async find(u) {
+            const html = await this._text(u.href);
+            const out = [], seen = new Set();
+            const gallery = (html.match(/id="cover_gallery"[\s\S]*?(?=<\/table>|<div id="(?!cover)|$)/) || [''])[0];
+            for (const m of gallery.matchAll(/<a[^>]*id="thumb_\d+"[^>]*href="([^"]+)"[^>]*>[\s\S]*?class="label"[^>]*>([^<]*)</g)) {
+                const url = ImageMaximizer.decode(m[1]);
+                if (seen.has(url)) continue; seen.add(url);
+                out.push(Object.assign({ url }, ImageMaximizer.captionType(ImageMaximizer.decode(m[2]).trim())));
+            }
+            const main = (html.match(/id="coverart"[^>]*background-image:\s*url\(['"]?([^'")]+)/) || [])[1];
+            const base = n => String(n).split('/').pop();
+            if (main && !/album-(nocover|nsfw)-medium\.gif$/.test(main) && !out.some(i => base(i.url) === base(main))) out.unshift({ url: new URL(ImageMaximizer.decode(main), u.origin).href, types: ['Front'] });
+            return out;
+        } },
+        { id: '7digital', name: '7digital', host: /(^|\.)7digital\.com$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+        { id: 'juno', name: 'Juno', host: /(^|\.)(junodownload\.com|juno\.co\.uk)$/, async find(u) { return this._metaImage(u.href, ['Front']); } },
+    ];
+
+    static TIDAL_TOKEN = 'CzET4vdadNUFQ5JU';   // the web player's public token
+    static QOBUZ_APP = '712109809';
+    static DISCOGS_QUERY = 'c7033a9fd1facb3e69fa50074b47e8aa0076857a968e6ed086153840e02b988a';   // ReleaseAllImages
+
+    // VGMdb-style captions ("Front", "Back", "Disc 2", "Booklet p. 3–4") → a type + the rest as comment
+    static captionType(caption) {
+        const map = { front: 'Front', cover: 'Front', back: 'Back', booklet: 'Booklet', disc: 'Medium', disk: 'Medium', cd: 'Medium', medium: 'Medium', vinyl: 'Medium',
+            obi: 'Obi', spine: 'Spine', tray: 'Tray', inside: 'Tray', sticker: 'Sticker', poster: 'Poster', liner: 'Liner', inlay: 'Liner', insert: 'Liner', jacket: 'Front', matrix: 'Matrix/Runout' };
+        const word = (String(caption).match(/^[A-Za-z]+/) || [''])[0].toLowerCase();
+        const type = map[word];
+        return type ? { types: [type], comment: caption.toLowerCase() === word ? '' : caption } : { types: [], comment: caption };
+    }
+
+    // ── instance ─────────────────────────────────────────────────────────────────
+    // request(url, { headers, type: 'text' | 'blob' }) → { status, url, contentType, text | blob }
+    // log(level, message), level = 'debug' | 'info' | 'warn'
+    constructor(opts) {
+        opts = opts || {};
+        this.request = opts.request || ImageMaximizer.fetchRequest;
+        this.log = opts.log || null;
+    }
+    _log(level, msg) { try { if (this.log) this.log(level, msg); } catch (e) { /* a broken logger must not break a fetch */ }}
+    async _get(url, type, headers) {
+        const r = await this.request(url, { type, headers: headers || {} });
+        if (!r || r.status < 200 || r.status >= 300) {
+            const body = r && typeof r.text === 'string' ? r.text : '';
+            if (r && r.status === 403 && /<title>Just a moment\.\.\.<\/title>/.test(body)) throw new Error('Cloudflare check; open the page once in this browser, then retry');
+            throw new Error('HTTP ' + (r ? r.status : '?'));
+        }
+        return r;
+    }
+    async _text(url, headers) { return (await this._get(url, 'text', headers)).text; }
+    async _json(url, headers) {
+        const t = await this._text(url, headers);
+        try { return JSON.parse(t); } catch (e) { throw new Error('not JSON'); }
+    }
+    async _metaImage(url, types) {
+        const og = ImageMaximizer.metaImage(await this._text(url), url);
+        return og ? [{ url: og, types: types || [] }] : [];
+    }
+
+    /** The platform resolver for a page URL, or null. */
+    platform(url) {
+        let u; try { u = new URL(url); } catch (e) { return null; }
+        const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
+        return p ? { id: p.id, name: p.name } : null;
+    }
+
+    /** Bigger versions of an image URL, largest first, ending with the URL itself. Synchronous. */
+    candidates(url) {
+        let u; try { u = new URL(url); } catch (e) { return [String(url)]; }
+        const out = [];
+        for (const r of ImageMaximizer.RULES) {
+            if (!r.host.test(u.hostname)) continue;
+            try { out.push(...r.max(u)); } catch (e) { this._log('debug', `rule for ${u.hostname} failed — ${e.message}`); }
+            break;
+        }
+        out.push(u.href);
+        return [...new Set(out)];
+    }
+
+    /** Images behind a URL, unmaximised: [{ url, types, comment, page }]. A store page goes to its
+     *  resolver; any other page to its og:image; an image URL is itself. */
+    async find(url) {
+        const u = new URL(url);
+        const p = ImageMaximizer.PLATFORMS.find(x => x.host.test(u.hostname));
+        // an image URL is an image even on a store's host (Beatport's geo-media, say), not a page
+        if (ImageMaximizer.looksLikeImage(u.href)) {
+            return [{ url: u.href, types: [], comment: '', page: '' }];
+        }
+        let list;
+        if (p) {
+            this._log('debug', `${p.name}: reading ${u.href}`);
+            list = await p.find.call(this, u);
+        } else {
+            // unknown host: an image answers as one, a page by its og:image
+            const r = await this._get(u.href, 'text');
+            if (/^image\//i.test(r.contentType || '')) return [{ url: u.href, types: [], comment: '', page: '' }];
+            const og = ImageMaximizer.metaImage(r.text || '', u.href);
+            list = og ? [{ url: og }] : [];
+        }
+        list = (list || []).filter(i => i && i.url && !ImageMaximizer.PLACEHOLDERS.some(re => re.test(i.url)));
+        this._log('debug', `${p ? p.name : u.hostname}: ${list.length} image(s)${list.length ? ' — ' + list.map(i => i.url).join(', ') : ''}`);
+        return list.map(i => ({ url: i.url, types: i.types || [], comment: i.comment || '', page: u.href }));
+    }
+
+    /** Download the largest version of each image behind a URL.
+     *  → [{ blob, url, original, page, types, comment, width, height }]; throws when there is none.
+     *  opts.minSize drops images whose longer side is smaller (a store's logo). */
+    async fetchImages(url, opts) {
+        opts = opts || {};
+        const found = await this.find(url);
+        if (!found.length) throw new Error('no image found');
+        const got = [];
+        for (const img of found) {
+            const r = await this.fetchLargest(img.url);
+            if (!r) { this._log('warn', `no candidate of ${img.url} answered with an image`); continue; }
+            if (opts.minSize && r.width && Math.max(r.width, r.height) < opts.minSize) { this._log('debug', `skipped ${r.url}: ${r.width}×${r.height} is under ${opts.minSize} px`); continue; }
+            got.push(Object.assign(r, { original: img.url, page: img.page, types: img.types, comment: img.comment }));
+        }
+        if (!got.length) throw new Error('no image could be downloaded');
+        return got;
+    }
+
+    /** The first candidate of one image URL that answers with an image: { blob, url, width, height } or null. */
+    async fetchLargest(url) {
+        for (const c of this.candidates(url)) {
+            try {
+                const r = await this.request(c, { type: 'blob', headers: {} });
+                const type = (r && (r.contentType || (r.blob && r.blob.type))) || '';
+                if (!r || r.status < 200 || r.status >= 300 || !r.blob || !r.blob.size) { this._log('debug', `candidate ${c}: HTTP ${r ? r.status : '?'}`); continue; }
+                if (!/^image\/|^application\/pdf/i.test(type) && !/^(application\/octet-stream|binary\/octet-stream)?$/i.test(type)) { this._log('debug', `candidate ${c}: not an image (${type})`); continue; }
+                let d = {};
+                try { d = ImageMaximizer.dimensions(await r.blob.slice(0, 262144).arrayBuffer()) || {}; } catch (e) { /* size unknown */ }
+                if (!d.type && !/^image\/|pdf/i.test(type)) { this._log('debug', `candidate ${c}: unrecognised bytes`); continue; }
+                this._log('debug', `candidate ${c}: ${d.width ? d.width + '×' + d.height : 'size unknown'}, ${r.blob.size} bytes`);
+                return { blob: r.blob, url: c, width: d.width || 0, height: d.height || 0 };
+            } catch (e) { this._log('debug', `candidate ${c}: ${e.message}`); }
+        }
+        return null;
+    }
+
+    // ── helpers (static, pure) ────────────────────────────────────────────────────
+    /** True when the URL's path ends in an image extension. */
+    static looksLikeImage(url) {
+        try { return /\.(jpe?g|png|gif|webp|avif|bmp|tiff?)$/i.test(new URL(url).pathname); } catch (e) { return false; }
+    }
+    /** og:image / twitter:image / image_src of an HTML page, resolved against its URL. */
+    static metaImage(html, base) {
+        const tags = String(html).match(/<(?:meta|link)\b[^>]*>/gi) || [];
+        const want = [/^og:image(:secure_url|:url)?$/i, /^twitter:image(:src)?$/i, /^image_src$/i];
+        for (const re of want) {
+            for (const t of tags) {
+                const key = (t.match(/\b(?:property|name|itemprop|rel)\s*=\s*["']([^"']+)["']/i) || [])[1];
+                const val = (t.match(/\b(?:content|href)\s*=\s*["']([^"']+)["']/i) || [])[1];
+                if (key && val && re.test(key.trim())) { try { return new URL(ImageMaximizer.decode(val), base).href; } catch (e) { /* bad URL */ } }
+            }
+        }
+        return null;
+    }
+    static decode(s) {
+        return String(s).replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    }
+    /** { type, width, height } from the first bytes of a JPEG, PNG, GIF or WebP; null otherwise. */
+    static dimensions(buf) {
+        const b = new Uint8Array(buf);
+        if (b.length > 24 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return { type: 'png', width: (b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19]) >>> 0, height: (b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23]) >>> 0 };
+        if (b.length > 10 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) return { type: 'gif', width: b[6] | b[7] << 8, height: b[8] | b[9] << 8 };
+        if (b.length > 30 && b[0] === 0x52 && b[1] === 0x49 && b[8] === 0x57 && b[9] === 0x45) {
+            const f = String.fromCharCode(b[12], b[13], b[14], b[15]);
+            if (f === 'VP8X') return { type: 'webp', width: 1 + (b[24] | b[25] << 8 | b[26] << 16), height: 1 + (b[27] | b[28] << 8 | b[29] << 16) };
+            if (f === 'VP8 ') return { type: 'webp', width: (b[26] | b[27] << 8) & 0x3fff, height: (b[28] | b[29] << 8) & 0x3fff };
+            if (f === 'VP8L') return { type: 'webp', width: 1 + ((b[22] << 8 | b[21]) & 0x3fff), height: 1 + ((b[24] << 4 | b[23] >> 4) & 0x3fff) };
+            return { type: 'webp', width: 0, height: 0 };
+        }
+        if (b.length > 4 && b[0] === 0xFF && b[1] === 0xD8) {
+            let i = 2;
+            while (i + 9 < b.length) {
+                if (b[i] !== 0xFF) { i++; continue; }
+                const m = b[i + 1];
+                if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7) || m === 0xFF) { i++; continue; }
+                const len = b[i + 2] << 8 | b[i + 3];
+                if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return { type: 'jpeg', width: b[i + 7] << 8 | b[i + 8], height: b[i + 5] << 8 | b[i + 6] };
+                i += 2 + len;
+            }
+            return { type: 'jpeg', width: 0, height: 0 };
+        }
+        if (b.length > 4 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) return { type: 'pdf', width: 0, height: 0 };
+        return null;
+    }
+
+    // ── request adapters ──────────────────────────────────────────────────────────
+    /** The default: global fetch (Node 18+, a page; CORS applies in a page). */
+    static async fetchRequest(url, o) {
+        const r = await fetch(url, { headers: (o && o.headers) || {} });
+        const out = { status: r.status, url: r.url || url, contentType: r.headers.get('content-type') || '' };
+        if (o && o.type === 'blob') out.blob = await r.blob(); else out.text = await r.text();
+        return out;
+    }
+    /** An adapter for a userscript manager's GM_xmlhttpRequest / GM.xmlHttpRequest (no CORS). */
+    static gmRequest(gmXhr, timeout) {
+        return (url, o) => new Promise((resolve, reject) => {
+            gmXhr({ method: 'GET', url, headers: (o && o.headers) || {}, responseType: o && o.type === 'blob' ? 'blob' : 'text', timeout: timeout || 60000,
+                onload: r => {
+                    const ct = (String(r.responseHeaders || '').match(/^content-type:\s*([^\r\n]+)/im) || [])[1] || '';
+                    const out = { status: r.status, url: r.finalUrl || url, contentType: ct.trim() };
+                    if (o && o.type === 'blob') out.blob = r.response; else out.text = typeof r.responseText === 'string' ? r.responseText : String(r.response || '');
+                    resolve(out);
+                },
+                onerror: () => reject(new Error('network error')), ontimeout: () => reject(new Error('timed out')) });
+        });
+    }
+}
+// </ST-IMGMAX>
+return { ImageMaximizer };
+}
+
+// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
+// used by art_station, event_horizon, isrc_scout, mission_control, platform_check
+function __st_ICONS(GM_info) {
+'use strict';
+// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
+const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"presto":{"color":"#1f3a5f","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#1f3a5f\"/><path d=\"M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"melon":{"color":"#00cd3c","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#00cd3c\"/><path d=\"M10 16.5V8.5l5-1.5v8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"8.8\" cy=\"16.5\" r=\"1.7\" fill=\"#fff\"/><circle cx=\"13.8\" cy=\"15\" r=\"1.7\" fill=\"#fff\"/></svg>"},"bugs":{"color":"#ff3d2e","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff3d2e\"/><path d=\"M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.9\" stroke-linecap=\"round\"/></svg>"},"allmusic":{"color":"#0b5ea8","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0b5ea8\"/><path d=\"M8 16.5l4-9 4 9M9.4 13.4h5.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"mora":{"color":"#0a7fd3","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0a7fd3\"/><path d=\"M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" transform=\"translate(1.6 0)\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
+function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = size || 16; return i.svg.replace(/<svg\b([^>]*)>/, function (m, a) { a = a.replace(/\s(?:width|height)="[^"]*"/g, ''); var ns = /\bxmlns=/.test(a) ? '' : ' xmlns="http://www.w3.org/2000/svg"'; return '<svg' + a + ns + ' width="' + size + '" height="' + size + '">'; }); }
+function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
+// </ST-ICONS>
+return { ST_ICONS, stIcon, stColor };
+}
+
+// <ST-IMGMAX> — generated by dev/imgmax/sync-imgmax.mjs from dev/imgmax/image-maximizer.js — DO NOT EDIT
+// used by falcon
+function __st_IMGMAX_2(GM_info) {
 'use strict';
 // <ST-IMGMAX> — generated by dev/imgmax/sync-imgmax.mjs from dev/imgmax/image-maximizer.js — DO NOT EDIT
 class ImageMaximizer {
@@ -4007,18 +4474,6 @@ class ImageMaximizer {
 }
 // </ST-IMGMAX>
 return { ImageMaximizer };
-}
-
-// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
-// used by art_station, event_horizon, isrc_scout, mission_control, platform_check
-function __st_ICONS(GM_info) {
-'use strict';
-// <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
-const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"presto":{"color":"#1f3a5f","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#1f3a5f\"/><path d=\"M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"melon":{"color":"#00cd3c","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#00cd3c\"/><path d=\"M10 16.5V8.5l5-1.5v8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"8.8\" cy=\"16.5\" r=\"1.7\" fill=\"#fff\"/><circle cx=\"13.8\" cy=\"15\" r=\"1.7\" fill=\"#fff\"/></svg>"},"bugs":{"color":"#ff3d2e","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff3d2e\"/><path d=\"M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.9\" stroke-linecap=\"round\"/></svg>"},"allmusic":{"color":"#0b5ea8","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0b5ea8\"/><path d=\"M8 16.5l4-9 4 9M9.4 13.4h5.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"mora":{"color":"#0a7fd3","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0a7fd3\"/><path d=\"M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" transform=\"translate(1.6 0)\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
-function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = size || 16; return i.svg.replace(/<svg\b([^>]*)>/, function (m, a) { a = a.replace(/\s(?:width|height)="[^"]*"/g, ''); var ns = /\bxmlns=/.test(a) ? '' : ' xmlns="http://www.w3.org/2000/svg"'; return '<svg' + a + ns + ' width="' + size + '" height="' + size + '">'; }); }
-function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
-// </ST-ICONS>
-return { ST_ICONS, stIcon, stColor };
 }
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -16067,7 +16522,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/add-cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/event-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-event-art.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.24.220000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.24.220000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.24.220100","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.24.220100","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -34899,7 +35354,7 @@ var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, m
 var { MBP_COVER_TYPES, mbpCoverTypeId, mbpReleaseLinkList, mbpReleaseJsonLinks, mbpReleaseLinks } = __st_MBPAGE(GM_info);   // ST-MBPAGE, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
 var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
-var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at the top of the bundle (#786)
+var { ImageMaximizer } = __st_IMGMAX_2(GM_info);   // ST-IMGMAX, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('falcon', 'Falcon')) { falconHandOver(); return; }
   /* A copy that stands down still owns its GM storage, which no other copy can read: a
@@ -36221,7 +36676,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
   }
   // #719: the shared maximizer (Art Station's, #717) turns each suggested cover into the
   // store's largest version — a Deezer 1000x1000 into its 4000x0, a Bandcamp _10 into _0.
-  // <ST-IMGMAX> is __st_IMGMAX, at the top of the bundle (#786)
+  // <ST-IMGMAX> is __st_IMGMAX_2, at the top of the bundle (#786)
   const IMGMAX = new ImageMaximizer({
     request: (url, o) => ImageMaximizer.gmRequest(GM_xmlhttpRequest, 30000)(url, o),   // looked up per call, as gmFetch does
     log: (level, msg) => dbg('[cover]', 'maximizer: ' + msg),
