@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.002000
+// @version      2026.10.27.010000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2829,6 +2829,8 @@ const mkSvg = d => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" 
 const marks = t => `<span class="mk"><a class="${t.cr.length ? 'on' : ''}" href="${MB}/recording/${t.rid}" data-tip="Recording${t.cr.length ? ' · ' + t.cr.length + ' relationship' + (t.cr.length === 1 ? '' : 's') : ', no relationships'}" aria-label="Recording">${mkSvg(MK_REC)}</a>`
     + t.works.map(w => `<a class="on" href="${MB}/work/${w.id}" data-tip="Work: ${esc(w.title)}" aria-label="Work: ${esc(w.title)}">${mkSvg(MK_WORK)}</a>`).join('')
     + (t.credits ? `<span class="on" data-tip="${t.credits} credit${t.credits === 1 ? '' : 's'}">${mkSvg(MK_CR)}${t.credits}</span>` : '') + '</span>';
+// a release whose Artist column was turned on or off by hand → that choice
+const arCol = new Map();
 function tracklist(r) {
     const multi = r.media.length > 1;
     const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi })));
@@ -2838,7 +2840,9 @@ function tracklist(r) {
     const withIsrc = tracks.filter(t => t.isrcs.length).length, credits = tracks.reduce((s, t) => s + t.credits, 0);
     const cls = Object.entries(S.cols).filter(([, v]) => v === false).map(([k]) => 'hide-' + k).join(' ');
     // a Various Artists release names each track's artist in a column of its own (majkinetor, as MusicBrainz's page does)
-    const va = r.ac.some(a => a.artist.id === '89ad4ac3-39f7-470e-963a-56509c546377') || tracks.filter(t => t.feat.length).length > tracks.length / 2;
+    // Show › Artist turns it on or off by hand, for this release only
+    const vaAuto = r.ac.some(a => a.artist.id === '89ad4ac3-39f7-470e-963a-56509c546377') || tracks.filter(t => t.feat.length).length > tracks.length / 2;
+    const va = arCol.has(r.id) ? arCol.get(r.id) : vaAuto;
     const row = t => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
         return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
@@ -2853,7 +2857,7 @@ function tracklist(r) {
         rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
-    const toggles = [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
+    const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release">Artist</button>` + [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
     // open: arrows apart (expand); all open: arrows together (collapse)
@@ -3306,7 +3310,8 @@ function onClick(ev) {
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
-    if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
+    if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
+    else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
