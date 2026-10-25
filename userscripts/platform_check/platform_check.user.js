@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.26.140000
+// @version      2026.10.26.140100
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3897,31 +3897,55 @@ async function beatportLogin(username, password) {
         return { ok: false, error: m };
     }
 
+    const r = await bpAuthorize();
+    if (r.ok) appendLog('Beatport', `logged in (token scope: ${r.scope || '?'})`, 'ok');
+    return r;
+}
+// PKCE authorize + code exchange on the browser's beatport.com session (no password).
+// The login above mints that session; a token refresh that fails reuses it to sign in
+// again. `quiet` keeps a silent re-login's failure out of the log.
+async function bpAuthorize(quiet = false) {
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
     const ar = await gmGet(au, { headers: bpHeaders() });   // non-anonymous: uses the jar session (fresh-from-login or existing browser)
     const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
     if (!code) {
-        appendLog('Beatport', `authorize returned no code — HTTP ${ar.status}; no usable Beatport session in the browser. Log in at beatport.com in this browser, then retry.`, 'error');
+        if (!quiet) appendLog('Beatport', `authorize returned no code — HTTP ${ar.status}; no usable Beatport session in the browser. Log in at beatport.com in this browser, then retry.`, 'error');
         return { ok: false, error: 'no authorization code returned' };
     }
     const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { anonymous: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
-    let j; try { j = JSON.parse(tr.responseText); } catch { appendLog('Beatport', `token exchange — unparseable response (HTTP ${tr.status})`, 'error'); return { ok: false, error: 'token response parse failed' }; }
-    if (!j.access_token) { const e = j.error_description || j.error || 'no access token'; appendLog('Beatport', `token exchange failed — ${e}`, 'error'); return { ok: false, error: e }; }
+    let j; try { j = JSON.parse(tr.responseText); } catch { if (!quiet) appendLog('Beatport', `token exchange — unparseable response (HTTP ${tr.status})`, 'error'); return { ok: false, error: 'token response parse failed' }; }
+    if (!j.access_token) { const e = j.error_description || j.error || 'no access token'; if (!quiet) appendLog('Beatport', `token exchange failed — ${e}`, 'error'); return { ok: false, error: e }; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
-    appendLog('Beatport', `logged in (token scope: ${j.scope || '?'})`, 'ok');
-    return { ok: true };
+    return { ok: true, scope: j.scope };
 }
 // Valid access token, renewing via refresh_token when needed; null if not logged in / refresh failed.
-async function beatportToken() {
+// A failed refresh signs in again through the browser's Beatport session (bpAuthorize); only
+// when that fails too must the user log in again in ⚙ setup. Concurrent callers share one renewal:
+// Beatport rotates the refresh token, so a second refresh with the old one would be refused.
+let bpRenewing = null;
+function beatportToken() {
     const t = bpRead();
-    if (!t || !t.refresh_token) return null;
-    if (t.access_token && Date.now() < t.exp - 60000) return t.access_token;
+    if (!t || !t.refresh_token) return Promise.resolve(null);
+    if (t.access_token && Date.now() < t.exp - 60000) return Promise.resolve(t.access_token);
+    return bpRenewing || (bpRenewing = bpRenew(t).finally(() => { bpRenewing = null; }));
+}
+async function bpRenew(t) {
     const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { anonymous: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
     let j; try { j = JSON.parse(tr.responseText); } catch { j = {}; }
-    if (!j.access_token) { appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn'); return null; }
-    bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
-    return j.access_token;
+    if (j.access_token) {
+        bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
+        return j.access_token;
+    }
+    // ISRC Scout (or another tab) may have renewed meanwhile, spending the refresh token we sent.
+    const now = bpRead();
+    if (now?.access_token && now.refresh_token !== t.refresh_token && Date.now() < now.exp - 60000) return now.access_token;
+    const r = await bpAuthorize(true);
+    if (r.ok) { appendLog('Beatport', 'token refresh failed — signed in again with the browser\'s Beatport session', 'ok'); return bpRead()?.access_token || null; }
+    // Beatport refused the refresh token itself: drop it, so ⚙ setup shows signed out.
+    if (j.error === 'invalid_grant') bpWrite(null);
+    appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn');
+    return null;
 }
 // ── Qobuz API auth (email + password login; token shared with ISRC Scout + Credit Hoarder) ──
 // Qobuz's per-track data (ISRCs + roled `performers`) lives behind `album/get`, which is
