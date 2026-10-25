@@ -1911,8 +1911,8 @@ const CSS = `
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{font-size:12px;color:var(--muted)}
-.hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 16px}
-.hm-news a{padding:9px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important;font-weight:600}.hm-news a:hover{background:var(--hover)}
+.hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 16px;font-size:13px}
+.hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .kicker .ab.eh-home svg{width:20px!important;height:20px!important}
