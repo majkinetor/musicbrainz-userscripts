@@ -45,15 +45,15 @@ The funnel icon opens a filter: type part of a title, or add a filter by artist,
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                     | Default                                                   |                                                                  |
-| --------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
-| Release → Info              | released, labels, barcode, length, links                  | the facts shown beside the cover                                 |
-| Release → Under the cover   | Other covers, Rating, Genres                              | what shows under the cover                                       |
-| Platforms → Show            | off                                                       | **Names** beside the icons; **Gray icons** until pointed at      |
-| Platforms → Icon size       | 22px                                                      | the size of a platform icon                                      |
-| Platforms → Platforms       | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N    |
-| Artist → Images from | Discogs, Wikipedia, Deezer, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
-| General → Page width        | Medium                                                    | how wide the page grows on a big screen                          |
+| Setting                   | Default                                                    |                                                                            |
+| ------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Release → Info            | released, labels, barcode, length, links                   | the facts shown beside the cover                                           |
+| Release → Under the cover | Other covers, Rating, Genres                               | what shows under the cover                                                 |
+| Platforms → Show          | off                                                        | **Names** beside the icons; **Gray icons** until pointed at                |
+| Platforms → Icon size     | 22px                                                       | the size of a platform icon                                                |
+| Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music  | click to show or hide, drag to reorder; the rest go behind +N              |
+| Artist → Images from      | Discogs, Wikipedia, Deezer, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
+| General → Page width      | Medium                                                     | how wide the page grows on a big screen                                    |
 
 ## Shortcuts
 
