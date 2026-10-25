@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.247000
+// @version      2026.10.27.248000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2999,7 +2999,7 @@ function tracklist(r) {
     const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
     // open: arrows apart (expand); all open: arrows together (collapse)
     const rowsB = `<button class="ib" type="button" data-rows="${allOpen ? 0 : 1}" aria-label="${allOpen ? 'Close all tracks' : 'Open all tracks'}" data-tip="${allOpen ? 'Close all tracks' : 'Open all tracks\nShows every track\'s credits'}">${SVG(allOpen ? '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>' : '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>')}</button>`;
-    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}<span class="ed-div"></span>${rowsB}`;
+    const tools = `${rowsB}<span class="ed-div"></span><span class="label" style="margin-right:2px">Show</span>${toggles}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
