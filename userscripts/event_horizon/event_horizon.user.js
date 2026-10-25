@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.263100
+// @version      2026.10.27.263200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4386,7 +4386,10 @@ const titleOf = d => d && d.kind === 'search' ? d.q + ' · Search · Event Horiz
 // a release's cover-art page → "art/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/cover-art/?$', 'i')); return m ? 'art/' + m[1].toLowerCase() : null; };
-const keyOf = href => navTo(href) || artKey(href);
+// a release's relationship editor → "relate/<mbid>". MusicBrainz's React app stays where it is: Event Horizon only
+// dresses it (its header, theme and fonts over MusicBrainz's own sheets), never swaps its body, which would kill the editor
+const relKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit-relationships/?$', 'i')); return m ? 'relate/' + m[1].toLowerCase() : null; };
+const keyOf = href => navTo(href) || artKey(href) || relKey(href);
 const PAGE_ID = keyOf(location.href);
 
 /* ── cover-art page ────────────────────────────────── */
@@ -4413,6 +4416,64 @@ async function artLoad(n, id) {
     // Art Station mounts after it reads the release's art: until then the slot waits for it
     const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
     if (!$('#as-slot .as-none')) wait(); else { const m = $('#as-slot .as-none'); m.hidden = true; setTimeout(() => { if (m.isConnected) m.hidden = false; }, 20000); wait(); }
+}
+
+/* ── relationship editor ───────────────────────────── */
+
+// Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
+const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
+:root[data-eh-rel] body{background:var(--bg)!important;color:var(--text);font-family:Manrope,system-ui,sans-serif}
+:root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader,:root[data-eh-rel] #content>.tabs{display:none!important}
+:root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
+:root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
+:root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}
+:root[data-eh-rel] #page :is(p,td,th,label,span,input,select,textarea,button){font-family:Manrope,system-ui,sans-serif}
+:root[data-eh-rel] #tracklist{border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
+:root[data-eh-rel] #tracklist>thead th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+:root[data-eh-rel] #tracklist .subh th,:root[data-eh-rel] #tracklist tr.subh>*{background:var(--hover)!important;color:var(--text);border-color:var(--border)}
+:root[data-eh-rel] #tracklist>tbody>tr>td{background:var(--surface)!important;border-color:var(--line)}
+:root[data-eh-rel] #tracklist>tbody>tr.even>td{background:var(--hover)!important}
+:root[data-eh-rel] :is(#tracklist,#page .ars) table :is(td,th){background:transparent!important}
+:root[data-eh-rel] #page .ars,:root[data-eh-rel] #relationship-editor-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+:root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
+:root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
+:root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text)}
+#eh-relhd .kicker{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#eh-relhd .acts{margin-left:auto;display:flex;gap:4px}
+#eh-relhd .ab{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border-radius:9px;color:var(--soft)!important;text-decoration:none!important;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
+#eh-relhd .ab:hover{background:var(--hover);color:var(--text)!important}
+#eh-relhd .ab.on{background:var(--accent);color:#fff!important}
+#eh-relhd h1{margin:14px 0 6px;font:800 34px/1.15 Manrope,system-ui,sans-serif;color:var(--text);text-wrap:balance}
+#eh-relhd h1 a{color:inherit!important;text-decoration:none}#eh-relhd h1 a:hover{text-decoration:underline}
+#eh-relhd .by{font-size:15px;color:var(--soft)}`;
+// the header: Relate the tab that's open, then the release's title and artist, read off MusicBrainz's own header (no request)
+function relHeader(id) {
+    const rh = document.querySelector('#content > .releaseheader'), t = rh && rh.querySelector('h1 a'), sub = rh && rh.querySelector('.subheader');
+    const by = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')].map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ') : '';
+    const acts = ACTS.map(([p, n, tp, ic]) => `<a class="ab${p === 'edit-relationships' ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === 'edit-relationships' ? ' aria-current="page"' : ''} data-tip="${tp}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('');
+    const hd = document.createElement('section'); hd.id = 'eh-relhd';
+    hd.innerHTML = `<div class="kicker"><a class="ab" href="${MB}/release/${id}" data-tip="Back to the release">${LOGO}</a><span>Relationships</span><span class="acts">${acts}</span></div>`
+        + `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`;
+    hd.querySelector('.kicker svg').setAttribute('width', 22); hd.querySelector('.kicker svg').setAttribute('height', 22);
+    return hd;
+}
+function relSet(on) {
+    const de = document.documentElement;
+    if (on && !document.getElementById('eh-rel-css')) {
+        (document.head || de).insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-rel-css">${REL_CSS()}</style>`);
+        const c = document.getElementById('content'); if (c) c.prepend(relHeader(PAGE_ID.split('/')[1]));
+        LOG.info('Dressing the relationship editor of ' + PAGE_ID.split('/')[1]);
+    }
+    const theme = on && mbuTheme();
+    ehOn = on;
+    if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); }
+    else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); }
+    for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }
+    const hd = document.getElementById('eh-relhd'); if (hd) hd.hidden = !on;   // its sheet is off with it
+    const h = document.getElementById('eh-hide'); if (h) h.remove();
+    const l = document.getElementById('eh-launch');
+    if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
 }
 
 /* ── EH / native ───────────────────────────────────── */
@@ -4534,6 +4595,7 @@ function build() {
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
 function setOn(on) {
+    if (PAGE_ID.startsWith('relate/')) { relSet(on); return; }
     // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
     if (!on && keyOf(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes

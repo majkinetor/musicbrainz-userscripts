@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 21:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 21:13 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -736,7 +736,9 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ### The viewer
 
-Open a release, release group, artist, label, recording, work, area, instrument or place on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
+Open a release, release group, artist, label, recording, work, area, instrument or place on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, history, …) stay MusicBrainz's.
+
+A release's relationship editor (**Relate**) stays MusicBrainz's editor, but takes Event Horizon's look: its header with the release's title, artist and actions, its fonts and colours, light or dark. The corner icon switches it back to MusicBrainz's look.
 
 The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
 
