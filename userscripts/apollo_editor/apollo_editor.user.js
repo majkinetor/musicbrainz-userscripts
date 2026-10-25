@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.25.120000
+// @version      2026.10.26.111000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -6685,6 +6685,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-tpp-pi{flex:1;min-width:0;font:13px ui-monospace,Consolas,monospace;border:1px solid var(--mbu-accent);border-radius:5px;padding:5px 24px 5px 8px;color:var(--mbu-accent-deep-text)}
     .tc-tpp-piclr{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:none;border:none;background:none;cursor:pointer;color:var(--mbu-accent-text);font-size:12px;line-height:1;padding:2px}.tc-tpp-piclr:hover{color:var(--mbu-error)}
     .tc-tpp-piwrap.has .tc-tpp-piclr{display:block}
+    .tc-tpp-piwrap.has .tc-tpp-pi{padding-right:44px}.tc-tpp-piwrap .tc-tpp-pi{padding-right:28px}
+    .tc-tpp-piwrap.has .tc-tpp-piclr{right:24px}
+    .tc-tpp-pidd{position:absolute;right:3px;top:50%;transform:translateY(-50%);border:none;background:none;cursor:pointer;color:var(--mbu-accent-text);font-size:13px;line-height:1;padding:3px 5px;min-width:18px}.tc-tpp-pidd:hover{color:var(--mbu-accent)}
+    .tc-tpp-pdd{position:absolute;left:0;right:0;top:100%;margin-top:2px;z-index:100006;display:flex;flex-direction:column;background:var(--mbu-bg);border:1px solid var(--mbu-accent);border-radius:var(--mbu-radius);box-shadow:0 4px 16px rgba(40,20,80,.32);padding:3px;max-height:260px;overflow:auto}
+    .tc-tpp-pdd .tc-tpp-mi{font:13px ui-monospace,Consolas,monospace;text-align:left}
+    .tc-tpp-pdd-none{padding:5px 8px;color:var(--mbu-text-weak);font-size:12px}
     .tc-tpp-presets{display:flex;gap:5px;flex-wrap:wrap}
     .tc-tpp-chip{cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);color:var(--mbu-accent-text);font:12px ui-monospace,Consolas,monospace;border-radius:4px;padding:3px 7px}.tc-tpp-chip:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
     .tc-tpp-split{cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);color:var(--mbu-accent-text);font:11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}.tc-tpp-split:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}.tc-tpp-split b{color:var(--mbu-accent-text)}
@@ -8528,6 +8534,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const TP_SEPS = ['-', '‐', '–', '—', '/', ':'];
   const TP_PRESETS = ['#. T', '#. T - A (L)', '# T L', '# A - T', '# A - T (L)', 'T L'];   // #. T - A (L) = the native parser's format
   let _tpPattern = '#. T';   // remembered across opens this session
+  const TP_RECENT_KEY = 'ae-tp-recent', TP_RECENT_MAX = 8;   // recently used patterns, kept across sessions (presets left out)
+  const tpRecent = () => { const v = GM_getValue(TP_RECENT_KEY, []); return Array.isArray(v) ? v : []; };
+  const tpPatKeep = p => {
+    p = (p || '').trim();
+    if (!p || TP_PRESETS.includes(p)) return;
+    const list = [p, ...tpRecent().filter(x => x !== p)].slice(0, TP_RECENT_MAX);
+    GM_setValue(TP_RECENT_KEY, list);
+    Log.cat('Tool').debug('track parser: recent pattern kept', JSON.stringify(p), '->', list.length, 'recent');
+  };
   const tpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const tpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());
   function tpTokenize(pattern, seps) {
@@ -8706,7 +8721,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       <div class="tc-tpp-hd"><span class="tc-tpp-t">Pattern parser</span>${medSel}<button type="button" class="tc-tpp-max" data-tip="Maximize or restore">⛶</button><button type="button" class="tc-tpp-x" data-tip="Close (Esc)">✕</button></div>
       <div class="tc-tpp-pat">
         <span class="tc-tpp-plbl">Pattern</span>
-        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" data-tip="The pattern\n- \`#\` position, \`T\` title, \`A\` artist, \`L\` length, \`M\` medium, \`_\` skip\n- \`\$X\` explicit\n- \`X[a-b]\` a slice\n- \`X[a:.]\` up to a character\n- \`X[~a:.]\` from its last occurrence"><button type="button" class="tc-tpp-piclr" data-tip="Clear the pattern" tabindex="-1">✕</button></span>
+        <span class="tc-tpp-piwrap"><input type="text" ${NOPW_ATTRS} class="tc-tpp-pi" spellcheck="false" value="${esc(_tpPattern)}" data-tip="The pattern\n- \`#\` position, \`T\` title, \`A\` artist, \`L\` length, \`M\` medium, \`_\` skip\n- \`\$X\` explicit\n- \`X[a-b]\` a slice\n- \`X[a:.]\` up to a character\n- \`X[~a:.]\` from its last occurrence"><button type="button" class="tc-tpp-piclr" data-tip="Clear the pattern" tabindex="-1">✕</button><button type="button" class="tc-tpp-pidd" data-tip="Your recent patterns" tabindex="-1">▾</button></span>
         <button type="button" class="tc-tpp-freeze" data-tip="Freeze what matched\nThis pattern sticks to every row on the default pattern that matches it, so changing the pattern later leaves them be; try a new one on what is left.">🔒 Freeze matched</button>
         <span class="tc-tpp-presets">${TP_PRESETS.map(x => `<button type="button" class="tc-tpp-chip" data-p="${esc(x)}">${esc(x)}</button>`).join('')}</span>
         <button type="button" class="tc-tpp-split" data-tip="Which separator a field splits on when it repeats\n\`A - T\` on \`a - b - c\`">split: <b>first</b></button>
@@ -8821,6 +8836,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         });
       } finally { _selfEdit = false; }
       rebuild(true);
+      tpPatKeep(_tpPattern);
       Log.cat('Tool').info('track parser: applied', which, 'from pattern', JSON.stringify(_tpPattern), 'to', wrote, 'row(s) on medium', curMi + 1);
       toast(`Applied ${wrote} row${wrote !== 1 ? 's' : ''} to Medium ${curMi + 1}`);
       close();
@@ -8843,6 +8859,19 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     patIn.oninput = () => { _tpPattern = patIn.value; compiled.clear(); syncClr(); render(); };
     $('.tc-tpp-piclr').onclick = () => { patIn.value = ''; _tpPattern = ''; compiled.clear(); syncClr(); render(); patIn.focus(); };
     syncClr();
+    patIn.addEventListener('change', () => tpPatKeep(patIn.value));
+    $('.tc-tpp-pidd').onclick = e => {
+      e.preventDefault();
+      const old = piwrap.querySelector('.tc-tpp-pdd'); if (old) { old.remove(); return; }
+      const list = tpRecent();
+      Log.cat('Tool').debug('track parser: recent dropdown', list.length, 'pattern(s)');
+      const m = document.createElement('div'); m.className = 'tc-tpp-pdd';
+      if (!list.length) { const n = document.createElement('div'); n.className = 'tc-tpp-pdd-none'; n.textContent = 'No recent patterns yet'; m.appendChild(n); }
+      list.forEach(x => { const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-tpp-mi'; b.textContent = x; b.onclick = () => { m.remove(); patIn.value = x; _tpPattern = x; compiled.clear(); syncClr(); render(); tpPatKeep(x); patIn.focus(); }; m.appendChild(b); });
+      piwrap.appendChild(m);
+      const off = ev => { if (!m.contains(ev.target) && !ev.target.closest('.tc-tpp-pidd')) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+      setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+    };
     p.querySelectorAll('.tc-tpp-chip').forEach(c => c.onclick = () => { patIn.value = c.dataset.p; _tpPattern = c.dataset.p; compiled.clear(); syncClr(); render(); patIn.focus(); });
     $('.tc-tpp-split').onclick = () => { _splitLast = !_splitLast; $('.tc-tpp-split').innerHTML = 'split: <b>' + (_splitLast ? 'last' : 'first') + '</b>'; render(); };
     // #456 round 5 — iterative refinement: lock the CURRENT pattern onto every row that's still on

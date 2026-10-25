@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.21.133503
+// @version      2026.10.26.110000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4491,6 +4491,17 @@
   }
   const TXP_PRESETS = ['R: E', 'R: E[,]', 'R[,] - E[,]', 'E[,] - R[,]', 'R by E[&]'];
   let _txpPattern = 'R: E';   // remembered across opens this session
+  // the last patterns used (kept when the box is left or Enter is pressed), newest first, kept
+  // across visits; the presets aren't repeated there since ▾ always lists them
+  const TXP_RECENT_KEY = 'gt-txp-recent', TXP_RECENT_MAX = 8;
+  const txpRecent = () => { try { const v = GM_getValue(TXP_RECENT_KEY, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+  const txpPatKeep = p => {
+    p = (p || '').trim();
+    if (!p || TXP_PRESETS.includes(p)) return;
+    const list = [p, ...txpRecent().filter(x => x !== p)].slice(0, TXP_RECENT_MAX);
+    try { GM_setValue(TXP_RECENT_KEY, list); } catch (e) { /* no storage: the list just isn't kept */ }
+    console.debug('[Group Therapy] text parser: recent pattern kept', JSON.stringify(p), '·', list.length, 'in the list');
+  };
   const txpEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const txpUsable = out => !!out && Object.values(out).some(v => v && String(v).trim());
   function txpTokenize(pattern, seps) {
@@ -5294,6 +5305,7 @@
       + '.gt-tp-ddbtn{flex:none;height:100%;border:none;border-left:1px solid var(--mbu-border);background:none;padding:0 7px;cursor:pointer;color:var(--mbu-text-dim);font-size:11px}'
       + '.gt-tp-dd{position:absolute;top:calc(100% + 4px);left:-1px;width:280px;z-index:6;display:flex;flex-direction:column;padding:4px 0;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.12)}'
       + '.gt-tp-dd-it{display:flex;align-items:baseline;gap:8px;border:none;background:none;padding:4px 10px;text-align:left;cursor:pointer;font:inherit}.gt-tp-dd-it:hover,.gt-tp-dd-on{background:var(--mbu-bg-hover)}'
+      + '.gt-tp-dd-h{padding:5px 10px 2px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--mbu-text-weak)}.gt-tp-dd-it+.gt-tp-dd-h{border-top:1px solid var(--mbu-border);margin-top:4px;padding-top:7px}'
       + '.gt-tp-dd-pat{font:12.5px monospace;color:var(--mbu-text)}.gt-tp-dd-ex{font-size:11px;color:var(--mbu-text-weak)}'
       + '.gt-tp-freeze{flex:0 0 auto;height:28px;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:0 7px;font-size:12px;line-height:1}.gt-tp-freeze:hover{background:var(--mbu-bg-hover)}'
       + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0;height:28px}'
@@ -6013,23 +6025,30 @@
     const patIn = el('input', 'gt-tp-pat'); patIn.type = 'text'; patIn.value = pattern;
     const patClr = el('button', 'gt-tp-clr', '✕'); patClr.type = 'button'; patClr.dataset.tip = 'Clear the pattern';
     patIn.placeholder = 'pattern';
-    patIn.dataset.tip = 'The pattern every line is read with\n`R` is the role, `E` the entity; ▾ has the usual ones';
+    patIn.dataset.tip = 'The pattern every line is read with\n`R` is the role, `E` the entity; ▾ has your recent ones and the usual ones';
     // #798: the presets under ▾, each with a line it reads
     const TXP_PRESET_EX = { 'R: E': 'Mastering: Nick Robbins', 'R: E[,]': 'Bass: Ann, Bob', 'R[,] - E[,]': 'Bass, Guitar - Ann', 'E[,] - R[,]': 'Ann - Bass, Guitar', 'R by E[&]': 'Produced by Ann & Bob' };
     const combo = el('span', 'gt-tp-combo');
-    const ddBtn = el('button', 'gt-tp-ddbtn', '▾'); ddBtn.type = 'button'; ddBtn.dataset.tip = 'The usual patterns';
+    const ddBtn = el('button', 'gt-tp-ddbtn', '▾'); ddBtn.type = 'button'; ddBtn.dataset.tip = 'Your recent patterns and the usual ones';
     let dd = null;
     const closeDd = () => { if (dd) { dd.remove(); dd = null; document.removeEventListener('mousedown', ddOut, true); } };
     const ddOut = e => { if (dd && !combo.contains(e.target)) closeDd(); };
     ddBtn.onclick = () => {
       if (dd) { closeDd(); return; }
       dd = el('div', 'gt-tp-dd');
-      TXP_PRESETS.forEach(pp => {
+      const item = (pp, ex) => {
         const it = el('button', 'gt-tp-dd-it' + (pp === pattern ? ' gt-tp-dd-on' : '')); it.type = 'button';
-        it.append(el('span', 'gt-tp-dd-pat', pp), el('span', 'gt-tp-dd-ex', TXP_PRESET_EX[pp] || ''));
+        it.append(el('span', 'gt-tp-dd-pat', pp), el('span', 'gt-tp-dd-ex', ex));
         it.onclick = () => { patIn.value = pp; onPatternChange(); closeDd(); };
         dd.appendChild(it);
-      });
+      };
+      const recent = txpRecent();
+      if (recent.length) {
+        dd.appendChild(el('div', 'gt-tp-dd-h', 'Recent'));
+        recent.forEach(pp => item(pp, ''));
+        dd.appendChild(el('div', 'gt-tp-dd-h', 'Usual'));
+      }
+      TXP_PRESETS.forEach(pp => item(pp, TXP_PRESET_EX[pp] || ''));
       combo.appendChild(dd);
       document.addEventListener('mousedown', ddOut, true);
     };
@@ -7064,6 +7083,7 @@
     };
     const onPatternChange = () => { pattern = patIn.value; _txpPattern = pattern; render(); saveState(); scheduleMatch(); };
     patIn.addEventListener('input', onPatternChange);
+    patIn.addEventListener('change', () => txpPatKeep(patIn.value));   // left or Enter: the pattern counts as used
     patClr.onclick = () => { patIn.value = ''; onPatternChange(); };
     ta.addEventListener('input', onTextChange);
     ta.addEventListener('input', () => { loadedFromAnnotation = false; });
