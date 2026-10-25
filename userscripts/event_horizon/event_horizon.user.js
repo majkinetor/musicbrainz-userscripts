@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.014000
+// @version      2026.10.27.020000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2038,6 +2038,16 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 [aria-pressed="true"]>.box{background:var(--accent);border-color:var(--accent)}
 
 .ed-filter{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.fbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}
+#s-ed .fbar{margin:10px 0 14px}
+.fbar .fq{height:30px;width:220px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+.fbar select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;padding:0 6px;cursor:pointer;max-width:260px}
+.fchip{display:inline-flex;align-items:center;height:30px;border:1px solid var(--accent);border-radius:15px;background:var(--chip);padding:0 2px 0 10px;font-size:13px}
+.fchip .fk{color:var(--muted);font-weight:600;margin-right:2px}
+.fchip select{all:unset;cursor:pointer;font-weight:600;color:var(--text);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.fchip button{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:13px;color:var(--muted);font-size:16px}
+.fchip button:hover{color:var(--text);background:var(--line)}
+.fbar .fn{font-size:13px;color:var(--muted)}
 .ed-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:10px;background:var(--chip)}
 .ed-seg button{all:unset;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
 .ed-seg button:hover{color:var(--text)}
@@ -2726,14 +2736,14 @@ function edHtml(r, eds, count) {
     const all = paged ? [...eds] : [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
-    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official'));
+    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official') && fltPass('ed', e));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
     const views = '<span class="ed-div"></span>' + viewBs(['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
@@ -3111,12 +3121,47 @@ function arHero(d) {
         </div>
     </section>`;
 }
+/* ── filter bar ──────────────────────────────────── */
+// The discography's and the releases' filter (majkinetor, from a mock): a box for the title and a chip per chosen
+// field, all of them at once. "+ Filter" offers each field's values found in the list, counted among what the
+// other chips leave. It lasts while the page does.
+const FLT = { dg: { q: '', f: {} }, ed: { q: '', f: {} } };
+const fltFold = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const yearOf = d => (d || '').slice(0, 4);
+const FLT_FIELDS = {
+    dg: [['artist', 'Artist', g => [acText(g['artist-credit'] || [])]], ['type', 'Type', g => [g['primary-type'] || 'Unspecified']],
+        ['sec', 'Secondary type', g => g['secondary-types'] || []], ['year', 'Year', g => [yearOf(g['first-release-date'])].filter(Boolean)]],
+    ed: [['artist', 'Artist', e => [acText(e.ac)]], ['label', 'Label', e => e.labels], ['format', 'Format', e => e.formats.filter(Boolean)],
+        ['country', 'Country', e => e.where], ['status', 'Status', e => [e.status || 'None']], ['year', 'Year', e => [yearOf(e.date)].filter(Boolean)]],
+};
+// what the box searches: the title, and a release's catalog numbers and barcode
+const FLT_TEXT = { dg: g => [g.title, g.disambiguation], ed: e => [e.title, e.disambig, e.barcode, ...e.li.map(l => l.catno)] };
+function fltPass(sc, x, skip) {
+    const f = FLT[sc], q = fltFold(f.q.trim());
+    if (q && !FLT_TEXT[sc](x).some(t => fltFold(t).includes(q))) return false;
+    return FLT_FIELDS[sc].every(([k, , get]) => k === skip || !(k in f.f) || get(x).includes(f.f[k]));
+}
+const fltApply = (sc, xs) => xs.filter(x => fltPass(sc, x));
+function fltBar(sc, xs) {
+    const f = FLT[sc], n = fltApply(sc, xs).length, on = f.q || Object.keys(f.f).length;
+    const vals = (k, get) => {
+        const m = new Map();
+        for (const x of xs) if (fltPass(sc, x, k)) for (const v of new Set(get(x))) m.set(v, (m.get(v) || 0) + 1);
+        if (k in f.f && !m.has(f.f[k])) m.set(f.f[k], 0);
+        return [...m].sort((a, b) => k === 'year' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
+    };
+    const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
+    const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${vals(k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
+    const add = FLT_FIELDS[sc].filter(([k]) => !(k in f.f)).map(([k, name, get]) => [k, name, vals(k, get)]).filter(x => x[2].length > 1)
+        .map(([k, name, vs]) => `<optgroup label="${name}">${vs.map(([v, c]) => opt(k, v, c)).join('')}</optgroup>`).join('');
+    return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<select class="fadd" data-fset="${sc}" aria-label="Add a filter"><option value="">+ Filter</option>${add}</select>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
+}
 // the release groups by type, albums first, each type by date
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
     if (!x) return '';
-    const rgs = x['release-groups'] || [], m = new Map();
+    const allRgs = x['release-groups'] || [], rgs = fltApply('dg', allRgs), m = new Map();
     for (const g of rgs) { const k = [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified'; const l = m.get(k) || []; l.push(g); m.set(k, l); }
     const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
     const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
@@ -3130,8 +3175,8 @@ function discoHtml(d) {
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="4">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
-    const total = x['release-group-count'] || rgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > rgs.length ? ` · first ${rgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (total > rgs.length ? `<span class="aside">first ${rgs.length} shown</span>` : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), body, `<div class="folded-note">${n}</div>`);
+    const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
+    return sect('dg', `Discography <span class="count">${total}</span>`, (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -3149,6 +3194,8 @@ function render(keepPop) {
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     const r = data.rel || data.g;
+    // another page starts unfiltered
+    if (FLT.of !== r.id) { FLT.of = r.id; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = titleOf(data);
@@ -3332,6 +3379,8 @@ function onClick(ev) {
     else if (d.dism) { S.dis = d.dism; save(); }
     else if ('edoff' in d) S.ed.official = !S.ed.official;
     else if (d.edtr) edToggle(d.edtr);
+    else if (d.fdel) { const [sc, k] = d.fdel.split(':'); delete FLT[sc].f[k]; }
+    else if (d.fclr) FLT[d.fclr] = { q: '', f: {} };
     else if (d.mbgo) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.href = d.mbgo; return; }
     else return;
     const y = scrollY; render(keep); scrollTo(0, y);
@@ -3360,6 +3409,17 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
+    document.addEventListener('change', ev => {
+        const t = ev.target, sc = t.dataset && t.dataset.fset;
+        if (!sc || !t.value) return;
+        const i = t.value.indexOf('\t');
+        FLT[sc].f[t.value.slice(0, i)] = t.value.slice(i + 1);
+        const y = scrollY; render(); scrollTo(0, y);
+    });
+    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } };
+    document.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.fq) fq(ev.target); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
