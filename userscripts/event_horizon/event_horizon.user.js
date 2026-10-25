@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.263100
+// @version      2026.10.27.264000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2085,6 +2085,20 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .disamb{font-size:15px;color:var(--muted);font-weight:500;opacity:.75;margin-top:-8px}
 .by{font-size:16px;font-weight:600}
+.hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
+.hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
+.hchip{font:500 12px Manrope,system-ui,sans-serif;padding:3px 9px;border-radius:99px;border:1px solid var(--border);background:var(--chip);color:var(--chip-text);cursor:pointer}.hchip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.hday{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.hgrp{border:1px solid var(--border);border-radius:11px;background:var(--surface);margin-bottom:8px;overflow:hidden}
+.hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
+.hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
+.hst{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff}.hst.ok{background:#2e8b57}.hst.op{background:#c08a00}.hst.no{background:#c0392b}.hst.cx{background:#888}
+.hgb{display:none;border-top:1px solid var(--line)}.hgrp.open .hgb{display:block}
+.hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
+.hrun>summary:hover,.hed>summary:hover{background:var(--line)}.hrun .hed>summary{padding-left:62px}.hty{font-weight:600}.hrun>summary .n{color:var(--muted)}.hed .d,.hed .v{color:var(--muted);font-size:12px}.hed .id{font-size:12px}
+.hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}
+.hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
 .arthd{margin:0 0 -16px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
@@ -2434,7 +2448,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder', 'imgOff'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2452,6 +2466,7 @@ const S = {
     fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
     imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
     imgOff: [], // the image providers not used
+    hgrp: 'burst', // the history page's grouping
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -3835,6 +3850,7 @@ function render(keepPop) {
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
+    if (data.kind === 'hist') { document.title = titleOf(data); histPage(app, data); return; }
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
@@ -4321,7 +4337,7 @@ let rowKeys = [];
 function onClick(ev) {
     if (!ehOn) return;
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
-    const navId = nav && !nav.target && navTo(nav.href);
+    const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
     if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
@@ -4386,7 +4402,9 @@ const titleOf = d => d && d.kind === 'search' ? d.q + ' · Search · Event Horiz
 // a release's cover-art page → "art/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/cover-art/?$', 'i')); return m ? 'art/' + m[1].toLowerCase() : null; };
-const keyOf = href => navTo(href) || artKey(href);
+// a release's edit history → "hist/<mbid>"
+const histKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && !u.search && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edits/?$', 'i')); return m ? 'hist/' + m[1].toLowerCase() : null; };
+const keyOf = href => navTo(href) || artKey(href) || histKey(href);
 const PAGE_ID = keyOf(location.href);
 
 /* ── cover-art page ────────────────────────────────── */
@@ -4413,6 +4431,122 @@ async function artLoad(n, id) {
     // Art Station mounts after it reads the release's art: until then the slot waits for it
     const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
     if (!$('#as-slot .as-none')) wait(); else { const m = $('#as-slot .as-none'); m.hidden = true; setTimeout(() => { if (m.isConnected) m.hidden = false; }, 20000); wait(); }
+}
+
+/* ── history page ──────────────────────────────────── */
+
+// MusicBrainz's edit list of a release, its pages loaded one after another and grouped: by default into bursts, an
+// editor's edits less than half an hour apart. Each edit keeps MusicBrainz's own details table, so every edit type shows
+const H_GAP = 30 * 60e3, H_MIN = 100, H_MAXP = 20;
+const H_ST = { ok: 'applied', op: 'open', no: 'failed', cx: 'cancelled' };
+const histSt = c => /\bapplied\b/.test(c) ? 'ok' : /\bopen\b/.test(c) ? 'op' : /\bcancel/.test(c) ? 'cx' : 'no';
+// the date shown: when it closed, or for an open edit a week before voting closes
+const histTime = el => {
+    const x = el.querySelector('.edit-expiration'); if (!x) return 0;
+    const tt = x.querySelector('[title]'), m = ((tt && tt.title) || x.textContent).match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/);
+    if (!m) return 0;
+    const t = Date.parse(m[1] + 'T' + m[2] + 'Z');
+    return /\bopen\b/.test(el.querySelector('.edit-header').className) ? t - 7 * 864e5 : t;
+};
+function histParse(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const edits = [...doc.querySelectorAll('.edit-list')].map(el => {
+        const h = el.querySelector('.edit-header'), a = h.querySelector('h2 a'), c = h.className.split(/\s+/);
+        const ed = h.querySelector('.subheader a[href*="/user/"]'), det = el.querySelector('.edit-details');
+        if (det) det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
+        const vc = h.querySelector('.vote-count');
+        return {
+            id: +(a.getAttribute('href').match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
+            st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el),
+            votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
+        };
+    });
+    const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
+    const next = [...doc.querySelectorAll('.pagination a[href*="page="]')].some(x => +(x.getAttribute('href').match(/page=(\d+)/) || [])[1] > (cur || 1));
+    return { edits, next };
+}
+// what a type is about: "add-cover-art" → "cover art"
+const histEnt = tk => tk.replace(/^(add|edit|remove|reorder|merge|set|change)-/, '').replace(/-/g, ' ');
+function histBursts(es) {
+    const out = [];
+    for (const e of es) {
+        const g = out[out.length - 1], l = g && g.es[g.es.length - 1];
+        if (g && l.ed === e.ed && Math.abs(l.t - e.t) <= H_GAP) g.es.push(e); else out.push({ es: [e] });
+    }
+    return out;
+}
+async function histLoad(n) {
+    const d = data; if (d.busy || !d.more) return;
+    d.busy = true; render();
+    const target = d.edits.length + H_MIN;
+    try {
+        for (let i = 0; i < H_MAXP && d.more; i++) {
+            const p = d.page + 1;
+            let html;
+            if (p === 1 && 'hist/' + d.id === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
+            else { const r = await mbnFetch(`${MB}/release/${d.id}/edits?page=${p}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+            if (n !== showing || data !== d) return;
+            const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
+            d.edits.push(...x.edits.filter(e => !seen.has(e.id))); d.page = p;
+            // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
+            d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && x.edits.length > 0;
+            render();
+            // enough once past the target, unless this page was all one burst that may go on
+            if (d.edits.length >= target) { const b = histBursts(d.edits), l = b[b.length - 1]; if (l.es.length < x.edits.length || !x.edits.length) break; }
+        }
+    } catch (e) { LOG.err('Loading the history of ' + d.id + ' failed: ' + e.message); d.err = e.message; }
+    if (!d.rel) ws('release/' + d.id + '?inc=artist-credits+media+release-groups').then(r => { if (data === d) { d.rel = r; render(); } }, () => {});
+    d.busy = false; if (n === showing && data === d) render();
+}
+const histHue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const histTm = t => t ? new Date(t).toISOString().slice(11, 16) : '';
+const histDay = t => t ? new Date(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'Unknown date';
+const histPills = es => Object.keys(H_ST).map(k => { const c = es.filter(e => e.st === k).length; return c ? `<span class="hst ${k}">${c > 1 || es.length > 1 ? c + ' ' : ''}${H_ST[k]}</span>` : ''; }).join('');
+function histEdit(e) {
+    return `<details class="hed"><summary><span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a><span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}</summary><div class="hdt">${e.det}</div></details>`;
+}
+// a group's edits, a run of one type folded into one line
+function histRuns(es) {
+    const runs = [];
+    for (const e of es) { const r = runs[runs.length - 1]; if (r && r[0].tk === e.tk) r.push(e); else runs.push([e]); }
+    return runs.map(r => r.length === 1 ? histEdit(r[0]) : `<details class="hrun"><summary><span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span><span class="hed"><span class="d">${histTm(r[r.length - 1].t)}–${histTm(r[0].t)}</span></span>${histPills(r)}</summary>${r.map(histEdit).join('')}</details>`).join('');
+}
+function histGroup(key, title, es, av, nm) {
+    const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
+    const t0 = es[es.length - 1].t, t1 = es[0].t, when = t0 === t1 ? histTm(t1) : histTm(t0) + '–' + histTm(t1);
+    return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
+}
+function histPage(app, d) {
+    const r = d.rel, acts = ACTS.map(([p, nm, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}/release/${d.id}/${p}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${nm}</span></a>`).join('') + SRCH();
+    const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
+    const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : '<span>Edit history</span>';
+    const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
+    const name = e => e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden';
+    let body = '';
+    if (d.grp === 'burst' || d.grp === 'day') {
+        const gs = d.grp === 'burst' ? histBursts(es) : es.reduce((a, e) => { const g = a[a.length - 1]; if (g && histDay(g.es[0].t) === histDay(e.t)) g.es.push(e); else a.push({ es: [e] }); return a; }, []);
+        let day = '';
+        for (const g of gs) {
+            const dy = histDay(g.es[0].t); if (dy !== day && d.grp === 'burst') { day = dy; body += `<div class="hday">${esc(dy)}</div>`; }
+            body += d.grp === 'burst' ? histGroup('b' + g.es[0].id, name(g.es[0]), g.es, true, g.es[0].ed) : histGroup('d' + dy, esc(dy), g.es);
+        }
+    } else {
+        const by = d.grp === 'editor' ? e => e.ed || 'Editor hidden' : d.grp === 'type' ? e => e.type : e => H_ST[e.st], m = new Map();
+        es.forEach(e => { const k = by(e); if (!m.has(k)) m.set(k, []); m.get(k).push(e); });
+        for (const [k, g] of [...m].sort((a, b) => b[1].length - a[1].length)) body += histGroup(d.grp + k, d.grp === 'editor' ? name(g[0]) : esc(k), g, d.grp === 'editor', g[0].ed);
+    }
+    const cnt = k => d.edits.filter(e => e.st === k).length;
+    const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}</div>`;
+    const foot = d.busy ? '<div class="hmore">Loading edits…</div>' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.more ? `<div class="hmore">${d.edits.length} edits loaded <button type="button" class="sk-b" data-hmore>Load more</button></div>` : d.edits.length ? `<div class="hmore">All ${d.edits.length} edits</div>` : '<div class="hmore">No edits</div>';
+    app.innerHTML = `<section class="arthd"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>${r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : '<h1>&nbsp;</h1>'}</section><section class="hist">${d.edits.length ? bar : ''}${body}${foot}</section>`;
+    app.onclick = ev => {
+        if (data !== d) return;
+        const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');
+        if (g) { d.grp = S.hgrp = g.dataset.hgrp; d.open.clear(); save(); render(); }
+        else if (s) { d.st = d.st === s.dataset.hst ? '' : s.dataset.hst; render(); }
+        else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing); }
+        else if (h && !t.closest('a')) { const k = h.parentNode.dataset.hg; d.open.has(k) ? d.open.delete(k) : d.open.add(k); const y = scrollY; render(); scrollTo(0, y); }
+    };
 }
 
 /* ── EH / native ───────────────────────────────────── */
@@ -4791,6 +4925,7 @@ async function show(key) {
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'art') { data = { kind: 'art', id }; render(); artLoad(n, id); return; }
+    if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
