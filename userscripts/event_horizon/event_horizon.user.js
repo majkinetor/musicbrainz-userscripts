@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.310002
+// @version      2026.10.27.310003
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4518,7 +4518,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #relationship-editor-form legend::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0}
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend::before{transform:rotate(-45deg);margin:0 2px}
 :root[data-eh-rel] #relationship-editor-form.eh-fold>:not(fieldset),:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset>:not(legend){display:none!important}
-:root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important}` + relHdCss();
+:root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
 const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd)/.test(l)).join('\n')
     .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => '#eh-relhd ' + x.trim()).join(',') + '{');
