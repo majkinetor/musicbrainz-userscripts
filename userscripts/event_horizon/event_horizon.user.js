@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.000900
+// @version      2026.10.26.001000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2126,7 +2126,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 48px;padding-right:44px}
 .detail .grp{display:grid;align-content:start;grid-template-columns:7.5em minmax(0,1fr);gap:3px 12px;margin:0}
 .detail .grp h4{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:14px;min-width:0}
-.detail .grp h4 .tag{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);padding:2px 7px;border-radius:5px}
+.detail .grp h4 .tag svg{width:12px;height:12px;margin-right:5px;vertical-align:-1.5px}.detail .grp h4 .tag{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);padding:2px 7px;border-radius:5px}
 .detail .grp h4 a{font-weight:600;color:var(--text);border-bottom:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
 .detail .grp h4 a:hover{border-color:var(--accent);text-decoration:none}
 .detail .grp dt{text-align:right;color:var(--muted);overflow-wrap:anywhere}
@@ -2632,7 +2632,7 @@ const crName = c => {
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
 function crGroup(tag, type, ent, cr, extra = '') {
-    const head = `<h4><span class="tag">${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    const head = `<h4><span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
     const rows = !cr.length ? '<div class="none">None yet</div>'
         : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
         : byRole(cr).map(([role, cs]) => `<dt>${esc(role)}</dt><dd${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? ' class="stk"' : ''}>${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? cs.map(c => `<div>${crName(c)}</div>`).join('') : andList(cs.map(crName))}</dd>`).join('');
