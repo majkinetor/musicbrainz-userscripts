@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.203000
+// @version      2026.10.27.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3815,12 +3815,39 @@ const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release g
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
-// a visit's picture: its cover from the archive (a missing one falls back to the icon), an artist's or label's cached image
-const visitImg = (k, id) => { if (k === 'release' || k === 'release-group') return `https://coverartarchive.org/${k}/${id}/front-250`; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
+// a visit's picture: its cover from the archive (a missing one falls back to the icon), else the one kept with the visit
+// or an artist's or label's cached image
+const visitImg = v => { const [k, id] = v.key.split('/'); if (k === 'release' || k === 'release-group') return `https://coverartarchive.org/${k}/${id}/front-250`; if (v.img) return v.img; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
+// the picture a loaded page gives its visit: an artist's or label's image, an area's flag (else its first picture),
+// an instrument's Commons image, a recording's first release with a cover; '' for none
+async function visitPic(kind, d) {
+    if (kind === 'artist' || kind === 'label') { const x = await d.img; return x && x[0] ? x[0].src : ''; }
+    if (kind === 'area') { const x = (await d.img) || []; return ((x.find(y => y.from === 'Flag') || x[0]) || {}).src || ''; }
+    if (kind === 'instrument') return commonsImg(d.g.img, 120) || (/^https?:\/\//.test(d.g.img) ? d.g.img : '');
+    if (kind === 'recording') { const x = await d.eds, r = x && (x.releases || []).find(y => (y['cover-art-archive'] || {}).front); return r ? `https://coverartarchive.org/release/${r.id}/front-250` : ''; }
+    return '';
+}
+const VISIT_PIC = ['artist', 'label', 'area', 'instrument', 'recording'];
+const visitSet = (key, img) => { try { GM_setValue('visits', visits().map(x => x.key === key ? Object.assign(x, { img }) : x)); } catch (e) {} };
 function visited(key, d) {
     const r = d.rel || d.g; if (!r) return;
-    const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '' }, ...visits().filter(x => x.key !== key)].slice(0, 12);
+    const old = visits().find(x => x.key === key);
+    const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '', img: old && old.img }, ...visits().filter(x => x.key !== key)].slice(0, 12);
     try { GM_setValue('visits', v); } catch (e) {}
+    if (VISIT_PIC.includes(d.kind)) visitPic(d.kind, d).then(img => visitSet(key, img), () => {});
+}
+// the visits kept before they carried a picture get theirs once, with the fewest requests, and it is shown in place
+async function visitFill(app) {
+    for (const v of visits().filter(x => x.img === undefined)) {
+        const [k, id] = v.key.split('/'); if (!VISIT_PIC.includes(k)) continue;
+        try {
+            const d = k === 'recording' ? { eds: ws(`release?recording=${id}&limit=25`) }
+                : await ws(`${k}/${id}?inc=url-rels`).then(a => k === 'instrument' ? { g: instrument(a) } : { img: k === 'area' ? areaImages(id, a.relations || []) : artistImage(id, a.relations || []) });
+            const img = await visitPic(k, d); visitSet(v.key, img);
+            const ri = img && app.querySelector(`.hm-r[href$="/${k}/${id}"] .hm-ri`);
+            if (ri && !ri.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; ri.prepend(im); hmImg(im); }
+        } catch (e) { LOG.debug('Visit picture for ' + v.key + ' failed: ' + e.message); }
+    }
 }
 // MusicBrainz's own front page carries the latest releases and events (with covers) and the blog's headlines;
 // they are read from the page EH replaced, so they cost no request; a tab opened on another page and moved
@@ -3895,9 +3922,11 @@ function hmWire(app) {
     });
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
-    for (const im of app.querySelectorAll('[data-hmimg]')) { im.nextElementSibling.style.display = 'none'; im.onerror = () => { im.nextElementSibling.style.display = ''; im.remove(); }; }
+    for (const im of app.querySelectorAll('[data-hmimg]')) hmImg(im);
+    visitFill(app);
     if (ME) profLoad(app);
 }
+function hmImg(im) { im.nextElementSibling.style.display = 'none'; im.onerror = () => { im.nextElementSibling.style.display = ''; im.remove(); }; }
 function homeHtml() {
     const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
     const kinds = SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('');
@@ -3917,7 +3946,7 @@ function homeHtml() {
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
-        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(k, id))}${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
+        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(v))}${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
     return hero + me + nrel + rec + news + nev;
