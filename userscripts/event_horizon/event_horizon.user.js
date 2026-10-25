@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.163000
+// @version      2026.10.27.164000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2717,11 +2717,11 @@ const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-t
 const relNoCover = (r, fk) => `<div class="nocover rnc">${fmtSvg(fk, 96, 1.4)}<small>No cover art</small><a class="rnc-add" href="${MB}/release/${r.id}/add-cover-art">+ Add cover art</a></div>`;
 function hero(r) {
     const fk = fmtKind(r.media[0] && r.media[0].format);
-    const rest = r.images.filter(i => !i.front);
-    const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
+    const rest = r.images.filter(i => !i.front), front = r.images.find(i => i.front);
+    const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" data-full="${esc(i.image)}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
     return `<section class="hero">
         <div class="art">
-            ${r.front ? `<img class="cover" data-relcover src="https://coverartarchive.org/release/${r.id}/front-500" alt="Front cover">` : relNoCover(r, fk)}
+            ${r.front ? `<img class="cover" data-relcover src="https://coverartarchive.org/release/${r.id}/front-500"${front ? ` data-full="${esc(front.image)}"` : ''} alt="Front cover">` : relNoCover(r, fk)}
             ${thumbs ? `<div class="thumbs"${S.thumbs ? '' : ' hidden'}>${thumbs}</div>` : ''}
             ${under(r)}
         </div>
@@ -3610,6 +3610,8 @@ function render(keepPop) {
     for (const im of app.querySelectorAll('img')) { const o = oldImgs.get(im.outerHTML); if (o) { im.replaceWith(o); oldImgs.delete(im.outerHTML); } }
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    // a fresh upload has no thumbnails yet: the full image stands in
+    for (const im of app.querySelectorAll('img[data-full]')) im.addEventListener('error', e => { if (im.dataset.full && im.src !== im.dataset.full) { e.stopImmediatePropagation(); im.src = im.dataset.full; } }, true);
     const rc = app.querySelector('[data-relcover]');
     if (rc) rc.onerror = () => { LOG.debug('release cover failed to load', r.id); rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
     const rot = app.querySelector('[data-rot]');
