@@ -3,8 +3,8 @@
 A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder, retype, comment, remove, download and source a release's art, all staged and applied on **Enter edit**.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/art_station/art_station.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/art_station.user.js)
-    - Or via bundle: [String Theory](../string_theory/README.md)
-    - [Picker](./as_picker/README.md) companion: [install](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/as_picker/as_picker.user.js)
+  - Or via bundle: [String Theory](../string_theory/README.md)
+  - [Picker](./as_picker/README.md) companion: [install](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/art_station/as_picker/as_picker.user.js)
 - [Changelog](./CHANGELOG.md)
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=Art+Station)
 
@@ -12,7 +12,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 ## Features
 
-- **[Gallery](#gallery)** on a release's *Cover art* and an event's *Event art* tab: views, grouping, sorting and reordering by drag.
+- **[Gallery](#gallery)** on a release's _Cover art_ and an event's _Event art_ tab: views, grouping, sorting and reordering by drag.
 - **[Actions](#actions)** on one cover or the selection: type, comment, remove, download, report.
 - **[Add images](#add-images)**: files, folders, zips, URLs, MH Covers, reverse-image search.
 - **[Full-screen viewer](#full-screen-viewer)** with zoom, pan and slideshow.
@@ -30,13 +30,13 @@ Art Station's corner icon switches to MusicBrainz's own page and back; right-cli
 | ---------------------------------- | ---------------------------------- |
 | ![](./screenshots/screenshot2.png) | ![](./screenshots/screenshot3.png) |
 
-Each cover shows its size and resolution, and with *Show each cover's file type next to its size* (⚙) its format: `3.2Mb PNG`.
+Each cover shows its size and resolution, and with _Show each cover's file type next to its size_ (⚙) its format: `3.2Mb PNG`.
 
 ## Actions
 
 - **Set type**: tick one or more types; right-click a type to set only that one.
 - **Set comment**: Enter moves to the next cover's comment. With [Mammoth](../mammoth) installed, the comment field gets its 🦣 memory.
-- **Remove**, or the trash can on a cover's hover: the cover moves under the gallery to *Marked for removal*, with a **REMOVE** ribbon, until **Enter edit** removes it. **↺ keep** on one, or **↺ Keep** on a selection, brings it back. A cover whose removal is open for votes stays in the gallery, dashed red, with a **removal open · 6 days** chip that opens the edit, on its card and in the full-screen viewer.
+- **Remove**, or the trash can on a cover's hover: the cover moves under the gallery to _Marked for removal_, with a **REMOVE** ribbon, until **Enter edit** removes it. **↺ keep** on one, or **↺ Keep** on a selection, brings it back. A cover whose removal is open for votes stays in the gallery, dashed red, with a **removal open · 6 days** chip that opens the edit, on its card and in the full-screen viewer.
 - **✓ only this** on a new cover marks every other new cover for removal; the release's own covers stay.
 - **Download** as a zip, [named by type](#file-names--types).
 - **Report** in HTML or Markdown: inline, captioned, or a table (position, file, resolution, size) that also serves as the archive's `README.md`.
@@ -50,7 +50,7 @@ Each cover shows its size and resolution, and with *Show each cover's file type 
 | Zip                                           | drop or pick one; unpacked in the browser like a folder                          |
 | URL                                           | **Ctrl+V** a URL anywhere on the gallery, or the **URL (N)** panel               |
 | [MH Covers](https://covers.musichoarders.xyz) | pick a cover; it's staged as a new one                                           |
-| Reverse-image search                          | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy      |
+| Reverse-image search                          | 🔍 on a cover searches Yandex, Google Lens, TinEye or Bing for a bigger copy     |
 
 An Art Station download, added back as a zip, restores each cover's types and comment.
 
@@ -60,13 +60,13 @@ The **URL (N)** panel has an import for each source the release links, plus any 
 
 A URL can be a store's release page or an image. Art Station takes the store's largest version; the edit note names the page, the image and the smaller one offered:
 
-| Store pages                                |                                                           |
-| ------------------------------------------ | --------------------------------------------------------- |
-| Apple Music, Deezer, Spotify, Tidal, Qobuz | the cover; Qobuz adds its digital booklet when it has one |
-| Bandcamp, Beatport, 7digital, Juno, Melon, Bugs, AllMusic | the cover                                       |
-| Discogs, Amazon                            | every image                                               |
-| VGMdb                                      | every scan, typed by its caption                          |
-| any other page                             | its preview image                                         |
+| Store pages                                               |                                                           |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| Apple Music, Deezer, Spotify, Tidal, Qobuz                | the cover; Qobuz adds its digital booklet when it has one |
+| Bandcamp, Beatport, 7digital, Juno, Melon, Bugs, AllMusic | the cover                                                 |
+| Discogs, Amazon                                           | every image                                               |
+| VGMdb                                                     | every scan, typed by its caption                          |
+| any other page                                            | its preview image                                         |
 
 Links that open the add page with images, as Harmony's do, import with their types and comment.
 
@@ -82,15 +82,15 @@ Its keys are in [Shortcuts](#shortcuts). A zoomed image follows the mouse, or dr
 
 When an added image has no type, it's guessed from its file name (switch it off in ⚙):
 
-| Type | Name contains |
-| --- | --- |
-| Front | `front`, `folder`, `cover`, `frontal`, `recto` |
-| Back | `back`, `rear`, `verso` |
-| Booklet | `booklet`, `inlay`, `insert` |
-| Medium | `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…` |
-| *by name* | `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`, `runout`, `track`, `top`, `bottom`, `raw`, `unedited`, `watermark`; for events `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch` |
+| Type      | Name contains                                                                                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Front     | `front`, `folder`, `cover`, `frontal`, `recto`                                                                                                                                                                                       |
+| Back      | `back`, `rear`, `verso`                                                                                                                                                                                                              |
+| Booklet   | `booklet`, `inlay`, `insert`                                                                                                                                                                                                         |
+| Medium    | `cd`, `disc`, `disk`, `vinyl`, `medium`, `label`, `side a/b/…`                                                                                                                                                                       |
+| _by name_ | `tray`, `obi`, `spine`, `sticker`, `liner`, `poster`, `matrix`, `runout`, `track`, `top`, `bottom`, `raw`, `unedited`, `watermark`; for events `flyer`, `ticket`, `setlist`, `banner`, `program`, `schedule`, `map`, `logo`, `merch` |
 
-Matching is by whole word and order-aware: `back cover` is **Back**, and *Super Disco Pirata* is no type at all.
+Matching is by whole word and order-aware: `back cover` is **Back**, and _Super Disco Pirata_ is no type at all.
 
 Downloads are named `<NN> <types> <comment>.<ext>`, with `none` for no type, e.g. `09 front,sticker Front cover with the sticker.jpg`.
 
@@ -105,7 +105,7 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 
 ## Applying changes
 
-**Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and *make votable* for all.
+**Enter edit** lists the staged operations and submits them as MusicBrainz edits, with one edit note and _make votable_ for all.
 
 - Each operation shows its cover and progress; the top bar counts the batch, with the upload rate while images upload.
 - The edit note starts folded to its first line; click it to edit.
@@ -113,11 +113,11 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 - Uploads go first, then removes and edits, in parallel; one reorder edit runs last and sets the final order.
 - A removed cover that a new one replaces (its rotated copy, or the larger front [Mission Control](../mission_control/README.md) brings) says so in its edit note: the new image's address, size and source, the edit that added it, and the removed one's size.
 - **Repeat** re-runs only the failed operations, and the reorder after them.
-- *Automatically repeat failures* (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
+- _Automatically repeat failures_ (⚙, on) repeats them up to 10 times or 10 minutes, counting down in the footer; **Close** stops it.
 - The log of a page where edits were submitted is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and release. **Clear history** deletes Art Station's.
 
 > [!NOTE]
-> *Upload timeout* (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
+> _Upload timeout_ (⚙, default 10 minutes, at most 120) is how long one file may take to reach the Internet Archive. Raise it for large PDF booklets when the Archive is slow; the failure message says when this limit was hit.
 
 ## Shortcuts
 
@@ -133,13 +133,13 @@ The answer is the credits as printed, each line with its [pattern](../group_ther
 | D         | viewer          | download the original           |
 | P         | viewer          | slideshow                       |
 
-| Mouse                                                  |                                                    |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| right-click / right-drag                               | select / paint-select covers                       |
-| right-click **URL (N)**                                | import from every source                           |
-| middle-click **URL (N)**                               | import from every source, keep only the best cover |
-| wheel on the size slider, or right button held + wheel | resize thumbnails                                  |
-| viewer: wheel                                          | zoom toward the cursor                             |
+| Mouse                                                   |                                                    |
+| ------------------------------------------------------- | -------------------------------------------------- |
+| right-click / right-drag                                | select / paint-select covers                       |
+| right-click **URL (N)**                                 | import from every source                           |
+| middle-click **URL (N)**                                | import from every source, keep only the best cover |
+| wheel on the size buttons, or right button held + wheel | resize thumbnails in fine steps                    |
+| viewer: wheel                                           | zoom toward the cursor                             |
 
 ## Notes
 

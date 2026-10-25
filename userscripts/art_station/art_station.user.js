@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.120000
+// @version      2026.10.27.120100
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -798,6 +798,11 @@
   const MC_EMBED = window.top !== window && new URLSearchParams(location.search).get('mc_embed') === '1';
   let SETTINGS = load();
   if (MC_EMBED && SETTINGS.mcTile) SETTINGS.tile = SETTINGS.mcTile;
+  // thumbnail size presets [name, px, icon columns]; the wheel still sets any size between
+  const TILE_SIZES = [['Small', 140, 4], ['Medium', 200, 3], ['Large', 260, 2], ['Extra large', 330, 1]];
+  const tileIdx = () => TILE_SIZES.reduce((b, s, i) => Math.abs(s[1] - SETTINGS.tile) < Math.abs(TILE_SIZES[b][1] - SETTINGS.tile) ? i : b, 0);
+  const tileIcon = i => { const c = TILE_SIZES[i][2], s = 14 / c;
+    return `<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${Array.from({ length: c * c }, (_, j) => `<rect x="${1 + (j % c) * s}" y="${1 + Math.floor(j / c) * s}" width="${s - (c > 1 ? 1.5 : 0)}" height="${s - (c > 1 ? 1.5 : 0)}" rx="${c > 1 ? 0.5 : 2}"/>`).join('')}</svg>`; };
   // #560 (majkinetor): "Uploading PDF booklet of 50-100MB fails in AS due to
   // timeout (currently visible as IA is slow) while it passes in native uploader.
   // Let's make timeout configurable in minutes, and make default double the
@@ -1331,7 +1336,7 @@
       <button class="as-btn as-add" data-tip="Add ${ENT.noun}\nA drop zone for files, first in the gallery"><span class="as-bi">＋</span><span class="mbu-bt">Add image</span></button>
       ${IS_EVENT ? '' : `<button class="as-btn as-mh" data-tip="MH Covers\nFind a cover on covers.musichoarders.xyz"><img class="as-mh-ic" src="https://covers.musichoarders.xyz/favicon.svg" alt="MH" width="18" height="18"></button>`}
       <button class="as-btn as-src" data-tip="Source ${ENT.noun}\nFrom a linked platform, a registered provider, or any URL"><span class="as-bi">🔗</span><span class="mbu-bt">URL</span><span class="as-src-n"></span></button>
-      <span class="as-ctl"><span class="mbu-bt">Size</span> <input class="as-size" type="range" min="120" max="340" value="${SETTINGS.tile}" data-tip="Thumbnail size\nWheel: over the slider\nRight-click + wheel: anywhere in the gallery"></span>
+      <span class="as-size" data-tip="Thumbnail size\nClick: small, medium, large or extra large\nWheel over the buttons: any size between\nRight-click + wheel: anywhere in the gallery">${TILE_SIZES.map(([n], i) => `<button type="button" class="${i === tileIdx() ? 'on' : ''}" aria-label="${n}">${tileIcon(i)}</button>`).join('')}</span>
       <button class="as-btn as-view" data-tip="Sort and group">View ▾</button>
       ${!canReorder() ? '<span class="as-dragwarn" data-tip="Dragging to reorder is off\nIt works only sorted by Position, in the grid view.\nClick: change the view">⚠</span>' : ''}
       <span class="as-selbox">${selBox()}</span>
@@ -1642,21 +1647,26 @@
     });
   }
 
-  // bump the thumbnail size by one notch (dir +1 bigger / -1 smaller), update the live
-  // CSS var + slider, and persist/re-fit once changes settle. Shared by the size slider's
-  // wheel and the right-click+wheel gallery shortcut (#259).
+  // move the thumbnail size one preset (dir +1 bigger / -1 smaller), update the live
+  // CSS var + S/M/L/XL buttons, and persist/re-fit once changes settle. Shared by the size
+  // buttons' wheel and the right-click+wheel gallery shortcut (#259).
   let _szT = null;
+  function setTile(px) {
+    SETTINGS.tile = px;
+    const cur = tileIdx();
+    root.querySelectorAll('.as-size button').forEach((b, i) => b.classList.toggle('on', i === cur));
+    document.documentElement.style.setProperty('--as-tile', px + 'px'); fitTypePills(); fitFooters();
+    asLog.debug(`size: tile ${px}px (nearest ${TILE_SIZES[cur][0]})`);
+  }
+  // wheel = fine control (25px notches); a click jumps to a preset
   function resizeTile(dir) {
-    SETTINGS.tile = Math.max(120, Math.min(340, SETTINGS.tile + (dir > 0 ? 25 : -25)));   // #259 bigger step → less scrolling
-    const sizeEl = root.querySelector('.as-size'); if (sizeEl) sizeEl.value = SETTINGS.tile;
-    document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); fitTypePills(); fitFooters();
+    setTile(Math.max(120, Math.min(340, SETTINGS.tile + (dir > 0 ? 25 : -25))));   // #259 bigger step → less scrolling
     clearTimeout(_szT); _szT = setTimeout(() => { save(); render(); }, 250);   // persist + re-fit once scrolling settles
   }
   function wire() {
     const sizeEl = root.querySelector('.as-size');
-    sizeEl.oninput = e => { SETTINGS.tile = +e.target.value; document.documentElement.style.setProperty('--as-tile', SETTINGS.tile + 'px'); fitTypePills(); };
-    sizeEl.onchange = () => { save(); render(); };
-    // scroll the wheel over the slider to resize (no need to drag it)
+    sizeEl.querySelectorAll('button').forEach((b, i) => b.onclick = () => { setTile(TILE_SIZES[i][1]); save(); render(); });
+    // scroll the wheel over the buttons to resize
     sizeEl.onwheel = e => { e.preventDefault(); e.stopPropagation(); resizeTile(e.deltaY < 0 ? 1 : -1); };   // stopProp: don't also trigger the RMB+wheel root handler (#259)
     const view = root.querySelector('.as-view'); if (view) view.onclick = e => { e.stopPropagation(); openViewPop(view); };
     const dw = root.querySelector('.as-dragwarn'); if (dw) dw.onclick = () => { SETTINGS.detailed = false; SETTINGS.group = false; SETTINGS.sort = 'type'; save(); render(); };
@@ -7192,7 +7202,11 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   .as-setup-optlbl{display:inline-flex;gap:8px;align-items:center;cursor:pointer}   /* #262 label wraps only checkbox+text so the mode select stays independent */
   .as-setup-num{cursor:default}   /* #560 a number box, not a clickable checkbox row */
   .as-ctl{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mbu-text-dim);white-space:nowrap}
-  .as-size{accent-color:var(--as-acc);flex:0 1 130px;min-width:54px}
+  .as-size{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;flex:none}
+  .as-size button{display:flex;align-items:center;background:var(--mbu-bg);color:var(--mbu-text-dim);border:0;border-right:1px solid var(--mbu-border);padding:5px 8px;cursor:pointer}
+  .as-size button:last-child{border-right:0}
+  .as-size button:hover{color:var(--mbu-text)}
+  .as-size button.on{background:var(--as-acc);color:#fff}
   #as-root select,.as-btn{font-size:13px;font-family:inherit;border:1px solid var(--mbu-border);background:var(--mbu-bg);border-radius:var(--mbu-radius);padding:4px 9px;color:var(--mbu-text);cursor:pointer;white-space:nowrap}
   .as-btn{display:inline-flex;align-items:center;gap:5px}
   /* #234: compact toolbar — hide button labels (keep icons + tooltips) when it would otherwise wrap */
