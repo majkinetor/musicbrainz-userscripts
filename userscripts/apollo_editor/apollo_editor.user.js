@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.25.091801
+// @version      2026.10.25.091916
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2355,42 +2355,35 @@ Click: open the label`;
     picksCat(kind).info(`${on ? 'unpinned' : 'pinned'} ${kind}: ${c.name} (${p.pinned.length} pinned)`);
   }
   const picksAny = kind => { const p = picksLoad(kind); return p.pinned.length + p.recent.length > 0; };
-  // the picker's rows: the pinned and recent entries matching the typed text (all of them when it's
-  // empty; a pinned one isn't repeated under Recent), then the search results not already shown
+  // the picker's rows: one Recent section (collapsed until opened) with the pinned entries first, then
+  // the other recent ones, all filtered by the typed text; then the search results not already shown
   function picksRows(kind, q, res, recentOpen) {
     const p = picksLoad(kind), n = fold(q);
     const hit = x => !n || fold(x.name).includes(n) || fold(x.comment).includes(n);
     const pinnedGids = new Set(p.pinned.map(x => x.gid));
-    const pinned = p.pinned.filter(hit), recent = p.recent.filter(x => !pinnedGids.has(x.gid) && hit(x));
-    const pinnedOpen = !gmLoad(picksKey('pinnedShut')), pinRows = pinnedOpen ? pinned : [];   // Pinned folds too; that stays, for every picker
-    const shown = new Set([...pinRows, ...(recentOpen ? recent : [])].map(x => x.gid));
-    const rows = [...pinRows.map(c => ({ c, src: 'pin' })), ...(recentOpen ? recent.map(c => ({ c, src: 'rec' })) : []), ...(res || []).filter(c => !shown.has(c.gid)).map(c => ({ c, src: 'res' }))];
-    return { rows, pinned: pinned.length, pinRows: pinRows.length, pinnedOpen, recent: recent.length, recentOpen, pinnedGids };
+    const picks = [...p.pinned.filter(hit), ...p.recent.filter(x => !pinnedGids.has(x.gid) && hit(x))];
+    const open = recentOpen ? picks : [], shown = new Set(open.map(x => x.gid));
+    const rows = [...open.map(c => ({ c, src: 'rec' })), ...(res || []).filter(c => !shown.has(c.gid)).map(c => ({ c, src: 'res' }))];
+    return { rows, picks: picks.length, open: open.length, recentOpen, pinnedGids };
   }
-  // the popup's html: Pinned, the collapsible Recent header, then the results under `group(c)`'s
+  // the popup's html: the collapsible Recent header and its rows, then the results under `group(c)`'s
   // headers ('Search' unless the caller has its own). Each row gets the pin toggle. null → nothing to show
   function picksHtml(kind, pk, row, group) {
     const what = kind === 'label' ? 'labels' : 'artists';
-    const recHdr = pk.recent ? `<div class="tc-acsec tc-acrec${pk.recentOpen ? ' open' : ''}" data-tip="${pk.recentOpen ? 'Hide' : 'Show'} the ${what} you picked lately">${CARET_SVG}Recent <span class="tc-acn">${pk.recent}</span></div>` : '';
-    const pinHdr = pk.pinned ? `<div class="tc-acsec tc-acrec tc-acpinh${pk.pinnedOpen ? ' open' : ''}" data-tip="${pk.pinnedOpen ? 'Hide' : 'Show'} the pinned ${what}">${CARET_SVG}Pinned <span class="tc-acn">${pk.pinned}</span></div>` : '';
-    if (!pk.rows.length && !recHdr && !pinHdr) return null;
-    const above = pk.pinned || pk.recent;
-    let h = pinHdr, lastGroup = null;
+    const recHdr = pk.picks ? `<div class="tc-acsec tc-acrec${pk.recentOpen ? ' open' : ''}" data-tip="${pk.recentOpen ? 'Hide' : 'Show'} the pinned ${what} and the ones you picked lately">${CARET_SVG}Recent <span class="tc-acn">${pk.picks}</span></div>` : '';
+    if (!pk.rows.length && !recHdr) return null;
+    let h = recHdr, lastGroup = null;
     pk.rows.forEach((r, i) => {
-      if (i === pk.pinRows) h += recHdr;
-      if (r.src === 'res') { const g = group ? group(r.c) : 'Search'; if (g !== lastGroup && (above || lastGroup !== null || g !== 'Search')) h += `<div class="tc-acsec">${esc(g)}</div>`; lastGroup = g; }
+      if (r.src === 'res') { const g = group ? group(r.c) : 'Search'; if (g !== lastGroup && (recHdr || lastGroup !== null || g !== 'Search')) h += `<div class="tc-acsec">${esc(g)}</div>`; lastGroup = g; }
       const on = pk.pinnedGids.has(r.c.gid);
-      const pin = r.c.gid ? `<span class="tc-acpin${on ? ' on' : ''}" data-tip="${on ? 'Unpin' : `Pin: always on top of this list, for every ${kind}`}">${on ? PIN_SVG : PIN_OFF_SVG}</span>` : '';
+      const pin = r.c.gid ? `<span class="tc-acpin${on ? ' on' : ''}" data-tip="${on ? 'Unpin' : `Pin: always first under Recent, for every ${kind}`}">${on ? PIN_SVG : PIN_OFF_SVG}</span>` : '';
       h += row(r.c, i).replace(/<\/div>$/, pin + '</div>');
     });
-    if (pk.rows.length === pk.pinRows) h += recHdr;
     return h;
   }
   // the pin toggles and the Recent header: they act without picking or closing the popup
   function picksWire(pop, kind, pk, redraw, toggleRecent) {
-    const ph = pop.querySelector('.tc-acpinh');
-    if (ph) ph.onmousedown = e => { e.preventDefault(); e.stopPropagation(); gmSave(picksKey('pinnedShut'), pk.pinnedOpen ? '1' : ''); redraw(); };
-    const rec = pop.querySelector('.tc-acrec:not(.tc-acpinh)');
+    const rec = pop.querySelector('.tc-acrec');
     if (rec) rec.onmousedown = e => { e.preventDefault(); e.stopPropagation(); toggleRecent(); };
     pop.querySelectorAll('.tc-acpin').forEach(b => { b.onmousedown = e => { e.preventDefault(); e.stopPropagation(); const r = pk.rows[+b.closest('[data-i]').dataset.i]; if (r) { picksTogglePin(kind, r.c); redraw(); } }; });
   }
