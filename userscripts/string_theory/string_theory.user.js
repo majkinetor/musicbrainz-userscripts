@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.134736
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.26.111000, art_station 2026.10.26.140000, credit_hoarder 2026.10.25.113207, event_horizon 2026.10.27.130000, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.26.110000, isrc_scout 2026.10.26.140000, mammoth 2026.10.20.120000, mission_control 2026.10.26.140000, platform_check 2026.10.26.140100). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.25.135931
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.26.111000, art_station 2026.10.26.140000, credit_hoarder 2026.10.25.113207, event_horizon 2026.10.27.140000, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.26.110000, isrc_scout 2026.10.26.140000, mammoth 2026.10.20.120000, mission_control 2026.10.26.140000, platform_check 2026.10.26.140100). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -55,6 +55,9 @@
 // @connect      api.discogs.com
 // @connect      api.deezer.com
 // @connect      tidal.com
+// @connect      www.wikidata.org
+// @connect      wikipedia.org
+// @connect      soundcloud.com
 // @match        https://*.musicbrainz.org/*
 // @match        https://harmony.pulsewidth.org.uk/*
 // @match        https://harmony.mybrainz.dev/*
@@ -104,7 +107,6 @@
 // @connect      spclient.wg.spotify.com
 // @connect      volumo.com
 // @connect      hdtracks.azurewebsites.net
-// @connect      soundcloud.com
 // @connect      a-v2.sndcdn.com
 // @connect      api-v2.soundcloud.com
 // @connect      api.audiomack.com
@@ -150,8 +152,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.25.134736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.26.111000\n  · Art Station v2026.10.26.140000\n  · Credit Hoarder v2026.10.25.113207\n  · Event Horizon v2026.10.27.130000\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.26.110000\n  · ISRC Scout v2026.10.26.140000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.26.140000\n  · Platform Check v2026.10.26.140100");
+  console.log('%c String Theory %c v2026.10.25.135931 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.26.111000\n  · Art Station v2026.10.26.140000\n  · Credit Hoarder v2026.10.25.113207\n  · Event Horizon v2026.10.27.140000\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.26.110000\n  · ISRC Scout v2026.10.26.140000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.26.140000\n  · Platform Check v2026.10.26.140100");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -161,7 +163,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.26.111000"],["art_station","Art Station","2026.10.26.140000"],["credit_hoarder","Credit Hoarder","2026.10.25.113207"],["event_horizon","Event Horizon","2026.10.27.130000"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.26.110000"],["isrc_scout","ISRC Scout","2026.10.26.140000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.26.140000"],["platform_check","Platform Check","2026.10.26.140100"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.26.111000"],["art_station","Art Station","2026.10.26.140000"],["credit_hoarder","Credit Hoarder","2026.10.25.113207"],["event_horizon","Event Horizon","2026.10.27.140000"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.26.110000"],["isrc_scout","ISRC Scout","2026.10.26.140000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.26.140000"],["platform_check","Platform Check","2026.10.26.140100"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -4061,12 +4063,12 @@ class ArtistImage {
         this.missDays = o.missDays || 7;
         this.max = o.max || 2000;
         this.providers = o.providers || ArtistImage.PROVIDERS;
-        this.order = o.order || null; // provider keys, or a function returning them
+        this.order = o.order || null; // provider keys, or a function returning them; one left out is off
         this.http = o.http || (u => fetch(u));
         this.log = o.log || null;
     }
 
-    // Discogs and Deezer answer JSON; Tidal and Apple Music are read off their pages' og:image,
+    // Discogs, Deezer and Wikimedia answer JSON; Tidal, Apple Music and SoundCloud are read off their pages' og:image,
     // which only a manager's request can reach (no CORS): pass `http` for those.
     static PROVIDERS = [
         { key: 'discogs', name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async (m, http) => {
@@ -4092,6 +4094,27 @@ class ArtistImage {
             const s = ArtistImage.og(await r.text());
             return s ? s.replace(/\/[^/]+$/, '/500x500bb.jpg') : null; // the page's is a 1200x630 crop
         } },
+        { key: 'soundcloud', name: 'SoundCloud', re: /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/([^/?#]+)\/?(?:[?#]|$)/, get: async (m, http) => {
+            const r = await http('https://soundcloud.com/' + m[1]);
+            if (!r.ok) return null;
+            const s = ArtistImage.og(await r.text());
+            return s && !/default_avatar/.test(s) ? s : null;
+        } },
+        // the entity's own Commons image first, else its Wikidata item's (P18), else its Wikipedia article's
+        { key: 'wikipedia', name: 'Wikipedia', re: [/^https?:\/\/commons\.wikimedia\.org\/wiki\/(File:[^?#]+)/, /^https?:\/\/(?:www\.)?wikidata\.org\/wiki\/(Q\d+)/, /^https?:\/\/([a-z-]+)\.wikipedia\.org\/wiki\/([^?#]+)/], get: async (m, http) => {
+            const fp = f => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(decodeURIComponent(f).replace(/^File:/, '').replace(/ /g, '_')) + '?width=500';
+            if (m[1].startsWith('File:')) return fp(m[1]);
+            if (/^Q\d+$/.test(m[1]) && !m[2]) {
+                const r = await http('https://www.wikidata.org/w/api.php?action=wbgetclaims&property=P18&format=json&origin=*&entity=' + m[1]);
+                if (!r.ok) return null;
+                const c = ((await r.json()).claims || {}).P18, v = c && c[0] && c[0].mainsnak.datavalue;
+                return v ? fp(v.value) : null;
+            }
+            const r = await http('https://' + m[1] + '.wikipedia.org/w/api.php?action=query&prop=pageimages&pithumbsize=500&format=json&origin=*&titles=' + m[2]);
+            if (!r.ok) return null;
+            const pg = Object.values(((await r.json()).query || {}).pages || {})[0];
+            return pg && pg.thumbnail ? pg.thumbnail.source : null;
+        } },
     ];
     static og(html) {
         const m = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/) || html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/);
@@ -4106,8 +4129,8 @@ class ArtistImage {
     }
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
-        const at = k => { const i = o.indexOf(k); return i < 0 ? o.length : i; };
-        return all.slice().sort((a, b) => at(a.key) - at(b.key));
+        const at = k => o.indexOf(k);
+        return all.filter(x => o.includes(x.key)).sort((a, b) => at(a.key) - at(b.key)); // a provider left out of the order is off
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired
@@ -4125,7 +4148,7 @@ class ArtistImage {
         let failed = false;
         const got = await Promise.all(this.providers.map(async p => {
             let m = null, url = '';
-            for (const u of urls) if ((m = u.match(p.re))) { url = u; break; }
+            for (const re of [].concat(p.re)) { for (const u of urls) if ((m = u.match(re))) { url = u; break; } if (m) break; }
             if (!m) return null;
             try { const src = await p.get(m, this.http); return src ? { src, from: p.name, key: p.key, url } : null; }
             catch (e) { failed = true; if (this.log) this.log(p.name + ' image failed: ' + e.message); return null; }
@@ -33994,7 +34017,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/area/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.130000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.130000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.140000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.140000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording and work pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -34184,7 +34207,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
-.art .picw{position:relative}.art .cover.rot{cursor:pointer}
+.art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot{cursor:pointer}
 .art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
@@ -34575,7 +34598,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder', 'imgOff'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -34591,7 +34614,8 @@ const S = {
     ed: { kinds: new Set(), official: false },
     open: new Set(),
     fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
-    imgOrder: ['discogs', 'deezer', 'tidal', 'apple'], // whose artist image or label logo comes first
+    imgOrder: ['discogs', 'wikipedia', 'deezer', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
+    imgOff: [], // the image providers not used
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -35278,8 +35302,10 @@ function annotation(g) {
 // Tidal's and Apple Music's pages send no CORS headers, nor does Deezer's API: the manager fetches them
 const gmFetch = u => new Promise((ok, no) => GM_xmlhttpRequest({ method: 'GET', url: u, onerror: () => no(new Error('network')), ontimeout: () => no(new Error('timeout')), timeout: 15000,
     onload: x => ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }) }));
-const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, order: () => S.imgOrder, log: m => LOG.warn(m) });
+const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, order: () => imgOrder().filter(k => !S.imgOff.includes(k)), log: m => LOG.warn(m) });
 const IMG_PROV = ArtistImage.PROVIDERS.map(p => [p.key, p.name]);
+// the saved order, with providers added since appended
+const imgOrder = () => [...S.imgOrder.filter(k => IMG_PROV.some(x => x[0] === k)), ...IMG_PROV.map(x => x[0]).filter(k => !S.imgOrder.includes(k))];
 // the hero's picture: clicked, it shows the next provider's; the badge on its edge opens that provider's page
 function picHtml(g, cls, none) {
     const xs = g.imgs || [], i = (g.imgI || 0) % (xs.length || 1), x = xs[i];
@@ -36150,15 +36176,16 @@ function cfgBody() {
     // count and number only the picks this release has; the rest stay saved for other releases
     const all = plSorted(ps), shown = all.map(p => p.key).filter(k => S.prov.includes(k));
     const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
-    const tabs = [['release', 'Release'], ['platforms', `Platforms <span class="n">${shown.length}</span>`], ['general', 'General']];
+    const tabs = [['release', 'Release'], ['platforms', `Platforms <span class="n">${shown.length}</span>`], ['artist', 'Artist'], ['general', 'General']];
     const panes = {
         release: row('Info', FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join(''))
             + row('Under the cover', chip('thumbs', 'thumbs', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')),
         platforms: row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
             + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
-        general: row('Images first from', S.imgOrder.map((k, i) => `<button type="button" class="chip p" data-g="imgOrder" data-k="${k}" aria-pressed="true" data-tip="${i ? 'Click to put first' : 'Shown first'}">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}<span class="ord">${i + 1}</span></button>`).join(''), 'Whose picture an artist or label page shows first; clicking the picture shows the next')
-            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
+        artist: row('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
+Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next"),
+        general: row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
     };
     return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
 }
@@ -36198,7 +36225,30 @@ function openCfg() {
         save(); b.innerHTML = cfgBody();
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
     });
+    // an image provider moves with the pointer: dropped on another, it goes before that one; a click without moving toggles it
+    let imgMoved = false;
+    panel.addEventListener('pointerdown', ev => {
+        const c = ev.target.closest('[data-g=imgP]'); if (!c || ev.button) return;
+        const x0 = ev.clientX, y0 = ev.clientY; imgMoved = false;
+        const at = e => { const t = document.elementFromPoint(e.clientX, e.clientY); return t && t.closest('[data-g=imgP]'); };
+        const move = e => {
+            if (!imgMoved && Math.hypot(e.clientX - x0, e.clientY - y0) < 6) return;
+            imgMoved = true; c.classList.add('drag');
+            b.querySelectorAll('[data-g=imgP].over').forEach(x => x.classList.remove('over'));
+            const t = at(e); if (t && t !== c) t.classList.add('over');
+        };
+        const up = e => {
+            removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+            if (!imgMoved) return;
+            const t = at(e);
+            if (t && t !== c) { const o = imgOrder().filter(k => k !== c.dataset.k); o.splice(o.indexOf(t.dataset.k), 0, c.dataset.k); S.imgOrder = o; imgResort(); save(); if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); } }
+            b.innerHTML = cfgBody();
+        };
+        addEventListener('pointermove', move); addEventListener('pointerup', up);
+        ev.preventDefault();
+    });
     panel.addEventListener('click', ev => {
+        if (imgMoved && ev.target.closest('[data-g=imgP]')) { imgMoved = false; return; }
         const tb = ev.target.closest('[data-tab]');
         if (tb) { cfgTab = tb.dataset.tab; b.innerHTML = cfgBody(); return; }
         if (ev.target.closest('.reset')) { Object.assign(S, JSON.parse(DEFAULTS)); }
@@ -36213,13 +36263,15 @@ function openCfg() {
             else if (g === 'plNames' || g === 'plHover') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
-            else if (g === 'imgOrder') { S.imgOrder = [k, ...S.imgOrder.filter(x => x !== k)]; if (data && data.g && data.g.imgs) { data.g.imgs = ARTIMG.sorted(data.g.imgs); data.g.imgI = 0; } }
+            else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();
         b.innerHTML = cfgBody();
         if (ehOn) { const sy = scrollY; render(); scrollTo(0, sy); }
     });
 }
+// the open artist's or label's pictures follow a new order: all of them stay cached, the order picks and sorts
+function imgResort() { if (data && data.g && data.g.imgsAll) { data.g.imgs = ARTIMG.sorted(data.g.imgsAll); data.g.imgI = 0; } }
 const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
 function launcher() {
     const st = document.createElement('style'); st.id = 'eh-launch-css';
@@ -36311,7 +36363,7 @@ async function show(key) {
         if (d.lists) d.lists.then(x => { if (n === showing && data === d) { d.listsX = x; render(); } });
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
-        if (d.img) d.img.then(x => { if (n === showing && data === d && x.length) { d.g.imgs = x; render(); } });
+        if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
     }

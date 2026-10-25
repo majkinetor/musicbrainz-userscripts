@@ -16,12 +16,12 @@ class ArtistImage {
         this.missDays = o.missDays || 7;
         this.max = o.max || 2000;
         this.providers = o.providers || ArtistImage.PROVIDERS;
-        this.order = o.order || null; // provider keys, or a function returning them
+        this.order = o.order || null; // provider keys, or a function returning them; one left out is off
         this.http = o.http || (u => fetch(u));
         this.log = o.log || null;
     }
 
-    // Discogs and Deezer answer JSON; Tidal and Apple Music are read off their pages' og:image,
+    // Discogs, Deezer and Wikimedia answer JSON; Tidal, Apple Music and SoundCloud are read off their pages' og:image,
     // which only a manager's request can reach (no CORS): pass `http` for those.
     static PROVIDERS = [
         { key: 'discogs', name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async (m, http) => {
@@ -47,6 +47,27 @@ class ArtistImage {
             const s = ArtistImage.og(await r.text());
             return s ? s.replace(/\/[^/]+$/, '/500x500bb.jpg') : null; // the page's is a 1200x630 crop
         } },
+        { key: 'soundcloud', name: 'SoundCloud', re: /^https?:\/\/(?:www\.|m\.)?soundcloud\.com\/([^/?#]+)\/?(?:[?#]|$)/, get: async (m, http) => {
+            const r = await http('https://soundcloud.com/' + m[1]);
+            if (!r.ok) return null;
+            const s = ArtistImage.og(await r.text());
+            return s && !/default_avatar/.test(s) ? s : null;
+        } },
+        // the entity's own Commons image first, else its Wikidata item's (P18), else its Wikipedia article's
+        { key: 'wikipedia', name: 'Wikipedia', re: [/^https?:\/\/commons\.wikimedia\.org\/wiki\/(File:[^?#]+)/, /^https?:\/\/(?:www\.)?wikidata\.org\/wiki\/(Q\d+)/, /^https?:\/\/([a-z-]+)\.wikipedia\.org\/wiki\/([^?#]+)/], get: async (m, http) => {
+            const fp = f => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(decodeURIComponent(f).replace(/^File:/, '').replace(/ /g, '_')) + '?width=500';
+            if (m[1].startsWith('File:')) return fp(m[1]);
+            if (/^Q\d+$/.test(m[1]) && !m[2]) {
+                const r = await http('https://www.wikidata.org/w/api.php?action=wbgetclaims&property=P18&format=json&origin=*&entity=' + m[1]);
+                if (!r.ok) return null;
+                const c = ((await r.json()).claims || {}).P18, v = c && c[0] && c[0].mainsnak.datavalue;
+                return v ? fp(v.value) : null;
+            }
+            const r = await http('https://' + m[1] + '.wikipedia.org/w/api.php?action=query&prop=pageimages&pithumbsize=500&format=json&origin=*&titles=' + m[2]);
+            if (!r.ok) return null;
+            const pg = Object.values(((await r.json()).query || {}).pages || {})[0];
+            return pg && pg.thumbnail ? pg.thumbnail.source : null;
+        } },
     ];
     static og(html) {
         const m = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/) || html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/);
@@ -61,8 +82,8 @@ class ArtistImage {
     }
     sorted(all) {
         const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
-        const at = k => { const i = o.indexOf(k); return i < 0 ? o.length : i; };
-        return all.slice().sort((a, b) => at(a.key) - at(b.key));
+        const at = k => o.indexOf(k);
+        return all.filter(x => o.includes(x.key)).sort((a, b) => at(a.key) - at(b.key)); // a provider left out of the order is off
     }
 
     // every cached image in order ([] for a cached miss), undefined when there is none or it expired
@@ -80,7 +101,7 @@ class ArtistImage {
         let failed = false;
         const got = await Promise.all(this.providers.map(async p => {
             let m = null, url = '';
-            for (const u of urls) if ((m = u.match(p.re))) { url = u; break; }
+            for (const re of [].concat(p.re)) { for (const u of urls) if ((m = u.match(re))) { url = u; break; } if (m) break; }
             if (!m) return null;
             try { const src = await p.get(m, this.http); return src ? { src, from: p.name, key: p.key, url } : null; }
             catch (e) { failed = true; if (this.log) this.log(p.name + ' image failed: ' + e.message); return null; }
