@@ -1858,7 +1858,7 @@ const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="tru
 
 const CSS = `
 .hm-hero{position:relative;margin:22px 0 8px;padding:26px 190px 18px 4px;color:var(--text)}
-.hm-orb{position:absolute;right:4px;top:8px;width:150px!important;height:150px!important;pointer-events:none}
+.hm-orb{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:150px!important;height:150px!important;pointer-events:none}
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-k{position:relative;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -1873,10 +1873,13 @@ const CSS = `
 .hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
 .hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:var(--muted)!important;text-decoration:none!important;background:none;border:1px solid var(--border);cursor:pointer}
 .hm-qr a:hover,.hm-tg.on{background:var(--chip)!important;color:var(--text)!important}.hm-qr b{color:var(--accent);font-weight:700}.hm-tg svg{width:13px;height:13px}
-.hm-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
-.hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 8px 11px;text-align:center;font-weight:700;font-size:13px;color:var(--text)!important;text-decoration:none!important}
-.hm-tile:hover{border-color:var(--accent);box-shadow:0 4px 14px var(--shadow)}
-.hm-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin:0 auto 8px;color:#fff}
+.hm-srch button.hm-tg{display:grid;place-items:center;width:38px;height:36px;padding:0;background:none;color:var(--muted)}
+.hm-srch button.hm-tg:hover,.hm-srch button.hm-tg.on{background:var(--chip);color:var(--accent)}
+.hm-add{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px}
+.hm-add span{color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-right:4px}
+.hm-add a{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--c)!important;text-decoration:none!important}
+.hm-add a:hover{background:var(--chip)}
+.hm-add a svg,.hm-srch button.hm-tg svg{width:20px;height:20px}
 .hm-covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
 .hm-cv{min-width:0;color:var(--text)!important;text-decoration:none!important}
 .hm-art{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--chip);box-shadow:0 4px 12px var(--shadow)}
@@ -3651,13 +3654,14 @@ async function edMore() {
 // MusicBrainz's front page as a launch pad: search, adding things, your own pages and the pages you last opened.
 // Nothing here asks MusicBrainz for anything: it is all links, and the visits this script keeps itself.
 let ME = '';
+const MK_RELEASE = '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>', MK_RG = '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>';
 const HM_ADD = [
-    ['release/add', 'Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'],
+    ['release/add', 'Release', MK_RELEASE],
     ['artist/create', 'Artist', MK_CR],
     ['label/create', 'Label', CI_TAG],
     ['work/create', 'Work', MK_WORK],
     ['recording/create', 'Recording', MK_REC],
-    ['release-group/create', 'Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'],
+    ['release-group/create', 'Release group', MK_RG],
     ['event/create', 'Event', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
     ['place/create', 'Place', '<path d="M12 21s-7-6.500-7-12a7 7 0 0 1 14 0c0 5.500-7 12-7 12z"/><circle cx="12" cy="9" r="2.500"/>'],
     ['series/create', 'Series', '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>'],
@@ -3672,7 +3676,7 @@ const HM_ME = [
     ['tags', 'Tags', CI_TAG],
     ['', 'Profile', MK_CR],
 ];
-const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'], 'release-group': ['Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA] };
+const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA] };
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -3755,12 +3759,11 @@ function homeHtml() {
     const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
     const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
     const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-k">MusicBrainz · Event Horizon</div><div class="hm-hi">${hi}</div>
-        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="submit">Search</button>
+        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button><button type="submit">Search</button>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method"><option value="indexed">Indexed</option><option value="advanced">Indexed, with advanced query syntax</option><option value="direct">Direct database search</option></select>
         <label>Results per page</label><select name="limit"><option>25</option><option selected>50</option><option>100</option></select>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
-        <div class="hm-qr"><a class="hm-tg${S.hmAdv ? ' on' : ''}" role="button" tabindex="0">${SVG(LENS)} Advanced search</a>${qs}</div></header>`;
-    const add = sect('hadd', 'Add', '', `<div class="hm-tiles">${HM_ADD.map(([p, n, ic], i) => `<a class="hm-tile" href="${MB}/${p}"><span class="hm-ic" style="background:${HM_CLR[i]}">${SVG(ic)}</span>${n}</a>`).join('')}</div>`, '');
+        ${qs ? `<div class="hm-qr">${qs}</div>` : ''}<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav></header>`;
     const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
     const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" title="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
     const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
@@ -3772,7 +3775,7 @@ function homeHtml() {
         return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(k, id))}${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
-    return hero + add + me + nrel + rec + news + nev;
+    return hero + me + nrel + rec + news + nev;
 }
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
