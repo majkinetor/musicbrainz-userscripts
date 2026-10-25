@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.001200
+// @version      2026.10.26.001300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2006,11 +2006,16 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .quiet a.qi{opacity:.9}
 .quiet a.qi:hover{opacity:1}
 .rl-one{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
-.rl-one .icons{display:flex;flex-wrap:nowrap;gap:0;align-items:flex-end;overflow:hidden;min-width:0;flex:0 1 auto}
+.rl-one .icons{display:flex;flex-wrap:nowrap;gap:0;align-items:flex-end;overflow:visible;min-width:0;flex:0 1 auto}
 .rl-one a.qi{display:inline-grid;place-items:center;width:calc(var(--rl-size,28px) + 8px);height:calc(var(--rl-size,28px) + 8px);flex:none}
 .rl-one .kg{display:flex;flex-direction:column;gap:4px;flex:none;padding-left:28px}
 .rl-one .kg:first-child{padding-left:0}
 .rl-one .kg .label{font-size:11px}
+.rl-one .qk{position:relative;display:inline-flex}
+.rl-one .qk>.popwrap{position:absolute;right:-14px;top:-8px}
+.rl-one button.kn{min-width:20px;height:18px;padding:0 5px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font:700 11px/1 inherit;cursor:pointer}
+.rl-one button.kn:hover,.rl-one button.kn[aria-expanded="true"]{color:var(--text);border-color:var(--muted)}
+.pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
 .rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
 .lnk{font-size:13px;font-weight:700;background:none;border:0;color:var(--link);cursor:pointer;padding:0 4px}
@@ -2440,7 +2445,8 @@ const ORDER = ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic', 'youtu
 const rank = p => { const i = ORDER.indexOf(p.key); return i < 0 ? 99 : i; };
 const sortP = ps => [...ps].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['info', 'Info']];
-const primaryKind = p => p.kinds.includes('listen') ? 'listen' : p.kinds.includes('free') ? 'free' : p.kinds.includes('buy') ? 'buy' : 'info';
+// a platform shows under one kind, free streaming first (majkinetor); its other kinds are behind +N
+const primaryKind = p => p.kinds.includes('free') ? 'free' : p.kinds.includes('listen') ? 'listen' : p.kinds.includes('buy') ? 'buy' : 'info';
 const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
 const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
 const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
@@ -2544,8 +2550,17 @@ function hero(r) {
 function rlQuiet(r) {
     if (!r.links.length) return '—';
     const ps = KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k)));
-    const kindOf = p => KINDS.find(([k]) => k === primaryKind(p))[1];
-    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => plA(p, S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `)).join('')}</span></span>` : ''; }).join('');
+    const kname = k => KINDS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
+    // the platform's link of a kind; its icon leads with its first kind's
+    const urlOf = (p, k) => (p.urls.find(u => KIND(u.type) === k) || p.urls[0]).url;
+    const lead = p => ({ ...p, urls: [...p.urls].sort((a, b) => (KIND(b.type) === primaryKind(p)) - (KIND(a.type) === primaryKind(p))) });
+    const kRow = (p, k) => `<a class="row" href="${esc(urlOf(p, k))}" target="_blank" rel="noopener">${icon(p, 22)}<span>${kname(k)}</span></a>`;
+    const qi = (p, i) => {
+        const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
+        if (!rest.length) return a;
+        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${rest.length} more kinds on ${esc(p.name)}" data-tip="Also ${rest.map(kname).join(', ')}">+${rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}</div></span></span>`;
+    };
+    const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     const rows = ps.map((p, i) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r"><span class="iso">${kindOf(p)}</span></span></a>`).join('');
     return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r" id="pop-rlmore" hidden><div class="h label">More sites</div>${rows}</div></span></div>`;
 }
@@ -3072,13 +3087,14 @@ function railSpy() {
 // the release links stay on one row; what doesn't fit goes behind +N
 function fitQuiet() {
     const box = $('.rl-one'); if (!box) return;
-    const more = box.querySelector('.popwrap'), ic = [...box.querySelectorAll('a.qi')], gs = [...box.querySelectorAll('.kg')];
-    ic.forEach(x => { x.hidden = false; }); gs.forEach(g => { g.hidden = false; }); more.hidden = true;
+    const more = box.querySelector(':scope>.popwrap'), ic = [...box.querySelectorAll('a.qi')], gs = [...box.querySelectorAll('.kg')];
+    const hide = (x, h) => { (x.closest('.qk') || x).hidden = h; x.hidden = h; };
+    ic.forEach(x => hide(x, false)); gs.forEach(g => { g.hidden = false; }); more.hidden = true;
     const left = box.getBoundingClientRect().left, avail = box.getBoundingClientRect().width;
     let shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail);
     if (shown >= 0) {
         shown = ic.findIndex(x => x.getBoundingClientRect().right - left > avail - 48);
-        ic.slice(shown).forEach(x => { x.hidden = true; });
+        ic.slice(shown).forEach(x => hide(x, true));
         gs.forEach(g => { g.hidden = !g.querySelector('a.qi:not([hidden])'); });
         more.hidden = false; more.querySelector('button').textContent = '+' + (ic.length - shown);
     } else shown = ic.length;
