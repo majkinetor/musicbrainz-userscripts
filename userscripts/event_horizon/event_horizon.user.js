@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.140000
+// @version      2026.10.27.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3688,9 +3688,19 @@ function visited(key, d) {
     try { GM_setValue('visits', v); } catch (e) {}
 }
 // MusicBrainz's own front page carries the latest releases and events (with covers) and the blog's headlines;
-// they are read from the page EH replaced, so they cost no request.
+// they are read from the page EH replaced, so they cost no request; a tab opened on another page and moved
+// home in place has no such page, so MusicBrainz's front page is fetched once (hmFetch) and the home redrawn.
+let hmDoc = null, hmGet = null;
+function hmFetch() {
+    if (hmGet) return; const n = showing;
+    hmGet = mbnFetch(MB + '/').then(r => r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))).then(t => {
+        hmDoc = new DOMParser().parseFromString(t, 'text/html').body;
+        if (n === showing && data && data.kind === 'home') render();
+    }).catch(e => { hmGet = null; console.warn('[Event Horizon] front page fetch failed', e); });
+}
 function hmFront() {
-    const doc = mbBody || document.body, art = { release: [], event: [] };
+    const doc = hmDoc || (mbHome ? mbBody : null), art = { release: [], event: [] };
+    if (!doc) { hmFetch(); return { rel: [], ev: [], blog: [] }; }
     doc.querySelectorAll('.artwork-cont a[href]').forEach(a => {
         const m = a.getAttribute('href').match(/^\/(release|event)\/([0-9a-f-]{36})/); if (!m) return;
         const sp = a.querySelector('[data-small-thumbnail]'), img = sp ? sp.getAttribute('data-small-thumbnail') : (a.querySelector('img') || {}).src;
@@ -3923,7 +3933,7 @@ const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
 
-let mbBody = null, mbTitle = '', ehBody = null, ehOn = false;
+let mbBody = null, mbHome = false, mbTitle = '', ehBody = null, ehOn = false;
 const HIDE = 'body{visibility:hidden!important}';
 // MusicBrainz's own stylesheets go off while the viewer shows, and back on with its page
 // MusicBrainz's own sheets only: the other scripts' styles carry an id (fs-style, mc-style…) and stay on for their launchers
@@ -4210,7 +4220,7 @@ function launcher() {
 let LOG;
 function start() {
     LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin' });
-    mbBody = document.body; mbTitle = document.title;
+    mbBody = document.body; mbTitle = document.title; mbHome = location.pathname === '/';
     // the signed-in editor, off MusicBrainz's header: the home page's own links go to their pages
     const ua = mbBody.querySelector('.header a[href*="/user/"], header a[href*="/user/"]');
     if (ua) ME = decodeURIComponent(ua.getAttribute('href').split('/user/')[1].split('/')[0]);
