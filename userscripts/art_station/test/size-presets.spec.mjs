@@ -21,9 +21,17 @@ test('thumbnail size: presets on click, fine steps on the wheel', { tag: ['@sand
   check(s.tile === '330px' && s.on === 3, `XL click → 330px, XL on (${JSON.stringify(s)})`);
 
   await page.locator('#as-root .as-size button').nth(0).hover();
+  await page.waitForTimeout(800);   // let the tooltip show first
   await page.mouse.wheel(0, 100); await frames(page);
   s = await state();
   check(s.tile === '305px' && s.on === 3, `wheel down → 305px, XL still nearest (${JSON.stringify(s)})`);
+  const tipOn = () => page.evaluate(() => !!document.querySelector('#mbu-tip.mbu-tip-on'));
+  check(!(await tipOn()), 'the tooltip hides while the wheel turns');
+  await page.waitForTimeout(1200);   // past the settle-render
+  check(!(await tipOn()), 'and stays hidden after the gallery re-renders under the pointer');
+  await page.mouse.move(5, 5); await page.locator('#as-root .as-size button').nth(2).hover();
+  await page.waitForTimeout(1000);
+  check(await tipOn(), 'it shows again once the pointer leaves and comes back');
 
   await page.locator('#as-root .as-size button').nth(1).click(); await frames(page);
   s = await state();
