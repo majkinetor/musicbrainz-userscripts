@@ -67,7 +67,7 @@ Each part is optional, and Apollo's corner icon switches to MusicBrainz's own ed
 
 The artist and label pickers remember what you set, so an artist or label you use often is one click away.
 
-- An empty field lists your **Pinned** artists (or labels), then a **Recent** header with the last 30 you picked. Recent starts collapsed; click its header to open it.
+- An empty field lists your **Pinned** artists (or labels), then a **Recent** header with the last 30 you picked. Recent starts collapsed; click its header to open it. Pinned folds the same way, and stays as you leave it.
 - Typing filters both lists, and the search's results follow below them.
 - A row's pin icon pins or unpins it without setting it. Pinned ones stay until you unpin them, and aren't repeated under Recent.
 - Artists and labels each have one list, shared by every field and release.

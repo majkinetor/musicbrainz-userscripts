@@ -35,10 +35,15 @@ test('an emptied artist field lists the pinned artists and a collapsed Recent', 
   });
   check(await until(async () => (await read()) !== null), 'the emptied field opens the list');
   let s = await read();
-  check(JSON.stringify(s.secs) === JSON.stringify(['Pinned', 'Recent 2']), `Pinned, then Recent with its count (${JSON.stringify(s.secs)})`);
+  check(JSON.stringify(s.secs) === JSON.stringify(['Pinned 1', 'Recent 2']), `Pinned, then Recent with its count (${JSON.stringify(s.secs)})`);
   check(JSON.stringify(s.rows) === JSON.stringify([bach.name]), `only the pinned artist is shown; Recent is collapsed (${JSON.stringify(s.rows)})`);
 
-  await page.locator('.tc-acpop .tc-acrec').dispatchEvent('mousedown');
+  await page.locator('.tc-acpop .tc-acpinh').dispatchEvent('mousedown');
+  s = await read();
+  check(s && s.rows.length === 0 && s.secs[0] === 'Pinned 1', `Pinned folds too (${JSON.stringify(s)})`);
+  await page.locator('.tc-acpop .tc-acpinh').dispatchEvent('mousedown');
+
+  await page.locator('.tc-acpop .tc-acrec:not(.tc-acpinh)').dispatchEvent('mousedown');
   s = await read();
   check(JSON.stringify(s.rows) === JSON.stringify([bach.name, mozart.name, kitchener.name]), `Recent opens below, without repeating the pinned one (${JSON.stringify(s && s.rows)})`);
 
