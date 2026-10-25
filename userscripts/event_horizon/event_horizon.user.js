@@ -2024,6 +2024,11 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .popwrap{position:relative;display:inline-flex}
 .pop{position:absolute;top:calc(100% + 6px);left:0;z-index:15;min-width:280px;max-width:min(360px,calc(100vw - 32px));max-height:440px;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 40px var(--shadow);padding:8px}
 .pop.r{left:auto;right:0}
+.pop.more-sites{width:max-content;max-width:min(980px,calc(100vw - 32px));max-height:min(640px,calc(100vh - 120px));padding:10px 12px}
+.more-sites .mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 6px;width:min(940px,calc(100vw - 56px))}
+.more-sites .mg .row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.more-sites .mk+.mk{margin-top:6px}
+.more-sites .mflt{box-sizing:border-box;width:100%;margin:0 0 6px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
 .pop .h{padding:8px 10px 4px}
 .pop .hint{padding:0 10px 8px;font-size:13px;color:var(--muted)}
 .pop a.row,.pop button.opt{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:600;font-size:14px;border:0;background:none;cursor:pointer;text-align:left;text-transform:none;letter-spacing:0}
@@ -2581,8 +2586,9 @@ function rlQuiet(r) {
         return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${rest.length} more kinds on ${esc(p.name)}" data-tip="+${rest.length}: also ${rest.map(kname).join(', ')}">+${rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
-    const rows = ps.map((p, i) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r"><span class="iso">${kindOf(p)}</span></span></a>`).join('');
-    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r" id="pop-rlmore" hidden><div class="h label">More sites</div>${rows}</div></span></div>`;
+    // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row
+    const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
+    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
 
 /* ── editions ──────────────────────────────────────── */
@@ -3143,7 +3149,15 @@ function fitQuiet() {
         gs.forEach(g => { g.hidden = !g.querySelector('a.qi:not([hidden])'); });
         more.hidden = false; more.querySelector('button').textContent = '+' + (ic.length - shown);
     } else shown = ic.length;
-    more.querySelectorAll('.row').forEach(x => { x.hidden = +x.dataset.i < shown; });
+    const rows = [...more.querySelectorAll('.row')], flt = more.querySelector('.mflt');
+    // a long list gets a filter; a kind with nothing left to show loses its heading
+    const apply = () => {
+        const q = flt.value.trim().toLowerCase();
+        rows.forEach(x => { x.hidden = +x.dataset.i < shown || (q && !x.textContent.toLowerCase().includes(q)); });
+        more.querySelectorAll('.mk').forEach(m => { m.hidden = !m.querySelector('.row:not([hidden])'); });
+    };
+    flt.hidden = ic.length - shown <= 20; flt.oninput = apply;
+    apply();
 }
 let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1600); }
