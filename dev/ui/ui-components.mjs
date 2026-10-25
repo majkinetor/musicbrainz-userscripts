@@ -90,7 +90,7 @@ const CSS = [
     // An icon only, no frame or fill (maintainer, 2026-10-25): the tooltip says what it is.
     '.mbu-help{display:inline-grid;place-items:center;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:none;',
     'color:var(--mbu-text-weak);text-decoration:none;line-height:1}.mbu-help svg{width:18px;height:18px;display:block}',
-    '.mbu-help:hover{color:var(--mbu-accent);background:none;text-decoration:none}',
+    '.mbu-help:hover{color:var(--mbu-accent-text,var(--mbu-accent));background:none;text-decoration:none}',
     // config headers are flex rows: the help link is the last thing on the line
     'h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}',
 
