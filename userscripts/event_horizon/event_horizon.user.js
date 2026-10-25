@@ -1913,7 +1913,6 @@ const CSS = `
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
 .u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
 .u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
-.u-ratio{height:10px;border-radius:5px;background:#c4466a;overflow:hidden}.u-ratio i{display:block;height:100%;background:#3f8f7a}.u-rnote{margin:6px 0 12px;color:var(--muted);font-size:12px}
 .u-bars .u-bar{display:grid;grid-template-columns:130px 1fr 64px;gap:8px;align-items:center;font-size:13px;padding:3px 0;color:var(--text)!important;text-decoration:none!important}.u-bar i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-bar em{font-style:normal;text-align:right;color:var(--muted)}a.u-bar:hover span{color:var(--accent)}
 .u-votes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.u-vcol{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px}.u-vcol h3{margin:0 0 8px;font-size:13px;color:var(--muted)}
 .u-vr{display:grid;grid-template-columns:70px 1fr 90px;gap:8px;align-items:center;font-size:13px;padding:3px 0}.u-vr i{height:8px;border-radius:4px;background:var(--chip)}.u-vr b{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-vr em{font-style:normal;text-align:right}.u-vr small{color:var(--muted);margin-left:6px}.u-vt{margin-top:6px;font-size:12px;color:var(--muted)}
@@ -4148,9 +4147,6 @@ function userHtml(d) {
             body = rs.length ? `<div class="u-bars">${rs.map(r => link(r, `<span>${esc(r.l)}</span><i style="width:${Math.max(2, r.v[0] / top * 100)}%"></i><em>${fmtN(r.v[0])}</em>`, 'u-bar')).join('')}</div>` : '<p class="hm-none">Nothing added yet.</p>';
         } else {
             body = `<div class="u-sts">${t.rows.map(r => link(r, `<b>${fmtN(r.v[0])}</b><small>${esc(r.l)}</small>`, 'hm-st u-st' + (r.cls ? ' ' + r.cls : ''))).join('')}</div>`;
-            // the edits: how many of the decided ones went in, against those voted down
-            const g = c => (t.rows.find(r => r.cls === c) || { v: [0] }).v[0], ok = g('positive'), bad = g('negative');
-            if (i === 0 && ok + bad) body = `<div class="u-ratio"><i style="width:${(ok / (ok + bad) * 100).toFixed(2)}%"></i></div><p class="u-rnote">${(ok / (ok + bad) * 100).toFixed(2)}% applied, ${fmtN(bad)} voted down</p>` + body;
         }
         return sect(id, esc(t.title), tools, body, '');
     }).join('');
