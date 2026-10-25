@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.220000
+// @version      2026.10.27.221000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1859,7 +1859,7 @@ const FORMAT_ICONS = {
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
-.hm-hero{position:relative;margin:22px 0 8px;padding:26px 400px 18px 4px;color:var(--text)}
+.hm-hero{position:relative;margin:0 0 8px;padding:6px 400px 18px 4px;color:var(--text)}
 .hm-orb{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:150px!important;height:150px!important;pointer-events:none}
 .hm-wm{position:absolute;right:178px;top:50%;transform:translateY(-50%);text-align:right;pointer-events:none}.hm-wm b{display:block;font-size:26px;font-weight:300;letter-spacing:.35em;line-height:1.25;text-transform:uppercase;color:var(--text)}.hm-wm small{display:block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--accent)}
 @media (max-width:1100px){.hm-hero{padding-right:190px}.hm-wm{display:none}}
