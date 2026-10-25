@@ -3308,6 +3308,15 @@ function build() {
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
+        // a group's chevron does the same for its section's groups
+        const g = ehOn && ev.target.closest && ev.target.closest('.gf[data-gfold]');
+        if (g) {
+            ev.preventDefault();
+            const ks = [...g.closest('section').querySelectorAll('.gf[data-gfold]')].map(x => x.dataset.gfold);
+            S.grpFold = S.grpFold.includes(g.dataset.gfold) ? S.grpFold.filter(x => !ks.includes(x)) : [...new Set([...S.grpFold, ...ks])];
+            const y = scrollY; render(); scrollTo(0, y);
+            return;
+        }
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
         if (!b) return;
         ev.preventDefault();
