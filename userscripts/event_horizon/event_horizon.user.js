@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.262000
+// @version      2026.10.27.263000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4489,6 +4489,29 @@ function build() {
             const top = gr.getBoundingClientRect().top, y = scrollY; render();
             const nb = [...document.querySelectorAll('.gf[data-gfold]')].find(x => x.dataset.gfold === gr.dataset.gfold);
             scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
+            return;
+        }
+        // a track row folds its disc; a disc's head, or anything else in a section, folds the section
+        // (a link, a field or selected text keeps the browser's menu)
+        const own = ehOn && ev.target.closest && !ev.target.closest('a,input,select,textarea,.fold') && !String(getSelection()).trim();
+        let dk = own && ev.target.closest('.tl>:not(.disc,.tl-foot)');
+        while (dk && !dk.matches('.disc')) dk = dk.previousElementSibling;
+        if (dk) {
+            ev.preventDefault();
+            S.discFold = [...new Set([...S.discFold, +dk.dataset.disc])];
+            const top = dk.getBoundingClientRect().top, y = scrollY; render();
+            const nb = document.querySelector(`.disc[data-disc="${dk.dataset.disc}"]`);
+            scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
+            return;
+        }
+        const sc = own && ev.target.closest('#app>section.sec');
+        const sb = sc && sc.querySelector('.fold[data-fold]');
+        if (sb && !S.fold.includes(sb.dataset.fold)) {
+            ev.preventDefault();
+            S.fold = [...S.fold, sb.dataset.fold];
+            const top = sc.getBoundingClientRect().top, y = scrollY; render();
+            const ns = document.getElementById(sc.id);
+            scrollTo(0, ns && top < 0 ? scrollY + ns.getBoundingClientRect().top - 80 : y);
             return;
         }
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');

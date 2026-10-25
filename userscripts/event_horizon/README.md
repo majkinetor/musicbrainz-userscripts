@@ -68,3 +68,5 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Esc         | filter      | clear it          |
 | Esc         | a menu      | close it          |
 | Right-click | corner icon | open the settings |
+| Right-click | a track     | fold its disc     |
+| Right-click | a section   | fold the section  |

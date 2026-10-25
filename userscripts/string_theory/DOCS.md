@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 20:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 20:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -789,6 +789,8 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Esc         | filter      | clear it          |
 | Esc         | a menu      | close it          |
 | Right-click | corner icon | open the settings |
+| Right-click | a track     | fold its disc     |
+| Right-click | a section   | fold the section  |
 
 ---
 
