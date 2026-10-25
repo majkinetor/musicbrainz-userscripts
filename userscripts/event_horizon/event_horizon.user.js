@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.220000
+// @version      2026.10.26.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2531,7 +2531,7 @@ function fmtSummary(fs) {
 const isrcHtml = i => i.length === 12 ? `<span class="isrc" data-tip="${esc(i)}">${i.slice(0, 2)}<span class="d">-</span>${i.slice(2, 5)}<span class="d">-</span>${i.slice(5, 7)}<span class="d">-</span>${i.slice(7)}</span>` : `<span class="isrc">${esc(i)}</span>`;
 const dur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
 const total = tracks => dur(tracks.reduce((s, t) => s + t.lenMs, 0));
-const grpHead = (key, name, n) => { const shut = S.grpFold.includes(key); return [shut, `<button class="gf" type="button" data-gfold="${esc(key)}" aria-expanded="${!shut}">${CHEV}${esc(name)} <span class="count">${n}</span></button>`]; };
+const grpHead = (key, name, n) => { const shut = S.grpFold.includes(key); return [shut, `<button class="gf" type="button" data-gfold="${esc(key)}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this group&#10;Right-click: ${shut ? 'open' : 'fold'} every group here">${CHEV}${esc(name)} <span class="count">${n}</span></button>`]; };
 const CHEV = '<span class="cv"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></span>';
 const andList = ns => ns.length < 2 ? ns.join('') : ns.slice(0, -1).join(', ') + ' <span class="and">and</span> ' + ns[ns.length - 1];
 const entA = (type, id, name) => id ? `<a href="${MB}/${type}/${id}">${esc(name)}</a>` : esc(name);
@@ -2546,7 +2546,7 @@ const relUrl = id => '/release/' + id;
 function sect(id, title, tools, body, folded) {
     // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
     const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
-    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
+    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
 
 /* ── hero ──────────────────────────────────────────── */
