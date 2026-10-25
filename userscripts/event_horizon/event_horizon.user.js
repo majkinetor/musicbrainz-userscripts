@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.249000
+// @version      2026.10.27.250000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2680,6 +2680,12 @@ const isrcHtml = i => i.length === 12 ? `<span class="isrc" data-tip="${esc(i)}"
 const dur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
 // no track has a length: nothing, never 0:00
 const total = tracks => { const n = tracks.reduce((s, t) => s + (t.lenMs || 0), 0); return n ? dur(n) : ''; };
+// the chevron of the group an element sits in: its table body's head row, or the heading just before its block
+const grpOf = el => {
+    const tb = el.closest('tbody'); if (tb) return tb.querySelector('.gh .gf[data-gfold]');
+    for (let x = el; x && !x.matches('section'); x = x.parentElement) { const p = x.previousElementSibling; if (p && p.matches('.disco-h')) return p.querySelector('.gf[data-gfold]'); }
+    return null;
+};
 const grpHead = (key, name, n) => { const shut = S.grpFold.includes(key); return [shut, `<button class="gf" type="button" data-gfold="${esc(key)}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this group&#10;Right-click: ${shut ? 'open' : 'fold'} every group here">${CHEV}${esc(name)} <span class="count">${n}</span></button>`]; };
 const CHEV = '<span class="cv"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></span>';
 const andList = ns => ns.length < 2 ? ns.join('') : ns.slice(0, -1).join(', ') + ' <span class="and">and</span> ' + ns[ns.length - 1];
@@ -4371,6 +4377,16 @@ function build() {
             const ks = [...g.closest('section').querySelectorAll('.gf[data-gfold]')].map(x => x.dataset.gfold);
             S.grpFold = S.grpFold.includes(g.dataset.gfold) ? S.grpFold.filter(x => !ks.includes(x)) : [...new Set([...S.grpFold, ...ks])];
             const y = scrollY; render(); scrollTo(0, y);
+            return;
+        }
+        // a row in a group folds that group (a link or field keeps the browser's menu)
+        const gr = ehOn && ev.target.closest && !ev.target.closest('a,input,select,textarea,.gh') && grpOf(ev.target);
+        if (gr) {
+            ev.preventDefault();
+            S.grpFold = [...new Set([...S.grpFold, gr.dataset.gfold])];
+            const top = gr.getBoundingClientRect().top, y = scrollY; render();
+            const nb = [...document.querySelectorAll('.gf[data-gfold]')].find(x => x.dataset.gfold === gr.dataset.gfold);
+            scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
             return;
         }
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
