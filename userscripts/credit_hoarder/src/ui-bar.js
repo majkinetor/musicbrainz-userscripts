@@ -1756,7 +1756,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             font-family: inherit;
             background: var(--mbu-bg-raised);
             border: 1px solid var(--mbu-border);
-            border-radius: 12px;
+            border-radius: 10px;
             margin-bottom: 1rem;
             overflow: hidden;
         }
@@ -1766,10 +1766,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             gap: 0.6rem;
             row-gap: 0.4rem;
             flex-wrap: wrap;
-            min-height: 38px;
-            padding: 0.2rem 0.75rem;
+            min-height: 40px;
+            box-sizing: border-box;
+            padding: 4px 12px;
             background: var(--mbu-bg-raised);
         }
+        /* MB's margins on labels, selects and buttons pushed the row's content up, leaving more room below */
+        .discogs-bar-row1 > *, .discogs-bar-row1 > * > :is(label, select, button, input, span, img) { margin-top: 0 !important; margin-bottom: 0 !important; }
         .discogs-bar-row2:empty { display: none; }
         /* review table: flat ✕ that clears a row's MB pick */
         .discogs-clear-btn { margin-left: auto; flex: 0 0 auto; font-size: 0.85rem; line-height: 1; padding: 0.15rem 0.35rem; cursor: pointer; color: var(--mbu-text-weak); background: none !important; border: none; border-radius: var(--mbu-radius); }

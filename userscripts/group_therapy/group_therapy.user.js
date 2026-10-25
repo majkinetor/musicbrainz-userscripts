@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.110002
+// @version      2026.10.26.110003
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2286,12 +2286,16 @@
       .gt-cfg-btn{float:right;margin-left:8px;font-size:15px;line-height:1.4;color:var(--mbu-text-weak);background:none;border:none;cursor:pointer;padding:2px 7px;border-radius:5px}
       .gt-cfg-btn:hover{background:var(--mbu-info-bg);color:var(--mbu-text-dim)}
       /* #372 top toolbar (moved off the "Release relationships" heading to the top of the tab) */
-      .gt-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 14px;padding:8px 10px;background:var(--mbu-bg);border:1px solid var(--mbu-info);border-radius:7px}
-      .gt-toolbar .gt-clone-btn{margin-left:0}
+      .gt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-sizing:border-box;min-height:40px;margin:6px 0 14px;padding:4px 12px;background:var(--mbu-bg-raised);border:1px solid var(--mbu-border);border-radius:10px}
+      .gt-toolbar>*,.gt-toolbar .gt-vert>*{margin-top:0!important;margin-bottom:0!important}
+      .gt-bar-ic{display:inline-flex;flex:0 0 auto}.gt-bar-ic img{width:30px;height:30px;display:block}
+      .gt-bar-sep{flex:0 0 auto;width:1px;height:24px;background:var(--mbu-border)}
+      .gt-toolbar .gt-clone-btn{margin-left:0;box-sizing:border-box;height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 11px;border:1px solid var(--mbu-border);border-radius:8px;background:transparent;color:var(--mbu-text-dim);font:600 13px var(--mbu-font);white-space:nowrap;cursor:pointer}
+      .gt-toolbar .gt-clone-btn:hover{border-color:var(--mbu-accent);color:var(--mbu-accent-text);background:transparent}
       /* #365 "Vertical:" section — label + two icon-only up/down buttons */
       .gt-vert{display:inline-flex;align-items:center;gap:5px}
-      .gt-vert-lbl{font:600 12px -apple-system,Segoe UI,Arial,sans-serif;color:var(--mbu-text-dim)}
-      .gt-vert-btn{margin-left:0;font-size:14px;line-height:1;padding:2px 8px}
+      .gt-vert-lbl{font:700 12px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak);margin-right:2px}
+      .gt-toolbar .gt-vert-btn{width:30px;padding:0;justify-content:center;font-size:14px;line-height:1}
       .gt-vert .gt-vert-btn+.gt-vert-btn{margin-left:0}
       .gt-toolbar .gt-cfg-btn{float:none;margin-left:auto}
       /* #372 config window (⚙): standard header (icon + name + version + Help) + options body */
@@ -3121,6 +3125,10 @@
     // translates the "Release relationships" heading)
     if (!document.getElementById('release-rels')) return false;
     const bar = el('div', 'gt-toolbar');
+    // the script's icon at the left, like Credit Hoarder's ant, its name and version in the tooltip
+    const ic = el('span', 'gt-bar-ic'); ic.innerHTML = '<img src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg" alt="">';
+    ic.dataset.tip = 'Group Therapy ' + ((typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '');
+    bar.append(ic, el('span', 'gt-bar-sep'));
     const b = el('button', 'gt-clone-btn', '⧉ Copy from release…');
     b.dataset.tip = 'Copy release credits from another release\nArtists and labels, onto this one';
     b.type = 'button'; b.onclick = () => openCopyFromPopover(b); bar.appendChild(b); cloneBtnRef = b;
@@ -3136,11 +3144,11 @@
     // #365 one "Vertical:" section — ⬆ pushes the release's credits DOWN to its recordings, ⬇ pulls the
     // recordings' credits UP to the release (icons per majkinetor: up = release→recordings, down = →release)
     const vwrap = el('span', 'gt-vert');
-    vwrap.appendChild(el('span', 'gt-vert-lbl', 'Vertical:'));
-    const r2r = el('button', 'gt-clone-btn gt-vert-btn', '⬆');
+    vwrap.appendChild(el('span', 'gt-vert-lbl', 'Vertical'));
+    const r2r = el('button', 'gt-clone-btn gt-vert-btn', '↑');
     r2r.dataset.tip = 'Release → recordings\nCopy (or move) the release credits onto its recordings: the ticked ones, or all when none is ticked.';
     r2r.type = 'button'; r2r.onclick = () => openRelToRec(r2r);
-    const c2r = el('button', 'gt-clone-btn gt-vert-btn', '⬇');
+    const c2r = el('button', 'gt-clone-btn gt-vert-btn', '↓');
     c2r.dataset.tip = 'Recordings → release\nCollect the recordings’ credits onto the release, all of them together, each with the tracks it covers.';
     c2r.type = 'button'; c2r.onclick = () => openRecToRel(c2r);
     vwrap.append(r2r, c2r); bar.appendChild(vwrap);
