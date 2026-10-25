@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.246000
+// @version      2026.10.27.247000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3566,7 +3566,10 @@ function instrument(a) {
         if (xs.length && !groups.some(g => g[0] === l)) groups.push([l, xs]);
     }
     const im = rels.find(x => x['target-type'] === 'url' && x.type === 'image');
+    // where it comes from (areas) and the genres it is used in
+    const from = rels.filter(x => x['target-type'] === 'area' && x.area).map(x => x.area), usedIn = rels.filter(x => x['target-type'] === 'genre' && x.genre).map(x => x.genre);
     return {
+        from, usedIn,
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', desc: a.description || '', groups,
         img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
@@ -3597,7 +3600,7 @@ async function loadInstrument(id, step = () => {}) {
     const one = k => mbTab('instrument', id, k).then(x => x, () => null);
     const lists = Promise.all([one('artists'), one('releases'), one('recordings')]).then(x => { step('artists, releases, recordings'); return x; });
     const wiki = wikiOf('instrument', id);
-    const aP = ws(`instrument/${id}?inc=aliases+genres+tags+annotation+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
+    const aP = ws(`instrument/${id}?inc=aliases+genres+tags+annotation+area-rels+genre-rels+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
     const first = await Promise.race([aP, lists.then(x => ({ lists: x }))]);
     const early = first.lists ? (first.lists.find(Boolean) || {}).name : null;
     const mk = a => ({ kind: 'instrument', g: instrument(a), lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) });
@@ -3614,6 +3617,7 @@ function insHero(d) {
     const pic = src ? `<div class="picw"><img class="cover ipic" src="${esc(src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer" data-insimg><a class="imgsrc" href="${esc(g.img)}" target="_blank" rel="noopener" data-tip="${cm ? 'From Wikimedia Commons' : 'From ' + esc(new URL(g.img).hostname)}">${cm ? stIcon('commons', 18) : mkSvg(MK_INS)}</a></div>` : '';
     return pgHero(g, 'instrument', MK_INS, g.type || 'Instrument', [
         ['', g.desc && descHtml(g.desc), 'wide'],
+        ...[['From', 'area', g.from || []], ['Used in', 'genre', g.usedIn || []]].filter(x => x[2].length).map(([l, t, xs]) => [l, `<span class="arl">${xs.map(x => entA(t, x.id, x.name)).join('')}</span>`, 'wide']),
         ...g.groups.map(([l, xs]) => [`${l}${xs.length > 1 ? ` <span class="count">${xs.length}</span>` : ''}`, `<span class="arl">${xs.map(x => entA('instrument', x.id, x.name)).join('')}</span>`, 'wide']),
         [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
