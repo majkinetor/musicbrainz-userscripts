@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.235000
+// @version      2026.10.26.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2450,7 +2450,7 @@ function edTip(e, cur) {
     const f = (label, v) => v ? `<div><div class="lbl">${label}</div><div class="v">${v}</div></div>` : '';
     const st = e.status !== 'Official' ? (e.status || 'No status') : '';
     return `<div class="ehtip"><div class="hd"><b>${esc(e.title)}</b>${cur ? '<span class="here">you are here</span>' : ''}<span class="fmt">${esc(fmtSummary(e.formats))}${tracks}</span></div>${e.disambig ? `<div class="dis">${esc(e.disambig)}</div>` : ''}<div class="fs">`
-        + f(`Released${e.events.length > 1 ? ` <span class="count">${e.events.length}</span>` : ''}`, byDate.map(l => `<div>${l.date ? fdate(l.date) : 'no date'} <span class="sub">${esc(l.iso.filter(Boolean).join(', '))}</span></div>`).join('') || (e.date && fdate(e.date)))
+        + f(`Released${e.events.length > 1 ? ` <span class="count">${e.events.length}</span>` : ''}`, byDate.map(l => `<div>${l.date ? fdate(l.date) : 'no date'} <span class="sub">${(i => esc(i.length > 6 ? i.slice(0, 5).join(', ') + ` +${i.length - 5} more` : i.join(', ')))(l.iso.filter(Boolean))}</span></div>`).join('') || (e.date && fdate(e.date)))
         + f(`Label${e.li.length > 1 ? 's' : ''}`, e.li.map(l => `<div class="lab">${l.name ? `<span class="ln">${esc(l.name)}</span>` : ''}${l.catno ? `<span class="mono">${esc(l.catno)}</span>` : ''}</div>`).join(''))
         + f('Barcode', e.barcode && `<span class="mono bc">${esc(e.barcode)}</span>`)
         + f('Packaging', e.packaging && esc(e.packaging))
