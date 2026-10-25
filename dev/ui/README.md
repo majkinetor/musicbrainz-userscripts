@@ -11,6 +11,7 @@ live checks for both. Colours come from [`../tokens/`](../tokens/README.md).
 | `platform-icons.mjs`       | the platform icon set (Spotify, Discogs, …)                                                                                                              |
 | `sync-ui.mjs`              | inlines the components into every `// <ST-UI>` carrier                                                                                                   |
 | `sync-icons.mjs`           | the same for `// <ST-ICONS>`                                                                                                                             |
+| `preview-icons.mjs`        | every platform icon at 40 and 16 px, on white and dark → `platform-icons.html` (`--png` adds `platform-icons.png`)                                       |
 | `verify-ui-live.mjs`       | drives each component in a real page and asserts the contract                                                                                            |
 | `verify-theme-live.mjs`    | with a dark theme on, is any control in our windows still light?                                                                                         |
 | `verify-contrast-live.mjs` | is every label readable? (four theme modes, see below)                                                                                                   |
