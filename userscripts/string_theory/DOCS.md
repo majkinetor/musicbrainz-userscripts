@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 08:13 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 08:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -33,6 +33,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
+- **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
 - **[Matching](#matching)**: artists, recordings, the release label, artist and release group matched automatically, and a missing language and script detected.
 - **[Tools](#tools)**: a configurable toolbar with the native tools and Apollo's own.
@@ -81,6 +82,15 @@ Each part is optional, and Apollo's corner icon switches to MusicBrainz's own ed
 - Changed tracks get a coloured left border; pending changes, splittable tracks and tracks Guess case would change are highlighted.
 - Left-click a collapsed medium to expand it, right-click to expand all.
 - Pregap and data tracks and disc IDs are supported.
+
+### Pinned and recent
+
+The artist and label pickers remember what you set, so an artist or label you use often is one click away.
+
+- An empty field lists your **Pinned** artists (or labels), then a **Recent** header with the last 30 you picked. Recent starts collapsed; click its header to open it.
+- Typing filters both lists, and the search's results follow below them.
+- A row's pin icon pins or unpins it without setting it. Pinned ones stay until you unpin them, and aren't repeated under Recent.
+- Artists and labels each have one list, shared by every field and release.
 
 ### Recordings
 

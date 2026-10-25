@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.081324
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.25.050000, credit_hoarder 2026.10.25.081322, event_horizon 2026.10.26.001200, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.25.050000, mammoth 2026.10.20.120000, mission_control 2026.10.25.050000, platform_check 2026.10.25.050000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.25.085409
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.25, art_station 2026.10.25.050000, credit_hoarder 2026.10.25.081322, event_horizon 2026.10.26.001200, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.25.050000, mammoth 2026.10.20.120000, mission_control 2026.10.25.050000, platform_check 2026.10.25.050000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -146,8 +146,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.25.081324 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.25.050000\n  · Credit Hoarder v2026.10.25.081322\n  · Event Horizon v2026.10.26.001200\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.25.050000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.25.050000\n  · Platform Check v2026.10.25.050000");
+  console.log('%c String Theory %c v2026.10.25.085409 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.25\n  · Art Station v2026.10.25.050000\n  · Credit Hoarder v2026.10.25.081322\n  · Event Horizon v2026.10.26.001200\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.25.050000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.25.050000\n  · Platform Check v2026.10.25.050000");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -157,7 +157,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.25.050000"],["credit_hoarder","Credit Hoarder","2026.10.25.081322"],["event_horizon","Event Horizon","2026.10.26.001200"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.25.050000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.25.050000"],["platform_check","Platform Check","2026.10.25.050000"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.25"],["art_station","Art Station","2026.10.25.050000"],["credit_hoarder","Credit Hoarder","2026.10.25.081322"],["event_horizon","Event Horizon","2026.10.26.001200"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.25.050000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.25.050000"],["platform_check","Platform Check","2026.10.25.050000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -4046,7 +4046,7 @@ return { ST_ICONS, stIcon, stColor };
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*/edit_annotation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/cdtoc/attach.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.24","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.24","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.25","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.25","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -4874,7 +4874,7 @@ Click: open the label`;
     const ent = c.id ? c : await fetchEntity(c.gid, 'label');
     if (!ent || !ent.gid) { Log.cat('Label').warn('label pick: could not load', c.gid); return; }
     let e = ent; try { if (W.MB && typeof W.MB.entity === 'function') e = W.MB.entity(ent, 'label'); } catch (x) {}
-    lf.label(e); _riLab.delete(lf);
+    lf.label(e); _riLab.delete(lf); picksNote('label', ent);
     Log.cat('Label').info('Label picked:', ent.name, '(' + ent.gid + ')');
     renderRiLabels();
   }
@@ -4927,23 +4927,90 @@ Click: open the label`;
     const t = inp.dataset.tip || lead;
     if (!/^Paste:/m.test(t)) inp.dataset.tip = t + '\nPaste: an MBID, or its MusicBrainz URL, ' + what;
   }
+  // Pinned and recent artists and labels, offered at the top of their pickers. One list per kind in GM
+  // storage (gid, name, comment, type: enough to draw a row; a pick fetches the full entity). Pinned ones
+  // stay until unpinned; Recent keeps the last PICKS_MAX picks and starts collapsed in every popup.
+  const PICKS_MAX = 30;
+  const PIN_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M6 1.5h4l-.6 4.3 2.6 2.7v1.3H8.7v4.3L8 15l-.7-.9V9.8H4V8.5l2.6-2.7z" fill="currentColor"/></svg>';
+  const PIN_OFF_SVG = '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M6 1.5h4l-.6 4.3 2.6 2.7v1.3H8.7v4.3L8 15l-.7-.9V9.8H4V8.5l2.6-2.7z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+  const CARET_SVG = '<svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+  const picksKey = kind => 'apollo.picks.' + kind;
+  const picksLoad = kind => { let v = {}; try { v = JSON.parse(gmLoad(picksKey(kind)) || '{}') || {}; } catch (e) {} return { pinned: Array.isArray(v.pinned) ? v.pinned : [], recent: Array.isArray(v.recent) ? v.recent : [] }; };
+  const picksSave = (kind, p) => gmSave(picksKey(kind), JSON.stringify(p));
+  const picksSlim = c => ({ gid: c.gid, name: c.name, comment: c.comment || '', typeName: c.typeName || '' });
+  const picksCat = kind => Log.cat(kind === 'label' ? 'Label' : 'Artist');
+  function picksNote(kind, c) {
+    if (!c || !c.gid || !c.name) return;
+    const p = picksLoad(kind), s = picksSlim(c);
+    p.recent = [s, ...p.recent.filter(x => x.gid !== c.gid)].slice(0, PICKS_MAX);
+    p.pinned = p.pinned.map(x => x.gid === c.gid ? s : x);   // a pinned one keeps its place, with fresh details
+    picksSave(kind, p);
+    picksCat(kind).debug(`recent ${kind}s: ${c.name} first (${p.recent.length} kept, ${p.pinned.length} pinned)`);
+  }
+  function picksTogglePin(kind, c) {
+    const p = picksLoad(kind), on = p.pinned.some(x => x.gid === c.gid);
+    p.pinned = on ? p.pinned.filter(x => x.gid !== c.gid) : [...p.pinned, picksSlim(c)];
+    picksSave(kind, p);
+    picksCat(kind).info(`${on ? 'unpinned' : 'pinned'} ${kind}: ${c.name} (${p.pinned.length} pinned)`);
+  }
+  const picksAny = kind => { const p = picksLoad(kind); return p.pinned.length + p.recent.length > 0; };
+  // the picker's rows: the pinned and recent entries matching the typed text (all of them when it's
+  // empty; a pinned one isn't repeated under Recent), then the search results not already shown
+  function picksRows(kind, q, res, recentOpen) {
+    const p = picksLoad(kind), n = fold(q);
+    const hit = x => !n || fold(x.name).includes(n) || fold(x.comment).includes(n);
+    const pinnedGids = new Set(p.pinned.map(x => x.gid));
+    const pinned = p.pinned.filter(hit), recent = p.recent.filter(x => !pinnedGids.has(x.gid) && hit(x));
+    const shown = new Set([...pinned, ...(recentOpen ? recent : [])].map(x => x.gid));
+    const rows = [...pinned.map(c => ({ c, src: 'pin' })), ...(recentOpen ? recent.map(c => ({ c, src: 'rec' })) : []), ...(res || []).filter(c => !shown.has(c.gid)).map(c => ({ c, src: 'res' }))];
+    return { rows, pinned: pinned.length, recent: recent.length, recentOpen, pinnedGids };
+  }
+  // the popup's html: Pinned, the collapsible Recent header, then the results under `group(c)`'s
+  // headers ('Search' unless the caller has its own). Each row gets the pin toggle. null → nothing to show
+  function picksHtml(kind, pk, row, group) {
+    const what = kind === 'label' ? 'labels' : 'artists';
+    const recHdr = pk.recent ? `<div class="tc-acsec tc-acrec${pk.recentOpen ? ' open' : ''}" data-tip="${pk.recentOpen ? 'Hide' : 'Show'} the ${what} you picked lately">${CARET_SVG}Recent <span class="tc-acn">${pk.recent}</span></div>` : '';
+    if (!pk.rows.length && !recHdr) return null;
+    const above = pk.pinned || pk.recent;
+    let h = '', lastGroup = null;
+    pk.rows.forEach((r, i) => {
+      if (i === 0 && r.src === 'pin') h += '<div class="tc-acsec">Pinned</div>';
+      if (i === pk.pinned) h += recHdr;
+      if (r.src === 'res') { const g = group ? group(r.c) : 'Search'; if (g !== lastGroup && (above || lastGroup !== null || g !== 'Search')) h += `<div class="tc-acsec">${esc(g)}</div>`; lastGroup = g; }
+      const on = pk.pinnedGids.has(r.c.gid);
+      const pin = r.c.gid ? `<span class="tc-acpin${on ? ' on' : ''}" data-tip="${on ? 'Unpin' : `Pin: always on top of this list, for every ${kind}`}">${on ? PIN_SVG : PIN_OFF_SVG}</span>` : '';
+      h += row(r.c, i).replace(/<\/div>$/, pin + '</div>');
+    });
+    if (pk.rows.length === pk.pinned) h += recHdr;
+    return h;
+  }
+  // the pin toggles and the Recent header: they act without picking or closing the popup
+  function picksWire(pop, kind, pk, redraw, toggleRecent) {
+    const rec = pop.querySelector('.tc-acrec');
+    if (rec) rec.onmousedown = e => { e.preventDefault(); e.stopPropagation(); toggleRecent(); };
+    pop.querySelectorAll('.tc-acpin').forEach(b => { b.onmousedown = e => { e.preventDefault(); e.stopPropagation(); const r = pk.rows[+b.closest('[data-i]').dataset.i]; if (r) { picksTogglePin(kind, r.c); redraw(); } }; });
+  }
   function wireLabelPicker(inp, host) {
     mbidTip(inp, 'Search labels by name', 'sets that label at once');
-    let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8;
+    let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8, recentOpen = false, lastRes = [], lastQ = '';
     const live = () => inp._tcLabOn && inp.isConnected;
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
-    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
+    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; recentOpen = false; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop tc-labpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) close(); else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const say = msg => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">${esc(msg)}</div>`; position(); };
     const choose = c => { close(); riPickLabel(inp._tcLabLf, c); };
     const hiliteRow = () => { const rows = [...pop.querySelectorAll('[data-i]')]; rows.forEach((r, i) => r.classList.toggle('hi', i === hi)); if (rows[hi]) rows[hi].scrollIntoView({ block: 'nearest' }); };
     const draw = (res, q) => {
-      ensure(); list = res; hi = -1;
-      pop.innerHTML = res.length ? res.map((c, i) => {
+      ensure(); lastRes = res; lastQ = q;
+      const pk = picksRows('label', q, res, recentOpen), arr = pk.rows.map(r => r.c);
+      list = arr; hi = -1;
+      const html = picksHtml('label', pk, (c, i) => {
         const aka = aliasStr(c), meta = labelMeta(c);
         return `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}" data-tip="Click: set this label"><a class="tic" href="${ORIGIN}/label/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the label's page">${LABEL_SVG}</a><span class="nm">${esc(c.name)}</span>${aka ? `<span class="tc-aka">${esc(aka)}</span>` : ''}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${meta ? `<span class="tc-acmeta">${esc(meta)}</span>` : ''}</div>`;
-      }).join('') : '<div class="tc-acrow none">no matches — use ＋ to create</div>';
-      pop.querySelectorAll('.tc-acrow[data-i]').forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(res[+row.dataset.i]); }; });
+      });
+      pop.innerHTML = html !== null ? html : '<div class="tc-acrow none">no matches — use ＋ to create</div>';
+      pop.querySelectorAll('.tc-acrow[data-i]').forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
+      picksWire(pop, 'label', pk, () => draw(lastRes, lastQ), () => { recentOpen = !recentOpen; draw(lastRes, lastQ); });
       // the icon opens the label in a new tab: its mousedown stays off the row (no pick) and off the input (the popup stays)
       pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
       if (res.length >= curLimit && curLimit < 100) {   // a full page: probably more, as MusicBrainz's popup offers
@@ -4970,13 +5037,15 @@ Click: open the label`;
       if (!live()) return;
       host.classList.add('tc-lab-focus');
       const q = inp.value.trim(); if (q && !labelMbidFrom(q)) run(q);
+      else if (!q && picksAny('label')) { curQuery = ''; draw([], ''); }   // empty: the pinned and recent labels
     });
     inp.addEventListener('input', () => {
       if (!live()) return;
       clearTimeout(tmr); ++seq;
       mbuCls(host, 'tc-lab-empty', !inp.value.trim());
       const gid = labelMbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }
-      if (!inp.value.trim() || document.activeElement !== inp) { close(); return; }   // a value written from outside opens no popup
+      if (document.activeElement !== inp) { close(); return; }   // a value written from outside opens no popup
+      if (!inp.value.trim()) { if (picksAny('label')) { curQuery = ''; draw([], ''); } else close(); return; }
       if (!pop) say('Searching…');
       tmr = setTimeout(() => run(inp.value.trim()), 250);
     });
@@ -7300,6 +7369,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-acrow.none{color:var(--mbu-text-weak);font-style:italic;cursor:default}
     .tc-acsec{padding:5px 9px 2px;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-text-weak);cursor:default}.tc-acsec:not(:first-child){border-top:1px solid var(--mbu-border-soft);margin-top:3px}
     .tc-acrow .tc-acvotes{margin-left:auto;padding-left:10px;font-size:10px;color:var(--mbu-text-weak);white-space:nowrap}
+    .tc-acpin{margin-left:auto;flex:none;display:flex;padding:3px;border-radius:3px;color:var(--mbu-text-weak);visibility:hidden;cursor:pointer}.tc-acvotes+.tc-acpin{margin-left:4px}
+    .tc-acrow:hover .tc-acpin,.tc-acrow.hi .tc-acpin,.tc-acpin.on{visibility:visible}.tc-acpin.on{color:var(--mbu-accent-text)}.tc-acpin:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
+    .tc-acrec{display:flex;align-items:center;gap:4px;cursor:pointer}.tc-acrec:hover{color:var(--mbu-accent-text)}.tc-acrec svg{flex:none;transform:rotate(-90deg);transition:transform .15s}.tc-acrec.open svg{transform:none}.tc-acn{text-transform:none}
     .tc-acmore{justify-content:center;font-style:italic;color:var(--mbu-accent-text);border-top:1px solid var(--mbu-accent);position:sticky;bottom:0;background:var(--mbu-bg-raised)}
     .tc-acrow.exact{background:var(--mbu-ok-bg)}.tc-acrow.exact .nm{color:var(--mbu-ok)}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:var(--mbu-ok-bg)}
     .tc-toolbar{padding:5px 4px;font-size:12px;color:var(--mbu-text-dim);display:flex;align-items:center;gap:6px}
@@ -8304,6 +8376,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // track credited to the same text, committing each.
   function pickArtist(slot, c) {
     if (!c || !c.gid) return;
+    picksNote('artist', c);
     noteDisamb(c.gid, c.comment);   // #450: cache the disambiguation — a created / pasted-MBID pick never went through search (where it's cached), so the table showed no comment
     if (c.aliases) cacheAliases(c.gid, c.aliases);   // keep the chosen artist's aliases for the bar
     else if (!_gidAliases.has(c.gid)) fetchAliasesByGids([c.gid]).then(() => refreshAdorns());   // alias not loaded yet (fast pick / "Show more" result) — fetch + show it without re-searching #128
@@ -8691,11 +8764,22 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     mbidTip(inp, 'Search artists by name', 'sets that artist at once');
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
+    let recentOpen = false, lastRes = [];   // Recent starts collapsed in every popup
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
-    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
-    const choose = c => { close(); pickArtist(slot, c); };
-    const searching = () => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Searching…</div>`; position(); };
+    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; recentOpen = false; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
+    // a pinned or recent artist is stored lean: fetch the full one first (a track credit needs its id)
+    const choose = c => {
+      if (c.id) { close(); pickArtist(slot, c); return; }
+      fetchEntity(c.gid).then(ent => { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); if (ent && ent.id) { pickArtist(slot, ent); focusSlotInput(entry, i); } else Log.cat('Artist').warn('picker: could not load', c.gid); });
+    };
+    // the pinned and recent artists matching what's typed show at once, the search's results follow
+    const searching = () => {
+      ensure(); list = [];
+      if (inp.value.trim() && picksAny('artist')) { draw([]); const none = pop.querySelector('.tc-acrow.none'); if (none) none.remove(); }
+      else pop.innerHTML = '';
+      pop.insertAdjacentHTML('beforeend', `<div class="tc-acrow none">Searching…</div>`); position();
+    };
     const akaHtml = c => { const a = aliasStr(c); return a ? `<span class="tc-aka">${esc(a)}</span>` : ''; };
     // a full page of results probably means there are more — offer "Show more…" (like MB's native popup)
     const loadMore = () => { curLimit = curLimit >= 50 ? 100 : curLimit >= 25 ? 50 : 25; const my = ++seq; const more = pop && pop.querySelector('.tc-acmore'); if (more) more.textContent = 'Loading…'; searchArtist(curQuery, curLimit).then(res => { if (my === seq && document.activeElement === inp) showResults(res, curQuery); }); };
@@ -8703,16 +8787,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // section of their own, with how many editions back each — also once the slot resolved.
     const posLead = () => ((slot._pos && slot._pos.artists) || []).filter(x => x.entity && x.entity.gid);
     const draw = res => {
-      ensure(); const q = inp.value.trim() || slot.creditedAs;
+      ensure(); lastRes = res; const q = inp.value.trim() || slot.creditedAs || '';
       const lead = posLead(), leadG = new Set(lead.map(x => x.entity.gid)), votes = new Map(lead.map(x => [x.entity.gid, x.votes]));
       Log.cat('Artist').debug(`picker "${slot.creditedAs}": ${lead.length} artist(s) from other editions at this position, ${res.length} from the search (slot ${slot.status}${slot._pos ? ', position data kept' : ', no position data'})`);
-      const arr = lead.length ? [...lead.map(x => x.entity), ...res.filter(c => !leadG.has(c.gid || c.id))] : res;
+      const base = lead.length ? [...lead.map(x => x.entity), ...res.filter(c => !leadG.has(c.gid || c.id))] : res;
+      const pk = picksRows('artist', inp.value.trim(), base, recentOpen), arr = pk.rows.map(r => r.c);   // the pinned and recent artists filter by what's typed, not by the credit
       list = arr;
       const of = lead.length ? slot._pos.of : 0;
-      const sec = (i) => !lead.length ? '' : i === 0 ? '<div class="tc-acsec">On other editions at this position</div>' : i === lead.length ? '<div class="tc-acsec">Search</div>' : '';
       const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" data-tip="Credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
-      pop.innerHTML = arr.length ? arr.map((c, i) => sec(i) + `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the artist's page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`).join('') : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
-      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.dataset.tip = 'Click: set it\nCtrl+click: set it on every track not resolved'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (e.ctrlKey || e.metaKey) { close(); pickArtistAllUnresolved(c); } else choose(c); }; });
+      const html = picksHtml('artist', pk, (c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the artist's page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`, c => leadG.has(c.gid) ? 'On other editions at this position' : 'Search');
+      pop.innerHTML = html !== null ? html : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
+      picksWire(pop, 'artist', pk, () => draw(lastRes), () => { recentOpen = !recentOpen; draw(lastRes); });
+      [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.dataset.tip = 'Click: set it\nCtrl+click: set it on every track not resolved'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (!(e.ctrlKey || e.metaKey)) { choose(c); return; } close(); if (c.id) pickArtistAllUnresolved(c); else fetchEntity(c.gid).then(ent => { if (ent && ent.id) pickArtistAllUnresolved(ent); }); }; });
       // #689: the type icon opens the artist in a new tab, like the one beside a resolved field — its
       // mousedown stays off the row (no pick) and off the input (focus, so the popup stays open)
       pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
@@ -8744,7 +8830,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     inp.onfocus = () => {
       slot._editing = true;   // #580: this slot is the user's now — auto-match leaves it alone until they leave it
       if (slot.committed && slot.candidates && slot.candidates.length) { curQuery = inp.value.trim() || slot.creditedAs || slot.name; curLimit = 8; showResults(slot.candidates, curQuery); return; }
-      const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else close();   // empty → no dropdown
+      const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else if (picksAny('artist')) { curQuery = ''; draw([]); } else close();   // empty → the pinned and recent artists, or no dropdown
     };
     let tmr; inp.oninput = () => {
       slot.query = inp.value;
@@ -8752,7 +8838,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const gid = mbidFrom(inp.value); if (gid) { resolveByGid(gid); return; }   // pasted an MBID / artist URL → resolve directly (pickArtist replaces whatever was there; no un-link needed)
       // editing away from the matched artist un-links it: bar goes white, ＋ creates the typed name
       if (slot.committed && !sameName(inp.value, slot.name)) { slot.committed = false; slot.status = 'none'; slot.entity = null; slot.gid = null; commitTrack(slot._entry); if (refresh) refresh(); }
-      if (!inp.value.trim()) { close(); return; }   // nothing typed → don't search
+      if (!inp.value.trim()) { ++seq; if (picksAny('artist') && document.activeElement === inp) { curQuery = ''; draw([]); } else close(); return; }   // nothing typed → no search, only the pinned and recent artists
       searching(); const my = ++seq; tmr = setTimeout(async () => { curQuery = inp.value; curLimit = 8; const res = await searchArtist(inp.value); if (my === seq && document.activeElement === inp) showResults(res, inp.value); }, 250);
     };
     // arrows browse the results popup WHILE searching; once the slot is resolved they move row-to-row instead
