@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.001300
+// @version      2026.10.26.001400
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2112,6 +2112,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tr .is{flex:none;width:200px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
 .tr .lk{flex:none;display:flex;gap:6px;align-items:center;justify-content:flex-end}
 .tr .ln{flex:none;width:52px;text-align:right;font-size:14px}
+.tr .ar{flex:0 1 32%;min-width:0;font-size:15px;color:var(--muted)}
 .isrc{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;padding:4px 0;color:var(--muted);white-space:nowrap;display:inline-block}
 .isrc .d{opacity:.5}
 .tr:hover .isrc{color:var(--isrc)}
@@ -2214,6 +2215,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .tr{flex-wrap:wrap;gap:6px 12px}
   .tr .ti{flex:1 1 0;min-width:0}.tr .ln{margin-left:auto}.tr::before{content:"";order:4;flex-basis:100%;height:0}
   .tr .is{order:5;width:auto;margin-left:40px}
+  .tr .ar{order:4;flex-basis:100%;margin-left:40px;margin-top:-4px}
   .tr .lk{order:6;margin-left:auto}
   .detail{padding-left:16px}
   .hero{gap:20px}
@@ -2370,7 +2372,7 @@ function release(r, rg, images) {
                 const workRels = rels.filter(x => x['target-type'] === 'work'), work = workRels[0];
                 return {
                     n: t.number, title: t.title, rid: rec.id, len: ms(t.length), lenMs: t.length || 0, isrcs: rec.isrcs || [],
-                    feat: (t['artist-credit'] || []).filter(a => !mainIds.includes(a.artist.id)).map(a => a.name),
+                    ac: t['artist-credit'] || [], feat: (t['artist-credit'] || []).filter(a => !mainIds.includes(a.artist.id)).map(a => a.name),
                     cr: creditsOf(rels), credits: people.length,
                     work: work && { id: work.work.id, title: work.work.title }, wcr: work ? creditsOf(work.work.relations || []) : [],
                     works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []) })),
@@ -2697,10 +2699,12 @@ function tracklist(r) {
     const ctx = { slots: S.prov.filter(k => unionMap.has(k)).sort((a, b) => rank({ key: a }) - rank({ key: b })) };
     const withIsrc = tracks.filter(t => t.isrcs.length).length, credits = tracks.reduce((s, t) => s + t.credits, 0);
     const cls = Object.entries(S.cols).filter(([, v]) => v === false).map(([k]) => 'hide-' + k).join(' ');
+    // a Various Artists release names each track's artist in a column of its own (majkinetor, as MusicBrainz's page does)
+    const va = r.ac.some(a => a.artist.id === '89ad4ac3-39f7-470e-963a-56509c546377') || tracks.filter(t => t.feat.length).length > tracks.length / 2;
     const row = t => {
-        const sub = t.feat.length ? 'with ' + t.feat.join(', ') : '';
+        const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
         return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
-            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
+            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
             <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : '<span style="color:var(--muted);font-size:13px">no ISRC</span>'}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
             <span class="ln mono">${esc(t.len)}</span></div>${S.open.has(t.key) ? detail(t) : ''}`;
