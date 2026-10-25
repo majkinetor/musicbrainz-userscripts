@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.021000
+// @version      2026.10.27.022000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2514,7 +2514,8 @@ const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: '
 let UID = 0;
 const uniq = s => { const u = '-' + (++UID); return s.replace(/id="([^"]+)"/g, 'id="$1' + u + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + u + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + u + '"'); };
 function icon(p, size = 20) {
-    if (p.key === 'review') p = { ...p, key: 'bbc' }; // a BBC Music review shows the BBC's blocks, its tooltip saying review
+    // a BBC Music review: the BBC's blocks in a round badge, the same weight as the round icons beside it (majkinetor, from a mock)
+    if (p.key === 'review') return `<svg viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#111"/><g fill="#fff"><rect x="5" y="11" width="6.5" height="10"/><rect x="12.75" y="11" width="6.5" height="10"/><rect x="20.5" y="11" width="6.5" height="10"/></g><g fill="#111" font-family="Arial,sans-serif" font-weight="700" font-size="8" text-anchor="middle"><text x="8.25" y="19">B</text><text x="16" y="19">B</text><text x="23.75" y="19">C</text></g></svg>`;
     if (p.key !== 'globe' && ST_ICONS[p.key]) return uniq(stIcon(p.key, size).replace('<svg', '<svg aria-hidden="true"'));
     if (EXTRA[p.key]) return EXTRA[p.key].replace('<svg', `<svg width="${size}" height="${size}" aria-hidden="true"`);
     if (p.key === 'globe' && ST_ICONS.globe) return stIcon('globe', size).replace('<svg', '<svg aria-hidden="true"');
