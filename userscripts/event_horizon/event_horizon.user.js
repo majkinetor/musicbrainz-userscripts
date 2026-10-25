@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.190000
+// @version      2026.10.26.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2224,7 +2224,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .artgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
-.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border);transition:transform .15s}.gf[aria-expanded="true"] .cv{transform:rotate(90deg)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -2288,7 +2288,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2300,7 +2300,7 @@ const S = {
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
-    fold: [], discFold: [], edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date',
+    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date',
     ed: { kinds: new Set(), official: false },
     open: new Set(),
 };
@@ -2502,6 +2502,7 @@ function fmtSummary(fs) {
 const isrcHtml = i => i.length === 12 ? `<span class="isrc" data-tip="${esc(i)}">${i.slice(0, 2)}<span class="d">-</span>${i.slice(2, 5)}<span class="d">-</span>${i.slice(5, 7)}<span class="d">-</span>${i.slice(7)}</span>` : `<span class="isrc">${esc(i)}</span>`;
 const dur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
 const total = tracks => dur(tracks.reduce((s, t) => s + t.lenMs, 0));
+const grpHead = (key, name, n) => { const shut = S.grpFold.includes(key); return [shut, `<button class="gf" type="button" data-gfold="${esc(key)}" aria-expanded="${!shut}">${CHEV}${esc(name)} <span class="count">${n}</span></button>`]; };
 const CHEV = '<span class="cv"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></span>';
 const andList = ns => ns.length < 2 ? ns.join('') : ns.slice(0, -1).join(', ') + ' <span class="and">and</span> ' + ns[ns.length - 1];
 const entA = (type, id, name) => id ? `<a href="${MB}/${type}/${id}">${esc(name)}</a>` : esc(name);
@@ -2643,7 +2644,7 @@ function edTable(es, curId, flat) {
             <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
         </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="9">${edTracksHtml(e)}</td></tr>` : ''}`;
     };
-    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th><th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => `<tbody><tr class="gh"><th colspan="10">${esc(g || 'No status')} <span class="count">${es.filter(e => (e.status || '') === g).length}</span></th></tr>${es.filter(e => (e.status || '') === g).map(row).join('')}</tbody>`).join('')}</table></div>`;
+    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th><th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
 }
 const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
 const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
@@ -3033,9 +3034,9 @@ function discoHtml(d) {
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const th = (k, n) => `<th aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
     const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td></tr>`;
-    const head = (k, l) => `<h3 class="disco-h">${esc(k)} <span class="count">${l.length}</span></h3>`;
-    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => `<tbody><tr class="gh"><th colspan="4">${esc(k)} <span class="count">${l.length}</span></th></tr>${l.map(trow).join('')}</tbody>`).join('')}</table></div>`
-        : gs.map(([k, l]) => head(k, l) + `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`).join(''));
+    const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
+    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="4">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
+        : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
     const total = x['release-group-count'] || rgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > rgs.length ? ` · first ${rgs.length} shown` : ''}`;
     return sect('dg', `Discography <span class="count">${total}</span>`, (total > rgs.length ? `<span class="aside">first ${rgs.length} shown</span>` : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), body, `<div class="folded-note">${n}</div>`);
 }
@@ -3222,6 +3223,7 @@ function onClick(ev) {
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
+    else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if ('aliasmore' in d) aliasOpen = !aliasOpen;
     else if (d.dgview) S.dgView = d.dgview;
