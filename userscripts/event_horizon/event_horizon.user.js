@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.260000
+// @version      2026.10.27.261000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2085,7 +2085,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .disamb{font-size:15px;color:var(--muted);font-weight:500;opacity:.75;margin-top:-8px}
 .by{font-size:16px;font-weight:600}
-.arthd{margin:0 0 -24px}.arthd h1{margin:0 0 6px}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
+.arthd{margin:0 0 -16px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
@@ -4396,14 +4396,19 @@ const PAGE_ID = keyOf(location.href);
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    app.querySelector('.arthd').innerHTML = r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : `<h1 class="sk-t">${d.err ? esc(d.err) : 'Cover art'}</h1>`;
+    // the release page's kicker, Art the tab that's open, and its title and credits without the facts
+    const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
+    const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === 'cover-art' ? ' on' : ''}" href="${MB}/release/${d.id}/${p}"${p === 'cover-art' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+    const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : '<span>Cover art</span>';
+    app.querySelector('.arthd').innerHTML = `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`);
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
     if (as) slot.append(as);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none">Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
     const mb = slot.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
 }
 async function artLoad(n, id) {
-    try { const r = await ws('release/' + id + '?inc=artist-credits'); if (n === showing) { data.rel = r; render(); } }
+    try { const r = await ws('release/' + id + '?inc=artist-credits+media+release-groups'); if (n === showing) { data.rel = r; render(); } }
     catch (e) { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
     // Art Station mounts after it reads the release's art: until then the slot waits for it
     const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
