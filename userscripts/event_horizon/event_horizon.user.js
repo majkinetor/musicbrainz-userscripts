@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.014000
+// @version      2026.10.27.020000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
+// @match        https://*.musicbrainz.org/
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release-group/*
 // @match        https://*.musicbrainz.org/artist/*
@@ -15,7 +16,7 @@
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist and label pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid> and /label/<mbid>
-// (not their subpages), and moves between them in place: the page is hidden
+// (not their subpages), and the home page, and moves between them in place: the page is hidden
 // from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
 // back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
 // the Cover Art Archive.
@@ -1845,6 +1846,26 @@ const FORMAT_ICONS = {
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
+.hm-hero{display:flex;align-items:center;gap:22px;padding:34px 0 26px}
+.hm-logo{width:84px;height:84px;flex:none}
+.hm-t{flex:1;min-width:0}
+.hm-k{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.hm-srch{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 2px 10px var(--shadow)}
+.hm-srch:focus-within{border-color:var(--accent)}
+.hm-srch input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--text);font:inherit;font-size:18px;padding:8px 0}
+.hm-srch select{border:0;background:var(--chip);color:var(--chip-text);font:inherit;font-size:13px;border-radius:9px;padding:8px}
+.hm-srch button{border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
+.hm-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hm-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;background:var(--chip);color:var(--chip-text)!important;text-decoration:none!important;font-weight:600}
+.hm-chip:hover{background:var(--accent);color:#fff!important}
+.hm-rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
+.hm-r{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
+.hm-r:hover{background:var(--hover)}
+.hm-r svg{flex:none;color:var(--muted)}
+.hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.hm-by{font-weight:400;color:var(--muted);margin-left:6px}
+.hm-rk{font-size:12px;color:var(--muted)}
+.hm-none{color:var(--muted);margin:0}
 :root{
   --bg:#f7f5f8;--surface:#fff;--text:#231c2b;--muted:#7a6b85;--soft:#5d4f68;--border:#e8e0ec;--line:#eee7f0;
   --chip:#efe8f2;--chip-text:#4a3b55;--accent:#ba478f;--accent2:#eb743b;--link:#8c2f6c;--link-hover:#5f1d49;
@@ -3148,6 +3169,7 @@ function render(keepPop) {
     const app = $('#app');
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
+    if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); secRail(app); save(); return; }
     const r = data.rel || data.g;
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
@@ -3207,10 +3229,58 @@ async function edMore() {
     finally { edBusy = false; }
     if (data === d) { const y = scrollY; render(); scrollTo(0, y); }
 }
+/* ── home page ─────────────────────────────────────── */
+// MusicBrainz's front page as a launch pad: search, adding things, your own pages and the pages you last opened.
+// Nothing here asks MusicBrainz for anything: it is all links, and the visits this script keeps itself.
+let ME = '';
+const HM_ADD = [
+    ['release/add', 'Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'],
+    ['artist/create', 'Artist', MK_CR],
+    ['label/create', 'Label', CI_TAG],
+    ['work/create', 'Work', MK_WORK],
+    ['recording/create', 'Recording', MK_REC],
+    ['release-group/create', 'Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'],
+    ['event/create', 'Event', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+    ['place/create', 'Place', '<path d="M12 21s-7-6.500-7-12a7 7 0 0 1 14 0c0 5.500-7 12-7 12z"/><circle cx="12" cy="9" r="2.500"/>'],
+    ['series/create', 'Series', '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>'],
+];
+const HM_ME = [
+    ['edits/open', 'Open edits', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
+    ['edits', 'All edits', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
+    ['/vote', 'Vote', '<path d="M20 6 9 17l-5-5"/>'],
+    ['collections', 'Collections', '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>'],
+    ['subscriptions/artist', 'Subscriptions', '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>'],
+    ['ratings', 'Ratings', '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>'],
+    ['tags', 'Tags', CI_TAG],
+    ['', 'Profile', MK_CR],
+];
+const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'], 'release-group': ['Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'], artist: ['Artist', MK_CR], label: ['Label', CI_TAG] };
+const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
+// the pages last opened here, newest first
+const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
+function visited(key, d) {
+    const r = d.rel || d.g; if (!r) return;
+    const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '' }, ...visits().filter(x => x.key !== key)].slice(0, 12);
+    try { GM_setValue('visits', v); } catch (e) {}
+}
+function homeHtml() {
+    const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`;
+    const kinds = SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('');
+    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-logo"')}<div class="hm-t"><div class="hm-k">MusicBrainz · Event Horizon</div>
+        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><input type="hidden" name="method" value="indexed"><button type="submit">Search</button></form></div></header>`;
+    const add = sect('hadd', 'Add', '', `<div class="hm-chips">${HM_ADD.map(([p, n, ic]) => hmChip(`${MB}/${p}`, n, ic)).join('')}</div>`, '');
+    const me = ME ? sect('hme', esc(ME), '', `<div class="hm-chips">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div>`, '')
+        : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
+    const vs = visits();
+    const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
+        return `<a class="hm-r" href="${MB}/${k}/${id}">${SVG(ic)}<span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
+        : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
+    return hero + add + me + rec;
+}
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -3341,10 +3411,11 @@ function onClick(ev) {
 const PAGE = new RegExp('^/(release|release-group|artist|label)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
+    if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d ? (d.rel || d.g).title + ' · Event Horizon' : 'Event Horizon';
+const titleOf = d => d && d.kind !== 'home' ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
@@ -3426,9 +3497,23 @@ function setOn(on) {
     mbSheets(!on);
     if (ehBody) for (const id of ['eh-css', 'eh-font']) document.getElementById(id).disabled = !on;
     document.title = on ? titleOf(data) : mbTitle;
+    favicon(on);
     const h = document.getElementById('eh-hide'); if (h) h.remove();
     const l = document.getElementById('eh-launch');
     if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
+}
+// the tab shows Event Horizon's mark while the viewer is on, and MusicBrainz's again with its page
+let mbIcons = null;
+function favicon(on) {
+    if (!mbIcons) mbIcons = [...document.querySelectorAll('link[rel~="icon"]')];
+    const own = document.getElementById('eh-icon');
+    if (own) own.remove();
+    for (const l of mbIcons) if (on) l.remove(); else if (!l.isConnected) document.head.append(l);
+    if (!on) return;
+    const l = document.createElement('link');
+    l.id = 'eh-icon'; l.rel = 'icon'; l.type = 'image/svg+xml';
+    l.href = 'data:image/svg+xml,' + encodeURIComponent(LOGO.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"'));
+    document.head.append(l);
 }
 // the settings window: the shared overlay and header
 const CI = {
@@ -3580,6 +3665,9 @@ let LOG;
 function start() {
     LOG = mbuLog({ name: 'Event Horizon', version: VERSION, key: 'event_horizon.logwin' });
     mbBody = document.body; mbTitle = document.title;
+    // the signed-in editor, off MusicBrainz's header: the home page's own links go to their pages
+    const ua = mbBody.querySelector('.header a[href*="/user/"], header a[href*="/user/"]');
+    if (ua) ME = decodeURIComponent(ua.getAttribute('href').split('/user/')[1].split('/')[0]);
     launcher();
     // Mission Control opening on a release it just consolidated (its mc.after note) needs MusicBrainz's page
     let off = false; try { off = !!sessionStorage.getItem('eh-off'); sessionStorage.removeItem('eh-off'); } catch (e) {}
@@ -3603,6 +3691,7 @@ const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, la
 // this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
 let early = null;
 function prefetch(key) {
+    if (!LOADERS[key.split('/')[0]]) return;
     const done = new Set(), e = { key, done, on: null };
     e.p = LOADERS[key.split('/')[0]](key.split('/')[1], k => { done.add(k); if (e.on) e.on(k); });
     e.p.catch(() => {});
@@ -3612,6 +3701,7 @@ async function show(key) {
     const app = $('#app'), n = ++showing;
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     const parts = isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
+    if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
@@ -3633,7 +3723,7 @@ async function show(key) {
         if (d.disc) wait.add('dg');
         if (kind === 'release') wait.add('art');
         let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); if (kind === 'release') let_('art', d.covers);
-        if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
+        if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
         d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } });
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
