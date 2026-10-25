@@ -2064,7 +2064,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
 .ed-t tbody tr:not(.gh):hover{background:var(--hover)}
-.ed-t caption{text-align:left;padding:4px 0 8px}
+.ev-pop{max-width:340px;max-height:360px;overflow:auto}.ev-pop .evs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}.evm{font-size:13px}.ed-t caption{text-align:left;padding:4px 0 8px}
 .ed-t tr.cur td{background:var(--chip)}
 .ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
 .ed-t .ed-tr:hover{background:var(--chip)}
@@ -2673,6 +2673,15 @@ async function edToggle(id) {
 const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)],
     ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
     ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff']];
+// a release's events: the first two, the rest behind +N, by date with their countries
+const evOne = v => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : ''}${v.date ? fdate(v.date) : ''}</div>`;
+function evCell(e) {
+    const vs = e.events;
+    if (vs.length <= 3) return vs.map(evOne).join('') || '—';
+    const rest = vs.slice(2), by = new Map();
+    for (const v of rest) { const k = v.date || ''; by.set(k, [...(by.get(k) || []), v.iso || '?']); }
+    return vs.slice(0, 2).map(evOne).join('') + `<span class="popwrap"><button class="lnk evm" type="button" data-pop="ev-${e.id}" aria-expanded="false" data-tip="${rest.length} more countries">+${rest.length}</button><div class="pop ev-pop" id="pop-ev-${e.id}" hidden>${[...by].map(([d, isos]) => `<div class="h label">${d ? fdate(d) : 'No date'} · ${isos.length}</div><div class="evs">${isos.map(i => `<span class="iso">${esc(i)}</span>`).join('')}</div>`).join('')}</div></span>`;
+}
 function edTable(es, curId, flat, part) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
     if (col) es = [...es].sort((a, b) => (desc ? -1 : 1) * col[2](a).localeCompare(col[2](b), undefined, { sensitivity: 'base', numeric: true }) || (a.date || '9').localeCompare(b.date || '9'));
@@ -2688,7 +2697,7 @@ function edTable(es, curId, flat, part) {
             <td>${acHtml(e.ac)}</td>
             <td>${esc(fmtSummary(e.formats))}</td>
             <td class="num"><button class="ed-tr" type="button" data-edtr="${e.id}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button></td>
-            <td>${e.events.map(v => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : ''}${v.date ? fdate(v.date) : ''}</div>`).join('') || '—'}</td>
+            <td>${evCell(e)}</td>
             <td>${e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')}</td>
             <td class="mono">${e.li.map(l => `<div>${esc(l.catno)}</div>`).join('')}</td>
             <td class="mono">${esc(e.barcode)}</td>
