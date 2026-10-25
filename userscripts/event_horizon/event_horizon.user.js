@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.140000
+// @version      2026.10.26.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2055,6 +2055,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-tw{overflow-x:auto}
 .ed-t{width:100%;border-collapse:collapse;font-size:14px}
 .ed-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.dg-sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}.dg-sort i{font-style:normal;margin-left:5px;opacity:0}.dg-sort:hover{color:var(--text)}.dg-sort:hover i{opacity:.5}.dg-sort.on{color:var(--accent)}.dg-sort.on i{opacity:1}
 .ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
 .ed-t tbody tr:not(.gh):hover{background:var(--hover)}
@@ -2282,7 +2283,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2294,7 +2295,7 @@ const S = {
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
-    fold: [], discFold: [], edView: 'grid', rgView: 'table', dgView: 'grid',
+    fold: [], discFold: [], edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date',
     ed: { kinds: new Set(), official: false },
     open: new Set(),
 };
@@ -3014,15 +3015,18 @@ function discoHtml(d) {
     for (const g of rgs) { const k = [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified'; const l = m.get(k) || []; l.push(g); m.set(k, l); }
     const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
     const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
-    const byDate = l => l.sort((a, b) => (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
-    const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, byDate(l)]);
+    // each type sorts by the chosen column (date by default), a leading '-' reversing it
+    const sk = (S.dgSort || 'date').replace(/^-/, ''), desc = (S.dgSort || '').startsWith('-');
+    const kv = { title: g => g.title || '', artist: g => (g['artist-credit'] || []).map(c => (c.name || '') + (c.joinphrase || '')).join(''), date: g => g['first-release-date'] || '9' }[sk] || (g => g['first-release-date'] || '9');
+    const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
+    const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
+    const th = (k, n) => `<th aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
     const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td></tr>`;
     const head = (k, l) => `<h3 class="disco-h">${esc(k)} <span class="count">${l.length}</span></h3>`;
-    const body = '<div class="ed-filter" style="justify-content:flex-end">' + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view') + '</div>'
-        + (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Title</th><th>Artist</th><th>First released</th></tr></thead>${gs.map(([k, l]) => `<tbody><tr class="gh"><th colspan="4">${esc(k)} <span class="count">${l.length}</span></th></tr>${l.map(trow).join('')}</tbody>`).join('')}</table></div>`
+    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => `<tbody><tr class="gh"><th colspan="4">${esc(k)} <span class="count">${l.length}</span></th></tr>${l.map(trow).join('')}</tbody>`).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`).join(''));
     const total = x['release-group-count'] || rgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > rgs.length ? ` · first ${rgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, `<span class="aside">${n}</span>`, body, `<div class="folded-note">${n}</div>`);
+    return sect('dg', `Discography <span class="count">${total}</span>`, (total > rgs.length ? `<span class="aside">first ${rgs.length} shown</span>` : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), body, `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -3174,6 +3178,7 @@ function onClick(ev) {
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if ('aliasmore' in d) aliasOpen = !aliasOpen;
     else if (d.dgview) S.dgView = d.dgview;
+    else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
     else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
     else if ('edkind' in d) S.ed.kinds = new Set(d.edkind ? [d.edkind] : []);
