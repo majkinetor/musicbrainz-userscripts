@@ -1,6 +1,6 @@
 # Event Horizon <img src="icon.svg" align="left" width="48">
 
-MusicBrainz, past the point of no return: release, release group, artist and label pages redesigned around what you came for.
+MusicBrainz, past the point of no return: release, release group, artist, label, recording and work pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
@@ -8,16 +8,16 @@ MusicBrainz, past the point of no return: release, release group, artist and lab
 
 ## Features
 
-- **[The viewer](#the-viewer)** takes over a release, release group, artist or label page, and moves between them without reloading.
+- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording or work page, and moves between them without reloading.
 - **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
 
 ## The viewer
 
-Open a release, release group, artist or label on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
+Open a release, release group, artist, label, recording or work on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
 
-The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another release, release group, artist or label opens in place.
+The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
 
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 
@@ -34,6 +34,8 @@ Which platforms show, in which order, and how big, are in the settings' **Platfo
 ## Releases and discography
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
+
+A recording shows its length, ISRCs and credits, its works beside them with their writers, and the releases it appears on. A work shows its writers, ISWCs and other codes, related works, and its recordings in a table by first release.
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 

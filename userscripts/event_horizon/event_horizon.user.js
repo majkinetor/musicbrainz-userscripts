@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.060000
+// @version      2026.10.27.070000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -10,12 +10,14 @@
 // @match        https://*.musicbrainz.org/release-group/*
 // @match        https://*.musicbrainz.org/artist/*
 // @match        https://*.musicbrainz.org/label/*
+// @match        https://*.musicbrainz.org/recording/*
+// @match        https://*.musicbrainz.org/work/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
 // ==/UserScript==
 
-// Event Horizon takes over MusicBrainz's own release, release group, artist and label pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid> and /label/<mbid>
+// Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording and work pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
 // from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
 // back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
@@ -3223,6 +3225,111 @@ function arHero(d) {
         </div>
     </section>`;
 }
+/* ── recording and work pages ──────────────────────── */
+const tagsOf = (x, gn) => (x.tags || []).filter(t => !gn.has(t.name)).sort((a, b) => b.count - a.count).slice(0, 8).map(t => t.name);
+const genresOf = x => (x.genres || []).sort((a, b) => b.count - a.count);
+const wkOf = w => ({
+    id: w.id, title: w.title, type: w.type || '', dis: w.disambiguation || '', iswcs: w.iswcs || [], cr: creditsOf(w.relations || []),
+    langs: (w.languages || (w.language ? [w.language] : [])).map(l => nameOf('language', l) || l), attrs: (w.attributes || []).map(a => [a.type, a.value]),
+});
+function recording(x) {
+    const genres = genresOf(x), gn = new Set(genres.map(g => g.name)), rels = x.relations || [];
+    return {
+        id: x.id, title: x.title, disambig: x.disambiguation, ac: x['artist-credit'] || [], len: x.length || 0, video: !!x.video,
+        first: x['first-release-date'] || '', isrcs: x.isrcs || [], rating: x.rating || {}, genres: genres.slice(0, 5).map(g => g.name), tags: tagsOf(x, gn),
+        aliases: [...new Set((x.aliases || []).map(a => a.name))].filter(n => n !== x.title), annotation: x.annotation || '',
+        cr: creditsOf(rels), links: urlsOf(rels),
+        works: rels.filter(r => r['target-type'] === 'work').map(r => Object.assign(wkOf(r.work), { perf: r.attributes || [] })),
+    };
+}
+async function loadRecording(id, step = () => {}) {
+    const eds = ws(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const x = await ws(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`);
+    step('recording');
+    const g = recording(x);
+    // the works' own writers: one request per work, the first five
+    const wk = Promise.all(g.works.slice(0, 5).map(w => ws(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {}))).then(() => { step('works'); return true; });
+    return { kind: 'recording', g, wk, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
+}
+function work(w) {
+    const genres = genresOf(w), gn = new Set(genres.map(g => g.name)), rels = w.relations || [];
+    return Object.assign(wkOf(w), {
+        disambig: w.disambiguation, rating: w.rating || {}, genres: genres.slice(0, 5).map(g => g.name), tags: tagsOf(w, gn),
+        aliases: [...new Set((w.aliases || []).map(a => a.name))].filter(n => n !== w.title), annotation: w.annotation || '', links: urlsOf(rels),
+        related: rels.filter(r => r['target-type'] === 'work').map(r => ({ role: phrase(r) + (r.direction === 'backward' ? ' of' : ''), id: r.work.id, title: r.work.title })),
+    });
+}
+async function loadWork(id, step = () => {}) {
+    const recs = ws(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`).then(x => { step('recordings'); return x; }, () => null);
+    const wiki = wikiOf('work', id);
+    const w = await ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`);
+    step('work');
+    return { kind: 'work', g: work(w), recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+}
+const pgActs = (type, id) => AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
+const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
+function pgHero(g, type, icon, kind, F, by) {
+    return `<section class="hero">
+        <div class="art"><div class="nocover">${bigMk(icon)}</div>${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
+        <div class="facts-col">
+            <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
+            <h1>${esc(g.title)}</h1>
+            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            ${by ? `<div class="by">${by}</div>` : ''}
+            ${factsHtml(F)}
+        </div>
+    </section>`;
+}
+const codes = xs => xs.map(i => copyB(i)).join(' ');
+function recHero(d) {
+    const g = d.g;
+    return pgHero(g, 'recording', MK_REC, g.video ? 'Video' : 'Recording', [
+        ['Length', g.len && `<span>${esc(ms(g.len))}</span>`],
+        ['First released', g.first && `<span>${fdate(g.first)}</span>`],
+        [g.isrcs.length > 1 ? 'ISRCs' : 'ISRC', g.isrcs.length && codes(g.isrcs), g.isrcs.length > 2 ? 'wide' : ''],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ], g.ac.length ? 'by ' + acHtml(g.ac) : '');
+}
+function wkHero(d) {
+    const g = d.g, writers = byPerson(g.cr.filter(c => /writer|composer|lyricist|librettist/i.test(c.role))).map(e => crName(e.c));
+    return pgHero(g, 'work', MK_WORK, g.type || 'Work', [
+        [g.langs.length > 1 ? 'Languages' : 'Language', g.langs.length && esc(g.langs.join(', '))],
+        [g.iswcs.length > 1 ? 'ISWCs' : 'ISWC', g.iswcs.length && codes(g.iswcs), g.iswcs.length > 2 ? 'wide' : ''],
+        ...g.attrs.map(([k, v]) => [esc(k), /^key$/i.test(k) ? esc(v) : mono(v)]),
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ], writers.length ? 'by ' + andList(writers) : '');
+}
+// the credits as the tracklist's detail shows them: the page's own, and beside them its works (or related works)
+function pgCredits(own, side) {
+    if (!own && !side) return '';
+    const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
+    return sect('cr', 'Credits', '', `<div class="detail pg dm-${S.dis}">${sw}<div class="cols">${own || ''}${side ? `<div class="side">${side}</div>` : ''}</div></div>`, '<div class="folded-note">Credits</div>');
+}
+function recCredits(g) {
+    const fx = (k, rows) => ({ k: 'pg|' + k, open: S.tkFx.has('pg|' + k), rows });
+    const works = g.works.map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx('w' + i, workFacts(w))));
+    return pgCredits(g.cr.length ? crGroup('Recording', 'recording', null, g.cr) : '', works.join(''));
+}
+function wkCredits(g) {
+    const rel = g.related.length ? `<dl class="grp"><h4><span class="tag">${mkSvg(MK_WORK)}Related works</span></h4>${g.related.map(r => `<dt>${esc(r.role)}</dt><dd>${entA('work', r.id, r.title)}</dd>`).join('')}</dl>` : '';
+    return pgCredits(g.cr.length ? crGroup('Work', 'work', null, g.cr) : '', rel);
+}
+// a work's recordings, a table by first release
+function recsHtml(d) {
+    const x = d.recsX;
+    if (!x) return '';
+    const rs = [...(x.recordings || [])].sort((a, b) => (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
+    if (!rs.length) return '';
+    const total = x['recording-count'] || rs.length;
+    const row = r => `<tr><td><a href="${MB}/recording/${r.id}">${esc(r.title)}</a>${r.disambiguation ? ` <span class="sub">(${esc(r.disambiguation)})</span>` : ''}${r.video ? ' <span class="sub">· video</span>' : ''}</td><td>${acHtml(r['artist-credit'] || [])}</td><td class="mono">${esc(ms(r.length))}</td><td class="mono">${(r.isrcs || []).map(esc).join(' ')}</td><td class="mono">${r['first-release-date'] ? fdate(r['first-release-date']) : '—'}</td></tr>`;
+    const more = total > rs.length ? `<div class="folded-note">The first ${rs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/work/${d.g.id}">All on MusicBrainz's page</button></div>` : '';
+    return sect('rc', `Recordings <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Title</th><th>Artist</th><th>Length</th><th>ISRC</th><th>First released</th></tr></thead><tbody>${rs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} recording${total === 1 ? '' : 's'}</div>`);
+}
 /* ── filter bar ──────────────────────────────────── */
 // The discography's and the releases' filter (majkinetor, from a mock): a box for the title and a chip per chosen
 // field, all of them at once. "+ Filter" offers each field's values found in the list, counted among what the
@@ -3309,7 +3416,9 @@ function render(keepPop) {
     const w = (id, title, html) => html || (data.wait && data.wait.has(id) ? pend(id, title) : id === 'ed' && data.edErr ? lost(id, title) : '');
     const wikipedia = x => w('wp', 'Wikipedia', wikiHtml(x)), discography = x => w('dg', 'Discography', discoHtml(x)), artwork = x => w('art', 'Artwork', artHtml(x));
     const editions = (x, eds, n) => w('ed', x.id ? 'Editions' : 'Releases', edHtml(x, eds, n));
-    app.innerHTML = data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
+    app.innerHTML = data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
+        : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
+        : data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
@@ -3346,7 +3455,7 @@ function edWatch(app) {
 async function edMore() {
     const d = data;
     if (edBusy || !d || d.edCount <= d.editions.length) return;
-    const id = (d.rel || d.g).id, q = (d.kind === 'label' ? 'label=' : 'release-group=') + id;
+    const id = (d.rel || d.g).id, q = (d.kind === 'label' ? 'label=' : d.kind === 'recording' ? 'recording=' : 'release-group=') + id;
     edBusy = true;
     try {
         const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels&limit=100&offset=${d.editions.length}`);
@@ -3384,7 +3493,7 @@ const HM_ME = [
     ['tags', 'Tags', CI_TAG],
     ['', 'Profile', MK_CR],
 ];
-const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'], 'release-group': ['Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'], artist: ['Artist', MK_CR], label: ['Label', CI_TAG] };
+const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'], 'release-group': ['Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK] };
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -3485,7 +3594,7 @@ function homeHtml() {
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -3616,7 +3725,7 @@ function onClick(ev) {
 }
 
 // a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
-const PAGE = new RegExp('^/(release|release-group|artist|label)/(' + MBID.source + ')/?$', 'i');
+const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
     if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
@@ -3909,7 +4018,7 @@ function skeleton() {
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
-const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel };
+const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork };
 // this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
 let early = null;
 function prefetch(key) {
@@ -3922,7 +4031,7 @@ function prefetch(key) {
 async function show(key) {
     const app = $('#app'), n = ++showing;
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
-    const parts = isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
+    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
@@ -3943,11 +4052,14 @@ async function show(key) {
         const wait = d.wait = new Set(['ed']), let_ = (k, p) => p && p.then(() => {}, () => {}).then(() => { wait.delete(k); if (n === showing && data === d) render(); });
         if (d.wiki) wait.add('wp');
         if (d.disc) wait.add('dg');
+        if (d.recs) wait.add('rc');
         if (kind === 'release') wait.add('art');
-        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); if (kind === 'release') let_('art', d.covers);
+        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); if (kind === 'release') let_('art', d.covers);
         if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
         d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } });
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
+        if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
+        if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
         if (d.img) d.img.then(x => { if (n === showing && data === d && x) { d.g.img = x; render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
