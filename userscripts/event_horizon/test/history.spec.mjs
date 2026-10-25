@@ -33,3 +33,14 @@ test('the history page groups a release\'s edits', { tag: '@sandbox' }, async ({
   await attachShot(testInfo, page, 'history');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });
+
+// MusicBrainz's other edit lists open in the same viewer: open edits, under their own title
+test('open edits show in the history viewer', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/edit/open', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await idle(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('.arthd h1').textContent(), t => /Open edits/.test(t || '')), 'the title names the list');
+  check(await until(() => page.locator('.hist .hgrp, .hist .hmore').count(), n => n > 0) > 0, 'the edits or their count show');
+  await attachShot(testInfo, page, 'open-edits');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace(/\.png$/, '-open.png'), fullPage: true });
+});
