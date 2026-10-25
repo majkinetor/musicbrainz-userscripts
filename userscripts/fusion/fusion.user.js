@@ -957,7 +957,10 @@ const STATE = { recordings: new Map(), poolOrder: [], groups: [], poolFilter: ''
     // #529: per-recording release tables, expanded on demand. The Map doubles as
     // the cache — a missing key means "never asked" (renders "loading…"), null
     // means the lookup failed, so a failed fetch doesn't retry on every render.
-    expandedReleases: new Set(), releaseDetails: new Map(), collapsedGroups: new Set() };
+    expandedReleases: new Set(), releaseDetails: new Map(), collapsedGroups: new Set(),
+    expandedIds: new Set() };   // "<gid>:isrc" / "<gid>:acoustid" whose long id list is unfolded
+// A row shows this many identifiers of a kind before folding the unshared rest.
+const ID_FOLD = 3;
 
 function addToPool(rec) {
     if (STATE.recordings.has(rec.gid)) return false;
@@ -1176,6 +1179,7 @@ function clearBoard() {
     // behind makes a re-grouped recording come back mysteriously pre-expanded.
     // releaseDetails is a CACHE keyed by gid, so that one deliberately survives.
     STATE.expandedReleases.clear();
+    STATE.expandedIds.clear();
     STATE.collapsedGroups.clear();
     Log.info('Cleared board — ' + n + ' group(s) dissolved, every member returned to the pool');
 }
@@ -1228,8 +1232,31 @@ function pairSignals(a, b, tolMs) {
     }
     return sig;
 }
+/* #823 (majkinetor): Match by position, an explicit action only, for localised
+   or translated titles. Two recordings group when they sit at the same track
+   number (and track count, where both are known) on two different releases,
+   their artists agree and their lengths are close; every gate that is not about
+   the title (video, pending edits, gross length, live/place, ISRC batch) holds. */
+function samePosition(a, b) {
+    for (const ra of a.releases || []) {
+        if (ra.trackNumber == null) continue;
+        for (const rb of b.releases || []) {
+            if (rb.gid === ra.gid || rb.trackNumber == null) continue;
+            if (String(ra.trackNumber) !== String(rb.trackNumber)) continue;
+            if (ra.trackCount != null && rb.trackCount != null && ra.trackCount !== rb.trackCount) continue;
+            return ra.trackNumber;
+        }
+    }
+    return null;
+}
+function positionUnion(sig, a, b) {
+    if (sig.videoMismatch || sig.pendingEdit || sig.lengthConflict || sig.liveMismatch || sig.placeConflict || sig.isrcConflict) return false;
+    if (!sig.artist || !sig.length) return false;
+    return samePosition(a, b) != null;
+}
 function autoMatch(pool, tolMs, cutoff) {
     cutoff = cutoff || 'normal';
+    const byPos = cutoff === 'position';
     if (pool.length < 2) return [];
     const uf = gatedUnionFind(pool), find = uf.find;   // #623 U3: the gates hold for the whole group
     let lengthBlocked = 0, bridgeBlocked = 0, guardBlocked = 0, settingBlocked = 0;
@@ -1240,6 +1267,13 @@ function autoMatch(pool, tolMs, cutoff) {
                and the credit strings would have refused it. This is the whole
                behaviour change, and without a line for it the only evidence is a
                group appearing that did not before. */
+            if (byPos) {
+                if (positionUnion(sig, pool[i], pool[j])) {
+                    const joined = uf.union(pool[i].gid, pool[j].gid);
+                    Log.info('  ' + (joined === true ? 'grouped' : 'not grouped (' + joined + ' in the group it would join)') + ' by position ' + samePosition(pool[i], pool[j]) + ': "' + pool[i].title + '" ' + dur(pool[i].length) + ' ↔ "' + pool[j].title + '" ' + dur(pool[j].length));
+                }
+                continue;
+            }
             if (sig.artistByMbid && !artistSimilar(pool[i].artistCredit || '', pool[j].artistCredit || '')) {
                 Log.info('  same artist by MBID despite differing credits: "' + pool[i].artistCredit
                     + '" vs "' + pool[j].artistCredit + '" (' + pool[i].artistGids.join(', ') + ')');
@@ -3630,6 +3664,7 @@ function fsStyle() {
         + '.fs-idv{border-radius:3px;padding:1px 4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.45}'
         + 'a.fs-idv,a.fs-idtag{color:inherit;text-decoration:none}a.fs-idv:hover,a.fs-idtag:hover{text-decoration:underline}'
         + '.fs-idnone{padding:1px 0;line-height:1.45}'
+        + '.fs-idmore{padding:1px 4px;line-height:1.45;cursor:pointer;color:var(--mbu-info);font-family:system-ui,sans-serif}.fs-idmore:hover{text-decoration:underline}'
         + '.fs-idunk{color:var(--mbu-info);cursor:help;font-weight:700}'
         + '.fs-grow .fs-t,.fs-grow .fs-artistcol,.fs-grow .fs-rel,.fs-grow .fs-len,.fs-grow .fs-star,.fs-grow .fs-acts,.fs-grow .fs-exp{line-height:1.45;padding-top:1px}'
         + '.fs-acts{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .1s}'
@@ -3995,6 +4030,11 @@ function storeReleaseDetails(gid, rows) {
     rec.allReleases = list;
     if (!rec.releases || !rec.releases.length) rec.releases = list;
 }
+function toggleIdList(gid, kind) {
+    const key = gid + ':' + kind;
+    if (!STATE.expandedIds.delete(key)) STATE.expandedIds.add(key);
+    renderGroups();
+}
 async function toggleReleaseDetails(gid) {
     resumeBackground('you expanded a recording');
     if (STATE.expandedReleases.has(gid)) { STATE.expandedReleases.delete(gid); renderGroups(); return; }
@@ -4146,8 +4186,16 @@ function groupCardHtml(group, embed) {
             const title = label + ' ' + escapeHtml(v) + (cls ? ' — shared with another recording in this group' : ' — only on this recording') + (isAcoustid ? ' · open on acoustid.org' : '');
             return isAcoustid ? '<a class="fs-idv fs-idlink ' + cls + '" href="' + acidUrl(v) + '" target="_blank" rel="noopener" data-tip="' + title + '">' + shown + '</a>'
                 : '<span class="fs-idv ' + cls + '" data-tip="' + title + '">' + shown + '</span>';
-        }).join('');
-        return '<span class="fs-isrc">' + tags + '</span>';
+        });
+        // majkinetor: a recording with dozens of AcoustIDs stretched its row to a
+        // screen of unshared ids. The shared ones (sorted first) always show; the
+        // unshared rest folds behind "+N more" past ID_FOLD lines, per row and kind.
+        const keep = Math.max(ID_FOLD, vals.filter(v => idColor.has(v)).length);
+        if (tags.length <= keep + 1) return '<span class="fs-isrc">' + tags.join('') + '</span>';
+        const key = rec.gid + ':' + kind, open = STATE.expandedIds.has(key);
+        const more = tags.length - keep;
+        const toggle = '<span class="fs-idmore" data-act="toggle-ids" data-kind="' + kind + '" data-tip="' + (open ? 'Show only the first ' + keep : 'Show ' + more + ' more ' + label + 's, none shared with this group') + '">' + (open ? 'less' : '+' + more + ' more') + '</span>';
+        return '<span class="fs-isrc">' + (open ? tags : tags.slice(0, keep)).join('') + toggle + '</span>';
     };
     const rows = ordered.map(m => {
         const rs = releasesSummary(m);
@@ -4492,14 +4540,17 @@ function seedPageProgress(page, totalPages, loaded, total) {
 }
 function setScopeSuffix(suffix) { const e = document.getElementById('fs-scope'); if (e) e.textContent = _scopeBaseLabel + suffix; }
 
-async function onAutoMatch() {
+async function onAutoMatch(byPosition) {
+    byPosition = byPosition === true;
     const btn = document.getElementById('fs-automatch'); if (!btn) return;
+    const cutoff = byPosition ? 'position' : SETTINGS.matchCutoff;
+    const how = byPosition ? 'by position' : 'at the "' + SETTINGS.matchCutoff + '" cutoff';
     btn.disabled = true; const orig = btn.textContent;
     btn.textContent = 'Matching…';
     busyStart('matching…');
     try {
         const poolRecs = STATE.poolOrder.map(g => STATE.recordings.get(g)).filter(Boolean);
-        Log.info('Match starting on ' + poolRecs.length + ' pool recording(s), cutoff=' + SETTINGS.matchCutoff);
+        Log.info('Match starting on ' + poolRecs.length + ' pool recording(s), ' + (byPosition ? 'by position' : 'cutoff=' + SETTINGS.matchCutoff));
         poolRecs.forEach(r => Log.info('  pool: ' + describeRecordingForLog(r)));
         // Enrich EVERY known recording, not just ungrouped ones (#529): members
         // already sitting in a group were previously never looked up, so two rows
@@ -4514,7 +4565,7 @@ async function onAutoMatch() {
             } else Log.warn('Skipping AcoustID lookup — ' + allRecs.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + ')');
         }
         btn.textContent = 'Matching… (comparing)';
-        let groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, SETTINGS.matchCutoff);
+        let groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, cutoff);
         // Only now, for the few recordings actually grouped, is a pending-edit
         // lookup worth a request each. A group containing one is dissolved: its
         // members go back to the pool rather than being silently merged.
@@ -4542,14 +4593,14 @@ async function onAutoMatch() {
         // Short in the header (it is one line), full sentence in the tooltip.
         if (!groupings.length) {
             showNotice('none',
-                'Match found nothing to group in ' + poolRecs.length + ' pool recording(s) at the "'
-                + SETTINGS.matchCutoff + '" cutoff. Try a looser cutoff, or group by hand.',
-                'match: nothing matched at "' + SETTINGS.matchCutoff + '"');
+                'Match found nothing to group in ' + poolRecs.length + ' pool recording(s) ' + how + '.'
+                + (byPosition ? ' Lengths and artists must agree too.' : ' Try a looser cutoff, or group by hand.'),
+                'match: nothing matched ' + (byPosition ? 'by position' : 'at "' + SETTINGS.matchCutoff + '"'));
         } else {
             const recs = groupings.reduce((a, g) => a + g.memberGids.length, 0);
             showNotice('ok',
                 'Match formed ' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's')
-                + ' from ' + recs + ' recording' + (recs === 1 ? '' : 's') + ' at the "' + SETTINGS.matchCutoff + '" cutoff.',
+                + ' from ' + recs + ' recording' + (recs === 1 ? '' : 's') + ' ' + how + '.',
                 'match: +' + groupings.length + ' group' + (groupings.length === 1 ? '' : 's'));
         }
         renderAll();
@@ -4785,6 +4836,7 @@ function wireDelegatedEvents() {
             renderGroups(); return;
         }
         if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+        if (act === 'toggle-ids' && row) { toggleIdList(row.dataset.gid, e.target.dataset.kind); return; }
         if (act === 'toggle-all-details') { toggleAllDetails(card.dataset.gid); return; }
         if (act === 'toggle-card') {
             const id = card.dataset.gid;
@@ -4949,7 +5001,7 @@ function buildShell() {
         // colour legend beside it went (majkinetor: "make fusion cutoff resemble the apollo's and remove [ ] strict …")
         + '<label class="fs-cutwrap" id="fs-cutwrap"><b>Cutoff</b><span class="fs-cutoff" id="fs-cutoff" tabindex="0" role="button">'
         + '<span class="fs-cutoff-dot"></span><span class="fs-cutoff-lbl"></span><span class="fs-cutoff-caret">▾</span></span></label></div>'
-        + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button></div>'
+        + '<button type="button" id="fs-automatch" class="fs-btn fs-primary">⚡ Match</button><button type="button" id="fs-matchmore" class="fs-btn fs-primary" data-tip="More ways to match">▾</button></div>'
 
         + '<div class="fs-body" id="fs-body"><div class="fs-col fs-pool"><div class="fs-colhdr">Pool <span class="fs-cnt" id="fs-pool-cnt">0</span><span class="fs-sp"></span><input type="text" id="fs-pool-filter" class="fs-poolfilter" placeholder="filter the pool…" data-tip="Filter by title, artist, release, ISRC or AcoustID\nMatch still looks at the whole pool."><span class="fs-pooltog" id="fs-pooltog" data-tip="Fold the pool away\nThe groups get the full width.">◀</span></div>'
         + '<div class="fs-poolsort">Sort <span class="fs-seg" id="fs-pool-sort"><button type="button" data-sort="added" data-tip="In the order they were added">Added</button><button type="button" data-sort="title" data-tip="By title, so the versions of one song sit together">Title</button><button type="button" data-sort="artist" data-tip="By artist, then title">Artist</button></span></div>'
@@ -4973,7 +5025,21 @@ function buildShell() {
     const addInput = document.getElementById('fs-add-input');
     addInput.addEventListener('paste', () => setTimeout(() => onAddByMbid(), 0));
     addInput.addEventListener('keydown', e => { if (e.key === 'Enter') onAddByMbid(); });
-    document.getElementById('fs-automatch').onclick = onAutoMatch;
+    document.getElementById('fs-automatch').onclick = () => onAutoMatch();
+    // #823: the Match submenu; Match by position runs only from here
+    {
+        const more = document.getElementById('fs-matchmore');
+        more.onclick = () => {
+            if (document.querySelector('.fs-match-menu')) { document.querySelectorAll('.fs-match-menu').forEach(m => m.remove()); return; }
+            const m = document.createElement('div'); m.className = 'fs-cutoff-menu fs-match-menu';
+            m.innerHTML = '<div class="mi" data-v="position" data-tip="Match by position\nGroups tracks at the same track number on different releases, whatever their titles.\nMeant for localised or translated titles. Artists and lengths must still agree,\nand the video, live, pending-edit and ISRC checks still apply.">Match by position</div>';
+            document.body.appendChild(m);
+            const r = more.getBoundingClientRect(); m.style.left = Math.max(4, r.right - 160) + 'px'; m.style.top = (r.bottom + 3) + 'px';
+            const off = e => { if (!m.contains(e.target) && !more.contains(e.target)) { m.remove(); document.removeEventListener('mousedown', off, true); } };
+            m.querySelector('.mi').onmousedown = e => { e.preventDefault(); m.remove(); document.removeEventListener('mousedown', off, true); onAutoMatch(true); };
+            setTimeout(() => document.addEventListener('mousedown', off, true), 0);
+        };
+    }
     // NOT `onclick = mergeAll` — the click Event would land in mergeAll's first
     // parameter (concurrency), and being truthy it survives `|| 3`, making
     // Math.min(Event, n) → NaN → Array.from({length:NaN}) → zero workers → the
@@ -5270,6 +5336,7 @@ if (SCOPE.type === 'release') {
             const row = t.closest('.fs-grow');
             if (act === 'mc-open') { mcOpen(key); return; }
             if (act === 'toggle-releases' && row) { toggleReleaseDetails(row.dataset.gid); return; }
+            if (act === 'toggle-ids' && row) { toggleIdList(row.dataset.gid, t.dataset.kind); return; }
             if (act === 'toggle-all-details') {   // the group isn't on the board (toggleAllDetails finds it there): one recording at a time
                 const all = groupAllExpanded(g);
                 g.memberGids.filter(gid => all || !STATE.expandedReleases.has(gid)).forEach(gid => toggleReleaseDetails(gid));
