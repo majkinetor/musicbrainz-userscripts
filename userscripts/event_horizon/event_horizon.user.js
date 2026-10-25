@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.023000
+// @version      2026.10.27.026000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2041,12 +2041,15 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .fbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}
 #s-ed .fbar{margin:10px 0 14px}
 .fbar .fq{height:30px;width:220px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+.fbar .fadd{height:30px;width:240px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
 .fbar select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;padding:0 6px;cursor:pointer;max-width:260px}
 .fchip{display:inline-flex;align-items:center;height:30px;border:1px solid var(--accent);border-radius:15px;background:var(--chip);padding:0 2px 0 10px;font-size:13px}
 .fchip .fk{color:var(--muted);font-weight:600;margin-right:2px}
 .fchip select{all:unset;cursor:pointer;font-weight:600;color:var(--text);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
 .fchip button{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:13px;color:var(--muted);font-size:16px}
 .fchip button:hover{color:var(--text);background:var(--line)}
+.fbtn{all:unset;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
+.fbtn:hover{color:var(--text)}.fbtn[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
 .fbar .fn{font-size:13px;color:var(--muted)}
 .ed-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:10px;background:var(--chip)}
 .ed-seg button{all:unset;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
@@ -2747,7 +2750,7 @@ function edHtml(r, eds, count) {
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>` + fltBar('ed', all);
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button><span class="ed-div"></span>${fltBtn('ed')}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
@@ -3148,6 +3151,7 @@ function fltPass(sc, x, skip) {
 const fltApply = (sc, xs) => xs.filter(x => fltPass(sc, x));
 function fltBar(sc, xs) {
     const f = FLT[sc], n = fltApply(sc, xs).length, on = f.q || Object.keys(f.f).length;
+    if (!f.open && !on) return '';
     const vals = (k, get) => {
         const m = new Map();
         for (const x of xs) if (fltPass(sc, x, k)) for (const v of new Set(get(x))) m.set(v, (m.get(v) || 0) + 1);
@@ -3157,9 +3161,11 @@ function fltBar(sc, xs) {
     const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
     const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${vals(k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
     const add = FLT_FIELDS[sc].filter(([k]) => !(k in f.f)).map(([k, name, get]) => [k, name, vals(k, get)]).filter(x => x[2].length > 1)
-        .map(([k, name, vs]) => `<optgroup label="${name}">${vs.map(([v, c]) => opt(k, v, c)).join('')}</optgroup>`).join('');
-    return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<select class="fadd" data-fset="${sc}" aria-label="Add a filter"><option value="">+ Filter</option>${add}</select>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
+        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(name + ': ' + v)}" data-fv="${esc(k + '\t' + v)}">${c}</option>`).join('')).join('');
+    return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<input type="search" class="fadd" data-fadd="${sc}" list="fl-${sc}" placeholder="+ Filter: type an artist, year…" aria-label="Add a filter" autocomplete="off"><datalist id="fl-${sc}">${add}</datalist>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
 }
+// the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
+const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
@@ -3180,7 +3186,7 @@ function discoHtml(d) {
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="4">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
+    return sect('dg', `Discography <span class="count">${total}</span>`, (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -3384,7 +3390,8 @@ function onClick(ev) {
     else if ('edoff' in d) S.ed.official = !S.ed.official;
     else if (d.edtr) edToggle(d.edtr);
     else if (d.fdel) { const [sc, k] = d.fdel.split(':'); delete FLT[sc].f[k]; }
-    else if (d.fclr) FLT[d.fclr] = { q: '', f: {} };
+    else if (d.fclr) FLT[d.fclr] = { q: '', f: {}, open: true };
+    else if (d.fopen) { const sc = d.fopen, f = FLT[sc], shut = f.open || f.q || Object.keys(f.f).length; FLT[sc] = { q: '', f: {}, open: !shut }; const y = scrollY; render(); scrollTo(0, y); const i = !shut && $(`[data-fq="${sc}"]`); if (i) i.focus(); return; }
     else if (d.mbgo) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.href = d.mbgo; return; }
     else return;
     const y = scrollY; render(keep); scrollTo(0, y);
@@ -3415,14 +3422,17 @@ function build() {
     document.addEventListener('click', onClick);
     // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
     document.addEventListener('change', ev => {
-        const t = ev.target, sc = t.dataset && t.dataset.fset;
+        const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
         if (!sc || !t.value) return;
-        const i = t.value.indexOf('\t');
-        FLT[sc].f[t.value.slice(0, i)] = t.value.slice(i + 1);
+        // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
+        const o = t.list && [...t.list.options].find(x => x.value === t.value), v = o ? o.dataset.fv : t.dataset.fset ? t.value : '';
+        if (!v) return;
+        const i = v.indexOf('\t');
+        FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
         const y = scrollY; render(); scrollTo(0, y);
     });
     const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } };
-    document.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.fq) fq(ev.target); });
+    document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
