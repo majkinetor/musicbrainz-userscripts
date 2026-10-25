@@ -1869,7 +1869,10 @@ const CSS = `
 .hm-covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
 .hm-cv{min-width:0;color:var(--text)!important;text-decoration:none!important}
 .hm-art{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--chip);box-shadow:0 4px 12px var(--shadow)}
-.hm-art img{width:100%;height:100%;object-fit:cover;display:block}.hm-cv:hover .hm-art{outline:2px solid var(--accent)}
+.hm-art{position:relative;background:linear-gradient(135deg,hsl(var(--h1,260) 55% 62%),hsl(var(--h2,320) 60% 42%))}
+.hm-ph{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 50%,transparent 0 17%,rgba(0,0,0,.18) 17.5% 18.5%,transparent 19% 27%,rgba(255,255,255,.08) 27.5% 28.5%,transparent 29% 37%,rgba(0,0,0,.12) 37.5% 38.5%,transparent 39%),radial-gradient(circle at 25% 15%,rgba(255,255,255,.35),transparent 55%)}
+.hm-ph i{font-style:normal;font-weight:800;font-size:clamp(28px,40%,72px);color:rgba(255,255,255,.92);text-shadow:0 2px 12px rgba(0,0,0,.25);letter-spacing:-.02em}
+.hm-art img{position:relative;width:100%;height:100%;object-fit:cover;display:block}.hm-cv:hover .hm-art{outline:2px solid var(--accent)}
 .hm-cv b,.hm-cv small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;margin-top:6px}.hm-cv small{color:var(--muted);margin:0;font-size:11px}
 .hm-you{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
 @media (max-width:900px){.hm-you{grid-template-columns:1fr}}
@@ -3583,7 +3586,8 @@ function homeHtml() {
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
         <div class="hm-qr"><a class="hm-tg${S.hmAdv ? ' on' : ''}" role="button" tabindex="0">${SVG(LENS)} Advanced search</a>${qs}</div></header>`;
     const add = sect('hadd', 'Add', '', `<div class="hm-tiles">${HM_ADD.map(([p, n, ic], i) => `<a class="hm-tile" href="${MB}/${p}"><span class="hm-ic" style="background:${HM_CLR[i]}">${SVG(ic)}</span>${n}</a>`).join('')}</div>`, '');
-    const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" title="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art">${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
+    const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
+    const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" title="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
     const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
     const nev = fr.ev.length ? sect('hnev', 'Recently added events', '', cov(fr.ev), '') : '';
     const me = ME ? sect('hme', esc(ME), '', `<div class="hm-you"><div class="hm-pf"><div class="hm-pid"><span class="hm-av">${esc(ME[0]).toUpperCase()}</span><div><b>${esc(ME)}</b><small>Loading your profile…</small></div></div></div><div class="hm-me">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div></div>`, '')
