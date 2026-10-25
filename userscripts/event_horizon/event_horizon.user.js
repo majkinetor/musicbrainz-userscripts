@@ -1889,7 +1889,8 @@ const CSS = `
 .hm-rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
 .hm-r{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
 .hm-r:hover{background:var(--hover)}
-.hm-ri{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--chip);color:var(--accent)}
+.hm-ri{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--chip);color:var(--accent);overflow:hidden}
+.hm-ri img{width:100%;height:100%;object-fit:cover;display:block}.hm-ri.ar img{border-radius:50%}
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{font-size:12px;color:var(--muted)}
@@ -3497,6 +3498,8 @@ const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
+// a visit's picture: its cover from the archive (a missing one falls back to the icon), an artist's or label's cached image
+const visitImg = (k, id) => { if (k === 'release' || k === 'release-group') return `https://coverartarchive.org/${k}/${id}/front-250`; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
 function visited(key, d) {
     const r = d.rel || d.g; if (!r) return;
     const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '' }, ...visits().filter(x => x.key !== key)].slice(0, 12);
@@ -3565,6 +3568,7 @@ function hmWire(app) {
     });
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
+    for (const im of app.querySelectorAll('[data-hmimg]')) { im.nextElementSibling.style.display = 'none'; im.onerror = () => { im.nextElementSibling.style.display = ''; im.remove(); }; }
     if (ME) profLoad(app);
 }
 function homeHtml() {
@@ -3586,7 +3590,7 @@ function homeHtml() {
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
-        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
+        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(k, id))}${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
     return hero + add + me + nrel + rec + news + nev;
