@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.001403
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.25.011500, credit_hoarder 2026.10.25.001400, event_horizon 2026.10.25.011500, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.25.011500, mammoth 2026.10.20.120000, mission_control 2026.10.25.011500, platform_check 2026.10.25.011500). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.25.081324
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.24, art_station 2026.10.25.050000, credit_hoarder 2026.10.25.081322, event_horizon 2026.10.26.001200, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.21.133503, isrc_scout 2026.10.25.050000, mammoth 2026.10.20.120000, mission_control 2026.10.25.050000, platform_check 2026.10.25.050000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -146,8 +146,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.25.001403 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.25.011500\n  · Credit Hoarder v2026.10.25.001400\n  · Event Horizon v2026.10.25.011500\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.25.011500\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.25.011500\n  · Platform Check v2026.10.25.011500");
+  console.log('%c String Theory %c v2026.10.25.081324 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.24\n  · Art Station v2026.10.25.050000\n  · Credit Hoarder v2026.10.25.081322\n  · Event Horizon v2026.10.26.001200\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.21.133503\n  · ISRC Scout v2026.10.25.050000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.25.050000\n  · Platform Check v2026.10.25.050000");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -157,7 +157,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.25.011500"],["credit_hoarder","Credit Hoarder","2026.10.25.001400"],["event_horizon","Event Horizon","2026.10.25.011500"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.25.011500"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.25.011500"],["platform_check","Platform Check","2026.10.25.011500"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.24"],["art_station","Art Station","2026.10.25.050000"],["credit_hoarder","Credit Hoarder","2026.10.25.081322"],["event_horizon","Event Horizon","2026.10.26.001200"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.21.133503"],["isrc_scout","ISRC Scout","2026.10.25.050000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.25.050000"],["platform_check","Platform Check","2026.10.25.050000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -4037,7 +4037,7 @@ return { ImageMaximizer };
 function __st_ICONS(GM_info) {
 'use strict';
 // <ST-ICONS> — generated by dev/ui/sync-icons.mjs from dev/ui/platform-icons.mjs — DO NOT EDIT
-const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"presto":{"color":"#1f3a5f","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#1f3a5f\"/><path d=\"M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"melon":{"color":"#00cd3c","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#00cd3c\"/><path d=\"M10 16.5V8.5l5-1.5v8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"8.8\" cy=\"16.5\" r=\"1.7\" fill=\"#fff\"/><circle cx=\"13.8\" cy=\"15\" r=\"1.7\" fill=\"#fff\"/></svg>"},"bugs":{"color":"#ff3d2e","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff3d2e\"/><path d=\"M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.9\" stroke-linecap=\"round\"/></svg>"},"allmusic":{"color":"#27aae1","svg":"<svg viewBox=\"-52.87 0 482.77 482.77\"><g transform=\"translate(-118.18 -150.37)\"><path d=\"M432.47,627.54,310.78,352.16a14.57,14.57,0,1,0-7.81.09L178.83,633.14h67.38l14-40.1h92.41l14.32,40.1h67.65ZM276.91,543.85l30-82,29.31,82Z\" style=\"fill:var(--mbu-text,#131313)\"/><path d=\"M403.28,338.88a96.59,96.59,0,1,0-159.89,72.86l11.51-26.33A69.71,69.71,0,1,1,358.83,385l11.61,26.35A96.55,96.55,0,0,0,403.28,338.88Z\" fill=\"#27aae1\"/><path d=\"M466,439.64a187.71,187.71,0,0,0,29.24-100.76c0-103.95-84.57-188.51-188.52-188.51S118.18,234.93,118.18,338.88a187.67,187.67,0,0,0,29.7,101.48A189.56,189.56,0,0,0,205.69,498l13.08-29.92c-42.16-28.9-68.42-77.44-68.42-129.170c0-86.21,70.13-156.34,156.34-156.34s156.36,70.13,156.36,156.34a155.39,155.39,0,0,1-67.8,128.8l13.13,29.83A189.6,189.6,0,0,0,466,439.64Z\" fill=\"#27aae1\"/></g></svg>"},"mora":{"color":"#0a7fd3","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0a7fd3\"/><path d=\"M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" transform=\"translate(1.6 0)\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"amazon":{"color":"#FF6600","svg":"<svg viewBox=\"2 2 20 20\"><rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"4.5\" fill=\"#FF6600\"/><path d=\"M5.6 11.6c3.9 2.6 9 2.7 12.4.4\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"/><path d=\"M15.6 10.9l2.6 1-.6 2.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
+const ST_ICONS = {"musicbrainz":{"color":"#eb743b","svg":"<svg viewBox=\"0.75 0.75 28.5 28.5\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(1.5)\"><path d=\"m13 1-12 7v14l12 7z\" fill=\"#ba478f\"/><path d=\"m14 1 12 7v14l-12 7z\" fill=\"#eb743b\"/></g></svg>"},"discogs":{"color":"#333333","svg":"<svg viewBox=\"71 71 882 882\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"translate(512 512) scale(0.86) translate(-512 -512)\"><circle cx=\"512\" cy=\"512\" r=\"496\" fill=\"#333\" stroke=\"#9a9a9a\" stroke-width=\"32\"/><path fill=\"#fff\" d=\"M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z\"/></g></svg>"},"spotify":{"color":"#1DB954","svg":"<svg viewBox=\"1.25 1.375 21.25 21.25\" fill=\"#1DB954\"><path transform=\"translate(12 12) scale(.875) translate(-12 -12)\" d=\"M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z\"/></svg>"},"apple":{"color":"#FA243C","svg":"<svg viewBox=\"1.625 1.25 20 20\" fill=\"#FA243C\"><path d=\"M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z\"/></svg>"},"deezer":{"color":"#A238FF","svg":"<svg viewBox=\"3 3 18 18\"><path transform=\"translate(12 12) scale(.74) translate(-12 -12)\" d=\"M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z\" fill=\"#A238FF\"/></svg>"},"tidal":{"color":"#000000","svg":"<svg viewBox=\"3 3 18 18\"><path d=\"M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z\" style=\"fill:var(--mbu-text,currentColor)\"/></svg>"},"qobuz":{"color":"#0070ef","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0070ef\"/><circle cx=\"12\" cy=\"12\" r=\"5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\"/><path d=\"M14.5 14.5 19 19\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>"},"beatport":{"color":"#01FF95","svg":"<svg viewBox=\"0.75 0.75 22.5 22.5\"><circle cx=\"12\" cy=\"12\" r=\"11\" fill=\"#000\"/><g transform=\"translate(12 12) scale(0.84) translate(-12 -12)\" fill=\"none\" stroke=\"#01FF95\" stroke-width=\"2.5\"><path d=\"M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1\"/><circle cx=\"13.9\" cy=\"15.8\" r=\"4.05\" stroke-width=\"2.35\"/></g></svg>"},"bandcamp":{"color":"#629AA9","svg":"<svg viewBox=\"2.25 2.25 19.5 19.5\" fill=\"#629AA9\"><path transform=\"translate(12 12) scale(.8) translate(-12 -12)\" d=\"M0 18.75l7.437-13.5H24l-7.438 13.5z\"/></svg>"},"volumo":{"color":"#7c4dff","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#7c4dff\"/><path d=\"M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z\" fill=\"#fff\"/></svg>"},"presto":{"color":"#1f3a5f","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#1f3a5f\"/><path d=\"M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z\" fill=\"#fff\"/></svg>"},"hdtracks":{"color":"#e63329","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#e63329\"/><path d=\"M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z\" fill=\"#fff\"/></svg>"},"soundcloud":{"color":"#ff5500","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff5500\"/><g fill=\"#fff\"><rect x=\"6\" y=\"12\" width=\"1.4\" height=\"4\" rx=\".6\"/><rect x=\"8.5\" y=\"10\" width=\"1.4\" height=\"6\" rx=\".6\"/><rect x=\"11\" y=\"8.5\" width=\"1.4\" height=\"7.5\" rx=\".6\"/><rect x=\"13.5\" y=\"10.5\" width=\"1.4\" height=\"5.5\" rx=\".6\"/><rect x=\"16\" y=\"11.5\" width=\"1.4\" height=\"4.5\" rx=\".6\"/></g></svg>"},"audiomack":{"color":"#FFA200","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FFA200\"/><path d=\"M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"sevendigital":{"color":"#07606E","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#07606E\"/><path d=\"M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z\" fill=\"#fff\"/></svg>"},"melon":{"color":"#00cd3c","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#00cd3c\"/><path d=\"M10 16.5V8.5l5-1.5v8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><circle cx=\"8.8\" cy=\"16.5\" r=\"1.7\" fill=\"#fff\"/><circle cx=\"13.8\" cy=\"15\" r=\"1.7\" fill=\"#fff\"/></svg>"},"bugs":{"color":"#ff3d2e","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#ff3d2e\"/><path d=\"M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.9\" stroke-linecap=\"round\"/></svg>"},"allmusic":{"color":"#27aae1","svg":"<svg viewBox=\"-52.87 0 482.77 482.77\"><g transform=\"translate(-118.18 -150.37)\"><path d=\"M432.47,627.54,310.78,352.16a14.57,14.57,0,1,0-7.81.09L178.83,633.14h67.38l14-40.1h92.41l14.32,40.1h67.65ZM276.91,543.85l30-82,29.31,82Z\" style=\"fill:var(--mbu-text,#131313)\"/><path d=\"M403.28,338.88a96.59,96.59,0,1,0-159.89,72.86l11.51-26.33A69.71,69.71,0,1,1,358.83,385l11.61,26.35A96.55,96.55,0,0,0,403.28,338.88Z\" fill=\"#27aae1\"/><path d=\"M466,439.64a187.71,187.71,0,0,0,29.24-100.76c0-103.95-84.57-188.51-188.52-188.51S118.18,234.93,118.18,338.88a187.67,187.67,0,0,0,29.7,101.48A189.56,189.56,0,0,0,205.69,498l13.08-29.92c-42.16-28.9-68.42-77.44-68.42-129.170c0-86.21,70.13-156.34,156.34-156.34s156.36,70.13,156.36,156.34a155.39,155.39,0,0,1-67.8,128.8l13.13,29.83A189.6,189.6,0,0,0,466,439.64Z\" fill=\"#27aae1\"/></g></svg>"},"mora":{"color":"#0a7fd3","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#0a7fd3\"/><path d=\"M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.6\" stroke-linecap=\"round\" transform=\"translate(1.6 0)\"/></svg>"},"ytmusic":{"color":"#FF0000","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#FF0000\"/><circle cx=\"12\" cy=\"12\" r=\"5.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\"/><path d=\"M10.4 9.5v5l4.2-2.5z\" fill=\"#fff\"/></svg>"},"amazonmusic":{"color":"#25D1DA","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#25D1DA\"/><path d=\"M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.9\" stroke-linecap=\"round\"/><path d=\"M15.5 10.7l3 1.3-.9 3.1\" fill=\"none\" stroke=\"#0F1111\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"amazon":{"color":"#FF6600","svg":"<svg viewBox=\"2 2 20 20\"><rect x=\"2\" y=\"2\" width=\"20\" height=\"20\" rx=\"4.5\" fill=\"#FF6600\"/><path d=\"M5.6 11.6c3.9 2.6 9 2.7 12.4.4\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.7\" stroke-linecap=\"round\"/><path d=\"M15.6 10.9l2.6 1-.6 2.6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>"},"soundexchange":{"color":"#6f42c1","svg":"<svg viewBox=\"1.75 1.75 20.5 20.5\"><circle cx=\"12\" cy=\"12\" r=\"10\" fill=\"#6f42c1\"/><path d=\"M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"1.4\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/></svg>"},"wikidata":{"color":"#339966","svg":"<svg viewBox=\"0 0 24 24\"><g transform=\"translate(0 3)\"><path d=\"M1 0h2v18H1zM4.5 0h2v18h-2z\" fill=\"#990000\"/><path d=\"M8.5 0h1.4v18H8.5zM11.2 0h1.4v18h-1.4zM13.9 0h1.4v18h-1.4z\" fill=\"#339966\"/><path d=\"M17 0h1.6v18H17zM19.8 0h.9v18h-.9zM22 0h1v18h-1z\" fill=\"#006699\"/></g></svg>"},"rateyourmusic":{"color":"#2383C6","svg":"<svg viewBox=\"0 0 143 143\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M85.7921 43.0106C96.6509 47.3959 115.863 46.7695 127.766 45.7254C117.951 24.2165 96.2333 9.18123 71.1744 9.18123C59.0627 9.18123 47.995 12.5224 38.3892 18.5783C59.2715 8.76358 69.295 36.1195 85.7921 43.0106Z\" fill=\"#E6E4E5\"/><path d=\"M142.174 71.4106C142.174 110.669 110.433 142.411 71.1738 142.411C31.915 142.411 0.173828 110.669 0.173828 71.4106C0.173828 32.1518 31.915 0.410645 71.1738 0.410645C110.433 0.410645 142.174 32.3606 142.174 71.4106Z\" fill=\"#E6E4E5\"/><path d=\"M107.717 67.8609C117.323 68.4874 126.093 65.9815 132.776 63.058C131.94 56.7933 130.27 50.9463 127.764 45.5169C115.861 46.561 96.6492 47.1874 85.7904 42.8021C69.2934 35.911 58.4346 8.13754 38.3875 18.3699C20.6375 29.4375 8.94341 48.858 8.94341 71.4109C8.94341 77.258 9.77868 82.8962 11.2404 88.1168C21.0551 79.3462 41.7287 62.8492 60.314 57.8374C85.3728 51.1551 87.0434 66.608 107.717 67.8609Z\" fill=\"url(#rym-g0)\"/><path d=\"M132.777 63.2667C126.095 66.1902 117.324 68.4872 107.718 68.0696C87.0447 66.8167 85.3742 51.1549 60.1065 58.0461C41.73 63.0579 21.0565 79.7637 11.033 88.3255C13.1212 95.4255 16.2536 102.108 20.6389 108.164C27.3212 102.525 35.4653 97.3049 44.4447 95.4255C70.13 89.996 70.13 108.372 91.8477 105.867C103.751 104.405 120.039 92.9196 132.359 82.8961C132.986 79.3461 133.404 75.5873 133.404 71.8284C133.404 68.6961 133.195 65.9814 132.777 63.2667Z\" fill=\"url(#rym-g1)\"/><path d=\"M44.4443 95.2164C35.4649 97.0958 27.3208 102.316 20.6384 107.955C31.9149 123.616 50.2913 133.849 71.1737 133.849C101.871 133.849 127.138 111.713 132.359 82.687C120.038 92.7106 103.75 104.196 91.8472 105.658C70.1296 108.163 70.1296 89.5782 44.4443 95.2164Z\" fill=\"url(#rym-g2)\"/><path d=\"M97.2771 83.1047C99.783 89.3694 97.4859 96.2606 91.6389 98.7665C86.0007 101.064 79.3184 97.9311 76.6037 91.8752C74.0978 85.6105 76.3948 78.7194 82.2419 76.2135C88.0889 73.7076 94.7712 76.84 97.2771 83.1047Z\" fill=\"url(#rym-g3)\"/><defs><linearGradient id=\"rym-g0\" x1=\"70.8335\" y1=\"57.9435\" x2=\"70.8335\" y2=\"17.9123\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#88C6EB\"/><stop offset=\"1\" stop-color=\"#2392CC\"/></linearGradient><linearGradient id=\"rym-g1\" x1=\"76.8285\" y1=\"109.069\" x2=\"70.589\" y2=\"66.1666\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#2383C6\"/><stop offset=\"1\" stop-color=\"#33519F\"/></linearGradient><linearGradient id=\"rym-g2\" x1=\"76.5127\" y1=\"128.007\" x2=\"76.5127\" y2=\"94.94\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#1E4999\"/><stop offset=\"1\" stop-color=\"#1B3B6C\"/></linearGradient><linearGradient id=\"rym-g3\" x1=\"88.7722\" y1=\"102.59\" x2=\"85.7469\" y2=\"75.5277\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#1E4999\"/><stop offset=\"1\" stop-color=\"#1B3B6C\"/></linearGradient></defs></svg>"},"review":{"color":"#555555","svg":"<svg viewBox=\"1 1 22 22\"><path d=\"M3 3h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H10l-5 5v-5H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z\" style=\"fill:var(--mbu-text,currentColor)\"/><path d=\"M6 7.5h12M6 10.5h12M6 13.5h8\" stroke=\"var(--mbu-bg,#fff)\" stroke-width=\"1.5\" stroke-linecap=\"round\" style=\"stroke:var(--mbu-bg,#fff)\"/></svg>"},"globe":{"color":"#6f7d75","svg":"<svg viewBox=\"2 2 20 20\" fill=\"none\" stroke=\"#6f7d75\" stroke-width=\"1.8\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18\"/></svg>"}};
 function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = size || 16; return i.svg.replace(/<svg\b([^>]*)>/, function (m, a) { a = a.replace(/\s(?:width|height)="[^"]*"/g, ''); var ns = /\bxmlns=/.test(a) ? '' : ' xmlns="http://www.w3.org/2000/svg"'; return '<svg' + a + ns + ' width="' + size + '" height="' + size + '">'; }); }
 function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
 // </ST-ICONS>
@@ -16090,7 +16090,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/add-cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/event-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-event-art.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.25.011500","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.25.011500","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.25.050000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.25.050000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -21559,7 +21559,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 if (__stOff.indexOf("credit_hoarder") < 0 && __stRuns("credit_hoarder", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.metal-archives\\.com(?::\\d+)?/albums/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.25.001400","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.25.001400","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.25.081322","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.25.081322","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -29551,7 +29551,7 @@ Its \u{1F517} chip adds the link.`;
   var _appleJson = null;
   var _ytmJson = null;
   var _consolidatedJson = null;
-  var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0.75 0.75 28.5 28.5" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="71 71 882 882" xmlns="http://www.w3.org/2000/svg"><g transform="translate(512 512) scale(0.86) translate(-512 -512)"><circle cx="512" cy="512" r="496" fill="#333" stroke="#9a9a9a" stroke-width="32"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></g></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="1.25 1.375 21.25 21.25" fill="#1DB954"><path transform="translate(12 12) scale(.875) translate(-12 -12)" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="1.625 1.25 20 20" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="3 3 18 18"><path transform="translate(12 12) scale(.74) translate(-12 -12)" d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="3 3 18 18"><path d="M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z" style="fill:var(--mbu-text,currentColor)"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#01FF95", "svg": '<svg viewBox="0.75 0.75 22.5 22.5"><circle cx="12" cy="12" r="11" fill="#000"/><g transform="translate(12 12) scale(0.84) translate(-12 -12)" fill="none" stroke="#01FF95" stroke-width="2.5"><path d="M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1"/><circle cx="13.9" cy="15.8" r="4.05" stroke-width="2.35"/></g></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="2.25 2.25 19.5 19.5" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "presto": { "color": "#1f3a5f", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#1f3a5f"/><path d="M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundcloud": { "color": "#ff5500", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' }, "audiomack": { "color": "#FFA200", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FFA200"/><path d="M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "sevendigital": { "color": "#07606E", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#07606E"/><path d="M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z" fill="#fff"/></svg>' }, "melon": { "color": "#00cd3c", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#00cd3c"/><path d="M10 16.5V8.5l5-1.5v8" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.8" cy="16.5" r="1.7" fill="#fff"/><circle cx="13.8" cy="15" r="1.7" fill="#fff"/></svg>' }, "bugs": { "color": "#ff3d2e", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff3d2e"/><path d="M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>' }, "allmusic": { "color": "#27aae1", "svg": '<svg viewBox="-52.87 0 482.77 482.77"><g transform="translate(-118.18 -150.37)"><path d="M432.47,627.54,310.78,352.16a14.57,14.57,0,1,0-7.81.09L178.83,633.14h67.38l14-40.1h92.41l14.32,40.1h67.65ZM276.91,543.85l30-82,29.31,82Z" style="fill:var(--mbu-text,#131313)"/><path d="M403.28,338.88a96.59,96.59,0,1,0-159.89,72.86l11.51-26.33A69.71,69.71,0,1,1,358.83,385l11.61,26.35A96.55,96.55,0,0,0,403.28,338.88Z" fill="#27aae1"/><path d="M466,439.64a187.71,187.71,0,0,0,29.24-100.76c0-103.95-84.57-188.51-188.52-188.51S118.18,234.93,118.18,338.88a187.67,187.67,0,0,0,29.7,101.48A189.56,189.56,0,0,0,205.69,498l13.08-29.92c-42.16-28.9-68.42-77.44-68.42-129.170c0-86.21,70.13-156.34,156.34-156.34s156.36,70.13,156.36,156.34a155.39,155.39,0,0,1-67.8,128.8l13.13,29.83A189.6,189.6,0,0,0,466,439.64Z" fill="#27aae1"/></g></svg>' }, "mora": { "color": "#0a7fd3", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0a7fd3"/><path d="M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" transform="translate(1.6 0)"/></svg>' }, "ytmusic": { "color": "#FF0000", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' }, "amazonmusic": { "color": "#25D1DA", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "amazon": { "color": "#FF6600", "svg": '<svg viewBox="2 2 20 20"><rect x="2" y="2" width="20" height="20" rx="4.5" fill="#FF6600"/><path d="M5.6 11.6c3.9 2.6 9 2.7 12.4.4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M15.6 10.9l2.6 1-.6 2.6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="2 2 20 20" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
+  var ST_ICONS = { "musicbrainz": { "color": "#eb743b", "svg": '<svg viewBox="0.75 0.75 28.5 28.5" xmlns="http://www.w3.org/2000/svg"><g transform="translate(1.5)"><path d="m13 1-12 7v14l12 7z" fill="#ba478f"/><path d="m14 1 12 7v14l-12 7z" fill="#eb743b"/></g></svg>' }, "discogs": { "color": "#333333", "svg": '<svg viewBox="71 71 882 882" xmlns="http://www.w3.org/2000/svg"><g transform="translate(512 512) scale(0.86) translate(-512 -512)"><circle cx="512" cy="512" r="496" fill="#333" stroke="#9a9a9a" stroke-width="32"/><path fill="#fff" d="M439.84 511.58A72.58 72.58 0 0 1 512.41 439 72.54 72.54 0 0 1 585 511.58a72.56 72.56 0 0 1-72.57 72.56 72.56 72.56 0 0 1-72.57-72.56zm3.18 0A69.48 69.48 0 0 0 512.41 581a69.4 69.4 0 0 0 69.4-69.38 69.49 69.49 0 0 0-69.4-69.43A69.44 69.44 0 0 0 443 511.58zm69.42-11.44a11.43 11.43 0 1 0 11.47 11.45 11.45 11.45 0 0 0-11.48-11.45zm-131.08 11.43a130.68 130.68 0 0 0 40.3 94.43l24.68-26.69.33.3a94.59 94.59 0 0 1 113.08-149.95l17.51-31.95a130.23 130.23 0 0 0-64.82-17.22c-72.27.01-131.08 58.81-131.08 131.08zm225.73 0a94.6 94.6 0 0 1-138.64 83.79l-17.83 31.74a130.26 130.26 0 0 0 61.82 15.53c72.28 0 131.08-58.8 131.08-131.08a130.63 130.63 0 0 0-37.73-91.9L581 446.39a94.3 94.3 0 0 1 26.1 65.2zm-267.34 0a172.17 172.17 0 0 0 53.68 125l25-27.07a135.38 135.38 0 0 1-41.82-97.89c0-74.88 60.92-135.8 135.8-135.8a134.92 134.92 0 0 1 67.08 17.8l17.73-32.34a171.57 171.57 0 0 0-84.81-22.35c-95.19-.03-172.66 77.43-172.66 172.65zm308.49 0c0 74.88-60.92 135.8-135.8 135.8a135 135 0 0 1-64.14-16.14l-18.07 32.17a171.62 171.62 0 0 0 82.21 20.86c95.22 0 172.69-77.47 172.69-172.69a172.15 172.15 0 0 0-51-122.4l-25.12 27a135.35 135.35 0 0 1 39.23 95.4zm41.61 0c0 97.83-79.58 177.43-177.41 177.43a176.32 176.32 0 0 1-84.52-21.46l-18.18 32.36a213.21 213.21 0 0 0 102.7 26.23C630.74 726.11 727 629.87 727 511.57a213.87 213.87 0 0 0-64.38-153l-25.26 27.18a176.85 176.85 0 0 1 52.49 125.82zm-392 0A213.9 213.9 0 0 0 365 667.24L390.23 640A176.88 176.88 0 0 1 335 511.57c0-97.82 79.59-177.41 177.41-177.41a176.26 176.26 0 0 1 87.08 22.93l17.84-32.55A213.14 213.14 0 0 0 512.44 297c-118.3 0-214.54 96.28-214.54 214.57zm392.55-183-24.64 26.49a218.57 218.57 0 0 1 65.94 156.51c0 120.9-98.36 219.26-219.26 219.26a217.9 217.9 0 0 1-105-26.84l-18.24 32.47A255.43 255.43 0 0 0 512 768c141.39 0 256-114.64 256-256a255.23 255.23 0 0 0-77.55-183.41zm-397.27 183c0-120.9 98.36-219.26 219.26-219.26a217.84 217.84 0 0 1 107.19 28.09L637 288.65A254.46 254.46 0 0 0 516.12 256H512c-140.54.22-254.42 113.26-256 253.5v2.5a255.69 255.69 0 0 0 80.51 186.08l25.31-27.36a218.61 218.61 0 0 1-68.64-159.15z"/></g></svg>' }, "spotify": { "color": "#1DB954", "svg": '<svg viewBox="1.25 1.375 21.25 21.25" fill="#1DB954"><path transform="translate(12 12) scale(.875) translate(-12 -12)" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>' }, "apple": { "color": "#FA243C", "svg": '<svg viewBox="1.625 1.25 20 20" fill="#FA243C"><path d="M17.05 12.04c-.03-2.5 2.04-3.7 2.13-3.76-1.16-1.7-2.97-1.93-3.61-1.96-1.54-.16-3 .9-3.78.9-.78 0-1.97-.88-3.24-.86-1.67.03-3.21.97-4.07 2.46-1.73 3.01-.44 7.47 1.24 9.92.82 1.2 1.8 2.54 3.08 2.49 1.24-.05 1.71-.8 3.21-.8 1.5 0 1.92.8 3.23.77 1.33-.02 2.18-1.22 3-2.42.94-1.39 1.33-2.73 1.35-2.8-.03-.01-2.59-.99-2.62-3.93zM14.6 4.59c.68-.83 1.14-1.97 1.01-3.11-.98.04-2.17.65-2.87 1.47-.63.73-1.18 1.9-1.03 3.02 1.09.08 2.21-.55 2.89-1.38z"/></svg>' }, "deezer": { "color": "#A238FF", "svg": '<svg viewBox="3 3 18 18"><path transform="translate(12 12) scale(.74) translate(-12 -12)" d="M4 2h6v2h-6zM14 2h6v2h-6zM2 4h20v2h-20zM0 6h24v2h-24zM0 8h24v2h-24zM0 10h24v2h-24zM2 12h20v2h-20zM4 14h16v2h-16zM6 16h12v2h-12zM8 18h8v2h-8zM10 20h4v2h-4z" fill="#A238FF"/></svg>' }, "tidal": { "color": "#000000", "svg": '<svg viewBox="3 3 18 18"><path d="M6 6l3 3-3 3-3-3zM12 6l3 3-3 3-3-3zM18 6l3 3-3 3-3-3zM12 12l3 3-3 3-3-3z" style="fill:var(--mbu-text,currentColor)"/></svg>' }, "qobuz": { "color": "#0070ef", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0070ef"/><circle cx="12" cy="12" r="5" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M14.5 14.5 19 19" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>' }, "beatport": { "color": "#01FF95", "svg": '<svg viewBox="0.75 0.75 22.5 22.5"><circle cx="12" cy="12" r="11" fill="#000"/><g transform="translate(12 12) scale(0.84) translate(-12 -12)" fill="none" stroke="#01FF95" stroke-width="2.5"><path d="M10.9 3V8.3c0 1.2-.4 1.9-1.1 2.6L5.6 15.1"/><circle cx="13.9" cy="15.8" r="4.05" stroke-width="2.35"/></g></svg>' }, "bandcamp": { "color": "#629AA9", "svg": '<svg viewBox="2.25 2.25 19.5 19.5" fill="#629AA9"><path transform="translate(12 12) scale(.8) translate(-12 -12)" d="M0 18.75l7.437-13.5H24l-7.438 13.5z"/></svg>' }, "volumo": { "color": "#7c4dff", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#7c4dff"/><path d="M7 8h2.2l2.8 6 2.8-6H17l-4 9h-2z" fill="#fff"/></svg>' }, "presto": { "color": "#1f3a5f", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#1f3a5f"/><path d="M8.5 6.5h4.1c2.2 0 3.7 1.4 3.7 3.4s-1.5 3.4-3.7 3.4h-2.2v4.2H8.5zm1.9 1.7v3.4h2c1.1 0 1.9-.7 1.9-1.7s-.8-1.7-1.9-1.7z" fill="#fff"/></svg>' }, "hdtracks": { "color": "#e63329", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#e63329"/><path d="M5 7.5h1.7v3.1h2.6V7.5H11v8H9.3v-3.2H6.7v3.2H5zm7.2 0h2.9c2 0 3.4 1.6 3.4 4s-1.4 4-3.4 4h-2.9zm1.7 1.5v5h1.1c1.1 0 1.8-1 1.8-2.5s-.7-2.5-1.8-2.5z" fill="#fff"/></svg>' }, "soundcloud": { "color": "#ff5500", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff5500"/><g fill="#fff"><rect x="6" y="12" width="1.4" height="4" rx=".6"/><rect x="8.5" y="10" width="1.4" height="6" rx=".6"/><rect x="11" y="8.5" width="1.4" height="7.5" rx=".6"/><rect x="13.5" y="10.5" width="1.4" height="5.5" rx=".6"/><rect x="16" y="11.5" width="1.4" height="4.5" rx=".6"/></g></svg>' }, "audiomack": { "color": "#FFA200", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FFA200"/><path d="M5 13.5l2-2 1.6 2.4 2.2-5.4 2.4 6.6 2.2-4 1.6 2.4H19" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "sevendigital": { "color": "#07606E", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#07606E"/><path d="M7.8 6.8h8.4v1.9l-4.5 8.9H9.4l4.4-8.7h-6z" fill="#fff"/></svg>' }, "melon": { "color": "#00cd3c", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#00cd3c"/><path d="M10 16.5V8.5l5-1.5v8" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.8" cy="16.5" r="1.7" fill="#fff"/><circle cx="13.8" cy="15" r="1.7" fill="#fff"/></svg>' }, "bugs": { "color": "#ff3d2e", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#ff3d2e"/><path d="M9.5 6.5v10M9.5 13.2a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg>' }, "allmusic": { "color": "#27aae1", "svg": '<svg viewBox="-52.87 0 482.77 482.77"><g transform="translate(-118.18 -150.37)"><path d="M432.47,627.54,310.78,352.16a14.57,14.57,0,1,0-7.81.09L178.83,633.14h67.38l14-40.1h92.41l14.32,40.1h67.65ZM276.91,543.85l30-82,29.31,82Z" style="fill:var(--mbu-text,#131313)"/><path d="M403.28,338.88a96.59,96.59,0,1,0-159.89,72.86l11.51-26.33A69.71,69.71,0,1,1,358.83,385l11.61,26.35A96.55,96.55,0,0,0,403.28,338.88Z" fill="#27aae1"/><path d="M466,439.64a187.71,187.71,0,0,0,29.24-100.76c0-103.95-84.57-188.51-188.52-188.51S118.18,234.93,118.18,338.88a187.67,187.67,0,0,0,29.7,101.48A189.56,189.56,0,0,0,205.69,498l13.08-29.92c-42.16-28.9-68.42-77.44-68.42-129.170c0-86.21,70.13-156.34,156.34-156.34s156.36,70.13,156.36,156.34a155.39,155.39,0,0,1-67.8,128.8l13.13,29.83A189.6,189.6,0,0,0,466,439.64Z" fill="#27aae1"/></g></svg>' }, "mora": { "color": "#0a7fd3", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#0a7fd3"/><path d="M6.8 16V10.2M6.8 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16M10.4 11.6c0-1 .8-1.6 1.8-1.6s1.8.6 1.8 1.6V16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" transform="translate(1.6 0)"/></svg>' }, "ytmusic": { "color": "#FF0000", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#FF0000"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M10.4 9.5v5l4.2-2.5z" fill="#fff"/></svg>' }, "amazonmusic": { "color": "#25D1DA", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#25D1DA"/><path d="M5.8 11.2c3.5 3.2 8.9 3.5 12.4.9" fill="none" stroke="#0F1111" stroke-width="1.9" stroke-linecap="round"/><path d="M15.5 10.7l3 1.3-.9 3.1" fill="none" stroke="#0F1111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "amazon": { "color": "#FF6600", "svg": '<svg viewBox="2 2 20 20"><rect x="2" y="2" width="20" height="20" rx="4.5" fill="#FF6600"/><path d="M5.6 11.6c3.9 2.6 9 2.7 12.4.4" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/><path d="M15.6 10.9l2.6 1-.6 2.6" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' }, "soundexchange": { "color": "#6f42c1", "svg": '<svg viewBox="1.75 1.75 20.5 20.5"><circle cx="12" cy="12" r="10" fill="#6f42c1"/><path d="M6.5 12h1.3l1-3 1.6 6 1.6-9 1.6 12 1.4-6h1.5" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>' }, "wikidata": { "color": "#339966", "svg": '<svg viewBox="0 0 24 24"><g transform="translate(0 3)"><path d="M1 0h2v18H1zM4.5 0h2v18h-2z" fill="#990000"/><path d="M8.5 0h1.4v18H8.5zM11.2 0h1.4v18h-1.4zM13.9 0h1.4v18h-1.4z" fill="#339966"/><path d="M17 0h1.6v18H17zM19.8 0h.9v18h-.9zM22 0h1v18h-1z" fill="#006699"/></g></svg>' }, "rateyourmusic": { "color": "#2383C6", "svg": '<svg viewBox="0 0 143 143" xmlns="http://www.w3.org/2000/svg"><path d="M85.7921 43.0106C96.6509 47.3959 115.863 46.7695 127.766 45.7254C117.951 24.2165 96.2333 9.18123 71.1744 9.18123C59.0627 9.18123 47.995 12.5224 38.3892 18.5783C59.2715 8.76358 69.295 36.1195 85.7921 43.0106Z" fill="#E6E4E5"/><path d="M142.174 71.4106C142.174 110.669 110.433 142.411 71.1738 142.411C31.915 142.411 0.173828 110.669 0.173828 71.4106C0.173828 32.1518 31.915 0.410645 71.1738 0.410645C110.433 0.410645 142.174 32.3606 142.174 71.4106Z" fill="#E6E4E5"/><path d="M107.717 67.8609C117.323 68.4874 126.093 65.9815 132.776 63.058C131.94 56.7933 130.27 50.9463 127.764 45.5169C115.861 46.561 96.6492 47.1874 85.7904 42.8021C69.2934 35.911 58.4346 8.13754 38.3875 18.3699C20.6375 29.4375 8.94341 48.858 8.94341 71.4109C8.94341 77.258 9.77868 82.8962 11.2404 88.1168C21.0551 79.3462 41.7287 62.8492 60.314 57.8374C85.3728 51.1551 87.0434 66.608 107.717 67.8609Z" fill="url(#rym-g0)"/><path d="M132.777 63.2667C126.095 66.1902 117.324 68.4872 107.718 68.0696C87.0447 66.8167 85.3742 51.1549 60.1065 58.0461C41.73 63.0579 21.0565 79.7637 11.033 88.3255C13.1212 95.4255 16.2536 102.108 20.6389 108.164C27.3212 102.525 35.4653 97.3049 44.4447 95.4255C70.13 89.996 70.13 108.372 91.8477 105.867C103.751 104.405 120.039 92.9196 132.359 82.8961C132.986 79.3461 133.404 75.5873 133.404 71.8284C133.404 68.6961 133.195 65.9814 132.777 63.2667Z" fill="url(#rym-g1)"/><path d="M44.4443 95.2164C35.4649 97.0958 27.3208 102.316 20.6384 107.955C31.9149 123.616 50.2913 133.849 71.1737 133.849C101.871 133.849 127.138 111.713 132.359 82.687C120.038 92.7106 103.75 104.196 91.8472 105.658C70.1296 108.163 70.1296 89.5782 44.4443 95.2164Z" fill="url(#rym-g2)"/><path d="M97.2771 83.1047C99.783 89.3694 97.4859 96.2606 91.6389 98.7665C86.0007 101.064 79.3184 97.9311 76.6037 91.8752C74.0978 85.6105 76.3948 78.7194 82.2419 76.2135C88.0889 73.7076 94.7712 76.84 97.2771 83.1047Z" fill="url(#rym-g3)"/><defs><linearGradient id="rym-g0" x1="70.8335" y1="57.9435" x2="70.8335" y2="17.9123" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#88C6EB"/><stop offset="1" stop-color="#2392CC"/></linearGradient><linearGradient id="rym-g1" x1="76.8285" y1="109.069" x2="70.589" y2="66.1666" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2383C6"/><stop offset="1" stop-color="#33519F"/></linearGradient><linearGradient id="rym-g2" x1="76.5127" y1="128.007" x2="76.5127" y2="94.94" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1E4999"/><stop offset="1" stop-color="#1B3B6C"/></linearGradient><linearGradient id="rym-g3" x1="88.7722" y1="102.59" x2="85.7469" y2="75.5277" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1E4999"/><stop offset="1" stop-color="#1B3B6C"/></linearGradient></defs></svg>' }, "review": { "color": "#555555", "svg": '<svg viewBox="1 1 22 22"><path d="M3 3h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H10l-5 5v-5H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" style="fill:var(--mbu-text,currentColor)"/><path d="M6 7.5h12M6 10.5h12M6 13.5h8" stroke="var(--mbu-bg,#fff)" stroke-width="1.5" stroke-linecap="round" style="stroke:var(--mbu-bg,#fff)"/></svg>' }, "globe": { "color": "#6f7d75", "svg": '<svg viewBox="2 2 20 20" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' } };
   function stIcon(name, size) {
     var i = ST_ICONS[name];
     if (!i) return "";
@@ -33759,10 +33759,11 @@ ${lines}
 })(typeof GM_info !== 'undefined' ? GM_info : undefined);
 
 // ===== event_horizon (@run-at document-start) =====================================
-if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.25.011500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.25.011500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$"],"exc":[],"noframes":false})) (function(__stGM){
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.001200","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.001200","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
-// Event Horizon takes over MusicBrainz's own release page, /release/<mbid> (not its subpages): the page is hidden
+// Event Horizon takes over MusicBrainz's own release, release group, artist and label pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid> and /label/<mbid>
+// (not their subpages), and moves between them in place: the page is hidden
 // from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
 // back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
 // the Cover Art Archive.
@@ -33842,8 +33843,29 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg{font-size:16px;color:var(--soft)}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
+#eh-rail{position:fixed;z-index:20;top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent}
+#eh-rail:not(.open)::before{content:"";position:absolute;inset:-24px -12px -24px -56px}
+#eh-rail.open{background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
+#eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:30px;min-width:16px;padding:0 6px;border-radius:8px;cursor:pointer}
+#eh-rail .rr>i{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none}
+#eh-rail .rr.on>i{background:var(--accent)}
+#eh-rail .rr.off>i{background:none;border:1.5px solid var(--border);box-sizing:border-box}
+#eh-rail .gr,#eh-rail .nm,#eh-rail .eye{display:none}
+#eh-rail.open .gr,#eh-rail.open .nm,#eh-rail.open .eye{display:inline-flex}
+#eh-rail.open .rr:hover{background:var(--hover)}
+#eh-rail .rr.drag{opacity:.5}
+#eh-rail .gr{align-items:center;line-height:1;cursor:grab;color:var(--muted);font-size:11px;letter-spacing:-2px}
+#eh-rail .nm{align-items:center;line-height:1;border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text)!important;background:none!important;cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
+#eh-rail .rr.on .nm{color:var(--accent)!important}
+#eh-rail .rr.off .nm{color:var(--muted)!important;text-decoration:line-through}
+#eh-rail .eye{border:0;background:none;padding:2px;color:var(--muted);cursor:pointer}
+#eh-rail .eye:hover{color:var(--accent)}
+#eh-rail .eye svg{width:14px;height:14px}
+#eh-rail .fa{display:none;align-items:center;gap:6px;height:28px;margin-top:4px;padding:0 10px;border:0;border-top:1px solid var(--border)!important;border-radius:0;background:none!important;color:var(--soft)!important;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0}#eh-rail.open .fa{display:flex}#eh-rail .fa:hover{color:var(--accent)!important}#eh-rail .fa svg{width:14px;height:14px}
+#eh-rail[hidden]{display:none}
+@media (max-width:700px){#eh-rail{display:none}}
 /* A dark userstyle (Stylus, kellnerd's theme) colours and inverts buttons and headings with !important; these outrank it. */
-:root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
+:root[data-eh-theme] #app button,:root[data-eh-theme] #app button *,:root[data-eh-theme] #app h2,#eh-rail button,#eh-rail button *{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
 :root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
 :root[data-eh-theme] #app .cv svg,:root[data-eh-theme] #app .cv svg *,:root[data-eh-theme] #app button.ib svg,:root[data-eh-theme] #app button.ib svg *{stroke:currentColor!important;fill:none!important;color:inherit!important}
 :root[data-eh-theme] .secthead button.fold,:root[data-eh-theme] .secthead button.fold h2{background:transparent!important;color:var(--text)!important}
@@ -33859,6 +33881,10 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .cv svg{transition:transform .15s}
 [aria-expanded="true"]>.cv svg{transform:rotate(90deg)}
 .folded-note{font-size:14px;color:var(--muted)}
+.secthead .folded-note{margin-right:auto}
+.secthead:has(>.folded-note){align-items:baseline}
+.anno{font-size:15px;line-height:1.6;max-width:72ch;overflow-wrap:anywhere}.anno p{margin:0 0 10px}.anno p:last-child{margin:0}
+.chip.tag{background:none;border-color:var(--chip)}
 .rgc{display:grid;grid-template-columns:fit-content(14em) minmax(0,1fr);gap:10px 14px;margin:0;font-size:14px}
 .rgc dt{text-align:right;color:var(--muted);font-weight:600}
 .rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
@@ -33881,6 +33907,15 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .acts{margin-left:auto;display:flex;gap:2px;align-items:center}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 7px;border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.kicker .srch{display:inline-flex;align-items:center;margin:0}
+.kicker .acts:has(>.srch.open)>:not(.srch),.kicker .srch.open>.ab,.kicker .srch:not(.open) .sf{display:none}
+.kicker .srch .sf{display:inline-flex;align-items:center;gap:6px;height:30px;width:min(300px,60vw);padding:0 4px 0 8px;border:1px solid var(--accent);border-radius:8px;background:var(--surface);color:var(--muted)}
+.kicker .srch .sf svg{width:15px;height:15px;flex:none}
+.kicker .srch input,.kicker .srch select{border:0;outline:0;background:none;font:inherit;font-size:13px;letter-spacing:0;text-transform:none;color:var(--text)}
+.kicker .srch input{flex:1;min-width:0;background:none!important}
+.kicker .srch select{color:var(--muted);font-weight:600}
+.kicker .srch .x{display:grid;place-items:center;width:22px;height:22px;border:0;background:none;color:var(--muted);cursor:pointer;padding:0}
+.kicker .srch .x:hover{color:var(--accent)}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text)!important;text-decoration:none}
@@ -33945,6 +33980,8 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:10px;background:var(--chip)}
 .ed-seg button{all:unset;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
 .ed-seg button:hover{color:var(--text)}
+.rg-l{display:inline-flex;align-items:center;gap:5px;margin-left:14px;vertical-align:middle;color:var(--muted)!important;font-size:15px;font-weight:700;letter-spacing:0}
+.rg-l:hover{color:var(--accent)!important;text-decoration:none}
 .ed-seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px var(--shadow)}
 .ed-seg .n{opacity:.7}
 .ed-sw{all:unset;display:inline-flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
@@ -33959,6 +33996,21 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
 .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
+.ed-tw{overflow-x:auto}
+.ed-t{width:100%;border-collapse:collapse;font-size:14px}
+.ed-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
+.ed-t tbody tr:not(.gh):hover{background:var(--hover)}
+.ed-t tr.cur td{background:var(--chip)}
+.ed-t .num{text-align:right}
+.ed-t .mono{font-size:13px;color:var(--soft);white-space:nowrap}
+.ed-t .sub{color:var(--muted)}
+.ed-t .ev{display:flex!important;flex-wrap:nowrap;align-items:center;gap:8px;white-space:nowrap;line-height:1.3}.ed-t .ev+.ev{margin-top:4px}.ed-t .iso{flex:none;min-width:2.8em;text-align:center;font-weight:700;color:var(--soft)}
+.ed-t .tc{width:52px}
+.ed-t .lk{white-space:normal;min-width:60px}.ed-t .lk a{display:inline-flex;margin:2px 6px 2px 0;vertical-align:middle}
+.ed-t a.tt{display:grid;place-items:center;width:40px;height:40px;border-radius:6px;overflow:hidden;background:var(--chip);color:var(--muted)}
+.ed-t a.tt img{width:100%;height:100%;object-fit:cover}
 .ed-row{display:grid;grid-auto-flow:column;grid-auto-columns:120px;gap:14px;overflow-x:auto;padding:6px 4px 12px;scroll-snap-type:x mandatory}
 .ed-row .tile{scroll-snap-align:start}
 .ed-groups{display:flex;flex-direction:column;gap:18px}
@@ -33993,9 +34045,13 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tr{display:flex;align-items:center;gap:16px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer}
 .tr:hover{background:var(--hover)}
 .tr .n{width:28px;flex:none;color:var(--muted);font-size:14px}
-.tr .ti{flex:1 1 auto;min-width:0}
+.tr .ti{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 .tr .ti a.t{font-weight:700;font-size:16px;color:var(--text)}
-.tr .ti .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.tr .ti .mk{display:inline-flex;align-items:center;gap:8px;align-self:center}
+.tr .ti .mk>*{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:12px;font-weight:700}
+.tr .ti .mk>.on{color:var(--accent)}
+.tr .ti .mk>a:hover{color:var(--text);text-decoration:none}
+.tr .ti .sub{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap}
 .tr .is .isrow{display:flex;align-items:center;gap:8px}
 .tr .is .pop .isrc{display:block;padding:4px 10px}
 .tr .is{flex:none;width:200px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
@@ -34007,7 +34063,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .isrc+.plus{font-size:12px;color:var(--muted);margin-left:4px}
 .hide-isrc .is{display:none}
 .hide-links .lk .slots,.hide-links .lk .popwrap{display:none}
-.hide-credits .sub{display:none}
+.hide-mk .sub,.hide-mk .tr .ti .mk{display:none}
 .hide-len .ln,.hide-len .tot{display:none}
 .slots{display:flex;gap:2px}
 .slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
@@ -34020,7 +34076,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 48px;padding-right:44px}
 .detail .grp{display:grid;align-content:start;grid-template-columns:7.5em minmax(0,1fr);gap:3px 12px;margin:0}
 .detail .grp h4{grid-column:1/-1;display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:14px;min-width:0}
-.detail .grp h4 .tag{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);padding:2px 7px;border-radius:5px}
+.detail .grp h4 .tag svg{width:12px;height:12px;margin-right:5px;vertical-align:-1.5px}.detail .grp h4 .tag{flex:none;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);padding:2px 7px;border-radius:5px}
 .detail .grp h4 a{font-weight:600;color:var(--text);border-bottom:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
 .detail .grp h4 a:hover{border-color:var(--accent);text-decoration:none}
 .detail .grp dt{text-align:right;color:var(--muted);overflow-wrap:anywhere}
@@ -34093,6 +34149,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .artgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -34100,7 +34157,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:600px){.detail .grp{grid-template-columns:fit-content(9em) minmax(0,1fr);gap:3px 10px}.detail .cols{padding-right:34px}.detail .gtools{right:4px}}
 @media (max-width:700px){
   .tr{flex-wrap:wrap;gap:6px 12px}
-  .tr .ti{flex-basis:calc(100% - 100px)}
+  .tr .ti{flex:1 1 0;min-width:0}.tr .ln{margin-left:auto}.tr::before{content:"";order:4;flex-basis:100%;height:0}
   .tr .is{order:5;width:auto;margin-left:40px}
   .tr .lk{order:6;margin-left:auto}
   .detail{padding-left:16px}
@@ -34133,13 +34190,31 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
 .sk-rows{margin-top:16px;display:grid}.sk-r{display:grid;grid-template-columns:28px 1fr 120px 60px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.sk-r .sk{height:14px}
 @media (max-width:700px){.sk-r{grid-template-columns:20px 1fr 50px}.sk-r .sk:nth-child(3){display:none}}
-@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}`;
+@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}
+#mbu-tip:has(.ehtip){width:340px;padding:10px 12px 11px;background:var(--surface);color:var(--text);border-color:var(--border);border-radius:10px;font-family:Manrope,system-ui,sans-serif}
+#mbu-tip:has(.ehtip)::before{border-color:var(--border)}
+.ehtip .hd{display:flex;align-items:baseline;gap:8px}
+.ehtip .hd b{font-size:14px;font-weight:800;color:var(--text);min-width:0}
+.ehtip .here{font-size:11px;font-weight:700;color:var(--accent);white-space:nowrap}
+.ehtip .fmt{margin-left:auto;font-size:12.5px;font-weight:700;white-space:nowrap}
+.ehtip .dis{font-size:12px;color:var(--muted);margin-top:1px}
+.ehtip .fs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px 16px;align-items:start;border-top:1px solid var(--border);padding-top:9px;margin-top:8px}
+.ehtip .fs:empty{display:none}
+.ehtip .fs>div{min-width:0}
+.ehtip .lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ehtip .count{font-size:9.5px;margin-left:3px;padding:0 5px;border-radius:999px;background:var(--chip);color:var(--text)}
+.ehtip .v{margin-top:2px;font-size:12.5px;font-weight:600;display:flex;flex-direction:column;gap:3px}
+.ehtip .sub{font-size:11.5px;font-weight:500;color:var(--muted)}
+.ehtip .lab{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 7px}
+.ehtip .ln{color:var(--link)}
+.ehtip .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;color:var(--muted)}
+.ehtip .mono.bc{color:var(--text)}`;
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide'];
 const S = {
-    cols: { isrc: true, links: true, credits: true, len: true },
+    cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
@@ -34148,7 +34223,8 @@ const S = {
     thumbs: true,
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
-    fold: [], discFold: [], edView: 'grid',
+    secOrder: [], secHide: [], // the rail's section order, and the sections it hides
+    fold: [], discFold: [], edView: 'grid', rgView: 'table', dgView: 'grid',
     ed: { kinds: new Set(), official: false },
     open: new Set(),
 };
@@ -34165,7 +34241,7 @@ const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 async function ws(path) {
     const r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } });
     if (!r) throw new Error('cancelled');
-    if (r.status === 404) throw new Error('MusicBrainz has no such release.');
+    if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
     if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
     return r.json();
 }
@@ -34182,7 +34258,7 @@ const HOSTS = [
     ['soundcloud', 'SoundCloud', /soundcloud\.com/], ['sevendigital', '7digital', /7digital\.com/], ['hdtracks', 'HDtracks', /hdtracks\.com/],
     ['amazonmusic', 'Amazon Music', /music\.amazon\./], ['amazon', 'Amazon', /amazon\./], ['discogs', 'Discogs', /discogs\.com/], ['allmusic', 'AllMusic', /allmusic\.com/],
     ['mora', 'mora', /mora\.jp/], ['ototoy', 'OTOTOY', /ototoy\.jp/], ['pandora', 'Pandora', /pandora\.com/], ['jaxsta', 'Jaxsta', /jaxsta\.com/],
-    ['wikidata', 'Wikidata', /wikidata\.org/], ['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
+    ['wikidata', 'Wikidata', /wikidata\.org/], ['rateyourmusic', 'Rate Your Music', /rateyourmusic\.com/], ['review', 'BBC Music review', /bbc\.co\.uk\/music\/reviews/],['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
 ];
 const KIND = t => /free streaming/.test(t) ? 'free' : /streaming/.test(t) ? 'listen' : /purchase|amazon/.test(t) ? 'buy' : 'info';
 const region = u => (u.match(/music\.apple\.com\/(\w\w)\//) || u.match(/amazon\.(co\.uk|de|fr|nl|com)/) || u.match(/qobuz\.com\/(\w\w-\w\w)\//) || [])[1] || '';
@@ -34221,7 +34297,7 @@ const creditsOf = rels => rels.filter(x => x['target-type'] === 'artist').map(x 
 function release(r, rg, images) {
     const ac = r['artist-credit'] || [], mainIds = ac.map(a => a.artist.id);
     return {
-        id: r.id, asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
+        id: r.id, annotation: r.annotation || '', asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
         langName: r['text-representation'] && nameOf('language', r['text-representation'].language),
         script: r['text-representation'] && nameOf('script', r['text-representation'].script),
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
@@ -34255,17 +34331,44 @@ const edition = e => ({
     formats: (e.media || []).map(m => m.format), date: e.date || '',
     where: (e['release-events'] || []).map(v => v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name)).filter(Boolean),
     labels: [...new Set((e['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean))],
+    // for the tile's tooltip
+    title: e.title || '', barcode: e.barcode || '', packaging: e.packaging || '',
+    lang: e['text-representation'] && [nameOf('language', e['text-representation'].language), nameOf('script', e['text-representation'].script)].filter(Boolean),
+    counts: (e.media || []).map(m => m['track-count'] || 0),
+    events: (e['release-events'] || []).map(v => ({ date: v.date || '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
+    ac: e['artist-credit'] || [], links: urlsOf(e.relations || []),
+    li: (e['label-info'] || []).map(l => ({ id: l.label && l.label.id, name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
+// The edition tile's tooltip: the release info's look, small (majkinetor, from a mock)
+const ED_TIP = new Map();
+function edTip(e, cur) {
+    const n = e.counts.reduce((s, x) => s + x, 0);
+    const tracks = n ? ` <span class="sub">· ${e.counts.length > 1 ? e.counts.join(' + ') + ' · ' : ''}${n} track${n === 1 ? '' : 's'}</span>` : '';
+    const byDate = [];
+    for (const v of e.events) { const l = byDate.find(x => x.date === v.date); l ? l.iso.push(v.iso) : byDate.push({ date: v.date, iso: [v.iso] }); }
+    const f = (label, v) => v ? `<div><div class="lbl">${label}</div><div class="v">${v}</div></div>` : '';
+    const st = e.status !== 'Official' ? (e.status || 'No status') : '';
+    return `<div class="ehtip"><div class="hd"><b>${esc(e.title)}</b>${cur ? '<span class="here">you are here</span>' : ''}<span class="fmt">${esc(fmtSummary(e.formats))}${tracks}</span></div>${e.disambig ? `<div class="dis">${esc(e.disambig)}</div>` : ''}<div class="fs">`
+        + f(`Released${e.events.length > 1 ? ` <span class="count">${e.events.length}</span>` : ''}`, byDate.map(l => `<div>${l.date ? fdate(l.date) : 'no date'} <span class="sub">${esc(l.iso.filter(Boolean).join(', '))}</span></div>`).join('') || (e.date && fdate(e.date)))
+        + f(`Label${e.li.length > 1 ? 's' : ''}`, e.li.map(l => `<div class="lab">${l.name ? `<span class="ln">${esc(l.name)}</span>` : ''}${l.catno ? `<span class="mono">${esc(l.catno)}</span>` : ''}</div>`).join(''))
+        + f('Barcode', e.barcode && `<span class="mono bc">${esc(e.barcode)}</span>`)
+        + f('Packaging', e.packaging && esc(e.packaging))
+        + f('Status', st && esc(st))
+        + f('Language', e.lang && e.lang.length && `<span>${esc(e.lang[0])}${e.lang[1] ? ` <span class="sub">· ${esc(e.lang[1])}</span>` : ''}</span>`)
+        + '</div></div>';
+}
+mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
-    const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups';
+    const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
     const covers = caa(id).then(x => { step('covers'); return x; });
     const r = await ws(`release/${id}?inc=${inc}`);
     step('release');
+    // the page shows off the release's own release group; the group's rating and relationships fill in after
     const rgId = r['release-group'].id;
-    const rg = await ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`);
-    const eds = ws(`release?release-group=${rgId}&inc=media+labels&limit=100`).then(x => { step('editions'); return x; }, () => null);
-    return { rel: release(r, rg, []), editions: [], edCount: 0, eds, covers };
+    const rgP = ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`).catch(() => null);
+    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, () => null);
+    return { rel: release(r, r['release-group'], []), rgP, editions: [], edCount: 0, eds, covers };
 }
 
 /* ── icons ─────────────────────────────────────────── */
@@ -34276,7 +34379,7 @@ const fmtSvg = (k, size = 18, sw = 2.4) => `<svg width="${size}" height="${size}
 const EXTRA = {
     youtube: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#FF0000"/><path d="M10 9v6l5-3z" fill="#fff"/></svg>',
 };
-const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: 'P', jaxsta: 'Jx', ebay: 'eb', bol: 'bol', wikidata: 'WD' };
+const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: 'P', jaxsta: 'Jx', ebay: 'eb', bol: 'bol' };
 function icon(p, size = 20) {
     if (p.key !== 'globe' && ST_ICONS[p.key]) return stIcon(p.key, size).replace('<svg', '<svg aria-hidden="true"');
     if (EXTRA[p.key]) return EXTRA[p.key].replace('<svg', `<svg width="${size}" height="${size}" aria-hidden="true"`);
@@ -34292,7 +34395,13 @@ const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
 const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
 const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
+const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
+const CI_TAG = '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>';
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+// MusicBrainz search, sent as MB's own search form; a bare magnifier that, clicked, swaps the header's actions for its field until a search, × or Escape
+const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
+const LENS = '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>';
+const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type">${SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('')}</select><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form>`;
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
     ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
@@ -34324,8 +34433,9 @@ const relUrl = id => '/release/' + id;
 
 /* ── sections fold ─────────────────────────────────── */
 function sect(id, title, tools, body, folded) {
-    const shut = S.fold.includes(id);
-    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}">${CHEV}<h2>${title}</h2></button>${shut ? '' : `<div class="tools">${tools}</div>`}</div>${shut ? folded : body}</section>`;
+    // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
+    const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
+    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
 
 /* ── hero ──────────────────────────────────────────── */
@@ -34351,15 +34461,17 @@ function facts(r) {
     };
     return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k) && F[k][1]).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
-function under(r) {
+function under(r, more = '') {
     const on = k => S.extras.includes(k);
     const v = r.rating.value, n = r.rating['votes-count'] || 0;
     const tip = v != null ? `${v} from ${n} vote${n === 1 ? '' : 's'} (release group)` : '';
     const stars = on('rating') && v != null ? `<span class="stars" data-tip="${esc(tip)}" aria-label="Rated ${esc(tip)}">${'★'.repeat(Math.round(v))}<span class="off">${'★'.repeat(5 - Math.round(v))}</span></span>` : '';
-    const tags = on('tags') && r.genres.length ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}</div>` : '';
+    const tags = on('tags') && (r.genres.length || more) ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
 const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
+// the release group's link after the release's title: its layers and how many editions it has, muted
+const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
 function hero(r) {
     const fk = fmtKind(r.media[0] && r.media[0].format);
     const rest = r.images.filter(i => !i.front);
@@ -34371,8 +34483,8 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}</span></div>
-            <h1>${esc(r.title)}</h1>
+            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <h1>${esc(r.title)}${rgLink(r)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
             ${facts(r)}
@@ -34393,35 +34505,64 @@ function edTile(e, curId) {
     const k = fmtKind(e.formats[0]);
     const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
-    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-tip="${esc(fmtSummary(e.formats) + ' · ' + (e.where.join(', ') || 'no country') + ' · ' + (e.date || 'no date') + (e.disambig ? ' · ' + e.disambig : '') + ' · ' + e.labels.join(', '))}">
+    ED_TIP.set(e.id, { e, cur: e.id === curId });
+    return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
         <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
         <span class="t1">${esc(fmtSummary(e.formats))}</span>
         <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
     </a>`;
 }
-function editions(r, eds, count) {
-    if (eds.length < 2) return '';
+function edTable(es, curId) {
+    const ST = ['Official', 'Promotion', 'Bootleg', 'Pseudo-Release', 'Withdrawn', 'Expunged', 'Cancelled'];
+    const groups = [...new Set(es.map(e => e.status || ''))].sort((a, b) => (ST.indexOf(a) + 1 || 99) - (ST.indexOf(b) + 1 || 99));
+    const row = e => {
+        ED_TIP.set(e.id, { e, cur: e.id === curId });
+        const k = fmtKind(e.formats[0]);
+        return `<tr${e.id === curId ? ' class="cur"' : ''}>
+            <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
+            <td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}</td>
+            <td>${acHtml(e.ac)}</td>
+            <td>${esc(fmtSummary(e.formats))}</td>
+            <td class="num">${e.counts.join(' + ')}</td>
+            <td>${e.events.map(v => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : ''}${v.date ? fdate(v.date) : ''}</div>`).join('') || '—'}</td>
+            <td>${e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')}</td>
+            <td class="mono">${e.li.map(l => `<div>${esc(l.catno)}</div>`).join('')}</td>
+            <td class="mono">${esc(e.barcode)}</td>
+            <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
+        </tr>`;
+    };
+    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th><th>Links</th></tr></thead>${groups.map(g => `<tbody><tr class="gh"><th colspan="10">${esc(g || 'No status')} <span class="count">${es.filter(e => (e.status || '') === g).length}</span></th></tr>${es.filter(e => (e.status || '') === g).map(row).join('')}</tbody>`).join('')}</table></div>`;
+}
+const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
+const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
+// a section whose data is still on its way: its header, with a spinner
+const pend = (id, title) => `<section class="sec pend" id="s-${id}" aria-busy="true"><div class="secthead"><span class="fold">${CHEV}<h2>${title}</h2></span><span class="ld" role="status" aria-label="Loading"></span></div></section>`;
+// a section whose data MusicBrainz didn't send: its header, and a reload
+const lost = (id, title) => `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${title}</h2></span></div><div class="folded-note">MusicBrainz didn't send the ${title.toLowerCase()}. <button class="lnk" type="button" onclick="location.reload()">Reload</button></div></section>`;
+function edHtml(r, eds, count) {
+    if (eds.length < (r.id ? 2 : 1)) return '';
+    const view = r.id ? S.edView : S.rgView;
     const all = [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
     const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official'));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
-    const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>']];
-    const views = `<span class="ed-div"></span><span class="ed-views" role="group" aria-label="Editions view">${EDV.map(([v, n, d]) => `<button type="button" data-edview="${v}" aria-pressed="${S.edView === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
+    const views = '<span class="ed-div"></span>' + viewBs(['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
     let body;
-    if (S.edView === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
-    else if (S.edView === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
+    if (view === 'table') body = edTable(shown, r.id);
+    else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
             return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id)).join('')}</div></div>`;
         }).join('')}</div>`;
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
-    const more = count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. <a href="${MB}/release-group/${r.rgId}">All on MusicBrainz</a></div>` : '';
-    return sect('ed', `${count} editions of this ${esc((r.type || 'release').toLowerCase())}`, '', filters + body + more, folded);
+    const more = count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. <button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">All on MusicBrainz's page</button></div>` : '';
+    return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, '', filters + body + more, folded);
 }
 
 /* ── tracklist ─────────────────────────────────────── */
@@ -34443,7 +34584,7 @@ const crName = c => {
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
 function crGroup(tag, type, ent, cr, extra = '') {
-    const head = `<h4><span class="tag">${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    const head = `<h4><span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
     const rows = !cr.length ? '<div class="none">None yet</div>'
         : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
         : byRole(cr).map(([role, cs]) => `<dt>${esc(role)}</dt><dd${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? ' class="stk"' : ''}>${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? cs.map(c => `<div>${crName(c)}</div>`).join('') : andList(cs.map(crName))}</dd>`).join('');
@@ -34475,6 +34616,14 @@ function detail(t) {
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
 const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : `<div class="iswc"><span>ISWC</span><span>${esc(w.iswcs.join(', '))}</span></div>`;
+// a track's markers after its title: its recording (lit when it has relationships of its own), its works, its credits
+const MK_REC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
+const MK_WORK = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
+const MK_CR = '<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>';
+const mkSvg = d => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const marks = t => `<span class="mk"><a class="${t.cr.length ? 'on' : ''}" href="${MB}/recording/${t.rid}" data-tip="Recording${t.cr.length ? ' · ' + t.cr.length + ' relationship' + (t.cr.length === 1 ? '' : 's') : ', no relationships'}" aria-label="Recording">${mkSvg(MK_REC)}</a>`
+    + t.works.map(w => `<a class="on" href="${MB}/work/${w.id}" data-tip="Work: ${esc(w.title)}" aria-label="Work: ${esc(w.title)}">${mkSvg(MK_WORK)}</a>`).join('')
+    + (t.credits ? `<span class="on" data-tip="${t.credits} credit${t.credits === 1 ? '' : 's'}">${mkSvg(MK_CR)}${t.credits}</span>` : '') + '</span>';
 function tracklist(r) {
     const multi = r.media.length > 1;
     const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi })));
@@ -34482,11 +34631,11 @@ function tracklist(r) {
     // a column for each provider you picked that any track here has
     const ctx = { slots: S.prov.filter(k => unionMap.has(k)).sort((a, b) => rank({ key: a }) - rank({ key: b })) };
     const withIsrc = tracks.filter(t => t.isrcs.length).length, credits = tracks.reduce((s, t) => s + t.credits, 0);
-    const cls = Object.entries(S.cols).filter(([, v]) => !v).map(([k]) => 'hide-' + k).join(' ');
+    const cls = Object.entries(S.cols).filter(([, v]) => v === false).map(([k]) => 'hide-' + k).join(' ');
     const row = t => {
-        const sub = [t.feat.length ? 'with ' + t.feat.join(', ') : '', t.credits ? t.credits + ' credits' : ''].filter(Boolean).join(' · ');
+        const sub = t.feat.length ? 'with ' + t.feat.join(', ') : '';
         return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
-            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
+            <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>
             <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : '<span style="color:var(--muted);font-size:13px">no ISRC</span>'}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
             <span class="ln mono">${esc(t.len)}</span></div>${S.open.has(t.key) ? detail(t) : ''}`;
@@ -34497,7 +34646,7 @@ function tracklist(r) {
         rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
-    const toggles = [['isrc', 'ISRCs'], ['links', 'Platforms'], ['credits', 'Credits'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k]}">${n}</button>`).join('');
+    const toggles = [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
     rowKeys = tracks.map(t => t.key);
     const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
     // open: arrows apart (expand); all open: arrows together (collapse)
@@ -34544,9 +34693,10 @@ function creditsCard(r) {
 // MB's phrase for each side of a release group relationship: [forward, backward]
 const RG_PHRASE = { 'single from': ['single from', 'associated singles/EPs'], cover: ['cover of', 'covers'], 'included in': ['included in', 'includes'], compilation: ['compiles', 'included in'], 'DJ-mix': ['DJ-mix of', 'DJ-mixed by'], remix: ['remix of', 'remixes'], 'live performance': ['live performance of', 'live performances'], 'mashes up': ['mashes up', 'mashed up in'], 'first album release': ['first release of', 'first released as'], 'part of set': ['part of', 'includes'] };
 const rgAttrs = x => [...(x.attributes || []).map(a => (x['attribute-values'] || {})[a] ? `${a}: ${x['attribute-values'][a]}` : a), x['ordering-key'] != null && x['target-type'] === 'series' ? `order: ${x['ordering-key']}` : ''].filter(Boolean).map(a => `<span class="rga">(${esc(a)})</span>`).join(' ');
-function rgCard(r) {
+function rgCard(r, own) {
     const groups = new Map(), add = (k, h) => { const l = groups.get(k) || []; l.push(h); groups.set(k, l); };
-    for (const x of r.rg.rels) {
+    const rels = own ? r.rg.rels.filter(x => x['target-type'] !== 'url') : r.rg.rels;
+    for (const x of rels) {
         if (x['target-type'] === 'release_group') {
             const p = RG_PHRASE[x.type] || [x.type, x.type], g = x['release_group'];
             add(p[x.direction === 'backward' ? 1 : 0], `${entA('release-group', g.id, g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''} ${rgAttrs(x)}`);
@@ -34554,13 +34704,223 @@ function rgCard(r) {
         else if (x['target-type'] === 'url') add(x.type, `<a href="${esc(x.url.resource)}" target="_blank" rel="noopener">${esc(x.url.resource.replace(/^https?:\/\/(www\.)?/, ''))}</a>`);
     }
     if (!groups.size) return '';
-    const n = r.rg.rels.length;
+    const n = rels.length;
     const body = `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>`;
+    if (own) return sect('rg', `Relationships <span class="count">${n}</span>`, '', body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
     return sect('rg', 'Release group', `<a class="rgt" href="${MB}/release-group/${r.rgId}">${esc(r.rg.title)}</a><span class="aside">${n} relationship${n === 1 ? '' : 's'}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
 }
 
+/* ── release group page ────────────────────────────── */
+const RG_ACTS = [
+    ['edit', 'Edit', 'Edit release group', ACTS[0][3]],
+    ['/release/add?release-group=', 'Add', 'Add a release to this group', '<path d="M12 5v14M5 12h14"/>'],
+    ['tags', 'Tags', 'Tags', CI_TAG],
+    ['edits', 'History', 'Edit history', ACTS[3][3]],
+];
+function group(g) {
+    const genres = (g.genres || []).sort((a, b) => b.count - a.count), gn = new Set(genres.map(x => x.name));
+    return {
+        id: g.id, rgId: g.id, title: g.title, disambig: g.disambiguation, ac: g['artist-credit'] || [], type: g['primary-type'],
+        types: [g['primary-type'], ...(g['secondary-types'] || [])].filter(Boolean), first: g['first-release-date'] || '',
+        rating: g.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (g.tags || []).filter(t => !gn.has(t.name)).sort((a, b) => b.count - a.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((g.aliases || []).map(a => a.name))], annotation: g.annotation || '',
+        links: urlsOf(g.relations || []), rg: { title: g.title, rels: g.relations || [] },
+    };
+}
+// the Wikipedia extract MusicBrainz's own page fetches after load: { content (HTML), url }, or none
+const wikiOf = (type, id) => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => r.json()).then(x => x.wikipediaExtract || null, () => null);
+async function loadRg(id, step = () => {}) {
+    // the releases and the Wikipedia extract don't need the group: asked for at once
+    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const wiki = wikiOf('release-group', id);
+    const g = await ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`);
+    step('group');
+    return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
+}
+// the folksonomy tags (not the genres) sit behind a chip that opens them
+let tagsOpen = false;
+const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class="chip tag">${esc(t)}</span>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
+// a few aliases inline; a +N button shows the rest
+let aliasOpen = false;
+const aliasList = as => { const n = 4, sh = aliasOpen ? as : as.slice(0, n); return `<div class="als">${sh.map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<button class="chip" type="button" data-aliasmore aria-expanded="${aliasOpen}">${aliasOpen ? 'Fewer' : '+' + (as.length - n)}</button>` : ''}</div>`; };
+function rgHero(d) {
+    const g = d.g, on = k => S.extras.includes(k);
+    const F = [
+        ['First released', g.first && `<span>${fdate(g.first)}</span>`],
+        [`Release${d.edCount === 1 ? '' : 's'}`, d.edCount ? `<span>${d.edCount}</span>` : ''],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && g.aliases.map(a => `<div>${esc(a)}</div>`).join('')],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ];
+    const tags = on('tags') ? tagsMore(g.tags) : '';
+    return `<section class="hero">
+        <div class="art">
+            <img class="cover" data-rgcover src="https://coverartarchive.org/release-group/${g.id}/front-500" alt="Front cover">
+            ${under(g, tags)}
+        </div>
+        <div class="facts-col">
+            <div class="kicker label">${LAYERS(18)}<span>${esc(g.types.join(' · ') || 'Release group')}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <h1>${esc(g.title)}</h1>
+            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <div class="by">by ${acHtml(g.ac)}</div>
+            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+        </div>
+    </section>`;
+}
+// MusicBrainz's wiki markup, as far as a reader needs it: links, bold, italics, paragraphs
+function annoHtml(t) {
+    return esc(t).replace(/\[(https?:\/\/[^\]|\s]+)(?:\|([^\]]+))?\]/g, (m, u, n) => `<a href="${u}" target="_blank" rel="noopener">${n || u}</a>`)
+        .replace(/'''(.+?)'''/g, '<b>$1</b>').replace(/''(.+?)''/g, '<i>$1</i>')
+        .split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+function wikiHtml(w) {
+    if (!w || !w.content) return '';
+    return sect('wp', 'Wikipedia', '', `<div class="anno">${w.content}</div><div class="folded-note"><a href="${esc(w.url)}" target="_blank" rel="noopener">Continue reading at Wikipedia</a> · content under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA</a></div>`, '');   // folded, just the title
+}
+function annotation(g) {
+    if (!g.annotation) return '';
+    return sect('an', 'Annotation', '', `<div class="anno">${annoHtml(g.annotation)}</div>`, `<div class="folded-note">${esc(g.annotation.slice(0, 120))}${g.annotation.length > 120 ? '…' : ''}</div>`);
+}
+
+/* ── artist page ───────────────────────────────────── */
+// where an artist's picture (or a label's logo) comes from: the first of its URL relationships one of these knows, in this order
+const ART_IMG = [
+    { name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async m => {
+        const r = await fetch('https://api.discogs.com/' + m[1] + 's/' + m[2]);
+        if (!r.ok) return null;
+        const im = (await r.json()).images || [], i = im.find(x => x.type === 'primary') || im[0];
+        return i && i.uri ? i.uri : null;
+    } },
+];
+async function artistImage(rels) {
+    const urls = rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource);
+    for (const p of ART_IMG) for (const u of urls) {
+        const m = u.match(p.re);
+        if (!m) continue;
+        try { const src = await p.get(m); if (src) return { src, from: p.name, url: u }; } catch (e) { LOG.warn(p.name + ' image failed: ' + e.message); }
+    }
+    return null;
+}
+const AR_ACTS = [
+    ['edit', 'Edit', 'Edit artist', ACTS[0][3]],
+    ['tags', 'Tags', 'Tags', CI_TAG],
+    ['edits', 'History', 'Edit history', ACTS[3][3]],
+];
+function artist(a) {
+    const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {};
+    return {
+        id: a.id, title: a.name, sort: a['sort-name'], disambig: a.disambiguation, type: a.type || '', gender: a.gender || '',
+        area: a.area, begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, beginArea: a['begin-area'], endArea: a['end-area'],
+        rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        ipis: a.ipis || [], isnis: a.isnis || [], links: urlsOf(a.relations || []), rels: a.relations || [], img: null,
+    };
+}
+async function loadArtist(id, step = () => {}) {
+    const disc = ws(`release-group?artist=${id}&inc=artist-credits&limit=100`).then(x => { step('discography'); return x; }, () => null);
+    const wiki = wikiOf('artist', id);
+    const a = await ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
+    step('artist');
+    const g = artist(a);
+    const img = artistImage(g.rels).then(x => { step('image'); return x; });
+    return { kind: 'artist', g, disc, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+}
+function label(l) {
+    const genres = (l.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = l['life-span'] || {};
+    return {
+        id: l.id, title: l.name, disambig: l.disambiguation, type: l.type || '', area: l.area, code: l['label-code'],
+        begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, rating: l.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (l.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((l.aliases || []).map(x => x.name))].filter(n => n !== l.name), annotation: l.annotation || '',
+        ipis: l.ipis || [], isnis: l.isnis || [], links: urlsOf(l.relations || []), rels: l.relations || [], img: null,
+    };
+}
+async function loadLabel(id, step = () => {}) {
+    const eds = ws(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const wiki = wikiOf('label', id);
+    const l = await ws(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
+    step('label');
+    const g = label(l);
+    const img = artistImage(g.rels).then(x => { step('logo'); return x; });
+    return { kind: 'label', g, img, wiki, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
+}
+const LB_ACTS = AR_ACTS.map(([p, n, t, ic]) => [p, n, t.replace('artist', 'label'), ic]);
+function lbHero(d) {
+    const g = d.g, on = k => S.extras.includes(k);
+    const F = [
+        ['Founded', g.begin && fdate(g.begin)],
+        ['Defunct', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
+        ['Area', g.area && areaA(g.area)],
+        ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0'))],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases)],
+        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
+        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ];
+    const pic = g.img ? `<a href="${esc(g.img.url)}" target="_blank" rel="noopener" data-tip="Logo from ${esc(g.img.from)}"><img class="cover lpic" src="${esc(g.img.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"></a>` : `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}</div>`;
+    return `<section class="hero">
+        <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
+        <div class="facts-col">
+            <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${LB_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/label/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <h1>${esc(g.title)}</h1>
+            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+        </div>
+    </section>`;
+}
+const areaA = x => x ? entA('area', x.id, x.name) : '';
+function arHero(d) {
+    const g = d.g, person = g.type === 'Person' || g.type === 'Character', on = k => S.extras.includes(k);
+    const when = (date, area) => [date && fdate(date), area && areaA(area)].filter(Boolean).join(' · ');
+    const F = [
+        [person ? 'Born' : 'Formed', when(g.begin, g.beginArea)],
+        [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : '')],
+        ['Area', g.area && areaA(g.area)],
+        ['Gender', g.gender && esc(g.gender)],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases)],
+        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
+        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ];
+    const tags = on('tags') ? tagsMore(g.tags) : '';
+    const pic = g.img ? `<a href="${esc(g.img.url)}" target="_blank" rel="noopener" data-tip="Image from ${esc(g.img.from)}"><img class="cover apic" src="${esc(g.img.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"></a>` : `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}</div>`;
+    return `<section class="hero">
+        <div class="art">${pic}${under(g, tags)}</div>
+        <div class="facts-col">
+            <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/artist/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <h1>${esc(g.title)}</h1>
+            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
+            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+        </div>
+    </section>`;
+}
+// the release groups by type, albums first, each type by date
+const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
+function discoHtml(d) {
+    const x = d.discX;
+    if (!x) return '';
+    const rgs = x['release-groups'] || [], m = new Map();
+    for (const g of rgs) { const k = [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified'; const l = m.get(k) || []; l.push(g); m.set(k, l); }
+    const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
+    const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
+    const byDate = l => l.sort((a, b) => (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
+    const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, byDate(l)]);
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td></tr>`;
+    const head = (k, l) => `<h3 class="disco-h">${esc(k)} <span class="count">${l.length}</span></h3>`;
+    const body = '<div class="ed-filter" style="justify-content:flex-end">' + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view') + '</div>'
+        + (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Title</th><th>Artist</th><th>First released</th></tr></thead>${gs.map(([k, l]) => `<tbody><tr class="gh"><th colspan="4">${esc(k)} <span class="count">${l.length}</span></th></tr>${l.map(trow).join('')}</tbody>`).join('')}</table></div>`
+        : gs.map(([k, l]) => head(k, l) + `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`).join(''));
+    const total = x['release-group-count'] || rgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > rgs.length ? ` · first ${rgs.length} shown` : ''}`;
+    return sect('dg', `Discography <span class="count">${total}</span>`, `<span class="aside">${n}</span>`, body, `<div class="folded-note">${n}</div>`);
+}
+
 /* ── artwork ───────────────────────────────────────── */
-function artwork(r) {
+function artHtml(r) {
     if (!r.images.length) return '';
     const body = `<div class="artgrid">${r.images.map(i => `<figure><a href="${esc(i.image)}" target="_blank" rel="noopener"><img src="${esc(thumbOf(i))}" alt="" loading="lazy"></a><figcaption>${esc([i.types.join(', '), i.comment].filter(Boolean).join(' · ') || 'Untyped')}</figcaption></figure>`).join('')}</div>`;
     const n = `${r.images.length} image${r.images.length === 1 ? '' : 's'}`;
@@ -34573,11 +34933,20 @@ function render(keepPop) {
     const app = $('#app');
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
-    const { rel: r } = data;
+    const r = data.rel || data.g;
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
-    document.title = r.title + ' · Event Horizon';
-    app.innerHTML = hero(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
+    document.title = titleOf(data);
+    // a section still loading shows its header, and one that came back empty goes
+    const w = (id, title, html) => html || (data.wait && data.wait.has(id) ? pend(id, title) : id === 'ed' && data.edErr ? lost(id, title) : '');
+    const wikipedia = x => w('wp', 'Wikipedia', wikiHtml(x)), discography = x => w('dg', 'Discography', discoHtml(x)), artwork = x => w('art', 'Artwork', artHtml(x));
+    const editions = (x, eds, n) => w('ed', x.id ? 'Editions' : 'Releases', edHtml(x, eds, n));
+    app.innerHTML = data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
+        : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);
+    // a group without its own cover shows its first release's, else the format's mark
+    const gc = app.querySelector('[data-rgcover]');
+    if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    for (const im of app.querySelectorAll('[data-dgcover]')) im.onerror = () => { im.outerHTML = `<span class="dn">${im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; };
     // Every row's platforms take the widest row's width, so the ISRCs line up.
     for (const tl of app.querySelectorAll('.tl')) {
         const lks = [...tl.querySelectorAll('.tr .lk')], w = Math.max(0, ...lks.map(e => e.offsetWidth));
@@ -34591,8 +34960,64 @@ function render(keepPop) {
         if (window.ResizeObserver) new window.ResizeObserver(fit).observe(kick.parentElement || kick);
     }
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
+    secRail(app);
     fitQuiet();
     save();
+}
+/* ── section rail ──────────────────────────────────── */
+// A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
+// there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
+const SEC_NAME = { dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
+function secRail(app) {
+    const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
+    const at = x => { const i = S.secOrder.indexOf(id(x)); return i < 0 ? 100 + secs.indexOf(x) : i; };
+    secs.sort((a, b) => at(a) - at(b)).forEach(x => { x.hidden = S.secHide.includes(id(x)); app.appendChild(x); });
+    let rail = document.getElementById('eh-rail');
+    if (!rail) {
+        rail = document.createElement('nav');
+        rail.id = 'eh-rail';
+        rail.setAttribute('aria-label', 'Sections');
+        app.after(rail);
+        let t = 0;
+        rail.addEventListener('mouseenter', () => { clearTimeout(t); rail.classList.add('open'); });
+        rail.addEventListener('mouseleave', () => { clearTimeout(t); t = setTimeout(() => rail.classList.remove('open'), 400); });
+        rail.addEventListener('click', ev => {
+            // the last row folds every shown section, or opens them all when they all are folded
+            const fa = ev.target.closest('[data-foldall]');
+            if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => x.id.slice(2)); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); scrollTo(0, y); return; }
+            const row = ev.target.closest('[data-sec]'); if (!row) return;
+            const k = row.dataset.sec;
+            if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, k); const y = scrollY; render(); scrollTo(0, y); return; }
+            S.secHide = S.secHide.filter(x => x !== k); S.fold = S.fold.filter(x => x !== k);
+            render();
+            const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
+        });
+        let drag = null;
+        rail.addEventListener('dragstart', ev => { const row = ev.target.closest('[data-sec]'); drag = row && row.dataset.sec; if (row) row.classList.add('drag'); });
+        rail.addEventListener('dragend', () => { drag = null; rail.querySelectorAll('.drag').forEach(x => x.classList.remove('drag')); });
+        rail.addEventListener('dragover', ev => { if (drag) ev.preventDefault(); });
+        rail.addEventListener('drop', ev => {
+            const row = ev.target.closest('[data-sec]'); if (!drag || !row || row.dataset.sec === drag) return;
+            ev.preventDefault();
+            const ks = [...rail.querySelectorAll('[data-sec]')].map(x => x.dataset.sec).filter(x => x !== drag);
+            ks.splice(ks.indexOf(row.dataset.sec) + (ev.offsetY > row.offsetHeight / 2 ? 1 : 0), 0, drag);
+            S.secOrder = ks; const y = scrollY; render(); scrollTo(0, y);
+        });
+    }
+    rail.hidden = secs.length < 2;
+    rail.innerHTML = secs.map(x => { const k = id(x), off = x.hidden;
+        return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
+        + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
+    railSpy();
+}
+// lights the section at the top of the window
+function railSpy() {
+    const rail = document.getElementById('eh-rail'); if (!rail || !ehOn) return;
+    let cur = null;
+    for (const x of document.querySelectorAll('#app>section.sec:not([hidden])')) if (x.getBoundingClientRect().top < innerHeight / 3) cur = x.id.slice(2);
+    rail.querySelectorAll('[data-sec]').forEach(r => r.classList.toggle('on', r.dataset.sec === cur));
 }
 // the release links stay on one row; what doesn't fit goes behind +N
 function fitQuiet() {
@@ -34627,18 +35052,22 @@ function onClick(ev) {
     if (!b) return;
     const d = b.dataset;
     let keep;
+    if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); return; }
     if (d.copy) {
         const label = b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, '');
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
-    if (d.col) S.cols[d.col] = !S.cols[d.col];
+    if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
-    else if (d.edview) S.edView = d.edview;
+    else if ('tagsmore' in d) tagsOpen = !tagsOpen;
+    else if ('aliasmore' in d) aliasOpen = !aliasOpen;
+    else if (d.dgview) S.dgView = d.dgview;
+    else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
     else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
     else if ('edkind' in d) S.ed.kinds = new Set(d.edkind ? [d.edkind] : []);
     else if ('crtracks' in d) S.crTracks = !S.crTracks;
@@ -34646,17 +35075,19 @@ function onClick(ev) {
     else if ('dismenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     else if (d.dism) { S.dis = d.dism; save(); }
     else if ('edoff' in d) S.ed.official = !S.ed.official;
+    else if (d.mbgo) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.href = d.mbgo; return; }
     else return;
     const y = scrollY; render(keep); scrollTo(0, y);
 }
 
-// a release page's URL on this site → its MBID; not its subpages (/edit, /cover-art, …)
-const RELEASE = new RegExp('^/release/(' + MBID.source + ')/?$', 'i');
+// a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
+const PAGE = new RegExp('^/(release|release-group|artist|label)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
-    const m = u.origin === location.origin && u.pathname.match(RELEASE);
-    return m ? m[1].toLowerCase() : null;
+    const m = u.origin === location.origin && u.pathname.match(PAGE);
+    return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
+const titleOf = d => d ? (d.rel || d.g).title + ' · Event Horizon' : 'Event Horizon';
 const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
@@ -34672,17 +35103,29 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // the search field folds away once focus leaves it
+    document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
+    // right-click on a section's chevron: fold every section, or open them all when that one is folded
+    document.addEventListener('contextmenu', ev => {
+        const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
+        if (!b) return;
+        ev.preventDefault();
+        const ids = [...document.querySelectorAll('.fold[data-fold]')].map(x => x.dataset.fold);
+        S.fold = S.fold.includes(b.dataset.fold) ? S.fold.filter(x => !ids.includes(x)) : [...new Set([...S.fold, ...ids])];
+        const y = scrollY; render(); scrollTo(0, y);
+    });
     // a click outside the disambiguation menu, or Escape, closes it
     const dmClose = () => document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open'));
     document.addEventListener('click', ev => { if (!ev.target.closest || !ev.target.closest('.dwrap')) dmClose(); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') dmClose(); });
-    document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; } });
+    document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; const fm = $('.srch.open'); if (fm) fm.classList.remove('open'); } });
     addEventListener('resize', () => { if (ehOn) fitQuiet(); });
+    addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     addEventListener('popstate', () => { if (!ehOn) location.reload(); else show(navTo(location.href)); });
 }
 function setOn(on) {
-    // navigated inside EH: reload for MusicBrainz's page of this release, and stay off there
+    // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
     if (!on && navTo(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
     if (first) build();
@@ -34696,7 +35139,7 @@ function setOn(on) {
     else document.documentElement.removeAttribute('data-eh-theme');
     mbSheets(!on);
     if (ehBody) for (const id of ['eh-css', 'eh-font']) document.getElementById(id).disabled = !on;
-    document.title = on ? (data ? data.rel.title + ' · Event Horizon' : 'Event Horizon') : mbTitle;
+    document.title = on ? titleOf(data) : mbTitle;
     const h = document.getElementById('eh-hide'); if (h) h.remove();
     const l = document.getElementById('eh-launch');
     if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
@@ -34748,7 +35191,7 @@ const plFollow = () => { const o = plSorted(cfgProviders()).map(p => p.key); S.p
 let cfgAll = false;
 function cfgProviders() {
     const um = new Map();
-    if (data) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
+    if (data && data.rel) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
     if (!data || cfgAll) for (const k of [...S.prov, ...ORDER, ...(cfgAll ? HOSTS.map(h => h[0]) : [])]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
     return sortP([...um.values()]);
 }
@@ -34872,23 +35315,46 @@ function skeleton() {
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
-async function show(id) {
+const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel };
+// this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
+let early = null;
+function prefetch(key) {
+    const done = new Set(), e = { key, done, on: null };
+    e.p = LOADERS[key.split('/')[0]](key.split('/')[1], k => { done.add(k); if (e.on) e.on(k); });
+    e.p.catch(() => {});
+    early = e;
+}
+async function show(key) {
     const app = $('#app'), n = ++showing;
+    const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
+    const parts = isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
-    app.innerHTML = skeleton();
+    app.innerHTML = skeleton().replace('<b>release</b> · <b>editions</b> · <b>covers</b>', parts.map(x => `<b>${x}</b>`).join(' · '));
     scrollTo(0, 0);
     const st = app.querySelector('.sk-st span:last-child');
     // each part is bold while it loads and ticked when done
     const done = new Set();
-    const step = k => { done.add(k); if (n === showing && st) st.innerHTML = ['release', 'editions', 'covers'].map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
-    LOG.info('Loading release ' + id);
+    const step = k => { done.add(k); if (n === showing && st) st.innerHTML = parts.map(x => done.has(x) ? `✓ ${x}` : `<b>${x}</b>`).join(' · '); };
+    LOG.info('Loading ' + kind.replace('-', ' ') + ' ' + id);
     const t0 = Date.now();
     try {
-        const d = await load(id, step);
+        const pre = early && early.key === key ? early : null;
+    early = null;
+    if (pre) { pre.done.forEach(step); pre.on = step; }
+    const d = await (pre ? pre.p : LOADERS[kind](id, step));
+        const wait = d.wait = new Set(['ed']), let_ = (k, p) => p && p.then(() => {}, () => {}).then(() => { wait.delete(k); if (n === showing && data === d) render(); });
+        if (d.wiki) wait.add('wp');
+        if (d.disc) wait.add('dg');
+        if (kind === 'release') wait.add('art');
+        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); if (kind === 'release') let_('art', d.covers);
         if (n === showing) { data = d; render(); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
-        d.eds.then(x => { if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > 1) render(); } });
+        d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } });
+        if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
+        if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
+        if (d.img) d.img.then(x => { if (n === showing && data === d && x) { d.g.img = x; render(); } });
+        if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
     }
     catch (e) {
@@ -34896,8 +35362,8 @@ async function show(id) {
         if (n !== showing) return;
         const box = app.querySelector('.sk-st');
         box.className = 'sk-st err';
-        box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${id === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;
-        box.querySelector('[data-retry]').onclick = () => show(id);
+        box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${key === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;
+        box.querySelector('[data-retry]').onclick = () => show(key);
         const mb = box.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => setOn(false);
     }
 }
@@ -34907,6 +35373,9 @@ if (PAGE_ID) {
         const hide = () => { const h = document.documentElement; if (!h) return false; const st = document.createElement('style'); st.id = 'eh-hide'; st.textContent = HIDE; h.appendChild(st); return true; };
         if (!hide()) { const mo = new MutationObserver(() => { if (hide()) mo.disconnect(); }); mo.observe(document, { childList: true }); }
     }
+    // the same reasons start() stays on MusicBrainz's page, read without clearing them
+    let off = !S.on; try { off = off || !!sessionStorage.getItem('eh-off') || !!sessionStorage.getItem('mc.after'); } catch (e) {}
+    if (!off && !/[#&]fc-update=/.test(location.hash)) prefetch(PAGE_ID);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 }
 })();
@@ -55260,7 +55729,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.25.011500","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.25.011500","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.25.050000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.25.050000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -64134,7 +64603,7 @@ var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbu
 
 // ===== mission_control (@run-at document-end) ===================================
 if (__stOff.indexOf("mission_control") < 0 && __stRuns("mission_control", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.25.011500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.25.011500","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.25.050000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.25.050000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -67695,7 +68164,7 @@ else { launcher(); if (FC_UPDATE) fcUpdate(FC_UPDATE); else afterSave(); }
 
 // ===== platform_check (@run-at document-end) ====================================
 if (__stOff.indexOf("platform_check") < 0 && __stRuns("platform_check", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.25.011500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.25.011500","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.25.050000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.25.050000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
