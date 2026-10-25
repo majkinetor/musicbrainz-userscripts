@@ -2064,6 +2064,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
 .ed-t tbody tr:not(.gh):hover{background:var(--hover)}
+.ed-t caption{text-align:left;padding:4px 0 8px}
 .ed-t tr.cur td{background:var(--chip)}
 .ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
 .ed-t .ed-tr:hover{background:var(--chip)}
@@ -2288,7 +2289,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2300,7 +2301,7 @@ const S = {
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
-    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date',
+    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
 };
@@ -2653,7 +2654,14 @@ async function edToggle(id) {
     if (edOpen.has(id)) { const y = scrollY; render(); scrollTo(0, y); }
 }
 // flat: a paged list loads in MusicBrainz's order, so status groups would grow above the reader
-function edTable(es, curId, flat) {
+// the releases table's sortable columns: key, heading, the value it sorts by
+const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)],
+    ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
+    ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff']];
+function edTable(es, curId, flat, part) {
+    const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
+    if (col) es = [...es].sort((a, b) => (desc ? -1 : 1) * col[2](a).localeCompare(col[2](b), undefined, { sensitivity: 'base', numeric: true }) || (a.date || '9').localeCompare(b.date || '9'));
+    const th = ([k, n]) => `<th${k === 'tracks' ? ' class="num"' : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
     const ST = ['Official', 'Promotion', 'Bootleg', 'Pseudo-Release', 'Withdrawn', 'Expunged', 'Cancelled'];
     const groups = [...new Set(es.map(e => e.status || ''))].sort((a, b) => (ST.indexOf(a) + 1 || 99) - (ST.indexOf(b) + 1 || 99));
     const row = e => {
@@ -2672,7 +2680,7 @@ function edTable(es, curId, flat) {
             <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
         </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="9">${edTracksHtml(e)}</td></tr>` : ''}`;
     };
-    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th><th>Release</th><th>Artist</th><th>Format</th><th class="num">Tracks</th><th>Country / date</th><th>Label</th><th>Catalog#</th><th>Barcode</th><th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
+    return `<div class="ed-tw"><table class="ed-t">${col && part ? `<caption class="folded-note">Sorted: the ${es.length} loaded so far</caption>` : ''}<thead><tr><th></th>${ED_COLS.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
 }
 const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
 const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
@@ -2698,7 +2706,7 @@ function edHtml(r, eds, count) {
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
     let body;
-    if (view === 'table') body = edTable(shown, r.id, paged);
+    if (view === 'table') body = edTable(shown, r.id, paged, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
     else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
@@ -3255,6 +3263,7 @@ function onClick(ev) {
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if ('aliasmore' in d) aliasOpen = !aliasOpen;
     else if (d.dgview) S.dgView = d.dgview;
+    else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
     else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
