@@ -105,7 +105,7 @@ Code several scripts need is written once and copied into each between marker co
 | `// <ST-ICONS>` | `dev/ui/platform-icons.mjs` | platform icons and brand colours |
 | `// <ST-MATCH>` | `dev/match/artist-match.mjs` | the artist matcher and sort-name guess |
 | `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md)) |
-| `// <ST-ARTIMG>` | `dev/artimg/artist-image.js` | an artist's picture or a label's logo from its URL relationships (Discogs so far), the answer cached by MBID |
+| `// <ST-ARTIMG>` | `dev/artimg/artist-image.js` | an artist's picture or a label's logo from its URL relationships, the answer cached by MBID ([API](dev/artimg/README.md)) |
 | `// <ST-GUESSCASE>` | `dev/guesscase/guess-case.mjs` | MusicBrainz's guess case without its editors, with more languages ([API](dev/guesscase/README.md)) |
 | `// <ST-NET>` | `dev/net/mb-gate.mjs` | the MusicBrainz request gate (`mbnFetch`): ws/2 paced for every script and tab, and MusicBrainz's browser check passed again when it answers a website request |
 | `// <ST-MBPAGE>` | `dev/mbpage/mb-page.mjs` | MusicBrainz's page read in any language: cover-art type ids, the release's own external links |
