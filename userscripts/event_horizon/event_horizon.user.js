@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.253000
+// @version      2026.10.27.254000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4189,7 +4189,7 @@ function searchParse(html) {
     const rows = t ? [...t.querySelectorAll('tbody tr')].map(r => ({ score: +r.dataset.score || 0, cells: [...r.querySelectorAll('td')].map(cell) })) : [];
     const ps = [...c.querySelectorAll(':scope>p')].map(tx).filter(x => x && !/^\S+:\s*\d{4}-\d\d-\d\d/.test(x));
     const found = tx(c.querySelector('.pageselector-results')) || ps.find(x => /\d/.test(x) && x.includes('"')) || '';
-    const pages = [...c.querySelectorAll('ul.pagination li')].filter(li => !li.classList.contains('separator')).map(li => { const a = li.querySelector('a'); return { t: tx(li), href: a ? a.getAttribute('href') : '', sel: !!(a && a.classList.contains('sel')) }; });
+    const pages = [...((c.querySelector('ul.pagination') || {}).children || [])].filter(li => !li.classList.contains('separator')).map(li => { const a = li.querySelector('a'); return { t: tx(li), href: a ? a.getAttribute('href') : '', sel: !!(a && a.classList.contains('sel')) }; });
     const err = t ? '' : ps.filter(x => x !== found).join(' ') || tx(c.querySelector('.error, p'));
     return { head, rows, found, pages, err };
 }
