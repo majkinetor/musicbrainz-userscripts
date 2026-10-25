@@ -25,6 +25,8 @@ An area shows its codes, its parts, its anthem and instruments, what it was the 
 
 An area's cover is its map from Wikidata, with its flag in the corner. Click it for the flag, the coat of arms and any other image its Wikidata item has. An area with no Wikidata images keeps the globe. A place's picture is its Wikimedia Commons image, else its Wikidata image or logo.
 
+Search results open in Event Horizon too. They show the same columns as MusicBrainz's, with each result's score as a bar, a form to change the search, and the result pages below. Columns that are empty in every row are left out.
+
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 
 ## Sections

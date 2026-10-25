@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.252000
+// @version      2026.10.27.253000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -16,6 +16,7 @@
 // @match        https://*.musicbrainz.org/instrument/*
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://*.musicbrainz.org/user/*
+// @match        https://*.musicbrainz.org/search*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -1905,6 +1906,9 @@ const CSS = `
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
 .hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
+.sr-hero{margin:8px 0 22px}.sr-hero h1{margin:4px 0 6px;font-size:32px;overflow-wrap:anywhere}.sr-f{margin-top:14px;max-width:none}
+.sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
+.sr-pg{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.sr-pg a,.sr-pg span{min-width:30px;padding:4px 9px;border-radius:8px;text-align:center;font-weight:600;font-size:13px}.sr-pg a{border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important}.sr-pg a:hover{border-color:var(--accent)}.sr-pg span{color:var(--muted)}.sr-pg span.on{background:var(--accent);color:#fff}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
 @media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
@@ -3817,6 +3821,7 @@ function render(keepPop) {
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
+    if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
@@ -4173,10 +4178,55 @@ function userHtml(d) {
     }).join('');
     return hero + secs;
 }
+/* ── search results ────────────────────────────────── */
+// MusicBrainz's /search page, read off its own markup (every type has its own columns): this tab's page as loaded, another one fetched.
+function searchParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), c = d.querySelector('#content') || d.body, tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
+    const t = c.querySelector('table.tbl');
+    // the release's cover-art icon and the blank one beside a name go, and the release events' JSON
+    const cell = td => { td.querySelectorAll('script,.artwork-icon,.blank-icon,a[href$="/cover-art"]').forEach(x => x.remove()); return td.innerHTML.trim(); };
+    const head = t ? [...t.querySelectorAll('thead th')].map(tx) : [];
+    const rows = t ? [...t.querySelectorAll('tbody tr')].map(r => ({ score: +r.dataset.score || 0, cells: [...r.querySelectorAll('td')].map(cell) })) : [];
+    const ps = [...c.querySelectorAll(':scope>p')].map(tx).filter(x => x && !/^\S+:\s*\d{4}-\d\d-\d\d/.test(x));
+    const found = tx(c.querySelector('.pageselector-results')) || ps.find(x => /\d/.test(x) && x.includes('"')) || '';
+    const pages = [...c.querySelectorAll('ul.pagination li')].filter(li => !li.classList.contains('separator')).map(li => { const a = li.querySelector('a'); return { t: tx(li), href: a ? a.getAttribute('href') : '', sel: !!(a && a.classList.contains('sel')) }; });
+    const err = t ? '' : ps.filter(x => x !== found).join(' ') || tx(c.querySelector('.error, p'));
+    return { head, rows, found, pages, err };
+}
+async function searchLoad(n, key) {
+    const d = data;
+    try {
+        let html;
+        if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(`${MB}/search?${key.slice(7)}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const s = searchParse(html);
+        LOG.info(`Search "${d.q}" (${d.t}): ${s.rows.length} rows, ${s.pages.length} page links${s.err ? ' — ' + s.err : ''}`);
+        if (n === showing && data === d) { d.s = s; render(); }
+    } catch (e) {
+        LOG.err('Search "' + d.q + '" failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
+function searchHtml(d) {
+    const p = new URLSearchParams(d.qs), lim = p.get('limit') || '25', meth = p.get('method') || 'indexed';
+    const form = `<form class="hm-srch sr-f" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" value="${esc(d.q)}" placeholder="Search MusicBrainz" required><select name="type">${SRCH_T.map(t => `<option value="${t}"${t === d.t ? ' selected' : ''}>${srchName(t)}</option>`).join('')}</select>`
+        + `<select name="method" aria-label="Search method">${[['indexed', 'Indexed'], ['advanced', 'Advanced syntax'], ['direct', 'Direct database']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>`
+        + `<select name="limit" aria-label="Results per page">${[25, 50, 100].map(v => `<option value="${v}"${String(v) === lim ? ' selected' : ''}>${v} a page</option>`).join('')}</select><button type="submit">Search</button></form>`;
+    const s = d.s, sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : esc(s.found || (s.rows.length ? '' : s.err || 'No results'));
+    const hero = `<section class="sr-hero"><div class="kicker label"><span>Search · ${esc(srchName(d.t))}</span></div><h1>${esc(d.q)}</h1><p class="u-sub">${sub}</p>${form}</section>`;
+    if (!s || !s.rows.length) return hero;
+    // a column empty in every row goes; the score shows as a bar
+    const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
+    const abs = h => h && h.startsWith('/') ? MB + h : h;
+    const pager = s.pages.length > 1 ? `<nav class="sr-pg">${s.pages.map(x => x.href && !x.sel ? `<a href="${esc(abs(x.href))}">${esc(x.t)}</a>` : `<span${x.sel ? ' class="on"' : ''}>${esc(x.t)}</span>`).join('')}</nav>` : '';
+    const table = `<div class="ed-tw"><table class="ed-t sr-t"><thead><tr><th class="sr-sc" data-tip="How well it matches">Score</th>${s.head.filter((_, i) => on[i]).map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${s.rows.map(r => `<tr><td class="sr-sc"><i style="--w:${r.score}%"></i><small>${r.score}</small></td>${r.cells.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    return hero + sect('sr', `Results <span class="count">${s.rows.length}</span>`, '', table + pager, `<div class="folded-note">${esc(s.found)}</div>`);
+}
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', ued: 'Edits', uvo: 'Votes', uad: 'Added entities', utg: 'Tags and ratings', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings', aa: 'Artists', al: 'Labels', ap: 'Places' };
+const SEC_NAME = { sr: 'Results', hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', ued: 'Edits', uvo: 'Votes', uad: 'Added entities', utg: 'Tags and ratings', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings', aa: 'Artists', al: 'Labels', ap: 'Places' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -4314,10 +4364,12 @@ function navTo(href) {
     // an editor's profile → "user/<name as in the path>"
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
+    // a search → "search/<its query string>"
+    if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && u.searchParams.get('query')) return 'search/' + u.search.slice(1);
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
@@ -4333,6 +4385,13 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // a search from any of the viewer's search boxes opens in place
+    document.addEventListener('submit', ev => {
+        const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || new URL(fm.action).pathname !== '/search') return;
+        const u = new URL(fm.action); u.search = new URLSearchParams(new FormData(fm)).toString();
+        const k = navTo(u.href); if (!k) return;
+        ev.preventDefault(); fm.classList.remove('open'); history.pushState(null, '', u.href); show(k);
+    });
     // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
     document.addEventListener('change', ev => {
         const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
@@ -4666,6 +4725,11 @@ async function show(key) {
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
+    if (kind === 'search') {
+        const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
+        try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) {}
+        data = { kind: 'search', qs: key.slice(7), q, t }; scrollTo(0, 0); render(); searchLoad(n, key); return;
+    }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 17:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 17:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -745,6 +745,8 @@ An artist's picture or a label's logo comes from its Discogs, Wikipedia (its Com
 An area shows its codes, its parts, its anthem and instruments, what it was the location for, and the artists, labels and places in it. An instrument shows what it is tied to and the artists, releases and recordings that use it. A place shows its area, address and coordinates (with a link to the map), the places, artists and labels tied to it, its events, and the recordings made there.
 
 An area's cover is its map from Wikidata, with its flag in the corner. Click it for the flag, the coat of arms and any other image its Wikidata item has. An area with no Wikidata images keeps the globe. A place's picture is its Wikimedia Commons image, else its Wikidata image or logo.
+
+Search results open in Event Horizon too. They show the same columns as MusicBrainz's, with each result's score as a bar, a form to change the search, and the result pages below. Columns that are empty in every row are left out.
 
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 
