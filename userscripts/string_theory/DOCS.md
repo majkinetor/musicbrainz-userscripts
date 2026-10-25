@@ -1,20 +1,21 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 12:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 12:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
 1. [Apollo Editor](#apollo-editor)
 2. [Art Station](#art-station)
 3. [Credit Hoarder](#credit-hoarder)
-4. [Falcon](#falcon)
-5. [First Contact](#first-contact)
-6. [Fusion](#fusion)
-7. [Group Therapy](#group-therapy)
-8. [ISRC Scout](#isrc-scout)
-9. [Mammoth](#mammoth)
-10. [Mission Control](#mission-control)
-11. [Platform Check](#platform-check)
+4. [Event Horizon](#event-horizon)
+5. [Falcon](#falcon)
+6. [First Contact](#first-contact)
+7. [Fusion](#fusion)
+8. [Group Therapy](#group-therapy)
+9. [ISRC Scout](#isrc-scout)
+10. [Mammoth](#mammoth)
+11. [Mission Control](#mission-control)
+12. [Platform Check](#platform-check)
 
 ---
 
@@ -718,6 +719,68 @@ How each source is read is in [DEVELOP.md](../credit_hoarder/DEVELOP.md).
 
 ---
 
+## Event Horizon
+
+MusicBrainz, past the point of no return: release, release group, artist and label pages redesigned around what you came for.
+
+- Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
+    - Or via bundle: [String Theory](../string_theory/README.md)
+- [Changelog](../event_horizon/CHANGELOG.md)
+
+### Features
+
+- **[The viewer](#the-viewer)** takes over a release, release group, artist or label page, and moves between them without reloading.
+- **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
+- **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
+- **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
+
+### The viewer
+
+Open a release, release group, artist or label on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
+
+The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another release, release group, artist or label opens in place.
+
+If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
+
+### Sections
+
+Point at the rail beside the page to open it. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered.
+
+### Tracks and platforms
+
+Open a track to see its recording and work credits. The platforms it is on (Spotify, Apple Music, Tidal, …) show as icons; point at one for its URL. A site without an icon of its own shows two letters of its domain.
+
+Which platforms show, in which order, and how big, are in the settings' **Platforms** tab.
+
+### Releases and discography
+
+A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
+
+The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
+
+### Settings
+
+Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
+
+| Setting                   | Default                                                   |                                                               |
+| ------------------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
+| Release → Info            | released, labels, barcode, length, links                  | the facts shown beside the cover                              |
+| Release → Under the cover | Other covers, Rating, Genres                              | what shows under the cover                                    |
+| Platforms → Show          | off                                                       | **Names** beside the icons; **Gray icons** until pointed at   |
+| Platforms → Icon size     | 22px                                                      | the size of a platform icon                                   |
+| Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N |
+| General → Page width      | Medium                                                    | how wide the page grows on a big screen                       |
+
+### Shortcuts
+
+| Key         | Where       |                   |
+| ----------- | ----------- | ----------------- |
+| Esc         | filter      | clear it          |
+| Esc         | a menu      | close it          |
+| Right-click | corner icon | open the settings |
+
+---
+
 ## Falcon
 
 A MusicBrainz batch editor: queue many entities, then let a pool of workers add their links, ISRCs, names, aliases, disambiguations and cover art, through MusicBrainz's own forms or its API.
@@ -779,7 +842,7 @@ On a series page, **+ Add from series** queues its release groups (optionally ev
 - Edit a URL in its box (empty drops it). A type badge picks another type or **✕** drops it; **+** after the types adds one, **+** by *Links* adds a link, the link's **✕** removes it. A link without a type shows *auto*, left for MusicBrainz to guess.
 - **Grid**: one line per row, with its name, disambiguation and ISRCs editable in place. **▸** opens the row's links and aliases (and a release's cover art) beneath it, lined up under *Name*; aliases are added and edited only there.
 
-The [keyboard](#shortcuts-2) moves between fields like a spreadsheet; in the list, rows open and close as you go.
+The [keyboard](#shortcuts-3) moves between fields like a spreadsheet; in the list, rows open and close as you go.
 
 ### The run
 
@@ -807,7 +870,7 @@ Review the queue, then press **Start**. Right-click a row's type to select every
 A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or streaming?) fails with that reason instead of blocking its row; use **⇗** to pick the type.
 
 > [!NOTE]
-> Workers are MusicBrainz's own edit pages, filled in and submitted out of sight; how is in [DEVELOP.md](../falcon/DEVELOP.md#workers). *Workers* in [Settings](#settings-1) sets how many run at once.
+> Workers are MusicBrainz's own edit pages, filled in and submitted out of sight; how is in [DEVELOP.md](../falcon/DEVELOP.md#workers). *Workers* in [Settings](#settings-2) sets how many run at once.
 
 #### The log
 
@@ -944,7 +1007,7 @@ Import a release into MusicBrainz from the platform's album page with one click:
 - [View users](https://musicbrainz.org/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=edit_note_content&conditions.0.operator=includes&conditions.0.args.0=First+Contact)
 
 > [!IMPORTANT]
-> By default every album page you import is sent to the Internet Archive to be saved, so anyone can later check what it showed. See [Archive](#archive-1); turn it off in [Settings](#settings-2).
+> By default every album page you import is sent to the Internet Archive to be saved, so anyone can later check what it showed. See [Archive](#archive-1); turn it off in [Settings](#settings-3).
 
 ### Features
 
@@ -972,7 +1035,7 @@ On a platform's album page, click **Import to MusicBrainz**: once the release is
 | Script               | Latin, when every title is in Latin letters; otherwise left for you                               |
 | Tracklist            | one Digital Media medium per disc, with titles, track artists and lengths                         |
 | External link        | the album page                                                                                    |
-| Annotation           | the platform's [notes](#platforms), with their source; off per platform in [Settings](#settings-2)  |
+| Annotation           | the platform's [notes](#platforms), with their source; off per platform in [Settings](#settings-3)  |
 | Edit note            | the album page, the script and its version                                                        |
 
 A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
@@ -1013,7 +1076,7 @@ When MusicBrainz may have the album, a panel lists those releases before the edi
 
 **Import anyway** opens the release editor as usual. Mission Control adds links only for the platforms Platform Check knows: for Presto Music, Ototoy, mora, Melon and Bugs, use **Add link only**.
 
-The *Check MusicBrainz* [setting](#settings-2) says when the album is looked up:
+The *Check MusicBrainz* [setting](#settings-3) says when the album is looked up:
 
 | Check MusicBrainz |                                                                          |
 | ----------------- | ------------------------------------------------------------------------ |
@@ -1183,7 +1246,7 @@ Pages: `music.amazon.com/albums/<id>`, and the other countries' `music.amazon.*`
 - The tracklist is one medium: Amazon Music doesn't mark discs, so split them in the editor.
 - A track's artists come from its artist line (*A, B & C*), and only the first has an Amazon Music link; an *&* inside one name (*Simon & Garfunkel*) stays one artist.
 - The date is the one the album page shows, which for a reissue can be the original's.
-- The label is read from the ℗ line, as for [Tidal](#tidal); the whole line also goes to the annotation (see [Settings](#settings-2)), since it may or may not name the label.
+- The label is read from the ℗ line, as for [Tidal](#tidal); the whole line also goes to the annotation (see [Settings](#settings-3)), since it may or may not name the label.
 
 #### Audiomack
 
@@ -1273,7 +1336,7 @@ First Contact hands every credited artist's platform link, the release's and eac
 
 On every import, First Contact has the Internet Archive's [Wayback Machine](https://web.archive.org/) save the album page, so anyone can later check what it showed; the snapshot is found by the page's address.
 
-- The import doesn't wait for the save; the [log](#settings-2) says how it went.
+- The import doesn't wait for the save; the [log](#settings-3) says how it went.
 - Deezer and Apple Music build their pages in the browser, so a saved page shows little. For these, the album data First Contact read is saved too.
 - Discogs refuses the Internet Archive, so its release data is saved instead.
 - Spotify, Tidal and YouTube Music also build their pages in the browser, and their data can't be saved. For these, add your archive.org keys: the save then also takes a screenshot of the page.
@@ -1291,7 +1354,7 @@ To get them, make a free account on [archive.org](https://archive.org), log in, 
 [Apollo Editor](../apollo_editor/README.md#archive) archives a release's links with the same keys, shared in [String Theory](../string_theory/README.md).
 
 > [!NOTE]
-> Archiving sends the address of every album you import to archive.org, and with keys, under your account. Turn **Archive the album page on the Internet Archive** off in [Settings](#settings-2) if you don't want that.
+> Archiving sends the address of every album you import to archive.org, and with keys, under your account. Turn **Archive the album page on the Internet Archive** off in [Settings](#settings-3) if you don't want that.
 
 ### Moving the button
 
@@ -1903,7 +1966,7 @@ Reusable edit notes in a panel beside the edit-note field of every edit form, an
 - **＋** saves the current text. In **History**, ★ moves a note to the saved ones.
 - ★ on a saved note pins it as a **button** under the field.
 - Sort **manually** (drag ⠿), by **most used** or by **recent**.
-- Click applies a note, replacing or appending ([Shortcuts](#shortcuts-5)); appending skips a line that's already there.
+- Click applies a note, replacing or appending ([Shortcuts](#shortcuts-6)); appending skips a line that's already there.
 
 The panel starts minimized to an icon: hover to peek, click to pin, **⤢** restores it, **–** minimizes it.
 
