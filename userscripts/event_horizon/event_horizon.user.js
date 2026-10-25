@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.200000
+// @version      2026.10.27.203000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3585,7 +3585,7 @@ async function loadInstrument(id, step = () => {}) {
 function insHero(d) {
     // a Commons file page becomes its picture; any other image link (MetaBrainz's IROMBook) is the picture itself
     const g = d.g, cm = commonsImg(g.img, 600), src = cm || (/^https?:\/\//.test(g.img) ? g.img : '');
-    const pic = src ? `<div class="picw"><img class="cover ipic" src="${esc(src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer" data-insimg><a class="imgsrc" href="${esc(g.img)}" target="_blank" rel="noopener" data-tip="${cm ? 'From Wikimedia Commons' : 'From ' + esc(new URL(g.img).hostname)}">${mkSvg(MK_INS)}</a></div>` : '';
+    const pic = src ? `<div class="picw"><img class="cover ipic" src="${esc(src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer" data-insimg><a class="imgsrc" href="${esc(g.img)}" target="_blank" rel="noopener" data-tip="${cm ? 'From Wikimedia Commons' : 'From ' + esc(new URL(g.img).hostname)}">${cm ? stIcon('commons', 18) : mkSvg(MK_INS)}</a></div>` : '';
     return pgHero(g, 'instrument', MK_INS, g.type || 'Instrument', [
         ['', g.desc && esc(g.desc), 'wide'],
         ...g.groups.map(([l, xs]) => [`${l}${xs.length > 1 ? ` <span class="count">${xs.length}</span>` : ''}`, `<span class="arl">${xs.map(x => entA('instrument', x.id, x.name)).join('')}</span>`, 'wide']),
