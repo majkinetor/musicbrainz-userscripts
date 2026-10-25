@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.267000
+// @version      2026.10.27.268000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2099,7 +2099,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hrun>summary::before,.hed>summary::before{content:'▸';color:var(--muted);width:12px;margin-left:-18px;transition:transform .15s;align-self:center}.hrun[open]>summary::before,.hed[open]>summary::before{transform:rotate(90deg)}
 .hrun>summary:hover,.hed>summary:hover{background:var(--line)}.hrun .hed>summary{padding-left:62px}.hty{font-weight:600}.hrun>summary .n{color:var(--muted)}.hed .d,.hed .v{color:var(--muted);font-size:12px}.hed .id{font-size:12px}
 .hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}
-.hwho{font-size:13px;font-weight:600}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
+.hwho{font-size:13px;font-weight:600}.hico{display:inline-grid;place-items:center;align-self:center;flex:none}.hico svg{width:17px;height:17px}.hgh .t .hico{vertical-align:-3px;margin-right:6px}.hico.add{color:#2e8b57}.hico.edit{color:#3b7dd8}.hico.rem{color:#c0392b}.hico.oth{color:#8a6bb8}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
 .hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
 .arthd{margin:0 0 -16px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
@@ -4473,6 +4473,35 @@ function histParse(html) {
     const next = [...doc.querySelectorAll('.pagination a[href*="page="]')].some(x => +(x.getAttribute('href').match(/page=(\d+)/) || [])[1] > (cur || 1));
     return { edits, next };
 }
+// an edit type's icon: what it changes, coloured by what it does (add green, edit blue, remove red, the rest violet)
+const H_ICO = {
+    'cover art': '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
+    release: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    'release group': '<rect x="7" y="7" width="14" height="14" rx="2"/><path d="M3 17V5a2 2 0 0 1 2-2h12"/><circle cx="14" cy="14" r="3"/>',
+    medium: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
+    track: '<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>',
+    recording: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/>',
+    work: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><circle cx="10" cy="16" r="2"/><path d="M12 16v-5l3 1"/>',
+    artist: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    label: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    relationship: '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>',
+    annotation: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+    url: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+    barcode: '<path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14"/>',
+    isrc: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+    'disc id': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3v4"/>',
+    place: '<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+    event: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+    series: '<path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h1M4 12h1M4 18h1"/>',
+    area: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    instrument: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    other: '<circle cx="12" cy="12" r="9"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
+};
+const histIco = tk => {
+    const e = histEnt(tk), k = H_ICO[e] ? e : Object.keys(H_ICO).find(x => e.endsWith(x)) || Object.keys(H_ICO).find(x => e.includes(x)) || 'other';
+    const a = /^add-/.test(tk) ? 'add' : /^(edit|set|change)-/.test(tk) ? 'edit' : /^remove-/.test(tk) ? 'rem' : 'oth';
+    return `<span class="hico ${a}">${SVG(H_ICO[k])}</span>`;
+};
 // what a type is about: "add-cover-art" → "cover art"
 const histEnt = tk => tk.replace(/^(add|edit|remove|reorder|merge|set|change)-/, '').replace(/-/g, ' ');
 function histBursts(es) {
@@ -4509,20 +4538,21 @@ async function histLoad(n) {
 const histHue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 // a time, with its date where no day header above gives it
 const histTm = t => !t ? '' : (data && data.grp !== 'burst' && data.grp !== 'day' ? new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ' ' : '') + new Date(t).toISOString().slice(11, 16);
+const histSpan = (a, b) => { const x = histTm(a), y = histTm(b); if (x === y) return y; const i = x.lastIndexOf(' '); return i > 0 && x.slice(0, i) === y.slice(0, y.lastIndexOf(' ')) ? x + '–' + y.slice(i + 1) : x + '–' + y; };
 const histDay = t => t ? new Date(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'Unknown date';
 const histPills = es => Object.keys(H_ST).map(k => { const c = es.filter(e => e.st === k).length; return c ? `<span class="hst ${k}">${c > 1 || es.length > 1 ? c + ' ' : ''}${H_ST[k]}</span>` : ''; }).join('');
 function histEdit(e) {
-    return `<details class="hed"><summary><span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${e.notes.length ? `<span class="hnc" data-tip="${e.notes.length} edit note${e.notes.length > 1 ? 's' : ''}">💬 ${e.notes.length}</span><span class="hnp">${esc(e.notes[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${e.notes.map(n => `<div class="hnote${n.bot ? ' bot' : ''}"><div class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''} <span>${esc(n.date)}</span></div><div class="hnt">${n.html}</div></div>`).join('')}</div></details>`;
+    return `<details class="hed"><summary>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${e.notes.length ? `<span class="hnc" data-tip="${e.notes.length} edit note${e.notes.length > 1 ? 's' : ''}">💬 ${e.notes.length}</span><span class="hnp">${esc(e.notes[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${e.notes.map(n => `<div class="hnote${n.bot ? ' bot' : ''}"><div class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''} <span>${esc(n.date)}</span></div><div class="hnt">${n.html}</div></div>`).join('')}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
     const runs = [];
     for (const e of es) { const r = runs[runs.length - 1]; if (r && r[0].tk === e.tk) r.push(e); else runs.push([e]); }
-    return runs.map(r => r.length === 1 ? histEdit(r[0]) : `<details class="hrun"><summary><span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span><span class="hed"><span class="d">${histTm(r[r.length - 1].t)}–${histTm(r[0].t)}</span></span>${histPills(r)}</summary>${r.map(histEdit).join('')}</details>`).join('');
+    return runs.map(r => r.length === 1 ? histEdit(r[0]) : `<details class="hrun"><summary>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histPills(r)}</summary>${r.map(histEdit).join('')}</details>`).join('');
 }
 function histGroup(key, title, es, av, nm) {
     const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
-    const t0 = es[es.length - 1].t, t1 = es[0].t, when = t0 === t1 ? histTm(t1) : histTm(t0) + '–' + histTm(t1);
+    const when = histSpan(es[es.length - 1].t, es[0].t);
     return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
@@ -4542,7 +4572,7 @@ function histPage(app, d) {
     } else {
         const by = d.grp === 'editor' ? e => e.ed || 'Editor hidden' : d.grp === 'type' ? e => e.type : e => H_ST[e.st], m = new Map();
         es.forEach(e => { const k = by(e); if (!m.has(k)) m.set(k, []); m.get(k).push(e); });
-        for (const [k, g] of [...m].sort((a, b) => b[1].length - a[1].length)) body += histGroup(d.grp + k, d.grp === 'editor' ? name(g[0]) : esc(k), g, d.grp === 'editor', g[0].ed);
+        for (const [k, g] of [...m].sort((a, b) => b[1].length - a[1].length)) body += histGroup(d.grp + k, d.grp === 'editor' ? name(g[0]) : d.grp === 'type' ? histIco(g[0].tk) + esc(k) : esc(k), g, d.grp === 'editor', g[0].ed);
     }
     const cnt = k => d.edits.filter(e => e.st === k).length;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}</div>`;
