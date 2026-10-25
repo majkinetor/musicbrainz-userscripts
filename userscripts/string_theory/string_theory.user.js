@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.120141
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.26.111000, art_station 2026.10.26.140000, credit_hoarder 2026.10.25.113207, event_horizon 2026.10.27.030000, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.26.110000, isrc_scout 2026.10.26.140000, mammoth 2026.10.20.120000, mission_control 2026.10.26.140000, platform_check 2026.10.26.140100). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.25.124916
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.26.111000, art_station 2026.10.26.140000, credit_hoarder 2026.10.25.113207, event_horizon 2026.10.27.050000, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.26.110000, isrc_scout 2026.10.26.140000, mammoth 2026.10.20.120000, mission_control 2026.10.26.140000, platform_check 2026.10.26.140000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -147,8 +147,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.25.120141 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.26.111000\n  · Art Station v2026.10.26.140000\n  · Credit Hoarder v2026.10.25.113207\n  · Event Horizon v2026.10.27.030000\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.26.110000\n  · ISRC Scout v2026.10.26.140000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.26.140000\n  · Platform Check v2026.10.26.140100");
+  console.log('%c String Theory %c v2026.10.25.124916 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.26.111000\n  · Art Station v2026.10.26.140000\n  · Credit Hoarder v2026.10.25.113207\n  · Event Horizon v2026.10.27.050000\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.26.110000\n  · ISRC Scout v2026.10.26.140000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.26.140000\n  · Platform Check v2026.10.26.140000");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -158,7 +158,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.26.111000"],["art_station","Art Station","2026.10.26.140000"],["credit_hoarder","Credit Hoarder","2026.10.25.113207"],["event_horizon","Event Horizon","2026.10.27.030000"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.26.110000"],["isrc_scout","ISRC Scout","2026.10.26.140000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.26.140000"],["platform_check","Platform Check","2026.10.26.140100"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.26.111000"],["art_station","Art Station","2026.10.26.140000"],["credit_hoarder","Credit Hoarder","2026.10.25.113207"],["event_horizon","Event Horizon","2026.10.27.050000"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.26.110000"],["isrc_scout","ISRC Scout","2026.10.26.140000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.26.140000"],["platform_check","Platform Check","2026.10.26.140000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -4043,70 +4043,6 @@ function stIcon(name, size) { var i = ST_ICONS[name]; if (!i) return ''; size = 
 function stColor(name) { return (ST_ICONS[name] && ST_ICONS[name].color) || ''; }
 // </ST-ICONS>
 return { ST_ICONS, stIcon, stColor };
-}
-
-// <ST-ARTIMG> — generated by dev/artimg/sync-artimg.mjs from dev/artimg/artist-image.js — DO NOT EDIT
-// used by event_horizon
-function __st_ARTIMG(GM_info) {
-'use strict';
-// <ST-ARTIMG> — generated by dev/artimg/sync-artimg.mjs from dev/artimg/artist-image.js — DO NOT EDIT
-class ArtistImage {
-    constructor(store = {}, o = {}) {
-        this.store = store;
-        this.key = o.key || 'mbu:artimg';
-        this.hitDays = o.hitDays || 30;
-        this.missDays = o.missDays || 7;
-        this.max = o.max || 2000;
-        this.providers = o.providers || ArtistImage.PROVIDERS;
-        this.log = o.log || null;
-    }
-
-    static PROVIDERS = [
-        { name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async m => {
-            const r = await fetch('https://api.discogs.com/' + m[1] + 's/' + m[2]);
-            if (!r.ok) return null;
-            const im = (await r.json()).images || [], i = im.find(x => x.type === 'primary') || im[0];
-            return i && i.uri ? i.uri : null;
-        } },
-    ];
-
-    load() { try { return (this.store.get && this.store.get(this.key, null)) || {}; } catch (e) { return {}; } }
-    save(c) {
-        const ks = Object.keys(c);
-        if (ks.length > this.max) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - this.max).forEach(k => delete c[k]);
-        try { if (this.store.set) this.store.set(this.key, c); } catch (e) { /* no storage */ }
-    }
-
-    // the cached answer, undefined when there is none or it expired
-    cached(mbid) {
-        const e = mbid && this.load()[mbid];
-        if (!e) return undefined;
-        const days = e.img ? this.hitDays : this.missDays;
-        return Date.now() - e.t < days * 864e5 ? e.img : undefined;
-    }
-
-    async find(mbid, urls) {
-        const hit = this.cached(mbid);
-        if (hit !== undefined) return hit;
-        let img = null, failed = false;
-        for (const p of this.providers) {
-            for (const u of urls) {
-                const m = u.match(p.re);
-                if (!m) continue;
-                try { const src = await p.get(m); if (src) { img = { src, from: p.name, url: u }; break; } }
-                catch (e) { failed = true; if (this.log) this.log(p.name + ' image failed: ' + e.message); }
-            }
-            if (img) break;
-        }
-        // a failed request isn't a miss: ask again next time
-        if (mbid && (img || !failed)) { const c = this.load(); c[mbid] = { img, t: Date.now() }; this.save(c); }
-        return img;
-    }
-
-    forget(mbid) { const c = this.load(); delete c[mbid]; this.save(c); }
-}
-// </ST-ARTIMG>
-return { ArtistImage };
 }
 
 // ===== apollo_editor (@run-at document-start) =====================================
@@ -33960,7 +33896,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.030000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.030000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.050000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.27.050000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist and label pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid> and /label/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -33973,7 +33909,6 @@ var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, m
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
 var { MBU_UI_CSS, mbuHelpHref, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
-var { ArtistImage } = __st_ARTIMG(GM_info);   // ST-ARTIMG, written once at the top of the bundle (#786)
 const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';
 
 // <ST-NET> is __st_NET, at the top of the bundle (#786)
@@ -33996,25 +33931,54 @@ const FORMAT_ICONS = {
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
-.hm-hero{display:flex;align-items:center;gap:22px;padding:34px 0 26px}
-.hm-logo{width:84px;height:84px;flex:none}
-.hm-t{flex:1;min-width:0}
-.hm-k{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.hm-srch{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 2px 10px var(--shadow)}
-.hm-srch:focus-within{border-color:var(--accent)}
-.hm-srch input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--text);font:inherit;font-size:18px;padding:8px 0}
-.hm-srch select{border:0;background:var(--chip);color:var(--chip-text);font:inherit;font-size:13px;border-radius:9px;padding:8px}
+.hm-hero{position:relative;overflow:hidden;margin:22px 0 8px;padding:30px 36px 24px;border-radius:22px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,#5b2357 0%,#2a1630 55%,#1b1020 100%)}
+.hm-orb{position:absolute;right:-50px;top:-60px;width:330px!important;height:330px!important;opacity:.35;pointer-events:none}
+.hm-k{position:relative;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#f2b38f}
+.hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fff!important;border-radius:14px;padding:6px 6px 6px 16px;color:#7a6b85;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:#231c2b!important;font:inherit;font-size:18px;padding:8px 0}
+.hm-srch select{border:0;background:#efe8f2!important;color:#4a3b55!important;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
+.hm-adv{flex-basis:100%;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;border-top:1px solid #e8e0ec;margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}
+.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:#4a3b55}.hm-adv select{justify-self:start}
+.hm-hint{grid-column:1/3;color:#7a6b85}.hm-hint code{background:#efe8f2;border-radius:5px;padding:1px 5px;color:#231c2b}
+.hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:#eadff0!important;text-decoration:none!important;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);cursor:pointer}
+.hm-qr a:hover,.hm-tg.on{background:rgba(255,255,255,.22)!important}.hm-qr b{color:#f5a06b;font-weight:700}.hm-tg svg{width:13px;height:13px}
+.hm-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 8px 11px;text-align:center;font-weight:700;font-size:13px;color:var(--text)!important;text-decoration:none!important}
+.hm-tile:hover{border-color:var(--accent);box-shadow:0 4px 14px var(--shadow)}
+.hm-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin:0 auto 8px;color:#fff}
+.hm-covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
+.hm-cv{min-width:0;color:var(--text)!important;text-decoration:none!important}
+.hm-art{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--chip);box-shadow:0 4px 12px var(--shadow)}
+.hm-art img{width:100%;height:100%;object-fit:cover;display:block}.hm-cv:hover .hm-art{outline:2px solid var(--accent)}
+.hm-cv b,.hm-cv small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;margin-top:6px}.hm-cv small{color:var(--muted);margin:0;font-size:11px}
+.hm-you{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.hm-you{grid-template-columns:1fr}}
+.hm-pf{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
+.hm-pid{display:flex;gap:12px;align-items:center}.hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
+.hm-av{flex:none;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
+.hm-sts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
+.hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
+.hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
+.hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
+.hm-sec{display:block;color:var(--muted);margin-top:8px}
+.hm-me{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .hm-chips{display:flex;flex-wrap:wrap;gap:8px}
 .hm-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;background:var(--chip);color:var(--chip-text)!important;text-decoration:none!important;font-weight:600}
 .hm-chip:hover{background:var(--accent);color:#fff!important}
 .hm-rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
-.hm-r{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
+.hm-r{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
 .hm-r:hover{background:var(--hover)}
-.hm-r svg{flex:none;color:var(--muted)}
+.hm-ri{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--chip);color:var(--accent)}
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{font-size:12px;color:var(--muted)}
+.hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 16px}
+.hm-news a{padding:9px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important;font-weight:600}.hm-news a:hover{background:var(--hover)}
+.hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .kicker .ab.eh-home svg{width:20px!important;height:20px!important}
 :root{
@@ -34139,9 +34103,6 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .srch .x{display:grid;place-items:center;width:22px;height:22px;border:0;background:none;color:var(--muted);cursor:pointer;padding:0}
 .kicker .srch .x:hover{color:var(--accent)}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
-.kicker .srch{margin-left:10px}
-.kicker .srch>.ab,.kicker .ab.eh-home{background:none!important;border-color:transparent}
-.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text)!important;text-decoration:none}
 .ib.primary,.kicker .ib.primary svg{color:var(--accent)}
@@ -35188,9 +35149,24 @@ function annotation(g) {
 }
 
 /* ── artist page ───────────────────────────────────── */
-// <ST-ARTIMG> is __st_ARTIMG, at the top of the bundle (#786)
-const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { log: m => LOG.warn(m) });
-const artistImage = (mbid, rels) => ARTIMG.find(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
+// where an artist's picture (or a label's logo) comes from: the first of its URL relationships one of these knows, in this order
+const ART_IMG = [
+    { name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async m => {
+        const r = await fetch('https://api.discogs.com/' + m[1] + 's/' + m[2]);
+        if (!r.ok) return null;
+        const im = (await r.json()).images || [], i = im.find(x => x.type === 'primary') || im[0];
+        return i && i.uri ? i.uri : null;
+    } },
+];
+async function artistImage(rels) {
+    const urls = rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource);
+    for (const p of ART_IMG) for (const u of urls) {
+        const m = u.match(p.re);
+        if (!m) continue;
+        try { const src = await p.get(m); if (src) return { src, from: p.name, url: u }; } catch (e) { LOG.warn(p.name + ' image failed: ' + e.message); }
+    }
+    return null;
+}
 const AR_ACTS = [
     ['edit', 'Edit', 'Edit artist', ACTS[0][3]],
     ['tags', 'Tags', 'Tags', CI_TAG],
@@ -35213,7 +35189,7 @@ async function loadArtist(id, step = () => {}) {
     const a = await ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
     step('artist');
     const g = artist(a);
-    const img = artistImage(id, g.rels).then(x => { step('image'); return x; });
+    const img = artistImage(g.rels).then(x => { step('image'); return x; });
     return { kind: 'artist', g, disc, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function label(l) {
@@ -35232,7 +35208,7 @@ async function loadLabel(id, step = () => {}) {
     const l = await ws(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
     step('label');
     const g = label(l);
-    const img = artistImage(id, g.rels).then(x => { step('logo'); return x; });
+    const img = artistImage(g.rels).then(x => { step('logo'); return x; });
     return { kind: 'label', g, img, wiki, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
 const LB_ACTS = AR_ACTS.map(([p, n, t, ic]) => [p, n, t.replace('artist', 'label'), ic]);
@@ -35321,7 +35297,7 @@ function fltBar(sc, xs) {
     const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
     const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${vals(k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
     const add = FLT_FIELDS[sc].filter(([k]) => !(k in f.f)).map(([k, name, get]) => [k, name, vals(k, get)]).filter(x => x[2].length > 1)
-        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(`${name}: ${v} (${c})`)}" data-fv="${esc(k + '\t' + v)}"></option>`).join('')).join('');
+        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(name + ': ' + v)}" data-fv="${esc(k + '\t' + v)}">${c}</option>`).join('')).join('');
     return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<input type="search" class="fadd" data-fadd="${sc}" list="fl-${sc}" placeholder="+ Filter: type an artist, year…" aria-label="Add a filter" autocomplete="off"><datalist id="fl-${sc}">${add}</datalist>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
 }
 // the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
@@ -35363,7 +35339,7 @@ function render(keepPop) {
     const app = $('#app');
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
-    if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); secRail(app); save(); return; }
+    if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g;
     // another page starts unfiltered
     if (FLT.of !== r.id) { FLT.of = r.id; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
@@ -35458,24 +35434,99 @@ function visited(key, d) {
     const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '' }, ...visits().filter(x => x.key !== key)].slice(0, 12);
     try { GM_setValue('visits', v); } catch (e) {}
 }
+// MusicBrainz's own front page carries the latest releases and events (with covers) and the blog's headlines;
+// they are read from the page EH replaced, so they cost no request.
+function hmFront() {
+    const doc = mbBody || document.body, art = { release: [], event: [] };
+    doc.querySelectorAll('.artwork-cont a[href]').forEach(a => {
+        const m = a.getAttribute('href').match(/^\/(release|event)\/([0-9a-f-]{36})/); if (!m) return;
+        const sp = a.querySelector('[data-small-thumbnail]'), img = sp ? sp.getAttribute('data-small-thumbnail') : (a.querySelector('img') || {}).src;
+        const t = a.getAttribute('title') || '', i = m[1] === 'release' ? t.lastIndexOf(' by ') : -1;
+        art[m[1]].push({ href: `${MB}/${m[1]}/${m[2]}`, img: img ? (img.startsWith('//') ? 'https:' + img : img) : '', t: i > 0 ? t.slice(0, i) : t, by: i > 0 ? t.slice(i + 4) : '' });
+    });
+    const blog = [...doc.querySelectorAll('#blog-feed li a[href]')].map(a => ({ href: a.href, t: a.textContent.trim() }));
+    return { rel: art.release.slice(0, 12), ev: art.event.slice(0, 12), blog };
+}
+// Your profile card: the one request the home page makes (your /user page), kept for 6 hours.
+// The page's labels are translated, so rows are read by position and shape, not by their text.
+const PROF_TTL = 6 * 3600e3;
+function profParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), num = x => x ? +x.textContent.replace(/[^\d]/g, '') || 0 : 0;
+    const info = d.querySelector('table.profileinfo'), tds = info ? [...info.querySelectorAll('td')] : [];
+    const loc = tds.find(td => td.querySelector('a[href^="/area/"]')), since = tds.map(td => td.textContent.match(/^\s*(\d{4})-\d\d-\d\d/)).find(Boolean);
+    const st = [...d.querySelectorAll('table.statistics')], row = (t, i) => t && t.querySelectorAll('tbody tr')[i];
+    const ed = st[0], votes = st[1] && st[1].querySelectorAll('tfoot th'), added = st[2] ? [...st[2].querySelectorAll('tbody tr')].map(r => [r.querySelector('th').textContent.trim(), num(r.querySelector('td'))]).filter(x => x[1]) : [];
+    const sec = st[3] ? [...st[3].querySelectorAll('tbody tr')].map(r => [r.querySelector('th').textContent.trim(), num(r.querySelector('td'))]) : [];
+    return {
+        at: Date.now(), loc: loc ? [...loc.querySelectorAll('a[href^="/area/"]')].map(a => a.textContent.trim()).join(', ') : '', since: since ? +since[1] : 0,
+        langs: info ? [...info.querySelectorAll('ul.inline li')].map(li => li.textContent.replace(/\s*\(.*\)/, '').trim()) : [],
+        bio: (info && info.querySelector('tr.biography a[href]') || {}).href || '',
+        total: num(row(ed, 0) && row(ed, 0).querySelector('td')), open: num(row(ed, 7) && row(ed, 7).querySelector('td')), day: num(row(ed, 8) && row(ed, 8).querySelector('td')),
+        votes: votes && votes[2] ? num({ textContent: votes[2].textContent.split('(')[0] }) : 0, added: added.sort((a, b) => b[1] - a[1]), sec,
+    };
+}
+async function profLoad(app) {
+    let p = null; try { p = GM_getValue('profile', null); } catch (e) {}
+    if (p && p.me === ME && Date.now() - p.at < PROF_TTL) return profFill(app, p);
+    if (p && p.me === ME) profFill(app, p);
+    try {
+        const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
+        const n = profParse(await r.text()); n.me = ME; console.info('[Event Horizon] profile', n);
+        try { GM_setValue('profile', n); } catch (e) {}
+        profFill(app, n);
+    } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
+}
+const fmtN = n => n.toLocaleString('en');
+function profFill(app, p) {
+    const el = app.querySelector('.hm-pf'); if (!el) return;
+    const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
+    const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
+    const stat = (n, l, h) => `<a class="hm-st" href="${u}/${h}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
+    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${esc(ME[0] || '?').toUpperCase()}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
+        <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
+        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
+        ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
+}
+const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
+const searches = () => { try { return GM_getValue('searches', []) || []; } catch (e) { return []; } };
+function hmWire(app) {
+    const f = app.querySelector('.hm-srch'); if (!f) return;
+    f.addEventListener('submit', () => {
+        const q = f.query.value.trim(), t = f.type.value; if (!q) return;
+        try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) {}
+    });
+    const adv = app.querySelector('.hm-tg');
+    adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
+    if (ME) profLoad(app);
+}
 function homeHtml() {
-    const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`;
+    const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
     const kinds = SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('');
-    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-logo"')}<div class="hm-t"><div class="hm-k">MusicBrainz · Event Horizon</div>
-        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><input type="hidden" name="method" value="indexed"><button type="submit">Search</button></form></div></header>`;
-    const add = sect('hadd', 'Add', '', `<div class="hm-chips">${HM_ADD.map(([p, n, ic]) => hmChip(`${MB}/${p}`, n, ic)).join('')}</div>`, '');
-    const me = ME ? sect('hme', esc(ME), '', `<div class="hm-chips">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div>`, '')
+    const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
+    const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
+    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-k">MusicBrainz · Event Horizon</div><div class="hm-hi">${hi}</div>
+        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="submit">Search</button>
+        <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method"><option value="indexed">Indexed</option><option value="advanced">Indexed, with advanced query syntax</option><option value="direct">Direct database search</option></select>
+        <label>Results per page</label><select name="limit"><option>25</option><option selected>50</option><option>100</option></select>
+        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
+        <div class="hm-qr"><a class="hm-tg${S.hmAdv ? ' on' : ''}" role="button" tabindex="0">${SVG(LENS)} Advanced search</a>${qs}</div></header>`;
+    const add = sect('hadd', 'Add', '', `<div class="hm-tiles">${HM_ADD.map(([p, n, ic], i) => `<a class="hm-tile" href="${MB}/${p}"><span class="hm-ic" style="background:${HM_CLR[i]}">${SVG(ic)}</span>${n}</a>`).join('')}</div>`, '');
+    const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" title="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art">${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
+    const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
+    const nev = fr.ev.length ? sect('hnev', 'Recently added events', '', cov(fr.ev), '') : '';
+    const me = ME ? sect('hme', esc(ME), '', `<div class="hm-you"><div class="hm-pf"><div class="hm-pid"><span class="hm-av">${esc(ME[0]).toUpperCase()}</span><div><b>${esc(ME)}</b><small>Loading your profile…</small></div></div></div><div class="hm-me">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div></div>`, '')
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
-        return `<a class="hm-r" href="${MB}/${k}/${id}">${SVG(ic)}<span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
+        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
-    return hero + add + me + rec;
+    const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
+    return hero + add + me + nrel + rec + news + nev;
 }
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -68837,7 +68888,7 @@ else { launcher(); if (FC_UPDATE) fcUpdate(FC_UPDATE); else afterSave(); }
 
 // ===== platform_check (@run-at document-end) ====================================
 if (__stOff.indexOf("platform_check") < 0 && __stRuns("platform_check", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.26.140100","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.26.140100","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.26.140000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.26.140000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -70889,55 +70940,31 @@ async function beatportLogin(username, password) {
         return { ok: false, error: m };
     }
 
-    const r = await bpAuthorize();
-    if (r.ok) appendLog('Beatport', `logged in (token scope: ${r.scope || '?'})`, 'ok');
-    return r;
-}
-// PKCE authorize + code exchange on the browser's beatport.com session (no password).
-// The login above mints that session; a token refresh that fails reuses it to sign in
-// again. `quiet` keeps a silent re-login's failure out of the log.
-async function bpAuthorize(quiet = false) {
     const { v, c } = await bpPkce();
     const au = `${BEATPORT.api}/auth/o/authorize/?response_type=code&client_id=${BEATPORT.clientId}&redirect_uri=${encodeURIComponent(BEATPORT.redirect)}&code_challenge=${c}&code_challenge_method=S256`;
     const ar = await gmGet(au, { headers: bpHeaders() });   // non-anonymous: uses the jar session (fresh-from-login or existing browser)
     const code = ((ar.finalUrl || '').match(/[?&#]code=([^&]+)/) || [])[1];
     if (!code) {
-        if (!quiet) appendLog('Beatport', `authorize returned no code — HTTP ${ar.status}; no usable Beatport session in the browser. Log in at beatport.com in this browser, then retry.`, 'error');
+        appendLog('Beatport', `authorize returned no code — HTTP ${ar.status}; no usable Beatport session in the browser. Log in at beatport.com in this browser, then retry.`, 'error');
         return { ok: false, error: 'no authorization code returned' };
     }
     const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: BEATPORT.redirect, client_id: BEATPORT.clientId, code_verifier: v }).toString(), { anonymous: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
-    let j; try { j = JSON.parse(tr.responseText); } catch { if (!quiet) appendLog('Beatport', `token exchange — unparseable response (HTTP ${tr.status})`, 'error'); return { ok: false, error: 'token response parse failed' }; }
-    if (!j.access_token) { const e = j.error_description || j.error || 'no access token'; if (!quiet) appendLog('Beatport', `token exchange failed — ${e}`, 'error'); return { ok: false, error: e }; }
+    let j; try { j = JSON.parse(tr.responseText); } catch { appendLog('Beatport', `token exchange — unparseable response (HTTP ${tr.status})`, 'error'); return { ok: false, error: 'token response parse failed' }; }
+    if (!j.access_token) { const e = j.error_description || j.error || 'no access token'; appendLog('Beatport', `token exchange failed — ${e}`, 'error'); return { ok: false, error: e }; }
     bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
-    return { ok: true, scope: j.scope };
+    appendLog('Beatport', `logged in (token scope: ${j.scope || '?'})`, 'ok');
+    return { ok: true };
 }
 // Valid access token, renewing via refresh_token when needed; null if not logged in / refresh failed.
-// A failed refresh signs in again through the browser's Beatport session (bpAuthorize); only
-// when that fails too must the user log in again in ⚙ setup. Concurrent callers share one renewal:
-// Beatport rotates the refresh token, so a second refresh with the old one would be refused.
-let bpRenewing = null;
-function beatportToken() {
+async function beatportToken() {
     const t = bpRead();
-    if (!t || !t.refresh_token) return Promise.resolve(null);
-    if (t.access_token && Date.now() < t.exp - 60000) return Promise.resolve(t.access_token);
-    return bpRenewing || (bpRenewing = bpRenew(t).finally(() => { bpRenewing = null; }));
-}
-async function bpRenew(t) {
+    if (!t || !t.refresh_token) return null;
+    if (t.access_token && Date.now() < t.exp - 60000) return t.access_token;
     const tr = await gmPost(`${BEATPORT.api}/auth/o/token/`, new URLSearchParams({ grant_type: 'refresh_token', refresh_token: t.refresh_token, client_id: BEATPORT.clientId }).toString(), { anonymous: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...bpHeaders() } });
     let j; try { j = JSON.parse(tr.responseText); } catch { j = {}; }
-    if (j.access_token) {
-        bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
-        return j.access_token;
-    }
-    // ISRC Scout (or another tab) may have renewed meanwhile, spending the refresh token we sent.
-    const now = bpRead();
-    if (now?.access_token && now.refresh_token !== t.refresh_token && Date.now() < now.exp - 60000) return now.access_token;
-    const r = await bpAuthorize(true);
-    if (r.ok) { appendLog('Beatport', 'token refresh failed — signed in again with the browser\'s Beatport session', 'ok'); return bpRead()?.access_token || null; }
-    // Beatport refused the refresh token itself: drop it, so ⚙ setup shows signed out.
-    if (j.error === 'invalid_grant') bpWrite(null);
-    appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn');
-    return null;
+    if (!j.access_token) { appendLog('Beatport', 'token refresh failed — log in again in ⚙ setup', 'warn'); return null; }
+    bpWrite({ access_token: j.access_token, refresh_token: j.refresh_token || t.refresh_token, exp: Date.now() + ((j.expires_in || 36000) * 1000) });
+    return j.access_token;
 }
 // ── Qobuz API auth (email + password login; token shared with ISRC Scout + Credit Hoarder) ──
 // Qobuz's per-track data (ISRCs + roled `performers`) lives behind `album/get`, which is

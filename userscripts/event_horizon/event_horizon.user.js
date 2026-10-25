@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.030000
+// @version      2026.10.27.060000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1846,25 +1846,54 @@ const FORMAT_ICONS = {
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
-.hm-hero{display:flex;align-items:center;gap:22px;padding:34px 0 26px}
-.hm-logo{width:84px;height:84px;flex:none}
-.hm-t{flex:1;min-width:0}
-.hm-k{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.hm-srch{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 2px 10px var(--shadow)}
-.hm-srch:focus-within{border-color:var(--accent)}
-.hm-srch input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--text);font:inherit;font-size:18px;padding:8px 0}
-.hm-srch select{border:0;background:var(--chip);color:var(--chip-text);font:inherit;font-size:13px;border-radius:9px;padding:8px}
+.hm-hero{position:relative;overflow:hidden;margin:22px 0 8px;padding:30px 36px 24px;border-radius:22px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,#5b2357 0%,#2a1630 55%,#1b1020 100%)}
+.hm-orb{position:absolute;right:-50px;top:-60px;width:330px!important;height:330px!important;opacity:.35;pointer-events:none}
+.hm-k{position:relative;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#f2b38f}
+.hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fff!important;border-radius:14px;padding:6px 6px 6px 16px;color:#7a6b85;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:#231c2b!important;font:inherit;font-size:18px;padding:8px 0}
+.hm-srch select{border:0;background:#efe8f2!important;color:#4a3b55!important;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
+.hm-adv{flex-basis:100%;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;border-top:1px solid #e8e0ec;margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}
+.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:#4a3b55}.hm-adv select{justify-self:start}
+.hm-hint{grid-column:1/3;color:#7a6b85}.hm-hint code{background:#efe8f2;border-radius:5px;padding:1px 5px;color:#231c2b}
+.hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:#eadff0!important;text-decoration:none!important;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);cursor:pointer}
+.hm-qr a:hover,.hm-tg.on{background:rgba(255,255,255,.22)!important}.hm-qr b{color:#f5a06b;font-weight:700}.hm-tg svg{width:13px;height:13px}
+.hm-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 8px 11px;text-align:center;font-weight:700;font-size:13px;color:var(--text)!important;text-decoration:none!important}
+.hm-tile:hover{border-color:var(--accent);box-shadow:0 4px 14px var(--shadow)}
+.hm-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;margin:0 auto 8px;color:#fff}
+.hm-covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
+.hm-cv{min-width:0;color:var(--text)!important;text-decoration:none!important}
+.hm-art{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--chip);box-shadow:0 4px 12px var(--shadow)}
+.hm-art img{width:100%;height:100%;object-fit:cover;display:block}.hm-cv:hover .hm-art{outline:2px solid var(--accent)}
+.hm-cv b,.hm-cv small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;margin-top:6px}.hm-cv small{color:var(--muted);margin:0;font-size:11px}
+.hm-you{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.hm-you{grid-template-columns:1fr}}
+.hm-pf{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
+.hm-pid{display:flex;gap:12px;align-items:center}.hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
+.hm-av{flex:none;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
+.hm-sts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+.hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
+.hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
+.hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
+.hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
+.hm-sec{display:block;color:var(--muted);margin-top:8px}
+.hm-me{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .hm-chips{display:flex;flex-wrap:wrap;gap:8px}
 .hm-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;background:var(--chip);color:var(--chip-text)!important;text-decoration:none!important;font-weight:600}
 .hm-chip:hover{background:var(--accent);color:#fff!important}
 .hm-rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
-.hm-r{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
+.hm-r{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
 .hm-r:hover{background:var(--hover)}
-.hm-r svg{flex:none;color:var(--muted)}
+.hm-ri{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--chip);color:var(--accent)}
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{font-size:12px;color:var(--muted)}
+.hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px 16px}
+.hm-news a{padding:9px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important;font-weight:600}.hm-news a:hover{background:var(--hover)}
+.hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .kicker .ab.eh-home svg{width:20px!important;height:20px!important}
 :root{
@@ -3269,7 +3298,7 @@ function render(keepPop) {
     const app = $('#app');
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
-    if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); secRail(app); save(); return; }
+    if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g;
     // another page starts unfiltered
     if (FLT.of !== r.id) { FLT.of = r.id; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
@@ -3364,24 +3393,99 @@ function visited(key, d) {
     const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '' }, ...visits().filter(x => x.key !== key)].slice(0, 12);
     try { GM_setValue('visits', v); } catch (e) {}
 }
+// MusicBrainz's own front page carries the latest releases and events (with covers) and the blog's headlines;
+// they are read from the page EH replaced, so they cost no request.
+function hmFront() {
+    const doc = mbBody || document.body, art = { release: [], event: [] };
+    doc.querySelectorAll('.artwork-cont a[href]').forEach(a => {
+        const m = a.getAttribute('href').match(/^\/(release|event)\/([0-9a-f-]{36})/); if (!m) return;
+        const sp = a.querySelector('[data-small-thumbnail]'), img = sp ? sp.getAttribute('data-small-thumbnail') : (a.querySelector('img') || {}).src;
+        const t = a.getAttribute('title') || '', i = m[1] === 'release' ? t.lastIndexOf(' by ') : -1;
+        art[m[1]].push({ href: `${MB}/${m[1]}/${m[2]}`, img: img ? (img.startsWith('//') ? 'https:' + img : img) : '', t: i > 0 ? t.slice(0, i) : t, by: i > 0 ? t.slice(i + 4) : '' });
+    });
+    const blog = [...doc.querySelectorAll('#blog-feed li a[href]')].map(a => ({ href: a.href, t: a.textContent.trim() }));
+    return { rel: art.release.slice(0, 12), ev: art.event.slice(0, 12), blog };
+}
+// Your profile card: the one request the home page makes (your /user page), kept for 6 hours.
+// The page's labels are translated, so rows are read by position and shape, not by their text.
+const PROF_TTL = 6 * 3600e3;
+function profParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), num = x => x ? +x.textContent.replace(/[^\d]/g, '') || 0 : 0;
+    const info = d.querySelector('table.profileinfo'), tds = info ? [...info.querySelectorAll('td')] : [];
+    const loc = tds.find(td => td.querySelector('a[href^="/area/"]')), since = tds.map(td => td.textContent.match(/^\s*(\d{4})-\d\d-\d\d/)).find(Boolean);
+    const st = [...d.querySelectorAll('table.statistics')], row = (t, i) => t && t.querySelectorAll('tbody tr')[i];
+    const ed = st[0], votes = st[1] && st[1].querySelectorAll('tfoot th'), added = st[2] ? [...st[2].querySelectorAll('tbody tr')].map(r => [r.querySelector('th').textContent.trim(), num(r.querySelector('td'))]).filter(x => x[1]) : [];
+    const sec = st[3] ? [...st[3].querySelectorAll('tbody tr')].map(r => [r.querySelector('th').textContent.trim(), num(r.querySelector('td'))]) : [];
+    return {
+        at: Date.now(), loc: loc ? [...loc.querySelectorAll('a[href^="/area/"]')].map(a => a.textContent.trim()).join(', ') : '', since: since ? +since[1] : 0,
+        langs: info ? [...info.querySelectorAll('ul.inline li')].map(li => li.textContent.replace(/\s*\(.*\)/, '').trim()) : [],
+        bio: (info && info.querySelector('tr.biography a[href]') || {}).href || '',
+        total: num(row(ed, 0) && row(ed, 0).querySelector('td')), open: num(row(ed, 7) && row(ed, 7).querySelector('td')), day: num(row(ed, 8) && row(ed, 8).querySelector('td')),
+        votes: votes && votes[2] ? num({ textContent: votes[2].textContent.split('(')[0] }) : 0, added: added.sort((a, b) => b[1] - a[1]), sec,
+    };
+}
+async function profLoad(app) {
+    let p = null; try { p = GM_getValue('profile', null); } catch (e) {}
+    if (p && p.me === ME && Date.now() - p.at < PROF_TTL) return profFill(app, p);
+    if (p && p.me === ME) profFill(app, p);
+    try {
+        const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
+        const n = profParse(await r.text()); n.me = ME; console.info('[Event Horizon] profile', n);
+        try { GM_setValue('profile', n); } catch (e) {}
+        profFill(app, n);
+    } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
+}
+const fmtN = n => n.toLocaleString('en');
+function profFill(app, p) {
+    const el = app.querySelector('.hm-pf'); if (!el) return;
+    const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
+    const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
+    const stat = (n, l, h) => `<a class="hm-st" href="${u}/${h}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
+    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${esc(ME[0] || '?').toUpperCase()}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
+        <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
+        ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
+        ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
+}
+const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
+const searches = () => { try { return GM_getValue('searches', []) || []; } catch (e) { return []; } };
+function hmWire(app) {
+    const f = app.querySelector('.hm-srch'); if (!f) return;
+    f.addEventListener('submit', () => {
+        const q = f.query.value.trim(), t = f.type.value; if (!q) return;
+        try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) {}
+    });
+    const adv = app.querySelector('.hm-tg');
+    adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
+    if (ME) profLoad(app);
+}
 function homeHtml() {
-    const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`;
+    const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
     const kinds = SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('');
-    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-logo"')}<div class="hm-t"><div class="hm-k">MusicBrainz · Event Horizon</div>
-        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><input type="hidden" name="method" value="indexed"><button type="submit">Search</button></form></div></header>`;
-    const add = sect('hadd', 'Add', '', `<div class="hm-chips">${HM_ADD.map(([p, n, ic]) => hmChip(`${MB}/${p}`, n, ic)).join('')}</div>`, '');
-    const me = ME ? sect('hme', esc(ME), '', `<div class="hm-chips">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div>`, '')
+    const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
+    const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
+    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-k">MusicBrainz · Event Horizon</div><div class="hm-hi">${hi}</div>
+        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="submit">Search</button>
+        <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method"><option value="indexed">Indexed</option><option value="advanced">Indexed, with advanced query syntax</option><option value="direct">Direct database search</option></select>
+        <label>Results per page</label><select name="limit"><option>25</option><option selected>50</option><option>100</option></select>
+        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
+        <div class="hm-qr"><a class="hm-tg${S.hmAdv ? ' on' : ''}" role="button" tabindex="0">${SVG(LENS)} Advanced search</a>${qs}</div></header>`;
+    const add = sect('hadd', 'Add', '', `<div class="hm-tiles">${HM_ADD.map(([p, n, ic], i) => `<a class="hm-tile" href="${MB}/${p}"><span class="hm-ic" style="background:${HM_CLR[i]}">${SVG(ic)}</span>${n}</a>`).join('')}</div>`, '');
+    const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" title="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art">${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
+    const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
+    const nev = fr.ev.length ? sect('hnev', 'Recently added events', '', cov(fr.ev), '') : '';
+    const me = ME ? sect('hme', esc(ME), '', `<div class="hm-you"><div class="hm-pf"><div class="hm-pid"><span class="hm-av">${esc(ME[0]).toUpperCase()}</span><div><b>${esc(ME)}</b><small>Loading your profile…</small></div></div></div><div class="hm-me">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div></div>`, '')
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
-        return `<a class="hm-r" href="${MB}/${k}/${id}">${SVG(ic)}<span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
+        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
-    return hero + add + me + rec;
+    const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
+    return hero + add + me + nrel + rec + news + nev;
 }
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
+const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
