@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.210000
+// @version      2026.10.27.213000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3537,7 +3537,7 @@ function areaList(d, i) {
 /* ── instrument ──────────────────────────────────── */
 // an instrument: its description, picture (its own Commons "image" link), the instruments it's tied to, then who plays it;
 // ws/2 can't list artists, releases or recordings by instrument, so those are read from MusicBrainz's own subpages
-const MK_INS = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
+const MK_INS = '<path d="M9 3v7a3 3 0 0 0 6 0V3"/><path d="M12 13v8"/><path d="M5 6l-1.500-1M5 9H3M19 6l1.500-1M19 9h2"/>'; // a tuning fork
 // [link type, forward label, backward label]
 const INS_RELS = [['subtype', 'Subtypes', 'Subtype of'], ['parts', 'Parts', 'Part of'], ['children', "Children's versions", "Children's version of"],
     ['derivation', 'Derived instruments', 'Derived from'], ['hybrid of', 'Hybrids', 'Hybrid of'], ['related to', 'Related', 'Related']];
@@ -3564,23 +3564,32 @@ async function insPage(id, sub) {
     const r = await mbnFetch(`${MB}/instrument/${id}/${sub}`);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = new DOMParser().parseFromString(await r.text(), 'text/html'), t = d.querySelector('#content table.tbl');
-    const more = !!d.querySelector('#content ul.pagination');
-    if (!t) return { head: [], rows: [], more };
+    const more = !!d.querySelector('#content ul.pagination'), h = d.querySelector('.instrumentheader h1'), name = h ? h.textContent.trim() : '';
+    if (!t) return { head: [], rows: [], more, name };
     const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && !th.classList.contains('rating') && !th.classList.contains('checkbox-cell'));
     const cell = td => {
         for (const e of td.querySelectorAll('input, .inline-rating, script')) e.remove();
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
         return td.innerHTML.trim();
     };
-    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(tr => [...tr.children].filter((_, i) => keep[i]).map(cell)), more };
+    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(tr => [...tr.children].filter((_, i) => keep[i]).map(cell)), more, name };
 }
+// the page shows as soon as either the instrument or its lists are in: lists first give a page
+// named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
 async function loadInstrument(id, step = () => {}) {
     const one = k => insPage(id, k).then(x => x, () => null);
     const lists = Promise.all([one('artists'), one('releases'), one('recordings')]).then(x => { step('artists, releases, recordings'); return x; });
     const wiki = wikiOf('instrument', id);
-    const a = await ws(`instrument/${id}?inc=aliases+genres+tags+annotation+instrument-rels+url-rels`);
-    step('instrument');
-    return { kind: 'instrument', g: instrument(a), lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+    const aP = ws(`instrument/${id}?inc=aliases+genres+tags+annotation+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
+    const first = await Promise.race([aP, lists.then(x => ({ lists: x }))]);
+    const early = first.lists ? (first.lists.find(Boolean) || {}).name : null;
+    const mk = a => ({ kind: 'instrument', g: instrument(a), lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) });
+    if (!first.lists) return mk(first);
+    if (!early) return mk(await aP);
+    LOG.debug('Instrument ' + id + ': its lists came first, shown before the instrument');
+    const d = mk({ id, name: early });
+    d.gP = aP.then(instrument);
+    return d;
 }
 function insHero(d) {
     // a Commons file page becomes its picture; any other image link (MetaBrainz's IROMBook) is the picture itself
@@ -4450,6 +4459,7 @@ async function show(key) {
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
         if (d.lists) d.lists.then(x => { if (n === showing && data === d) { d.listsX = x; render(); } });
+        if (d.gP) d.gP.then(g => { if (n === showing && data === d) { d.g = g; render(); visited(key, d); } }, e => LOG.err('Loading ' + id + ' failed: ' + e.message));
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
         if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
