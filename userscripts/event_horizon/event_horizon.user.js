@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.022000
+// @version      2026.10.27.023000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2359,7 +2359,7 @@ const HOSTS = [
     ['soundcloud', 'SoundCloud', /soundcloud\.com/], ['sevendigital', '7digital', /7digital\.com/], ['hdtracks', 'HDtracks', /hdtracks\.com/],
     ['amazonmusic', 'Amazon Music', /music\.amazon\./], ['amazon', 'Amazon', /amazon\./], ['discogs', 'Discogs', /discogs\.com/], ['allmusic', 'AllMusic', /allmusic\.com/],
     ['mora', 'mora', /mora\.jp/], ['ototoy', 'OTOTOY', /ototoy\.jp/], ['pandora', 'Pandora', /pandora\.com/], ['jaxsta', 'Jaxsta', /jaxsta\.com/],
-    ['wikidata', 'Wikidata', /wikidata\.org/], ['wikipedia', 'Wikipedia', /wikipedia\.org/],['rateyourmusic', 'Rate Your Music', /rateyourmusic\.com/], ['review', 'BBC Music review', /bbc\.co\.uk\/music\/reviews/],['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
+    ['wikidata', 'Wikidata', /wikidata\.org/], ['wikipedia', 'Wikipedia', /wikipedia\.org/],['rateyourmusic', 'Rate Your Music', /rateyourmusic\.com/], ['review', 'BBC Music review', /bbc\.co\.uk\/music\/reviews/],['vimeo', 'Vimeo', /vimeo\.com/],['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
     ['twitter', 'X (Twitter)', /twitter\.com|\/\/(www\.)?x\.com\//], ['facebook', 'Facebook', /facebook\.com/], ['viaf', 'VIAF', /viaf\.org/], ['lastfm', 'Last.fm', /last\.fm|lastfm\./], ['secondhandsongs', 'SecondHandSongs', /secondhandsongs\.com/], ['genius', 'Genius', /genius\.com/],
     ['melon', 'Melon', /melon\.com/], ['bugs', 'Bugs', /bugs\.co\.kr/], ['instagram', 'Instagram', /instagram\.com/], ['imdb', 'IMDb', /imdb\.com/],
     ['songkick', 'Songkick', /songkick\.com/], ['bandsintown', 'Bandsintown', /bandsintown\.com/], ['napster', 'Napster', /napster\.com/], ['myspace', 'Myspace', /myspace\.com/],
@@ -2493,6 +2493,7 @@ const fmtSvg = (k, size = 18, sw = 2.4) => `<svg width="${size}" height="${size}
 const TILE = (bg, fg, t, fs = 11) => `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="${bg}"/><text x="12" y="12" dy=".36em" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="${fs}" fill="${fg}">${t}</text></svg>`;
 const NOTE = '<path d="M10 17.5a2.5 2.5 0 1 1-1-2V6l8-2v9.5a2.5 2.5 0 1 1-1-2V7.2l-6 1.5z" fill="#fff"/>';
 const EXTRA = {
+    vimeo: '<svg viewBox="0 0 512 512"><path fill="#2CABE2" d="M426.667,34.133c-69.036,0-121.735,61.071-136.273,118.533c-1.59,6.288,4.463,12.115,10.69,10.276 c13.693-4.045,31.867-6.925,40.686,2.331c9.465,9.934,8.803,33.955-1.767,64.257c-15.401,44.146-45.632,84.343-59.578,86.284 c-4.809,0.671-8.572-0.22-11.849-2.797c-14.681-11.546-18.96-54.354-23.099-95.753c-6.606-66.082-14.094-140.98-62.461-165.164 C109.427,15.304,6.227,142.823,1.87,148.27c-2.079,2.599-2.458,6.17-0.969,9.147l17.067,34.133 c2.549,5.099,9.565,6.265,13.628,2.256c14.128-13.933,39.399-31.429,48.778-24.729c23.297,16.641,38.427,77.207,53.059,135.779 c21.249,85.057,43.22,173.01,97.679,173.01c57.819,0,130.474-60.703,179.189-117.511c29.339-34.213,54.224-71.316,71.965-107.298 C501.996,213.039,512,176.705,512,145.067C512,68.435,469.141,34.133,426.667,34.133z"/><path fill="#0099D4" d="M256.711,460.8c-54.458,0-76.429-87.953-97.678-173.01c-14.634-58.572-29.763-119.139-53.06-135.779 c-8.021-5.73-27.662,6.238-42.019,18.539c6.803-3.029,12.798-4.059,16.419-1.472c23.297,16.641,38.427,77.207,53.059,135.779 c21.249,85.057,43.22,173.01,97.679,173.01c30.55,0,65.242-16.95,98.356-41.316C304.493,451.404,279.454,460.8,256.711,460.8z"/></svg>',
     youtube: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#FF0000"/><path d="M10 9v6l5-3z" fill="#fff"/></svg>',
     juno: TILE('#77b72b', '#fff', 'juno', 8), tower: TILE('#ffd400', '#e60012', 'TR', 11), yesasia: TILE('#2a8a3e', '#fff', 'YA', 10), cat45: TILE('#e8581f', '#fff', '45', 13),
     bbc: '<svg viewBox="0 0 24 24"><rect y="7" width="7" height="10" fill="#000"/><rect x="8.5" y="7" width="7" height="10" fill="#000"/><rect x="17" y="7" width="7" height="10" fill="#000"/><g font-family="Arial,sans-serif" font-weight="700" font-size="8" fill="#fff" text-anchor="middle"><text x="3.5" y="15">B</text><text x="12" y="15">B</text><text x="20.5" y="15">C</text></g></svg>',
@@ -2518,7 +2519,8 @@ function icon(p, size = 20) {
     if (p.key === 'review') return `<svg viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#111"/><g fill="#fff"><rect x="5" y="11" width="6.5" height="10"/><rect x="12.75" y="11" width="6.5" height="10"/><rect x="20.5" y="11" width="6.5" height="10"/></g><g fill="#111" font-family="Arial,sans-serif" font-weight="700" font-size="8" text-anchor="middle"><text x="8.25" y="19">B</text><text x="16" y="19">B</text><text x="23.75" y="19">C</text></g></svg>`;
     if (p.key !== 'globe' && ST_ICONS[p.key]) return uniq(stIcon(p.key, size).replace('<svg', '<svg aria-hidden="true"'));
     if (EXTRA[p.key]) return EXTRA[p.key].replace('<svg', `<svg width="${size}" height="${size}" aria-hidden="true"`);
-    if (p.key === 'globe' && ST_ICONS.globe) return stIcon('globe', size).replace('<svg', '<svg aria-hidden="true"');
+    // a site without an icon: two letters of its domain on a colour of its own, not the same globe for all (majkinetor)
+    if (p.key === 'globe') { const d = p.name.replace(/^www\d*\./, '').split('.')[0] || p.name, h = [...d].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7); return `<span class="mgram" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px;background:hsl(${h} 45% 46%);color:#fff" aria-hidden="true">${esc(d.replace(/[^A-Za-z0-9]/g, '').slice(0, 2) || '?')}</span>`; }
     const t = MONO[p.key] || p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2);
     return `<span class="mgram" style="width:${size}px;height:${size}px;font-size:${Math.round(size * (t.length > 2 ? .34 : .42))}px" aria-hidden="true">${esc(t)}</span>`;
 }
@@ -2529,7 +2531,7 @@ const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['
 // a platform shows under one kind, free streaming first (majkinetor); its other kinds are behind +N
 const primaryKind = p => p.kinds.includes('free') ? 'free' : p.kinds.includes('listen') ? 'listen' : p.kinds.includes('buy') ? 'buy' : 'info';
 const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
-const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
+const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '') + '\n' + p.urls[0].url.replace(/^https?:\/\/(www\.)?/, ''); // the link itself, under the name
 const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
