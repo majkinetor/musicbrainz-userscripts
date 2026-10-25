@@ -87,9 +87,10 @@ const CSS = [
     // Help link — `? Help` opening the script's README in a new tab. Apollo and
     // Fusion already agreed on this shape; Art Station said "Help ↗" and Mammoth
     // carried no class at all. Apollo/Fusion win on numbers.
-    '.mbu-help{font-size:12px;color:var(--mbu-accent-text);text-decoration:none;border:1px solid var(--mbu-border);',
-    'border-radius:var(--mbu-radius);padding:1px 8px;white-space:nowrap;line-height:1.6;background:none}',
-    '.mbu-help:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent);text-decoration:none}',
+    // An icon only, no frame or fill (maintainer, 2026-10-25): the tooltip says what it is.
+    '.mbu-help{display:inline-grid;place-items:center;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:none;',
+    'color:var(--mbu-text-weak);text-decoration:none;line-height:1}.mbu-help svg{width:18px;height:18px;display:block}',
+    '.mbu-help:hover{color:var(--mbu-accent);background:none;text-decoration:none}',
     // config headers are flex rows: the help link is the last thing on the line
     'h4>.mbu-help,.mbu-cfg-h>.mbu-help{margin-left:8px;flex:0 0 auto;font-weight:normal}',
 
@@ -394,9 +395,10 @@ const JS = `
 function mbuHelpHref(name) {
     return 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/' + name + '/README.md';
 }
+var MBU_HELP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.6"/><path d="M12 17h.01"/></svg>';
 function mbuHelpHtml(name, label) {
-    return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener"'
-        + ' data-tip="Open the README in a new tab">' + (label || '? Help') + '</a>';
+    return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener" aria-label="Help"'
+        + ' data-tip="Help: open the README in a new tab">' + (label || MBU_HELP_ICON) + '</a>';
 }
 function mbuHelpEl(name, label) {
     var a = document.createElement('a');
@@ -404,8 +406,9 @@ function mbuHelpEl(name, label) {
     a.href = mbuHelpHref(name);
     a.target = '_blank';
     a.rel = 'noopener';
-    a.dataset.tip = 'Open the README in a new tab';
-    a.textContent = label || '? Help';
+    a.setAttribute('aria-label', 'Help');
+    a.dataset.tip = 'Help: open the README in a new tab';
+    if (label) a.textContent = label; else a.innerHTML = MBU_HELP_ICON;
     return a;
 }
 
