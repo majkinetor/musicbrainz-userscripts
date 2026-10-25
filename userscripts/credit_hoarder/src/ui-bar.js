@@ -1752,10 +1752,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     style.innerText = MBU_TOKENS + MBU_UI_CSS + `
         .discogs-bar {
             font-family: inherit;
-            background: var(--mbu-bg);
-            border: 1px solid var(--mbu-warn);
-            border-left: 4px solid var(--mbu-warn);
-            border-radius: 0.35rem;
+            background: var(--mbu-bg-raised);
+            border: 1px solid var(--mbu-border);
+            border-radius: 12px;
             margin-bottom: 1rem;
             overflow: hidden;
         }
@@ -1765,18 +1764,18 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             gap: 0.6rem;
             row-gap: 0.4rem;
             flex-wrap: wrap;
-            padding: 0.5rem 0.75rem;
+            padding: 0.5rem 0.85rem;
             background: var(--mbu-bg-raised);
-            border-bottom: 1px solid var(--mbu-warn);
         }
+        .discogs-bar-row2:empty { display: none; }
         /* review table: flat ✕ that clears a row's MB pick */
         .discogs-clear-btn { margin-left: auto; flex: 0 0 auto; font-size: 0.85rem; line-height: 1; padding: 0.15rem 0.35rem; cursor: pointer; color: var(--mbu-text-weak); background: none !important; border: none; border-radius: var(--mbu-radius); }
         .discogs-clear-btn:hover { color: var(--mbu-error); background: var(--mbu-bg-hover) !important; }
         /* inline options strip in the single bar (#139) */
         .discogs-bar-opts { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: 0.9rem; }
         .discogs-bar-opts .discogs-opts-label { font-size: 0.75rem; color: var(--mbu-text-weak); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
-        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-warn); border-radius: 2rem; padding: 0.15rem 0.6rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .discogs-opts-btn:hover { border-color: var(--mbu-warn); color: var(--mbu-text); }
+        .discogs-opts-btn { font-size: 0.8rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 8px; height: 1.9rem; padding: 0 0.65rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .discogs-opts-btn:hover { border-color: var(--mbu-accent); color: var(--mbu-text); }
         .discogs-opts-caret { color: var(--mbu-text-weak); font-size: 0.7rem; }
         /* "Options ▾" popover (Dedup toggles) */
         .discogs-opts-panel { position: fixed; z-index: 100002; display: none; flex-direction: column; gap: 0.4rem; background: var(--mbu-bg); border: 1px solid var(--mbu-warn); border-radius: 0.4rem; box-shadow: 0 6px 22px rgba(40,20,80,0.18); padding: 0.55rem 0.6rem; font-family: inherit; }
@@ -1929,16 +1928,17 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         }
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
         /* #272: "Import credits:" label + a row of clickable source icons */
-        .discogs-import-label { flex-shrink: 0; font-size: 0.88rem; font-weight: bold; color: var(--mbu-text); letter-spacing: 0.01em; }
+        .discogs-import-label { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--mbu-text-weak); letter-spacing: 0.08em; text-transform: uppercase; padding-right: 0.7rem; border-right: 1px solid var(--mbu-border); }
+        .discogs-import-label img { width: 26px; height: 26px; }
         /* #272: drop the "Import credits:" label once a run is underway — only the
            active source icon + progress/Start-import matter then. */
-        .discogs-bar.is-importing .discogs-import-label,
-        .discogs-bar.is-reviewing .discogs-import-label { display: none; }
+        .discogs-bar.is-importing .discogs-import-label span,
+        .discogs-bar.is-reviewing .discogs-import-label span { display: none; }
         .discogs-src-icons { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.3rem; }
         .discogs-src-ico {
             display: inline-flex; align-items: center; justify-content: center;
             width: 2rem; height: 2rem; padding: 0; cursor: pointer;
-            border: 1px solid var(--mbu-border); border-radius: 0.3rem; background: var(--mbu-bg); color: var(--mbu-text-dim);
+            border: 1px solid var(--mbu-border); border-radius: 8px; background: transparent; color: var(--mbu-text-dim);
         }
         .discogs-src-ico:hover { background: var(--mbu-bg-raised); border-color: var(--mbu-warn); color: var(--mbu-warn); }
         .discogs-src-ico:disabled { opacity: 0.5; cursor: default; }
@@ -2004,18 +2004,25 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-toggle:hover { color: var(--mbu-text); }
         .discogs-toggle input[type=checkbox] { display: none; }
         .discogs-toggle .discogs-toggle-dot {
-            width: 14px; height: 14px;
-            border-radius: 50%;
-            border: 2px solid var(--mbu-border);
-            background: var(--mbu-bg);
+            position: relative;
+            width: 28px; height: 16px;
+            border-radius: 9px;
+            border: 0;
+            background: var(--mbu-border);
             flex-shrink: 0;
-            transition: border-color 0.12s, background 0.12s;
+            transition: background 0.12s;
         }
+        .discogs-toggle .discogs-toggle-dot::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--mbu-text-weak);
+            transition: left 0.12s, background 0.12s;
+        }
+        .discogs-toggle.active .discogs-toggle-dot::after { left: 14px; background: #fff; }
         .discogs-toggle.active {
             color: var(--mbu-text);
         }
         .discogs-toggle.active .discogs-toggle-dot {
-            border-color: var(--mbu-warn);
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
@@ -2150,7 +2157,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     }
     const importLabel = document.createElement('span');
     importLabel.className = 'discogs-import-label';
-    importLabel.textContent = 'Import credits:';
+    importLabel.innerHTML = `<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K" alt=""><span>Import credits</span>`;   // Credit Hoarder's icon, then the label
     const srcIcons = document.createElement('span');
     srcIcons.className = 'discogs-src-icons';
     // Provider marks — the shared brand icons (#404); Titles keeps its lines glyph.
