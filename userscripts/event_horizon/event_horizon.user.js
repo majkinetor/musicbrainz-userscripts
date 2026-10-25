@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.029000
+// @version      2026.10.27.030000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3227,7 +3227,7 @@ function fltBar(sc, xs) {
     const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
     const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${vals(k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
     const add = FLT_FIELDS[sc].filter(([k]) => !(k in f.f)).map(([k, name, get]) => [k, name, vals(k, get)]).filter(x => x[2].length > 1)
-        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(name + ': ' + v)}" data-fv="${esc(k + '\t' + v)}">${c}</option>`).join('')).join('');
+        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(`${name}: ${v} (${c})`)}" data-fv="${esc(k + '\t' + v)}"></option>`).join('')).join('');
     return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<input type="search" class="fadd" data-fadd="${sc}" list="fl-${sc}" placeholder="+ Filter: type an artist, year…" aria-label="Add a filter" autocomplete="off"><datalist id="fl-${sc}">${add}</datalist>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
 }
 // the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
