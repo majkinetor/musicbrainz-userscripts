@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.251000
+// @version      2026.10.27.252000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3115,7 +3115,7 @@ function rgHero(d) {
             ${under(g, tags)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${LAYERS(18)}<span>${esc(g.types.join(' · ') || 'Release group')}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
             <h1>${esc(g.title)}</h1>
             ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(g.ac)}</div>
