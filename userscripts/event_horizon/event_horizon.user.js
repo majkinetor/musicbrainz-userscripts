@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.011000
+// @version      2026.10.26.103000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2012,9 +2012,10 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rl-one .kg:first-child{padding-left:0}
 .rl-one .kg .label{font-size:11px}
 .rl-one .qk{position:relative;display:inline-flex}
-.rl-one .qk>.popwrap{position:absolute;right:-14px;top:-8px}
-.rl-one button.kn{min-width:20px;height:18px;padding:0 5px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font:700 11px/1 inherit;cursor:pointer}
-.rl-one button.kn:hover,.rl-one button.kn[aria-expanded="true"]{color:var(--text);border-color:var(--muted)}
+.rl-one .qk>.popwrap{position:absolute;right:-4px;bottom:-4px}
+.rl-one button.kn{display:grid;place-items:center;width:16px;height:16px;padding:0;border:0;background:none;font-size:0;cursor:pointer}
+.rl-one button.kn::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 2px var(--surface)}
+.rl-one button.kn:hover::before,.rl-one button.kn[aria-expanded="true"]::before{background:var(--text)}
 .pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
 .rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
@@ -2561,7 +2562,7 @@ function rlQuiet(r) {
     const qi = (p, i) => {
         const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
         if (!rest.length) return a;
-        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${rest.length} more kinds on ${esc(p.name)}" data-tip="Also ${rest.map(kname).join(', ')}">+${rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}</div></span></span>`;
+        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${rest.length} more kinds on ${esc(p.name)}" data-tip="+${rest.length}: also ${rest.map(kname).join(', ')}">+${rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     const rows = ps.map((p, i) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r"><span class="iso">${kindOf(p)}</span></span></a>`).join('');
