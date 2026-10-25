@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.234000
+// @version      2026.10.26.235000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2570,9 +2570,11 @@ function facts(r) {
     const tracks = r.media.flatMap(m => m.tracks);
     const labA = l => entA('label', l.id, l.name || '[no label]');
     // past two rows, the first stays and the rest fold behind "+N more"
+    // a date's countries past three fold behind "+N more" too
+    const areas = a => a.length > 4 ? `${esc(a.slice(0, 3).join(', '))}<details class="more"><summary>+${a.length - 3} more</summary>${esc(a.slice(3).join(', '))}</details>` : esc(a.join(', '));
     const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
     const F = {
-        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${esc(l.ev.map(v => v.area).filter(Boolean).join(', '))}</span></div>`))],
+        released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${areas(l.ev.map(v => v.area).filter(Boolean))}</span></div>`))],
         labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`))],
         barcode: ['Barcode', r.barcode && `<span>${copyB(r.barcode)}</span>`],
         length: ['Length', `<span>${total(tracks)} <span class="sub">· ${tracks.length} track${tracks.length === 1 ? '' : 's'}</span></span>`],
