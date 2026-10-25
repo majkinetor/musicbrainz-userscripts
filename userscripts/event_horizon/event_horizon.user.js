@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.001000
+// @version      2026.10.27.002000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2166,6 +2166,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .grp.ls{grid-template-columns:1fr}
 .detail .grp h4 .fxc{flex:none;align-self:center;display:inline-grid;place-items:center;width:20px;height:20px;margin:0 -4px 0 -24px;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
 .detail .grp h4 .fxc:hover{color:var(--text)}
+.detail .grp h4 .fxt{cursor:pointer;user-select:none}
 .detail .grp h4 .fxc svg{width:14px;height:14px;transition:transform .15s}
 .detail .grp h4 .fxc .cv{display:contents}
 .detail .grp h4 .fxc[aria-expanded="true"] svg{transform:rotate(90deg)}
@@ -2765,7 +2766,7 @@ const crName = c => {
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
 function crGroup(tag, type, ent, cr, extra = '', fx) {
     const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details" data-tip="${fx.open ? 'Hide' : 'Show'} the ${type}'s details\nRight-click: on every track">${CHEV}</button>` : '';
-    const head = `<h4>${chev}<span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    const head = `<h4>${chev}<span class="tag${chev ? ' fxt' : ''}"${chev ? ` data-fx="${esc(fx.k)}" data-tip="${fx.open ? 'Hide' : 'Show'} the ${type}'s details\nRight-click: on every track"` : ''}>${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
     if (fx && fx.rows.length) extra = (fx.open ? `<div class="tfx">${fx.rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>` : `<div class="fxsum">${fx.rows.map(r => r[2] || r[1]).join(' · ')}</div>`) + extra;
     const rows = !cr.length ? '<div class="none">None yet</div>'
         : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
@@ -3290,7 +3291,7 @@ function onClick(ev) {
     if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
-    const b = ev.target.closest('button,[data-pop]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
+    const b = ev.target.closest('button,[data-pop],[data-fx]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
     const tr = ev.target.closest('.tr');
