@@ -21,6 +21,9 @@ Edit cover art, find it online and maximize it, with parallel edits retried on e
 [Credit Hoarder](./userscripts/credit_hoarder/README.md)<img src="./userscripts/credit_hoarder/icon.svg" align="left" width="32"><br>
 Import hundreds of credits from online platforms. What used to take days now takes minutes.
 
+[Event Horizon](./userscripts/event_horizon/) <img src="./userscripts/event_horizon/icon.svg" align="left" width="32"><br>
+A new face for MusicBrainz: entity pages and a home page redesigned around what you came for.
+
 [Falcon](./userscripts/falcon/README.md) <img src="./userscripts/falcon/icon.svg" align="left" width="32"><br>
 Batch import entity fields from Harmony or by hand; attach disc IDs from CD rip logs.
 
