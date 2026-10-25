@@ -3130,6 +3130,8 @@ function rgHero(d) {
 // MusicBrainz's wiki markup, as far as a reader needs it: links, bold, italics, paragraphs
 function annoHtml(t) {
     return esc(t).replace(/\[(https?:\/\/[^\]|\s]+)(?:\|([^\]]+))?\]/g, (m, u, n) => `<a href="${u}" target="_blank" rel="noopener">${n || u}</a>`)
+        .replace(/\[([a-z_-]+):([0-9a-f]{8}-[0-9a-f-]{27})(?:\|([^\]]+))?\]/g, (m, k, id, n) => `<a href="${MB}/${k.replace('_', '-')}/${id}">${n || k + ' ' + id.slice(0, 8)}</a>`)
+        .replace(/(?<![="'>\w])https?:\/\/[^\s<]+[^\s<.,;:!?)'"]/g, u => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`)
         .replace(/'''(.+?)'''/g, '<b>$1</b>').replace(/''(.+?)''/g, '<i>$1</i>')
         .split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
 }
