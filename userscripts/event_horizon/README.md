@@ -1,6 +1,6 @@
 # Event Horizon <img src="icon.svg" align="left" width="48">
 
-A new face for MusicBrainz: release, release group, artist and label pages redesigned around what you came for.
+MusicBrainz, past the point of no return: release, release group, artist and label pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)

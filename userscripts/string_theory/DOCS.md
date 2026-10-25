@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 12:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 12:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -721,7 +721,7 @@ How each source is read is in [DEVELOP.md](../credit_hoarder/DEVELOP.md).
 
 ## Event Horizon
 
-A new face for MusicBrainz: release, release group, artist and label pages redesigned around what you came for.
+MusicBrainz, past the point of no return: release, release group, artist and label pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
     - Or via bundle: [String Theory](../string_theory/README.md)
