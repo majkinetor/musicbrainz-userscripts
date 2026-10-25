@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.240000
+// @version      2026.10.27.241000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1929,7 +1929,7 @@ const CSS = `
 .hm-ri img{width:100%;height:100%;object-fit:cover;display:block}.hm-ri.ar img{border-radius:50%}
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
-.hm-rk{font-size:12px;color:var(--muted)}
+.hm-rk{flex:none;display:flex;color:var(--muted);margin-right:-4px}.hm-rk svg{width:16px;height:16px}
 .hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 16px;font-size:13px}
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
@@ -4073,7 +4073,7 @@ function homeHtml() {
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
-        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(v))}${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span><span class="hm-rk">${kn}</span></a>`; }).join('')}</div>`
+        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(v))}${SVG(ic)}</span><span class="hm-rk" data-tip="${kn}" aria-label="${kn}">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
     return hero + me + nrel + rec + news + nev;

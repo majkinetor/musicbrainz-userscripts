@@ -24,4 +24,8 @@ test('an artist page leads back to the home page', { tag: '@sandbox' }, async ({
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-artist.png'), clip: { x: 0, y: 0, width: 1600, height: 300 } });
   await home.click();
   check(await until(() => page.locator('.hm-add').count(), n => n === 1) === 1, 'clicking it opens the home page');
+  const kind = page.locator('.hm-rec .hm-r .hm-rk').first();
+  check(await until(() => kind.count(), n => n === 1) === 1 && await kind.getAttribute('data-tip') === 'Artist', 'recently opened marks the artist with its icon, named in its tooltip');
+  check(await kind.locator('svg').count() === 1, 'the kind is an icon, not a word');
+  if (process.env.EH_SHOT) await page.locator('#s-hrec').screenshot({ path: process.env.EH_SHOT.replace('.png', '-recent.png') });
 });
