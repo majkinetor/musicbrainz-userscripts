@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.173000
+// @version      2026.10.27.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2346,7 +2346,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid img,.artgrid .art-miss{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;background:var(--chip);color:transparent}
 .artgrid .art-miss{display:grid;place-items:center;color:var(--muted)}.art-miss svg{opacity:.55}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
-.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -3239,7 +3239,7 @@ function picHtml(g, cls, none) {
     const xs = g.imgs || [], i = (g.imgI || 0) % (xs.length || 1), x = xs[i];
     if (!x) return none;
     const more = xs.length > 1;
-    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}><a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="From ${esc(x.from)}">${stIcon(x.key, 18)}</a></div>`;
+    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="From ${esc(x.from)}">${stIcon(x.key, 18)}</a></div>`;
 }
 const artistImage = (mbid, rels) => ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
 const AR_ACTS = [
@@ -3385,7 +3385,7 @@ const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by) {
     return `<section class="hero">
-        <div class="art"><div class="nocover">${bigMk(icon)}</div>${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
+        <div class="art">${picHtml(g, 'mpic', `<div class="nocover">${bigMk(icon)}</div>`)}${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
             <h1>${esc(g.title)}</h1>
@@ -3456,25 +3456,62 @@ function area(a) {
         rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
-        links: urlsOf(a.relations || []), rels: a.relations || [],
+        links: urlsOf(a.relations || []), rels: a.relations || [], imgs: [],
+        anthem: relsTo(a, 'work', 'anthem'), instruments: relsTo(a, 'instrument', 'instrument origin'),
+        held: [...relsTo(a, 'series', 'held in'), ...relsTo(a, 'event', 'held in')],
     };
+}
+// the area's relationships of one type to one kind of entity: { kind, id, name, dis, years }
+const relsTo = (a, kind, type) => (a.relations || []).filter(x => x['target-type'] === kind && x.type === type && x[kind])
+    .map(x => ({ kind, id: x[kind].id, name: x[kind].name || x[kind].title, dis: x[kind].disambiguation || '', years: [yearOf(x.begin || ''), yearOf(x.end || '')].filter(Boolean) }));
+// an area's pictures from its Wikidata item: the locator map with the flag on its corner, then the flag,
+// coat of arms, seal and image; kept 30 days (a miss 3), as areas hardly change
+const AREA_PROPS = [['P242', 'Locator map'], ['P41', 'Flag'], ['P94', 'Coat of arms'], ['P158', 'Seal'], ['P18', 'Image']];
+async function areaImages(id, rels) {
+    const c = (() => { try { return GM_getValue('areaImg', null) || {}; } catch (e) { return {}; } })(), e = c[id];
+    if (e && Date.now() - e.t < (e.all.length ? 30 : 3) * 864e5) return e.all;
+    const wd = rels.map(x => x['target-type'] === 'url' && (x.url.resource.match(/wikidata\.org\/wiki\/(Q\d+)/) || [])[1]).find(Boolean);
+    if (!wd) return [];
+    const fp = f => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f.replace(/ /g, '_')) + '?width=500';
+    let failed = false;
+    const got = await Promise.all(AREA_PROPS.map(async ([p, from]) => {
+        try {
+            const r = await gmFetch(`https://www.wikidata.org/w/api.php?action=wbgetclaims&property=${p}&format=json&origin=*&entity=${wd}`);
+            if (!r.ok) { failed = true; return null; }
+            const cl = ((await r.json()).claims || {})[p] || [], v = (cl.find(x => x.rank === 'preferred') || cl.find(x => x.rank !== 'deprecated') || {}).mainsnak;
+            return v && v.datavalue ? { src: fp(v.datavalue.value), from, key: 'wikipedia', url: 'https://www.wikidata.org/wiki/' + wd + '#' + p } : null;
+        } catch (err) { failed = true; LOG.warn('Wikidata ' + p + ' failed: ' + err.message); return null; }
+    }));
+    let all = got.filter(Boolean);
+    const flag = all.find(x => x.from === 'Flag');
+    if (all[0] && all[0].from === 'Locator map' && flag) all[0].badge = flag.src;
+    LOG.debug('Area ' + id + ' (' + wd + '): ' + (all.map(x => x.from).join(', ') || 'no images'));
+    if (all.length || !failed) { c[id] = { all, t: Date.now() }; const ks = Object.keys(c); if (ks.length > 300) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - 300).forEach(k => delete c[k]); try { GM_setValue('areaImg', c); } catch (err) { /* no storage */ } }
+    return all;
 }
 async function loadArea(id, step = () => {}) {
     const one = k => ws(`${k}?area=${id}&limit=100`).then(x => x, () => null);
     const lists = Promise.all([one('artist'), one('label'), one('place')]).then(x => { step('artists, labels, places'); return x; });
     const wiki = wikiOf('area', id);
-    const a = await ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels`);
+    const a = await ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels+work-rels+instrument-rels+series-rels+event-rels`);
     step('area');
-    return { kind: 'area', g: area(a), lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+    const g = area(a);
+    const img = areaImages(id, g.rels).catch(() => []);
+    return { kind: 'area', g, lists, wiki, img, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function areaHero(d) {
     const g = d.g, list = xs => `<span class="arl">${xs.map(areaA).join('')}</span>`;
+    const rl = xs => `<span class="arl">${xs.map(x => `<span>${entA(x.kind, x.id, x.name)}${x.dis ? ` <span class="sub">(${esc(x.dis)})</span>` : ''}${x.years.length ? ` <span class="sub">${esc([...new Set(x.years)].join('–'))}</span>` : ''}</span>`).join('')}</span>`;
+    const cnt = xs => xs.length > 1 ? ` <span class="count">${xs.length}</span>` : '';
     return pgHero(g, 'area', MK_AREA, g.type || 'Area', [
         [g.iso.length > 1 ? 'ISO codes' : 'ISO code', g.iso.length && codes(g.iso)],
         ['Part of', g.partOf.length && list(g.partOf)],
         ['Began', g.begin && fdate(g.begin)],
         ['Ended', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
         [`Part${g.parts.length > 1 ? 's' : ''} <span class="count">${g.parts.length}</span>`, g.parts.length && list(g.parts), 'wide'],
+        [g.anthem.length > 1 ? 'Anthems' : 'Anthem', g.anthem.length && rl(g.anthem), 'wide'],
+        [`Instrument${g.instruments.length > 1 ? 's' : ''}${cnt(g.instruments)}`, g.instruments.length && rl(g.instruments), 'wide'],
+        [`Location for${cnt(g.held)}`, g.held.length && rl(g.held), 'wide'],
         [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
@@ -4220,7 +4257,7 @@ function openCfg() {
     });
 }
 // the open artist's or label's pictures follow a new order: all of them stay cached, the order picks and sorts
-function imgResort() { if (data && data.g && data.g.imgsAll) { data.g.imgs = ARTIMG.sorted(data.g.imgsAll); data.g.imgI = 0; } }
+function imgResort() { if (data && data.kind !== 'area' && data.g && data.g.imgsAll) { data.g.imgs = ARTIMG.sorted(data.g.imgsAll); data.g.imgI = 0; } }
 const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
 function launcher() {
     const st = document.createElement('style'); st.id = 'eh-launch-css';

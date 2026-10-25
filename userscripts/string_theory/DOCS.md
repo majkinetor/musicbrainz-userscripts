@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 14:41 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 14:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -729,7 +729,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ### Features
 
-- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work or area page (a country shows its codes, its parts, and the artists, labels and places in it), and moves between them without reloading.
+- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work or area page (a country shows its codes, its parts, its anthem and instruments, what it was the location for, and the artists, labels and places in it), and moves between them without reloading.
 - **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
@@ -741,6 +741,8 @@ Open a release, release group, artist, label, recording or work on MusicBrainz a
 The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
 
 An artist's picture or a label's logo comes from its Discogs, Wikipedia (its Commons image, Wikidata item or article), Deezer, Spotify, Tidal, Apple Music or SoundCloud link. Click it to see the next one; the badge on its edge opens the page it came from.
+
+An area's cover is its map from Wikidata, with its flag in the corner. Click it for the flag, the coat of arms and any other image its Wikidata item has. An area with no Wikidata images keeps the globe.
 
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 
