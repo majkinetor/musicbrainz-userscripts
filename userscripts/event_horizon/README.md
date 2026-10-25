@@ -1,6 +1,6 @@
 # Event Horizon <img src="icon.svg" align="left" width="48">
 
-MusicBrainz, past the point of no return: release, release group, artist, label, recording and work pages redesigned around what you came for.
+MusicBrainz, past the point of no return: release, release group, artist, label, recording, work and area pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
   - Or via bundle: [String Theory](../string_theory/README.md)
@@ -8,7 +8,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ## Features
 
-- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording or work page, and moves between them without reloading.
+- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work or area page (a country shows its codes, its parts, and the artists, labels and places in it), and moves between them without reloading.
 - **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.

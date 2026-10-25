@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.120000
+// @version      2026.10.27.130000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -12,6 +12,7 @@
 // @match        https://*.musicbrainz.org/label/*
 // @match        https://*.musicbrainz.org/recording/*
 // @match        https://*.musicbrainz.org/work/*
+// @match        https://*.musicbrainz.org/area/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -2109,6 +2110,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-filter{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .fbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}
 #s-ed .fbar{margin:10px 0 14px}
+.arl{display:flex;flex-wrap:wrap;gap:4px 14px}.arl>*{display:inline!important;margin:0!important}
 .fbox{position:relative;display:inline-flex;align-items:center;gap:6px;height:34px;width:300px;max-width:50vw;box-sizing:border-box;padding:0 10px;margin-right:6px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--muted)}
 .fbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 .fbox input{all:unset;flex:1;min-width:0;height:100%;font-size:13px;color:var(--text)}
@@ -3398,6 +3400,58 @@ function recsHtml(d) {
     const more = total > rs.length ? `<div class="folded-note">The first ${rs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/work/${d.g.id}">All on MusicBrainz's page</button></div>` : '';
     return sect('rc', `Recordings <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Title</th><th>Artist</th><th>Length</th><th>ISRC</th><th>First released</th></tr></thead><tbody>${rs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} recording${total === 1 ? '' : 's'}</div>`);
 }
+/* ── area ──────────────────────────────────────── */
+// a country (or any area): its codes, what it's part of and its parts, then the artists, labels and places in it
+const MK_AREA = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3.500 3 14.500 0 18"/><path d="M12 3c-3 3.500-3 14.500 0 18"/>';
+function area(a) {
+    const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {};
+    const ar = (a.relations || []).filter(x => x['target-type'] === 'area' && x.type === 'part of' && x.area);
+    return {
+        id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended,
+        iso: [...(a['iso-3166-1-codes'] || []), ...(a['iso-3166-2-codes'] || []), ...(a['iso-3166-3-codes'] || [])],
+        partOf: ar.filter(x => x.direction === 'backward').map(x => x.area), parts: ar.filter(x => x.direction === 'forward').map(x => x.area),
+        rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        links: urlsOf(a.relations || []), rels: a.relations || [],
+    };
+}
+async function loadArea(id, step = () => {}) {
+    const one = k => ws(`${k}?area=${id}&limit=100`).then(x => x, () => null);
+    const lists = Promise.all([one('artist'), one('label'), one('place')]).then(x => { step('artists, labels, places'); return x; });
+    const wiki = wikiOf('area', id);
+    const a = await ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels`);
+    step('area');
+    return { kind: 'area', g: area(a), lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+}
+function areaHero(d) {
+    const g = d.g, list = xs => `<span class="arl">${xs.map(areaA).join('')}</span>`;
+    return pgHero(g, 'area', MK_AREA, g.type || 'Area', [
+        [g.iso.length > 1 ? 'ISO codes' : 'ISO code', g.iso.length && codes(g.iso)],
+        ['Part of', g.partOf.length && list(g.partOf)],
+        ['Began', g.begin && fdate(g.begin)],
+        ['Ended', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
+        [`Part${g.parts.length > 1 ? 's' : ''} <span class="count">${g.parts.length}</span>`, g.parts.length && list(g.parts), 'wide'],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ]);
+}
+// one table per kind, the first hundred, by name
+function areaList(d, i) {
+    const x = d.listsX && d.listsX[i];
+    const [sid, name, key, page, head, cells] = [
+        ['aa', 'Artists', 'artists', 'artists', ['Name', 'Type', 'Life span'], e => [esc(e.type || ''), [e['life-span'] && e['life-span'].begin, e['life-span'] && e['life-span'].end].some(Boolean) ? `${e['life-span'].begin ? fdate(e['life-span'].begin) : '?'} – ${e['life-span'].end ? fdate(e['life-span'].end) : ''}` : '']],
+        ['al', 'Labels', 'labels', 'labels', ['Name', 'Type', 'Label code'], e => [esc(e.type || ''), e['label-code'] ? 'LC-' + String(e['label-code']).padStart(5, '0') : '']],
+        ['ap', 'Places', 'places', 'places', ['Name', 'Type', 'Address'], e => [esc(e.type || ''), esc(e.address || '')]],
+    ][i];
+    const kind = ['artist', 'label', 'place'][i], xs = x && [...(x[key] || [])].sort((a, b) => (a['sort-name'] || a.name).localeCompare(b['sort-name'] || b.name));
+    if (!xs || !xs.length) return '';
+    const total = x[kind + '-count'] || xs.length;
+    const row = e => `<tr><td>${entA(kind, e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}</td>${cells(e).map((c, j) => `<td${j ? ' class="mono"' : ''}>${c || '—'}</td>`).join('')}</tr>`;
+    const more = total > xs.length ? `<div class="folded-note">The first ${xs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/area/${d.g.id}/${page}">All on MusicBrainz's page</button></div>` : '';
+    return sect(sid, `${name} <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} ${name.toLowerCase()}</div>`);
+}
 /* ── filter bar ──────────────────────────────────── */
 // The discography's and the releases' filter (majkinetor, from a mock): a box for the title and a chip per chosen
 // field, all of them at once. "+ Filter" offers each field's values found in the list, counted among what the
@@ -3512,6 +3566,7 @@ function render(keepPop) {
     const wikipedia = x => w('wp', 'Wikipedia', wikiHtml(x)), discography = x => w('dg', 'Discography', discoHtml(x)), artwork = x => w('art', 'Artwork', artHtml(x));
     const editions = (x, eds, n) => w('ed', x.id ? 'Editions' : 'Releases', edHtml(x, eds, n));
     app.innerHTML = data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
+        : data.kind === 'area' ? areaHero(data) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2)) + annotation(r)
         : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
         : data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
@@ -3590,7 +3645,7 @@ const HM_ME = [
     ['tags', 'Tags', CI_TAG],
     ['', 'Profile', MK_CR],
 ];
-const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'], 'release-group': ['Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK] };
+const HM_KIND = { release: ['Release', '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>'], 'release-group': ['Release group', '<rect x="3" y="7" width="14" height="14" rx="2"/><path d="M7 3h14v14"/>'], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA] };
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -3695,7 +3750,7 @@ function homeHtml() {
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings' };
+const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings', aa: 'Artists', al: 'Labels', ap: 'Places' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -3826,7 +3881,7 @@ function onClick(ev) {
 }
 
 // a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
-const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work)/(' + MBID.source + ')/?$', 'i');
+const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|area)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
     if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
@@ -4122,7 +4177,7 @@ function skeleton() {
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
-const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork };
+const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork, area: loadArea };
 // this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
 let early = null;
 function prefetch(key) {
@@ -4135,7 +4190,7 @@ function prefetch(key) {
 async function show(key) {
     const app = $('#app'), n = ++showing;
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
-    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
+    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
@@ -4157,12 +4212,14 @@ async function show(key) {
         if (d.wiki) wait.add('wp');
         if (d.disc) wait.add('dg');
         if (d.recs) wait.add('rc');
+        if (d.lists) ['aa', 'al', 'ap'].forEach(k => wait.add(k));
         if (kind === 'release') wait.add('art');
-        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); if (kind === 'release') let_('art', d.covers);
+        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); ['aa', 'al', 'ap'].forEach(k => let_(k, d.lists)); if (kind === 'release') let_('art', d.covers);
         if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
         d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } });
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
+        if (d.lists) d.lists.then(x => { if (n === showing && data === d) { d.listsX = x; render(); } });
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
         if (d.img) d.img.then(x => { if (n === showing && data === d && x.length) { d.g.imgs = x; render(); } });

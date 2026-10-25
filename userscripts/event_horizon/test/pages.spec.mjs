@@ -13,6 +13,16 @@ test('a recording page shows its hero, credits and releases', { tag: '@sandbox' 
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-recording.png'), fullPage: true });
 });
 
+test('an area page shows its hero and its artists, labels and places', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/area/02b60d8d-7164-339d-868d-22d147d9f74a');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app .hero h1').count(), n => n === 1) === 1, 'the hero shows');
+  check(/country/i.test(await page.locator('#app .kicker').innerText()), 'the kicker names a country');
+  check(await until(() => page.locator('#s-aa tbody tr').count(), n => n > 0) > 0, 'the artists table fills in');
+  await attachShot(testInfo, page, 'area');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-area.png'), fullPage: true });
+});
+
 test('a work page shows its hero, credits and recordings', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/work/afec4a5d-5ac6-309a-be7c-ee4f919730c3');
   await inject('event_horizon');
