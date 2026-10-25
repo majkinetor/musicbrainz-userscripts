@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.020000
+// @version      2026.10.27.021000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2514,6 +2514,7 @@ const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: '
 let UID = 0;
 const uniq = s => { const u = '-' + (++UID); return s.replace(/id="([^"]+)"/g, 'id="$1' + u + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + u + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + u + '"'); };
 function icon(p, size = 20) {
+    if (p.key === 'review') p = { ...p, key: 'bbc' }; // a BBC Music review shows the BBC's blocks, its tooltip saying review
     if (p.key !== 'globe' && ST_ICONS[p.key]) return uniq(stIcon(p.key, size).replace('<svg', '<svg aria-hidden="true"'));
     if (EXTRA[p.key]) return EXTRA[p.key].replace('<svg', `<svg width="${size}" height="${size}" aria-hidden="true"`);
     if (p.key === 'globe' && ST_ICONS.globe) return stIcon('globe', size).replace('<svg', '<svg aria-hidden="true"');
