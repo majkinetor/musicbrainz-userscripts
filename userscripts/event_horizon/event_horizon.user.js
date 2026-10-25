@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.241000
+// @version      2026.10.27.242000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1908,7 +1908,7 @@ const CSS = `
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
 @media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
-.u-bio{margin-top:8px;overflow-wrap:anywhere}.u-bio p{margin:0}
+.u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
 .u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
@@ -4133,7 +4133,7 @@ function userHtml(d) {
     const rest = u.info.filter(x => x !== bio && x !== langs && x !== loc);
     const facts = rest.length ? `<dl class="u-facts">${rest.map(x => `<dt>${esc(x.l)}</dt><dd>${x.h}</dd>`).join('')}</dl>` : '';
     const hero = `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span></div><h1>${esc(u.name || name)}</h1>${sub ? `<p class="u-sub">${sub}</p>` : ''}
-        ${bio ? `<div class="u-bio">${bio.h}</div>` : ''}${langHtml}${tabs ? `<nav class="u-tabs">${tabs}</nav>` : ''}</div>${facts}</section>`;
+        ${langHtml}${tabs ? `<nav class="u-tabs">${tabs}</nav>` : ''}</div>${facts}${bio ? `<div class="u-bio">${bio.h}</div>` : ''}</section>`;
     const link = (r, inner, cls) => r.href ? `<a class="${cls}" href="${esc(abs(r.href))}">${inner}</a>` : `<span class="${cls}">${inner}</span>`;
     const ids = ['ued', 'uvo', 'uad', 'utg'];
     const secs = u.stats.map((t, i) => {
