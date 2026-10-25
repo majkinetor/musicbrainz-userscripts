@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.242000
+// @version      2026.10.27.244000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2035,6 +2035,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot{cursor:pointer}
 .art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
+.art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
 @media (min-width:701px){.art:has(>.nocover.pg){flex-basis:clamp(150px,13vw,190px)}}
 .art .rnc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.rnc svg{opacity:.55}.rnc small{font-size:13px}
@@ -3541,6 +3542,14 @@ function areaList(d, i) {
     return sect(sid, `${name} <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} ${name.toLowerCase()}</div>`);
 }
 /* ── instrument ──────────────────────────────────── */
+// an instrument's description is HTML: its links and line breaks are kept, everything else as text
+function descHtml(h) {
+    const walk = n => [...n.childNodes].map(c => c.nodeType === 3 ? esc(c.textContent)
+        : c.nodeName === 'BR' ? '<br>'
+        : c.nodeName === 'A' && /^(\/|https?:)/.test(c.getAttribute('href') || '') ? `<a href="${esc(new URL(c.getAttribute('href'), MB).href)}">${walk(c)}</a>`
+        : c.nodeType === 1 ? walk(c) : '').join('');
+    return walk(new DOMParser().parseFromString(h, 'text/html').body);
+}
 // an instrument: its description, picture (its own Commons "image" link), the instruments it's tied to, then who plays it;
 // ws/2 can't list artists, releases or recordings by instrument, so those are read from MusicBrainz's own subpages
 const MK_INS = '<path d="M9 3v7a3 3 0 0 0 6 0V3"/><path d="M12 13v8"/><path d="M5 6l-1.500-1M5 9H3M19 6l1.500-1M19 9h2"/>'; // a tuning fork
@@ -3604,7 +3613,7 @@ function insHero(d) {
     const g = d.g, cm = commonsImg(g.img, 600), src = cm || (/^https?:\/\//.test(g.img) ? g.img : '');
     const pic = src ? `<div class="picw"><img class="cover ipic" src="${esc(src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer" data-insimg><a class="imgsrc" href="${esc(g.img)}" target="_blank" rel="noopener" data-tip="${cm ? 'From Wikimedia Commons' : 'From ' + esc(new URL(g.img).hostname)}">${cm ? stIcon('commons', 18) : mkSvg(MK_INS)}</a></div>` : '';
     return pgHero(g, 'instrument', MK_INS, g.type || 'Instrument', [
-        ['', g.desc && esc(g.desc), 'wide'],
+        ['', g.desc && descHtml(g.desc), 'wide'],
         ...g.groups.map(([l, xs]) => [`${l}${xs.length > 1 ? ` <span class="count">${xs.length}</span>` : ''}`, `<span class="arl">${xs.map(x => entA('instrument', x.id, x.name)).join('')}</span>`, 'wide']),
         [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
