@@ -17,7 +17,13 @@ test('the history page groups a release\'s edits', { tag: '@sandbox' }, async ({
   await page.locator('[data-hgrp="type"]').click();
   check(await until(() => page.locator('.hday').count(), n => n === 0) === 0, 'grouped by type, no day headers');
   check(await page.locator('.hist .hgrp').count() > 0, 'grouped by type, the groups show');
-  await page.locator('[data-hgrp="burst"]').click();
+  await page.locator('[data-hgrp="day"]').click();
+  await page.locator('.hgrp .hgh').first().click();
+  check(await until(() => page.locator('.hgrp.open .hwho').count(), n => n > 0) > 0, 'grouped by day, each edit names its editor');
+  check(await page.locator('.hed .hnc').count() > 0, 'an edit with notes shows their count');
+  const noted = page.locator('.hgrp.open .hed:has(.hnc) > summary:visible').first();
+  if (await noted.count()) { await noted.click(); check(await until(() => page.locator('.hed[open] .hnote').count(), n => n > 0) > 0, 'an opened edit shows its notes'); }
+  check(await page.locator('.hdt span.artwork-image:not(:has(img))').count() === 0, 'every cover in the details has its thumbnail');
   await attachShot(testInfo, page, 'history');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });

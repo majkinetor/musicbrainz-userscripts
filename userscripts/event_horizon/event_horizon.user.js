@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.264000
+// @version      2026.10.27.266000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2098,6 +2098,8 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
 .hrun>summary:hover,.hed>summary:hover{background:var(--line)}.hrun .hed>summary{padding-left:62px}.hty{font-weight:600}.hrun>summary .n{color:var(--muted)}.hed .d,.hed .v{color:var(--muted);font-size:12px}.hed .id{font-size:12px}
 .hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}
+.hwho{font-size:13px;font-weight:600}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
+.hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
 .arthd{margin:0 0 -16px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
@@ -4453,12 +4455,17 @@ function histParse(html) {
     const edits = [...doc.querySelectorAll('.edit-list')].map(el => {
         const h = el.querySelector('.edit-header'), a = h.querySelector('h2 a'), c = h.className.split(/\s+/);
         const ed = h.querySelector('.subheader a[href*="/user/"]'), det = el.querySelector('.edit-details');
-        if (det) det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
+        if (det) {
+            // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
+            det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
+            det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
+        }
+        const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const o = n.querySelector('.owner a[href*="/user/"]'), dt = n.querySelector('.owner .date'), tx = n.querySelector('.edit-note-text'); return { by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
         const vc = h.querySelector('.vote-count');
         return {
             id: +(a.getAttribute('href').match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
             st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el),
-            votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
+            notes, votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
         };
     });
     const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
@@ -4499,11 +4506,12 @@ async function histLoad(n) {
     d.busy = false; if (n === showing && data === d) render();
 }
 const histHue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
-const histTm = t => t ? new Date(t).toISOString().slice(11, 16) : '';
+// a time, with its date where no day header above gives it
+const histTm = t => !t ? '' : (data && data.grp !== 'burst' && data.grp !== 'day' ? new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ' ' : '') + new Date(t).toISOString().slice(11, 16);
 const histDay = t => t ? new Date(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'Unknown date';
 const histPills = es => Object.keys(H_ST).map(k => { const c = es.filter(e => e.st === k).length; return c ? `<span class="hst ${k}">${c > 1 || es.length > 1 ? c + ' ' : ''}${H_ST[k]}</span>` : ''; }).join('');
 function histEdit(e) {
-    return `<details class="hed"><summary><span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a><span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}</summary><div class="hdt">${e.det}</div></details>`;
+    return `<details class="hed"><summary><span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${e.notes.length ? `<span class="hnc" data-tip="${e.notes.length} edit note${e.notes.length > 1 ? 's' : ''}">💬 ${e.notes.length}</span><span class="hnp">${esc(e.notes[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${e.notes.map(n => `<div class="hnote${n.bot ? ' bot' : ''}"><div class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''} <span>${esc(n.date)}</span></div><div class="hnt">${n.html}</div></div>`).join('')}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
