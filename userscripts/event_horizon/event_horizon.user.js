@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.263200
+// @version      2026.10.27.263300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4396,15 +4396,18 @@ const PAGE_ID = keyOf(location.href);
 
 // the release's title and artist, then Art Station's gallery: it mounts in the slot, or moves there from
 // MusicBrainz's page when it came first. The slot is drawn once: a redraw would drop the gallery
+// a release subpage's header: the release page's kicker, the open tab `tab` lit, and its title and credits without the facts
+function subHead(r, id, tab, name, none) {
+    const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
+    const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+    const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
+    return `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none);
+}
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    // the release page's kicker, Art the tab that's open, and its title and credits without the facts
-    const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === 'cover-art' ? ' on' : ''}" href="${MB}/release/${d.id}/${p}"${p === 'cover-art' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
-    const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : '<span>Cover art</span>';
-    app.querySelector('.arthd').innerHTML = `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`);
+    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`);
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
     if (as) slot.append(as);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none">Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
@@ -4423,7 +4426,7 @@ async function artLoad(n, id) {
 // Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
 :root[data-eh-rel] body{background:var(--bg)!important;color:var(--text);font-family:Manrope,system-ui,sans-serif}
-:root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader,:root[data-eh-rel] #content>.tabs{display:none!important}
+:root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:is(h1,.subheader,.tagger-icon,p),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
 :root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}
@@ -4438,24 +4441,35 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text)}
-#eh-relhd .kicker{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-#eh-relhd .acts{margin-left:auto;display:flex;gap:4px}
-#eh-relhd .ab{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px;border-radius:9px;color:var(--soft)!important;text-decoration:none!important;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600}
-#eh-relhd .ab:hover{background:var(--hover);color:var(--text)!important}
-#eh-relhd .ab.on{background:var(--accent);color:#fff!important}
-#eh-relhd h1{margin:14px 0 6px;font:800 34px/1.15 Manrope,system-ui,sans-serif;color:var(--text);text-wrap:balance}
-#eh-relhd h1 a{color:inherit!important;text-decoration:none}#eh-relhd h1 a:hover{text-decoration:underline}
-#eh-relhd .by{font-size:15px;color:var(--soft)}`;
-// the header: Relate the tab that's open, then the release's title and artist, read off MusicBrainz's own header (no request)
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px}
+:root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
+:root[data-eh-rel] #relationship-editor-form{padding:4px 20px 20px}
+:root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
+:root[data-eh-rel] #relationship-editor-form h2{margin-top:16px}
+:root[data-eh-rel] #relationship-editor-form p{margin:0 0 10px;color:var(--soft)}
+:root[data-eh-rel] #relationship-editor-form .row label:empty{display:none}
+:root[data-eh-rel] #relationship-editor-form textarea{width:100%!important;box-sizing:border-box;margin:6px 0 0!important}
+:root[data-eh-rel] #relationship-editor-form :is(.row,.no-label){display:block}
+:root[data-eh-rel] #page .rel-add{background:color-mix(in srgb,#2e9e5b 22%,transparent)!important;border-radius:4px}
+:root[data-eh-rel] #page .rel-edit{background:color-mix(in srgb,#d9a400 22%,transparent)!important;border-radius:4px}
+:root[data-eh-rel] #page .rel-remove{background:color-mix(in srgb,#d64545 22%,transparent)!important;border-radius:4px}
+:root[data-eh-rel] #page :is(.rel-add,.rel-edit,.rel-remove) :is(span,bdi,.comment){color:inherit!important}
+:root[data-eh-rel] #page input[type=checkbox]{accent-color:var(--accent)}` + relHdCss();
+// EH's own header rules, scoped to the header, so it is the same as on the other pages
+const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd)/.test(l)).join('\n')
+    .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => '#eh-relhd ' + x.trim()).join(',') + '{');
+// the header: the same as the cover-art page's; title and artist read off MusicBrainz's own header at once, then the full kicker from the release
 function relHeader(id) {
     const rh = document.querySelector('#content > .releaseheader'), t = rh && rh.querySelector('h1 a'), sub = rh && rh.querySelector('.subheader');
     const by = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')].map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ') : '';
-    const acts = ACTS.map(([p, n, tp, ic]) => `<a class="ab${p === 'edit-relationships' ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === 'edit-relationships' ? ' aria-current="page"' : ''} data-tip="${tp}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('');
-    const hd = document.createElement('section'); hd.id = 'eh-relhd';
-    hd.innerHTML = `<div class="kicker"><a class="ab" href="${MB}/release/${id}" data-tip="Back to the release">${LOGO}</a><span>Relationships</span><span class="acts">${acts}</span></div>`
-        + `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`;
-    hd.querySelector('.kicker svg').setAttribute('width', 22); hd.querySelector('.kicker svg').setAttribute('height', 22);
+    const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
+    const draw = r => { hd.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); };
+    draw(null);
+    Promise.resolve().then(() => ws('release/' + id + '?inc=artist-credits+media+release-groups')).then(r => r && r.id && draw(r)).catch(e => LOG.warn('Relate header: ' + e));
+    hd.addEventListener('click', e => {
+        const b = e.target.closest('[data-srch]'); if (!b) return;
+        e.preventDefault(); const s = b.closest('.srch'); s.classList.toggle('open'); const q = s.querySelector('input'); if (q && s.classList.contains('open')) q.focus();
+    });
     return hd;
 }
 function relSet(on) {
