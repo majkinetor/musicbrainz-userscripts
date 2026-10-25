@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.221000
+// @version      2026.10.27.223000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3067,9 +3067,8 @@ async function loadRg(id, step = () => {}) {
     // the releases and the Wikipedia extract don't need the group: asked for at once
     const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
     const wiki = wikiOf('release-group', id);
-    const g = await ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`);
-    step('group');
-    return { kind: 'rg', g: group(g), editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
+    const gP = ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`).then(g => { step('group'); return group(g); });
+    return { kind: 'rg', g: null, gP, editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
 }
 // the folksonomy tags (not the genres) sit behind a chip that opens them
 let tagsOpen = false;
@@ -3265,11 +3264,9 @@ function artist(a) {
 async function loadArtist(id, step = () => {}) {
     const disc = ws(`release-group?artist=${id}&inc=artist-credits&limit=100`).then(x => { step('discography'); return x; }, () => null);
     const wiki = wikiOf('artist', id);
-    const a = await ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
-    step('artist');
-    const g = artist(a);
-    const img = artistImage(id, g.rels).then(x => { step('image'); return x; });
-    return { kind: 'artist', g, disc, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+    const gP = ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
+    const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
+    return { kind: 'artist', g: null, gP, disc, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function label(l) {
     const genres = (l.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = l['life-span'] || {};
@@ -3284,11 +3281,9 @@ function label(l) {
 async function loadLabel(id, step = () => {}) {
     const eds = ws(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
     const wiki = wikiOf('label', id);
-    const l = await ws(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`);
-    step('label');
-    const g = label(l);
-    const img = artistImage(id, g.rels).then(x => { step('logo'); return x; });
-    return { kind: 'label', g, img, wiki, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
+    const gP = ws(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); return label(l); });
+    const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('logo'); return x; });
+    return { kind: 'label', g: null, gP, img, wiki, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
 const LB_ACTS = AR_ACTS.map(([p, n, t, ic]) => [p, n, t.replace('artist', 'label'), ic]);
 function lbHero(d) {
@@ -3362,12 +3357,10 @@ function recording(x) {
 }
 async function loadRecording(id, step = () => {}) {
     const eds = ws(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
-    const x = await ws(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`);
-    step('recording');
-    const g = recording(x);
+    const gP = ws(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(x => { step('recording'); return recording(x); });
     // the works' own writers: one request per work, the first five
-    const wk = Promise.all(g.works.slice(0, 5).map(w => ws(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {}))).then(() => { step('works'); return true; });
-    return { kind: 'recording', g, wk, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
+    const wk = gP.then(g => Promise.all(g.works.slice(0, 5).map(w => ws(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {})))).then(() => { step('works'); return true; });
+    return { kind: 'recording', g: null, gP, wk, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
 function work(w) {
     const genres = genresOf(w), gn = new Set(genres.map(g => g.name)), rels = w.relations || [];
@@ -3380,9 +3373,8 @@ function work(w) {
 async function loadWork(id, step = () => {}) {
     const recs = ws(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`).then(x => { step('recordings'); return x; }, () => null);
     const wiki = wikiOf('work', id);
-    const w = await ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`);
-    step('work');
-    return { kind: 'work', g: work(w), recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+    const gP = ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
+    return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 const pgActs = (type, id) => AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
@@ -3444,7 +3436,7 @@ function recsHtml(d) {
     if (!rs.length) return '';
     const total = x['recording-count'] || rs.length;
     const row = r => `<tr><td><a href="${MB}/recording/${r.id}">${esc(r.title)}</a>${r.disambiguation ? ` <span class="sub">(${esc(r.disambiguation)})</span>` : ''}${r.video ? ' <span class="sub">· video</span>' : ''}</td><td>${acHtml(r['artist-credit'] || [])}</td><td class="mono">${esc(ms(r.length))}</td><td class="mono">${(r.isrcs || []).map(esc).join(' ')}</td><td class="mono">${r['first-release-date'] ? fdate(r['first-release-date']) : '—'}</td></tr>`;
-    const more = total > rs.length ? `<div class="folded-note">The first ${rs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/work/${d.g.id}">All on MusicBrainz's page</button></div>` : '';
+    const more = total > rs.length ? `<div class="folded-note">The first ${rs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/work/${d.id}">All on MusicBrainz's page</button></div>` : '';
     return sect('rc', `Recordings <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Title</th><th>Artist</th><th>Length</th><th>ISRC</th><th>First released</th></tr></thead><tbody>${rs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} recording${total === 1 ? '' : 's'}</div>`);
 }
 /* ── area ──────────────────────────────────────── */
@@ -3497,11 +3489,9 @@ async function loadArea(id, step = () => {}) {
     const one = k => ws(`${k}?area=${id}&limit=100`).then(x => x, () => null);
     const lists = Promise.all([one('artist'), one('label'), one('place')]).then(x => { step('artists, labels, places'); return x; });
     const wiki = wikiOf('area', id);
-    const a = await ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels+work-rels+instrument-rels+series-rels+event-rels`);
-    step('area');
-    const g = area(a);
-    const img = areaImages(id, g.rels).catch(() => []);
-    return { kind: 'area', g, lists, wiki, img, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+    const gP = ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels+work-rels+instrument-rels+series-rels+event-rels`).then(a => { step('area'); return area(a); });
+    const img = gP.then(g => areaImages(id, g.rels)).catch(() => []);
+    return { kind: 'area', g: null, gP, lists, wiki, img, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function areaHero(d) {
     const g = d.g, list = xs => `<span class="arl">${xs.map(areaA).join('')}</span>`;
@@ -3533,7 +3523,7 @@ function areaList(d, i) {
     if (!xs || !xs.length) return '';
     const total = x[kind + '-count'] || xs.length;
     const row = e => `<tr><td>${entA(kind, e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}</td>${cells(e).map((c, j) => `<td${j ? ' class="mono"' : ''}>${c || '—'}</td>`).join('')}</tr>`;
-    const more = total > xs.length ? `<div class="folded-note">The first ${xs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/area/${d.g.id}/${page}">All on MusicBrainz's page</button></div>` : '';
+    const more = total > xs.length ? `<div class="folded-note">The first ${xs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/area/${d.id}/${page}">All on MusicBrainz's page</button></div>` : '';
     return sect(sid, `${name} <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} ${name.toLowerCase()}</div>`);
 }
 /* ── instrument ──────────────────────────────────── */
@@ -3610,7 +3600,7 @@ function insList(d, i) {
     const x = d.listsX && d.listsX[i], [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
     if (!x || !x.rows.length) return '';
     const n = x.rows.length, cnt = x.more ? `${n}+` : n;
-    const more = x.more ? `<div class="folded-note">The first ${n}. <button class="lnk" type="button" data-mbgo="${MB}/instrument/${d.g.id}/${sub}">All on MusicBrainz's page</button></div>` : '';
+    const more = x.more ? `<div class="folded-note">The first ${n}. <button class="lnk" type="button" data-mbgo="${MB}/instrument/${d.id}/${sub}">All on MusicBrainz's page</button></div>` : '';
     return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${x.head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${x.rows.map(r => `<tr>${r.map(c => `<td>${c || '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
 }
 /* ── filter bar ──────────────────────────────────── */
@@ -3717,7 +3707,7 @@ function render(keepPop) {
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
-    const r = data.rel || data.g;
+    const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
     if (FLT.of !== r.id) { FLT.of = r.id; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
     // the menu is drawn anew: it keeps where it was scrolled to
@@ -3729,7 +3719,15 @@ function render(keepPop) {
     const editions = (x, eds, n) => w('ed', x.id ? 'Editions' : 'Releases', edHtml(x, eds, n));
     // keyed by the markup an image was drawn from: a fallback that changed its src since still matches
     const oldImgs = new Map([...app.querySelectorAll('img')].filter(i => i.complete && i.naturalWidth).map(i => [imgKey.get(i) || i.outerHTML, i]));
-    app.innerHTML = data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
+    const KN = { rg: 'group', recording: 'recording', work: 'work', area: 'area', label: 'label', artist: 'artist', instrument: 'instrument' };
+    app.innerHTML = !data.g && !data.rel ? heroSk(KN[data.kind] || data.kind, data.gErr) + (data.kind === 'recording' ? editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount)
+        : data.kind === 'instrument' ? wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2))
+        : data.kind === 'area' ? wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
+        : data.kind === 'work' ? wikipedia(data.wikiX) + w('rc', 'Recordings', recsHtml(data))
+        : data.kind === 'label' ? wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount)
+        : data.kind === 'artist' ? wikipedia(data.wikiX) + discography(data)
+        : wikipedia(data.wikiX) + editions({ id: null, rgId: r.id }, data.editions, data.edCount))
+        : data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
         : data.kind === 'instrument' ? insHero(data) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2)) + annotation(r)
         : data.kind === 'area' ? areaHero(data) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2)) + annotation(r)
         : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
@@ -4104,7 +4102,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind !== 'home' ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
@@ -4410,6 +4408,12 @@ function start() {
 }
 let showing = 0;
 // the page's shape while it loads, so nothing jumps when the data lands
+// the skeleton's hero alone, for a page whose sections came before its entity
+function heroSk(kind, err) {
+    const h = skeleton(), a = h.indexOf('<div class="hero">'), b = h.indexOf('<div class="sk-sec">');
+    const st = err ? `<div class="sk-st err"><span>${esc(err)}</span></div>` : `<div class="sk-st" role="status"><span class="sk-dot"></span><span><b>${kind}</b></span></div>`;
+    return '<div class="sk-page" aria-busy="true">' + h.slice(a, b).replace(/<div class="sk-st"[\s\S]*?<\/span><\/div>/, st) + '</div>';
+}
 function skeleton() {
     const sk = (cls, st = '') => `<span class="sk ${cls}"${st ? ` style="${st}"` : ''}></span>`;
     const fact = `<div class="sk-f">${sk('l')}${sk('v')}</div>`;
@@ -4450,6 +4454,13 @@ async function show(key) {
     early = null;
     if (pre) { pre.done.forEach(step); pre.on = step; }
     const d = await (pre ? pre.p : LOADERS[kind](id, step));
+        d.id = id;
+        if (!d.g && !d.rel && d.gP) {
+            const any = [d.eds, d.wiki, d.disc, d.recs, d.lists].filter(Boolean).map(p => p.then(x => x && (!Array.isArray(x) || x.some(Boolean)) ? x : Promise.reject()));
+            const first = await Promise.race([d.gP.then(g => ({ g })), Promise.any(any).then(() => ({}), () => d.gP.then(g => ({ g })))]);
+            if (first.g) d.g = first.g;
+            else LOG.debug(kind + ' ' + id + ': a section came first, shown before the ' + kind);
+        }
         const wait = d.wait = new Set(['ed']), let_ = (k, p) => p && p.then(() => {}, () => {}).then(() => { wait.delete(k); if (n === showing && data === d) render(); });
         if (d.wiki) wait.add('wp');
         if (d.disc) wait.add('dg');
@@ -4462,7 +4473,7 @@ async function show(key) {
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
         if (d.lists) d.lists.then(x => { if (n === showing && data === d) { d.listsX = x; render(); } });
-        if (d.gP) d.gP.then(g => { if (n === showing && data === d) { d.g = g; render(); visited(key, d); } }, e => LOG.err('Loading ' + id + ' failed: ' + e.message));
+        if (d.gP) d.gP.then(g => { if (n === showing && data === d && d.g !== g) { d.g = g; render(); visited(key, d); } }, e => { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing && data === d) { d.gErr = e.message; render(); } });
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
         if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
