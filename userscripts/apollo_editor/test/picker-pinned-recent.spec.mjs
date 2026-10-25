@@ -1,9 +1,9 @@
 // The artist picker's pinned and recent artists (majkinetor): an emptied field shows one Recent header,
 // collapsed until clicked, holding the pinned artists first and then the recent ones; a row's pin
-// toggle pins or unpins it without picking it or closing the list.
+// toggle pins or unpins it without picking it or closing the list; picking one doesn't reopen it.
 //
 // The lists are seeded into GM storage; nothing is searched or submitted.
-import { test, check, until } from '../../../dev/test/harness.mjs';
+import { test, check, until, frames } from '../../../dev/test/harness.mjs';
 import { openApollo, apolloGm } from './ap.mjs';
 
 const bach = { gid: '24f1766e-9635-4d58-a4d4-9413f9f98a4c', name: 'Johann Sebastian Bach', comment: 'German Baroque period composer & musician', typeName: 'Person' };
@@ -53,5 +53,13 @@ test('an emptied artist field shows one collapsed Recent, pinned artists first',
 
   await page.keyboard.type('moz');
   check(await until(async () => { const r = await read(); return r && JSON.stringify(r.secs) === JSON.stringify(['Recent 1']); }), 'typing filters Recent');
+
+  // a recent artist is stored lean, so a pick loads it first and then refocuses the field: the list stays shut
+  await page.locator('.tc-acpop .tc-acrow[data-i="0"]').dispatchEvent('mousedown');
+  const picked = page.locator('.tc-medsec .tc-search input.nm').first();
+  check(await until(() => picked.inputValue(), v => v === mozart.name), 'picking a recent artist sets it');
+  await frames(page, 3);
+  check(await picked.evaluate(el => el === document.activeElement), 'the field keeps the focus');
+  check((await read()) === null, `the picker doesn't reopen after the pick (${JSON.stringify(await read())})`);
   check(submitted.length === 0, 'nothing submitted');
 });

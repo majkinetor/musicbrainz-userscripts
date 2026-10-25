@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.111000
+// @version      2026.10.26.112000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7586,9 +7586,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
 
   const blankSlot = entry => ({ creditedAs: '', joinPhrase: '', status: 'none', entity: null, gid: null, name: '', candidates: [], committed: false, _entry: entry });
-  function focusSlotInput(entry, idx) {
-    if (entry.release) { const ins = document.querySelectorAll('#information .tc-ri-art .tc-search input.nm'); if (ins[idx]) ins[idx].focus(); return; }   // #652
-    const row = rowEl(entry.mi, entry.ti); if (row) { const ins = row.querySelectorAll('.tc-search input.nm'); if (ins[idx]) ins[idx].focus(); } }
+  // quiet: refocus after a pick — the field gets focus back for the keyboard, without reopening the picker
+  function focusSlotInput(entry, idx, quiet) {
+    const focus = el => { if (!el) return; el._quietFocus = !!quiet; el.focus(); delete el._quietFocus; };
+    if (entry.release) { focus(document.querySelectorAll('#information .tc-ri-art .tc-search input.nm')[idx]); return; }   // #652
+    const row = rowEl(entry.mi, entry.ti); if (row) focus(row.querySelectorAll('.tc-search input.nm')[idx]); }
   /* ── "all matching tracks" propagation (mirrors MB's native changeMatchingTrackArtists) ──
      The match key is the WHOLE artist-credit string — each slot's as-credited text (its
      credited-as, or the artist name when there's no override) + its join phrase, in order.
@@ -7934,7 +7936,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // a pinned or recent artist is stored lean: fetch the full one first (a track credit needs its id)
     const choose = c => {
       if (c.id) { close(); pickArtist(slot, c); return; }
-      fetchEntity(c.gid).then(ent => { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); if (ent && ent.id) { pickArtist(slot, ent); focusSlotInput(entry, i); } else Log.cat('Artist').warn('picker: could not load', c.gid); });
+      fetchEntity(c.gid).then(ent => { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); if (ent && ent.id) { pickArtist(slot, ent); focusSlotInput(entry, i, true); } else Log.cat('Artist').warn('picker: could not load', c.gid); });
     };
     // the pinned and recent artists matching what's typed show at once, the search's results follow
     const searching = () => {
@@ -7989,9 +7991,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const runSearch = q => { curQuery = q; curLimit = 8; const my = ++seq; searching(); searchArtist(q).then(res => { if (my === seq && document.activeElement === inp) showResults(res, q); }); };
     // paste an MBID or a MusicBrainz /artist/<mbid> URL → resolve it straight to that artist. Gate on the
     // field value (not focus): a commit-rerender can steal focus before the fetch returns.
-    const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); pickArtist(slot, ent); focusSlotInput(entry, i); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };   // refocus the (re-rendered) field so keyboard nav keeps working after a paste
+    const resolveByGid = async gid => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">Resolving…</div>`; position(); const ent = await fetchEntity(gid); if (mbidFrom(inp.value) !== gid) return; if (ent && ent.id) { const entry = slot._entry, i = entry.slots.indexOf(slot); close(); pickArtist(slot, ent); focusSlotInput(entry, i, true); } else { pop.innerHTML = `<div class="tc-acrow none">MBID not found</div>`; } };   // refocus the (re-rendered) field so keyboard nav keeps working after a paste
     inp.onfocus = () => {
       slot._editing = true;   // #580: this slot is the user's now — auto-match leaves it alone until they leave it
+      if (inp._quietFocus) return;   // refocused after a pick: no picker
       if (slot.committed && slot.candidates && slot.candidates.length) { curQuery = inp.value.trim() || slot.creditedAs || slot.name; curLimit = 8; showResults(slot.candidates, curQuery); return; }
       const q = inp.value.trim() || (slot.creditedAs || '').trim(); if (q) runSearch(q); else if (picksAny('artist')) { curQuery = ''; draw([]); } else close();   // empty → the pinned and recent artists, or no dropdown
     };
@@ -8013,7 +8016,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (e.key === 'Escape') { e.preventDefault(); close(); inp.focus(); }   // close the popup but keep the field focused, so the next ↓ navigates rows
       else if (e.key === 'ArrowDown') { if (browsing()) { hi = Math.min(list.length - 1, hi + 1); hiliteRow(); e.preventDefault(); } else { close(); if (focusSameField(inp, 1)) e.preventDefault(); } }
       else if (e.key === 'ArrowUp') { if (browsing()) { hi = Math.max(0, hi - 1); hiliteRow(); e.preventDefault(); } else { close(); if (focusSameField(inp, -1)) e.preventDefault(); } }
-      else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) { const entry = slot._entry, i = entry.slots.indexOf(slot); choose(c); focusSlotInput(entry, i); } }   // keep focus on the field after picking (so ↓ moves on)
+      else if (e.key === 'Enter') { e.preventDefault(); const c = list[hi >= 0 ? hi : 0]; if (c) { const entry = slot._entry, i = entry.slots.indexOf(slot); choose(c); focusSlotInput(entry, i, true); } }   // keep focus on the field after picking (so ↓ moves on)
     };
     inp.onblur = () => { slot._editing = false; setTimeout(close, 160); };   // keep whatever the user typed (no reset); #580 hands the slot back to auto-match
   }
