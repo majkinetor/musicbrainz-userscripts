@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.280000
+// @version      2026.10.27.290000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2102,7 +2102,8 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hrun>summary:hover,.hed>summary:hover{background:var(--line)}.hrun .hed>summary{padding-left:62px}.hty{font-weight:600}.hrun>summary .n{color:var(--muted)}.hed .d,.hed .v{color:var(--muted);font-size:12px}.hed .id{font-size:12px}
 .hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}.hdt .diff-only-a,.hdt .diff-only-b{display:inline-block;padding:0 4px;border-radius:3px}.hdt .diff-only-a{margin-right:6px}
 .hwho{font-size:13px;font-weight:600}.hico{display:inline-grid;place-items:center;align-self:center;flex:none}.hico svg{width:17px;height:17px}.hgh .t .hico{vertical-align:-3px;margin-right:6px}.hico.add{color:#2e8b57}.hico.edit{color:#3b7dd8}.hico.rem{color:#c0392b}.hico.oth{color:#8a6bb8}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
-.hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
+.hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}
+.hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
 .arthd{margin:0 0 -16px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
@@ -4621,14 +4622,23 @@ const histDay = t => t ? new Date(t).toLocaleDateString(undefined, { weekday: 's
 const histPills = es => Object.keys(H_ST).map(k => { const c = es.filter(e => e.st === k).length; return c ? `<span class="hst ${k}">${c > 1 || es.length > 1 ? c + ' ' : ''}${H_ST[k]}</span>` : ''; }).join('');
 // a note's header says how its writer voted (MusicBrainz's class on it); the edit's own editor is marked as such
 const H_VT = { yes: 'voted Yes', no: 'voted No', abstain: 'abstained', approve: 'approved' };
-function histEdit(e) {
-    return `<details class="hed"><summary>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${e.notes.length ? `<span class="hnc" data-tip="${e.notes.length} edit note${e.notes.length > 1 ? 's' : ''}">💬 ${e.notes.length}</span><span class="hnp">${esc(e.notes[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${e.notes.map(n => `<div class="hnote${n.bot ? ' bot' : ''}"><div class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''}${n.own ? ' <span class="hvt own">editor</span>' : n.vote ? ` <span class="hvt ${n.vote}">${H_VT[n.vote]}</span>` : ''} <span>${esc(n.date)}</span></div><div class="hnt">${n.html}</div></div>`).join('')}</div></details>`;
+const histNote = n => `<div class="hnote${n.bot ? ' bot' : ''}"><div class="hnh">${n.by ? `<a href="${MB}/user/${encodeURIComponent(n.by)}">${esc(n.by)}</a>` : ''}${n.own ? ' <span class="hvt own">editor</span>' : n.vote ? ` <span class="hvt ${n.vote}">${H_VT[n.vote]}</span>` : ''} <span>${esc(n.date)}</span></div><div class="hnt">${n.html}</div></div>`;
+// the note a burst's editor left on every one of several edits, shown once on their parent instead of on each
+const hnKey = n => (n.by || '') + '\n' + n.text;
+const histShared = es => { if (es.length < 2) return null; const n = es[0].notes.find(n => n.own); return n && es.every(e => e.notes.some(m => hnKey(m) === hnKey(n))) ? n : null; };
+function histEdit(e, sh) {
+    const ns = sh ? e.notes.filter(n => hnKey(n) !== sh) : e.notes;
+    return `<details class="hed"><summary>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${ns.map(histNote).join('')}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
-    const runs = [];
+    const runs = [], g = histShared(es), gk = g && hnKey(g);
     for (const e of es) { const r = runs[runs.length - 1]; if (r && r[0].tk === e.tk) r.push(e); else runs.push([e]); }
-    return runs.map(r => r.length === 1 ? histEdit(r[0]) : `<details class="hrun"><summary>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histPills(r)}</summary>${r.map(histEdit).join('')}</details>`).join('');
+    return (g ? `<div class="hshr">${histNote(g)}</div>` : '') + runs.map(r => {
+        if (r.length === 1) return histEdit(r[0], gk);
+        const s = !g && histShared(r), k = gk || (s && hnKey(s));
+        return `<details class="hrun"><summary>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histPills(r)}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
+    }).join('');
 }
 function histGroup(key, title, es, av, nm) {
     const d = data, ents = {}; es.forEach(e => { const k = histEnt(e.tk); ents[k] = (ents[k] || 0) + 1; });
