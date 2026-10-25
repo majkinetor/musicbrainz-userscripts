@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.238000
+// @version      2026.10.27.239000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15,6 +15,7 @@
 // @match        https://*.musicbrainz.org/area/*
 // @match        https://*.musicbrainz.org/instrument/*
 // @match        https://*.musicbrainz.org/place/*
+// @match        https://*.musicbrainz.org/user/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -1904,6 +1905,18 @@ const CSS = `
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
 .hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
+.u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
+@media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}
+.u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
+.u-bio{margin-top:8px;overflow-wrap:anywhere}.u-bio p{margin:0}
+.u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
+.u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
+.u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
+.u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
+.u-ratio{height:10px;border-radius:5px;background:#c4466a;overflow:hidden}.u-ratio i{display:block;height:100%;background:#3f8f7a}.u-rnote{margin:6px 0 12px;color:var(--muted);font-size:12px}
+.u-bars .u-bar{display:grid;grid-template-columns:130px 1fr 64px;gap:8px;align-items:center;font-size:13px;padding:3px 0;color:var(--text)!important;text-decoration:none!important}.u-bar i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-bar em{font-style:normal;text-align:right;color:var(--muted)}a.u-bar:hover span{color:var(--accent)}
+.u-votes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.u-vcol{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px}.u-vcol h3{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.u-vr{display:grid;grid-template-columns:70px 1fr 90px;gap:8px;align-items:center;font-size:13px;padding:3px 0}.u-vr i{height:8px;border-radius:4px;background:var(--chip)}.u-vr b{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.u-vr em{font-style:normal;text-align:right}.u-vr small{color:var(--muted);margin-left:6px}.u-vt{margin-top:6px;font-size:12px;color:var(--muted)}
 .hm-sec{display:block;color:var(--muted);margin-top:8px}
 .hm-me{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .hm-chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -3783,6 +3796,7 @@ function render(keepPop) {
     const app = $('#app');
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
+    if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
@@ -4065,10 +4079,88 @@ function homeHtml() {
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
     return hero + me + nrel + rec + news + nev;
 }
+/* ── editor profile ────────────────────────────────── */
+// An editor's /user page, read off MusicBrainz's own markup (no API has it): this tab's page as loaded, another editor's fetched.
+// The labels are translated, so tables are told apart by shape: the votes table has two numbers a row, the added entities sit third.
+function userParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
+    const num = t => +String(t).split('(')[0].replace(/[^\d]/g, '') || 0, pct = t => +((String(t).match(/\((\d+)%\)/) || [])[1] || 0);
+    const at = (n, sel) => { const a = n && n.querySelector(sel); return a ? a.getAttribute('href') : ''; };
+    const h1 = d.querySelector('#content h1') || d.querySelector('h1');
+    const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? img.getAttribute('src') || '' : '';
+    const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
+    const info = [...d.querySelectorAll('table.profileinfo tr')].map(r => ({ l: tx(r.querySelector('th')).replace(/:$/, ''), h: (r.querySelector('td') || {}).innerHTML || '', t: tx(r.querySelector('td')),
+        bio: r.classList.contains('biography'), langs: !!r.querySelector('ul.inline'), loc: !!r.querySelector('a[href^="/area/"]') }));
+    const stats = [...d.querySelectorAll('table.statistics')].map((t, i) => {
+        const rows = [...t.querySelectorAll('tbody tr')], two = rows.some(r => r.querySelectorAll('td').length > 1);
+        // the votes' heading carries a "(view)" link: the section's "all" takes it
+        const th = t.querySelector('thead th'), a = th && th.querySelector('a');
+        return { i, title: th ? tx(th).replace(a ? tx(a) : '', '').replace(/\s*\(\s*\)$/, '') : '', two, href: at(t.querySelector('thead'), 'a[href]'),
+            cols: two ? [...t.querySelectorAll('thead tr:nth-child(2) th')].slice(1).map(tx) : [],
+            rows: rows.map(r => { const tds = [...r.querySelectorAll('td')]; return { l: tx(r.querySelector('th')), cls: r.className, href: at(r, 'td a[href]'), v: tds.map(td => num(tx(td))), p: tds.map(td => pct(tx(td))) }; }) };
+    });
+    const mail = (info.map(x => x.t).join(' ').match(/[^\s@()]+@[^\s@()]+\.[a-z]{2,}/i) || [''])[0].toLowerCase();
+    return { name: h1 ? tx(h1) : '', av: av.replace(/^\/\//, 'https://').replace(/([?&]s=)\d+/, '$1192'), tabs, info, stats, mail };
+}
+async function userLoad(n, key) {
+    const d = data;
+    try {
+        let html;
+        if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(`${MB}/user/${key.slice(5)}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const u = userParse(html);
+        if (!u.info.length && !u.stats.length) throw new Error('No profile on this page');
+        // your own: the Gravatar email set on the home page's avatar wins, as there
+        let gh = ''; if (u.name === ME) { try { gh = GM_getValue('gravatar', ''); } catch (e) {} }
+        if (!gh && u.mail) gh = await sha256(u.mail);
+        u.gh = gh; delete u.mail;
+        if (n === showing && data === d) { d.u = u; render(); }
+    } catch (e) {
+        LOG.err('Loading editor ' + d.name + ' failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+function userHtml(d) {
+    const name = d.name, u = d.u, abs = h => h.startsWith('/') ? MB + h : h;
+    const avImg = u && (u.av || (u.gh && `https://gravatar.com/avatar/${u.gh}?s=192&d=404`));
+    const avatar = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${avImg ? `<img src="${esc(avImg)}" alt="" width="96" height="96" onerror="this.remove()">` : ''}</span>`;
+    if (!u) return `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span></div><h1>${esc(name)}</h1><p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p></div></section>`;
+    const bio = u.info.find(x => x.bio), langs = u.info.find(x => x.langs), loc = u.info.find(x => x.loc);
+    const since = (u.info.map(x => x.t.match(/^(\d{4})-\d\d-\d\d \d\d:\d\d/)).find(Boolean) || [])[1], yrs = since ? new Date().getFullYear() - since : 0;
+    const sub = [loc && loc.h.replace(/<span class="comment">[\s\S]*?<\/span>/, ''), since && esc(`member since ${since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`)].filter(Boolean).join(' · ');
+    const langHtml = langs ? `<div class="u-langs">${[...new DOMParser().parseFromString(langs.h, 'text/html').querySelectorAll('li')].map(li => {
+        const t = li.textContent.replace(/\s+/g, ' ').trim(), m = t.match(/^(.*?)\s*\((.*)\)$/);
+        return `<span class="u-lang">${esc(m ? m[1] : t)}${m ? `<small>${esc(m[2])}</small>` : ''}</span>`; }).join('')}</div>` : '';
+    const tabs = u.tabs.filter(t => !t[2]).map(([t, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(t)}</a>`).join('');
+    const rest = u.info.filter(x => x !== bio && x !== langs && x !== loc);
+    const facts = rest.length ? `<dl class="u-facts">${rest.map(x => `<dt>${esc(x.l)}</dt><dd>${x.h}</dd>`).join('')}</dl>` : '';
+    const hero = `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span></div><h1>${esc(u.name || name)}</h1>${sub ? `<p class="u-sub">${sub}</p>` : ''}
+        ${bio ? `<div class="u-bio">${bio.h}</div>` : ''}${langHtml}${tabs ? `<nav class="u-tabs">${tabs}</nav>` : ''}</div>${facts}</section>`;
+    const link = (r, inner, cls) => r.href ? `<a class="${cls}" href="${esc(abs(r.href))}">${inner}</a>` : `<span class="${cls}">${inner}</span>`;
+    const ids = ['ued', 'uvo', 'uad', 'utg'];
+    const secs = u.stats.map((t, i) => {
+        const id = ids[i] || 'ust' + i, tools = t.href ? `<a class="aside" href="${esc(abs(t.href))}">all</a>` : '';
+        let body;
+        if (t.two) {
+            const cols = t.cols.length ? t.cols : ['Recent', 'Overall'];
+            body = `<div class="u-votes">${cols.map((c, j) => `<div class="u-vcol"><h3>${esc(c)}</h3>${t.rows.map(r => `<div class="u-vr"><span>${esc(r.l)}</span><i><b style="width:${r.p[j] || 0}%"></b></i><em>${fmtN(r.v[j] || 0)}<small>${r.p[j] || 0}%</small></em></div>`).join('')}<div class="u-vt">${fmtN(t.rows.reduce((s, r) => s + (r.v[j] || 0), 0))} votes</div></div>`).join('')}</div>`;
+        } else if (i === 2) {
+            const rs = t.rows.filter(r => r.v[0]).sort((a, b) => b.v[0] - a.v[0]), top = rs[0] ? rs[0].v[0] : 1;
+            body = rs.length ? `<div class="u-bars">${rs.map(r => link(r, `<span>${esc(r.l)}</span><i style="width:${Math.max(2, r.v[0] / top * 100)}%"></i><em>${fmtN(r.v[0])}</em>`, 'u-bar')).join('')}</div>` : '<p class="hm-none">Nothing added yet.</p>';
+        } else {
+            body = `<div class="u-sts">${t.rows.map(r => link(r, `<b>${fmtN(r.v[0])}</b><small>${esc(r.l)}</small>`, 'hm-st u-st' + (r.cls ? ' ' + r.cls : ''))).join('')}</div>`;
+            // the edits: how many of the decided ones went in, against those voted down
+            const g = c => (t.rows.find(r => r.cls === c) || { v: [0] }).v[0], ok = g('positive'), bad = g('negative');
+            if (i === 0 && ok + bad) body = `<div class="u-ratio"><i style="width:${(ok / (ok + bad) * 100).toFixed(2)}%"></i></div><p class="u-rnote">${(ok / (ok + bad) * 100).toFixed(2)}% applied, ${fmtN(bad)} voted down</p>` + body;
+        }
+        return sect(id, esc(t.title), tools, body, '');
+    }).join('');
+    return hero + secs;
+}
 /* ── section rail ──────────────────────────────────── */
 // A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
-const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings', aa: 'Artists', al: 'Labels', ap: 'Places' };
+const SEC_NAME = { hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', ued: 'Edits', uvo: 'Votes', uad: 'Added entities', utg: 'Tags and ratings', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings', aa: 'Artists', al: 'Labels', ap: 'Places' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 function secRail(app) {
@@ -4203,10 +4295,13 @@ const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|ar
 function navTo(href) {
     const u = new URL(href, location.href);
     if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
+    // an editor's profile → "user/<name as in the path>"
+    const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
+    if (e) return 'user/' + e[1];
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 const PAGE_ID = navTo(location.href);
 
 /* ── EH / native ───────────────────────────────────── */
@@ -4544,6 +4639,7 @@ async function show(key) {
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
+    if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
