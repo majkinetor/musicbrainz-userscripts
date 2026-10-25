@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.263000
+// @version      2026.10.27.263100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2049,7 +2049,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .art .thumbs img,.art .thumbs a,.art .thumbs button{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
 .art .thumbs img{color:transparent;font-size:0}
 .facts-col{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
-.kicker{display:flex;align-items:center;gap:8px;min-width:0;font-size:15px}
+.kicker{display:flex;align-items:center;gap:10px;min-width:0;font-size:18px}
 .kicker>span:not(.acts){white-space:nowrap}
 .kicker.ico .ab .abt{display:none}
 .kicker.ico .ab{padding:0 8px}
@@ -2759,7 +2759,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 18)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
             <h1>${esc(r.title)}${rgLink(r)}</h1>
             ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
             <div class="by">by ${acHtml(r.ac)}</div>
@@ -4399,7 +4399,7 @@ function artPage(app, d) {
     // the release page's kicker, Art the tab that's open, and its title and credits without the facts
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === 'cover-art' ? ' on' : ''}" href="${MB}/release/${d.id}/${p}"${p === 'cover-art' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
-    const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : '<span>Cover art</span>';
+    const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : '<span>Cover art</span>';
     app.querySelector('.arthd').innerHTML = `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
         + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`);
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
