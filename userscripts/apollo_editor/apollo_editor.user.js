@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.25.091916
+// @version      2026.10.25.092432
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -2355,10 +2355,11 @@ Click: open the label`;
     picksCat(kind).info(`${on ? 'unpinned' : 'pinned'} ${kind}: ${c.name} (${p.pinned.length} pinned)`);
   }
   const picksAny = kind => { const p = picksLoad(kind); return p.pinned.length + p.recent.length > 0; };
-  // the picker's rows: one Recent section (collapsed until opened) with the pinned entries first, then
+  // the picker's rows: one Recent section (collapsed until first opened) with the pinned entries first, then
   // the other recent ones, all filtered by the typed text; then the search results not already shown
-  function picksRows(kind, q, res, recentOpen) {
-    const p = picksLoad(kind), n = fold(q);
+  const picksOpenKey = kind => picksKey(kind) + '.open';   // Recent stays open or collapsed as last left
+  function picksRows(kind, q, res) {
+    const p = picksLoad(kind), n = fold(q), recentOpen = !!gmLoad(picksOpenKey(kind));
     const hit = x => !n || fold(x.name).includes(n) || fold(x.comment).includes(n);
     const pinnedGids = new Set(p.pinned.map(x => x.gid));
     const picks = [...p.pinned.filter(hit), ...p.recent.filter(x => !pinnedGids.has(x.gid) && hit(x))];
@@ -2382,24 +2383,24 @@ Click: open the label`;
     return h;
   }
   // the pin toggles and the Recent header: they act without picking or closing the popup
-  function picksWire(pop, kind, pk, redraw, toggleRecent) {
+  function picksWire(pop, kind, pk, redraw) {
     const rec = pop.querySelector('.tc-acrec');
-    if (rec) rec.onmousedown = e => { e.preventDefault(); e.stopPropagation(); toggleRecent(); };
+    if (rec) rec.onmousedown = e => { e.preventDefault(); e.stopPropagation(); gmSave(picksOpenKey(kind), pk.recentOpen ? '' : '1'); redraw(); };
     pop.querySelectorAll('.tc-acpin').forEach(b => { b.onmousedown = e => { e.preventDefault(); e.stopPropagation(); const r = pk.rows[+b.closest('[data-i]').dataset.i]; if (r) { picksTogglePin(kind, r.c); redraw(); } }; });
   }
   function wireLabelPicker(inp, host) {
     mbidTip(inp, 'Search labels by name', 'sets that label at once');
-    let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8, recentOpen = false, lastRes = [], lastQ = '';
+    let pop = null, list = [], hi = -1, seq = 0, tmr = 0, onScroll = null, curQuery = '', curLimit = 8, lastRes = [], lastQ = '';
     const live = () => inp._tcLabOn && inp.isConnected;
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
-    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; recentOpen = false; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
+    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; list = []; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop tc-labpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) close(); else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
     const say = msg => { ensure(); list = []; pop.innerHTML = `<div class="tc-acrow none">${esc(msg)}</div>`; position(); };
     const choose = c => { close(); riPickLabel(inp._tcLabLf, c); };
     const hiliteRow = () => { const rows = [...pop.querySelectorAll('[data-i]')]; rows.forEach((r, i) => r.classList.toggle('hi', i === hi)); if (rows[hi]) rows[hi].scrollIntoView({ block: 'nearest' }); };
     const draw = (res, q) => {
       ensure(); lastRes = res; lastQ = q;
-      const pk = picksRows('label', q, res, recentOpen), arr = pk.rows.map(r => r.c);
+      const pk = picksRows('label', q, res), arr = pk.rows.map(r => r.c);
       list = arr; hi = -1;
       const html = picksHtml('label', pk, (c, i) => {
         const aka = aliasStr(c), meta = labelMeta(c);
@@ -2407,7 +2408,7 @@ Click: open the label`;
       });
       pop.innerHTML = html !== null ? html : '<div class="tc-acrow none">no matches — use ＋ to create</div>';
       pop.querySelectorAll('.tc-acrow[data-i]').forEach(row => { row.onmousedown = e => { e.preventDefault(); choose(arr[+row.dataset.i]); }; });
-      picksWire(pop, 'label', pk, () => draw(lastRes, lastQ), () => { recentOpen = !recentOpen; draw(lastRes, lastQ); });
+      picksWire(pop, 'label', pk, () => draw(lastRes, lastQ));
       // the icon opens the label in a new tab: its mousedown stays off the row (no pick) and off the input (the popup stays)
       pop.querySelectorAll('a.tic').forEach(a => { a.onmousedown = e => { e.preventDefault(); e.stopPropagation(); }; });
       if (res.length >= curLimit && curLimit < 100) {   // a full page: probably more, as MusicBrainz's popup offers
@@ -7920,10 +7921,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     mbidTip(inp, 'Search artists by name', 'sets that artist at once');
     let pop = null, list = [], hi = -1, seq = 0, onScroll = null;
     let curQuery = '', curLimit = 8;   // "Show more…" pagination: bump the limit and re-search
-    let recentOpen = false, lastRes = [];   // Recent starts collapsed in every popup
+    let lastRes = [];
     const position = () => { if (pop) acPlace(pop, inp); };   // #735: stays on screen (flips above near the bottom)
     const ensure = () => { if (pop) return; pop = document.createElement('div'); pop.className = 'tc-acpop'; pop._tcOwner = inp; document.body.appendChild(pop); onScroll = () => { if (!pop || !pop.isConnected) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); pop = null; } else position(); }; window.addEventListener('scroll', onScroll, true); window.addEventListener('resize', onScroll); position(); };
-    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; recentOpen = false; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
+    const close = () => { if (pop) pop.remove(); pop = null; hi = -1; if (onScroll) { window.removeEventListener('scroll', onScroll, true); window.removeEventListener('resize', onScroll); onScroll = null; } };
     // a pinned or recent artist is stored lean: fetch the full one first (a track credit needs its id)
     const choose = c => {
       if (c.id) { close(); pickArtist(slot, c); return; }
@@ -7947,13 +7948,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const lead = posLead(), leadG = new Set(lead.map(x => x.entity.gid)), votes = new Map(lead.map(x => [x.entity.gid, x.votes]));
       Log.cat('Artist').debug(`picker "${slot.creditedAs}": ${lead.length} artist(s) from other editions at this position, ${res.length} from the search (slot ${slot.status}${slot._pos ? ', position data kept' : ', no position data'})`);
       const base = lead.length ? [...lead.map(x => x.entity), ...res.filter(c => !leadG.has(c.gid || c.id))] : res;
-      const pk = picksRows('artist', inp.value.trim(), base, recentOpen), arr = pk.rows.map(r => r.c);   // the pinned and recent artists filter by what's typed, not by the credit
+      const pk = picksRows('artist', inp.value.trim(), base), arr = pk.rows.map(r => r.c);   // the pinned and recent artists filter by what's typed, not by the credit
       list = arr;
       const of = lead.length ? slot._pos.of : 0;
       const votesHtml = c => votes.has(c.gid) ? `<span class="tc-acvotes" data-tip="Credited on this track on ${votes.get(c.gid)} of ${of} other edition${of === 1 ? '' : 's'} of the release">${votes.get(c.gid)} of ${of} edition${of === 1 ? '' : 's'}</span>` : '';
       const html = picksHtml('artist', pk, (c, i) => `<div class="tc-acrow${sameName(c.name, q) ? ' exact' : ''}" data-i="${i}">${c.gid ? `<a class="tic" href="${ORIGIN}/artist/${esc(c.gid)}" target="_blank" rel="noopener" data-tip="Open the artist's page">${typeSvg(c)}</a>` : `<span class="tic">${typeSvg(c)}</span>`}<span class="nm">${esc(c.name)}</span>${akaHtml(c)}${c.comment ? `<span class="cmt">${esc(c.comment)}</span>` : ''}${votesHtml(c)}</div>`, c => leadG.has(c.gid) ? 'On other editions at this position' : 'Search');
       pop.innerHTML = html !== null ? html : `<div class="tc-acrow none">no matches — use ＋ to create</div>`;
-      picksWire(pop, 'artist', pk, () => draw(lastRes), () => { recentOpen = !recentOpen; draw(lastRes); });
+      picksWire(pop, 'artist', pk, () => draw(lastRes));
       [...pop.querySelectorAll('.tc-acrow[data-i]')].forEach(row => { row.dataset.tip = 'Click: set it\nCtrl+click: set it on every track not resolved'; row.onmousedown = e => { e.preventDefault(); const c = arr[+row.dataset.i]; if (!(e.ctrlKey || e.metaKey)) { choose(c); return; } close(); if (c.id) pickArtistAllUnresolved(c); else fetchEntity(c.gid).then(ent => { if (ent && ent.id) pickArtistAllUnresolved(ent); }); }; });
       // #689: the type icon opens the artist in a new tab, like the one beside a resolved field — its
       // mousedown stays off the row (no pick) and off the input (focus, so the popup stays open)

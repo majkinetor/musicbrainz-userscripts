@@ -46,6 +46,11 @@ test('an emptied artist field shows one collapsed Recent, pinned artists first',
   s = await read();
   check(s && JSON.stringify(s.rows) === JSON.stringify([kitchener.name, mozart.name, bach.name]) && JSON.stringify(s.pinned) === JSON.stringify([kitchener.name, mozart.name]), `the pin toggle pins Mozart, list still open (${JSON.stringify(s)})`);
 
+  await page.keyboard.press('Escape');
+  await inp.evaluate(el => el.blur());
+  await inp.click();
+  check(await until(async () => { const r = await read(); return r && r.rows.length === 3; }), 'a reopened list keeps Recent open');
+
   await page.keyboard.type('moz');
   check(await until(async () => { const r = await read(); return r && JSON.stringify(r.secs) === JSON.stringify(['Recent 1']); }), 'typing filters Recent');
   check(submitted.length === 0, 'nothing submitted');
