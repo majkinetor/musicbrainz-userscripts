@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.110003
+// @version      2026.10.26.110004
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2290,8 +2290,8 @@
       .gt-toolbar>*,.gt-toolbar .gt-vert>*{margin-top:0!important;margin-bottom:0!important}
       .gt-bar-ic{display:inline-flex;flex:0 0 auto}.gt-bar-ic img{width:30px;height:30px;display:block}
       .gt-bar-sep{flex:0 0 auto;width:1px;height:24px;background:var(--mbu-border)}
-      .gt-toolbar .gt-clone-btn{margin-left:0;box-sizing:border-box;height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 11px;border:1px solid var(--mbu-border);border-radius:8px;background:transparent;color:var(--mbu-text-dim);font:600 13px var(--mbu-font);white-space:nowrap;cursor:pointer}
-      .gt-toolbar .gt-clone-btn:hover{border-color:var(--mbu-accent);color:var(--mbu-accent-text);background:transparent}
+      .gt-toolbar .gt-clone-btn{margin-left:0;box-sizing:border-box;height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 11px;border:0!important;border-radius:8px;background:transparent!important;color:var(--mbu-text-dim);font:600 13px/1 var(--mbu-font)!important;white-space:nowrap;cursor:pointer}
+      .gt-toolbar .gt-clone-btn:hover{color:var(--mbu-accent-text);background:var(--mbu-bg-hover)!important}
       /* #365 "Vertical:" section — label + two icon-only up/down buttons */
       .gt-vert{display:inline-flex;align-items:center;gap:5px}
       .gt-vert-lbl{font:700 12px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak);margin-right:2px}

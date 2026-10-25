@@ -2032,7 +2032,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             background: #e8771d;
         }
         .discogs-output { padding: 0.5rem 0.75rem 0.25rem; }
-        .discogs-output.empty { display: none; }   /* no log yet → hide the whole section (#142) */
+        .discogs-output.empty { display: none; }
+        /* closed log and no review: its padding alone left a strip under the bar's row */
+        .discogs-output:not(.log-open):has(> .discogs-review-slot:empty) { display: none; }   /* no log yet → hide the whole section (#142) */
         .discogs-output .summary { margin: 0 0 0.25rem; font-size: 0.88rem; color: var(--mbu-text-dim); }
         .discogs-output .logs { margin: 0; padding-left: 1.2rem; font-size: 0.83rem; }
         /* log panel hides behind the header "Log ▾" button (#142); the review
