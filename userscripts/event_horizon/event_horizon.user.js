@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.100000
+// @version      2026.10.27.110000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15,6 +15,11 @@
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_xmlhttpRequest
+// @connect      api.discogs.com
+// @connect      api.deezer.com
+// @connect      tidal.com
+// @connect      music.apple.com
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording and work pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
@@ -2002,6 +2007,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
+.art .picw{position:relative}.art .cover.rot{cursor:pointer}
+.art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
 .art .thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
@@ -2377,7 +2384,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2393,6 +2400,7 @@ const S = {
     ed: { kinds: new Set(), official: false },
     open: new Set(),
     fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
+    imgOrder: ['discogs', 'deezer', 'tidal', 'apple'], // whose artist image or label logo comes first
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -3084,17 +3092,42 @@ class ArtistImage {
         this.missDays = o.missDays || 7;
         this.max = o.max || 2000;
         this.providers = o.providers || ArtistImage.PROVIDERS;
+        this.order = o.order || null; // provider keys, or a function returning them
+        this.http = o.http || (u => fetch(u));
         this.log = o.log || null;
     }
 
+    // Discogs and Deezer answer JSON; Tidal and Apple Music are read off their pages' og:image,
+    // which only a manager's request can reach (no CORS): pass `http` for those.
     static PROVIDERS = [
-        { name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async m => {
-            const r = await fetch('https://api.discogs.com/' + m[1] + 's/' + m[2]);
+        { key: 'discogs', name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async (m, http) => {
+            const r = await http('https://api.discogs.com/' + m[1] + 's/' + m[2]);
             if (!r.ok) return null;
             const im = (await r.json()).images || [], i = im.find(x => x.type === 'primary') || im[0];
             return i && i.uri ? i.uri : null;
         } },
+        { key: 'deezer', name: 'Deezer', re: /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]{2}\/)?artist\/(\d+)/, get: async (m, http) => {
+            const r = await http('https://api.deezer.com/artist/' + m[1]);
+            if (!r.ok) return null;
+            const p = (await r.json()).picture_big;
+            return p && !p.includes('/artist//') ? p : null; // an empty hash is Deezer's placeholder
+        } },
+        { key: 'tidal', name: 'Tidal', re: /^https?:\/\/(?:listen\.|www\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/, get: async (m, http) => {
+            const r = await http('https://tidal.com/artist/' + m[1]);
+            if (!r.ok) return null;
+            return ArtistImage.og(await r.text());
+        } },
+        { key: 'apple', name: 'Apple Music', re: /^https?:\/\/(?:music|itunes)\.apple\.com\/(?:[a-z]{2}\/)?artist\/(?:[^/?#]+\/)?(?:id)?(\d+)/, get: async (m, http) => {
+            const r = await http('https://music.apple.com/us/artist/' + m[1]);
+            if (!r.ok) return null;
+            const s = ArtistImage.og(await r.text());
+            return s ? s.replace(/\/[^/]+$/, '/500x500bb.jpg') : null; // the page's is a 1200x630 crop
+        } },
     ];
+    static og(html) {
+        const m = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/) || html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/);
+        return m ? m[1].replace(/&amp;/g, '&') : null;
+    }
 
     load() { try { return (this.store.get && this.store.get(this.key, null)) || {}; } catch (e) { return {}; } }
     save(c) {
@@ -3102,38 +3135,55 @@ class ArtistImage {
         if (ks.length > this.max) ks.sort((a, b) => c[a].t - c[b].t).slice(0, ks.length - this.max).forEach(k => delete c[k]);
         try { if (this.store.set) this.store.set(this.key, c); } catch (e) { /* no storage */ }
     }
+    sorted(all) {
+        const o = (typeof this.order === 'function' ? this.order() : this.order) || this.providers.map(p => p.key);
+        const at = k => { const i = o.indexOf(k); return i < 0 ? o.length : i; };
+        return all.slice().sort((a, b) => at(a.key) - at(b.key));
+    }
 
-    // the cached answer, undefined when there is none or it expired
-    cached(mbid) {
+    // every cached image in order ([] for a cached miss), undefined when there is none or it expired
+    cachedAll(mbid) {
         const e = mbid && this.load()[mbid];
-        if (!e) return undefined;
-        const days = e.img ? this.hitDays : this.missDays;
-        return Date.now() - e.t < days * 864e5 ? e.img : undefined;
+        if (!e || !Array.isArray(e.all)) return undefined; // older entries held one image: ask again
+        const days = e.all.length ? this.hitDays : this.missDays;
+        return Date.now() - e.t < days * 864e5 ? this.sorted(e.all) : undefined;
     }
+    cached(mbid) { const a = this.cachedAll(mbid); return a === undefined ? undefined : a[0] || null; }
 
-    async find(mbid, urls) {
-        const hit = this.cached(mbid);
+    async findAll(mbid, urls) {
+        const hit = this.cachedAll(mbid);
         if (hit !== undefined) return hit;
-        let img = null, failed = false;
-        for (const p of this.providers) {
-            for (const u of urls) {
-                const m = u.match(p.re);
-                if (!m) continue;
-                try { const src = await p.get(m); if (src) { img = { src, from: p.name, url: u }; break; } }
-                catch (e) { failed = true; if (this.log) this.log(p.name + ' image failed: ' + e.message); }
-            }
-            if (img) break;
-        }
+        let failed = false;
+        const got = await Promise.all(this.providers.map(async p => {
+            let m = null, url = '';
+            for (const u of urls) if ((m = u.match(p.re))) { url = u; break; }
+            if (!m) return null;
+            try { const src = await p.get(m, this.http); return src ? { src, from: p.name, key: p.key, url } : null; }
+            catch (e) { failed = true; if (this.log) this.log(p.name + ' image failed: ' + e.message); return null; }
+        }));
+        const all = got.filter(Boolean);
         // a failed request isn't a miss: ask again next time
-        if (mbid && (img || !failed)) { const c = this.load(); c[mbid] = { img, t: Date.now() }; this.save(c); }
-        return img;
+        if (mbid && (all.length || !failed)) { const c = this.load(); c[mbid] = { all, t: Date.now() }; this.save(c); }
+        return this.sorted(all);
     }
+    async find(mbid, urls) { return (await this.findAll(mbid, urls))[0] || null; }
 
     forget(mbid) { const c = this.load(); delete c[mbid]; this.save(c); }
 }
 // </ST-ARTIMG>
-const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { log: m => LOG.warn(m) });
-const artistImage = (mbid, rels) => ARTIMG.find(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
+// Tidal's and Apple Music's pages send no CORS headers, nor does Deezer's API: the manager fetches them
+const gmFetch = u => new Promise((ok, no) => GM_xmlhttpRequest({ method: 'GET', url: u, onerror: () => no(new Error('network')), ontimeout: () => no(new Error('timeout')), timeout: 15000,
+    onload: x => ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }) }));
+const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, order: () => S.imgOrder, log: m => LOG.warn(m) });
+const IMG_PROV = ArtistImage.PROVIDERS.map(p => [p.key, p.name]);
+// the hero's picture: clicked, it shows the next provider's; the badge on its edge opens that provider's page
+function picHtml(g, cls, none) {
+    const xs = g.imgs || [], i = (g.imgI || 0) % (xs.length || 1), x = xs[i];
+    if (!x) return none;
+    const more = xs.length > 1;
+    return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}><a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="From ${esc(x.from)}">${stIcon(x.key, 18)}</a></div>`;
+}
+const artistImage = (mbid, rels) => ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
 const AR_ACTS = [
     ['edit', 'Edit', 'Edit artist', ACTS[0][3]],
     ['tags', 'Tags', 'Tags', CI_TAG],
@@ -3147,7 +3197,7 @@ function artist(a) {
         rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
-        ipis: a.ipis || [], isnis: a.isnis || [], links: urlsOf(a.relations || []), rels: a.relations || [], img: null,
+        ipis: a.ipis || [], isnis: a.isnis || [], links: urlsOf(a.relations || []), rels: a.relations || [], imgs: [],
     };
 }
 async function loadArtist(id, step = () => {}) {
@@ -3166,7 +3216,7 @@ function label(l) {
         begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, rating: l.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (l.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
         aliases: [...new Set((l.aliases || []).map(x => x.name))].filter(n => n !== l.name), annotation: l.annotation || '',
-        ipis: l.ipis || [], isnis: l.isnis || [], links: urlsOf(l.relations || []), rels: l.relations || [], img: null,
+        ipis: l.ipis || [], isnis: l.isnis || [], links: urlsOf(l.relations || []), rels: l.relations || [], imgs: [],
     };
 }
 async function loadLabel(id, step = () => {}) {
@@ -3192,7 +3242,7 @@ function lbHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ];
-    const pic = g.img ? `<a href="${esc(g.img.url)}" target="_blank" rel="noopener" data-tip="Logo from ${esc(g.img.from)}"><img class="cover lpic" src="${esc(g.img.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"></a>` : `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}</div>`;
+    const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
@@ -3219,7 +3269,7 @@ function arHero(d) {
         ['', g.links.length && rlQuiet(g), 'wide'],
     ];
     const tags = on('tags') ? tagsMore(g.tags) : '';
-    const pic = g.img ? `<a href="${esc(g.img.url)}" target="_blank" rel="noopener" data-tip="Image from ${esc(g.img.from)}"><img class="cover apic" src="${esc(g.img.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"></a>` : `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}</div>`;
+    const pic = picHtml(g, 'apic', `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g, tags)}</div>
         <div class="facts-col">
@@ -3427,6 +3477,8 @@ function render(keepPop) {
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    const rot = app.querySelector('[data-rot]');
+    if (rot) rot.onclick = () => { const g = data.g; g.imgI = ((g.imgI || 0) + 1) % g.imgs.length; const sy = scrollY; render(); scrollTo(0, sy); };
     for (const im of app.querySelectorAll('[data-dgcover]')) im.onerror = () => { im.outerHTML = `<span class="dn">${im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; };
     // Every row's platforms take the widest row's width, so the ISRCs line up.
     for (const tl of app.querySelectorAll('.tl')) {
@@ -3911,7 +3963,8 @@ function cfgBody() {
         platforms: row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
             + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
-        general: row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
+        general: row('Images first from', S.imgOrder.map((k, i) => `<button type="button" class="chip p" data-g="imgOrder" data-k="${k}" aria-pressed="true" data-tip="${i ? 'Click to put first' : 'Shown first'}">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}<span class="ord">${i + 1}</span></button>`).join(''), 'Whose picture an artist or label page shows first; clicking the picture shows the next')
+            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
     };
     return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
 }
@@ -3966,6 +4019,7 @@ function openCfg() {
             else if (g === 'plNames' || g === 'plHover') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
+            else if (g === 'imgOrder') { S.imgOrder = [k, ...S.imgOrder.filter(x => x !== k)]; if (data && data.g && data.g.imgs) { data.g.imgs = ARTIMG.sorted(data.g.imgs); data.g.imgI = 0; } }
         }
         save();
         b.innerHTML = cfgBody();
@@ -4061,7 +4115,7 @@ async function show(key) {
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
-        if (d.img) d.img.then(x => { if (n === showing && data === d && x) { d.g.img = x; render(); } });
+        if (d.img) d.img.then(x => { if (n === showing && data === d && x.length) { d.g.imgs = x; render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; render(); } });
     }

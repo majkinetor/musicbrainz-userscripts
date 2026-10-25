@@ -3,7 +3,7 @@
 MusicBrainz, past the point of no return: release, release group, artist, label, recording and work pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
-    - Or via bundle: [String Theory](../string_theory/README.md)
+  - Or via bundle: [String Theory](../string_theory/README.md)
 - [Changelog](./CHANGELOG.md)
 
 ## Features
@@ -18,6 +18,8 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 Open a release, release group, artist, label, recording or work on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
 
 The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
+
+An artist's picture or a label's logo comes from its Discogs, Deezer, Tidal or Apple Music link. Click it to see the next one; the badge on its edge opens the page it came from.
 
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 
@@ -43,14 +45,15 @@ The funnel icon opens a filter: type part of a title, or add a filter by artist,
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                   | Default                                                   |                                                               |
-| ------------------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
-| Release → Info            | released, labels, barcode, length, links                  | the facts shown beside the cover                              |
-| Release → Under the cover | Other covers, Rating, Genres                              | what shows under the cover                                    |
-| Platforms → Show          | off                                                       | **Names** beside the icons; **Gray icons** until pointed at   |
-| Platforms → Icon size     | 22px                                                      | the size of a platform icon                                   |
-| Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N |
-| General → Page width      | Medium                                                    | how wide the page grows on a big screen                       |
+| Setting                     | Default                                                   |                                                                  |
+| --------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------- |
+| Release → Info              | released, labels, barcode, length, links                  | the facts shown beside the cover                                 |
+| Release → Under the cover   | Other covers, Rating, Genres                              | what shows under the cover                                       |
+| Platforms → Show            | off                                                       | **Names** beside the icons; **Gray icons** until pointed at      |
+| Platforms → Icon size       | 22px                                                      | the size of a platform icon                                      |
+| Platforms → Platforms       | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music | click to show or hide, drag to reorder; the rest go behind +N    |
+| General → Images first from | Discogs, Deezer, Tidal, Apple Music                       | whose picture an artist or label shows first; click to put first |
+| General → Page width        | Medium                                                    | how wide the page grows on a big screen                          |
 
 ## Shortcuts
 
