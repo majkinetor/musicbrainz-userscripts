@@ -3025,6 +3025,10 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // (or similar). We want to be the very first thing inside that wrapper,
     // above any other userscript toolbars (e.g. loujine batch tools).
     function insertBar() {
+        // above the release's header (its hexagon and tabs), right where it sits: an Event Horizon
+        // header prepended to #content stays above the bar
+        const hd = document.querySelector('#content > .releaseheader');
+        if (hd) { hd.before(bar); return; }
         // Try the most specific anchor first: the inner content div of the rel editor
         const anchor =
             document.querySelector('.release-rel-editor') ||   // MB React wrapper
