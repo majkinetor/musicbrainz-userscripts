@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.235900
+// @version      2026.10.27.000000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2064,7 +2064,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .ed-t tr.gh th{padding-top:18px;font-size:12px;color:var(--soft)}
 .ed-t tbody tr:not(.gh):hover{background:var(--hover)}
-.ra-pop{width:320px;max-height:360px;overflow:auto;line-height:1.6;color:var(--text);font-weight:400}.ev-pop{max-width:340px;max-height:360px;overflow:auto}.ev-pop .evs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}.evm{font-size:13px}.ed-t caption{text-align:left;padding:4px 0 8px}
+.ra-pop{width:320px;max-height:360px;overflow:auto;line-height:1.6;color:var(--text);font-weight:400}.ev-pop{max-width:340px;max-height:360px;overflow:auto}.ev-pop .evs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}.chip.pn{height:22px;padding:0 9px;font-size:12px;cursor:pointer;vertical-align:middle}.chip.pn:hover,.chip.pn[aria-expanded="true"]{border-color:var(--accent)}.ed-t caption{text-align:left;padding:4px 0 8px}
 .ed-t tr.cur td{background:var(--chip)}
 .ed-t .ed-tr{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:6px;font:inherit}
 .ed-t .ed-tr:hover{background:var(--chip)}
@@ -2572,7 +2572,7 @@ function facts(r) {
     // past two rows, the first stays and the rest fold behind "+N more"
     // a date's countries past three go behind +N, in a popover like the links'
     let an = 0;
-    const areas = a => a.length > 4 ? `${esc(a.slice(0, 3).join(', '))} <span class="popwrap"><button class="lnk" type="button" data-pop="ra-${++an}" aria-expanded="false" data-tip="${a.length - 3} more countries">+${a.length - 3}</button><div class="pop ra-pop" id="pop-ra-${an}" hidden><div class="h label">${a.length} countries</div>${esc(a.join(', '))}</div></span>` : esc(a.join(', '));
+    const areas = a => a.length > 4 ? `${esc(a.slice(0, 3).join(', '))} <span class="popwrap"><button class="chip pn" type="button" data-pop="ra-${++an}" aria-expanded="false" data-tip="${a.length - 3} more countries">+${a.length - 3}</button><div class="pop ra-pop" id="pop-ra-${an}" hidden><div class="h label">${a.length} countries</div>${esc(a.join(', '))}</div></span>` : esc(a.join(', '));
     const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
     const F = {
         released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${areas(l.ev.map(v => v.area).filter(Boolean))}</span></div>`))],
@@ -2636,7 +2636,7 @@ function rlQuiet(r) {
     // A–Z (majkinetor), the bare hostnames after the named sites
     const az = ([a], [b]) => (a.key === 'globe') - (b.key === 'globe') || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
     const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
-    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
+    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
 
 /* ── editions ──────────────────────────────────────── */
@@ -2683,7 +2683,7 @@ function evCell(e) {
     if (vs.length <= 3) return vs.map(evOne).join('') || '—';
     const rest = vs.slice(2), by = new Map();
     for (const v of rest) { const k = v.date || ''; by.set(k, [...(by.get(k) || []), v.iso || '?']); }
-    return vs.slice(0, 2).map(evOne).join('') + `<span class="popwrap"><button class="lnk evm" type="button" data-pop="ev-${e.id}" aria-expanded="false" data-tip="${rest.length} more countries">+${rest.length}</button><div class="pop ev-pop" id="pop-ev-${e.id}" hidden>${[...by].map(([d, isos]) => `<div class="h label">${d ? fdate(d) : 'No date'} · ${isos.length}</div><div class="evs">${isos.map(i => `<span class="iso">${esc(i)}</span>`).join('')}</div>`).join('')}</div></span>`;
+    return vs.slice(0, 2).map(evOne).join('') + `<span class="popwrap"><button class="chip pn" type="button" data-pop="ev-${e.id}" aria-expanded="false" data-tip="${rest.length} more countries">+${rest.length}</button><div class="pop ev-pop" id="pop-ev-${e.id}" hidden>${[...by].map(([d, isos]) => `<div class="h label">${d ? fdate(d) : 'No date'} · ${isos.length}</div><div class="evs">${isos.map(i => `<span class="iso">${esc(i)}</span>`).join('')}</div>`).join('')}</div></span>`;
 }
 function edTable(es, curId, flat, part) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
@@ -2949,7 +2949,7 @@ let tagsOpen = false;
 const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class="chip tag">${esc(t)}</span>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
 // a few aliases inline; a +N button shows the rest
 // the first four aliases, the rest in a popover behind +N
-const aliasList = as => { const n = 4; return `<div class="als">${as.slice(0, n).map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<span class="popwrap"><button class="chip" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => `<div>${esc(a)}</div>`).join('')}</div></span>` : ''}</div>`; };
+const aliasList = as => { const n = 4; return `<div class="als">${as.slice(0, n).map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => `<div>${esc(a)}</div>`).join('')}</div></span>` : ''}</div>`; };
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
