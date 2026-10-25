@@ -107,6 +107,16 @@ if printf '%s
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared artist image (#834) — dev/artimg/artist-image.js, re-inlined into every
+# script carrying a `// <ST-ARTIMG>` marker.
+if printf '%s\n' "$STAGED" | grep -qE '^dev/artimg/(artist-image\.js|sync-artimg\.mjs)$'; then
+    echo "[pre-commit] syncing the shared artist image…"
+    node dev/artimg/sync-artimg.mjs >/dev/null
+    ARTIMG_FILES=$(grep -rl '// <ST-ARTIMG>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$ARTIMG_FILES" ] && git add $ARTIMG_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # shared guess case (#785) — dev/guesscase/guess-case.mjs, re-inlined into every script
 # carrying a `// <ST-GUESSCASE>` marker.
 if printf '%s\n' "$STAGED" | grep -qE '^dev/guesscase/(guess-case|sync-guesscase)\.mjs$'; then
