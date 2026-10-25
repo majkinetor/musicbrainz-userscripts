@@ -23,6 +23,18 @@ test('an area page shows its hero and its artists, labels and places', { tag: '@
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-area.png'), fullPage: true });
 });
 
+test('an instrument page shows its Commons picture, what it is a subtype of, and its tabs as tables', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/instrument/46ec6044-6c57-4ebe-8c1e-762f19b66340');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app .hero h1').count(), n => n === 1) === 1, 'the hero shows');
+  check(/percussion/i.test(await page.locator('#app .kicker').innerText()), 'the kicker names its type');
+  check(await until(() => page.locator('#app img.ipic').evaluate(i => i.complete && i.naturalWidth).catch(() => 0), n => n > 0) > 0, 'the Commons picture loads');
+  check(/barrel drum/i.test(await page.locator('#app .facts').innerText()), 'it is a subtype of barrel drum');
+  check(await until(() => page.locator('#app .sec.pend').count(), n => n === 0) === 0, 'every section has loaded');
+  await attachShot(testInfo, page, 'instrument');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-instrument.png'), fullPage: true });
+});
+
 test('a work page shows its hero, credits and recordings', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/work/afec4a5d-5ac6-309a-be7c-ee4f919730c3');
   await inject('event_horizon');
