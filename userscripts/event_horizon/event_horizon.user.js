@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.248000
+// @version      2026.10.27.249000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2599,7 +2599,7 @@ async function load(id, step = () => {}) {
     // the page shows off the release's own release group; the group's rating and relationships fill in after
     const rgId = r['release-group'].id;
     const rgP = ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`).catch(() => null);
-    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, () => null);
+    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, noSec(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`));
     return { rel: release(r, r['release-group'], []), rgP, editions: [], edCount: 0, eds, covers };
 }
 
@@ -3077,10 +3077,12 @@ function group(g) {
     };
 }
 // the Wikipedia extract MusicBrainz's own page fetches after load: { content (HTML), url }, or none
-const wikiOf = (type, id) => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => r.json()).then(x => x.wikipediaExtract || null, () => null);
+// a section's fetch failing leaves its section out; the log says which and why
+const noSec = what => e => { LOG.warn(what + ' failed: ' + (e && e.message || e)); return null; };
+const wikiOf = (type, id) => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => r.json()).then(x => { if (!x.wikipediaExtract) LOG.debug(type + ' ' + id + ': no Wikipedia extract'); return x.wikipediaExtract || null; }, noSec('wikipedia-extract ' + type + '/' + id));
 async function loadRg(id, step = () => {}) {
     // the releases and the Wikipedia extract don't need the group: asked for at once
-    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
     const wiki = wikiOf('release-group', id);
     const gP = ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`).then(g => { step('group'); return group(g); });
     return { kind: 'rg', g: null, gP, editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
@@ -3277,7 +3279,7 @@ function artist(a) {
     };
 }
 async function loadArtist(id, step = () => {}) {
-    const disc = ws(`release-group?artist=${id}&inc=artist-credits&limit=100`).then(x => { step('discography'); return x; }, () => null);
+    const disc = ws(`release-group?artist=${id}&inc=artist-credits&limit=100`).then(x => { step('discography'); return x; }, noSec(`release-group?artist=${id}&inc=artist-credits&limit=100`));
     const wiki = wikiOf('artist', id);
     const gP = ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
@@ -3294,7 +3296,7 @@ function label(l) {
     };
 }
 async function loadLabel(id, step = () => {}) {
-    const eds = ws(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const eds = ws(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
     const wiki = wikiOf('label', id);
     const gP = ws(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); return label(l); });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('logo'); return x; });
@@ -3371,7 +3373,7 @@ function recording(x) {
     };
 }
 async function loadRecording(id, step = () => {}) {
-    const eds = ws(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, () => null);
+    const eds = ws(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
     const gP = ws(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(x => { step('recording'); return recording(x); });
     // the works' own writers: one request per work, the first five
     const wk = gP.then(g => Promise.all(g.works.slice(0, 5).map(w => ws(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {})))).then(() => { step('works'); return true; });
@@ -3386,7 +3388,7 @@ function work(w) {
     });
 }
 async function loadWork(id, step = () => {}) {
-    const recs = ws(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`).then(x => { step('recordings'); return x; }, () => null);
+    const recs = ws(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`).then(x => { step('recordings'); return x; }, noSec(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`));
     const wiki = wikiOf('work', id);
     const gP = ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
     return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
@@ -3501,7 +3503,7 @@ async function areaImages(id, rels, props = AREA_PROPS) {
     return all;
 }
 async function loadArea(id, step = () => {}) {
-    const one = k => ws(`${k}?area=${id}&limit=100`).then(x => x, () => null);
+    const one = k => ws(`${k}?area=${id}&limit=100`).then(x => x, noSec(`${k}?area=${id}&limit=100`));
     const lists = Promise.all([one('artist'), one('label'), one('place')]).then(x => { step('artists, labels, places'); return x; });
     const wiki = wikiOf('area', id);
     const gP = ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels+work-rels+instrument-rels+series-rels+event-rels`).then(a => { step('area'); return area(a); });
@@ -3597,7 +3599,7 @@ async function mbTab(type, id, sub) {
 // the page shows as soon as either the instrument or its lists are in: lists first give a page
 // named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
 async function loadInstrument(id, step = () => {}) {
-    const one = k => mbTab('instrument', id, k).then(x => x, () => null);
+    const one = k => mbTab('instrument', id, k).then(x => x, noSec('tab ' + ['instrument', id, k].join('/')));
     const lists = Promise.all([one('artists'), one('releases'), one('recordings')]).then(x => { step('artists, releases, recordings'); return x; });
     const wiki = wikiOf('instrument', id);
     const aP = ws(`instrument/${id}?inc=aliases+genres+tags+annotation+area-rels+genre-rels+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
@@ -3670,8 +3672,8 @@ function place(a) {
 }
 const placeImages = g => commonsImg(g.img, 600) ? Promise.resolve([{ src: commonsImg(g.img, 600), from: 'Wikimedia Commons', key: 'wikipedia', url: g.img }]) : areaImages(g.id, g.rels, PLACE_PROPS).catch(() => []);
 async function loadPlace(id, step = () => {}) {
-    const events = ws(`event?place=${id}&limit=100`).then(x => x, () => null);
-    const perf = mbTab('place', id, 'performances').then(x => x, () => null);
+    const events = ws(`event?place=${id}&limit=100`).then(x => x, noSec(`event?place=${id}&limit=100`));
+    const perf = mbTab('place', id, 'performances').then(x => x, noSec('tab ' + ['place', id, 'performances'].join('/')));
     const lists = Promise.all([events, perf]).then(x => { step('events, recordings'); return x; });
     const wiki = wikiOf('place', id);
     const gP = ws(`place/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+artist-rels+label-rels+place-rels+series-rels+work-rels+instrument-rels+url-rels`).then(a => { step('place'); return place(a); });
@@ -4671,6 +4673,11 @@ async function show(key) {
             if (first.g) d.g = first.g;
             else LOG.debug(kind + ' ' + id + ': a section came first, shown before the ' + kind);
         }
+        const said = (name, p, n) => p && p.then(x => LOG.debug(kind + ' ' + id + ': ' + name + ' ' + (x == null ? 'none' : n(x))), e => LOG.warn(kind + ' ' + id + ': ' + name + ' failed: ' + (e && e.message || e)));
+        const cnt = (x, k) => (x[k + 's'] || []).length + (x[k + '-count'] != null ? ' of ' + x[k + '-count'] : '');
+        said('releases', d.eds, x => cnt(x, 'release')); said('discography', d.disc, x => cnt(x, 'release-group')); said('recordings', d.recs, x => cnt(x, 'recording'));
+        said('wikipedia', d.wiki, () => 'loaded'); said('lists', d.lists, x => x.map(y => y == null ? 'none' : Object.keys(y).filter(k => Array.isArray(y[k])).map(k => k + ' ' + y[k].length).join(' ')).join(' · '));
+        said('images', d.img, x => (x || []).length); said('covers', d.covers, x => (x || []).length);
         const wait = d.wait = new Set(['ed']), let_ = (k, p) => p && p.then(() => {}, () => {}).then(() => { wait.delete(k); if (n === showing && data === d) render(); });
         if (d.wiki) wait.add('wp');
         if (d.disc) wait.add('dg');
@@ -4679,7 +4686,7 @@ async function show(key) {
         if (kind === 'release') wait.add('art');
         let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); (LIST_IDS[kind] || LIST_IDS.area).forEach(k => let_(k, d.lists)); if (kind === 'release') let_('art', d.covers);
         if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
-        d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } });
+        d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; LOG.debug(kind + ' ' + id + ': ' + d.editions.length + ' release(s) to show'); if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } }).catch(e => LOG.err(kind + ' ' + id + ': showing the releases failed: ' + e.message));
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
         if (d.recs) d.recs.then(x => { if (n === showing && data === d && x) { d.recsX = x; render(); } });
         if (d.lists) d.lists.then(x => { if (n === showing && data === d) { d.listsX = x; render(); } });
