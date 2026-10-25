@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.012000
+// @version      2026.10.27.013000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2438,7 +2438,7 @@ const edition = e => ({
     title: e.title || '', barcode: e.barcode || '', packaging: e.packaging || '',
     lang: e['text-representation'] && [nameOf('language', e['text-representation'].language), nameOf('script', e['text-representation'].script)].filter(Boolean),
     counts: (e.media || []).map(m => m['track-count'] || 0),
-    events: (e['release-events'] || []).map(v => ({ date: v.date || '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
+    events: (e['release-events'] || []).map(v => ({ date: v.date || '', area: v.area ? v.area.name.replace(/^\[(.*)\]$/, '$1') : '', iso: v.area && ((v.area['iso-3166-1-codes'] || [])[0] || v.area.name.replace(/^\[(.*)\]$/, '$1')) })),
     ac: e['artist-credit'] || [], links: urlsOf(e.relations || []),
     li: (e['label-info'] || []).map(l => ({ id: l.label && l.label.id, name: l.label && l.label.name !== '[no label]' ? l.label.name : '', catno: l['catalog-number'] && !/^\[none\]$/i.test(l['catalog-number']) ? l['catalog-number'] : '' })).filter(l => l.name || l.catno),
 });
@@ -2679,7 +2679,7 @@ const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', 
     ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
     ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff']];
 // a release's events: the first, and the rest behind +N on its line, by date with their countries
-const evOne = (v, more = '') => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : '<span class="iso nc" aria-hidden="true"></span> '}${v.date ? fdate(v.date) : ''}${more}</div>`;
+const evOne = (v, more = '') => `<div class="ev">${v.iso ? `<span class="iso"${v.area && v.area !== v.iso ? ` data-tip="${esc(v.area)}"` : ''}>${esc(v.iso)}</span> ` : '<span class="iso nc" aria-hidden="true"></span> '}${v.date ? fdate(v.date) : ''}${more}</div>`;
 function evCell(e) {
     const vs = e.events;
     if (vs.length < 2) return vs.map(v => evOne(v)).join('') || '—';
