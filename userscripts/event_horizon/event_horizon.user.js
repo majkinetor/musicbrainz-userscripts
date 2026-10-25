@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.233000
+// @version      2026.10.26.234000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2164,6 +2164,17 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .grp.bn dt{color:var(--text);font-weight:600}
 .detail .grp.bn dd{color:var(--muted);font-weight:400}
 .detail .grp.ls{grid-template-columns:1fr}
+.detail .grp h4 .fxc{flex:none;align-self:center;display:inline-grid;place-items:center;width:20px;height:20px;margin:0 -4px 0 -24px;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
+.detail .grp h4 .fxc:hover{color:var(--text)}
+.detail .grp h4 .fxc svg{width:14px;height:14px;transition:transform .15s}
+.detail .grp h4 .fxc .cv{display:contents}
+.detail .grp h4 .fxc[aria-expanded="true"] svg{transform:rotate(90deg)}
+.detail .tfx{grid-column:1/-1;display:grid;grid-template-columns:subgrid;gap:4px 12px;margin:0 0 8px;padding:7px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px;overflow-wrap:anywhere}
+.detail .tfx>span:nth-child(odd){justify-self:end;text-align:right;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.detail .tfx .r,.detail .fxsum{color:var(--muted);font-weight:400}
+.detail .fxsum{grid-column:1/-1;font-size:12.5px;margin:-4px 0 6px;overflow-wrap:anywhere}
+.detail .mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.detail .ftag{font-size:11.5px;border:1px solid var(--border);border-radius:10px;padding:0 7px}
 .detail .side{display:flex;flex-direction:column;gap:18px;min-width:0}
 .detail .none{grid-column:1/-1}
 /* the ISWC takes the credit rows' columns: its label under the roles, the code under the names */
@@ -2304,6 +2315,7 @@ const S = {
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
+    tkFx: new Set(), // "<track key>|rec" / "<track key>|w<i>": a side with its facts box open
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -2406,8 +2418,9 @@ function release(r, rg, images) {
                     ac: t['artist-credit'] || [], feat: (t['artist-credit'] || []).filter(a => !mainIds.includes(a.artist.id)).map(a => a.name),
                     cr: creditsOf(rels), credits: people.length,
                     work: work && { id: work.work.id, title: work.work.title }, wcr: work ? creditsOf(work.work.relations || []) : [],
-                    works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []) })),
+                    works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []), type: x.work.type || '', dis: x.work.disambiguation || '', langs: (x.work.languages || (x.work.language ? [x.work.language] : [])).map(l => nameOf('language', l) || l), attrs: (x.work.attributes || []).map(a => [a.type, a.value]), perf: x.attributes || [] })),
                     links: urlsOf(rels),
+                    rec: { dis: rec.disambiguation || '', first: rec['first-release-date'] || '', len: rec.length || 0, title: rec.title, ac: rec['artist-credit'] || [] },
                 };
             }),
         })),
@@ -2738,12 +2751,14 @@ const crName = c => {
 };
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
-function crGroup(tag, type, ent, cr, extra = '') {
-    const head = `<h4><span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+function crGroup(tag, type, ent, cr, extra = '', fx) {
+    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details" data-tip="${fx.open ? 'Hide' : 'Show'} the ${type}'s details\nRight-click: on every track">${CHEV}</button>` : '';
+    const head = `<h4>${chev}<span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    if (fx && fx.rows.length) extra = (fx.open ? `<div class="tfx">${fx.rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>` : `<div class="fxsum">${fx.rows.map(r => r[2] || r[1]).join(' · ')}</div>`) + extra;
     const rows = !cr.length ? '<div class="none">None yet</div>'
         : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
         : byRole(cr).map(([role, cs]) => `<dt>${esc(role)}</dt><dd${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? ' class="stk"' : ''}>${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? cs.map(c => `<div>${crName(c)}</div>`).join('') : andList(cs.map(crName))}</dd>`).join('');
-    return `<dl class="grp${S.byName ? ' bn' : ''}">${head}${rows}${extra}</dl>`;
+    return `<dl class="grp${S.byName ? ' bn' : ''}">${head}${fx ? extra + rows : rows + extra}</dl>`;
 }
 const IC_ROLE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h5.5l6.5 6.5-5 5-7-6.5z"/><circle cx="5.3" cy="5.8" r="1"/></svg>';
 const IC_NAME = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 14c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5"/></svg>';
@@ -2765,12 +2780,34 @@ function detail(t) {
     const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
-    const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? `<div class="iswc"><span>ISWC</span><span>${esc(t.work.iswcs.join(', '))}</span></div>` : '';
-    const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
+    const fx = (k, rows) => ({ k: t.key + '|' + k, open: S.tkFx.has(t.key + '|' + k), rows });
+    const works = (t.works || []).map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx('w' + i, workFacts(w))));
     const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
-    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
+    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx('rec', recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
-const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : `<div class="iswc"><span>ISWC</span><span>${esc(w.iswcs.join(', '))}</span></div>`;
+// a side's facts: [label, html, short form for the folded summary]
+const mono = s => `<span class="mono">${esc(s)}</span>`;
+const acText = ac => ac.map(a => a.name + (a.joinphrase || '')).join('');
+function recFacts(t) {
+    const r = t.rec || {}, out = [];
+    if (r.dis) out.push(['Disambig.', esc(r.dis)]);
+    if (r.title && r.title !== t.title) out.push(['Title', esc(r.title)]);
+    if (r.ac && r.ac.length && acText(r.ac) !== acText(t.ac)) out.push(['Artist', r.ac.map(a => artistA({ id: a.artist.id, name: a.name }) + esc(a.joinphrase || '')).join(''), esc(acText(r.ac))]);
+    if (r.len && t.lenMs && Math.abs(r.len - t.lenMs) >= 1000) out.push(['Length', esc(ms(r.len)) + ` <span class="r">(track ${esc(t.len)})</span>`, esc(ms(r.len))]);
+    if (r.first) out.push(['First released', esc(r.first)]);
+    if (t.isrcs.length) out.push([t.isrcs.length > 1 ? 'ISRCs' : 'ISRC', t.isrcs.map(mono).join(' '), esc(t.isrcs[0]) + (t.isrcs.length > 1 ? ' +' + (t.isrcs.length - 1) : '')]);
+    return out;
+}
+function workFacts(w) {
+    const out = [];
+    if (w.type) out.push(['Type', esc(w.type)]);
+    if (w.dis) out.push(['Disambig.', esc(w.dis)]);
+    if (w.langs && w.langs.length) out.push([w.langs.length > 1 ? 'Languages' : 'Language', esc(w.langs.join(', '))]);
+    if (w.perf && w.perf.length) out.push(['Performed', w.perf.map(a => `<span class="ftag">${esc(a)}</span>`).join(' ')]);
+    if (w.iswcs.length) out.push([w.iswcs.length > 1 ? 'ISWCs' : 'ISWC', w.iswcs.map(mono).join(' '), esc(w.iswcs[0]) + (w.iswcs.length > 1 ? ' +' + (w.iswcs.length - 1) : '')]);
+    for (const [k, v] of w.attrs || []) out.push([k, /^key$/i.test(k) ? esc(v) : mono(v), esc(v)]);
+    return out;
+}
 // a track's markers after its title: its recording (lit when it has relationships of its own), its works, its credits
 const MK_REC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
 const MK_WORK = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
@@ -3260,6 +3297,7 @@ function onClick(ev) {
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
+    else if (d.fx) S.tkFx.has(d.fx) ? S.tkFx.delete(d.fx) : S.tkFx.add(d.fx);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
@@ -3316,6 +3354,15 @@ function build() {
             S.grpFold = S.grpFold.includes(g.dataset.gfold) ? S.grpFold.filter(x => !ks.includes(x)) : [...new Set([...S.grpFold, ...ks])];
             const y = scrollY; render(); scrollTo(0, y);
             return;
+        }
+        // a track side's chevron opens or closes that side on every track
+        const fb = ehOn && ev.target.closest && ev.target.closest('[data-fx]');
+        if (fb) {
+            ev.preventDefault();
+            const side = fb.dataset.fx.slice(fb.dataset.fx.lastIndexOf('|')), all = [...document.querySelectorAll('[data-fx]')].map(x => x.dataset.fx).filter(k => k.endsWith(side));
+            const keys = rowKeys.map(k => k + side), on = !S.tkFx.has(fb.dataset.fx);
+            for (const k of new Set([...all, ...keys])) on ? S.tkFx.add(k) : S.tkFx.delete(k);
+            const y = scrollY; render(); scrollTo(0, y); return;
         }
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
         if (!b) return;

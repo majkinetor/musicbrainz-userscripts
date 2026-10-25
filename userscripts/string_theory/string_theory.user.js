@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.25.115420
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.26.111000, art_station 2026.10.26.140000, credit_hoarder 2026.10.25.113207, event_horizon 2026.10.26.233000, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.26.110000, isrc_scout 2026.10.26.140000, mammoth 2026.10.20.120000, mission_control 2026.10.26.140000, platform_check 2026.10.26.140000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.25.115829
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.26.111000, art_station 2026.10.26.140000, credit_hoarder 2026.10.25.113207, event_horizon 2026.10.26.234000, falcon 2026.10.25.001000, first_contact 2026.10.24.232707, fusion 2026.10.20.120000, group_therapy 2026.10.26.110000, isrc_scout 2026.10.26.140000, mammoth 2026.10.20.120000, mission_control 2026.10.26.140000, platform_check 2026.10.26.140000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -146,8 +146,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.25.115420 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.26.111000\n  · Art Station v2026.10.26.140000\n  · Credit Hoarder v2026.10.25.113207\n  · Event Horizon v2026.10.26.233000\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.26.110000\n  · ISRC Scout v2026.10.26.140000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.26.140000\n  · Platform Check v2026.10.26.140000");
+  console.log('%c String Theory %c v2026.10.25.115829 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.26.111000\n  · Art Station v2026.10.26.140000\n  · Credit Hoarder v2026.10.25.113207\n  · Event Horizon v2026.10.26.234000\n  · Falcon v2026.10.25.001000\n  · First Contact v2026.10.24.232707\n  · Fusion v2026.10.20.120000\n  · Group Therapy v2026.10.26.110000\n  · ISRC Scout v2026.10.26.140000\n  · Mammoth v2026.10.20.120000\n  · Mission Control v2026.10.26.140000\n  · Platform Check v2026.10.26.140000");
 } catch (e) {}
 
 var __stDefOff = ["event_horizon"];
@@ -157,7 +157,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.26.111000"],["art_station","Art Station","2026.10.26.140000"],["credit_hoarder","Credit Hoarder","2026.10.25.113207"],["event_horizon","Event Horizon","2026.10.26.233000"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.26.110000"],["isrc_scout","ISRC Scout","2026.10.26.140000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.26.140000"],["platform_check","Platform Check","2026.10.26.140000"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.26.111000"],["art_station","Art Station","2026.10.26.140000"],["credit_hoarder","Credit Hoarder","2026.10.25.113207"],["event_horizon","Event Horizon","2026.10.26.234000"],["falcon","Falcon","2026.10.25.001000"],["first_contact","First Contact","2026.10.24.232707"],["fusion","Fusion","2026.10.20.120000"],["group_therapy","Group Therapy","2026.10.26.110000"],["isrc_scout","ISRC Scout","2026.10.26.140000"],["mammoth","Mammoth","2026.10.20.120000"],["mission_control","Mission Control","2026.10.26.140000"],["platform_check","Platform Check","2026.10.26.140000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -33895,7 +33895,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.233000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.233000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.234000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.234000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist and label pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid> and /label/<mbid>
 // (not their subpages), and moves between them in place: the page is hidden
@@ -34249,6 +34249,17 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .grp.bn dt{color:var(--text);font-weight:600}
 .detail .grp.bn dd{color:var(--muted);font-weight:400}
 .detail .grp.ls{grid-template-columns:1fr}
+.detail .grp h4 .fxc{flex:none;align-self:center;display:inline-grid;place-items:center;width:20px;height:20px;margin:0 -4px 0 -24px;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
+.detail .grp h4 .fxc:hover{color:var(--text)}
+.detail .grp h4 .fxc svg{width:14px;height:14px;transition:transform .15s}
+.detail .grp h4 .fxc .cv{display:contents}
+.detail .grp h4 .fxc[aria-expanded="true"] svg{transform:rotate(90deg)}
+.detail .tfx{grid-column:1/-1;display:grid;grid-template-columns:subgrid;gap:4px 12px;margin:0 0 8px;padding:7px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px;overflow-wrap:anywhere}
+.detail .tfx>span:nth-child(odd){justify-self:end;text-align:right;color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.detail .tfx .r,.detail .fxsum{color:var(--muted);font-weight:400}
+.detail .fxsum{grid-column:1/-1;font-size:12.5px;margin:-4px 0 6px;overflow-wrap:anywhere}
+.detail .mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.detail .ftag{font-size:11.5px;border:1px solid var(--border);border-radius:10px;padding:0 7px}
 .detail .side{display:flex;flex-direction:column;gap:18px;min-width:0}
 .detail .none{grid-column:1/-1}
 /* the ISWC takes the credit rows' columns: its label under the roles, the code under the names */
@@ -34389,6 +34400,7 @@ const S = {
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
+    tkFx: new Set(), // "<track key>|rec" / "<track key>|w<i>": a side with its facts box open
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -34491,8 +34503,9 @@ function release(r, rg, images) {
                     ac: t['artist-credit'] || [], feat: (t['artist-credit'] || []).filter(a => !mainIds.includes(a.artist.id)).map(a => a.name),
                     cr: creditsOf(rels), credits: people.length,
                     work: work && { id: work.work.id, title: work.work.title }, wcr: work ? creditsOf(work.work.relations || []) : [],
-                    works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []) })),
+                    works: workRels.map(x => ({ id: x.work.id, title: x.work.title, iswcs: x.work.iswcs || [], cr: creditsOf(x.work.relations || []), type: x.work.type || '', dis: x.work.disambiguation || '', langs: (x.work.languages || (x.work.language ? [x.work.language] : [])).map(l => nameOf('language', l) || l), attrs: (x.work.attributes || []).map(a => [a.type, a.value]), perf: x.attributes || [] })),
                     links: urlsOf(rels),
+                    rec: { dis: rec.disambiguation || '', first: rec['first-release-date'] || '', len: rec.length || 0, title: rec.title, ac: rec['artist-credit'] || [] },
                 };
             }),
         })),
@@ -34823,12 +34836,14 @@ const crName = c => {
 };
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
-function crGroup(tag, type, ent, cr, extra = '') {
-    const head = `<h4><span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+function crGroup(tag, type, ent, cr, extra = '', fx) {
+    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details" data-tip="${fx.open ? 'Hide' : 'Show'} the ${type}'s details\nRight-click: on every track">${CHEV}</button>` : '';
+    const head = `<h4>${chev}<span class="tag">${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    if (fx && fx.rows.length) extra = (fx.open ? `<div class="tfx">${fx.rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>` : `<div class="fxsum">${fx.rows.map(r => r[2] || r[1]).join(' · ')}</div>`) + extra;
     const rows = !cr.length ? '<div class="none">None yet</div>'
         : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
         : byRole(cr).map(([role, cs]) => `<dt>${esc(role)}</dt><dd${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? ' class="stk"' : ''}>${S.dis === 'below' && cs.length > 1 && cs.some(c => c.dis) ? cs.map(c => `<div>${crName(c)}</div>`).join('') : andList(cs.map(crName))}</dd>`).join('');
-    return `<dl class="grp${S.byName ? ' bn' : ''}">${head}${rows}${extra}</dl>`;
+    return `<dl class="grp${S.byName ? ' bn' : ''}">${head}${fx ? extra + rows : rows + extra}</dl>`;
 }
 const IC_ROLE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h5.5l6.5 6.5-5 5-7-6.5z"/><circle cx="5.3" cy="5.8" r="1"/></svg>';
 const IC_NAME = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 14c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5"/></svg>';
@@ -34850,12 +34865,34 @@ function detail(t) {
     const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
-    const iswc = t.work && t.work.iswcs && t.work.iswcs.length ? `<div class="iswc"><span>ISWC</span><span>${esc(t.work.iswcs.join(', '))}</span></div>` : '';
-    const works = t.works && t.works.length ? t.works.map(w => crGroup('Work', 'work', w, w.cr, iswcOf(w))) : t.work ? [crGroup('Work', 'work', t.work, t.wcr, iswc)] : [];
+    const fx = (k, rows) => ({ k: t.key + '|' + k, open: S.tkFx.has(t.key + '|' + k), rows });
+    const works = (t.works || []).map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx('w' + i, workFacts(w))));
     const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
-    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr)}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
+    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx('rec', recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
-const iswcOf = w => !w.iswcs || !w.iswcs.length ? '' : `<div class="iswc"><span>ISWC</span><span>${esc(w.iswcs.join(', '))}</span></div>`;
+// a side's facts: [label, html, short form for the folded summary]
+const mono = s => `<span class="mono">${esc(s)}</span>`;
+const acText = ac => ac.map(a => a.name + (a.joinphrase || '')).join('');
+function recFacts(t) {
+    const r = t.rec || {}, out = [];
+    if (r.dis) out.push(['Disambig.', esc(r.dis)]);
+    if (r.title && r.title !== t.title) out.push(['Title', esc(r.title)]);
+    if (r.ac && r.ac.length && acText(r.ac) !== acText(t.ac)) out.push(['Artist', r.ac.map(a => artistA({ id: a.artist.id, name: a.name }) + esc(a.joinphrase || '')).join(''), esc(acText(r.ac))]);
+    if (r.len && t.lenMs && Math.abs(r.len - t.lenMs) >= 1000) out.push(['Length', esc(ms(r.len)) + ` <span class="r">(track ${esc(t.len)})</span>`, esc(ms(r.len))]);
+    if (r.first) out.push(['First released', esc(r.first)]);
+    if (t.isrcs.length) out.push([t.isrcs.length > 1 ? 'ISRCs' : 'ISRC', t.isrcs.map(mono).join(' '), esc(t.isrcs[0]) + (t.isrcs.length > 1 ? ' +' + (t.isrcs.length - 1) : '')]);
+    return out;
+}
+function workFacts(w) {
+    const out = [];
+    if (w.type) out.push(['Type', esc(w.type)]);
+    if (w.dis) out.push(['Disambig.', esc(w.dis)]);
+    if (w.langs && w.langs.length) out.push([w.langs.length > 1 ? 'Languages' : 'Language', esc(w.langs.join(', '))]);
+    if (w.perf && w.perf.length) out.push(['Performed', w.perf.map(a => `<span class="ftag">${esc(a)}</span>`).join(' ')]);
+    if (w.iswcs.length) out.push([w.iswcs.length > 1 ? 'ISWCs' : 'ISWC', w.iswcs.map(mono).join(' '), esc(w.iswcs[0]) + (w.iswcs.length > 1 ? ' +' + (w.iswcs.length - 1) : '')]);
+    for (const [k, v] of w.attrs || []) out.push([k, /^key$/i.test(k) ? esc(v) : mono(v), esc(v)]);
+    return out;
+}
 // a track's markers after its title: its recording (lit when it has relationships of its own), its works, its credits
 const MK_REC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
 const MK_WORK = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
@@ -35345,6 +35382,7 @@ function onClick(ev) {
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
+    else if (d.fx) S.tkFx.has(d.fx) ? S.tkFx.delete(d.fx) : S.tkFx.add(d.fx);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
@@ -35401,6 +35439,15 @@ function build() {
             S.grpFold = S.grpFold.includes(g.dataset.gfold) ? S.grpFold.filter(x => !ks.includes(x)) : [...new Set([...S.grpFold, ...ks])];
             const y = scrollY; render(); scrollTo(0, y);
             return;
+        }
+        // a track side's chevron opens or closes that side on every track
+        const fb = ehOn && ev.target.closest && ev.target.closest('[data-fx]');
+        if (fb) {
+            ev.preventDefault();
+            const side = fb.dataset.fx.slice(fb.dataset.fx.lastIndexOf('|')), all = [...document.querySelectorAll('[data-fx]')].map(x => x.dataset.fx).filter(k => k.endsWith(side));
+            const keys = rowKeys.map(k => k + side), on = !S.tkFx.has(fb.dataset.fx);
+            for (const k of new Set([...all, ...keys])) on ? S.tkFx.add(k) : S.tkFx.delete(k);
+            const y = scrollY; render(); scrollTo(0, y); return;
         }
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
         if (!b) return;
