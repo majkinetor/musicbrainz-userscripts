@@ -17,8 +17,8 @@ test('the home page shows search, Add, You and the tab icon', { tag: '@sandbox' 
 test('an artist page leads back to the home page', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/artist/89ad4ac3-39f7-470e-963a-56509c546377');
   await inject('event_horizon');
-  const home = page.locator('#app > a.eh-home');
-  check(await until(() => home.count(), n => n === 1) === 1, 'the home line shows above the header');
+  const home = page.locator('.kicker a.eh-home');
+  check(await until(() => home.count(), n => n === 1) === 1, 'the home icon shows right of search');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-artist.png'), clip: { x: 0, y: 0, width: 1600, height: 300 } });
   await home.click();
   check(await until(() => page.locator('#s-hadd').count(), n => n === 1) === 1, 'clicking it opens the home page');
