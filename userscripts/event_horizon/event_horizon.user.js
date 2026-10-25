@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.162000
+// @version      2026.10.27.163000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2656,7 +2656,8 @@ function fmtSummary(fs) {
 }
 const isrcHtml = i => i.length === 12 ? `<span class="isrc" data-tip="${esc(i)}">${i.slice(0, 2)}<span class="d">-</span>${i.slice(2, 5)}<span class="d">-</span>${i.slice(5, 7)}<span class="d">-</span>${i.slice(7)}</span>` : `<span class="isrc">${esc(i)}</span>`;
 const dur = ms => { const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`; };
-const total = tracks => dur(tracks.reduce((s, t) => s + t.lenMs, 0));
+// no track has a length: nothing, never 0:00
+const total = tracks => { const n = tracks.reduce((s, t) => s + (t.lenMs || 0), 0); return n ? dur(n) : ''; };
 const grpHead = (key, name, n) => { const shut = S.grpFold.includes(key); return [shut, `<button class="gf" type="button" data-gfold="${esc(key)}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this group&#10;Right-click: ${shut ? 'open' : 'fold'} every group here">${CHEV}${esc(name)} <span class="count">${n}</span></button>`]; };
 const CHEV = '<span class="cv"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 3l5 5-5 5"/></svg></span>';
 const andList = ns => ns.length < 2 ? ns.join('') : ns.slice(0, -1).join(', ') + ' <span class="and">and</span> ' + ns[ns.length - 1];
@@ -2691,7 +2692,7 @@ function facts(r) {
         released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${areas(l.ev.map(v => v.area).filter(Boolean))}</span></div>`))],
         labels: [`Label${r.labels.length > 1 ? 's' : ''}`, fold(r.labels.map(l => `<div class="lab">${labA(l)} ${l.catno ? copyB(l.catno, 'mono cat') : ''}</div>`))],
         barcode: ['Barcode', r.barcode && `<span>${copyB(r.barcode)}</span>`],
-        length: ['Length', `<span>${total(tracks)} <span class="sub">· ${tracks.length} track${tracks.length === 1 ? '' : 's'}</span></span>`],
+        length: ['Length', `<span>${total(tracks)} <span class="sub">${total(tracks) ? '· ' : ''}${tracks.length} track${tracks.length === 1 ? '' : 's'}</span></span>`],
         mbid: ['MBID', `<span>${copyB(r.id)}</span>`],
         asin: ['ASIN', r.asin && `<span>${copyB(r.asin)}</span>`],
         packaging: ['Packaging', r.packaging && esc(r.packaging)],
@@ -2980,7 +2981,7 @@ function tracklist(r) {
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
-    return sect('tl', 'Tracklist', tools, body, `<div class="folded-note">${tracks.length} tracks · ${total(tracks)}</div>`);
+    return sect('tl', 'Tracklist', tools, body, `<div class="folded-note">${tracks.length} tracks${total(tracks) ? ' · ' + total(tracks) : ''}</div>`);
 }
 
 /* ── release credits ───────────────────────────────── */
