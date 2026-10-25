@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.25
+// @version      2026.10.25.091638
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -6528,8 +6528,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-acrow.none{color:var(--mbu-text-weak);font-style:italic;cursor:default}
     .tc-acsec{padding:5px 9px 2px;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--mbu-text-weak);cursor:default}.tc-acsec:not(:first-child){border-top:1px solid var(--mbu-border-soft);margin-top:3px}
     .tc-acrow .tc-acvotes{margin-left:auto;padding-left:10px;font-size:10px;color:var(--mbu-text-weak);white-space:nowrap}
-    .tc-acpin{margin-left:auto;flex:none;display:flex;padding:3px;border-radius:3px;color:var(--mbu-text-weak);visibility:hidden;cursor:pointer}.tc-acvotes+.tc-acpin{margin-left:4px}
-    .tc-acrow:hover .tc-acpin,.tc-acrow.hi .tc-acpin,.tc-acpin.on{visibility:visible}.tc-acpin.on{color:var(--mbu-accent-text)}.tc-acpin:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
+    .tc-acpin{margin-left:auto;flex:none;display:flex;padding:3px;border-radius:3px;color:var(--mbu-text-weak);opacity:.45;cursor:pointer}.tc-acvotes+.tc-acpin{margin-left:4px}
+    .tc-acrow:hover .tc-acpin,.tc-acrow.hi .tc-acpin,.tc-acpin.on{opacity:1}.tc-acpin.on{color:var(--mbu-accent-text)}.tc-acpin:hover{background:var(--mbu-bg-hover);color:var(--mbu-accent-text)}
     .tc-acrec{display:flex;align-items:center;gap:4px;cursor:pointer}.tc-acrec:hover{color:var(--mbu-accent-text)}.tc-acrec svg{flex:none;transform:rotate(-90deg);transition:transform .15s}.tc-acrec.open svg{transform:none}.tc-acn{text-transform:none}
     .tc-acmore{justify-content:center;font-style:italic;color:var(--mbu-accent-text);border-top:1px solid var(--mbu-accent);position:sticky;bottom:0;background:var(--mbu-bg-raised)}
     .tc-acrow.exact{background:var(--mbu-ok-bg)}.tc-acrow.exact .nm{color:var(--mbu-ok)}.tc-acrow.exact:hover,.tc-acrow.exact.hi{background:var(--mbu-ok-bg)}
