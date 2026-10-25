@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.232000
+// @version      2026.10.27.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1861,8 +1861,8 @@ const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="tru
 
 const CSS = `
 .hm-hero{position:relative;margin:0 0 8px;padding:6px 400px 18px 4px;color:var(--text)}
-.hm-orb{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:150px!important;height:150px!important;pointer-events:none}
-.hm-wm{position:absolute;right:178px;top:50%;transform:translateY(-50%);text-align:right;pointer-events:none}.hm-wm b{display:block;font-size:26px;font-weight:300;letter-spacing:.35em;line-height:1.25;text-transform:uppercase;color:var(--text)}.hm-wm small{display:block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--accent)}
+.hm-orb{position:absolute;right:4px;top:20px;width:150px!important;height:150px!important;pointer-events:none}
+.hm-wm{position:absolute;right:178px;top:95px;transform:translateY(-50%);text-align:right;pointer-events:none}.hm-wm b{display:block;font-size:26px;font-weight:300;letter-spacing:.35em;line-height:1.25;text-transform:uppercase;color:var(--text)}.hm-wm small{display:block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--accent)}
 @media (max-width:1100px){.hm-hero{padding-right:190px}.hm-wm{display:none}}
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
 .hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -1870,7 +1870,7 @@ const CSS = `
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
 .hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
-.hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;font:inherit;font-size:13px;border-radius:9px;padding:8px}
+.hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;filter:none!important;color-scheme:light dark;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
 .hm-adv{flex-basis:100%;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}
 .hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}
@@ -1896,7 +1896,8 @@ const CSS = `
 .hm-you{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px;align-items:start}
 @media (max-width:900px){.hm-you{grid-template-columns:1fr}}
 .hm-pf{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
-.hm-pid{display:flex;gap:12px;align-items:center}.hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
+.hm-pid{display:flex;gap:12px;align-items:center}button.hm-av{border:0;padding:0;cursor:pointer;filter:none!important}.hm-gv{display:flex;gap:6px;margin-top:4px}.hm-gv input{border:1px solid var(--border);border-radius:8px;background:var(--surface)!important;color:var(--text)!important;font:inherit;font-size:13px;padding:5px 8px;width:240px}.hm-gv button{border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-size:13px;font-weight:700;padding:5px 12px;cursor:pointer;filter:none!important}
+.hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
 .hm-av{flex:none;overflow:hidden;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
 .hm-sts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
 .hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
@@ -3994,12 +3995,29 @@ async function profLoad(app) {
     } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
 }
 const fmtN = n => n.toLocaleString('en');
+// MusicBrainz no longer shows your email anywhere, so the avatar takes it once: only its SHA-256 is kept, and only that goes to Gravatar
+let profP = null;
+function gravForm(app) {
+    const d = app.querySelector('.hm-pid > div'); if (!d || d.querySelector('.hm-gv')) return;
+    d.insertAdjacentHTML('beforeend', '<form class="hm-gv"><input type="email" placeholder="Gravatar email, empty to clear" aria-label="Gravatar email"><button type="submit">Save</button></form>');
+    const f = d.querySelector('.hm-gv'); f.querySelector('input').focus();
+    f.addEventListener('submit', async e => {
+        e.preventDefault();
+        const m = f.querySelector('input').value.trim().toLowerCase();
+        const h = m ? [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(m)))].map(b => b.toString(16).padStart(2, '0')).join('') : '';
+        try { GM_setValue('gravatar', h); } catch (er) {}
+        if (profP) profFill(app, profP); else f.remove();
+    });
+}
 function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
     const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
     const stat = (n, l, h) => `<a class="hm-st" href="${u}/${h}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
-    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${esc(ME[0] || '?').toUpperCase()}${p.av ? `<img src="${esc(p.av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
+    profP = p; let gh = ''; try { gh = GM_getValue('gravatar', ''); } catch (e) {}
+    const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
+    el.innerHTML = `<div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
+Click to set its email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
         <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
@@ -4015,6 +4033,7 @@ function hmWire(app) {
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
     for (const im of app.querySelectorAll('[data-hmimg]')) hmImg(im);
+    app.addEventListener('click', e => { if (e.target.closest('button.hm-av')) gravForm(app); });
     visitFill(app);
     if (ME) profLoad(app);
 }
