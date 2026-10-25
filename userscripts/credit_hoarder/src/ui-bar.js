@@ -1766,8 +1766,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             gap: 0.6rem;
             row-gap: 0.4rem;
             flex-wrap: wrap;
-            min-height: 64px;
-            padding: 0.5rem 1rem;
+            min-height: 46px;
+            padding: 0.3rem 0.85rem;
             background: var(--mbu-bg-raised);
         }
         .discogs-bar-row2:empty { display: none; }
@@ -1932,7 +1932,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-bar .discogs-source a:hover { text-decoration: underline; }
         /* #272: "Import credits:" label + a row of clickable source icons */
         .discogs-import-label { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--mbu-text-weak); letter-spacing: 0.08em; text-transform: uppercase; padding-right: 0.7rem; border-right: 1px solid var(--mbu-border); }
-        .discogs-import-label img { width: 46px; height: 46px; }
+        .discogs-import-label img { width: 36px; height: 36px; }
         /* #272: drop the "Import credits:" label once a run is underway — only the
            active source icon + progress/Start-import matter then. */
         .discogs-bar.is-importing .discogs-import-label span,
@@ -2259,6 +2259,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     const progressPct = document.createElement('span');
     progressPct.id = 'discogs-progress-pct';
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:var(--mbu-warn); font-weight:bold; min-width:3.5rem;';
+    // the ant's tooltip names the script and its version (String Theory's, when it runs bundled)
+    try { const gs = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {}, host = String(gs.name || '').replace(/\*$/, ''); importLabel.dataset.tip = (host && host !== 'Credit Hoarder' ? 'Credit Hoarder (' + host + ' v' : 'Credit Hoarder v') + (gs.version || '?') + (host && host !== 'Credit Hoarder' ? ')' : ''); } catch (e) { /* no GM_info */ }
     row1.appendChild(importLabel);
     row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
