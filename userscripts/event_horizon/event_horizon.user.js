@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.152000
+// @version      2026.10.27.160000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2018,6 +2018,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
+.art .rnc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.rnc svg{opacity:.55}.rnc small{font-size:13px}
+.rnc-add{font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)!important;text-decoration:none!important}.rnc-add:hover{background:var(--hover)}
 .art .thumbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .art .thumbs button{border:0;cursor:pointer;color:var(--accent);padding:0}
 .art .thumbs img,.art .thumbs a,.art .thumbs button{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);font-weight:700;font-size:14px}
@@ -2710,13 +2712,15 @@ function under(r, more = '') {
 const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
 // the release group's link after the release's title: its layers and how many editions it has, muted
 const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
+// no front cover (none on the CAA, or it failed to load): the format's mark, a word, and a way to add one
+const relNoCover = (r, fk) => `<div class="nocover rnc">${fmtSvg(fk, 96, 1.4)}<small>No cover art</small><a class="rnc-add" href="${MB}/release/${r.id}/add-cover-art">+ Add cover art</a></div>`;
 function hero(r) {
     const fk = fmtKind(r.media[0] && r.media[0].format);
     const rest = r.images.filter(i => !i.front);
     const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
     return `<section class="hero">
         <div class="art">
-            ${r.front ? `<img class="cover" src="https://coverartarchive.org/release/${r.id}/front-500" alt="Front cover">` : `<div class="nocover">${fmtSvg(fk, 96, 1.4)}</div>`}
+            ${r.front ? `<img class="cover" data-relcover src="https://coverartarchive.org/release/${r.id}/front-500" alt="Front cover">` : relNoCover(r, fk)}
             ${thumbs ? `<div class="thumbs"${S.thumbs ? '' : ' hidden'}>${thumbs}</div>` : ''}
             ${under(r)}
         </div>
@@ -3602,6 +3606,8 @@ function render(keepPop) {
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
+    const rc = app.querySelector('[data-relcover]');
+    if (rc) rc.onerror = () => { LOG.debug('release cover failed to load', r.id); rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
     const rot = app.querySelector('[data-rot]');
     if (rot) rot.onclick = () => { const g = data.g; g.imgI = ((g.imgI || 0) + 1) % g.imgs.length; const sy = scrollY; render(); scrollTo(0, sy); };
     for (const im of app.querySelectorAll('[data-dgcover]')) im.onerror = () => { im.outerHTML = `<span class="dn">${im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; };
