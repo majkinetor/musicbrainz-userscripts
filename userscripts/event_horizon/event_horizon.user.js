@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.210000
+// @version      2026.10.26.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2616,8 +2616,10 @@ function rlQuiet(r) {
         return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${rest.length} more kinds on ${esc(p.name)}" data-tip="+${rest.length}: also ${rest.map(kname).join(', ')}">+${rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
-    // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row
-    const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
+    // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
+    // A–Z (majkinetor), the bare hostnames after the named sites
+    const az = ([a], [b]) => (a.key === 'globe') - (b.key === 'globe') || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
     return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="lnk" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
 
