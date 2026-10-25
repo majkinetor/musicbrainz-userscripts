@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.266000
+// @version      2026.10.27.267000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2096,6 +2096,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hst{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff}.hst.ok{background:#2e8b57}.hst.op{background:#c08a00}.hst.no{background:#c0392b}.hst.cx{background:#888}
 .hgb{display:none;border-top:1px solid var(--line)}.hgrp.open .hgb{display:block}
 .hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
+.hrun>summary::before,.hed>summary::before{content:'▸';color:var(--muted);width:12px;margin-left:-18px;transition:transform .15s;align-self:center}.hrun[open]>summary::before,.hed[open]>summary::before{transform:rotate(90deg)}
 .hrun>summary:hover,.hed>summary:hover{background:var(--line)}.hrun .hed>summary{padding-left:62px}.hty{font-weight:600}.hrun>summary .n{color:var(--muted)}.hed .d,.hed .v{color:var(--muted);font-size:12px}.hed .id{font-size:12px}
 .hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}
 .hwho{font-size:13px;font-weight:600}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
@@ -4554,6 +4555,16 @@ function histPage(app, d) {
         else if (s) { d.st = d.st === s.dataset.hst ? '' : s.dataset.hst; render(); }
         else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing); }
         else if (h && !t.closest('a')) { const k = h.parentNode.dataset.hg; d.open.has(k) ? d.open.delete(k) : d.open.add(k); const y = scrollY; render(); scrollTo(0, y); }
+    };
+    // right-click on a row: it and its siblings all open, or all close when it is open
+    app.oncontextmenu = ev => {
+        if (data !== d) return;
+        const t = ev.target, h = t.closest('.hgh'), sm = !h && t.closest('.hrun>summary,.hed>summary');
+        if (t.closest('a') || (!h && !sm)) return;
+        ev.preventDefault();
+        if (h) { const keys = [...app.querySelectorAll('.hgrp')].map(g => g.dataset.hg), open = !d.open.has(h.parentNode.dataset.hg); keys.forEach(k => open ? d.open.add(k) : d.open.delete(k)); const y = scrollY; render(); scrollTo(0, y); return; }
+        const me = sm.parentNode, open = !me.open;
+        [...me.parentNode.children].filter(x => x.tagName === 'DETAILS').forEach(x => { x.open = open; });
     };
 }
 

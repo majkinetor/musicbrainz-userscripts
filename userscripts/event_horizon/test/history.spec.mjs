@@ -24,6 +24,12 @@ test('the history page groups a release\'s edits', { tag: '@sandbox' }, async ({
   const noted = page.locator('.hgrp.open .hed:has(.hnc) > summary:visible').first();
   if (await noted.count()) { await noted.click(); check(await until(() => page.locator('.hed[open] .hnote').count(), n => n > 0) > 0, 'an opened edit shows its notes'); }
   check(await page.locator('.hdt span.artwork-image:not(:has(img))').count() === 0, 'every cover in the details has its thumbnail');
+  await page.locator('.hgrp .hgh').nth(1).click({ button: 'right' });
+  check(await until(() => page.locator('.hgrp:not(.open)').count(), n => n === 0) === 0, 'a right-click on a closed group opens every group');
+  const row = page.locator('.hgrp.open .hgb > details > summary:visible').first();
+  const n = await page.locator('.hgrp.open').first().locator('.hgb > details').count();
+  await row.click({ button: 'right' });
+  check(await page.locator('.hgrp.open').first().locator('.hgb > details[open]').count() === n, 'a right-click on a row opens its siblings');
   await attachShot(testInfo, page, 'history');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });
