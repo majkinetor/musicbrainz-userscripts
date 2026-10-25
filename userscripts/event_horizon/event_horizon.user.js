@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.235800
+// @version      2026.10.26.235900
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2948,8 +2948,8 @@ async function loadRg(id, step = () => {}) {
 let tagsOpen = false;
 const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class="chip tag">${esc(t)}</span>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
 // a few aliases inline; a +N button shows the rest
-let aliasOpen = false;
-const aliasList = as => { const n = 4, sh = aliasOpen ? as : as.slice(0, n); return `<div class="als">${sh.map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<button class="chip" type="button" data-aliasmore aria-expanded="${aliasOpen}">${aliasOpen ? 'Fewer' : '+' + (as.length - n)}</button>` : ''}</div>`; };
+// the first four aliases, the rest in a popover behind +N
+const aliasList = as => { const n = 4; return `<div class="als">${as.slice(0, n).map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<span class="popwrap"><button class="chip" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => `<div>${esc(a)}</div>`).join('')}</div></span>` : ''}</div>`; };
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
@@ -3313,7 +3313,6 @@ function onClick(ev) {
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
-    else if ('aliasmore' in d) aliasOpen = !aliasOpen;
     else if (d.dgview) S.dgView = d.dgview;
     else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
