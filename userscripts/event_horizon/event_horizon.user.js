@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.110000
+// @version      2026.10.27.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2109,6 +2109,19 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-filter{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .fbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}
 #s-ed .fbar{margin:10px 0 14px}
+.fbox{position:relative;display:inline-flex;align-items:center;gap:6px;height:34px;width:300px;max-width:50vw;box-sizing:border-box;padding:0 10px;margin-right:6px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--muted)}
+.fbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.fbox input{all:unset;flex:1;min-width:0;height:100%;font-size:13px;color:var(--text)}
+.fbox input::placeholder{color:var(--muted)}
+.fpop{position:absolute;top:calc(100% + 6px);left:0;width:max(100%,360px);max-height:360px;overflow:auto;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px var(--shadow);padding:6px;font-size:13px;color:var(--text);text-align:left}
+.fs-k{color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:8px 10px 3px}
+.fs-row{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;cursor:pointer}
+.fs-row span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-row:hover,.fs-row.on{background:var(--chip)}
+.fs-row mark{background:none;color:var(--accent);font-weight:700}
+.fs-n{margin-left:auto;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.fs-ft{display:flex;gap:12px;border-top:1px solid var(--border);margin:6px -6px -6px;padding:6px 12px;color:var(--muted);font-size:11px}
+.fs-ft kbd{font:inherit;border:1px solid var(--border);border-radius:4px;padding:0 4px;background:var(--bg)}
 .fbar .fq{height:30px;width:220px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
 .fbar .fadd{height:30px;width:240px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
 .fbar select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;padding:0 6px;cursor:pointer;max-width:260px}
@@ -3406,23 +3419,50 @@ function fltPass(sc, x, skip) {
     return FLT_FIELDS[sc].every(([k, , get]) => k === skip || !(k in f.f) || get(x).includes(f.f[k]));
 }
 const fltApply = (sc, xs) => xs.filter(x => fltPass(sc, x));
+function fltVals(sc, k, get) {
+    const f = FLT[sc], m = new Map(), q = f.q;
+    f.q = '';    // a value's count ignores the title typed so far, which is what the suggestion replaces
+    for (const x of f.xs || []) if (fltPass(sc, x, k)) for (const v of new Set(get(x))) m.set(v, (m.get(v) || 0) + 1);
+    f.q = q;
+    if (k in f.f && !m.has(f.f[k])) m.set(f.f[k], 0);
+    return [...m].sort((a, b) => k === 'year' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
+}
 function fltBar(sc, xs) {
-    const f = FLT[sc], n = fltApply(sc, xs).length, on = f.q || Object.keys(f.f).length;
-    if (!f.open && !on) return '';
-    const vals = (k, get) => {
-        const m = new Map();
-        for (const x of xs) if (fltPass(sc, x, k)) for (const v of new Set(get(x))) m.set(v, (m.get(v) || 0) + 1);
-        if (k in f.f && !m.has(f.f[k])) m.set(f.f[k], 0);
-        return [...m].sort((a, b) => k === 'year' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
-    };
+    const f = FLT[sc]; f.xs = xs;
+    const n = fltApply(sc, xs).length, on = f.q || Object.keys(f.f).length;
+    if (!on) return '';
     const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
-    const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${vals(k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
-    const add = FLT_FIELDS[sc].filter(([k]) => !(k in f.f)).map(([k, name, get]) => [k, name, vals(k, get)]).filter(x => x[2].length > 1)
-        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(`${name}: ${v} (${c})`)}" data-fv="${esc(k + '\t' + v)}"></option>`).join('')).join('');
-    return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<input type="search" class="fadd" data-fadd="${sc}" list="fl-${sc}" placeholder="+ Filter: type an artist, year…" aria-label="Add a filter" autocomplete="off"><datalist id="fl-${sc}">${add}</datalist>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
+    const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${fltVals(sc, k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
+    return `<div class="fbar">${chips}<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span></div>`;
+}
+// the suggestions under the box (majkinetor, option C of a mock): the title as typed first, then each field's
+// values that contain it, grouped under the field's name; Enter or a click takes the lit one
+function fltSug(sc, inp) {
+    const f = FLT[sc], q = fltFold(inp.value.trim()), pop = inp.parentNode.querySelector('.fpop');
+    if (!pop) return;
+    if (!q || document.activeElement !== inp) { pop.hidden = true; pop.innerHTML = ''; return; }
+    const hi = v => { const t = fltFold(v), i = t.indexOf(q); return i < 0 ? esc(v) : esc(v.slice(0, i)) + '<mark>' + esc(v.slice(i, i + q.length)) + '</mark>' + esc(v.slice(i + q.length)); };
+    let h = `<div class="fs-row on" data-fsv="">Title contains <b>“${esc(inp.value.trim())}”</b></div>`, n = 0;
+    for (const [k, name, get] of FLT_FIELDS[sc]) {
+        if (k in f.f) continue;
+        const vs = fltVals(sc, k, get).filter(([v]) => fltFold(v).includes(q)).slice(0, 6);
+        if (!vs.length) continue;
+        h += `<div class="fs-k">${name}</div>` + vs.map(([v, c]) => `<div class="fs-row" data-fsv="${esc(k + '\t' + v)}"><span>${hi(v)}</span><span class="fs-n">${c}</span></div>`).join('');
+        n += vs.length;
+    }
+    pop.innerHTML = h + `<div class="fs-ft"><span><kbd>↑↓</kbd> move</span><span><kbd>Enter</kbd> take</span><span><kbd>Esc</kbd> clear</span></div>`;
+    pop.hidden = false;
+}
+function fltTake(sc, row) {
+    const v = row.dataset.fsv;
+    if (!v) { const i = $(`[data-fq="${sc}"]`); if (i) { i.blur(); } return; }
+    const i = v.indexOf('\t');
+    FLT[sc].f[v.slice(0, i)] = v.slice(i + 1); FLT[sc].q = '';
+    const y = scrollY; render(); scrollTo(0, y);
+    const b = $(`[data-fq="${sc}"]`); if (b) b.focus();
 }
 // the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
-const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
+const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `${on ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter: title, ${sc === 'ed' ? 'cat#, label, format' : 'artist, type'}, year…" aria-label="Filter" autocomplete="off"><div class="fpop" hidden></div></span>` : ''}<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
@@ -3820,9 +3860,19 @@ function build() {
         FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
         const y = scrollY; render(); scrollTo(0, y);
     });
-    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } };
+    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); fltSug(sc, i); } };
+    document.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
+    document.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => fltSug(t.dataset.fq, t)); });
+    document.addEventListener('keydown', ev => {
+        const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
+        if (!pop || pop.hidden) return;
+        const rows = [...pop.querySelectorAll('.fs-row')], at = rows.findIndex(r => r.classList.contains('on'));
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
+        else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
+    });
     document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
+    document.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
