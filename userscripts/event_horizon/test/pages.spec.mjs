@@ -35,6 +35,21 @@ test('an instrument page shows its Commons picture, what it is a subtype of, and
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-instrument.png'), fullPage: true });
 });
 
+test('a place page shows where it is, its parts, and its events and recordings', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/place/bd55aeb7-19d1-4607-a500-14b8479d3fed');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app .hero h1').count(), n => n === 1) === 1, 'the hero shows');
+  check(/studio/i.test(await page.locator('#app .kicker').innerText()), 'the kicker names its type');
+  const facts = await page.locator('#app .facts').innerText();
+  check(/london/i.test(facts), 'its area shows');
+  check(/51\.53/.test(facts), 'its coordinates show');
+  check(/parts/i.test(facts), 'its parts show');
+  check(await until(() => page.locator('#app .sec.pend').count(), n => n === 0) === 0, 'every section has loaded');
+  check(await page.locator('#s-pr tbody tr').count() > 0, 'the recordings table fills in');
+  await attachShot(testInfo, page, 'place');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-place.png'), fullPage: true });
+});
+
 test('a work page shows its hero, credits and recordings', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/work/afec4a5d-5ac6-309a-be7c-ee4f919730c3');
   await inject('event_horizon');

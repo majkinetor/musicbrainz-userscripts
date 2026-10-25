@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 15:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 14:33 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -721,7 +721,7 @@ How each source is read is in [DEVELOP.md](../credit_hoarder/DEVELOP.md).
 
 ## Event Horizon
 
-MusicBrainz, past the point of no return: release, release group, artist, label, recording, work and area pages redesigned around what you came for.
+MusicBrainz, past the point of no return: release, release group, artist, label, recording, work, area, instrument and place pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
   - Or via bundle: [String Theory](../string_theory/README.md)
@@ -729,20 +729,22 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ### Features
 
-- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work or area page (a country shows its codes, its parts, its anthem and instruments, what it was the location for, and the artists, labels and places in it), and moves between them without reloading.
+- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument or place page, and moves between them without reloading.
 - **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
 
 ### The viewer
 
-Open a release, release group, artist, label, recording or work on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
+Open a release, release group, artist, label, recording, work, area, instrument or place on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, relationships, …) stay MusicBrainz's.
 
 The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
 
 An artist's picture or a label's logo comes from its Discogs, Wikipedia (its Commons image, Wikidata item or article), Deezer, Spotify, Tidal, Apple Music or SoundCloud link. Click it to see the next one; the badge on its edge opens the page it came from.
 
-An area's cover is its map from Wikidata, with its flag in the corner. Click it for the flag, the coat of arms and any other image its Wikidata item has. An area with no Wikidata images keeps the globe.
+An area shows its codes, its parts, its anthem and instruments, what it was the location for, and the artists, labels and places in it. An instrument shows what it is tied to and the artists, releases and recordings that use it. A place shows its area, address and coordinates (with a link to the map), the places, artists and labels tied to it, its events, and the recordings made there.
+
+An area's cover is its map from Wikidata, with its flag in the corner. Click it for the flag, the coat of arms and any other image its Wikidata item has. An area with no Wikidata images keeps the globe. A place's picture is its Wikimedia Commons image, else its Wikidata image or logo.
 
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 

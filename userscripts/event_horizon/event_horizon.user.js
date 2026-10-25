@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.224000
+// @version      2026.10.27.231000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -14,6 +14,7 @@
 // @match        https://*.musicbrainz.org/work/*
 // @match        https://*.musicbrainz.org/area/*
 // @match        https://*.musicbrainz.org/instrument/*
+// @match        https://*.musicbrainz.org/place/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -2350,7 +2351,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid img,.artgrid .art-miss{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;background:var(--chip);color:transparent}
 .artgrid .art-miss{display:grid;place-items:center;color:var(--muted)}.art-miss svg{opacity:.55}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
-.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.ed-t tr.tsub td{padding-top:18px;font-weight:600;color:var(--soft)}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -3463,14 +3464,14 @@ const relsTo = (a, kind, type) => (a.relations || []).filter(x => x['target-type
 // an area's pictures from its Wikidata item: the locator map with the flag on its corner, then the flag,
 // coat of arms, seal and image; kept 30 days (a miss 3), as areas hardly change
 const AREA_PROPS = [['P242', 'Locator map'], ['P41', 'Flag'], ['P94', 'Coat of arms'], ['P158', 'Seal'], ['P18', 'Image']];
-async function areaImages(id, rels) {
+async function areaImages(id, rels, props = AREA_PROPS) {
     const c = (() => { try { return GM_getValue('areaImg', null) || {}; } catch (e) { return {}; } })(), e = c[id];
     if (e && Date.now() - e.t < (e.all.length ? 30 : 3) * 864e5) return e.all;
     const wd = rels.map(x => x['target-type'] === 'url' && (x.url.resource.match(/wikidata\.org\/wiki\/(Q\d+)/) || [])[1]).find(Boolean);
     if (!wd) return [];
     const fp = f => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f.replace(/ /g, '_')) + '?width=500';
     let failed = false;
-    const got = await Promise.all(AREA_PROPS.map(async ([p, from]) => {
+    const got = await Promise.all(props.map(async ([p, from]) => {
         try {
             const r = await gmFetch(`https://www.wikidata.org/w/api.php?action=wbgetclaims&property=${p}&format=json&origin=*&entity=${wd}`);
             if (!r.ok) { failed = true; return null; }
@@ -3551,12 +3552,12 @@ function instrument(a) {
         links: urlsOf(rels.filter(x => x.type !== 'image')), rels,
     };
 }
-// one of MusicBrainz's instrument subpages: its table as headings and rows, without the merge checkboxes and the ratings
-async function insPage(id, sub) {
-    const r = await mbnFetch(`${MB}/instrument/${id}/${sub}`);
+// one of MusicBrainz's subpages (an instrument's or a place's tab): its table as headings and rows, without the merge checkboxes and the ratings
+async function mbTab(type, id, sub) {
+    const r = await mbnFetch(`${MB}/${type}/${id}/${sub}`);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = new DOMParser().parseFromString(await r.text(), 'text/html'), t = d.querySelector('#content table.tbl');
-    const more = !!d.querySelector('#content ul.pagination'), h = d.querySelector('.instrumentheader h1'), name = h ? h.textContent.trim() : '';
+    const more = !!d.querySelector('#content ul.pagination'), h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
     if (!t) return { head: [], rows: [], more, name };
     const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && !th.classList.contains('rating') && !th.classList.contains('checkbox-cell'));
     const cell = td => {
@@ -3564,12 +3565,14 @@ async function insPage(id, sub) {
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
         return td.innerHTML.trim();
     };
-    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(tr => [...tr.children].filter((_, i) => keep[i]).map(cell)), more, name };
+    // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
+    const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
+    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(row), more, name };
 }
 // the page shows as soon as either the instrument or its lists are in: lists first give a page
 // named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
 async function loadInstrument(id, step = () => {}) {
-    const one = k => insPage(id, k).then(x => x, () => null);
+    const one = k => mbTab('instrument', id, k).then(x => x, () => null);
     const lists = Promise.all([one('artists'), one('releases'), one('recordings')]).then(x => { step('artists, releases, recordings'); return x; });
     const wiki = wikiOf('instrument', id);
     const aP = ws(`instrument/${id}?inc=aliases+genres+tags+annotation+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
@@ -3596,12 +3599,85 @@ function insHero(d) {
     ], '', pic);
 }
 // a table per subpage, as MusicBrainz shows its first page
+function tabSect(sid, name, x, href) {
+    const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
+    if (!rs.length) return '';
+    // a column empty in every row goes
+    const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = x.head.map((_, i) => rs.some(r => txt(r[i])));
+    const head = x.head.filter((_, i) => on[i]), n = rs.length, cnt = x.more ? `${n}+` : n;
+    const tr = r => Array.isArray(r) ? `<tr>${r.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${head.length}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
+    const more = x.more ? `<div class="folded-note">The first ${n}. <button class="lnk" type="button" data-mbgo="${href}">All on MusicBrainz's page</button></div>` : '';
+    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${x.rows.map(tr).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+}
 function insList(d, i) {
-    const x = d.listsX && d.listsX[i], [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
-    if (!x || !x.rows.length) return '';
-    const n = x.rows.length, cnt = x.more ? `${n}+` : n;
-    const more = x.more ? `<div class="folded-note">The first ${n}. <button class="lnk" type="button" data-mbgo="${MB}/instrument/${d.id}/${sub}">All on MusicBrainz's page</button></div>` : '';
-    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${x.head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${x.rows.map(r => `<tr>${r.map(c => `<td>${c || '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+    const [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
+    return tabSect(sid, name, d.listsX && d.listsX[i], `${MB}/instrument/${d.id}/${sub}`);
+}
+/* ── place ───────────────────────────────────────── */
+// a place (a studio, a venue, …): where it is, its picture (its Commons "image" link, else its Wikidata image or logo),
+// the places, artists and labels tied to it, then its events and the recordings made there; ws/2 can't list a place's
+// recordings, and its own relationships to them run to thousands for a big studio, so those are read from its Performances tab
+const MK_PLACE = '<path d="M12 21s-7-6.200-7-11.500a7 7 0 0 1 14 0C19 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/>';
+const PLACE_PROPS = [['P18', 'Image'], ['P154', 'Logo']];
+// [link type, forward label, backward label]; any other type is named after itself
+const PL_RELS = { parts: ['Parts', 'Part of'] };
+function place(a) {
+    const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {}, rels = a.relations || [];
+    const groups = [];
+    for (const x of rels) {
+        const k = x['target-type'];
+        if (!['place', 'artist', 'label', 'area', 'series', 'work', 'instrument'].includes(k) || !x[k]) continue;
+        const l = PL_RELS[x.type] ? PL_RELS[x.type][x.direction === 'backward' ? 1 : 0] : x.type.charAt(0).toUpperCase() + x.type.slice(1);
+        let gr = groups.find(y => y[0] === l);
+        if (!gr) groups.push(gr = [l, []]);
+        if (!gr[1].some(y => y.id === x[k].id)) gr[1].push({ kind: k, id: x[k].id, name: x[k].name || x[k].title, dis: x[k].disambiguation || '', years: [yearOf(x.begin || ''), yearOf(x.end || '')].filter(Boolean) });
+    }
+    const c = a.coordinates, im = rels.find(x => x['target-type'] === 'url' && x.type === 'image');
+    return {
+        id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended,
+        address: a.address || '', area: a.area || null, coords: c && c.latitude != null ? [+c.latitude, +c.longitude] : null, groups,
+        img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
+        tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
+        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        links: urlsOf(rels.filter(x => x.type !== 'image')), rels, imgs: [],
+    };
+}
+const placeImages = g => commonsImg(g.img, 600) ? Promise.resolve([{ src: commonsImg(g.img, 600), from: 'Wikimedia Commons', key: 'wikipedia', url: g.img }]) : areaImages(g.id, g.rels, PLACE_PROPS).catch(() => []);
+async function loadPlace(id, step = () => {}) {
+    const events = ws(`event?place=${id}&limit=100`).then(x => x, () => null);
+    const perf = mbTab('place', id, 'performances').then(x => x, () => null);
+    const lists = Promise.all([events, perf]).then(x => { step('events, recordings'); return x; });
+    const wiki = wikiOf('place', id);
+    const gP = ws(`place/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+artist-rels+label-rels+place-rels+series-rels+work-rels+instrument-rels+url-rels`).then(a => { step('place'); return place(a); });
+    const img = gP.then(placeImages).catch(() => []);
+    return { kind: 'place', g: null, gP, lists, wiki, img, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+}
+function placeHero(d) {
+    const g = d.g, cnt = xs => xs.length > 1 ? ` <span class="count">${xs.length}</span>` : '';
+    const rl = xs => `<span class="arl">${xs.map(x => `<span>${entA(x.kind, x.id, x.name)}${x.dis ? ` <span class="sub">(${esc(x.dis)})</span>` : ''}${x.years.length ? ` <span class="sub">${esc([...new Set(x.years)].join('–'))}</span>` : ''}</span>`).join('')}</span>`;
+    const ll = g.coords && g.coords.map(v => v.toFixed(5)).join(', ');
+    const at = g.coords ? `<a href="https://www.openstreetmap.org/?mlat=${g.coords[0]}&amp;mlon=${g.coords[1]}#map=17/${g.coords[0]}/${g.coords[1]}" target="_blank" rel="noopener" class="mono">${esc(ll)}</a> <button class="lnk" type="button" data-mbgo="${MB}/place/${g.id}/map">Map</button>` : '';
+    return pgHero(g, 'place', MK_PLACE, g.type || 'Place', [
+        ['Area', g.area && areaA(g.area)],
+        ['Address', g.address && esc(g.address)],
+        ['Coordinates', at],
+        [g.type === 'Studio' || g.type === 'Venue' ? 'Opened' : 'Began', g.begin && fdate(g.begin)],
+        [g.type === 'Studio' || g.type === 'Venue' ? 'Closed' : 'Ended', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
+        ...g.groups.map(([l, xs]) => [`${esc(l)}${cnt(xs)}`, rl(xs), 'wide']),
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.links.length && rlQuiet(g), 'wide'],
+    ], '', picHtml(g, 'ipic', `<div class="nocover pg">${bigMk(MK_PLACE)}</div>`));
+}
+// its events by date, from ws/2
+function placeEvents(d) {
+    const x = d.listsX && d.listsX[0], xs = x && [...(x.events || [])].sort((a, b) => ((a['life-span'] || {}).begin || '9').localeCompare((b['life-span'] || {}).begin || '9'));
+    if (!xs || !xs.length) return '';
+    const total = x['event-count'] || xs.length;
+    const when = e => { const ls = e['life-span'] || {}; return ls.begin ? fdate(ls.begin) + (ls.end && ls.end !== ls.begin ? ' – ' + fdate(ls.end) : '') : ''; };
+    const row = e => `<tr><td>${entA('event', e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}${e.cancelled ? ' <span class="sub">· cancelled</span>' : ''}</td><td>${esc(e.type || '') || '—'}</td><td class="mono">${when(e) || '—'}</td><td class="mono">${esc(e.time || '') || '—'}</td></tr>`;
+    const more = total > xs.length ? `<div class="folded-note">The first ${xs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/place/${d.id}/events">All on MusicBrainz's page</button></div>` : '';
+    return sect('pe', `Events <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Time</th></tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} event${total === 1 ? '' : 's'}</div>`);
 }
 /* ── filter bar ──────────────────────────────────── */
 // The discography's and the releases' filter (majkinetor, from a mock): a box for the title and a chip per chosen
@@ -3719,8 +3795,9 @@ function render(keepPop) {
     const editions = (x, eds, n) => w('ed', x.id ? 'Editions' : 'Releases', edHtml(x, eds, n));
     // keyed by the markup an image was drawn from: a fallback that changed its src since still matches
     const oldImgs = new Map([...app.querySelectorAll('img')].filter(i => i.complete && i.naturalWidth).map(i => [imgKey.get(i) || i.outerHTML, i]));
-    const KN = { rg: 'group', recording: 'recording', work: 'work', area: 'area', label: 'label', artist: 'artist', instrument: 'instrument' };
+    const KN = { rg: 'group', recording: 'recording', work: 'work', area: 'area', label: 'label', artist: 'artist', instrument: 'instrument', place: 'place' };
     app.innerHTML = !data.g && !data.rel ? heroSk(KN[data.kind] || data.kind, data.gErr) + (data.kind === 'recording' ? editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount)
+        : data.kind === 'place' ? wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`))
         : data.kind === 'instrument' ? wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2))
         : data.kind === 'area' ? wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
         : data.kind === 'work' ? wikipedia(data.wikiX) + w('rc', 'Recordings', recsHtml(data))
@@ -3728,6 +3805,7 @@ function render(keepPop) {
         : data.kind === 'artist' ? wikipedia(data.wikiX) + discography(data)
         : wikipedia(data.wikiX) + editions({ id: null, rgId: r.id }, data.editions, data.edCount))
         : data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
+        : data.kind === 'place' ? placeHero(data) + wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`)) + annotation(r)
         : data.kind === 'instrument' ? insHero(data) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2)) + annotation(r)
         : data.kind === 'area' ? areaHero(data) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2)) + annotation(r)
         : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
@@ -3746,6 +3824,9 @@ function render(keepPop) {
     // a Commons picture that won't load: the instrument's mark
     const ii = app.querySelector('[data-insimg]');
     if (ii) ii.onerror = () => { ii.closest('.picw').outerHTML = `<div class="nocover">${bigMk(MK_INS)}</div>`; };
+    // and a place's: its pin
+    const pi = data.kind === 'place' && app.querySelector('.art img.cover');
+    if (pi) pi.onerror = () => { pi.closest('.picw').outerHTML = `<div class="nocover pg">${bigMk(MK_PLACE)}</div>`; };
     const rot = app.querySelector('[data-rot]');
     if (rot) rot.onclick = () => { const g = data.g; g.imgI = ((g.imgI || 0) + 1) % g.imgs.length; const sy = scrollY; render(); scrollTo(0, sy); };
     for (const im of app.querySelectorAll('[data-dgcover]')) im.onerror = () => { im.outerHTML = `<span class="dn">${im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; };
@@ -3820,23 +3901,23 @@ const HM_ME = [
     ['tags', 'Tags', CI_TAG],
     ['', 'Profile', MK_CR],
 ];
-const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS] };
+const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE] };
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
 // a visit's picture: its cover from the archive (a missing one falls back to the icon), else the one kept with the visit
 // or an artist's or label's cached image
 const visitImg = v => { const [k, id] = v.key.split('/'); if (k === 'release' || k === 'release-group') return `https://coverartarchive.org/${k}/${id}/front-250`; if (v.img) return v.img; const a = (k === 'artist' || k === 'label') && ARTIMG.cached(id); return a ? a.src : ''; };
-// the picture a loaded page gives its visit: an artist's or label's image, an area's flag (else its first picture),
+// the picture a loaded page gives its visit: an artist's, label's or place's image, an area's flag (else its first picture),
 // an instrument's Commons image, a recording's first release with a cover; '' for none
 async function visitPic(kind, d) {
-    if (kind === 'artist' || kind === 'label') { const x = await d.img; return x && x[0] ? x[0].src : ''; }
+    if (kind === 'artist' || kind === 'label' || kind === 'place') { const x = await d.img; return x && x[0] ? x[0].src : ''; }
     if (kind === 'area') { const x = (await d.img) || []; return ((x.find(y => y.from === 'Flag') || x[0]) || {}).src || ''; }
     if (kind === 'instrument') return commonsImg(d.g.img, 120) || (/^https?:\/\//.test(d.g.img) ? d.g.img : '');
     if (kind === 'recording') { const x = await d.eds, r = x && (x.releases || []).find(y => (y['cover-art-archive'] || {}).front); return r ? `https://coverartarchive.org/release/${r.id}/front-250` : ''; }
     return '';
 }
-const VISIT_PIC = ['artist', 'label', 'area', 'instrument', 'recording'];
+const VISIT_PIC = ['artist', 'label', 'area', 'instrument', 'place', 'recording'];
 const visitSet = (key, img) => { try { GM_setValue('visits', visits().map(x => x.key === key ? Object.assign(x, { img }) : x)); } catch (e) {} };
 function visited(key, d) {
     const r = d.rel || d.g; if (!r) return;
@@ -3851,7 +3932,7 @@ async function visitFill(app) {
         const [k, id] = v.key.split('/'); if (!VISIT_PIC.includes(k)) continue;
         try {
             const d = k === 'recording' ? { eds: ws(`release?recording=${id}&limit=25`) }
-                : await ws(`${k}/${id}?inc=url-rels`).then(a => k === 'instrument' ? { g: instrument(a) } : { img: k === 'area' ? areaImages(id, a.relations || []) : artistImage(id, a.relations || []) });
+                : await ws(`${k}/${id}?inc=url-rels`).then(a => k === 'instrument' ? { g: instrument(a) } : k === 'place' ? { img: placeImages(place(a)) } : { img: k === 'area' ? areaImages(id, a.relations || []) : artistImage(id, a.relations || []) });
             const img = await visitPic(k, d); visitSet(v.key, img);
             const ri = img && app.querySelector(`.hm-r[href$="/${k}/${id}"] .hm-ri`);
             if (ri && !ri.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; ri.prepend(im); hmImg(im); }
@@ -4106,7 +4187,7 @@ function onClick(ev) {
 }
 
 // a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
-const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument)/(' + MBID.source + ')/?$', 'i');
+const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
     if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
@@ -4381,7 +4462,7 @@ function openCfg() {
     });
 }
 // the open artist's or label's pictures follow a new order: all of them stay cached, the order picks and sorts
-function imgResort() { if (data && data.kind !== 'area' && data.g && data.g.imgsAll) { data.g.imgs = ARTIMG.sorted(data.g.imgsAll); data.g.imgI = 0; } }
+function imgResort() { if (data && !['area', 'place'].includes(data.kind) && data.g && data.g.imgsAll) { data.g.imgs = ARTIMG.sorted(data.g.imgsAll); data.g.imgI = 0; } }
 const closeCfg = () => { const w = document.getElementById('eh-cfg'); if (w) w.remove(); };
 function launcher() {
     const st = document.createElement('style'); st.id = 'eh-launch-css';
@@ -4434,7 +4515,9 @@ function skeleton() {
         <div class="sk-sec">${sk('h')}<div class="sk-tiles">${sk('tile').repeat(4)}</div></div>
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
-const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork, area: loadArea, instrument: loadInstrument };
+// each kind's list sections, filled in by its loader's lists
+const LIST_IDS = { area: ['aa', 'al', 'ap'], instrument: ['ia', 'ir', 'ic'], place: ['pe', 'pr'] };
+const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork, area: loadArea, instrument: loadInstrument, place: loadPlace };
 // this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
 let early = null;
 function prefetch(key) {
@@ -4447,7 +4530,7 @@ function prefetch(key) {
 async function show(key) {
     const app = $('#app'), n = ++showing;
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
-    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
+    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
@@ -4476,9 +4559,9 @@ async function show(key) {
         if (d.wiki) wait.add('wp');
         if (d.disc) wait.add('dg');
         if (d.recs) wait.add('rc');
-        if (d.lists) (kind === 'instrument' ? ['ia', 'ir', 'ic'] : ['aa', 'al', 'ap']).forEach(k => wait.add(k));
+        if (d.lists) (LIST_IDS[kind] || LIST_IDS.area).forEach(k => wait.add(k));
         if (kind === 'release') wait.add('art');
-        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); (kind === 'instrument' ? ['ia', 'ir', 'ic'] : ['aa', 'al', 'ap']).forEach(k => let_(k, d.lists)); if (kind === 'release') let_('art', d.covers);
+        let_('ed', d.eds); let_('wp', d.wiki); let_('dg', d.disc); let_('rc', d.recs); (LIST_IDS[kind] || LIST_IDS.area).forEach(k => let_(k, d.lists)); if (kind === 'release') let_('art', d.covers);
         if (n === showing) { data = d; render(); visited(key, d); LOG.ok('Loaded in ' + (Date.now() - t0) + ' ms'); }
         d.eds.then(x => { if (n === showing && data === d && !x) { d.edErr = true; render(); } if (n === showing && data === d && x) { d.editions = (x.releases || []).map(edition); d.edCount = x['release-count'] || 0; if (d.editions.length > (kind === 'release' ? 1 : 0)) render(); } });
         if (d.rgP) d.rgP.then(rg => { if (n === showing && data === d && rg) { Object.assign(d.rel, { rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] } }); render(); } });
