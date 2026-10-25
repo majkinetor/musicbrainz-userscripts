@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.310001
+// @version      2026.10.27.310002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4506,8 +4506,6 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox,#tracklist,.ars){margin:0!important;box-sizing:border-box;width:100%;background:var(--surface)!important;border:1px solid var(--border);border-top:0;padding:8px 16px!important}
 :root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox){display:block;border-bottom:0}
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
-:root[data-eh-rel] .eh-h2-act{margin-left:auto;font:600 12px Manrope,system-ui,sans-serif;color:var(--soft);background:none;border:0;border-radius:6px;padding:3px 8px;cursor:pointer}
-:root[data-eh-rel] .eh-h2-act:hover{background:var(--hover);color:var(--text)}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 6px!important;overflow:visible!important}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td{background:var(--bg)!important;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;position:relative;padding-left:20px}
@@ -4550,16 +4548,10 @@ function relCardsApply() {
         const k = h.nextElementSibling && h.nextElementSibling.id || (i ? 'r' + i : 'tracks');
         if (h.dataset.ehFold !== k) h.dataset.ehFold = k;
         h.classList.toggle('eh-fold', !!relFold[k]);
-        if (i === 0 && !h.querySelector('.eh-h2-act')) {
-            const b = document.createElement('button'); b.type = 'button'; b.className = 'eh-h2-act'; b.dataset.ehTrkAll = '';
-            h.appendChild(b);
-        }
     });
     const f = document.getElementById('relationship-editor-form'); if (f) f.classList.toggle('eh-fold', !!relFold.note);
     const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')];
     trs.forEach(tr => tr.classList.toggle('eh-tf', relTrkFold.has(relTrkKey(tr))));
-    const all = ed.querySelector('[data-eh-trk-all]');
-    if (all) { const open = trs.some(tr => !tr.classList.contains('eh-tf')); const t = open ? 'Fold tracks' : 'Unfold tracks'; if (all.textContent !== t) all.textContent = t; all.dataset.tip = open ? 'Show only the tracks, without their relationships' : 'Show every track\'s relationships'; }
 }
 function relCards() {
     const ed = document.querySelector('.release-relationship-editor');
@@ -4567,18 +4559,25 @@ function relCards() {
     if (ed.dataset.ehCards) return; ed.dataset.ehCards = '1';
     ed.addEventListener('click', e => {
         if (!ehOn) return;
-        const all = e.target.closest('[data-eh-trk-all]');
-        if (all) {
-            e.stopPropagation();
-            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = trs.some(tr => !relTrkFold.has(relTrkKey(tr)));
+        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        if (td) { const k = relTrkKey(td.parentNode); if (!k) return; relTrkFold.has(k) ? relTrkFold.delete(k) : relTrkFold.add(k); relCardsApply(); }
+    });
+    // right-click a track's number, as on Event Horizon's pages: fold every track, or open them all when that one is folded
+    ed.addEventListener('contextmenu', e => {
+        if (!ehOn) return;
+        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        if (td) {
+            e.preventDefault();
+            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = !relTrkFold.has(relTrkKey(td.parentNode));
             trs.forEach(tr => fold ? relTrkFold.add(relTrkKey(tr)) : relTrkFold.delete(relTrkKey(tr)));
-            LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every track'); relCardsApply(); return;
+            LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every track'); relCardsApply();
         }
+    });
+    ed.addEventListener('click', e => {
+        if (!ehOn) return;
         const h = e.target.closest('.release-relationship-editor > h2');
         if (h) { const k = h.dataset.ehFold; relFold[k] = !relFold[k]; relSaveFold(); LOG.debug('Relate: region ' + k + (relFold[k] ? ' folded' : ' unfolded')); relCardsApply(); return; }
         if (e.target.closest('#relationship-editor-form legend')) { relFold.note = !relFold.note; relSaveFold(); relCardsApply(); return; }
-        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
-        if (td) { const k = relTrkKey(td.parentNode); if (!k) return; relTrkFold.has(k) ? relTrkFold.delete(k) : relTrkFold.add(k); relCardsApply(); }
     });
     let q = 0;
     new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; relCardsApply(); }); }).observe(ed, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
