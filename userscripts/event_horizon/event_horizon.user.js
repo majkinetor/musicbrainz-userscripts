@@ -2002,7 +2002,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
-.disamb{font-size:16px;color:var(--muted);font-weight:600;margin-top:-8px}
+.disamb{font-size:15px;color:var(--muted);font-weight:500;opacity:.75;margin-top:-8px}
 .by{font-size:16px;font-weight:600}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
@@ -2060,6 +2060,19 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 [aria-pressed="true"]>.box{background:var(--accent);border-color:var(--accent)}
 
 .ed-filter{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.fbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}
+#s-ed .fbar{margin:10px 0 14px}
+.fbar .fq{height:30px;width:220px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+.fbar .fadd{height:30px;width:240px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
+.fbar select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;padding:0 6px;cursor:pointer;max-width:260px}
+.fchip{display:inline-flex;align-items:center;height:30px;border:1px solid var(--accent);border-radius:15px;background:var(--chip);padding:0 2px 0 10px;font-size:13px}
+.fchip .fk{color:var(--muted);font-weight:600;margin-right:2px}
+.fchip select{all:unset;cursor:pointer;font-weight:600;color:var(--text);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.fchip button{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:13px;color:var(--muted);font-size:16px}
+.fchip button:hover{color:var(--text);background:var(--line)}
+.fbtn{all:unset;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
+.fbtn:hover{color:var(--text)}.fbtn[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
+.fbar .fn{font-size:13px;color:var(--muted)}
 .ed-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:10px;background:var(--chip)}
 .ed-seg button{all:unset;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
 .ed-seg button:hover{color:var(--text)}
@@ -2371,7 +2384,7 @@ const HOSTS = [
     ['soundcloud', 'SoundCloud', /soundcloud\.com/], ['sevendigital', '7digital', /7digital\.com/], ['hdtracks', 'HDtracks', /hdtracks\.com/],
     ['amazonmusic', 'Amazon Music', /music\.amazon\./], ['amazon', 'Amazon', /amazon\./], ['discogs', 'Discogs', /discogs\.com/], ['allmusic', 'AllMusic', /allmusic\.com/],
     ['mora', 'mora', /mora\.jp/], ['ototoy', 'OTOTOY', /ototoy\.jp/], ['pandora', 'Pandora', /pandora\.com/], ['jaxsta', 'Jaxsta', /jaxsta\.com/],
-    ['wikidata', 'Wikidata', /wikidata\.org/], ['wikipedia', 'Wikipedia', /wikipedia\.org/],['rateyourmusic', 'Rate Your Music', /rateyourmusic\.com/], ['review', 'BBC Music review', /bbc\.co\.uk\/music\/reviews/],['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
+    ['wikidata', 'Wikidata', /wikidata\.org/], ['wikipedia', 'Wikipedia', /wikipedia\.org/],['rateyourmusic', 'Rate Your Music', /rateyourmusic\.com/], ['review', 'BBC Music review', /bbc\.co\.uk\/music\/reviews/],['vimeo', 'Vimeo', /vimeo\.com/],['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
     ['twitter', 'X (Twitter)', /twitter\.com|\/\/(www\.)?x\.com\//], ['facebook', 'Facebook', /facebook\.com/], ['viaf', 'VIAF', /viaf\.org/], ['lastfm', 'Last.fm', /last\.fm|lastfm\./], ['secondhandsongs', 'SecondHandSongs', /secondhandsongs\.com/], ['genius', 'Genius', /genius\.com/],
     ['melon', 'Melon', /melon\.com/], ['bugs', 'Bugs', /bugs\.co\.kr/], ['instagram', 'Instagram', /instagram\.com/], ['imdb', 'IMDb', /imdb\.com/],
     ['songkick', 'Songkick', /songkick\.com/], ['bandsintown', 'Bandsintown', /bandsintown\.com/], ['napster', 'Napster', /napster\.com/], ['myspace', 'Myspace', /myspace\.com/],
@@ -2505,6 +2518,7 @@ const fmtSvg = (k, size = 18, sw = 2.4) => `<svg width="${size}" height="${size}
 const TILE = (bg, fg, t, fs = 11) => `<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="${bg}"/><text x="12" y="12" dy=".36em" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="${fs}" fill="${fg}">${t}</text></svg>`;
 const NOTE = '<path d="M10 17.5a2.5 2.5 0 1 1-1-2V6l8-2v9.5a2.5 2.5 0 1 1-1-2V7.2l-6 1.5z" fill="#fff"/>';
 const EXTRA = {
+    vimeo: '<svg viewBox="0 0 512 512"><path fill="#2CABE2" d="M426.667,34.133c-69.036,0-121.735,61.071-136.273,118.533c-1.59,6.288,4.463,12.115,10.69,10.276 c13.693-4.045,31.867-6.925,40.686,2.331c9.465,9.934,8.803,33.955-1.767,64.257c-15.401,44.146-45.632,84.343-59.578,86.284 c-4.809,0.671-8.572-0.22-11.849-2.797c-14.681-11.546-18.96-54.354-23.099-95.753c-6.606-66.082-14.094-140.98-62.461-165.164 C109.427,15.304,6.227,142.823,1.87,148.27c-2.079,2.599-2.458,6.17-0.969,9.147l17.067,34.133 c2.549,5.099,9.565,6.265,13.628,2.256c14.128-13.933,39.399-31.429,48.778-24.729c23.297,16.641,38.427,77.207,53.059,135.779 c21.249,85.057,43.22,173.01,97.679,173.01c57.819,0,130.474-60.703,179.189-117.511c29.339-34.213,54.224-71.316,71.965-107.298 C501.996,213.039,512,176.705,512,145.067C512,68.435,469.141,34.133,426.667,34.133z"/><path fill="#0099D4" d="M256.711,460.8c-54.458,0-76.429-87.953-97.678-173.01c-14.634-58.572-29.763-119.139-53.06-135.779 c-8.021-5.73-27.662,6.238-42.019,18.539c6.803-3.029,12.798-4.059,16.419-1.472c23.297,16.641,38.427,77.207,53.059,135.779 c21.249,85.057,43.22,173.01,97.679,173.01c30.55,0,65.242-16.95,98.356-41.316C304.493,451.404,279.454,460.8,256.711,460.8z"/></svg>',
     youtube: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4" fill="#FF0000"/><path d="M10 9v6l5-3z" fill="#fff"/></svg>',
     juno: TILE('#77b72b', '#fff', 'juno', 8), tower: TILE('#ffd400', '#e60012', 'TR', 11), yesasia: TILE('#2a8a3e', '#fff', 'YA', 10), cat45: TILE('#e8581f', '#fff', '45', 13),
     bbc: '<svg viewBox="0 0 24 24"><rect y="7" width="7" height="10" fill="#000"/><rect x="8.5" y="7" width="7" height="10" fill="#000"/><rect x="17" y="7" width="7" height="10" fill="#000"/><g font-family="Arial,sans-serif" font-weight="700" font-size="8" fill="#fff" text-anchor="middle"><text x="3.5" y="15">B</text><text x="12" y="15">B</text><text x="20.5" y="15">C</text></g></svg>',
@@ -2526,9 +2540,12 @@ const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: '
 let UID = 0;
 const uniq = s => { const u = '-' + (++UID); return s.replace(/id="([^"]+)"/g, 'id="$1' + u + '"').replace(/url\(#([^)]+)\)/g, 'url(#$1' + u + ')').replace(/href="#([^"]+)"/g, 'href="#$1' + u + '"'); };
 function icon(p, size = 20) {
+    // a BBC Music review: the BBC's blocks in a round badge, the same weight as the round icons beside it (majkinetor, from a mock)
+    if (p.key === 'review') return `<svg viewBox="0 0 32 32" width="${size}" height="${size}" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#111"/><g fill="#fff"><rect x="5" y="11" width="6.5" height="10"/><rect x="12.75" y="11" width="6.5" height="10"/><rect x="20.5" y="11" width="6.5" height="10"/></g><g fill="#111" font-family="Arial,sans-serif" font-weight="700" font-size="8" text-anchor="middle"><text x="8.25" y="19">B</text><text x="16" y="19">B</text><text x="23.75" y="19">C</text></g></svg>`;
     if (p.key !== 'globe' && ST_ICONS[p.key]) return uniq(stIcon(p.key, size).replace('<svg', '<svg aria-hidden="true"'));
     if (EXTRA[p.key]) return EXTRA[p.key].replace('<svg', `<svg width="${size}" height="${size}" aria-hidden="true"`);
-    if (p.key === 'globe' && ST_ICONS.globe) return stIcon('globe', size).replace('<svg', '<svg aria-hidden="true"');
+    // a site without an icon: two letters of its domain on a colour of its own, not the same globe for all (majkinetor)
+    if (p.key === 'globe') { const d = p.name.replace(/^www\d*\./, '').split('.')[0] || p.name, h = [...d].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7); return `<span class="mgram" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .42)}px;background:hsl(${h} 45% 46%);color:#fff" aria-hidden="true">${esc(d.replace(/[^A-Za-z0-9]/g, '').slice(0, 2) || '?')}</span>`; }
     const t = MONO[p.key] || p.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2);
     return `<span class="mgram" style="width:${size}px;height:${size}px;font-size:${Math.round(size * (t.length > 2 ? .34 : .42))}px" aria-hidden="true">${esc(t)}</span>`;
 }
@@ -2539,7 +2556,7 @@ const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['
 // a platform shows under one kind, free streaming first (majkinetor); its other kinds are behind +N
 const primaryKind = p => p.kinds.includes('free') ? 'free' : p.kinds.includes('listen') ? 'listen' : p.kinds.includes('buy') ? 'buy' : 'info';
 const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
-const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '');
+const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '') + '\n' + p.urls[0].url.replace(/^https?:\/\/(www\.)?/, ''); // the link itself, under the name
 const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
@@ -2748,14 +2765,14 @@ function edHtml(r, eds, count) {
     const all = paged ? [...eds] : [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
-    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official'));
+    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official') && fltPass('ed', e));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
     const views = '<span class="ed-div"></span>' + viewBs(['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button>${views}</div>`;
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button><span class="ed-div"></span>${fltBtn('ed')}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
@@ -3133,12 +3150,50 @@ function arHero(d) {
         </div>
     </section>`;
 }
+/* ── filter bar ──────────────────────────────────── */
+// The discography's and the releases' filter (majkinetor, from a mock): a box for the title and a chip per chosen
+// field, all of them at once. "+ Filter" offers each field's values found in the list, counted among what the
+// other chips leave. It lasts while the page does.
+const FLT = { dg: { q: '', f: {} }, ed: { q: '', f: {} } };
+const fltFold = t => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const yearOf = d => (d || '').slice(0, 4);
+const FLT_FIELDS = {
+    dg: [['artist', 'Artist', g => [acText(g['artist-credit'] || [])]], ['type', 'Type', g => [g['primary-type'] || 'Unspecified']],
+        ['sec', 'Secondary type', g => g['secondary-types'] || []], ['year', 'Year', g => [yearOf(g['first-release-date'])].filter(Boolean)]],
+    ed: [['artist', 'Artist', e => [acText(e.ac)]], ['label', 'Label', e => e.labels], ['format', 'Format', e => e.formats.filter(Boolean)],
+        ['country', 'Country', e => e.where], ['status', 'Status', e => [e.status || 'None']], ['year', 'Year', e => [yearOf(e.date)].filter(Boolean)]],
+};
+// what the box searches: the title, and a release's catalog numbers and barcode
+const FLT_TEXT = { dg: g => [g.title, g.disambiguation], ed: e => [e.title, e.disambig, e.barcode, ...e.li.map(l => l.catno)] };
+function fltPass(sc, x, skip) {
+    const f = FLT[sc], q = fltFold(f.q.trim());
+    if (q && !FLT_TEXT[sc](x).some(t => fltFold(t).includes(q))) return false;
+    return FLT_FIELDS[sc].every(([k, , get]) => k === skip || !(k in f.f) || get(x).includes(f.f[k]));
+}
+const fltApply = (sc, xs) => xs.filter(x => fltPass(sc, x));
+function fltBar(sc, xs) {
+    const f = FLT[sc], n = fltApply(sc, xs).length, on = f.q || Object.keys(f.f).length;
+    if (!f.open && !on) return '';
+    const vals = (k, get) => {
+        const m = new Map();
+        for (const x of xs) if (fltPass(sc, x, k)) for (const v of new Set(get(x))) m.set(v, (m.get(v) || 0) + 1);
+        if (k in f.f && !m.has(f.f[k])) m.set(f.f[k], 0);
+        return [...m].sort((a, b) => k === 'year' ? a[0].localeCompare(b[0]) : b[1] - a[1] || a[0].localeCompare(b[0]));
+    };
+    const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
+    const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${vals(k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
+    const add = FLT_FIELDS[sc].filter(([k]) => !(k in f.f)).map(([k, name, get]) => [k, name, vals(k, get)]).filter(x => x[2].length > 1)
+        .map(([k, name, vs]) => vs.map(([v, c]) => `<option value="${esc(name + ': ' + v)}" data-fv="${esc(k + '\t' + v)}">${c}</option>`).join('')).join('');
+    return `<div class="fbar"><input type="search" class="fq" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter by title${sc === 'ed' ? ', cat#' : ''}…" autocomplete="off">${chips}${add ? `<input type="search" class="fadd" data-fadd="${sc}" list="fl-${sc}" placeholder="+ Filter: type an artist, year…" aria-label="Add a filter" autocomplete="off"><datalist id="fl-${sc}">${add}</datalist>` : ''}${on ? `<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span>` : ''}</div>`;
+}
+// the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
+const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
     if (!x) return '';
-    const rgs = x['release-groups'] || [], m = new Map();
+    const allRgs = x['release-groups'] || [], rgs = fltApply('dg', allRgs), m = new Map();
     for (const g of rgs) { const k = [g['primary-type'] || '', ...(g['secondary-types'] || [])].filter(Boolean).join(' · ') || 'Unspecified'; const l = m.get(k) || []; l.push(g); m.set(k, l); }
     const rank = k => { const [p, ...sec] = k.split(' · '), i = DG_ORDER.indexOf(p); return (i < 0 ? 9 : i) * 10 + sec.length; };
     const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
@@ -3152,8 +3207,8 @@ function discoHtml(d) {
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="4">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
-    const total = x['release-group-count'] || rgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > rgs.length ? ` · first ${rgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (total > rgs.length ? `<span class="aside">first ${rgs.length} shown</span>` : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), body, `<div class="folded-note">${n}</div>`);
+    const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
+    return sect('dg', `Discography <span class="count">${total}</span>`, (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -3172,6 +3227,8 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); secRail(app); save(); return; }
     const r = data.rel || data.g;
+    // another page starts unfiltered
+    if (FLT.of !== r.id) { FLT.of = r.id; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = titleOf(data);
@@ -3402,6 +3459,9 @@ function onClick(ev) {
     else if (d.dism) { S.dis = d.dism; save(); }
     else if ('edoff' in d) S.ed.official = !S.ed.official;
     else if (d.edtr) edToggle(d.edtr);
+    else if (d.fdel) { const [sc, k] = d.fdel.split(':'); delete FLT[sc].f[k]; }
+    else if (d.fclr) FLT[d.fclr] = { q: '', f: {}, open: true };
+    else if (d.fopen) { const sc = d.fopen, f = FLT[sc], shut = f.open || f.q || Object.keys(f.f).length; FLT[sc] = { q: '', f: {}, open: !shut }; const y = scrollY; render(); scrollTo(0, y); const i = !shut && $(`[data-fq="${sc}"]`); if (i) i.focus(); return; }
     else if (d.mbgo) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.href = d.mbgo; return; }
     else return;
     const y = scrollY; render(keep); scrollTo(0, y);
@@ -3431,6 +3491,20 @@ function build() {
     ehBody = document.createElement('body');
     ehBody.innerHTML = `<main class="wrap" id="app"></main><div class="toast" id="toast" hidden role="status"></div>`;
     document.addEventListener('click', onClick);
+    // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
+    document.addEventListener('change', ev => {
+        const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
+        if (!sc || !t.value) return;
+        // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
+        const o = t.list && [...t.list.options].find(x => x.value === t.value), v = o ? o.dataset.fv : t.dataset.fset ? t.value : '';
+        if (!v) return;
+        const i = v.indexOf('\t');
+        FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
+        const y = scrollY; render(); scrollTo(0, y);
+    });
+    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } };
+    document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
