@@ -15,6 +15,8 @@ for (const asFirst of [true, false]) test(`the cover-art page holds Art Station'
   check(await page.locator('.arthd .by a').count() > 0, 'the artist shows');
   check(await page.locator('.as-none:not([hidden])').count() === 0, 'no "install Art Station" note');
   check(await until(() => page.locator('#as-root .as-card').count(), n => n > 0) > 0, 'the gallery shows its covers');
+  await page.mouse.move(0, 0);
+  check(await until(() => page.evaluate(() => getComputedStyle(document.querySelector('#as-root .as-pencil')).opacity), v => v === '0') === '0', 'a card\'s hover buttons stay hidden until hovered');
   await attachShot(testInfo, page, 'cover-art');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', asFirst ? '-as.png' : '-eh.png') });
 });
