@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.080000
+// @version      2026.10.27.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2375,7 +2375,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2390,7 +2390,7 @@ const S = {
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
-    tkFx: new Set(), // "<track key>|rec" / "<track key>|w<i>": a side with its facts box open
+    fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -2843,8 +2843,8 @@ const crName = c => {
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
 function crGroup(tag, type, ent, cr, extra = '', fx) {
-    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details" data-tip="${fx.open ? 'Hide' : 'Show'} the ${type}'s details\nRight-click: on every track">${CHEV}</button>` : '';
-    const head = `<h4>${chev}<span class="tag${chev ? ' fxt' : ''}"${chev ? ` data-fx="${esc(fx.k)}" data-tip="${fx.open ? 'Hide' : 'Show'} the ${type}'s details\nRight-click: on every track"` : ''}>${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
+    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details">${CHEV}</button>` : '';
+    const head = `<h4>${chev}<span class="tag${chev ? ' fxt' : ''}"${chev ? ` data-fx="${esc(fx.k)}"` : ''}>${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
     if (fx && fx.rows.length) extra = (fx.open ? `<div class="tfx">${fx.rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>` : `<div class="fxsum">${fx.rows.map(r => r[2] || r[1]).join(' · ')}</div>`) + extra;
     const rows = !cr.length ? ''
         : S.byName ? byPerson(cr).map(e => `<dt>${crName(e.c)}</dt><dd>${esc(e.roles.join(', '))}</dd>`).join('')
@@ -2871,8 +2871,8 @@ function detail(t) {
     const pl = p => `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`;
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
-    const fx = (k, rows) => ({ k: t.key + '|' + k, open: S.tkFx.has(t.key + '|' + k), rows });
-    const works = (t.works || []).map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx('w' + i, workFacts(w))));
+    const fx = (k, rows) => ({ k, open: S.fxOpen.includes(k), rows });
+    const works = (t.works || []).map(w => crGroup('Work', 'work', w, w.cr, '', fx('work', workFacts(w))));
     const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
     return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx('rec', recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
@@ -3315,8 +3315,7 @@ function pgCredits(own, side) {
     return sect('cr', 'Credits', '', `<div class="detail pg dm-${S.dis}">${sw}<div class="cols">${own || ''}${side ? `<div class="side">${side}</div>` : ''}</div></div>`, '<div class="folded-note">Credits</div>');
 }
 function recCredits(g) {
-    const fx = (k, rows) => ({ k: 'pg|' + k, open: S.tkFx.has('pg|' + k), rows });
-    const works = g.works.map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx('w' + i, workFacts(w))));
+    const works = g.works.map(w => crGroup('Work', 'work', w, w.cr, '', { k: 'work', open: S.fxOpen.includes('work'), rows: workFacts(w) }));
     return pgCredits(g.cr.length ? crGroup('Recording', 'recording', null, g.cr) : '', works.join(''));
 }
 function wkCredits(g) {
@@ -3708,7 +3707,7 @@ function onClick(ev) {
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
-    else if (d.fx) S.tkFx.has(d.fx) ? S.tkFx.delete(d.fx) : S.tkFx.add(d.fx);
+    else if (d.fx) S.fxOpen = toggle(S.fxOpen, d.fx); // a side opens or closes on every track, and stays so
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
@@ -3791,15 +3790,6 @@ function build() {
             S.grpFold = S.grpFold.includes(g.dataset.gfold) ? S.grpFold.filter(x => !ks.includes(x)) : [...new Set([...S.grpFold, ...ks])];
             const y = scrollY; render(); scrollTo(0, y);
             return;
-        }
-        // a track side's chevron opens or closes that side on every track
-        const fb = ehOn && ev.target.closest && ev.target.closest('[data-fx]');
-        if (fb) {
-            ev.preventDefault();
-            const side = fb.dataset.fx.slice(fb.dataset.fx.lastIndexOf('|')), all = [...document.querySelectorAll('[data-fx]')].map(x => x.dataset.fx).filter(k => k.endsWith(side));
-            const keys = rowKeys.map(k => k + side), on = !S.tkFx.has(fb.dataset.fx);
-            for (const k of new Set([...all, ...keys])) on ? S.tkFx.add(k) : S.tkFx.delete(k);
-            const y = scrollY; render(); scrollTo(0, y); return;
         }
         const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
         if (!b) return;
