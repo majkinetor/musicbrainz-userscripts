@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.254500
+// @version      2026.10.27.260000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2085,6 +2085,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .disamb{font-size:15px;color:var(--muted);font-weight:500;opacity:.75;margin-top:-8px}
 .by{font-size:16px;font-weight:600}
+.arthd{margin:0 0 -24px}.arthd h1{margin:0 0 6px}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
@@ -2667,7 +2668,7 @@ const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span 
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
     ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
-    ['add-cover-art', 'Art', 'Add cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
+    ['cover-art', 'Art', 'Cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
     ['edits', 'History', 'Edit history', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
 ];
 
@@ -3833,6 +3834,7 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
+    if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
@@ -4381,7 +4383,32 @@ function navTo(href) {
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
 const titleOf = d => d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
-const PAGE_ID = navTo(location.href);
+// a release's cover-art page → "art/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
+// page the tab loaded, as Art Station runs on that page alone: a link to it loads it
+const artKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/cover-art/?$', 'i')); return m ? 'art/' + m[1].toLowerCase() : null; };
+const keyOf = href => navTo(href) || artKey(href);
+const PAGE_ID = keyOf(location.href);
+
+/* ── cover-art page ────────────────────────────────── */
+
+// the release's title and artist, then Art Station's gallery: it mounts in the slot, or moves there from
+// MusicBrainz's page when it came first. The slot is drawn once: a redraw would drop the gallery
+function artPage(app, d) {
+    const r = d.rel;
+    if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
+    app.querySelector('.arthd').innerHTML = r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : `<h1 class="sk-t">${d.err ? esc(d.err) : 'Cover art'}</h1>`;
+    const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
+    if (as) slot.append(as);
+    else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none">Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
+    const mb = slot.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
+}
+async function artLoad(n, id) {
+    try { const r = await ws('release/' + id + '?inc=artist-credits'); if (n === showing) { data.rel = r; render(); } }
+    catch (e) { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
+    // Art Station mounts after it reads the release's art: until then the slot waits for it
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
+    if (!$('#as-slot .as-none')) wait(); else { const m = $('#as-slot .as-none'); m.hidden = true; setTimeout(() => { if (m.isConnected) m.hidden = false; }, 20000); wait(); }
+}
 
 /* ── EH / native ───────────────────────────────────── */
 
@@ -4474,13 +4501,13 @@ function build() {
     addEventListener('resize', () => { if (ehOn) fitQuiet(); });
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
-    addEventListener('popstate', () => { if (!ehOn) location.reload(); else show(navTo(location.href)); });
+    addEventListener('popstate', () => { const k = navTo(location.href); if (!ehOn || !k) location.reload(); else show(k); });
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
 function setOn(on) {
     // navigated inside EH: reload for MusicBrainz's page of this one, and stay off there
-    if (!on && navTo(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
+    if (!on && keyOf(location.href) !== PAGE_ID) { try { sessionStorage.setItem('eh-off', 1); } catch (e) {} location.reload(); return; }
     const first = on && !ehBody, theme = on && mbuTheme();   // read off MusicBrainz's page, before it goes
     if (first) build();
     ehOn = on;
@@ -4735,6 +4762,7 @@ async function show(key) {
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
+    if (kind === 'art') { data = { kind: 'art', id }; render(); artLoad(n, id); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
