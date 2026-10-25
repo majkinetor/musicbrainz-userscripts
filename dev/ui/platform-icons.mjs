@@ -101,10 +101,11 @@ export const PLATFORM_ICONS = {
     review: { color: '#555555', svg: '<svg viewBox="1 1 22 22"><path d="M3 3h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H10l-5 5v-5H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" style="fill:var(--mbu-text,currentColor)"/><path d="M6 7.5h12M6 10.5h12M6 13.5h8" stroke="var(--mbu-bg,#fff)" stroke-width="1.5" stroke-linecap="round" style="stroke:var(--mbu-bg,#fff)"/></svg>' },
 
     // ── X (Twitter) — its X mark (the uploaded logo, its disc dropped), in OUR theme's text colour, like Tidal ──
-    twitter: { color: '#000000', svg: '<svg viewBox="537.78 263.6 694 694"><path transform="translate(52.39 -25.06)" d="M485.39 356.79l230.07 307.62L483.94 914.52h52.11l202.7-218.98 163.77 218.98h177.32L836.82 589.6l215.5-232.81h-52.11L813.54 558.46 662.71 356.79zM562.02 395.17h81.46l359.72 480.97h-81.46z" fill-rule="evenodd" style="fill:var(--mbu-text,currentColor)"/></svg>' },
+    twitter: { color: '#000000', svg: '<svg viewBox="458.78 184.6 852 852"><path transform="translate(52.39 -25.06)" d="M485.39 356.79l230.07 307.62L483.94 914.52h52.11l202.7-218.98 163.77 218.98h177.32L836.82 589.6l215.5-232.81h-52.11L813.54 558.46 662.71 356.79zM562.02 395.17h81.46l359.72 480.97h-81.46z" fill-rule="evenodd" style="fill:var(--mbu-text,currentColor)"/></svg>' },
 
     // ── Facebook — the blue disc with its white f ──
     facebook: { color: '#0866FF', svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#0866FF"/><path d="M15.12 7.6h-1.7c-.9 0-1.12.43-1.12 1.1V10h2.8l-.4 2.85h-2.4v11.1a12 12 0 0 1-3 0v-11.1H7.2V10h2.1V8.3c0-2.45 1.5-3.8 3.7-3.8.9 0 1.7.07 2.12.12z" fill="#fff"/></svg>' },
+    viaf: { color: '#2a6ebb', svg: '<svg viewBox="0 0 24 24" fill="none"><circle cx="8.6" cy="8.6" r="6.6" stroke="#2a6ebb" stroke-width="2.6"/><circle cx="14" cy="13.4" r="5" stroke="#5a9a2e" stroke-width="2.3"/><circle cx="12.6" cy="18.6" r="3.6" stroke="#e8792b" stroke-width="2"/></svg>' },
 
     // ── Generic streaming host (unknown provider fallback) ──
     globe: { color: '#6f7d75', svg: '<svg viewBox="2 2 20 20" fill="none" stroke="#6f7d75" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>' },
