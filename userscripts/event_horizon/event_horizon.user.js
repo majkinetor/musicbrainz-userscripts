@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.000700
+// @version      2026.10.26.000800
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2199,7 +2199,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .artgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
-.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.disco-h:first-of-type{margin-top:0}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.disco-h:first-of-type{margin-top:0}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -2787,6 +2787,9 @@ async function loadRg(id, step = () => {}) {
 // the folksonomy tags (not the genres) sit behind a chip that opens them
 let tagsOpen = false;
 const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class="chip tag">${esc(t)}</span>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
+// a few aliases inline; a +N button shows the rest
+let aliasOpen = false;
+const aliasList = as => { const n = 4, sh = aliasOpen ? as : as.slice(0, n); return `<div class="als">${sh.map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<button class="chip" type="button" data-aliasmore aria-expanded="${aliasOpen}">${aliasOpen ? 'Fewer' : '+' + (as.length - n)}</button>` : ''}</div>`; };
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
@@ -2897,7 +2900,7 @@ function lbHero(d) {
         ['Defunct', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
         ['Area', g.area && areaA(g.area)],
         ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0'))],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && g.aliases.slice(0, 8).map(a => `<div>${esc(a)}</div>`).join('') + (g.aliases.length > 8 ? `<div class="aside">+${g.aliases.length - 8} more</div>` : '')],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases)],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
         ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
@@ -2923,7 +2926,7 @@ function arHero(d) {
         [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : '')],
         ['Area', g.area && areaA(g.area)],
         ['Gender', g.gender && esc(g.gender)],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && g.aliases.slice(0, 8).map(a => `<div>${esc(a)}</div>`).join('') + (g.aliases.length > 8 ? `<div class="aside">+${g.aliases.length - 8} more</div>` : '')],
+        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases)],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
         ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
@@ -3104,6 +3107,7 @@ function onClick(ev) {
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
+    else if ('aliasmore' in d) aliasOpen = !aliasOpen;
     else if (d.dgview) S.dgView = d.dgview;
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
     else if (d.edjump) { S.fold = S.fold.filter(x => x !== 'ed'); S.ed.kinds = new Set([d.edjump]); }
