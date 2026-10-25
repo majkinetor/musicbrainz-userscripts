@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.090000
+// @version      2026.10.27.100000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1848,20 +1848,22 @@ const FORMAT_ICONS = {
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
-.hm-hero{position:relative;overflow:hidden;margin:22px 0 8px;padding:30px 36px 24px;border-radius:22px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,#5b2357 0%,#2a1630 55%,#1b1020 100%)}
-.hm-orb{position:absolute;right:-50px;top:-60px;width:330px!important;height:330px!important;opacity:.35;pointer-events:none}
-.hm-k{position:relative;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#f2b38f}
+.hm-hero{position:relative;margin:22px 0 8px;padding:26px 190px 18px 4px;color:var(--text)}
+.hm-orb{position:absolute;right:4px;top:8px;width:150px!important;height:150px!important;pointer-events:none}
+@media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
+.hm-k{position:relative;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fff!important;border-radius:14px;padding:6px 6px 6px 16px;color:#7a6b85;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:#231c2b!important;font:inherit;font-size:18px;padding:8px 0}
-.hm-srch select{border:0;background:#efe8f2!important;color:#4a3b55!important;font:inherit;font-size:13px;border-radius:9px;padding:8px}
+.hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
+.hm-srch:focus-within{border-color:var(--accent)}
+.hm-srch>input[name=query]{flex:1;min-width:0;border:0;outline:0;background:none!important;color:var(--text)!important;font:inherit;font-size:18px;padding:8px 0}
+.hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
-.hm-adv{flex-basis:100%;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;border-top:1px solid #e8e0ec;margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}
-.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:#4a3b55}.hm-adv select{justify-self:start}
-.hm-hint{grid-column:1/3;color:#7a6b85}.hm-hint code{background:#efe8f2;border-radius:5px;padding:1px 5px;color:#231c2b}
+.hm-adv{flex-basis:100%;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}
+.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}
+.hm-hint{grid-column:1/3;color:var(--muted)}.hm-hint code{background:var(--chip);border-radius:5px;padding:1px 5px;color:var(--text)}
 .hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
-.hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:#eadff0!important;text-decoration:none!important;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);cursor:pointer}
-.hm-qr a:hover,.hm-tg.on{background:rgba(255,255,255,.22)!important}.hm-qr b{color:#f5a06b;font-weight:700}.hm-tg svg{width:13px;height:13px}
+.hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:var(--muted)!important;text-decoration:none!important;background:none;border:1px solid var(--border);cursor:pointer}
+.hm-qr a:hover,.hm-tg.on{background:var(--chip)!important;color:var(--text)!important}.hm-qr b{color:var(--accent);font-weight:700}.hm-tg svg{width:13px;height:13px}
 .hm-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
 .hm-tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 8px 11px;text-align:center;font-weight:700;font-size:13px;color:var(--text)!important;text-decoration:none!important}
 .hm-tile:hover{border-color:var(--accent);box-shadow:0 4px 14px var(--shadow)}
