@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.000000
+// @version      2026.10.27.001000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2676,14 +2676,14 @@ async function edToggle(id) {
 const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)],
     ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
     ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff']];
-// a release's events: the first two, the rest behind +N, by date with their countries
-const evOne = v => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : ''}${v.date ? fdate(v.date) : ''}</div>`;
+// a release's events: the first, and the rest behind +N on its line, by date with their countries
+const evOne = (v, more = '') => `<div class="ev">${v.iso ? `<span class="iso">${esc(v.iso)}</span> ` : ''}${v.date ? fdate(v.date) : ''}${more}</div>`;
 function evCell(e) {
     const vs = e.events;
-    if (vs.length <= 3) return vs.map(evOne).join('') || '—';
-    const rest = vs.slice(2), by = new Map();
+    if (vs.length < 2) return vs.map(v => evOne(v)).join('') || '—';
+    const rest = vs.slice(1), by = new Map();
     for (const v of rest) { const k = v.date || ''; by.set(k, [...(by.get(k) || []), v.iso || '?']); }
-    return vs.slice(0, 2).map(evOne).join('') + `<span class="popwrap"><button class="chip pn" type="button" data-pop="ev-${e.id}" aria-expanded="false" data-tip="${rest.length} more countries">+${rest.length}</button><div class="pop ev-pop" id="pop-ev-${e.id}" hidden>${[...by].map(([d, isos]) => `<div class="h label">${d ? fdate(d) : 'No date'} · ${isos.length}</div><div class="evs">${isos.map(i => `<span class="iso">${esc(i)}</span>`).join('')}</div>`).join('')}</div></span>`;
+    return evOne(vs[0], ` <span class="popwrap"><button class="chip pn" type="button" data-pop="ev-${e.id}" aria-expanded="false" data-tip="${rest.length} more release events">+${rest.length}</button><div class="pop ev-pop" id="pop-ev-${e.id}" hidden>${[...by].map(([d, isos]) => `<div class="h label">${d ? fdate(d) : 'No date'} · ${isos.length}</div><div class="evs">${isos.map(i => `<span class="iso">${esc(i)}</span>`).join('')}</div>`).join('')}</div></span>`);
 }
 function edTable(es, curId, flat, part) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
