@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.213000
+// @version      2026.10.27.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1859,10 +1859,12 @@ const FORMAT_ICONS = {
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
-.hm-hero{position:relative;margin:22px 0 8px;padding:26px 190px 18px 4px;color:var(--text)}
+.hm-hero{position:relative;margin:22px 0 8px;padding:26px 400px 18px 4px;color:var(--text)}
 .hm-orb{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:150px!important;height:150px!important;pointer-events:none}
+.hm-wm{position:absolute;right:178px;top:50%;transform:translateY(-50%);text-align:right;pointer-events:none}.hm-wm b{display:block;font-size:26px;font-weight:300;letter-spacing:.35em;line-height:1.25;text-transform:uppercase;color:var(--text)}.hm-wm small{display:block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--accent)}
+@media (max-width:1100px){.hm-hero{padding-right:190px}.hm-wm{display:none}}
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
-.hm-k{position:relative;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.hm-av img{width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
@@ -1894,7 +1896,7 @@ const CSS = `
 @media (max-width:900px){.hm-you{grid-template-columns:1fr}}
 .hm-pf{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px}
 .hm-pid{display:flex;gap:12px;align-items:center}.hm-pid b{font-size:16px}.hm-pid small{display:block;color:var(--muted)}
-.hm-av{flex:none;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
+.hm-av{flex:none;overflow:hidden;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ba478f,#eb743b);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800}
 .hm-sts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
 .hm-st{background:var(--chip);border-radius:10px;padding:8px 10px;color:var(--text)!important;text-decoration:none!important}.hm-st:hover{outline:1px solid var(--accent)}
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
@@ -3894,6 +3896,7 @@ function profParse(html) {
     return {
         at: Date.now(), loc: loc ? [...loc.querySelectorAll('a[href^="/area/"]')].map(a => a.textContent.trim()).join(', ') : '', since: since ? +since[1] : 0,
         langs: info ? [...info.querySelectorAll('ul.inline li')].map(li => li.textContent.replace(/\s*\(.*\)/, '').trim()) : [],
+        av: ((d.querySelector('#content img.avatar:not(.no-avatar)') || d.querySelector('img.avatar:not(.no-avatar)') || { getAttribute: () => '' }).getAttribute('src') || '').replace(/^\/\//, 'https://').replace(/([?&]s=)\d+/, '$1104'),
         bio: (info && info.querySelector('tr.biography a[href]') || {}).href || '',
         total: num(row(ed, 0) && row(ed, 0).querySelector('td')), open: num(row(ed, 7) && row(ed, 7).querySelector('td')), day: num(row(ed, 8) && row(ed, 8).querySelector('td')),
         votes: votes && votes[2] ? num({ textContent: votes[2].textContent.split('(')[0] }) : 0, added: added.sort((a, b) => b[1] - a[1]), sec,
@@ -3901,7 +3904,7 @@ function profParse(html) {
 }
 async function profLoad(app) {
     let p = null; try { p = GM_getValue('profile', null); } catch (e) {}
-    if (p && p.me === ME && Date.now() - p.at < PROF_TTL) return profFill(app, p);
+    if (p && p.me === ME && "av" in p && Date.now() - p.at < PROF_TTL) return profFill(app, p);
     if (p && p.me === ME) profFill(app, p);
     try {
         const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -3916,7 +3919,7 @@ function profFill(app, p) {
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
     const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
     const stat = (n, l, h) => `<a class="hm-st" href="${u}/${h}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
-    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${esc(ME[0] || '?').toUpperCase()}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
+    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${p.av ? `<img src="${esc(p.av)}" alt="" width="52" height="52">` : esc(ME[0] || '?').toUpperCase()}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
         <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
@@ -3941,7 +3944,7 @@ function homeHtml() {
     const kinds = SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('');
     const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
     const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
-    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-k">MusicBrainz · Event Horizon</div><div class="hm-hi">${hi}</div>
+    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button><button type="submit">Search</button>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method"><option value="indexed">Indexed</option><option value="advanced">Indexed, with advanced query syntax</option><option value="direct">Direct database search</option></select>
         <label>Results per page</label><select name="limit"><option>25</option><option selected>50</option><option>100</option></select>
