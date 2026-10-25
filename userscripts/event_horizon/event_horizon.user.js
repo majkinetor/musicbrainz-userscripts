@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.254300
+// @version      2026.10.27.254400
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -32,7 +32,7 @@
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording and work pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
-// (not their subpages), and the home page, and moves between them in place: the page is hidden
+// (not their subpages, except a release's cover art, shown as the release at its artwork), and the home page, and moves between them in place: the page is hidden
 // from the first moment and, once parsed, its body is swapped for the viewer's. The launcher in the corner stack swaps
 // back to MusicBrainz's page and again; right-click opens the settings. Its data comes from ws/2 (three requests) and
 // the Cover Art Archive.
@@ -4377,6 +4377,9 @@ function navTo(href) {
     if (e) return 'user/' + e[1];
     // a search → "search/<its query string>"
     if (u.origin === location.origin && /^\/search\/?$/.test(u.pathname) && u.searchParams.get('query')) return 'search/' + u.search.slice(1);
+    // a release's cover art → the release, scrolled to its artwork
+    const c = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/cover-art/?$', 'i'));
+    if (c) return 'release/' + c[1].toLowerCase();
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
@@ -4786,7 +4789,7 @@ async function show(key) {
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
         if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
-        d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; if (x.some(i => i.front)) d.rel.front = true; render(); } });
+        d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; if (x.some(i => i.front)) d.rel.front = true; render(); const sa = /\/cover-art\/?$/.test(location.pathname) && document.getElementById('s-art'); if (sa) sa.scrollIntoView({ block: 'start' }); } });
     }
     catch (e) {
         LOG.err('Loading ' + id + ' failed: ' + e.message);
