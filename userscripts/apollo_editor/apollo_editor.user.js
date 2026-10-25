@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.25.092432
+// @version      2026.10.25.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -8661,6 +8661,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
 
   function openParser(mi) { const ed = getEditor(), m = mediums()[mi]; if (!m) return; try { ed.openTrackParser(m); } catch (e) { Log.cat('Tool').warn('open parser failed', e.message); } }
+
+  /* A new release with an empty tracklist: MB auto-opens its Add medium / Track parser
+     dialog on the Tracklist tab (releaseEditor.autoOpenTheAddMediumDialog, re-run from a
+     computed). Open the Pattern parser there instead — once per visit to the tab, so
+     closing it doesn't bring it straight back. */
+  let _autoTppDone = false;
+  function hookAutoParser(tries = 0) {
+    const ed = getEditor();
+    if (!ed || typeof ed.autoOpenTheAddMediumDialog !== 'function') { if (tries < 100) setTimeout(() => hookAutoParser(tries + 1), 200); return; }
+    if (ed._tcAutoTpp) return; ed._tcAutoTpp = true;
+    ed.autoOpenTheAddMediumDialog = function (release) {
+      try {
+        if (u(this.activeTabID) !== '#tracklist') { _autoTppDone = false; return; }
+        const m0 = release && u(release.mediums)[0];
+        if (_autoTppDone || document.getElementById('tc-tpppop') || !release.hasOneEmptyMedium() || u(m0.loading)) return;
+        _autoTppDone = true;
+        setTimeout(() => openTrackPatternParser(0), 0);   // outside MB's computed, so our reads don't become its dependencies
+        Log.cat('Tool').info('empty tracklist: opened Pattern parser instead of the native dialog');
+      } catch (e) { Log.cat('Tool').warn('auto pattern parser failed', e.message); }
+    };
+  }
+  if (/\/release\/add/.test(location.pathname)) hookAutoParser();
 
   function openTrackPatternParser(mi) {
     document.getElementById('tc-tpppop')?.remove();

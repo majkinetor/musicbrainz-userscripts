@@ -236,7 +236,7 @@ Replaces text in track titles. **★** saves patterns under a name; the last fiv
 
 <img src="./screenshots/pattern_parser.png" />
 
-Fills a medium from pasted text, by a pattern. It opens with the current tracklist, so it also bulk-edits.
+Fills a medium from pasted text, by a pattern. It opens with the current tracklist, so it also bulk-edits. On a new release with an empty tracklist it opens by itself on the Tracklist tab, in place of MusicBrainz's track parser.
 
 | Token |              | Token |                               |
 | ----- | ------------ | ----- | ----------------------------- |

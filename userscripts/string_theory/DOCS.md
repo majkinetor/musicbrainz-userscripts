@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 10:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-25 10:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -256,7 +256,7 @@ Replaces text in track titles. **★** saves patterns under a name; the last fiv
 
 <img src="../apollo_editor/screenshots/pattern_parser.png" />
 
-Fills a medium from pasted text, by a pattern. It opens with the current tracklist, so it also bulk-edits.
+Fills a medium from pasted text, by a pattern. It opens with the current tracklist, so it also bulk-edits. On a new release with an empty tracklist it opens by itself on the Tracklist tab, in place of MusicBrainz's track parser.
 
 | Token |              | Token |                               |
 | ----- | ------------ | ----- | ----------------------------- |
