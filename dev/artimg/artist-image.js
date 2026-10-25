@@ -21,7 +21,7 @@ class ArtistImage {
         this.log = o.log || null;
     }
 
-    // Discogs, Deezer and Wikimedia answer JSON; Tidal, Apple Music and SoundCloud are read off their pages' og:image,
+    // Discogs, Deezer and Wikimedia answer JSON; Spotify, Tidal, Apple Music and SoundCloud are read off their pages' og:image,
     // which only a manager's request can reach (no CORS): pass `http` for those.
     static PROVIDERS = [
         { key: 'discogs', name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async (m, http) => {
@@ -35,6 +35,11 @@ class ArtistImage {
             if (!r.ok) return null;
             const p = (await r.json()).picture_big;
             return p && !p.includes('/artist//') ? p : null; // an empty hash is Deezer's placeholder
+        } },
+        { key: 'spotify', name: 'Spotify', re: /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?artist\/([A-Za-z0-9]{22})/, get: async (m, http) => {
+            const r = await http('https://open.spotify.com/artist/' + m[1]);
+            if (!r.ok) return null;
+            return ArtistImage.og(await r.text()); // 640x640
         } },
         { key: 'tidal', name: 'Tidal', re: /^https?:\/\/(?:listen\.|www\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://tidal.com/artist/' + m[1]);

@@ -19,7 +19,7 @@ Open a release, release group, artist, label, recording or work on MusicBrainz a
 
 The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
 
-An artist's picture or a label's logo comes from its Discogs, Wikipedia (its Commons image, Wikidata item or article), Deezer, Tidal, Apple Music or SoundCloud link. Click it to see the next one; the badge on its edge opens the page it came from.
+An artist's picture or a label's logo comes from its Discogs, Wikipedia (its Commons image, Wikidata item or article), Deezer, Spotify, Tidal, Apple Music or SoundCloud link. Click it to see the next one; the badge on its edge opens the page it came from.
 
 If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
 
@@ -52,7 +52,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Platforms → Show          | off                                                        | **Names** beside the icons; **Gray icons** until pointed at                |
 | Platforms → Icon size     | 22px                                                       | the size of a platform icon                                                |
 | Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music  | click to show or hide, drag to reorder; the rest go behind +N              |
-| Artist → Images from      | Discogs, Wikipedia, Deezer, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
+| Artist → Images from      | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
 | General → Page width      | Medium                                                     | how wide the page grows on a big screen                                    |
 
 ## Shortcuts

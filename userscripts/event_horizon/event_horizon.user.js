@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.172000
+// @version      2026.10.27.173000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -24,6 +24,7 @@
 // @connect      www.wikidata.org
 // @connect      wikipedia.org
 // @connect      soundcloud.com
+// @connect      open.spotify.com
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording and work pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
@@ -2425,7 +2426,7 @@ const S = {
     ed: { kinds: new Set(), official: false },
     open: new Set(),
     fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
-    imgOrder: ['discogs', 'wikipedia', 'deezer', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
+    imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
     imgOff: [], // the image providers not used
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
@@ -3126,7 +3127,7 @@ class ArtistImage {
         this.log = o.log || null;
     }
 
-    // Discogs, Deezer and Wikimedia answer JSON; Tidal, Apple Music and SoundCloud are read off their pages' og:image,
+    // Discogs, Deezer and Wikimedia answer JSON; Spotify, Tidal, Apple Music and SoundCloud are read off their pages' og:image,
     // which only a manager's request can reach (no CORS): pass `http` for those.
     static PROVIDERS = [
         { key: 'discogs', name: 'Discogs', re: /^https?:\/\/(?:www\.)?discogs\.com\/(artist|label)\/(\d+)/, get: async (m, http) => {
@@ -3140,6 +3141,11 @@ class ArtistImage {
             if (!r.ok) return null;
             const p = (await r.json()).picture_big;
             return p && !p.includes('/artist//') ? p : null; // an empty hash is Deezer's placeholder
+        } },
+        { key: 'spotify', name: 'Spotify', re: /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?artist\/([A-Za-z0-9]{22})/, get: async (m, http) => {
+            const r = await http('https://open.spotify.com/artist/' + m[1]);
+            if (!r.ok) return null;
+            return ArtistImage.og(await r.text()); // 640x640
         } },
         { key: 'tidal', name: 'Tidal', re: /^https?:\/\/(?:listen\.|www\.)?tidal\.com\/(?:browse\/)?artist\/(\d+)/, get: async (m, http) => {
             const r = await http('https://tidal.com/artist/' + m[1]);
