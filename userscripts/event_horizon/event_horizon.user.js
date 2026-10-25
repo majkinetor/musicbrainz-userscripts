@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.160000
+// @version      2026.10.27.161000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2150,7 +2150,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rg-l:hover{color:var(--accent)!important;text-decoration:none}
 .ed-seg button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:0 1px 3px var(--shadow)}
 .ed-seg .n{opacity:.7}
-.ed-sw{all:unset;display:inline-flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.ed-sw{all:unset;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}.ed-sw+.ed-div{margin-left:auto}
 .ed-sw i{position:relative;width:32px;height:18px;border-radius:9px;background:var(--border);transition:background .15s}
 .ed-sw i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
 .ed-sw[aria-checked=true]{color:var(--text)}
@@ -2846,7 +2846,7 @@ function edHtml(r, eds, count) {
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}"><i></i>Official only</button><span class="ed-div"></span>${fltBtn('ed')}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed')}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
