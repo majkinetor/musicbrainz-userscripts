@@ -15,21 +15,13 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ## The viewer
 
-Open a release, release group, artist, label, recording, work, area, instrument or place on MusicBrainz and Event Horizon shows its own page instead. Its subpages (edit, history, …) stay MusicBrainz's.
+Event Horizon shows its own page for each of these, and for search results; subpages (edit, history, …) stay MusicBrainz's. A link to another such page opens in place. The round corner icon switches back to MusicBrainz's page; right-click it for the settings.
 
-A release's relationship editor (**Relate**) stays MusicBrainz's editor, but takes Event Horizon's look: its header with the release's title, artist and actions, its fonts and colours, light or dark. The corner icon switches it back to MusicBrainz's look.
-
-The round icon in the corner switches between Event Horizon's page and MusicBrainz's; right-click it for the settings. A link to another of these pages opens in place.
-
-An artist's picture or a label's logo comes from its Discogs, Wikipedia (its Commons image, Wikidata item or article), Deezer, Spotify, Tidal, Apple Music or SoundCloud link. Click it to see the next one; the badge on its edge opens the page it came from.
-
-An area shows its codes, its parts, its anthem and instruments, what it was the location for, and the artists, labels and places in it. An instrument shows what it is tied to and the artists, releases and recordings that use it. A place shows its area, address and coordinates (with a link to the map), the places, artists and labels tied to it, its events, and the recordings made there.
-
-An area's cover is its map from Wikidata, with its flag in the corner. Click it for the flag, the coat of arms and any other image its Wikidata item has. An area with no Wikidata images keeps the globe. A place's picture is its Wikimedia Commons image, else its Wikidata image or logo.
-
-Search results open in Event Horizon too. They show the same columns as MusicBrainz's, with each result's score as a bar, a form to change the search, and the result pages below. Columns that are empty in every row are left out.
-
-If a page can't load, **Retry** tries again and **Show MusicBrainz's page** falls back to the original.
+- **Pictures**: an artist's or label's comes from its linked sites (click for the next, the badge opens its source); an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image.
+- **Areas, instruments and places** list what is in, uses or happened at them.
+- **Search results** keep MusicBrainz's columns, with the score as a bar.
+- **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
+- If a page can't load, **Retry**, or **Show MusicBrainz's page**.
 
 ## Sections
 
