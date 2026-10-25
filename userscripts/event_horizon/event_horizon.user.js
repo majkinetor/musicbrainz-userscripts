@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.236000
+// @version      2026.10.27.237000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1873,7 +1873,7 @@ const CSS = `
 .hm-srch select{border:0;background:var(--chip)!important;color:var(--chip-text)!important;filter:none!important;color-scheme:light dark;font:inherit;font-size:13px;border-radius:9px;padding:8px}
 .hm-srch button{filter:none!important;border:0;border-radius:9px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:9px 18px;cursor:pointer}
 .hm-adv{flex-basis:100%;display:grid;grid-template-columns:auto auto auto 1fr;gap:8px 14px;align-items:center;border-top:1px solid var(--border);margin:2px 10px 0 0;padding:10px 0 6px;font-size:13px}
-.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}.hm-adv select+label{margin-left:12px}
+.hm-adv[hidden]{display:none}.hm-adv label{font-weight:700;color:var(--text)}.hm-adv select{justify-self:start}.hm-seg{display:inline-flex;justify-self:start;background:var(--chip);border-radius:9px;padding:3px;gap:2px}.hm-seg label{font-weight:400!important;cursor:pointer}.hm-seg input{position:absolute;opacity:0;pointer-events:none}.hm-seg span{display:block;padding:5px 12px;border-radius:7px;color:var(--chip-text)}.hm-seg input:checked+span{background:var(--accent);color:#fff;font-weight:700}.hm-seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}.hm-adv select+label{margin-left:12px}
 .hm-hint{grid-column:1/-1;color:var(--muted)}.hm-hint code{background:var(--chip);border-radius:5px;padding:1px 5px;color:var(--text)}
 .hm-qr{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
 .hm-qr a{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:4px 11px;font-size:12px;color:var(--muted)!important;text-decoration:none!important;background:none;border:1px solid var(--border);cursor:pointer}
@@ -4049,7 +4049,7 @@ function homeHtml() {
     const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div><div class="hm-hi">${hi}</div>
         <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button><button type="submit">Search</button>
         <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method"><option value="indexed">Indexed</option><option value="advanced">Indexed, with advanced query syntax</option><option value="direct">Direct database search</option></select>
-        <label>Results per page</label><select name="limit"><option>25</option><option selected>50</option><option>100</option></select>
+        <label>Results per page</label><span class="hm-seg" role="radiogroup" aria-label="Results per page">${[25, 50, 100].map(n => `<label><input type="radio" name="limit" value="${n}"${n === 50 ? ' checked' : ''}><span>${n}</span></label>`).join('')}</span>
         <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
         ${qs ? `<div class="hm-qr">${qs}</div>` : ''}<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav></header>`;
     const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
