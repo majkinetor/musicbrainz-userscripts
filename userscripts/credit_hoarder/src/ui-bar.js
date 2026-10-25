@@ -3030,6 +3030,13 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     // (or similar). We want to be the very first thing inside that wrapper,
     // above any other userscript toolbars (e.g. loujine batch tools).
     function insertBar() {
+        // on the relationship editor, right under the tabs, so it sits just above Group Therapy's toolbar
+        const tabs = document.querySelector('#content > .tabs');
+        if (tabs && /\/edit-relationships\b/.test(location.pathname)) {
+            const gt = document.querySelector('#content > .gt-toolbar');
+            if (gt) gt.before(bar); else tabs.after(bar);
+            return;
+        }
         // above the release's header (its hexagon and tabs), right where it sits: an Event Horizon
         // header prepended to #content stays above the bar
         const hd = document.querySelector('#content .releaseheader');

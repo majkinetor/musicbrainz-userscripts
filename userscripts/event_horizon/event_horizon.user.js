@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.310000
+// @version      2026.10.27.310001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4496,7 +4496,31 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page .rel-edit{background:color-mix(in srgb,#d9a400 22%,transparent)!important;border-radius:4px}
 :root[data-eh-rel] #page .rel-remove{background:color-mix(in srgb,#d64545 22%,transparent)!important;border-radius:4px}
 :root[data-eh-rel] #page :is(.rel-add,.rel-edit,.rel-remove) :is(span,bdi,.comment){color:inherit!important}
-:root[data-eh-rel] #page input[type=checkbox]{accent-color:var(--accent)}` + relHdCss();
+:root[data-eh-rel] #page input[type=checkbox]{accent-color:var(--accent)}
+:root[data-eh-rel] .release-relationship-editor>h2{display:flex;align-items:center;gap:10px;margin:24px 0 0!important;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px 12px 0 0;font-size:17px!important;cursor:pointer;user-select:none}
+:root[data-eh-rel] .release-relationship-editor>h2:first-child{margin-top:8px!important}
+:root[data-eh-rel] .release-relationship-editor>h2::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0;transition:transform .15s}
+:root[data-eh-rel] .release-relationship-editor>h2.eh-fold{border-radius:12px}
+:root[data-eh-rel] .release-relationship-editor>h2.eh-fold::before{transform:rotate(-45deg);margin:0 2px}
+:root[data-eh-rel] .release-relationship-editor>h2.eh-fold+.ars,:root[data-eh-rel] .release-relationship-editor>h2:first-child.eh-fold~:is(#batch-tools,#medium-toolbox,#tracklist){display:none!important}
+:root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox,#tracklist,.ars){margin:0!important;box-sizing:border-box;width:100%;background:var(--surface)!important;border:1px solid var(--border);border-top:0;padding:8px 16px!important}
+:root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox){display:block;border-bottom:0}
+:root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
+:root[data-eh-rel] .eh-h2-act{margin-left:auto;font:600 12px Manrope,system-ui,sans-serif;color:var(--soft);background:none;border:0;border-radius:6px;padding:3px 8px;cursor:pointer}
+:root[data-eh-rel] .eh-h2-act:hover{background:var(--hover);color:var(--text)}
+:root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 6px!important;overflow:visible!important}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td{background:var(--bg)!important;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;position:relative;padding-left:20px}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child::before{content:"";position:absolute;left:8px;top:14px;width:5px;height:5px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf>td:first-child::before{transform:rotate(-45deg)}
+:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf .rel-editor-table{display:none}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child:hover::before{border-color:var(--text)}
+:root[data-eh-rel] #relationship-editor-form legend{display:flex!important;align-items:center;gap:10px;cursor:pointer;user-select:none}
+:root[data-eh-rel] #relationship-editor-form legend::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0}
+:root[data-eh-rel] #relationship-editor-form.eh-fold legend::before{transform:rotate(-45deg);margin:0 2px}
+:root[data-eh-rel] #relationship-editor-form.eh-fold>:not(fieldset),:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset>:not(legend){display:none!important}
+:root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
 const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd)/.test(l)).join('\n')
     .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => '#eh-relhd ' + x.trim()).join(',') + '{');
@@ -4514,12 +4538,60 @@ function relHeader(id) {
     });
     return hd;
 }
+// the editor's regions as cards: a heading folds its region, a track's number folds its relationships.
+// The editor is React's, so nothing is moved; classes go back on after it redraws
+const REL_FOLD_KEY = 'eh-relfold', relTrkFold = new Set();
+let relFold = (() => { try { return JSON.parse(localStorage.getItem(REL_FOLD_KEY)) || {}; } catch (e) { return {}; } })();
+const relSaveFold = () => { try { localStorage.setItem(REL_FOLD_KEY, JSON.stringify(relFold)); } catch (e) {} };
+const relTrkKey = tr => { const a = tr.querySelector('td.recording a[href*="/recording/"]'); return a ? a.getAttribute('href') : ''; };
+function relCardsApply() {
+    const ed = document.querySelector('.release-relationship-editor'); if (!ed) return;
+    ed.querySelectorAll(':scope > h2').forEach((h, i) => {
+        const k = h.nextElementSibling && h.nextElementSibling.id || (i ? 'r' + i : 'tracks');
+        if (h.dataset.ehFold !== k) h.dataset.ehFold = k;
+        h.classList.toggle('eh-fold', !!relFold[k]);
+        if (i === 0 && !h.querySelector('.eh-h2-act')) {
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'eh-h2-act'; b.dataset.ehTrkAll = '';
+            h.appendChild(b);
+        }
+    });
+    const f = document.getElementById('relationship-editor-form'); if (f) f.classList.toggle('eh-fold', !!relFold.note);
+    const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')];
+    trs.forEach(tr => tr.classList.toggle('eh-tf', relTrkFold.has(relTrkKey(tr))));
+    const all = ed.querySelector('[data-eh-trk-all]');
+    if (all) { const open = trs.some(tr => !tr.classList.contains('eh-tf')); const t = open ? 'Fold tracks' : 'Unfold tracks'; if (all.textContent !== t) all.textContent = t; all.dataset.tip = open ? 'Show only the tracks, without their relationships' : 'Show every track\'s relationships'; }
+}
+function relCards() {
+    const ed = document.querySelector('.release-relationship-editor');
+    if (!ed) { setTimeout(relCards, 400); return; }
+    if (ed.dataset.ehCards) return; ed.dataset.ehCards = '1';
+    ed.addEventListener('click', e => {
+        if (!ehOn) return;
+        const all = e.target.closest('[data-eh-trk-all]');
+        if (all) {
+            e.stopPropagation();
+            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = trs.some(tr => !relTrkFold.has(relTrkKey(tr)));
+            trs.forEach(tr => fold ? relTrkFold.add(relTrkKey(tr)) : relTrkFold.delete(relTrkKey(tr)));
+            LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every track'); relCardsApply(); return;
+        }
+        const h = e.target.closest('.release-relationship-editor > h2');
+        if (h) { const k = h.dataset.ehFold; relFold[k] = !relFold[k]; relSaveFold(); LOG.debug('Relate: region ' + k + (relFold[k] ? ' folded' : ' unfolded')); relCardsApply(); return; }
+        if (e.target.closest('#relationship-editor-form legend')) { relFold.note = !relFold.note; relSaveFold(); relCardsApply(); return; }
+        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        if (td) { const k = relTrkKey(td.parentNode); if (!k) return; relTrkFold.has(k) ? relTrkFold.delete(k) : relTrkFold.add(k); relCardsApply(); }
+    });
+    let q = 0;
+    new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; relCardsApply(); }); }).observe(ed, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    relCardsApply();
+    LOG.info('Relate: regions and tracks as cards');
+}
 function relSet(on) {
     const de = document.documentElement;
     if (on && !document.getElementById('eh-rel-css')) {
         (document.head || de).insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-rel-css">${REL_CSS()}</style>`);
         const c = document.getElementById('content'); if (c) c.prepend(relHeader(PAGE_ID.split('/')[1]));
         LOG.info('Dressing the relationship editor of ' + PAGE_ID.split('/')[1]);
+        relCards();
     }
     const theme = on && mbuTheme();
     ehOn = on;

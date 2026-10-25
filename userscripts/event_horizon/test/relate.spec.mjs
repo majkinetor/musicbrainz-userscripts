@@ -15,6 +15,17 @@ test('the relationship editor takes Event Horizon\'s header and theme', { tag: [
   check(!(await page.locator('body > .header').isVisible()), 'MusicBrainz\'s header hides');
   check(await page.locator('#tracklist').isVisible(), 'the editor stays');
   check(await page.evaluate(() => getComputedStyle(document.body).fontFamily).then(f => /Manrope/.test(f)), 'the page takes Event Horizon\'s font');
+  // regions and tracks are cards: a heading folds its region, a track's number its relationships
+  const tr = page.locator('#tracklist > tbody > tr.track').first();
+  await tr.locator('td').first().click();
+  check(await until(() => tr.locator('.rel-editor-table').first().isVisible(), v => !v) === false, 'a track folds');
+  await tr.locator('td').first().click();
+  const rh = page.locator('.release-relationship-editor > h2:has(+ #release-rels)');
+  await rh.click();
+  check(await until(() => page.locator('#release-rels').isVisible(), v => !v) === false, 'a region folds');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-fold.png'), fullPage: true });
+  await rh.click();
+  check(await until(() => page.locator('#release-rels').isVisible(), v => v) === true, 'and opens again');
   // the editor still works: Add relationship opens MusicBrainz's dialog
   await page.locator('#release-rels button.add-item, #release-rels .add-relationship').first().click();
   check(await until(() => page.locator('[role=dialog], .dialog').count(), n => n > 0) > 0, 'Add relationship opens the dialog');
