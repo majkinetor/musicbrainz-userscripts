@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.010000
+// @version      2026.10.26.011000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2316,6 +2316,7 @@ const HOSTS = [
     ['amazonmusic', 'Amazon Music', /music\.amazon\./], ['amazon', 'Amazon', /amazon\./], ['discogs', 'Discogs', /discogs\.com/], ['allmusic', 'AllMusic', /allmusic\.com/],
     ['mora', 'mora', /mora\.jp/], ['ototoy', 'OTOTOY', /ototoy\.jp/], ['pandora', 'Pandora', /pandora\.com/], ['jaxsta', 'Jaxsta', /jaxsta\.com/],
     ['wikidata', 'Wikidata', /wikidata\.org/], ['rateyourmusic', 'Rate Your Music', /rateyourmusic\.com/], ['review', 'BBC Music review', /bbc\.co\.uk\/music\/reviews/],['ebay', 'eBay', /ebay\./], ['bol', 'bol.com', /bol\.com/],
+    ['twitter', 'X (Twitter)', /twitter\.com|\/\/(www\.)?x\.com\//], ['facebook', 'Facebook', /facebook\.com/],
 ];
 const KIND = t => /free streaming/.test(t) ? 'free' : /streaming/.test(t) ? 'listen' : /purchase|amazon/.test(t) ? 'buy' : 'info';
 const region = u => (u.match(/music\.apple\.com\/(\w\w)\//) || u.match(/amazon\.(co\.uk|de|fr|nl|com)/) || u.match(/qobuz\.com\/(\w\w-\w\w)\//) || [])[1] || '';
