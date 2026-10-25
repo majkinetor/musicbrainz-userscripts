@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.223000
+// @version      2026.10.27.224000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1864,7 +1864,7 @@ const CSS = `
 .hm-wm{position:absolute;right:178px;top:50%;transform:translateY(-50%);text-align:right;pointer-events:none}.hm-wm b{display:block;font-size:26px;font-weight:300;letter-spacing:.35em;line-height:1.25;text-transform:uppercase;color:var(--text)}.hm-wm small{display:block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--accent)}
 @media (max-width:1100px){.hm-hero{padding-right:190px}.hm-wm{display:none}}
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
-.hm-av img{width:100%;height:100%;object-fit:cover}
+.hm-av{position:relative}.hm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .hm-hi{position:relative;font-size:30px;font-weight:800;margin:6px 0 16px}.hm-hi em{font-style:normal;background:linear-gradient(90deg,#f07dbf,#f5a06b);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hm-srch{position:relative;max-width:820px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--surface)!important;border:1px solid var(--border);border-radius:14px;padding:6px 6px 6px 16px;color:var(--muted);box-shadow:0 6px 22px var(--shadow)}
 .hm-srch:focus-within{border-color:var(--accent)}
@@ -3900,13 +3900,24 @@ function profParse(html) {
         votes: votes && votes[2] ? num({ textContent: votes[2].textContent.split('(')[0] }) : 0, added: added.sort((a, b) => b[1] - a[1]), sec,
     };
 }
+// Gravatar keys a picture by the SHA-256 of your email, read once from your account settings page and kept with the profile;
+// only the hash goes to Gravatar, and d=404 leaves the initial in place when you have none
+async function gravatar() {
+    try {
+        const r = await mbnFetch(`${MB}/account/edit`); if (!r.ok) return '';
+        const d = new DOMParser().parseFromString(await r.text(), 'text/html'), e = d.querySelector('input[type=email], input[name$="email"]');
+        const m = e && e.value.trim().toLowerCase(); if (!m) return '';
+        const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(m)))].map(b => b.toString(16).padStart(2, '0')).join('');
+        return `https://gravatar.com/avatar/${h}?s=104&d=404`;
+    } catch (e) { return ''; }
+}
 async function profLoad(app) {
     let p = null; try { p = GM_getValue('profile', null); } catch (e) {}
-    if (p && p.me === ME && "av" in p && Date.now() - p.at < PROF_TTL) return profFill(app, p);
+    if (p && p.me === ME && "grav" in p && Date.now() - p.at < PROF_TTL) return profFill(app, p);
     if (p && p.me === ME) profFill(app, p);
     try {
         const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
-        const n = profParse(await r.text()); n.me = ME; console.info('[Event Horizon] profile', n);
+        const n = profParse(await r.text()); n.me = ME; n.grav = await gravatar(); console.info('[Event Horizon] profile', n);
         try { GM_setValue('profile', n); } catch (e) {}
         profFill(app, n);
     } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
@@ -3917,7 +3928,7 @@ function profFill(app, p) {
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
     const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
     const stat = (n, l, h) => `<a class="hm-st" href="${u}/${h}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
-    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${p.av ? `<img src="${esc(p.av)}" alt="" width="52" height="52">` : esc(ME[0] || '?').toUpperCase()}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
+    el.innerHTML = `<div class="hm-pid"><span class="hm-av">${esc(ME[0] || '?').toUpperCase()}${p.av || p.grav ? `<img src="${esc(p.av || p.grav)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</span><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
         <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
