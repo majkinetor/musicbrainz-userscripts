@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.26.092331
+// @version      2026.10.26.092510
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -10267,6 +10267,7 @@ Its \u{1F517} chip adds the link.`;
         /* Occupies row1's height in the flow while row1 is fixed, so the page
            content below the bar doesn't jump up under it. Height set by JS. */
         .discogs-sticky-spacer { display: none; }
+        .discogs-import-label.cancels { cursor: pointer; }
         /* With row1 pinned the bar's box would hold only the spacer: the output below carries the box instead */
         .discogs-bar:is(.is-importing, .is-pinned) { border-color: transparent; background: none; overflow: visible; }
         .discogs-bar:is(.is-importing, .is-pinned) > .discogs-output { border: 1px solid var(--mbu-border); border-radius: 10px; background: var(--mbu-bg-raised); overflow: hidden; }
@@ -10374,10 +10375,7 @@ Its \u{1F517} chip adds the link.`;
       b.dataset.tip = s.url ? `Import the credits from ${s.name}
 Right-click: open the ${s.name} page` : "Import remixer credits\nRead from the track titles";
       b.addEventListener("click", () => {
-        if (importing) {
-          if (b.classList.contains("importing")) cancelRun();
-          return;
-        }
+        if (importing) return;
         startImport(b, s.url, s.run);
       });
       if (s.url) b.addEventListener("contextmenu", (e) => {
@@ -10408,10 +10406,7 @@ Right-click: open the ${s.name} page` : "Import remixer credits\nRead from the t
       allBtn.dataset.tip = `Import from all ${importSources.length} sources at once
 Merged, without duplicates, into one review`;
       allBtn.addEventListener("click", () => {
-        if (importing) {
-          if (allBtn.classList.contains("importing")) cancelRun();
-          return;
-        }
+        if (importing) return;
         startImport(allBtn, "", (g, c) => runConsolidatedImport(importSources, g, c), `Import all (${importSources.map((s) => s.name).join(", ")})`);
       });
       srcButtons.push(allBtn);
@@ -10436,6 +10431,9 @@ Merged, without duplicates, into one review`;
       importLabel.dataset.tip = (host && host !== "Credit Hoarder" ? "Credit Hoarder (" + host + " v" : "Credit Hoarder v") + (gs.version || "?") + (host && host !== "Credit Hoarder" ? ")" : "");
     } catch (e) {
     }
+    importLabel.addEventListener("click", () => {
+      if (importing) cancelRun();
+    });
     row1.appendChild(importLabel);
     row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
@@ -10853,6 +10851,8 @@ Merged, without duplicates, into one review`;
         b.style.display = "";
         b.dataset.tip = b._restoreTitle || b.dataset.tip;
       });
+      importLabel.dataset.tip = importLabel._restoreTitle || importLabel.dataset.tip;
+      importLabel.classList.remove("cancels");
       progressPct.style.display = "none";
       progressPct.textContent = "0%";
       bar.classList.remove("is-importing", "is-reviewing", "is-pinned");
@@ -10875,10 +10875,13 @@ Merged, without duplicates, into one review`;
         b.style.display = active ? "" : "none";
         if (active) {
           b._restoreTitle = b.dataset.tip;
-          b.dataset.tip = `Cancel this ${srcBtn.dataset.src} import
-Back to the sources`;
+          b.dataset.tip = `Importing from ${srcBtn.dataset.src}`;
         }
       });
+      importLabel._restoreTitle = importLabel.dataset.tip;
+      importLabel.dataset.tip = `Cancel this ${srcBtn.dataset.src} import
+Back to the sources`;
+      importLabel.classList.add("cancels");
       progressPct.style.display = "inline";
       progressPct.textContent = "0%";
       bar._hideEnterEdit();
@@ -11064,6 +11067,8 @@ ${lines}
           b.style.display = "";
           b.dataset.tip = b._restoreTitle || b.dataset.tip;
         });
+        importLabel.dataset.tip = importLabel._restoreTitle || importLabel.dataset.tip;
+        importLabel.classList.remove("cancels");
         progressPct.textContent = "100%";
         setTimeout(() => {
           progressPct.style.display = "none";

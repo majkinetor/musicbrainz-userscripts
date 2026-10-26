@@ -2066,6 +2066,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         /* Occupies row1's height in the flow while row1 is fixed, so the page
            content below the bar doesn't jump up under it. Height set by JS. */
         .discogs-sticky-spacer { display: none; }
+        .discogs-import-label.cancels { cursor: pointer; }
         /* With row1 pinned the bar's box would hold only the spacer: the output below carries the box instead */
         .discogs-bar:is(.is-importing, .is-pinned) { border-color: transparent; background: none; overflow: visible; }
         .discogs-bar:is(.is-importing, .is-pinned) > .discogs-output { border: 1px solid var(--mbu-border); border-radius: 10px; background: var(--mbu-bg-raised); overflow: hidden; }
@@ -2201,10 +2202,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             ? `Import the credits from ${s.name}\nRight-click: open the ${s.name} page`
             : 'Import remixer credits\nRead from the track titles';
         b.addEventListener('click', () => {
-            // Mid-run, clicking the active source (the only one still shown)
-            // cancels the preflight/review and restores the source picker so you
-            // can pick a different source without reloading the page.
-            if (importing) { if (b.classList.contains('importing')) cancelRun(); return; }
+            // Mid-run the ant cancels, not the source
+            if (importing) return;
             startImport(b, s.url, s.run);
         });
         if (s.url) b.addEventListener('contextmenu', e => { e.preventDefault(); window.open(s.url, '_blank', 'noopener,noreferrer'); });
@@ -2236,7 +2235,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         allBtn.dataset.src = 'All';
         allBtn.dataset.tip = `Import from all ${importSources.length} sources at once\nMerged, without duplicates, into one review`;
         allBtn.addEventListener('click', () => {
-            if (importing) { if (allBtn.classList.contains('importing')) cancelRun(); return; }
+            if (importing) return;
             startImport(allBtn, '', (g, c) => runConsolidatedImport(importSources, g, c), `Import all (${importSources.map(s => s.name).join(', ')})`);
         });
         srcButtons.push(allBtn);
@@ -2269,6 +2268,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     progressPct.style.cssText = 'display:none; margin-left:0.5rem; font-size:0.85rem; color:var(--mbu-warn); font-weight:bold; min-width:3.5rem;';
     // the ant's tooltip names the script and its version (String Theory's, when it runs bundled)
     try { const gs = (typeof GM_info !== 'undefined' && GM_info && GM_info.script) || {}, host = String(gs.name || '').replace(/\*$/, ''); importLabel.dataset.tip = (host && host !== 'Credit Hoarder' ? 'Credit Hoarder (' + host + ' v' : 'Credit Hoarder v') + (gs.version || '?') + (host && host !== 'Credit Hoarder' ? ')' : ''); } catch (e) { /* no GM_info */ }
+    // mid-run, a click on the ant cancels the run and brings the source picker back
+    importLabel.addEventListener('click', () => { if (importing) cancelRun(); });
     row1.appendChild(importLabel);
     row1.appendChild(srcIcons);
     row1.appendChild(progressPct);
@@ -2756,6 +2757,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         if (typeof bar._reviewAbort === 'function') { const abort = bar._reviewAbort; bar._reviewAbort = null; abort(); }
         // Restore every source icon (the active run had hidden the others).
         srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; b.dataset.tip = b._restoreTitle || b.dataset.tip; });
+        importLabel.dataset.tip = importLabel._restoreTitle || importLabel.dataset.tip; importLabel.classList.remove('cancels');
         // Drop the run chrome: progress %, pinned/importing/reviewing states,
         // the marquee bar, and the review table + its header-mounted button.
         progressPct.style.display = 'none';
@@ -2791,9 +2793,12 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             b.style.display = active ? '' : 'none';
             if (active) {
                 b._restoreTitle = b.dataset.tip;
-                b.dataset.tip = `Cancel this ${srcBtn.dataset.src} import\nBack to the sources`;
+                b.dataset.tip = `Importing from ${srcBtn.dataset.src}`;
             }
         });
+        importLabel._restoreTitle = importLabel.dataset.tip;
+        importLabel.dataset.tip = `Cancel this ${srcBtn.dataset.src} import\nBack to the sources`;
+        importLabel.classList.add('cancels');
         progressPct.style.display = 'inline';
         progressPct.textContent = '0%';
 
@@ -3004,6 +3009,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             if (cancelled()) { delete bar._setProgress; return; }
             importing = false;
             srcButtons.forEach(b => { b.classList.remove('importing'); b.style.display = ''; b.dataset.tip = b._restoreTitle || b.dataset.tip; });
+        importLabel.dataset.tip = importLabel._restoreTitle || importLabel.dataset.tip; importLabel.classList.remove('cancels');
             progressPct.textContent = '100%';
             setTimeout(() => { progressPct.style.display = 'none'; }, 2000);
             bar.classList.remove('is-reviewing');   // #139: safety — clear if the flow ended during review
