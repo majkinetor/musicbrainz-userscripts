@@ -150,7 +150,7 @@ const startupLog = `try {\n  console.log('%c String Theory %c v${version} ', 'ba
 const OFF_KEY = 'string_theory.off';
 // Members that start off until turned on in the menu (new, still settling). Their "on" is kept apart,
 // in ON_KEY, so an off list a user already has doesn't switch them on.
-const DEFAULT_OFF = ['event_horizon'].filter(n => MEMBERS.includes(n));
+const DEFAULT_OFF = [].filter(n => MEMBERS.includes(n));
 const ON_KEY = 'string_theory.on';
 // The corner launchers' layout: a column (the default) or a row along the page's edge, on the right
 // (the default) or the left. They're shared settings (mbuShared 'cornerFlow' and 'cornerSide': the page's
