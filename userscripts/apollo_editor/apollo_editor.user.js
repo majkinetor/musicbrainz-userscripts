@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.222556
+// @version      2026.10.26.235415
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7117,7 +7117,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     repltl.onchange = () => { SETTINGS.replaceTracklist = repltl.checked; saveSettings(); applyView(); };
     replrec.onchange = () => { SETTINGS.replaceRecordings = replrec.checked; saveSettings(); applyView(); };
     modanno.onchange = () => { SETTINGS.modifyAnnotation = modanno.checked; saveSettings(); applyView(); applyAnnotationPage(); };
-    cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); applyNav(); applyZen(); };
+    cnav.onchange = () => { SETTINGS.compactNav = cnav.checked; saveSettings(); if (aliasNavRefresh) { aliasNavRefresh(); return; } applyNav(); applyZen(); };
     zen.onchange = () => { SETTINGS.zenMode = zen.checked; saveSettings(); applyZen(); };
     const aconf = s.querySelector('#tc-s-autoconfirm'); if (aconf) { aconf.checked = SETTINGS.autoConfirmSeed !== false; aconf.onchange = () => { SETTINGS.autoConfirmSeed = aconf.checked; saveSettings(); }; }
     const arch = s.querySelector('#tc-s-archive'); if (arch) { arch.checked = SETTINGS.archive !== false; arch.onchange = () => { SETTINGS.archive = arch.checked; saveSettings(); const ia = s.querySelector('.mbu-ia'); if (ia) ia.classList.toggle('mbu-ia-off', !arch.checked); Log.cat('Archive').info('archive links on the Internet Archive:', arch.checked ? 'on' : 'off'); }; }   // #736
@@ -13265,6 +13265,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Zen editing (#141): hide the site header, release header, entity tabs + footer,
   // leaving just the Apollo nav bar (which gains the release title) and the editor.
   function applyZen() {
+    if (ALIAS_PAGE_RE.test(location.pathname)) { mbuCls(document.body, 'tc-zen-on', !!(SETTINGS.zenMode && navOn() && document.getElementById('tc-nav-bar'))); return; }
     const on = !!(SETTINGS.zenMode && navOn() && editorEl());
     document.body.classList.toggle('tc-zen-on', on);
     if (on) fillNavTitle();
@@ -15827,7 +15828,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return [...doc.querySelectorAll('.error, ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join('; ') || 'HTTP ' + r.status;
   }
 
-  let aliasPageBusy = false;
+  let aliasPageBusy = false, aliasNavRefresh = null;   // aliasNavRefresh: redraws the bar after a settings change
+  // Header and footer, Zen editing: the same bar as the entity edit pages (the entity's name, Enter edit, Cancel) in place of
+  // MusicBrainz's chrome; Enter edit submits every changed row
+  function aliasNav(box, ent, gid, n) {
+    navStyle();
+    const on = navOn(), go = box.querySelector('.tc-al-go');
+    mbuCls(document.body, 'tc-zen-on', !!(on && SETTINGS.zenMode));
+    if (go) mbuProp(go.style, 'display', on ? 'none' : '');
+    let bar = document.getElementById('tc-nav-bar');
+    if (!on) { if (bar) bar.remove(); return; }
+    if (!bar) {
+      bar = document.createElement('div'); bar.id = 'tc-nav-bar'; bar.className = 'mbu-ui';
+      const left = document.createElement('div'); left.id = 'tc-nav-left';
+      const enter = document.createElement('button'); enter.type = 'button'; enter.className = 'tc-nav-wbtn tc-wiz-enter'; enter.id = 'tc-al-enter';
+      enter.onclick = () => box.querySelector('.tc-al-go')?.click();
+      left.appendChild(enter);
+      const title = document.createElement('div'); title.id = 'tc-nav-title';
+      const name = document.querySelector('.' + ent.replace('-', '') + 'header h1 a, #content h1 a, h1 a')?.textContent.trim() || '';
+      title.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name"><a href="' + ORIGIN + '/' + ent + '/' + gid + '">' + esc(name) + '</a></span></div><div class="tc-nav-title-artist">Aliases</div>';
+      const pager = document.createElement('div'); pager.id = 'tc-nav-pager';
+      const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'tc-nav-wbtn tc-wiz-cancel'; cancel.textContent = '\u2715 Cancel';
+      cancel.onclick = () => { location.href = ORIGIN + '/' + ent + '/' + gid; };
+      pager.appendChild(cancel);
+      bar.append(left, title, pager);
+      box.before(bar);
+    }
+    const en = document.getElementById('tc-al-enter');
+    if (en) { en.textContent = '\u2713 Enter ' + (n > 1 ? n + ' edits' : 'edit'); mbuProp(en.style, 'display', n ? '' : 'none'); }
+  }
   async function applyAliasPage() {
     const m = location.pathname.match(ALIAS_PAGE_RE); if (!m) return;
     const ent = m[1].toLowerCase(), gid = m[2];
@@ -15835,7 +15864,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const list = m[3].toLowerCase() === 'aliases';
     const mbPart = list ? document.querySelector('#content table.tbl') || [...document.querySelectorAll('#content > p')].find(p => !p.querySelector('a[href$="/add-alias"]')) : document.querySelector('input[name="edit-alias.name"]')?.closest('form');
     ensureLauncher();
-    if (!aliasWant()) { if (mbPart) mbPart.style.display = ''; document.getElementById('tc-alias')?.remove(); return; }
+    if (!aliasWant()) { if (mbPart) mbPart.style.display = ''; document.getElementById('tc-alias')?.remove(); document.getElementById('tc-nav-bar')?.remove(); mbuCls(document.body, 'tc-zen-on', false); return; }
     if (document.getElementById('tc-alias') || aliasPageBusy) return;
     let form = mbPart;
     if (list) {
@@ -15873,6 +15902,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       let n = 0;
       for (const r of rows) { const s = state(r); r.tr.className = s ? 'tc-al-' + s : ''; if (s && (s === 'del' || r.name.trim())) n++; r.tr.querySelector('.tc-al-x').textContent = r.removed ? '↺' : '×'; r.tr.querySelector('.tc-al-x').title = r.removed ? 'Keep this alias' : r.id ? 'Remove this alias' : 'Drop this row'; }
       go.textContent = n ? 'Submit ' + n + ' edit' + (n > 1 ? 's' : '') : 'Submit'; go.disabled = !n;
+      aliasNav(box, ent, gid, n); aliasNavRefresh = sync;
       box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
     };
     const addRow = (r, top) => {
@@ -15954,8 +15984,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     try {
       for (const r of await aliasLoad(ent, gid, locales, types)) { r.orig = key(r); addRow(r); }
     } catch (e) { Log.cat('Alias').warn('could not load the aliases', e.message); msg.textContent = 'Could not load the existing aliases'; }
-    // MusicBrainz's form may arrive with a name typed in (its "Add alias" link carries none, a seed may)
-    const seeded = nameIn.value.trim();
+    // a seed in the URL fills the first row; MusicBrainz's own form arrives with the entity's name typed in, which isn't one
+    const seeded = !list && new URLSearchParams(location.search).has('edit-alias.name') ? nameIn.value.trim() : '';
     addRow(blank(seeded, seeded ? (form.querySelector('input[name="edit-alias.sort_name"]')?.value || '') : ''), false);
     sync();
   }
@@ -16032,6 +16062,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-paste button{margin-top:4px}
     #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}
     #tc-alias .tc-al-go:disabled{opacity:.5}
+    body.tc-zen-on:has(#tc-alias) :is(#content > [class$="header"],#content > .tabs,#content > h2,#content > p,#sidebar,.header,#footer){display:none!important}
+    body.tc-zen-on:has(#tc-alias) #content{margin-right:0!important}
     #tc-alias .tc-al-src{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0 8px}
     #tc-alias .tc-al-chip{padding:2px 6px}
     .tc-al-pill{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;background:var(--mbu-border);color:var(--mbu-text);font-size:11px;font-weight:600;line-height:16px;text-decoration:none}

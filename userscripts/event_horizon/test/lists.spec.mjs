@@ -54,7 +54,7 @@ test('a heading\'s funnel filters the table by that column (#845)', { tag: '@san
   const all = await cells(), word = all[0].split(/\s+/)[0];
   await fun.click();
   const box = page.locator('#s-ir input[data-tq]');
-  check(await box.inputValue(), 'artist:');
+  check(await box.inputValue() === 'artist:', 'the funnel starts "artist:"');
   await box.press('End');
   await box.pressSequentially(word);
   const left = await cells();
