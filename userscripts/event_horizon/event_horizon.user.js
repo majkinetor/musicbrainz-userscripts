@@ -2107,7 +2107,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}
 .hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
-.arthd{margin:0 0 -16px}.arthd .kicker.label{font-size:10.5px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
+.arthd{margin:0 0 -16px;display:flex;gap:20px;align-items:center}.arthd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}.arthd>.rhcv[hidden]{display:none}.arthd>.rhtx{flex:1;min-width:0}.arthd .kicker.label{font-size:10.5px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
@@ -4444,13 +4444,15 @@ function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
-    return `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none);
+    return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
 }
+// a release without a front cover drops the header's image
+const cvWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; LOG.debug('Header: no front cover'); }; };
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`);
+    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`); cvWire(app.querySelector('.arthd'));
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
     if (as) slot.append(as);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none">Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
@@ -4487,7 +4489,7 @@ body{background:var(--bg)}
 :root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:12px 0 10px!important}#eh-relhd .disamb{margin:0 0 10px}#eh-relhd h1 a{white-space:normal!important}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd .disamb{margin:0 0 10px}#eh-relhd h1 a{white-space:normal!important}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -4531,9 +4533,7 @@ function relHeader(id) {
     const rh = document.querySelector('#content > .releaseheader'), t = rh && rh.querySelector('h1 a'), sub = rh && rh.querySelector('.subheader');
     const by = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')].map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ') : '';
     const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
-    hd.innerHTML = `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"></div>`;
-    const cv = hd.querySelector('.rhcv'), tx = hd.querySelector('.rhtx'); cv.onerror = () => { cv.hidden = true; LOG.debug('Relate header: no front cover'); };
-    const draw = r => { tx.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); };
+    const draw = r => { hd.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); cvWire(hd); };
     draw(null);
     Promise.resolve().then(() => ws('release/' + id + '?inc=artist-credits+media+release-groups')).then(r => r && r.id && draw(r)).catch(e => LOG.warn('Relate header: ' + e));
     hd.addEventListener('click', e => {
@@ -4769,7 +4769,8 @@ function histPage(app, d) {
     const cnt = k => d.edits.filter(e => e.st === k).length;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}</div>` + `<div class="hql">${[...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = d.busy ? '<div class="hmore">Loading edits…</div>' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.more ? `<div class="hmore">${d.edits.length} edits loaded <button type="button" class="sk-b" data-hmore>Load more</button></div>` : d.edits.length ? `<div class="hmore">All ${d.edits.length} edits</div>` : '<div class="hmore">No edits</div>';
-    app.innerHTML = `<section class="arthd"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>${r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : rid ? '<h1>&nbsp;</h1>' : `<h1>${esc(histName(d.id))}</h1>`}</section><section class="hist">${d.edits.length ? bar : ''}${body}${foot}</section>`;
+    app.innerHTML = `<section class="arthd">${rid ? subHead(r, rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1></div>`}</section><section class="hist">${d.edits.length ? bar : ''}${body}${foot}</section>`;
+    cvWire(app);
     app.onclick = ev => {
         if (data !== d) return;
         const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');
