@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.380000
+// @version      2026.10.27.390000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4718,6 +4718,9 @@ function histBursts(es) {
 async function histLoad(n) {
     const d = data; if (d.busy || !d.more) return;
     d.busy = true; render();
+    // the header's release loads beside the edits, not after them
+    const relGet = () => { if (!d.rel && !d.relAsk && histRid(d.id)) { d.relAsk = true; ws('release/' + histRid(d.id) + '?inc=artist-credits+media+release-groups').then(r => { if (data === d) { d.rel = r; render(); } }, () => { d.relAsk = false; }); } };
+    relGet();
     const target = d.edits.length + H_MIN;
     try {
         for (let i = 0; i < H_MAXP && d.more; i++) {
@@ -4727,15 +4730,14 @@ async function histLoad(n) {
             else { const sr = histSrc(d.id), r = await mbnFetch(`${MB}${sr}${sr.includes('?') ? '&' : '?'}page=${p}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
             if (n !== showing || data !== d) return;
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
-            d.edits.push(...x.edits.filter(e => !seen.has(e.id))); d.page = p; if (x.rid) d.rid = x.rid;
+            d.edits.push(...x.edits.filter(e => !seen.has(e.id))); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
             d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && x.edits.length > 0;
             render();
             // enough once past the target, unless this page was all one burst that may go on
             if (d.edits.length >= target) { const b = histBursts(d.edits), l = b[b.length - 1]; if (l.es.length < x.edits.length || !x.edits.length) break; }
         }
-    } catch (e) { LOG.err('Loading the history of ' + d.id + ' failed: ' + e.message); d.err = e.message; }
-    if (!d.rel && histRid(d.id)) ws('release/' + histRid(d.id) + '?inc=artist-credits+media+release-groups').then(r => { if (data === d) { d.rel = r; render(); } }, () => {});
+    } catch (e) { relGet(); LOG.err('Loading the history of ' + d.id + ' failed: ' + e.message); d.err = e.message; }
     d.busy = false; if (n === showing && data === d) render();
 }
 const histHue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
@@ -5014,8 +5016,10 @@ const plFollow = () => { const o = plSorted(cfgProviders()).map(p => p.key); S.p
 let cfgAll = false;
 function cfgProviders() {
     const um = new Map();
-    if (data && data.rel) { for (const m of data.rel.media) for (const t of m.tracks) for (const p of t.links) if (!um.has(p.key)) um.set(p.key, p); }
-    if (!data || cfgAll) for (const k of [...S.prov, ...ORDER, ...(cfgAll ? HOSTS.map(h => h[0]) : [])]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
+    // a subpage (Art, History) loads its release without tracks: it offers the usual platforms, as no release would
+    const rel = data && data.rel && (data.rel.media || []).some(m => m.tracks);
+    if (rel) { for (const m of data.rel.media) for (const t of m.tracks || []) for (const p of t.links || []) if (!um.has(p.key)) um.set(p.key, p); }
+    if (!rel || cfgAll) for (const k of [...S.prov, ...ORDER, ...(cfgAll ? HOSTS.map(h => h[0]) : [])]) { const h = HOSTS.find(x => x[0] === k); if (h && !um.has(k)) um.set(k, { key: k, name: h[1] }); }
     return sortP([...um.values()]);
 }
 function cfgBody() {
