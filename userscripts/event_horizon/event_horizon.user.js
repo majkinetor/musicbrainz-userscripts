@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.430000
+// @version      2026.10.27.510000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2089,7 +2089,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft);cursor:pointer;display:grid;place-items:center}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
 .gear>button svg{color:inherit}
-.art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
@@ -2109,7 +2109,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
 .hrun>summary::before,.hed>summary::before{content:'▸';color:var(--muted);width:12px;margin-left:-18px;transition:transform .15s;align-self:center}.hrun[open]>summary::before,.hed[open]>summary::before{transform:rotate(90deg)}
 .hrun>summary:hover,.hed>summary:hover{background:var(--line)}.hrun .hed>summary{padding-left:62px}.hty{font-weight:600}.hrun>summary .n{color:var(--muted)}.hed .d,.hed .v{color:var(--muted);font-size:12px}.hed .id{font-size:12px;margin-left:auto;flex:none}
-.hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt table.tbl{margin:2px 0 6px}.hdt table.tbl :is(td,th){padding:3px 14px 3px 0;text-align:left}.hdt table.tbl td.pos{color:var(--muted);font-variant-numeric:tabular-nums;padding-right:10px}.hdt table.tbl td.treleases{text-align:right;padding-right:0;font-variant-numeric:tabular-nums}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}.hdt .diff-only-a,.hdt .diff-only-b{display:inline-block;padding:0 4px;border-radius:3px}.hdt .diff-only-a{margin-right:6px}
+.hdt{padding:6px 12px 12px 62px;overflow-x:auto;font-size:13px}.hdt table{border-collapse:collapse}.hdt th{text-align:right;vertical-align:top;padding:2px 8px 2px 0;color:var(--muted);font-weight:600;white-space:nowrap}.hdt td{padding:2px 0;vertical-align:top}.hdt table.tbl{margin:2px 0 6px}.hdt table.tbl :is(td,th){padding:3px 14px 3px 0;text-align:left}.hdt table.tbl td.pos{color:var(--muted);font-variant-numeric:tabular-nums;padding-right:10px}.hdt table.tbl td.treleases{text-align:right;padding-right:0;font-variant-numeric:tabular-nums}.hdt table.wrap-block{display:inline-table;margin:0 6px 6px 0;vertical-align:top}.hdt table.wrap-block td{padding:1px 6px;font-variant-numeric:tabular-nums;border:1px solid var(--border);background:var(--chip)}.hdt td :is(ul,ol){list-style:none;margin:0;padding:0}.hdt th{font-weight:700!important;color:var(--text)!important}.hdt .expanded-ac-list{display:block;padding-left:1.5em;font-size:.92em;color:var(--muted)}.hdt .release-event{display:flex;flex-wrap:wrap;gap:0 .5em;align-items:baseline}.hdt .release-event>br{display:none}.hdt table.details:not(.wrap-block)>*>tr>th{min-width:10em}.hdt img{max-width:120px;height:auto;border-radius:4px}.hdt .thumb-position{display:inline-block;margin:0 6px 6px 0}.hdt .old,.hdt del{color:var(--warn)}.hdt .new,.hdt ins{color:#2e8b57;text-decoration:none}.hdt .diff-only-a,.hdt .diff-only-b{display:inline-block;padding:0 4px;border-radius:3px}.hdt .diff-only-a{margin-right:6px}
 .hwho{font-size:13px;font-weight:600}.hico{display:inline-grid;place-items:center;align-self:center;flex:none}.hico svg{width:17px;height:17px}.hgh .t .hico{vertical-align:-3px;margin-right:6px}.hico.add{color:#2e8b57}.hico.edit{color:#3b7dd8}.hico.rem{color:#c0392b}.hico.oth{color:#8a6bb8}.hnc{font-size:12px;color:var(--soft)}.hnp{flex:1 1 200px;min-width:0;color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hed[open] .hnp{display:none}
 .hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}
 .hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
@@ -2776,7 +2776,7 @@ function under(r, more = '') {
     const v = r.rating.value, n = r.rating['votes-count'] || 0;
     const tip = v != null ? `${v} from ${n} vote${n === 1 ? '' : 's'} (release group)` : '';
     const stars = on('rating') && v != null ? `<span class="stars" data-tip="${esc(tip)}" aria-label="Rated ${esc(tip)}">${'★'.repeat(Math.round(v))}<span class="off">${'★'.repeat(5 - Math.round(v))}</span></span>` : '';
-    const tags = on('tags') && (r.genres.length || more) ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
+    const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
 const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
@@ -3909,6 +3909,8 @@ function render(keepPop) {
         : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
         : data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
+    // opened, the genres and tags leave the cover's column for the page's full width
+    if (tagsOpen) { const gt = app.querySelector('.hero .gtags'); if (gt) { gt.classList.add('wide'); gt.closest('.hero').after(gt); } }
     // a redraw keeps the images already loaded, so the covers don't blink
     for (const im of app.querySelectorAll('img')) { const k = im.outerHTML, o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
     const gc = app.querySelector('[data-rgcover]');
@@ -4742,7 +4744,7 @@ async function histLoad(n, all) {
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
             const fresh = x.edits.filter(e => !seen.has(e.id)); d.edits.push(...fresh); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
-            d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && fresh.length > 0;
+            d.edits.sort((a, b) => b.id - a.id); d.more = x.next && fresh.length > 0;
             LOG.debug(`History ${d.id}: page ${p} gave ${x.edits.length} edits, ${fresh.length} new, ${d.edits.length} in all${d.more ? '' : ', no more pages'}`);
             render();
             // enough once past the target, unless this page was all one burst that may go on
@@ -4772,9 +4774,10 @@ function histRuns(es) {
     const runs = [], g = histShared(es), gk = g && hnKey(g);
     for (const e of es) { const r = runs[runs.length - 1]; if (r && r[0].tk === e.tk) r.push(e); else runs.push([e]); }
     return (g ? `<div class="hshr">${histNote(g)}</div>` : '') + runs.map(r => {
-        if (r.length === 1) return histEdit(r[0], gk);
+        // a group of one edit opens on that edit
+        if (r.length === 1) return es.length === 1 ? histEdit(r[0], gk).replace('<details class="hed">', '<details class="hed" open>') : histEdit(r[0], gk);
         const s = !g && histShared(r), k = gk || (s && hnKey(s));
-        return `<details class="hrun"><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
+        return `<details class="hrun"><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}${s || g ? `<span class="hnc" data-tip="1 edit note, on every edit">💬 1</span><span class="hnp">${esc((s || g).text.slice(0, 140))}</span>` : ''}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
     }).join('');
 }
 function histGroup(key, title, es, av, nm) {
