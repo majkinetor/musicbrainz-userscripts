@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.192317
+// @version      2026.10.26.193254
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -10305,6 +10305,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img);
     b.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
+      if (ENT_KIND) { applyRgEdit(); relabelLauncher(); return; }   // the entity edit pages have no release editor: applyView would throw before them
       applyView(); applyNav(); applyAnnotationPage(); applyRgEdit();
     };
     b.oncontextmenu = e => { e.preventDefault(); openSettings(b); };   // #695: the one settings entry point (right-click on every corner launcher)
@@ -14710,11 +14711,137 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     box.hidden = !show;
     if (show) box.innerHTML = html.replace(/ {2,}/g, m => '<span class="tc-jp" data-tip="Double space">' + '␣'.repeat(m.length) + '</span>').replace(/^ | $/g, '<span class="tc-jp" data-tip="Leading or trailing space">␣</span>');
   }
-  // Cards: loujine's "Add external link" box and a place's map. Each goes at the end of whichever column is shorter
+  /* #843: Autofill (Apollo's version of loujine's "Add external link"): paste a Wikidata, Wikipedia, VIAF or ISNI
+     link and the empty fields fill from Wikidata: name and sort name, type, gender, dates, area, begin and end area
+     (each found on MusicBrainz by its Wikidata link), IPI and ISNI codes, a place's coordinates, and the external
+     links Wikidata knows that the entity lacks. A field that already has a value is left as it is. */
+  const WD_API = 'https://www.wikidata.org/w/api.php';
+  const wdGet = async url => { const r = await fetch(url); if (!r.ok) throw new Error('Wikidata answered HTTP ' + r.status); return r.json(); };
+  async function wdQid(text) {
+    const url = text.trim();
+    let m = url.match(/wikidata\.org\/(?:wiki|entity)\/(Q\d+)/i); if (m) return m[1].toUpperCase();
+    m = url.match(/^https?:\/\/([a-z-]+)\.(?:m\.)?wikipedia\.org\/wiki\/([^?#]+)/i);
+    if (m) {
+      const j = await wdGet(`https://${m[1]}.wikipedia.org/w/api.php?action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&format=json&origin=*&titles=${m[2]}`);
+      const pg = Object.values((j.query && j.query.pages) || {})[0];
+      return (pg && pg.pageprops && pg.pageprops.wikibase_item) || '';
+    }
+    let prop = '', val = '';
+    const flat = url.replace(/[\s+]/g, '');
+    if ((m = url.match(/viaf\.org\/viaf\/(\d+)/i))) { prop = 'P214'; val = m[1]; }
+    else if ((m = flat.match(/isni(?:\.org\/isni\/|[:/])?(\d{15}[\dX])/i) || flat.match(/^(\d{15}[\dX])$/i))) { prop = 'P213'; val = m[1].toUpperCase().replace(/(.{4})(?=.)/g, '$1 '); }
+    if (!prop) return '';
+    const j = await wdGet(`${WD_API}?action=query&list=search&srsearch=${encodeURIComponent('haswbstatement:"' + prop + '=' + val + '"')}&format=json&origin=*`);
+    return ((j.query && j.query.search && j.query.search[0]) || {}).title || '';
+  }
+  const wdVals = (e, p) => ((e.claims && e.claims[p]) || []).filter(c => c.rank !== 'deprecated' && c.mainsnak && c.mainsnak.datavalue).sort((a, b) => (b.rank === 'preferred') - (a.rank === 'preferred')).map(c => c.mainsnak.datavalue.value);
+  const wdQs = (e, p) => wdVals(e, p).map(v => v && v.id).filter(Boolean);
+  const wdStr = (e, p) => wdVals(e, p).filter(v => typeof v === 'string');
+  function wdDate(e, p) {
+    const v = wdVals(e, p)[0]; if (!v || !v.time) return null;
+    const m = v.time.match(/^\+(\d+)-(\d\d)-(\d\d)/); if (!m || v.precision < 9) return null;
+    return { year: String(+m[1]), month: v.precision >= 10 ? String(+m[2]) : '', day: v.precision >= 11 ? String(+m[3]) : '' };
+  }
+  const WD_TYPE = { Q5: 'Person', Q42998: 'Orchestra', Q131186: 'Choir', Q215380: 'Group', Q2088357: 'Group', Q5741069: 'Group', Q9212979: 'Group', Q641066: 'Group', Q216337: 'Group', Q1323220: 'Group', Q2198484: 'Group' };
+  const WD_GENDER = { Q6581097: 'Male', Q2449503: 'Male', Q6581072: 'Female', Q1052281: 'Female', Q48270: 'Non-binary' };
+  // [property, url] for the links Wikidata keeps as identifiers
+  const WD_LINKS = [['P856', v => v], ['P1953', v => 'https://www.discogs.com/artist/' + v], ['P1955', v => 'https://www.discogs.com/label/' + v], ['P214', v => 'https://viaf.org/viaf/' + v],
+    ['P345', v => 'https://www.imdb.com/name/' + v + '/'], ['P1728', v => 'https://www.allmusic.com/artist/' + v], ['P1902', v => 'https://open.spotify.com/artist/' + v], ['P2722', v => 'https://www.deezer.com/artist/' + v],
+    ['P4576', v => 'https://tidal.com/artist/' + v], ['P2850', v => 'https://music.apple.com/artist/' + v], ['P3283', v => 'https://' + v + '.bandcamp.com/'], ['P3192', v => 'https://www.last.fm/music/' + v],
+    ['P3478', v => 'https://www.songkick.com/artists/' + v], ['P3040', v => 'https://soundcloud.com/' + v], ['P2397', v => 'https://www.youtube.com/channel/' + v], ['P2003', v => 'https://www.instagram.com/' + v + '/'],
+    ['P2002', v => 'https://twitter.com/' + v], ['P2013', v => 'https://www.facebook.com/' + v], ['P2373', v => 'https://genius.com/artists/' + v], ['P244', v => 'https://id.loc.gov/authorities/names/' + v],
+    ['P268', v => 'https://catalogue.bnf.fr/ark:/12148/cb' + v], ['P227', v => 'https://d-nb.info/gnd/' + v]];
+  const urlKey = u => String(u).toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
+  const afEl = k => document.getElementById('id-edit-' + ENT_KIND + '.' + k);
+  function afSet(inp, v) {
+    if (!inp || !v || (inp.value || '').trim()) return false;
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(inp, v);
+    inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+  function afSelect(sel, text) {
+    if (!sel || !text || (sel.value || '').trim()) return false;
+    const o = [...sel.options].find(x => x.textContent.trim().toLowerCase() === text.toLowerCase()); if (!o) return false;
+    sel.value = o.value; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+  function afDate(which, d) {
+    if (!d) return false;
+    const pre = 'period.' + which + '_date.';
+    if ((afEl(pre + 'year') || {}).value) return false;
+    ['year', 'month', 'day'].forEach(k => afSet(afEl(pre + k), d[k]));
+    return true;
+  }
+  // a Wikidata place → its MusicBrainz area, by the area's Wikidata link; the area field takes its MBID, which MusicBrainz looks up itself
+  async function afArea(inp, qid) {
+    if (!inp || !qid || (inp.value || '').trim()) return false;
+    const res = await wsJson(`${ORIGIN}/ws/2/url?resource=${encodeURIComponent('https://www.wikidata.org/wiki/' + qid)}&inc=area-rels&fmt=json`, { label: 'autofill area' });
+    const rel = res && res.json && (res.json.relations || []).find(r => r.area);
+    if (!rel) { Log.cat('Links').info('autofill: no MusicBrainz area has Wikidata', qid); return false; }
+    inp.focus(); afSet(inp, rel.area.id);
+    inp.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true })); inp.dispatchEvent(new Event('paste', { bubbles: true }));
+    return true;
+  }
+  async function autofill(text, status) {
+    const say = (t, bad) => { status.textContent = t; mbuCls(status, 'bad', !!bad); };
+    say('Reading Wikidata…');
+    try {
+      const qid = await wdQid(text);
+      if (!qid) { say('No Wikidata item for that link', true); return; }
+      const j = await wdGet(`${WD_API}?action=wbgetentities&ids=${qid}&props=labels|claims&format=json&origin=*`);
+      const e = j.entities && j.entities[qid]; if (!e) { say('Wikidata has no ' + qid, true); return; }
+      const done = [];
+      const lab = e.labels || {}, name = (lab.en || lab.mul || Object.values(lab)[0] || {}).value || '';
+      const types = wdQs(e, 'P31'), person = types.includes('Q5');
+      if (afSet(afEl('name'), name)) done.push('name');
+      const nm = (afEl('name') || {}).value || name, w = nm.trim().split(/\s+/);
+      if (ENT_KIND === 'artist' && afSet(afEl('sort_name'), person && w.length > 1 ? w[w.length - 1] + ', ' + w.slice(0, -1).join(' ') : guessSortName(nm))) done.push('sort name');
+      if (ENT_KIND === 'artist') {
+        const t = types.map(q => WD_TYPE[q]).find(Boolean);
+        if (afSelect(afEl('type_id'), t)) done.push('type');
+        if (afSelect(afEl('gender_id'), wdQs(e, 'P21').map(q => WD_GENDER[q]).find(Boolean))) done.push('gender');
+      }
+      const begin = ENT_KIND === 'artist' && person ? 'P569' : 'P571', end = ENT_KIND === 'artist' && person ? 'P570' : 'P576';
+      if (afDate('begin', wdDate(e, begin))) done.push('begin date');
+      const ed = wdDate(e, end);
+      if (afDate('end', ed)) { done.push('end date'); const cb = afEl('period.ended'); if (cb && !cb.checked) cb.click(); }
+      const area = ENT_KIND === 'artist' ? (person ? wdQs(e, 'P27') : wdQs(e, 'P495'))[0] : ENT_KIND === 'place' ? (wdQs(e, 'P131')[0] || wdQs(e, 'P17')[0]) : (wdQs(e, 'P17')[0] || wdQs(e, 'P495')[0]);
+      if (await afArea(afEl('area.name'), area)) done.push('area');
+      if (ENT_KIND === 'artist') {
+        if (await afArea(afEl('begin_area'), (person ? wdQs(e, 'P19') : wdQs(e, 'P740'))[0])) done.push(person ? 'born in' : 'founded in');
+        if (await afArea(afEl('end_area'), wdQs(e, 'P20')[0])) done.push('died in');
+      }
+      const f = rgForm(), first = n => f && f.querySelector(`input[name="edit-${ENT_KIND}.${n}_codes.0"]`);
+      if (afSet(first('ipi'), wdStr(e, 'P1828')[0])) done.push('IPI');
+      if (afSet(first('isni'), (wdStr(e, 'P213')[0] || '').replace(/\s/g, ''))) done.push('ISNI');
+      const co = wdVals(e, 'P625')[0];
+      if (ENT_KIND === 'place' && co && afSet(afEl('coordinates'), co.latitude + ', ' + co.longitude)) done.push('coordinates');
+      const have = new Set([...document.querySelectorAll('#external-links-editor a[href], #external-links-editor input[type=url]')].map(x => urlKey(x.href || x.value)).filter(Boolean));
+      const add = [];
+      ['https://www.wikidata.org/wiki/' + qid].concat(WD_LINKS.flatMap(([p, mk]) => wdStr(e, p).map(mk))).forEach(u => { const k = urlKey(u); if (!have.has(k)) { have.add(k); add.push(u); } });
+      if (add.length) { const r = await alAddUrls(add); const n = r.filter(x => x.ok).length; if (n) done.push(n + ' link' + (n > 1 ? 's' : '')); }
+      say(done.length ? 'Filled: ' + done.join(', ') : 'Nothing to fill: the form already has what Wikidata knows');
+      Log.cat('Links').info('autofill from', qid + ':', done.join(', ') || 'nothing');
+    } catch (x) { say('Autofill failed: ' + x.message, true); Log.cat('Links').warn('autofill failed —', x.message); }
+  }
+  function afCard() {
+    let c = document.getElementById('tc-af-card'); if (c) return c;
+    c = document.createElement('div'); c.id = 'tc-af-card'; c.className = 'mbu-ui';
+    c.innerHTML = '<div class="tc-af-h">Autofill</div><input type="text" class="tc-af-in" placeholder="Paste a Wikidata, Wikipedia, VIAF or ISNI link"><div class="tc-af-st"></div>';
+    const inp = c.querySelector('input'), st = c.querySelector('.tc-af-st');
+    let last = '';
+    const go = () => { const v = inp.value.trim(); if (!v || v === last) return; last = v; autofill(v, st); };
+    inp.addEventListener('paste', () => setTimeout(go, 0));
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); last = ''; go(); } });
+    inp.addEventListener('change', go);
+    return c;
+  }
+  // Cards: Autofill and a place's map. Each goes at the end of whichever column is shorter
   // (a masonry layout), so neither column is left with a long empty stretch
   function entCards(on) {
     const form = rgForm(), half = form && form.querySelector(':scope > .half-width'), col = form && form.querySelector(':scope > #tc-ri-rightcol');
-    const cards = [document.getElementById('loujine-menu'), document.getElementById('largemap')].filter(Boolean);
+    if (on && half && col && !document.getElementById('tc-af-card')) col.appendChild(afCard());   // placed below with the others
+    const cards = [document.getElementById('tc-af-card'), document.getElementById('largemap')].filter(Boolean);
     cards.forEach(c => {
       if (!c._tcHome) c._tcHome = { parent: c.parentElement, next: c.nextElementSibling };
       if (on && half && col) { c.classList.add('tc-ent-card'); return; }
@@ -14903,10 +15030,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.tc-ent-form > #side-col:empty{display:none}
     body.tc-ri-on .tc-ent-card{display:block;margin:14px 0!important;padding:10px 12px!important;border:1px solid var(--mbu-border)!important;border-radius:var(--mbu-radius);background:var(--mbu-bg)!important;color:var(--mbu-text);box-sizing:border-box;width:auto!important}
     body.tc-ri-on #largemap.tc-ent-card{padding:0!important;height:300px!important;overflow:hidden}
-    body.tc-ri-on #loujine-menu.tc-ent-card :is(h2,h3){margin:0 0 4px;font:600 13px var(--mbu-font);color:var(--mbu-text);text-transform:none}
-    body.tc-ri-on #loujine-menu.tc-ent-card > h2 + a{font-size:11px}
-    body.tc-ri-on #loujine-menu.tc-ent-card p{margin:2px 0 6px;font-size:12px;color:var(--mbu-text-dim)}
-    body.tc-ri-on #loujine-menu.tc-ent-card #linkParser{width:100%!important;box-sizing:border-box}
+    body.tc-ri-on form.tc-ent-plain #loujine-menu{display:none!important}   /* Autofill does what its Add external link did */
+    body:not(.tc-ri-on) #tc-af-card{display:none}
+    #tc-af-card .tc-af-h{font:600 12px var(--mbu-font);color:var(--mbu-text);margin:0 0 6px}
+    #tc-af-card .tc-af-in{width:100%;box-sizing:border-box}
+    #tc-af-card .tc-af-st{margin:6px 0 0;font:12px var(--mbu-font);color:var(--mbu-text-dim);min-height:1em}
+    #tc-af-card .tc-af-st.bad{color:var(--mbu-err)}
+    #tc-af-card .tc-af-st:empty{display:none}
     .tc-ent-hl{margin:2px 0 0 170px;font:13px var(--mbu-font);color:var(--mbu-text);white-space:pre-wrap;word-break:break-word}
     .tc-ent-hl[hidden]{display:none}
     /* #843: the artist form: its fields end on one line, the links column starts level with Artist details, the dates fit their hints */

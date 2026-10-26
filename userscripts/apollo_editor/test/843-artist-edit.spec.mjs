@@ -15,7 +15,7 @@ const addLoujine = page => page.evaluate(() => {
 });
 // the card is at the end of the column that was shorter without it
 const shorterColumn = page => page.evaluate(() => {
-  const c = document.getElementById('loujine-menu'), half = document.querySelector('#information > .half-width'), col = document.getElementById('tc-ri-rightcol');
+  const c = document.getElementById('tc-af-card'), half = document.querySelector('#information > .half-width'), col = document.getElementById('tc-ri-rightcol');
   const note = half.querySelector(':scope > fieldset.editnote');
   const left = (note ? note.getBoundingClientRect().top : half.getBoundingClientRect().bottom) - (c.parentElement === half ? c.offsetHeight : 0);
   const right = col.getBoundingClientRect().bottom - (c.parentElement === col ? c.offsetHeight : 0);
@@ -29,7 +29,7 @@ test('the artist edit page gets the links column, the name highlight and loujine
   await inject('apollo_editor');
   const s = await until(() => page.evaluate(() => ({
     col: !!document.querySelector('#tc-ri-rightcol #external-links-editor'),
-    card: document.getElementById('loujine-menu').classList.contains('tc-ent-card'),
+    card: !!document.querySelector('#tc-af-card.tc-ent-card') && getComputedStyle(document.getElementById('loujine-menu')).display === 'none',
     doc: getComputedStyle(document.querySelector('#information > div.documentation')).display,
     bar: !!document.getElementById('tc-nav-bar'),
   })), v => v.col && v.card);
@@ -38,7 +38,7 @@ test('the artist edit page gets the links column, the name highlight and loujine
   check(s.doc === 'none', `the help column is hidden (${s.doc})`);
   check(s.bar, 'Apollo\'s header bar is there');
   const c = await until(() => shorterColumn(page), v => v.in === v.want);
-  check(c.in === c.want, `loujine's card ends the shorter column (${c.in}, want ${c.want})`);
+  check(c.in === c.want, `Autofill ends the shorter column (${c.in}, want ${c.want})`);
   // links with a platform we draw get our SVG icon in place of MusicBrainz's favicon
   const fav = await until(() => page.evaluate(() => [...document.querySelectorAll('#external-links-editor tr.external-link-item')].filter(tr => tr.querySelector('a[href]')).map(tr => [new URL(tr.querySelector('a[href]').href).hostname, tr.querySelector('.favicon')?.dataset.tcIcon || '', !!tr.querySelector('.favicon > svg')])), v => v.some(r => /discogs/.test(r[0]) && r[2]));
   const dc = fav.find(r => /discogs/.test(r[0]));
@@ -73,14 +73,14 @@ test('the label and place edit pages get the links column and the cards', { tag:
     await inject('apollo_editor');
     const s = await until(() => page.evaluate(() => ({
       col: !!document.querySelector('#tc-ri-rightcol #external-links-editor'),
-      card: document.getElementById('loujine-menu').classList.contains('tc-ent-card'),
+      card: !!document.querySelector('#tc-af-card.tc-ent-card') && getComputedStyle(document.getElementById('loujine-menu')).display === 'none',
       map: document.getElementById('largemap') ? document.getElementById('largemap').classList.contains('tc-ent-card') && document.getElementById('largemap').offsetHeight > 100 : null,
     })), v => v.col && v.card && v.map !== false);
     check(s.col, `${kind}: the external links sit in the right column`);
-    check(s.card, `${kind}: loujine's box is a card`);
+    check(s.card, `${kind}: Autofill is a card, loujine's box hidden`);
     if (kind === 'place') check(s.map === true, `place: the map is a visible card (${s.map})`);
     const c = await until(() => shorterColumn(page), v => v.in === v.want);
-    check(c.in === c.want, `${kind}: loujine's card ends the shorter column (${c.in}, want ${c.want})`);
+    check(c.in === c.want, `${kind}: Autofill ends the shorter column (${c.in}, want ${c.want})`);
     await attachShot(testInfo, page, kind + '-edit');
   }
 });

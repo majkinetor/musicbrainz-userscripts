@@ -57,7 +57,8 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 
 - **External links** sit in a right column with the dead-link checker.
 - **Name** and **Sort name** show their look-alike and invisible characters, double spaces and leading or trailing spaces on a line under the field.
-- [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, when installed, and a place's map are cards at the end of whichever column is shorter.
+- **Autofill**: paste a Wikidata, Wikipedia, VIAF or ISNI link and the empty fields fill from Wikidata: name, sort name, type, gender, dates, areas, IPI, ISNI, a place's coordinates, and the links Wikidata knows. A field you already filled stays as it is. It replaces [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, which is hidden while Apollo is on.
+- Autofill and a place's map are cards at the end of whichever column is shorter.
 - The help bubbles are gone, and Apollo's bar has ✓ Enter edit and ✕ Cancel.
 
 ## Tracklist
