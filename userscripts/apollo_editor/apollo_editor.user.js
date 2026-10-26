@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.103354
+// @version      2026.10.26.110255
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -1605,7 +1605,7 @@
   }
 
   /* ── model access ── */
-  function release() { return u(getEditor().rootField.release); }
+  function release() { return RG_PAGE ? rgShim : u(getEditor().rootField.release); }   // #842: the release group's edit page has its stand-in
   function mediums() { return u(release().mediums) || []; }
   function koTrack(mi, ti) { return u(mediums()[mi].tracks)[ti]; }
   // #376 pending-edit state for a track's recording: {rec} if the recording itself has open edits,
@@ -2014,6 +2014,7 @@
     _selfEdit = true;
     try { rel.artistCredit({ names }); } catch (x) { Log.cat('Artist').warn('release artist: writing the credit failed —', x.message); } finally { _selfEdit = false; }
     _riCommittedKey = riLiveKey();
+    if (RG_PAGE && rgMissingIds()) rgFillIds().catch(() => {});   // #842: the form posts row ids, fetched now rather than at submit
     Log.cat('Artist').info('release artist credit →', JSON.stringify(names.map(n => n.name + n.joinPhrase).join('')), '·', names.map(n => (n.artist && n.artist.gid) ? 'linked' : 'unlinked').join(', '));
   }
   async function matchReleaseArtist(manual) {
@@ -10292,7 +10293,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img);
     b.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
-      applyView(); applyNav(); applyAnnotationPage();
+      applyView(); applyNav(); applyAnnotationPage(); applyRgEdit();
     };
     b.oncontextmenu = e => { e.preventDefault(); openSettings(b); };   // #695: the one settings entry point (right-click on every corner launcher)
     document.body.appendChild(b); relabelLauncher();
@@ -13368,7 +13369,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   let _apolloUsed = false;   // set true once a tracklist/recordings mirror is shown — i.e. Apollo is in use
   function ensureApolloEditNote() {
     if (!_apolloUsed) return;
-    const ta = document.getElementById('edit-note-text'); if (!ta) return;   // MB's plain edit-note textarea (name=edit_note)
+    const ta = document.getElementById('edit-note-text') || document.getElementById('id-edit-release-group.edit_note'); if (!ta) return;   // #842: the release group form's   // MB's plain edit-note textarea (name=edit_note)
     const cur = ta.value || '';
     if (/Apollo Editor/i.test(cur)) return;   // already credited — don't duplicate
     const s = (typeof GM_info !== 'undefined' && GM_info.script) || {};   // same shape as the other scripts' edit notes
@@ -13875,7 +13876,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Append/refresh a front-cover thumbnail (Cover Art Archive) at the bottom of the
   // right column, below external links. Display only; hides itself when there's no art.
   function riCover(col) {
-    const mbid = currentMbid();
+    const mbid = currentMbid(), kind = RG_PAGE ? 'release-group' : 'release';   // #842: the release group's cover on its edit page
     let box = col.querySelector(':scope > #tc-ri-cover');
     if (!mbid) { box?.remove(); return; }
     if (box && box.dataset.mbid === mbid) { col.appendChild(box); return; }   // keep, just ensure it's last
@@ -13884,14 +13885,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     box.style.display = 'none';   // hidden until the cover actually loads — no "FRONT COVER" flash on coverless releases
     box.innerHTML = '<div class="tc-ri-cover-h">Front cover</div>';
     const a = document.createElement('a');
-    a.href = ORIGIN + '/release/' + mbid + '/cover-art'; a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Cover art (Cover Art Archive)';
+    a.href = ORIGIN + '/' + kind + '/' + mbid + (RG_PAGE ? '' : '/cover-art'); a.target = '_blank'; a.rel = 'noopener'; a.dataset.tip = 'Cover art (Cover Art Archive)';
     const img = document.createElement('img');
     img.alt = 'Front cover'; img.referrerPolicy = 'no-referrer';   // not lazy: a hidden (display:none) box would never load a lazy image
     // reveal only once the image loads. On error the box stays hidden — but is KEPT
     // (marked for this mbid) so riCover doesn't rebuild + re-request it every relayout
     // tick (#297: front-250 request loop / OpaqueResponseBlocking on coverless releases).
     img.onload = () => { box.style.display = ''; };
-    img.src = 'https://coverartarchive.org/release/' + mbid + '/front-250';
+    img.src = 'https://coverartarchive.org/' + kind + '/' + mbid + '/front-250';
     a.appendChild(img); box.appendChild(a); col.appendChild(box);
   }
   // ---- dead-link checker (#138): check each external link's HTTP status, fade the dead ones, and turn on
@@ -14653,6 +14654,153 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // standalone /release/<mbid>/edit_annotation page: mount our editor on the annotation field, move the
   // Changelog above it (like Disambiguation in /edit). Gated by the same "Modify annotations" setting.
+  /* ── #842: the release group's edit page, in Release information's style ──────────
+   * The form is MusicBrainz's plain server form; its artist credit editor is React and posts
+   * hidden inputs. The form gets #information, so Release information's layout, links column
+   * and artist cell apply as they are: rgShim stands in for the release editor's release
+   * (release() returns it here), so the cell's code reads and writes _rgAC, and the submit
+   * writes _rgAC as the form's artist credit inputs in place of React's. */
+  const RG_EDIT_RE = new RegExp('^/release-group/(?:create|' + MBID_RE.source + '/edit)/?$', 'i');
+  const RG_PAGE = RG_EDIT_RE.test(location.pathname);
+  const RG_AC_PRE = 'edit-release-group.artist_credit.';
+  let _rgAC = null, _rgACInit = '';
+  const rgGid = () => (location.pathname.match(MBID_RE) || [''])[0];
+  const rgShim = {
+    gid: () => null,   // not a release: the edition stages mustn't take it for one
+    name: () => (document.getElementById('id-edit-release-group.name') || {}).value || '',
+    releaseGroup: () => (rgGid() ? { gid: rgGid() } : null),   // the edition stage reads this release group's releases
+    artistCredit(v) {
+      if (v === undefined) return _rgAC;
+      _rgAC = { names: ((v && v.names) || []).map(n => ({ artist: u(n.artist) || null, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })) };
+    },
+  };
+  const rgForm = () => document.querySelector('form.edit-release-group');
+  const rgKey = () => JSON.stringify(((_rgAC && _rgAC.names) || []).map(n => [(n.artist && u(n.artist.gid)) || '', n.name, n.joinPhrase]));
+  // the credit as the page has it: MusicBrainz's own state ($c.stash, with the artists' gids), else its hidden inputs
+  function rgReadCredit() {
+    let names = null;
+    try { const ac = W.__MB__ && W.__MB__.$c && W.__MB__.$c.stash && W.__MB__.$c.stash.artist_credit; if (ac && Array.isArray(ac.names)) names = ac.names.map(n => ({ artist: n.artist && n.artist.gid ? n.artist : null, name: n.name || '', joinPhrase: n.joinPhrase || '' })); } catch (e) {}
+    if (!names) {
+      const f = rgForm(), val = (i, k) => { const el = f && f.querySelector(`input[name="${RG_AC_PRE}names.${i}.${k}"]`); return el ? el.value : null; };
+      names = [];
+      for (let i = 0; val(i, 'name') !== null; i++) names.push({ artist: null, name: val(i, 'name'), joinPhrase: val(i, 'join_phrase') || '' });
+    }
+    _rgAC = { names }; _rgACInit = rgKey();
+    Log.cat('Artist').debug('release group artist: read the credit', _rgACInit);
+  }
+  // the Artist row: a Release-information-like table row holding the Tracklist's artist cell, before MusicBrainz's editor
+  function rgArtistRow(form) {
+    if (form.querySelector('table.tc-rg-arttbl')) return;
+    const ace = form.querySelector('#artist-credit-editor'); if (!ace) return;
+    const tbl = document.createElement('table'); tbl.className = 'row-form tc-rg-arttbl';
+    const tr = tbl.appendChild(document.createElement('tbody')).appendChild(document.createElement('tr'));
+    const th = tr.appendChild(document.createElement('td')); th.className = 'tc-rg-artlbl';
+    // MusicBrainz's own, translated caption, in an element: as on Release information, the credited-as box takes its place while Apollo is on
+    th.appendChild(document.createElement('span')).textContent = ((ace.querySelector('label.required') || {}).textContent || 'Artist:').trim();
+    tr.appendChild(document.createElement('td')).className = 'release-artist';
+    ace.before(tbl);
+  }
+  // Primary and secondary type as segmented bars; the selects stay the form's fields, the bars only set them
+  function rgTypeBar(sel, multi) {
+    if (!sel || sel._tcBar) return;
+    const bar = document.createElement('div'); bar.className = 'tc-rg-seg mbu-ui' + (multi ? ' multi' : '');
+    const paint = () => bar.querySelectorAll('button').forEach(b => mbuCls(b, 'on', sel.options[+b.dataset.i].selected));
+    [...sel.options].forEach((o, i) => {
+      if (!o.value.trim()) return;   // the blank (&nbsp;) "none" option: clicking the chosen type again clears it
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.i = i; b.textContent = o.textContent.trim();
+      b.onclick = () => {
+        if (multi) o.selected = !o.selected;
+        else if (o.selected) sel.selectedIndex = [...sel.options].findIndex(x => !x.value.trim());
+        else o.selected = true;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        paint();
+      };
+      bar.appendChild(b);
+    });
+    sel.addEventListener('change', paint);
+    sel.after(bar); sel._tcBar = bar; paint();
+  }
+  // a linked artist without its row id (a pick's entity can lack it): the form posts the id
+  const rgMissingIds = () => ((_rgAC && _rgAC.names) || []).some(n => n.artist && u(n.artist.gid) && !u(n.artist.id));
+  async function rgFillIds() {
+    for (const n of (_rgAC && _rgAC.names) || []) {
+      const a = n.artist, gid = a && u(a.gid);
+      if (gid && !u(a.id)) { const e = await fetchEntity(gid); if (e && e.id) n.artist = e; }
+    }
+  }
+  // Apollo's credit as the form's artist credit inputs; React's own are disabled, so only these are posted
+  function rgWriteInputs(form) {
+    form.querySelectorAll(`input[name^="${RG_AC_PRE}"]`).forEach(i => { if (!i.closest('#tc-rg-ac')) i.disabled = true; });
+    let box = form.querySelector(':scope > #tc-rg-ac');
+    if (!box) { box = document.createElement('div'); box.id = 'tc-rg-ac'; box.hidden = true; form.appendChild(box); }
+    box.textContent = '';
+    ((_rgAC && _rgAC.names) || []).forEach((n, i) => {
+      const a = n.artist || {}, nm = n.name || u(a.name) || '';
+      [['name', nm], ['join_phrase', n.joinPhrase || ''], ['artist.name', u(a.name) || nm], ['artist.id', u(a.id) || '']].forEach(([k, v]) => {
+        const inp = document.createElement('input'); inp.type = 'hidden'; inp.name = RG_AC_PRE + 'names.' + i + '.' + k; inp.value = v == null ? '' : String(v); box.appendChild(inp);
+      });
+    });
+  }
+  function rgWatchSubmit(form) {
+    if (form._tcSubmit) return; form._tcSubmit = true;
+    // capture phase and synchronous, so MusicBrainz's own submit handlers (the relationship editor's) still run after it
+    form.addEventListener('submit', e => {
+      if (!riWant() || rgKey() === _rgACInit) return;   // the credit wasn't touched: MusicBrainz's own inputs say the same
+      if (rgMissingIds()) {   // an artist picked a moment ago, its row id still being fetched: wait for it, then submit again
+        e.preventDefault(); e.stopImmediatePropagation();
+        rgFillIds().catch(x => Log.cat('Artist').warn('release group artist: fetching an artist failed —', x.message)).then(() => { const b = e.submitter; if (b) form.requestSubmit(b); else form.requestSubmit(); });
+        return;
+      }
+      rgWriteInputs(form);
+      _apolloUsed = true; ensureApolloEditNote();
+      Log.cat('Artist').info('release group artist credit →', rgKey());
+    }, true);
+  }
+  let _rgObs = null;
+  function applyRgEdit() {
+    if (!RG_PAGE) return;
+    const form = rgForm(); if (!form) return;
+    const on = riWant();
+    riStyle(); rgStyle();
+    form.id = 'information';   // Release information's rules and helpers find the panel by this id
+    mbuCls(document.body, 'tc-ri-on', on);
+    if (!_rgAC) rgReadCredit();
+    rgArtistRow(form);
+    rgTypeBar(document.getElementById('id-edit-release-group.primary_type_id'), false);
+    rgTypeBar(document.getElementById('id-edit-release-group.secondary_type_ids'), true);
+    relocateLinks(on);
+    renderRiArtist(true);
+    rgWatchSubmit(form);
+    if (!_rgObs) {   // the links editor loads late and re-renders: keep it in the column, and its dead-link marks
+      let t = 0;
+      _rgObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { relocateLinks(riWant()); remarkDeadLinks(); }, 120); });
+      _rgObs.observe(form, { childList: true, subtree: true });
+    }
+  }
+  let _rgStyled = false;
+  function rgStyle() {
+    if (_rgStyled) return; _rgStyled = true;
+    const s = document.createElement('style'); s.id = 'tc-rg-style';
+    s.textContent = `
+    body:not(.tc-ri-on) form.edit-release-group .tc-rg-arttbl,body:not(.tc-ri-on) form.edit-release-group .tc-rg-seg{display:none!important}
+    body.tc-ri-on form.edit-release-group #artist-credit-editor{display:none!important}
+    body.tc-ri-on form.edit-release-group > div.half-width{order:0}
+    body.tc-ri-on form.edit-release-group > #tc-ri-rightcol{order:1}
+    body.tc-ri-on form.edit-release-group > :not(.half-width):not(#tc-ri-rightcol){order:2;flex:1 1 100%}
+    body.tc-ri-on form.edit-release-group > div.documentation:empty{display:none}
+    body.tc-ri-on form.edit-release-group table.tc-rg-arttbl{margin:2px 0 6px}
+    body.tc-ri-on form.edit-release-group .tc-rg-artlbl{width:150px;text-align:right;vertical-align:top!important;padding-top:7px!important;font-weight:600;color:var(--mbu-text-dim);font-size:12px}
+    body.tc-ri-on form.edit-release-group .row > label{font-size:12px;color:var(--mbu-text-dim);font-weight:normal}
+    body.tc-ri-on form.edit-release-group label[for="id-edit-release-group.name"]{font-weight:600}
+    body.tc-ri-on form.edit-release-group :is(#id-edit-release-group\\.primary_type_id,#id-edit-release-group\\.secondary_type_ids){display:none!important}
+    .tc-rg-seg{display:inline-flex;flex-wrap:wrap;max-width:calc(100% - 170px);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;background:var(--mbu-bg);vertical-align:middle}
+    .tc-rg-seg > button{all:unset;box-sizing:border-box;padding:4px 10px;min-height:28px;display:inline-flex;align-items:center;font:12.5px var(--mbu-font);color:var(--mbu-text-dim);cursor:pointer;border-left:1px solid var(--mbu-border);border-top:1px solid var(--mbu-border);margin:-1px 0 0 -1px}
+    .tc-rg-seg > button:hover{background:var(--mbu-bg-hover)}
+    .tc-rg-seg > button.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-weight:600}
+    .tc-rg-seg > button:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px}`;
+    document.head.appendChild(s);
+  }
+
   function applyAnnotationPage() {
     if (!ANNO_PAGE_RE.test(location.pathname)) return;
     const ta = document.querySelector('textarea[name="edit-annotation.text"]'); if (!ta) return;
@@ -15347,6 +15495,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (ANNO_PAGE_RE.test(location.pathname)) {   // #394 standalone Edit annotation page for ANY entity (no releaseEditor)
       const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
+      return;
+    }
+    if (RG_PAGE) {   // #842
+      await whenDomReady(); applyRgEdit(); installMultiLinkPaste(); ensureLauncher();
+      Log.cat('System').info('release group edit page:', rgGid() ? ORIGIN + '/release-group/' + rgGid() : 'new');
+      if (apolloEnabled()) matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message));
       return;
     }
     // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path

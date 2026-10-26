@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-26 10:39 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-26 11:03 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -33,6 +33,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 ### Features
 
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
+- **[Release group editor](#release-group-editor)**: the release group's edit page laid out like Release information.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
@@ -60,6 +61,15 @@ Each part is optional, and Apollo's corner icon switches to MusicBrainz's own ed
 - The release **Label** is linked on load by its Discogs or platform link when exactly one label has it, else when exactly one label has its name or alias, else when the similar releases on the **Duplicates** tab credit exactly one label of that name. A badge by the field says how (**set**: already on the release, **user**: picked by you); click it to open the label.
 - The **Release group** of a new release is selected from MusicBrainz's suggestions under the field when exactly one of them has the release's title (punctuation, spaces and case aside) and artist, and marked **auto**. Pick **Add a new release group** to undo it.
 - The **Label** field searches with Apollo's picker, as the artist does: each label shows its aliases, disambiguation, type, label code and years, and an icon that opens it. A pasted MBID or label URL is set at once. **＋** in place of the search icon creates the typed label, with its Discogs or platform link when no label has it yet, and sets it once saved; right-click to create it in a background tab.
+
+### Release group editor
+
+The release group's edit page gets Release information's layout.
+
+- The **Artist** field is the same artist cell, with the same buttons, and an unlinked name is [matched](#artist-matching) on load.
+- **Primary type** and **Secondary types** are bars of buttons. Click a primary type to choose it and again to clear it; click secondary types to turn each on or off.
+- **External links** sit in a right column with the dead-link checker, and the release group's cover under them.
+- The help bubbles are gone, and a changed artist credit adds Apollo's line to the edit note.
 
 ### Tracklist
 
