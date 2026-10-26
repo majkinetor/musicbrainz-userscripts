@@ -80,6 +80,7 @@ test('an event page shows its date, time and setlist', { tag: '@sandbox' }, asyn
   const facts = await page.locator('#app .facts').innerText();
   check(/2021/.test(facts), 'its date shows');
   check(/20:30/.test(facts), 'its time shows');
+  check(await page.locator('#app .acts a[href$="/event-art"]').count() === 1, 'the bar links its event art');
   check(await page.locator('#s-sl .setl li').count() >= 4, 'its setlist shows');
   check(await page.locator('#s-sl .setl a[href*="/mbid/"]').count() === 1, 'a setlist link is a link');
   await attachShot(testInfo, page, 'event');

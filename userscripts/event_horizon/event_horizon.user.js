@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.600300
+// @version      2026.10.27.600500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1913,7 +1913,7 @@ const CSS = `
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
 .hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
-.sr-hero{margin:8px 0 22px}.sr-hero h1{margin:4px 0 6px;font-size:32px;overflow-wrap:anywhere}.sr-f{margin-top:14px;max-width:none}
+.sr-hero{position:relative;margin:-14px 0 22px}.sr-top{min-height:150px;padding-right:400px}.sr-home{position:absolute;inset:0 0 auto auto;width:400px;height:150px}.sr-home .hm-orb{top:0}.sr-home .hm-wm{top:75px}@media (max-width:900px){.sr-top{padding-right:190px}.sr-home{width:190px}.sr-home .hm-wm{display:none}}@media (max-width:600px){.sr-top{padding-right:0;min-height:0}.sr-home{display:none}}.sr-hero h1{margin:4px 0 6px;font-size:32px;overflow-wrap:anywhere}.sr-f{margin-top:14px;max-width:none}
 .sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
 .sr-pg{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.sr-pg a,.sr-pg span{min-width:30px;padding:4px 9px;border-radius:8px;text-align:center;font-weight:600;font-size:13px}.sr-pg a{border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important}.sr-pg a:hover{border-color:var(--accent)}.sr-pg span{color:var(--muted)}.sr-pg span.on{background:var(--accent);color:#fff}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
@@ -3474,7 +3474,7 @@ async function loadWork(id, step = () => {}) {
     const gP = ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
     return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
-const pgActs = (type, id) => AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+const pgActs = (type, id) => (type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS).map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by, pic) {
@@ -4436,7 +4436,7 @@ function searchHtml(d) {
         + `<select name="method" aria-label="Search method">${[['indexed', 'Indexed'], ['advanced', 'Advanced syntax'], ['direct', 'Direct database']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>`
         + `<select name="limit" aria-label="Results per page">${[25, 50, 100].map(v => `<option value="${v}"${String(v) === lim ? ' selected' : ''}>${v} a page</option>`).join('')}</select><button type="submit">Search</button></form>`;
     const s = d.s, sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : esc(s.found || (s.rows.length ? '' : s.err || 'No results'));
-    const hero = `<section class="sr-hero"><div class="kicker label"><span>Search · ${esc(srchName(d.t))}</span></div><h1>${esc(d.q)}</h1><p class="u-sub">${sub}</p>${form}</section>`;
+    const hero = `<section class="sr-hero"><a class="sr-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="sr-top"><div class="kicker label"><span>Search · ${esc(srchName(d.t))}</span></div><h1>${esc(d.q)}</h1><p class="u-sub">${sub}</p></div>${form}</section>`;
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
