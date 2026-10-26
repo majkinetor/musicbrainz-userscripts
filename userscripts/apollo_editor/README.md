@@ -13,7 +13,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Release group editor](#release-group-editor)**: the release group's edit page laid out like Release information.
-- **[Entity editors](#entity-editors)**: the edit pages of artists, labels, places, works, recordings and events laid out the same way.
+- **[Entity editors](#entity-editors)**: the edit pages of artists, labels, places, series, works, recordings and events laid out the same way.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.

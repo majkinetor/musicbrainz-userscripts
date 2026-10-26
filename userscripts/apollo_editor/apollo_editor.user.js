@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.193254
+// @version      2026.10.26.193412
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -21,6 +21,8 @@
 // @match        https://*.musicbrainz.org/recording/*/edit
 // @match        https://*.musicbrainz.org/event/create*
 // @match        https://*.musicbrainz.org/event/*/edit
+// @match        https://*.musicbrainz.org/series/create*
+// @match        https://*.musicbrainz.org/series/*/edit
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -14691,7 +14693,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     },
   };
   // #843: an artist's, label's, place's, work's, recording's or event's edit page, the same layout without the artist cell; ENT_KIND names the page's entity
-  const ENT_M = location.pathname.match(new RegExp('^/(artist|label|place|work|recording|event)/(?:create|' + MBID_RE.source + '/edit)/?$', 'i'));
+  const ENT_M = location.pathname.match(new RegExp('^/(artist|label|place|work|recording|event|series)/(?:create|' + MBID_RE.source + '/edit)/?$', 'i'));
   const ENT_PLAIN = !!ENT_M;
   const ENT_KIND = RG_PAGE ? 'release-group' : ENT_M ? ENT_M[1].toLowerCase() : '';
   const rgForm = () => document.querySelector('form.edit-' + ENT_KIND);
@@ -14840,7 +14842,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // (a masonry layout), so neither column is left with a long empty stretch
   function entCards(on) {
     const form = rgForm(), half = form && form.querySelector(':scope > .half-width'), col = form && form.querySelector(':scope > #tc-ri-rightcol');
-    if (on && half && col && !document.getElementById('tc-af-card')) col.appendChild(afCard());   // placed below with the others
+    if (on && half && col && /^(artist|label|place)$/.test(ENT_KIND) && !document.getElementById('tc-af-card')) col.appendChild(afCard());   // placed below with the others
     const cards = [document.getElementById('tc-af-card'), document.getElementById('largemap')].filter(Boolean);
     cards.forEach(c => {
       if (!c._tcHome) c._tcHome = { parent: c.parentElement, next: c.nextElementSibling };
@@ -15049,7 +15051,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.tc-ent-plain .half-width .row :is(input.ui-autocomplete-input,input[id$=".begin_area"],input[id$=".end_area"]){width:400px!important;box-sizing:border-box}
     body.tc-ri-on form.tc-ent-plain .date-range-fieldset > fieldset > p{display:none}
     body.tc-ri-on form.tc-ent-plain :is(.partial-date-month,.partial-date-day){width:3.2em!important;box-sizing:border-box}
-    body.tc-zen-on :is(.rgheader,.artistheader,.labelheader,.placeheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
+    body.tc-zen-on :is(.rgheader,.artistheader,.labelheader,.placeheader,.workheader,.recordingheader,.eventheader,.seriesheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
     body:has(#tc-nav-bar) form.tc-ent-form{margin-top:4px}
     body.tc-ri-on form.tc-ent-form input[id$=".comment"]{box-sizing:border-box;width:calc(100% - 170px)!important}
     body.tc-ri-on form.tc-ent-form .row:has(input[name*="make_votable"]){padding-left:0!important;margin-left:0!important}
