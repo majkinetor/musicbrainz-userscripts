@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.103844
+// @version      2026.10.26.103911
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2233,7 +2233,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-t .ed-tr svg{transition:transform .15s}
 .ed-t .ed-tr[aria-expanded="true"] svg{transform:rotate(180deg)}
 .ed-t tbody tr.ed-x:hover{background:none}
-.ed-t tr.ed-r{cursor:pointer}
+.ed-t td.ed-r{cursor:pointer}
 .ed-t tr.ed-x>td{padding:4px 10px 14px}
 .ed-xm{color:var(--muted);font-size:13px}
 .ed-xd{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:8px 0 2px}
@@ -2881,9 +2881,9 @@ function edTable(es, curId, flat, part) {
     const row = e => {
         ED_TIP.set(e.id, { e, cur: e.id === curId });
         const k = fmtKind(e.formats[0]);
-        return `<tr class="ed-r${e.id === curId ? ' cur' : ''}" data-edhref="${esc(relUrl(e.id))}">
+        return `<tr${e.id === curId ? ' class="cur"' : ''}>
             <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
-            <td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}</td>
+            <td class="ed-r" data-edhref="${esc(relUrl(e.id))}"><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}</td>
             <td>${acHtml(e.ac)}</td>
             <td>${esc(fmtSummary(e.formats))}</td>
             <td class="num"><button class="ed-tr" type="button" data-edtr="${e.id}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button></td>
@@ -4881,9 +4881,9 @@ function build() {
     document.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
-    // a click anywhere on a release table row opens that release (its links and buttons keep their own); Ctrl/middle: a new tab
+    // a click anywhere in a release table row's Release cell opens that release; Ctrl/middle: a new tab
     const edRow = ev => {
-        const r = ehOn && ev.target.closest && ev.target.closest('tr.ed-r[data-edhref]');
+        const r = ehOn && ev.target.closest && ev.target.closest('td.ed-r[data-edhref]');
         if (!r || ev.target.closest('a,button,input,select,label,summary') || (ev.button === 0 && String(getSelection()).trim())) return;
         if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(r.dataset.edhref, '_blank'); } else if (ev.button === 0) location.href = r.dataset.edhref;
     };
