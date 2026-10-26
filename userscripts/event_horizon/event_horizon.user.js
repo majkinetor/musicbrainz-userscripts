@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.470000
+// @version      2026.10.27.480000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4744,7 +4744,7 @@ async function histLoad(n, all) {
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
             const fresh = x.edits.filter(e => !seen.has(e.id)); d.edits.push(...fresh); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
-            d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && fresh.length > 0;
+            d.edits.sort((a, b) => b.id - a.id); d.more = x.next && fresh.length > 0;
             LOG.debug(`History ${d.id}: page ${p} gave ${x.edits.length} edits, ${fresh.length} new, ${d.edits.length} in all${d.more ? '' : ', no more pages'}`);
             render();
             // enough once past the target, unless this page was all one burst that may go on
