@@ -2087,7 +2087,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
-.disamb{font-size:15px;color:var(--muted);font-weight:500;opacity:.75;margin-top:4px}
+.disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;margin-left:.5em;letter-spacing:0;white-space:normal}
 .by{font-size:16px;font-weight:600}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
 .hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
@@ -2783,8 +2783,7 @@ function hero(r) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(r.title)}${rgLink(r)}</h1>
-            ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
+            <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}${rgLink(r)}</h1>
             <div class="by">by ${acHtml(r.ac)}</div>
             ${facts(r)}
         </div>
@@ -3144,8 +3143,7 @@ function rgHero(d) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             <div class="by">by ${acHtml(g.ac)}</div>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -3366,8 +3364,7 @@ function lbHero(d) {
         <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${LB_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/label/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
     </section>`;
@@ -3393,8 +3390,7 @@ function arHero(d) {
         <div class="art">${pic}${under(g, tags)}</div>
         <div class="facts-col">
             <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/artist/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -3446,8 +3442,7 @@ function pgHero(g, type, icon, kind, F, by, pic) {
         <div class="art">${pic || picHtml(g, 'mpic', `<div class="nocover pg">${bigMk(icon)}</div>`)}${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${by ? `<div class="by">${by}</div>` : ''}
             ${factsHtml(F)}
         </div>
@@ -4445,7 +4440,7 @@ function subHead(r, id, tab, name, none) {
     const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
 }
 // a release without a front cover drops the header's image
 const cvWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; LOG.debug('Header: no front cover'); }; };
@@ -4489,7 +4484,7 @@ body{background:var(--bg)}
 :root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd .disamb{margin:0 0 10px}#eh-relhd h1 a{white-space:normal!important}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -4565,7 +4560,10 @@ function relCards() {
     if (ed.dataset.ehCards) return; ed.dataset.ehCards = '1';
     ed.addEventListener('click', e => {
         if (!ehOn) return;
-        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        // a click anywhere on a track's row folds it, as its chevron does; its links, fields, relationships and works keep theirs
+        const t = e.target, tr = t.closest('#tracklist > tbody > tr.track');
+        if (!tr || t.closest('a,button,input,select,textarea,label,.rel-editor-table,.works-list,td.works li') || String(getSelection())) return;
+        const td = tr.firstElementChild;
         if (td) { const k = relTrkKey(td.parentNode); if (!k) return; relTrkFold.has(k) ? relTrkFold.delete(k) : relTrkFold.add(k); relCardsApply(); }
     });
     // right-click a track or a region's heading, as on Event Horizon's pages: fold it with its siblings, or open them all
