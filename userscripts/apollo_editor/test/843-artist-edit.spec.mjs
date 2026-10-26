@@ -39,6 +39,13 @@ test('the artist edit page gets the links column, the name highlight and loujine
   check(s.bar, 'Apollo\'s header bar is there');
   const c = await until(() => shorterColumn(page), v => v.in === v.want);
   check(c.in === c.want, `loujine's card ends the shorter column (${c.in}, want ${c.want})`);
+  // right-click a link's favicon: MusicBrainz's own URL editor opens, as on Release information
+  const inputs = () => page.evaluate(() => [...document.querySelectorAll('#external-links-editor input, .external-link-dialog input, [role=dialog] input')].filter(i => i.offsetParent).length);
+  const before = await inputs();
+  await page.locator('#external-links-editor tr.external-link-item > td:first-child').first().click({ button: 'right' });
+  const after = await until(inputs, n => n > before);
+  check(after > before, `right-click on a favicon opens the URL editor (${before} → ${after} inputs)`);
+  await page.keyboard.press('Escape');
   // a double space and a no-break space in the name show under the field
   await page.locator('[id="id-edit-artist.name"]').fill('Radio head  x');
   const hl = await until(() => page.evaluate(() => { const b = document.querySelector('.tc-ent-hl'); return b && !b.hidden ? b.querySelectorAll('.tc-cf,.tc-jp').length : 0; }), n => n >= 2);
