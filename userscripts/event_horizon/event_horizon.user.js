@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.600501
+// @version      2026.10.27.600502
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2473,7 +2473,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2485,7 +2485,7 @@ const S = {
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
-    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, // edSort: the releases table's column, '' its own order, a leading '-' reversing it
+    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
     fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
@@ -2953,7 +2953,7 @@ function edHtml(r, eds, count) {
         }).join('')}</div>`;
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
-    const more = paged ? lmFoot('ed', all.length, count, go) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
+    const more = paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
     return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, '', filters + body + more, folded);
 }
 
@@ -3623,7 +3623,7 @@ function areaList(d, i) {
     const total = x[kind + '-count'] || all.length, xs = total > all.length ? all : [...all].sort((a, b) => (a['sort-name'] || a.name).localeCompare(b['sort-name'] || b.name));
     WSX[sid] = { x, key, q: `${kind}?area=${d.id}&limit=100` };
     const row = e => `<tr><td>${entA(kind, e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}</td>${cells(e).map((c, j) => `<td${j ? ' class="mono"' : ''}>${c || '—'}</td>`).join('')}</tr>`;
-    const more = total > xs.length ? lmFoot('ws:' + sid, xs.length, total, `<button class="lnk" type="button" data-mbgo="${MB}/area/${d.id}/${page}">All on MusicBrainz's page</button>`) : '';
+    const more = total > xs.length ? lmFoot('ws:' + sid, xs.length, total) : '';
     return sect(sid, `${name} <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} ${name.toLowerCase()}</div>`);
 }
 /* ── instrument ──────────────────────────────────── */
@@ -3713,7 +3713,7 @@ function insHero(d) {
 // a table per subpage, as MusicBrainz shows its first page; with cv ("release-group", "release" or "event"), each row
 // leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
 const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
-const TSORT = {}, TABX = {};
+const TSORT = {}, TABX = {}, TQ = {};    // TQ: a table's filter text, absent while its box is shut
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
     if (!rs.length) return '';
@@ -3729,9 +3729,19 @@ function tabSect(sid, name, x, href, cv) {
     const hb = i => { const h = x.head[i], st = si === i ? sd : 0; return srt && h ? `<th aria-sort="${st > 0 ? 'ascending' : st < 0 ? 'descending' : 'none'}"><button type="button" class="dg-sort${st ? ' on' : ''}" data-tsort="${i}" data-tip="${st < 0 ? 'Back to MusicBrainz\'s order' : 'Sort by ' + txt(h).toLowerCase()}">${h}<i>${st > 0 ? '↑' : st < 0 ? '↓' : '↕'}</i></button></th>` : `<th>${h}</th>`; };
     const v = r => { const t = txt(r[si]); return t === '—' ? '' : t; };
     const rows = si == null ? x.rows : [...x.rows].sort((a, z) => (!v(a) - !v(z)) || sd * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }));
+    // the filter keeps the rows whose text holds what is typed, and every group row
+    const q = fltFold((TQ[sid] || '').trim()), shown = q ? rows.filter(r => !Array.isArray(r) || fltFold(r.map(txt).join(' ')).includes(q)) : rows;
+    const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
+    const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
+    const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${ART_URL[cv]}${m[1]}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
+    const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter" aria-label="Filter" autocomplete="off"></span>` : '')
+        + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
+        + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
     const tr = r => Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map(i => `<td>${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
-    const more = x.more ? lmFoot('tab:' + sid, n, 0, `<button class="lnk" type="button" data-mbgo="${href}">All on MusicBrainz's page</button>`) : '';
-    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+    const more = x.more ? lmFoot('tab:' + sid, n, 0) : '';
+    const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
+        : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${shown.map(tile).join('')}</div>`;
+    return sect(sid, `${name} <span class="count">${cnt}</span>`, tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
 }
 function insList(d, i) {
     const [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
@@ -3902,7 +3912,7 @@ function placeEvents(d) {
     WSX.pe = { x, key: 'events', q: `event?place=${d.id}&limit=100` };
     const when = e => { const ls = e['life-span'] || {}; return ls.begin ? fdate(ls.begin) + (ls.end && ls.end !== ls.begin ? ' – ' + fdate(ls.end) : '') : ''; };
     const row = e => `<tr><td>${entA('event', e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}${e.cancelled ? ' <span class="sub">· cancelled</span>' : ''}</td><td>${esc(e.type || '') || '—'}</td><td class="mono">${when(e) || '—'}</td><td class="mono">${esc(e.time || '') || '—'}</td></tr>`;
-    const more = total > xs.length ? lmFoot('ws:pe', xs.length, total, `<button class="lnk" type="button" data-mbgo="${MB}/place/${d.id}/events">All on MusicBrainz's page</button>`) : '';
+    const more = total > xs.length ? lmFoot('ws:pe', xs.length, total) : '';
     return sect('pe', `Events <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Time</th></tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} event${total === 1 ? '' : 's'}</div>`);
 }
 /* ── filter bar ──────────────────────────────────── */
@@ -4037,7 +4047,7 @@ function render(keepPop) {
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
-    if (FLT.of !== r.id) { FLT.of = r.id; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
+    if (FLT.of !== r.id) { FLT.of = r.id; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; for (const k in TQ) delete TQ[k]; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = titleOf(data);
@@ -4110,7 +4120,7 @@ function render(keepPop) {
 // a paged list's foot (#845): how many are in, "Load more", and Auto, which loads the next page as the foot nears the view;
 // one setting for every list. k names the list: 'ed' the releases, 'tab:<section>' a MusicBrainz table, 'ws:<section>' a ws/2 list
 const LM_ERR = new Set(), LM_BUSY = new Set(), WSX = {};
-const lmFoot = (k, n, total, go) => `<div class="folded-note lm" data-lm="${k}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label>${go || ''}</div>`;
+const lmFoot = (k, n, total) => `<div class="folded-note lm" data-lm="${k}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label></div>`;
 let lmIO = null;
 function lmWatch(app) {
     if (lmIO) { lmIO.disconnect(); lmIO = null; }
@@ -4573,6 +4583,7 @@ function onClick(ev) {
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
+    if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = TSORT[sid] || []; TSORT[sid] = t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []; const y = scrollY; render(); scrollTo(0, y); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
@@ -4585,6 +4596,7 @@ function onClick(ev) {
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if (d.dgview) S.dgView = d.dgview;
+    else if (d.tabview) S.tabView = d.tabview;
     else if (d.edsort) S.edSort = S.edSort === d.edsort ? '-' + d.edsort : S.edSort === '-' + d.edsort ? '' : d.edsort;
     else if (d.dgsort) S.dgSort = S.dgSort === d.dgsort ? '-' + d.dgsort : d.dgsort; // a second click turns the order round
     else if (d.edview) S[data.rel ? 'edView' : 'rgView'] = d.edview;
@@ -5133,7 +5145,7 @@ function build() {
         if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
         else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
     });
-    document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
+    document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
     document.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
     // the search field folds away once focus leaves it
