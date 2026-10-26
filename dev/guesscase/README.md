@@ -63,6 +63,7 @@ With `extras` (the default), on titles (`track`, `recording`, `release`, `releas
 [`guess-case.spec.mjs`](guess-case.spec.mjs): `pnpm test --project=guesscase`.
 
 - `@unit`: every title in [`titles.json`](titles.json) (real MusicBrainz titles, their lowercased and uppercased copies, hand-written edge cases), through the track and release handlers, in every MusicBrainz mode and option, must give what MusicBrainz gave, stored in [`mb-guesses.json`](mb-guesses.json). Then our rules and modes.
+- [`sort-name.spec.mjs`](sort-name.spec.mjs): every name in [`sortnames.json`](sortnames.json) through `sortName` must give what MusicBrainz's *Guess sort name* button gave, stored in [`mb-sortnames.json`](mb-sortnames.json): on the artist page as a person, a group and with no type, and on the artist's, label's and place's add-alias pages. MusicBrainz's add-alias page never reorders a person's name. Its `@sandbox` test presses the button again; `SORTNAME_RECORD=1` records.
 - `@sandbox`: MusicBrainz's own guess case in the sandbox's release editor, asked again: it fails when MusicBrainz has changed its guess case. `GUESSCASE_RECORD=1` writes `mb-guesses.json` from it instead; port MusicBrainz's change before recording.
 
 The port follows musicbrainz-server at `7224306c` (2026-10-14). MusicBrainz's guess case is GPL-2.0 or later.

@@ -98,6 +98,8 @@ test('the work, recording and event edit pages get the links column and the name
     check(s.col, `${kind}: the external links sit in the right column`);
     check(s.plain, `${kind}: the form has Apollo's layout`);
     check(s.bar, `${kind}: Apollo's header bar is there`);
+    check(await page.evaluate(() => ![...document.querySelectorAll('p')].some(p => p.offsetParent && p.querySelector(':scope > a[href*="/doc/"]') && /information/i.test(p.textContent) && !p.closest('form'))), `${kind}: no "For more information" line`);
+    if (kind === 'recording') check(await page.evaluate(() => !!document.querySelector('#artist-credit-editor')?.offsetParent), 'recording: the Artist field shows');
     await page.fill(`[id="id-edit-${kind}.name"]`, 'A  B');
     check(await until(() => page.evaluate(() => document.querySelectorAll('.tc-jp').length), n => n > 0) > 0, `${kind}: the name's double space is marked`);
     await attachShot(testInfo, page, kind + '-edit');

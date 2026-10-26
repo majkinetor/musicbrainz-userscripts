@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.193412
+// @version      2026.10.26.194601
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4328,8 +4328,9 @@ Click: open the label`;
   }
 
   /* ── create artist ── */
-  // the sort-name guess is shared with Credit Hoarder (mbmGuessSortName, the ST-MATCH block)
-  const guessSortName = name => mbmGuessSortName(name);
+  // MusicBrainz's own sort-name guess (ST-GUESSCASE, #843); its form counts every type but Group as a
+  // person, and a new artist has no type yet
+  const guessSortName = (name, isPerson = true) => mbuGuessCase.sortName(name, { entity: 'artist', isPerson });
   // open MB's create-artist form; when it's saved, the new artist page posts the MBID back over the
   // channel (handshake via sessionStorage token) and closes itself, and we drop it into the slot.
   function createArtist(name, slot, discogsUrl, background) {
@@ -14796,8 +14797,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const lab = e.labels || {}, name = (lab.en || lab.mul || Object.values(lab)[0] || {}).value || '';
       const types = wdQs(e, 'P31'), person = types.includes('Q5');
       if (afSet(afEl('name'), name)) done.push('name');
-      const nm = (afEl('name') || {}).value || name, w = nm.trim().split(/\s+/);
-      if (ENT_KIND === 'artist' && afSet(afEl('sort_name'), person && w.length > 1 ? w[w.length - 1] + ', ' + w.slice(0, -1).join(' ') : guessSortName(nm))) done.push('sort name');
+      const nm = (afEl('name') || {}).value || name;
+      if (ENT_KIND === 'artist' && afSet(afEl('sort_name'), guessSortName(nm, person))) done.push('sort name');
       if (ENT_KIND === 'artist') {
         const t = types.map(q => WD_TYPE[q]).find(Boolean);
         if (afSelect(afEl('type_id'), t)) done.push('type');
@@ -15024,7 +15025,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const s = document.createElement('style'); s.id = 'tc-rg-style';
     s.textContent = `
     body:not(.tc-ri-on) form.tc-ent-form .tc-rg-arttbl,body:not(.tc-ri-on) form.tc-ent-form .tc-rg-seg{display:none!important}
-    body.tc-ri-on form.tc-ent-form #artist-credit-editor{display:none!important}
+    body.tc-ri-on form.tc-ent-form:not(.tc-ent-plain) #artist-credit-editor{display:none!important}
+    body.tc-ri-on p:has(> a[href*="/doc/"]):has(~ form.tc-ent-plain){display:none!important}
     body.tc-ri-on form.tc-ent-form > div.half-width{order:0}
     body.tc-ri-on form.tc-ent-form > #tc-ri-rightcol{order:1}
     body.tc-ri-on form.tc-ent-form > :not(.half-width):not(#tc-ri-rightcol){order:2;flex:1 1 100%}
