@@ -1,6 +1,6 @@
 # Event Horizon <img src="icon.svg" align="left" width="48">
 
-MusicBrainz, past the point of no return: release, release group, artist, label, recording, work, area, instrument and place pages redesigned around what you came for.
+MusicBrainz, past the point of no return: release, release group, artist, label, recording, work, area, instrument, place, series and event pages redesigned around what you came for.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
   - Or via bundle: [String Theory](../string_theory/README.md)
@@ -8,7 +8,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ## Features
 
-- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument or place page, and moves between them without reloading.
+- **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument, place, series or event page, and moves between them without reloading.
 - **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
@@ -17,11 +17,12 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 Event Horizon shows its own page for each of these, and for search results. A link to another such page opens in place. The round corner icon switches back to MusicBrainz's page; right-click it for the settings.
 
-- **Pictures**: an artist's or label's comes from its linked sites (click for the next, the badge opens its source); an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image.
+- **Pictures**: an artist's or label's comes from its linked sites (click for the next, the badge opens its source); an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image; an event's its front from the Event Art Archive.
 - **Areas, instruments and places** list what is in, uses or happened at them.
+- **Series** list their parts in the columns their type needs (release groups, releases, recordings, works, artists or events); **events** show their date, time, who played, and their setlist.
 - **Search results** keep MusicBrainz's columns, with the score as a bar.
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
-- **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title.
+- **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - **Annotation** and, for a release group, **Cover art** open from Edit's menu (point at Edit); a release group's cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
 - If a page can't load, **Retry**, or **Show MusicBrainz's page**.

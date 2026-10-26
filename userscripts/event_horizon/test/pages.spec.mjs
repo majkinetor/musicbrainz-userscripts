@@ -50,6 +50,42 @@ test('a place page shows where it is, its parts, and its events and recordings',
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-place.png'), fullPage: true });
 });
 
+test('a series page shows its type and its parts as a table', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/series/bcef3f59-7559-4736-9228-dfeba507b5c0');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app .hero h1').count(), n => n === 1) === 1, 'the hero shows');
+  check(/release group series/i.test(await page.locator('#app .kicker').innerText()), 'the kicker names its type');
+  check(await until(() => page.locator('#app .sec.pend').count(), n => n === 0) === 0, 'every section has loaded');
+  check(/release groups/i.test(await page.locator('#s-sp').innerText()), 'the parts are named after the type');
+  check(await page.locator('#s-sp tbody tr').count() > 5, 'the parts table fills in');
+  await attachShot(testInfo, page, 'series');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-series.png'), fullPage: true });
+});
+
+test('an event page shows its date, time and setlist', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/event/b453f5ec-149b-4240-abaf-e12d32573ca9');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app .hero h1').count(), n => n === 1) === 1, 'the hero shows');
+  check(/concert/i.test(await page.locator('#app .kicker').innerText()), 'the kicker names its type');
+  const facts = await page.locator('#app .facts').innerText();
+  check(/2021/.test(facts), 'its date shows');
+  check(/20:30/.test(facts), 'its time shows');
+  check(await page.locator('#s-sl .setl li').count() >= 4, 'its setlist shows');
+  check(await page.locator('#s-sl .setl a[href*="/mbid/"]').count() === 1, 'a setlist link is a link');
+  await attachShot(testInfo, page, 'event');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-event.png'), fullPage: true });
+});
+
+test('an event-art page puts the event in its header', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/event/b453f5ec-149b-4240-abaf-e12d32573ca9/event-art');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app .arthd h1 a').count(), n => n === 1) === 1, 'the header names the event');
+  check(/EH test concert/.test(await page.locator('#app .arthd h1').innerText()), 'with its name');
+  check(await until(() => page.locator('#app .arthd .kicker').innerText(), t => /concert/i.test(t)).then(t => /event art/i.test(t)), 'the kicker says event art and the type');
+  check(await page.locator('#as-slot').count() === 1, "Art Station's slot is there");
+  await attachShot(testInfo, page, 'event-art');
+});
+
 test('a work page shows its hero, credits and recordings', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/work/afec4a5d-5ac6-309a-be7c-ee4f919730c3');
   await inject('event_horizon');
