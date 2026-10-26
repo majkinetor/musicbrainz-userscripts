@@ -4466,7 +4466,9 @@ async function artLoad(n, id) {
 
 // Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
-:root[data-eh-rel] body{background:var(--bg)!important;color:var(--text);font-family:Manrope,system-ui,sans-serif}
+:root[data-eh-rel],:root[data-eh-rel] body{background:var(--bg)!important}
+:root[data-eh-rel] :is(#page,#content,#container){background:none!important}
+:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
@@ -4508,11 +4510,11 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 6px!important;overflow:visible!important}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td{background:var(--bg)!important;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;position:relative;padding-left:20px}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;white-space:nowrap}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
-:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child::before{content:"";position:absolute;left:8px;top:14px;width:5px;height:5px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
-:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf>td:first-child::before{transform:rotate(-45deg)}
-:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf .rel-editor-table{display:none}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child::before{content:"";display:inline-block;vertical-align:middle;margin:-3px 8px 0 2px;width:5px;height:5px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf>td:first-child::before{transform:rotate(-45deg);margin-top:0}
+:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf :is(.rel-editor-table,td.works>h3){display:none}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child:hover::before{border-color:var(--text)}
 :root[data-eh-rel] #relationship-editor-form legend{display:flex!important;align-items:center;gap:10px;cursor:pointer;user-select:none}
 :root[data-eh-rel] #relationship-editor-form legend::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0}
