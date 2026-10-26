@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.144035
+// @version      2026.10.26.145502
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -14780,6 +14780,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // Header and footer, Zen editing: the release editor's bar (title, Enter edit, Cancel) in place of MusicBrainz's chrome and the form's own button
   function rgSubmitBtn(form) { return form.querySelector('.row.no-label button[type=submit], button[type=submit].submit') || form.querySelector('button[type=submit]'); }
+  // the form's fields minus the edit note: Enter edit shows only once they differ from how the page loaded
+  const rgSnap = form => [...new FormData(form)].filter(([k]) => !/edit_note|make_votable/.test(k)).map(([k, v]) => k + '=' + v).join('&');
+  function rgDirty(form) {
+    if (!form._tcTouched) {   // the links editor fills in late: the baseline follows the page until the user first does something
+      form._tcBase = rgSnap(form);
+      if (!form._tcTouchHook) { form._tcTouchHook = true; ['input', 'change', 'click', 'keydown', 'paste'].forEach(ev => form.addEventListener(ev, () => { form._tcTouched = true; setTimeout(() => rgNav(form), 50); }, true)); }
+      return false;
+    }
+    return rgSnap(form) !== form._tcBase || rgKey() !== _rgACInit;
+  }
   function rgNav(form) {
     navStyle();
     const on = navOn(), sb = rgSubmitBtn(form), row = sb && (sb.closest('.row') || sb.parentElement);
@@ -14792,7 +14802,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const left = document.createElement('div'); left.id = 'tc-nav-left';
       const enter = document.createElement('button'); enter.type = 'button'; enter.className = 'tc-nav-wbtn tc-wiz-enter'; enter.textContent = '✓ Enter edit';
       enter.onclick = () => { const b = rgSubmitBtn(form); if (b) form.requestSubmit(b); else form.requestSubmit(); };
-      left.appendChild(enter);
+      enter.id = 'tc-rg-enter'; left.appendChild(enter);
       const title = document.createElement('div'); title.id = 'tc-nav-title';
       const pager = document.createElement('div'); pager.id = 'tc-nav-pager';
       const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'tc-nav-wbtn tc-wiz-cancel'; cancel.textContent = '✕ Cancel';
@@ -14801,6 +14811,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       bar.append(left, title, pager);
       form.before(bar);
     }
+    const en = document.getElementById('tc-rg-enter'); if (en) mbuProp(en.style, 'display', rgDirty(form) ? '' : 'none');
     const t = document.getElementById('tc-nav-title'), name = (document.getElementById('id-edit-release-group.name') || {}).value || '';
     const sig = name + '\x01' + rgKey();
     if (t && t.dataset.sig !== sig) {
@@ -14822,6 +14833,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.edit-release-group > div.documentation:empty{display:none}
     body.tc-zen-on :is(.rgheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
     body:has(#tc-nav-bar) form.edit-release-group{margin-top:4px}
+    body.tc-ri-on form.edit-release-group .row:has(input[name*="make_votable"]){padding-left:0!important;margin-left:0!important}
+    body.tc-ri-on form.edit-release-group .row:has(input[name*="make_votable"]) > *{margin-left:0!important;padding-left:0!important}
     body.tc-ri-on form.edit-release-group table.tc-rg-arttbl{margin:2px 0 6px}
     body.tc-ri-on form.edit-release-group .tc-rg-artlbl{width:150px;text-align:right;vertical-align:top!important;padding-top:7px!important;font-weight:600;color:var(--mbu-text-dim);font-size:12px}
     body.tc-ri-on form.edit-release-group .row > label{font-size:12px;color:var(--mbu-text-dim);font-weight:normal}
