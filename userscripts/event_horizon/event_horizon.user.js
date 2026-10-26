@@ -2089,7 +2089,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft);cursor:pointer;display:grid;place-items:center}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
 .gear>button svg{color:inherit}
-.art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
@@ -2776,7 +2776,7 @@ function under(r, more = '') {
     const v = r.rating.value, n = r.rating['votes-count'] || 0;
     const tip = v != null ? `${v} from ${n} vote${n === 1 ? '' : 's'} (release group)` : '';
     const stars = on('rating') && v != null ? `<span class="stars" data-tip="${esc(tip)}" aria-label="Rated ${esc(tip)}">${'★'.repeat(Math.round(v))}<span class="off">${'★'.repeat(5 - Math.round(v))}</span></span>` : '';
-    const tags = on('tags') && (r.genres.length || more) ? `<div style="display:flex;flex-wrap:wrap;gap:8px">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
+    const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
 const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
@@ -3909,6 +3909,8 @@ function render(keepPop) {
         : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
         : data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
+    // opened, the genres and tags leave the cover's column for the page's full width
+    if (tagsOpen) { const gt = app.querySelector('.hero .gtags'); if (gt) { gt.classList.add('wide'); gt.closest('.hero').after(gt); } }
     // a redraw keeps the images already loaded, so the covers don't blink
     for (const im of app.querySelectorAll('img')) { const k = im.outerHTML, o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
     const gc = app.querySelector('[data-rgcover]');
