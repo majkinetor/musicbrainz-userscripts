@@ -14,6 +14,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Release group editor](#release-group-editor)**: the release group's edit page laid out like Release information.
 - **[Entity editors](#entity-editors)**: the edit pages of artists, labels, places, series, works, recordings and events laid out the same way.
+- **[Aliases](#aliases)**: every alias of an entity in one table, added, changed and removed together.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
@@ -60,6 +61,17 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 - **Autofill**: paste a Wikidata, Wikipedia, VIAF or ISNI link and the empty fields fill from Wikidata: name, sort name, type, gender, dates, areas, IPI, ISNI, a place's coordinates, and the links Wikidata knows. A field you already filled stays as it is. It replaces [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, which is hidden while Apollo is on.
 - Autofill and a place's map are cards at the end of whichever column is shorter.
 - The help bubbles are gone, and Apollo's bar has ✓ Enter edit and ✕ Cancel.
+
+## Aliases
+
+An entity's **Add alias** page becomes a table of all its aliases, so several are added, changed and removed with one edit note.
+
+- Each row is one alias: name, sort name, locale, primary for its locale, type, and begin and end dates. **Guess** fills the sort name the way MusicBrainz does; an artist's alias gets a person's sort name (*Presley, Elvis*).
+- **Add row** adds an empty row in the **Locale for new rows**, which Apollo remembers.
+- **Paste lines** adds a row for each line, written as `name | sort name | locale | type`; only the name is needed. The locale and type can be the code (`ja`) or the name MusicBrainz shows (*Japanese*).
+- **Guess sort names** fills every new row whose sort name is empty.
+- A new row is green, a changed one yellow, and a removed one red; **↺** brings a removed alias back.
+- **Submit** enters one edit per green, yellow or red row, all with the same edit note. A row that fails turns red underneath, and hovering it shows MusicBrainz's reason.
 
 ## Tracklist
 

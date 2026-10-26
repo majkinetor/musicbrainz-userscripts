@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.195136
+// @version      2026.10.26.195557
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -23,6 +23,13 @@
 // @match        https://*.musicbrainz.org/event/*/edit
 // @match        https://*.musicbrainz.org/series/create*
 // @match        https://*.musicbrainz.org/series/*/edit
+// @match        https://*.musicbrainz.org/work/*/add-alias
+// @match        https://*.musicbrainz.org/recording/*/add-alias
+// @match        https://*.musicbrainz.org/event/*/add-alias
+// @match        https://*.musicbrainz.org/series/*/add-alias
+// @match        https://*.musicbrainz.org/area/*/add-alias
+// @match        https://*.musicbrainz.org/instrument/*/add-alias
+// @match        https://*.musicbrainz.org/genre/*/add-alias
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -10292,6 +10299,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img);
     b.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
+      if (ALIAS_PAGE_RE.test(location.pathname)) { applyAliasPage(); relabelLauncher(); return; }
       if (ENT_KIND) { applyRgEdit(); relabelLauncher(); return; }   // the entity edit pages have no release editor: applyView would throw before them
       applyView(); applyNav(); applyAnnotationPage(); applyRgEdit();
     };
@@ -15763,6 +15771,178 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     return true;                                                                   // clicked → page navigates into the editor
   }
 
+  // #849 the bulk alias editor on /<entity>/<mbid>/add-alias: the entity's aliases as rows to edit
+  // or remove, plus new rows typed or pasted (name | sort | locale | type), sent as one edit each
+  // through MusicBrainz's own alias forms with one shared edit note
+  const ALIAS_PAGE_RE = /^\/(artist|label|place|work|recording|event|series|release|release-group|area|instrument|genre)\/([0-9a-f-]{36})\/add-alias/i;
+  function aliasWant() { return apolloEnabled() && SETTINGS.bulkAliases !== false; }
+
+  function aliasOpts(sel) { return sel ? [...sel.options].map(o => ({ v: o.value, t: o.textContent.trim() })) : []; }
+
+  // the /aliases page carries each alias's id (ws/2 doesn't); its locale and type cells are the names
+  // MusicBrainz shows, mapped back to codes through the add form's own selects
+  async function aliasLoad(ent, gid, locales, types) {
+    const r = await mbWebFetch(ORIGIN + '/' + ent + '/' + gid + '/aliases', { credentials: 'include' });
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    const rows = [];
+    for (const tr of doc.querySelectorAll('table.tbl tbody tr')) {
+      const a = tr.querySelector('a[href*="/alias/"][href$="/edit"]'); if (!a) continue;
+      const id = (a.getAttribute('href').match(/\/alias\/(\d+)\/edit/) || [])[1]; if (!id) continue;
+      const td = [...tr.children].map(c => c.textContent.trim());
+      const nameCell = tr.children[0], same = nameCell && nameCell.colSpan === 2;
+      const name = td[0], sort = same ? td[0] : td[1], rest = same ? td.slice(1) : td.slice(2);
+      const [begin, end, typeT, locT] = rest;
+      const primary = /\(primary\)/i.test(locT || ''), locName = (locT || '').replace(/\s*\(primary\)\s*$/i, '');
+      const loc = locales.find(o => o.t === locName), typ = types.find(o => o.t === typeT);
+      rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: begin || '', end: end || '' });
+    }
+    Log.cat('Alias').info('loaded', rows.length, 'aliases of', ent, gid);
+    return rows;
+  }
+
+  function aliasForm(row, note) {
+    const p = new URLSearchParams(), d = (k, s) => { const [y, m, dd] = (s || '').split('-'); p.set(k + '.year', y || ''); p.set(k + '.month', m || ''); p.set(k + '.day', dd || ''); };
+    p.set('edit-alias.name', row.name); p.set('edit-alias.sort_name', row.sort || row.name);
+    p.set('edit-alias.locale', row.locale || ''); if (row.locale && row.primary) p.set('edit-alias.primary_for_locale', '1');
+    p.set('edit-alias.type_id', row.type || '');
+    d('edit-alias.period.begin_date', row.begin); d('edit-alias.period.end_date', row.end);
+    if (row.end) p.set('edit-alias.period.ended', '1');
+    p.set('edit-alias.edit_note', note);
+    return p;
+  }
+
+  // MusicBrainz answers a good alias form by redirecting to the aliases page; a bad one comes back
+  // as the form with its errors
+  async function aliasPost(url, body) {
+    const r = await mbWebFetch(url, { method: 'POST', credentials: 'include', body, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    if (/\/aliases\/?$/.test(new URL(r.url).pathname)) return null;
+    const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    return [...doc.querySelectorAll('.error, ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join('; ') || 'HTTP ' + r.status;
+  }
+
+  async function applyAliasPage() {
+    const m = location.pathname.match(ALIAS_PAGE_RE); if (!m) return;
+    const ent = m[1].toLowerCase(), gid = m[2];
+    const nameIn = document.querySelector('input[name="edit-alias.name"]'), form = nameIn && nameIn.closest('form'); if (!form) return;
+    ensureLauncher();
+    if (!aliasWant()) { form.style.display = ''; document.getElementById('tc-alias')?.remove(); return; }
+    if (document.getElementById('tc-alias')) return;
+    const locales = aliasOpts(form.querySelector('select[name="edit-alias.locale"]')), types = aliasOpts(form.querySelector('select[name="edit-alias.type_id"]'));
+    const guess = n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent });
+    aliasStyle();
+    const box = document.createElement('div'); box.id = 'tc-alias';
+    box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span><span style="flex:1"></span>'
+      + '<label>Locale for new rows <select class="tc-al-defloc"></select></label>'
+      + '<button type="button" class="tc-al-guessall" title="Guess the sort name of every new row">Guess sort names</button>'
+      + '<button type="button" class="tc-al-add">Add row</button></div>'
+      + '<table class="tc-al-tbl"><thead><tr><th>Alias</th><th>Sort name</th><th></th><th>Locale</th><th title="Primary for its locale">Primary</th><th>Type</th><th>Begin</th><th>End</th><th></th></tr></thead><tbody></tbody></table>'
+      + '<details class="tc-al-paste"><summary>Paste lines</summary><textarea rows="5" placeholder="name | sort name | locale | type   (one alias per line; only the name is needed)"></textarea><button type="button">Add lines</button></details>'
+      + '<label class="tc-al-notel">Edit note<textarea class="tc-al-note" rows="3"></textarea></label>'
+      + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled>Submit</button></div>';
+    form.parentNode.insertBefore(box, form); form.style.display = 'none';
+    const tb = box.querySelector('tbody'), defloc = box.querySelector('.tc-al-defloc'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
+    const optHtml = (list, v) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.t) + '</option>').join('');
+    defloc.innerHTML = optHtml(locales, SETTINGS.aliasLocale || '');
+    defloc.onchange = () => { SETTINGS.aliasLocale = defloc.value; saveSettings(); };
+    const rows = [];
+    const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end]);
+    const state = r => r.removed ? 'del' : !r.id ? 'new' : key(r) !== r.orig ? 'chg' : '';
+    const sync = () => {
+      let n = 0;
+      for (const r of rows) { const s = state(r); r.tr.className = s ? 'tc-al-' + s : ''; if (s && (s === 'del' || r.name.trim())) n++; r.tr.querySelector('.tc-al-x').textContent = r.removed ? '↺' : '×'; r.tr.querySelector('.tc-al-x').title = r.removed ? 'Keep this alias' : r.id ? 'Remove this alias' : 'Drop this row'; }
+      go.textContent = n ? 'Submit ' + n + ' edit' + (n > 1 ? 's' : '') : 'Submit'; go.disabled = !n;
+      box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
+    };
+    const addRow = (r, top) => {
+      const tr = document.createElement('tr'); r.tr = tr;
+      tr.innerHTML = '<td><input class="tc-al-n"></td><td><input class="tc-al-s"></td><td><button type="button" class="tc-al-g" title="Guess sort name">Guess</button></td>'
+        + '<td><select class="tc-al-l">' + optHtml(locales, r.locale) + '</select></td><td><input type="checkbox" class="tc-al-p"></td>'
+        + '<td><select class="tc-al-t">' + optHtml(types, r.type) + '</select></td><td><input class="tc-al-b" placeholder="YYYY-MM-DD"></td><td><input class="tc-al-e" placeholder="YYYY-MM-DD"></td>'
+        + '<td><button type="button" class="tc-al-x"></button></td>';
+      const $ = c => tr.querySelector(c);
+      $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-p').checked = !!r.primary; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
+      const read = () => { r.name = $('.tc-al-n').value; r.sort = $('.tc-al-s').value; r.locale = $('.tc-al-l').value; r.primary = $('.tc-al-p').checked; r.type = $('.tc-al-t').value; r.begin = $('.tc-al-b').value.trim(); r.end = $('.tc-al-e').value.trim(); sync(); };
+      tr.addEventListener('input', read); tr.addEventListener('change', read);
+      $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); read(); };
+      $('.tc-al-x').onclick = () => { if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); sync(); } };
+      rows.push(r); if (top) tb.insertBefore(tr, tb.firstChild); else tb.appendChild(tr);
+      return r;
+    };
+    const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc != null ? loc : defloc.value, primary: false, type: typ || '', begin: '', end: '' });
+    box.querySelector('.tc-al-add').onclick = () => { addRow(blank()); sync(); rows[rows.length - 1].tr.querySelector('.tc-al-n').focus(); };
+    box.querySelector('.tc-al-guessall').onclick = () => { for (const r of rows) if (!r.id && r.name.trim() && !r.sort.trim()) { r.tr.querySelector('.tc-al-s').value = r.sort = guess(r.name.trim()); } sync(); };
+    // a pasted locale or type matches by code or by the name MusicBrainz shows, either case
+    const pick = (list, s) => { s = (s || '').trim().toLowerCase(); if (!s) return null; const o = list.find(x => x.v.toLowerCase() === s) || list.find(x => x.t.toLowerCase() === s); return o ? o.v : null; };
+    const pasteBox = box.querySelector('.tc-al-paste');
+    pasteBox.querySelector('button').onclick = () => {
+      const ta = pasteBox.querySelector('textarea'); let n = 0;
+      for (const line of ta.value.split(/\r?\n/)) {
+        const [nm, so, lo, ty] = line.split('|').map(s => s.trim()); if (!nm) continue;
+        const loc = pick(locales, lo), typ = pick(types, ty);
+        if (lo && loc == null) Log.cat('Alias').warn('unknown locale "' + lo + '" for', nm);
+        if (ty && typ == null) Log.cat('Alias').warn('unknown type "' + ty + '" for', nm);
+        addRow(blank(nm, so || '', loc, typ)); n++;
+      }
+      ta.value = ''; sync(); msg.textContent = n + ' row' + (n === 1 ? '' : 's') + ' added';
+    };
+    go.onclick = async () => {
+      const note = box.querySelector('.tc-al-note').value.trim();
+      const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
+      go.disabled = true; let ok = 0, bad = 0;
+      for (const r of todo) {
+        const s = state(r), base = ORIGIN + '/' + ent + '/' + gid;
+        msg.textContent = 'Submitting ' + (ok + bad + 1) + ' of ' + todo.length + '…';
+        let err;
+        try {
+          if (s === 'del') { const p = new URLSearchParams(); p.set('confirm.edit_note', note); err = await aliasPost(base + '/alias/' + r.id + '/delete', p); }
+          else err = await aliasPost(s === 'new' ? base + '/add-alias' : base + '/alias/' + r.id + '/edit', aliasForm(r, note));
+        } catch (e) { err = e.message; }
+        Log.cat('Alias')[err ? 'warn' : 'info']((s === 'del' ? 'remove' : s === 'new' ? 'add' : 'edit') + ' "' + r.name + '"', err || 'ok');
+        if (err) { bad++; r.tr.title = err; r.tr.classList.add('tc-al-err'); continue; }
+        ok++;
+        if (s === 'del') { r.tr.remove(); rows.splice(rows.indexOf(r), 1); } else { r.orig = key(r); r.tr.title = ''; if (s === 'new') r.id = 'done'; }
+        sync();
+      }
+      msg.textContent = ok + ' edit' + (ok === 1 ? '' : 's') + ' entered' + (bad ? ', ' + bad + ' failed (hover the red rows)' : '');
+      toast(msg.textContent, bad ? 'warn' : 'ok');
+      sync();
+    };
+    try {
+      for (const r of await aliasLoad(ent, gid, locales, types)) { r.orig = key(r); addRow(r); }
+    } catch (e) { Log.cat('Alias').warn('could not load the aliases', e.message); msg.textContent = 'Could not load the existing aliases'; }
+    // MusicBrainz's form may arrive with a name typed in (its "Add alias" link carries none, a seed may)
+    const seeded = nameIn.value.trim();
+    addRow(blank(seeded, seeded ? (form.querySelector('input[name="edit-alias.sort_name"]')?.value || '') : ''), false);
+    sync();
+  }
+
+  function aliasStyle() {
+    if (document.getElementById('tc-alias-style')) return;
+    const s = document.createElement('style'); s.id = 'tc-alias-style';
+    s.textContent = `
+    #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
+    #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
+    #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
+    #tc-alias .tc-al-tbl{border-collapse:collapse;width:100%}
+    #tc-alias .tc-al-tbl th{text-align:left;font-weight:600;padding:4px;border-bottom:1px solid var(--mbu-border)}
+    #tc-alias .tc-al-tbl td{padding:2px 4px;border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
+    #tc-alias input:not([type=checkbox]),#tc-alias select,#tc-alias textarea{box-sizing:border-box;width:100%;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:2px 4px;font:inherit}
+    #tc-alias .tc-al-b,#tc-alias .tc-al-e{width:96px}
+    #tc-alias .tc-al-defloc{width:auto}
+    #tc-alias tr.tc-al-new td{background:rgba(60,170,80,.14)}
+    #tc-alias tr.tc-al-chg td{background:rgba(230,190,40,.18)}
+    #tc-alias tr.tc-al-del td{background:rgba(220,60,60,.16)}
+    #tc-alias tr.tc-al-del input{text-decoration:line-through}
+    #tc-alias tr.tc-al-err td{box-shadow:inset 0 -2px 0 #d33}
+    #tc-alias .tc-al-x{min-width:26px;min-height:22px}
+    #tc-alias .tc-al-notel{display:block;margin-top:8px}
+    #tc-alias .tc-al-paste{margin-top:8px}
+    #tc-alias .tc-al-paste button{margin-top:4px}
+    #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}
+    #tc-alias .tc-al-go:disabled{opacity:.5}`;
+    document.head.appendChild(s);
+  }
+
   (async function main() {
     if (handleAutoCommit()) { Log.cat('Create').info('auto-commit (background create/link) — submitting the seeded form'); return; }
     if (handleArtistPageCallback()) { Log.cat('Create').info('artist/label-create callback — posting MBID back and closing'); return; }
@@ -15771,6 +15951,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (ANNO_PAGE_RE.test(location.pathname)) {   // #394 standalone Edit annotation page for ANY entity (no releaseEditor)
       const tryMount = () => { if (document.querySelector('textarea[name="edit-annotation.text"]')) { applyAnnotationPage(); return true; } return false; };
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
+      return;
+    }
+    if (ALIAS_PAGE_RE.test(location.pathname)) {   // #849 the bulk alias editor
+      await whenDomReady(); await waitFor(() => document.querySelector('input[name="edit-alias.name"]'), { tries: 40, every: 250 });
+      applyAliasPage().catch(e => Log.cat('Alias').err('alias editor failed', e.message));
       return;
     }
     if (ENT_KIND) {   // #842 #843
