@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.410000
+// @version      2026.10.27.420000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2493,8 +2493,13 @@ const MB = location.origin;
 const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
 /* ── data ──────────────────────────────────────────── */
+// every fetch leaves a debug line: what, how it answered, how long it took
+const fetchLog = (what, t0, r, e) => LOG.debug(`Fetch ${what}: ${e ? 'failed, ' + (e.message || e) : r ? r.status : 'cancelled'} in ${Math.round(performance.now() - t0)} ms`);
 async function ws(path) {
-    const r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } });
+    const t0 = performance.now();
+    let r;
+    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e); throw e; }
+    fetchLog('ws/2 ' + path, t0, r);
     if (!r) throw new Error('cancelled');
     if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
     if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
@@ -2503,7 +2508,8 @@ async function ws(path) {
 // ISO codes by their English names (eng → English, Latn → Latin); an unknown code stays as it is
 const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en'], { type, fallback: 'code' }).of(code); } catch (e) { return code; } };
 async function caa(id) {
-    try { const r = await fetch('https://coverartarchive.org/release/' + id); return r.ok ? (await r.json()).images || [] : []; } catch (e) { return []; }
+    const t0 = performance.now();
+    try { const r = await fetch('https://coverartarchive.org/release/' + id); fetchLog('CAA release ' + id, t0, r); return r.ok ? (await r.json()).images || [] : []; } catch (e) { fetchLog('CAA release ' + id, t0, null, e); return []; }
 }
 // platforms by host; the rest fall back to their name as a monogram
 const HOSTS = [
@@ -3119,7 +3125,7 @@ function group(g) {
 // the Wikipedia extract MusicBrainz's own page fetches after load: { content (HTML), url }, or none
 // a section's fetch failing leaves its section out; the log says which and why
 const noSec = what => e => { LOG.warn(what + ' failed: ' + (e && e.message || e)); return null; };
-const wikiOf = (type, id) => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => r.json()).then(x => { if (!x.wikipediaExtract) LOG.debug(type + ' ' + id + ': no Wikipedia extract'); return x.wikipediaExtract || null; }, noSec('wikipedia-extract ' + type + '/' + id));
+const wikiOf = (type, id, t0 = performance.now()) => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => { fetchLog(`${type}/${id}/wikipedia-extract`, t0, r); return r.json(); }).then(x => { if (!x.wikipediaExtract) LOG.debug(type + ' ' + id + ': no Wikipedia extract'); return x.wikipediaExtract || null; }, noSec('wikipedia-extract ' + type + '/' + id));
 async function loadRg(id, step = () => {}) {
     // the releases and the Wikipedia extract don't need the group: asked for at once
     const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
@@ -3290,8 +3296,8 @@ class ArtistImage {
 }
 // </ST-ARTIMG>
 // Tidal's and Apple Music's pages send no CORS headers, nor does Deezer's API: the manager fetches them
-const gmFetch = u => new Promise((ok, no) => GM_xmlhttpRequest({ method: 'GET', url: u, onerror: () => no(new Error('network')), ontimeout: () => no(new Error('timeout')), timeout: 15000,
-    onload: x => ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }) }));
+const gmFetch = (u, t0 = performance.now()) => new Promise((ok, no) => GM_xmlhttpRequest({ method: 'GET', url: u, onerror: () => { fetchLog(u, t0, null, 'network'); no(new Error('network')); }, ontimeout: () => { fetchLog(u, t0, null, 'timeout'); no(new Error('timeout')); }, timeout: 15000,
+    onload: x => { fetchLog(u, t0, x); ok({ ok: x.status >= 200 && x.status < 300, status: x.status, text: async () => x.responseText, json: async () => JSON.parse(x.responseText) }); } }));
 const ARTIMG = new ArtistImage({ get: GM_getValue, set: GM_setValue }, { http: gmFetch, order: () => imgOrder().filter(k => !S.imgOff.includes(k)), log: m => LOG.warn(m) });
 const IMG_PROV = ArtistImage.PROVIDERS.map(p => [p.key, p.name]);
 // the saved order, with providers added since appended
@@ -3628,7 +3634,8 @@ function instrument(a) {
 }
 // one of MusicBrainz's subpages (an instrument's or a place's tab): its table as headings and rows, without the merge checkboxes and the ratings
 async function mbTab(type, id, sub) {
-    const r = await mbnFetch(`${MB}/${type}/${id}/${sub}`);
+    const t0 = performance.now(), r = await mbnFetch(`${MB}/${type}/${id}/${sub}`);
+    fetchLog(`${type}/${id}/${sub}`, t0, r);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = new DOMParser().parseFromString(await r.text(), 'text/html'), t = d.querySelector('#content table.tbl');
     const more = !!d.querySelector('#content ul.pagination'), h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
@@ -4722,23 +4729,25 @@ async function histLoad(n, all) {
     const relGet = () => { if (!d.rel && !d.relAsk && histRid(d.id)) { d.relAsk = true; ws('release/' + histRid(d.id) + '?inc=artist-credits+media+release-groups').then(r => { if (data === d) { d.rel = r; render(); } }, () => { d.relAsk = false; }); } };
     relGet();
     const target = d.edits.length + H_MIN;
+    LOG.info(`History ${d.id}: loading ${all ? 'every page' : 'more'} from page ${d.page + 1}`);
     try {
         for (let i = 0; (all || i < H_MAXP) && d.more; i++) {
             const p = d.page + 1;
             let html;
             if (p === 1 && 'hist/' + d.id === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
-            else { const sr = histSrc(d.id), r = await mbnFetch(`${MB}${sr}${sr.includes('?') ? '&' : '?'}page=${p}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
-            if (n !== showing || data !== d) return;
+            else { const sr = histSrc(d.id), t0 = performance.now(), r = await mbnFetch(`${MB}${sr}${sr.includes('?') ? '&' : '?'}page=${p}`); fetchLog(`${sr} page ${p}`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled'); html = await r.text(); }
+            if (n !== showing || data !== d) { LOG.debug(`History ${d.id}: left the page, loading stops`); d.busy = false; return; }
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
-            d.edits.push(...x.edits.filter(e => !seen.has(e.id))); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
+            const fresh = x.edits.filter(e => !seen.has(e.id)); d.edits.push(...fresh); d.page = p; if (x.rid) { d.rid = x.rid; relGet(); }
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
-            d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && x.edits.length > 0;
+            d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && fresh.length > 0;
+            LOG.debug(`History ${d.id}: page ${p} gave ${x.edits.length} edits, ${fresh.length} new, ${d.edits.length} in all${d.more ? '' : ', no more pages'}`);
             render();
             // enough once past the target, unless this page was all one burst that may go on
             if (!all && d.edits.length >= target) { const b = histBursts(d.edits), l = b[b.length - 1]; if (l.es.length < x.edits.length || !x.edits.length) break; }
         }
     } catch (e) { relGet(); LOG.err('Loading the history of ' + d.id + ' failed: ' + e.message); d.err = e.message; }
-    d.busy = false; if (n === showing && data === d) render();
+    d.busy = false; LOG.info(`History ${d.id}: ${d.edits.length} edits${d.more ? ', more to load' : ', all loaded'}`); if (n === showing && data === d) render();
 }
 const histHue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 // a time, with its date where no day header above gives it
