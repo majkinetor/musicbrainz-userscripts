@@ -4438,9 +4438,11 @@ const PAGE_ID = keyOf(location.href);
 // the release's title and artist, then Art Station's gallery: it mounts in the slot, or moves there from
 // MusicBrainz's page when it came first. The slot is drawn once: a redraw would drop the gallery
 // a release subpage's header: the release page's kicker, the open tab `tab` lit, and its title and credits without the facts
+// a release subpage's way back to the release's overview: an arrow left of Edit
+const backA = id => `<a class="ab ov" href="${MB}/release/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>`;
 function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+    const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
         + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none);
@@ -4746,7 +4748,7 @@ function histGroup(key, title, es, av, nm) {
     return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
-    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? ACTS.map(([p, nm, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}/release/${rid}/${p}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${nm}</span></a>`).join('') : '') + SRCH();
+    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + ACTS.map(([p, nm, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}/release/${rid}/${p}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${nm}</span></a>`).join('') : '') + SRCH();
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
