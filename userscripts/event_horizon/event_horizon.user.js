@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.360000
+// @version      2026.10.27.370000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1955,6 +1955,14 @@ const CSS = `
   /* the shared settings dialog takes Event Horizon's pink, not its own deep violet, which sinks into a dark page */
   --mbu-accent:#d062a8;--mbu-accent-hover:#e07cbb;--mbu-accent-deep:#e891c8;--mbu-accent-text:#e891c8;--mbu-accent-deep-text:#f6c0e1;--mbu-accent-soft:color-mix(in srgb,#d062a8 22%,transparent);--mbu-border-strong:#7d5a72}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}
+/* the page's background, picked in General: aura blurs the page's own picture behind its head (glow where it has none) */
+body{position:relative;isolation:isolate;overflow-x:clip}
+body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none}
+:root[data-eh-bg=aura][data-eh-aura] body::before{content:"";height:620px;background:var(--eh-aura) center 30%/cover no-repeat;filter:blur(70px) saturate(1.5);opacity:.4;transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
+:root[data-eh-bg=aura][data-eh-theme=dark][data-eh-aura] body::before{opacity:.28}
+:root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)}
+:root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--bg)),color-mix(in srgb,var(--accent2) 11%,var(--bg)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--bg))}
+:root[data-eh-bg=hex] body{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0l14 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%23ba478f' stroke-opacity='.1'/%3E%3C/svg%3E") var(--bg)}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -2455,13 +2463,13 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1280,
+    byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1280, bg: 'flat',
     on: true,
     thumbs: true,
     extras: ['rating', 'tags'],
@@ -3843,10 +3851,22 @@ function artHtml(r) {
 }
 
 /* ── page ──────────────────────────────────────────── */
+// the background setting; aura takes the page's first cover or picture, after the render draws it
+function bgApply() {
+    const de = document.documentElement;
+    de.setAttribute('data-eh-bg', S.bg || 'flat');
+    requestAnimationFrame(() => {
+        const im = S.bg === 'aura' && document.querySelector('#app img.cover, #app .picw img');
+        const src = im && (im.currentSrc || im.src);
+        if (src) { de.style.setProperty('--eh-aura', `url("${src.replace(/"/g, '%22')}")`); de.setAttribute('data-eh-aura', ''); }
+        else de.removeAttribute('data-eh-aura');
+    });
+}
 let data = null;
 const imgKey = new WeakMap();
 function render(keepPop) {
     const app = $('#app');
+    bgApply();
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
@@ -5014,7 +5034,8 @@ function cfgBody() {
             + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
         artist: row('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
 Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next"),
-        general: row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen'),
+        general: row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
+            + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band'], ['hex', 'Hexagons']].map(([k, l]) => chip('bg', k, (S.bg || 'flat') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
     };
     return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
 }
@@ -5092,6 +5113,7 @@ function openCfg() {
             else if (g === 'plNames' || g === 'plHover') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
+            else if (g === 'bg') S.bg = k;
             else if (g === 'imgP') { S.imgOff = toggle(S.imgOff, k); imgResort(); }
         }
         save();
