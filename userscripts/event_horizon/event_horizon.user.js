@@ -2798,10 +2798,16 @@ function rlQuiet(r) {
     const urlOf = (p, k) => (p.urls.find(u => KIND(u.type) === k) || p.urls[0]).url;
     const lead = p => ({ ...p, urls: [...p.urls].sort((a, b) => (KIND(b.type) === primaryKind(p)) - (KIND(a.type) === primaryKind(p))) });
     const kRow = (p, k) => `<a class="row" href="${esc(urlOf(p, k))}" target="_blank" rel="noopener">${icon(p, 22)}<span>${kname(k)}</span></a>`;
+    // a site with several links: a row per link, its address under the kind (majkinetor)
+    const uRow = (p, u) => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${kname(KIND(u.type) || primaryKind(p))}${u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`;
     const qi = (p, i) => {
         const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
-        if (!rest.length) return a;
-        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${rest.length} more kinds on ${esc(p.name)}" data-tip="+${rest.length}: also ${rest.map(kname).join(', ')}">+${rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}</div></span></span>`;
+        const many = p.urls.length > 1;
+        if (!rest.length && !many) return a;
+        const lbl = many ? `${p.urls.length} links on ${esc(p.name)}` : `${rest.length} more kinds on ${esc(p.name)}`;
+        const tip = many ? `${p.urls.length} links${rest.length ? ': also ' + rest.map(kname).join(', ') : ''}` : `+${rest.length}: also ${rest.map(kname).join(', ')}`;
+        const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
+        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
