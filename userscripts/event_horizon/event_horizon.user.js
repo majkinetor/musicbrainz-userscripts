@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.560000
+// @version      2026.10.27.570000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4559,12 +4559,21 @@ body{background:var(--bg)}
 :root[data-eh-rel] #page fieldset.editnote{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:24px 0 12px}:root[data-eh-rel] #page fieldset.editnote legend{float:left;width:100%;margin:0 0 10px;padding:0;font-size:17px}:root[data-eh-rel] #page fieldset.editnote legend+*{clear:left}:root[data-eh-rel] #page fieldset.editnote .row,:root[data-eh-rel] #page form>.row.no-label,:root[data-eh-rel] #page form>div>.row.no-label{margin-left:0!important;padding-left:0!important}:root[data-eh-rel] #page fieldset.editnote .row>label{display:none}:root[data-eh-rel] #page fieldset.editnote p{margin-left:0;padding-left:0}
 :root[data-eh-rel] #page fieldset.editnote textarea,:root[data-eh-rel] #page textarea[name$=".text"]{width:100%!important;box-sizing:border-box}
 :root[data-eh-rel] #page table.details th{color:var(--muted);text-align:left;padding-right:12px}
-:root[data-eh-rel] #set-cover-art-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-:root[data-eh-rel] #set-cover-art-images .editimage{float:none!important;width:auto!important;margin:0!important;background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:12px;padding:12px!important;box-sizing:border-box;cursor:pointer}
+:root[data-eh-rel] #set-cover-art-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+:root[data-eh-rel] #set-cover-art-images .editimage{float:none!important;width:auto!important;margin:0!important;padding:10px!important;display:flex;flex-direction:column;gap:10px;background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:14px;box-sizing:border-box;cursor:pointer;font-size:13px;line-height:1.45;transition:border-color .12s}
 :root[data-eh-rel] #set-cover-art-images .editimage:hover{border-color:var(--accent)!important}
-:root[data-eh-rel] #set-cover-art-images .editimage.selected{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))!important}
-:root[data-eh-rel] #set-cover-art-images .editimage{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;align-items:start}:root[data-eh-rel] #set-cover-art-images .editimage>*{float:none!important;margin:0!important;width:auto!important}:root[data-eh-rel] #set-cover-art-images .editimage p{margin:0 0 8px}
-:root[data-eh-rel] #set-cover-art-images .editimage img{width:120px;height:120px;object-fit:cover;border-radius:8px;display:block;background:var(--chip)}
+:root[data-eh-rel] #set-cover-art-images .editimage.selected{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent)}
+:root[data-eh-rel] #set-cover-art-images .editimage>*{float:none!important;margin:0!important;width:auto!important}
+:root[data-eh-rel] #set-cover-art-images .cover-image{position:relative}:root[data-eh-rel] #set-cover-art-images .cover-image a{display:block}
+:root[data-eh-rel] #set-cover-art-images .cover-image img{width:100%;aspect-ratio:1;height:auto;object-fit:cover;border-radius:9px;display:block;background:var(--chip)}
+:root[data-eh-rel] #set-cover-art-images .eh-dim{position:absolute;right:6px;bottom:6px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;font:600 11px/1.5 'JetBrains Mono',monospace}
+:root[data-eh-rel] #set-cover-art-images .release-description{color:var(--muted)}
+:root[data-eh-rel] #set-cover-art-images .release-description p{margin:0}
+:root[data-eh-rel] #set-cover-art-images .release-description p:first-child{color:var(--text);margin-bottom:4px}
+:root[data-eh-rel] #set-cover-art-images .release-description p:first-child>.mp:first-child a{font-weight:700;font-size:14px;color:var(--text)}
+:root[data-eh-rel] #set-cover-art-images .release-description ul{display:inline;margin:0;padding:0;list-style:none}
+:root[data-eh-rel] #set-cover-art-images .release-description li{display:inline;margin-left:4px}
+:root[data-eh-rel] #set-cover-art-images .release-description strong{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:11.5px}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
 #eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
@@ -4698,6 +4707,14 @@ function relCards() {
     relCardsApply();
     LOG.info('Relate: regions and tracks as cards');
 }
+// Set cover art: each choice shows its original's size, read from the image itself (the Cover Art Archive, not MusicBrainz)
+function coverDims() {
+    for (const a of document.querySelectorAll('#set-cover-art-images .cover-image a.artwork-image[href]')) {
+        const im = new Image();
+        im.onload = () => a.parentNode.insertAdjacentHTML('beforeend', `<span class="eh-dim">${im.naturalWidth}×${im.naturalHeight}</span>`);
+        im.src = a.href.replace(/^http:/, 'https:');
+    }
+}
 function relSet(on) {
     const de = document.documentElement;
     if (on && !document.getElementById('eh-rel-css')) {
@@ -4706,6 +4723,7 @@ function relSet(on) {
         if (c) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
         LOG.info(rel ? 'Dressing the relationship editor of ' + PAGE_ID.split('/')[1] : 'Dressing the form ' + PAGE_ID.slice(5));
         if (rel) relCards();
+        else coverDims();
     }
     const theme = on && mbuTheme();
     ehOn = on;
