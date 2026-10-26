@@ -9,7 +9,7 @@ test('the relationship editor takes Event Horizon\'s header and theme', { tag: [
   await requireLogin(page);
   await settled(page);
   await inject('event_horizon');
-  check(await until(() => page.locator('#content > #eh-relhd h1 a').count(), n => n === 1) === 1, 'the header shows, its title linking to the release');
+  check(await until(() => page.locator(`#content > #eh-relhd h1 a[href$="/release/${RELEASE}"]`).count(), n => n === 1) === 1, 'the header shows, its title linking to the release');
   check(await page.locator('#eh-relhd .ab.on[aria-current=page]').textContent() === 'Relate', 'Relate is the open tab');
   check(await page.locator('#eh-relhd .by a').count() > 0, 'the artist shows');
   check(!(await page.locator('body > .header').isVisible()), 'MusicBrainz\'s header hides');
