@@ -39,6 +39,10 @@ test('the artist edit page gets the links column, the name highlight and loujine
   check(s.bar, 'Apollo\'s header bar is there');
   const c = await until(() => shorterColumn(page), v => v.in === v.want);
   check(c.in === c.want, `loujine's card ends the shorter column (${c.in}, want ${c.want})`);
+  // Sort name: guess is Apollo's Aa, MusicBrainz's copy button is gone
+  const sn = await page.evaluate(() => ({ gc: getComputedStyle(document.querySelector('button.guesscase-sortname'), '::before').content, copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
+  check(sn.gc === '"Aa"' && sn.copy === 'none', `sort name: Aa guess, no copy (${sn.gc}, ${sn.copy})`);
+  await attachShot(testInfo, page.locator('[id="id-edit-artist.name"]').locator('xpath=ancestor::fieldset[1]'), 'artist-details');
   // right-click a link's favicon: MusicBrainz's own URL editor opens, as on Release information
   const inputs = () => page.evaluate(() => [...document.querySelectorAll('#external-links-editor input, .external-link-dialog input, [role=dialog] input')].filter(i => i.offsetParent).length);
   const before = await inputs();
