@@ -84,3 +84,22 @@ test('the label and place edit pages get the links column and the cards', { tag:
     await attachShot(testInfo, page, kind + '-edit');
   }
 });
+
+test('the work, recording and event edit pages get the links column and the name highlight', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  for (const kind of ['work', 'recording', 'event']) {
+    await page.goto(`https://test.musicbrainz.org/${kind}/create`);
+    await requireLogin(page); await idle(page);
+    await inject('apollo_editor');
+    const s = await until(() => page.evaluate(() => ({
+      col: !!document.querySelector('#tc-ri-rightcol #external-links-editor'),
+      plain: !!document.querySelector('form.tc-ent-plain'),
+      bar: !!document.getElementById('tc-nav-title'),
+    })), v => v.col && v.plain && v.bar);
+    check(s.col, `${kind}: the external links sit in the right column`);
+    check(s.plain, `${kind}: the form has Apollo's layout`);
+    check(s.bar, `${kind}: Apollo's header bar is there`);
+    await page.fill(`[id="id-edit-${kind}.name"]`, 'A  B');
+    check(await until(() => page.evaluate(() => document.querySelectorAll('.tc-jp').length), n => n > 0) > 0, `${kind}: the name's double space is marked`);
+    await attachShot(testInfo, page, kind + '-edit');
+  }
+});

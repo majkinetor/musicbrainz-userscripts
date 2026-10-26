@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.165807
+// @version      2026.10.26.192317
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15,6 +15,12 @@
 // @match        https://*.musicbrainz.org/release/*
 // @match        https://*.musicbrainz.org/release-group/*
 // @match        https://*.musicbrainz.org/cdtoc/attach*
+// @match        https://*.musicbrainz.org/work/create*
+// @match        https://*.musicbrainz.org/work/*/edit
+// @match        https://*.musicbrainz.org/recording/create*
+// @match        https://*.musicbrainz.org/recording/*/edit
+// @match        https://*.musicbrainz.org/event/create*
+// @match        https://*.musicbrainz.org/event/*/edit
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        GM_getValue
@@ -13884,7 +13890,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Append/refresh a front-cover thumbnail (Cover Art Archive) at the bottom of the
   // right column, below external links. Display only; hides itself when there's no art.
   function riCover(col) {
-    if (ENT_PLAIN) return;   // #843: artists, labels and places have no cover
+    if (ENT_PLAIN) return;   // #843: these entities have no cover
     const mbid = currentMbid(), kind = RG_PAGE ? 'release-group' : 'release';   // #842: the release group's cover on its edit page
     let box = col.querySelector(':scope > #tc-ri-cover');
     if (!mbid) { box?.remove(); return; }
@@ -14683,8 +14689,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       _rgAC = { names: ((v && v.names) || []).map(n => ({ artist: u(n.artist) || null, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })) };
     },
   };
-  // #843: an artist's, label's or place's edit page, the same layout without the artist cell; ENT_KIND names the page's entity
-  const ENT_M = location.pathname.match(new RegExp('^/(artist|label|place)/(?:create|' + MBID_RE.source + '/edit)/?$', 'i'));
+  // #843: an artist's, label's, place's, work's, recording's or event's edit page, the same layout without the artist cell; ENT_KIND names the page's entity
+  const ENT_M = location.pathname.match(new RegExp('^/(artist|label|place|work|recording|event)/(?:create|' + MBID_RE.source + '/edit)/?$', 'i'));
   const ENT_PLAIN = !!ENT_M;
   const ENT_KIND = RG_PAGE ? 'release-group' : ENT_M ? ENT_M[1].toLowerCase() : '';
   const rgForm = () => document.querySelector('form.edit-' + ENT_KIND);
@@ -15649,7 +15655,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       return;
     }
     if (ENT_KIND) {   // #842 #843
-      await whenDomReady(); applyRgEdit(); installMultiLinkPaste(); ensureLauncher();
+      await whenDomReady(); await waitFor(rgForm, { tries: 40, every: 250 });   // an event's form is drawn after the page loads
+      applyRgEdit(); installMultiLinkPaste(); ensureLauncher();
       Log.cat('System').info(ENT_KIND + ' edit page:', rgGid() ? ORIGIN + '/' + ENT_KIND + '/' + rgGid() : 'new');
       if (RG_PAGE && apolloEnabled()) matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message));
       return;
