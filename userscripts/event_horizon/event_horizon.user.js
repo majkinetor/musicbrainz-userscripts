@@ -4466,7 +4466,7 @@ async function artLoad(n, id) {
 
 // Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
-:root[data-eh-rel],:root[data-eh-rel] body{background:var(--bg)!important}
+body{background:var(--bg)}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
@@ -4485,7 +4485,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -4529,7 +4529,9 @@ function relHeader(id) {
     const rh = document.querySelector('#content > .releaseheader'), t = rh && rh.querySelector('h1 a'), sub = rh && rh.querySelector('.subheader');
     const by = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')].map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ') : '';
     const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
-    const draw = r => { hd.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); };
+    hd.innerHTML = `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"></div>`;
+    const cv = hd.querySelector('.rhcv'), tx = hd.querySelector('.rhtx'); cv.onerror = () => { cv.hidden = true; LOG.debug('Relate header: no front cover'); };
+    const draw = r => { tx.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); };
     draw(null);
     Promise.resolve().then(() => ws('release/' + id + '?inc=artist-credits+media+release-groups')).then(r => r && r.id && draw(r)).catch(e => LOG.warn('Relate header: ' + e));
     hd.addEventListener('click', e => {
