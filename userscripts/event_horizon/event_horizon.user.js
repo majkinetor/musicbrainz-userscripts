@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.203458
+// @version      2026.10.26.222555
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3167,13 +3167,15 @@ let tagsOpen = false;
 const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class="chip tag">${esc(t)}</span>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
 // a few aliases inline; a +N button shows the rest
 // the first four aliases, the rest in a popover behind +N
-const aliasList = as => { const n = 4; return `<div class="als">${as.slice(0, n).map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => `<div>${esc(a)}</div>`).join('')}</div></span>` : ''}</div>`; };
+// and a link to the entity's aliases page, which Apollo Editor turns into its alias editor
+const aliasesHref = () => { const m = location.pathname.match(/^\/[a-z-]+\/[0-9a-f-]{36}/i); return m ? MB + m[0] + '/aliases' : ''; };
+const aliasList = as => { const n = 4, h = aliasesHref(), go = h ? `<a class="lnk als-go" href="${h}" data-tip="${as.length ? 'See and edit the aliases' : 'Add aliases'}">${as.length ? 'Edit' : 'Add'}</a>` : ''; if (!as.length && !go) return ''; return `<div class="als">${as.slice(0, n).map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => `<div>${esc(a)}</div>`).join('')}</div></span>` : ''}${go}</div>`; };
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
         ['First released', g.first && `<span>${fdate(g.first)}</span>`],
         [`Release${d.edCount === 1 ? '' : 's'}`, d.edCount ? `<span>${d.edCount}</span>` : ''],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ];
@@ -3395,7 +3397,7 @@ function lbHero(d) {
         ['Defunct', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
         ['Area', g.area && areaA(g.area)],
         ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0'))],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
         ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
@@ -3420,7 +3422,7 @@ function arHero(d) {
         [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : '')],
         ['Area', g.area && areaA(g.area)],
         ['Gender', g.gender && esc(g.gender)],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
         ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
@@ -3497,7 +3499,7 @@ function recHero(d) {
         ['Length', g.len && `<span>${esc(ms(g.len))}</span>`],
         ['First released', g.first && `<span>${fdate(g.first)}</span>`],
         [g.isrcs.length > 1 ? 'ISRCs' : 'ISRC', g.isrcs.length && codes(g.isrcs), g.isrcs.length > 2 ? 'wide' : ''],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], g.ac.length ? 'by ' + acHtml(g.ac) : '');
@@ -3508,7 +3510,7 @@ function wkHero(d) {
         [g.langs.length > 1 ? 'Languages' : 'Language', g.langs.length && esc(g.langs.join(', '))],
         [g.iswcs.length > 1 ? 'ISWCs' : 'ISWC', g.iswcs.length && codes(g.iswcs), g.iswcs.length > 2 ? 'wide' : ''],
         ...g.attrs.map(([k, v]) => [esc(k), /^key$/i.test(k) ? esc(v) : mono(v)]),
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], writers.length ? 'by ' + andList(writers) : '');
@@ -3605,7 +3607,7 @@ function areaHero(d) {
         [g.anthem.length > 1 ? 'Anthems' : 'Anthem', g.anthem.length && rl(g.anthem), 'wide'],
         [`Instrument${g.instruments.length > 1 ? 's' : ''}${cnt(g.instruments)}`, g.instruments.length && rl(g.instruments), 'wide'],
         [`Location for${cnt(g.held)}`, g.held.length && rl(g.held), 'wide'],
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ]);
@@ -3706,7 +3708,7 @@ function insHero(d) {
         ['', g.desc && descHtml(g.desc), 'wide'],
         ...[['From', 'area', g.from || []], ['Used in', 'genre', g.usedIn || []]].filter(x => x[2].length).map(([l, t, xs]) => [l, `<span class="arl">${xs.map(x => entA(t, x.id, x.name)).join('')}</span>`, 'wide']),
         ...g.groups.map(([l, xs]) => [`${l}${xs.length > 1 ? ` <span class="count">${xs.length}</span>` : ''}`, `<span class="arl">${xs.map(x => entA('instrument', x.id, x.name)).join('')}</span>`, 'wide']),
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], '', pic);
@@ -3813,7 +3815,7 @@ function placeHero(d) {
         [g.type === 'Studio' || g.type === 'Venue' ? 'Opened' : 'Began', g.begin && fdate(g.begin)],
         [g.type === 'Studio' || g.type === 'Venue' ? 'Closed' : 'Ended', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
         ...g.groups.map(([l, xs]) => [`${esc(l)}${cnt(xs)}`, rl(xs), 'wide']),
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], '', picHtml(g, 'ipic', `<div class="nocover pg">${bigMk(MK_PLACE)}</div>`));
@@ -3860,7 +3862,7 @@ function evHero(d) {
         ['Time', g.time && esc(g.time)],
         ['Cancelled', g.cancelled && 'yes'],
         ...g.groups.map(([l, xs]) => [`${esc(l)}${cnt(xs)}`, rl(xs), 'wide']),
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], '', pic);
@@ -3911,7 +3913,7 @@ function serHero(d) {
     const rl = xs => `<span class="arl">${xs.map(x => `<span>${entA(x.kind, x.id, x.name)}${x.dis ? ` <span class="sub">(${esc(x.dis)})</span>` : ''}</span>`).join('')}</span>`;
     return pgHero(g, 'series', MK_SER, g.type || 'Series', [
         ...g.groups.map(([l, xs]) => [`${esc(l)}${cnt(xs)}`, rl(xs), 'wide']),
-        [`Alias${g.aliases.length > 1 ? 'es' : ''}`, g.aliases.length && aliasList(g.aliases), 'wide'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
     ]);

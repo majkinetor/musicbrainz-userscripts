@@ -55,6 +55,12 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   await inject('apollo_editor');
   await page.waitForSelector('.tabs .tc-al-pill', { timeout: 30000 });
   check('the Aliases tab counts them', await page.textContent('.tabs .tc-al-pill'), '1');
+  // the aliases list is taken over too
+  await page.goto(`${SANDBOX}/artist/${mbid}/aliases`, { waitUntil: 'domcontentloaded' });
+  await inject('apollo_editor');
+  await page.waitForSelector('#tc-alias tbody tr', { timeout: 30000 });
+  check('the list page has the editor, with the alias', (await rows(page)).filter(r => r.name).map(r => r.name), ['Alpha Person']);
+  check('MusicBrainz\'s table is hidden', await page.$eval('#content table.tbl', t => t.style.display), 'none');
 
   // a release crediting the artist under another name: the name is offered from the credits, and
   // the release page shows the artist's alias after it
