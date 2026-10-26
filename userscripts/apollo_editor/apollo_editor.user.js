@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.195557
+// @version      2026.10.26.203216
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15834,7 +15834,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span><span style="flex:1"></span>'
       + '<label>Locale for new rows <select class="tc-al-defloc"></select></label>'
       + '<button type="button" class="tc-al-guessall" title="Guess the sort name of every new row">Guess sort names</button>'
-      + '<button type="button" class="tc-al-add">Add row</button></div>'
+      + (ent === 'artist' ? '<button type="button" class="tc-al-cred" title="The names this artist is credited as on recordings">From artist credits</button>' : '')
+      + '<button type="button" class="tc-al-add">Add row</button></div><div class="tc-al-src" hidden></div>'
       + '<table class="tc-al-tbl"><thead><tr><th>Alias</th><th>Sort name</th><th></th><th>Locale</th><th title="Primary for its locale">Primary</th><th>Type</th><th>Begin</th><th>End</th><th></th></tr></thead><tbody></tbody></table>'
       + '<details class="tc-al-paste"><summary>Paste lines</summary><textarea rows="5" placeholder="name | sort name | locale | type   (one alias per line; only the name is needed)"></textarea><button type="button">Add lines</button></details>'
       + '<label class="tc-al-notel">Edit note<textarea class="tc-al-note" rows="3"></textarea></label>'
@@ -15869,6 +15870,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       return r;
     };
     const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc != null ? loc : defloc.value, primary: false, type: typ || '', begin: '', end: '' });
+    const credBtn = box.querySelector('.tc-al-cred');
+    if (credBtn) credBtn.onclick = async () => {
+      const src = box.querySelector('.tc-al-src');
+      if (!src.hidden) { src.hidden = true; return; }
+      credBtn.disabled = true; src.hidden = false; src.textContent = 'Reading the artist credits\u2026';
+      try {
+        const names = await aliasCreditNames(gid), own = document.querySelector('.artistheader h1 a, h1 a')?.textContent.trim();
+        src.innerHTML = '<b>From artist credits</b> ';
+        const fresh = names.filter(([n]) => n !== own);
+        if (!fresh.length) src.append('no credited name differs from the artist\'s');
+        for (const [n, c] of fresh) {
+          const has = rows.some(r => r.name.trim() === n);
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-al-chip'; b.disabled = has;
+          b.textContent = n + ' '; const pill = document.createElement('span'); pill.className = 'tc-al-pill'; pill.textContent = c; b.appendChild(pill);
+          b.title = has ? 'Already an alias or a row' : c + ' recording' + (c === 1 ? '' : 's') + '; click to add a row';
+          b.onclick = () => { addRow(blank(n)); b.disabled = true; sync(); };
+          src.appendChild(b);
+        }
+        Log.cat('Alias').info('credited names:', names.length);
+      } catch (e) { src.textContent = 'Could not read the artist credits'; Log.cat('Alias').warn('artist credits failed', e.message); }
+      credBtn.disabled = false;
+    };
     box.querySelector('.tc-al-add').onclick = () => { addRow(blank()); sync(); rows[rows.length - 1].tr.querySelector('.tc-al-n').focus(); };
     box.querySelector('.tc-al-guessall').onclick = () => { for (const r of rows) if (!r.id && r.name.trim() && !r.sort.trim()) { r.tr.querySelector('.tc-al-s').value = r.sort = guess(r.name.trim()); } sync(); };
     // a pasted locale or type matches by code or by the name MusicBrainz shows, either case
@@ -15916,6 +15939,54 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     sync();
   }
 
+  // #849 the alias count in an entity's Aliases tab, from one ws/2 lookup
+  async function aliasTabBadge() {
+    if (!aliasWant()) return;
+    const m = location.pathname.match(/^\/(artist|label|place|work|recording|event|series|release|release-group|area|instrument|genre)\/([0-9a-f-]{36})/i); if (!m) return;
+    const a = document.querySelector('.tabs a[href$="/' + m[2] + '/aliases"]'); if (!a || a.querySelector('.tc-al-pill')) return;
+    try {
+      const j = await (await mbWebFetch(`${ORIGIN}/ws/2/${m[1]}/${m[2]}?inc=aliases&fmt=json`)).json();
+      const n = (j && j.aliases || []).length; if (!n) return;
+      aliasStyle(); const p = document.createElement('span'); p.className = 'tc-al-pill'; p.textContent = n; a.appendChild(p);
+    } catch (e) { Log.cat('Alias').debug('alias count failed', e.message); }
+  }
+
+  // #849 on a release's own page, each credited artist's aliases after its name: two, then +N to the
+  // artist's aliases, from the release's one ws/2 lookup
+  async function releaseArtistAliases() {
+    if (!aliasWant()) return;
+    const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i); if (!m) return;
+    const links = [...document.querySelectorAll('.releaseheader .subheader a[href*="/artist/"]')]; if (!links.length) return;
+    try {
+      const j = await (await mbWebFetch(`${ORIGIN}/ws/2/release/${m[1]}?inc=artist-credits+aliases&fmt=json`)).json();
+      aliasStyle();
+      for (const c of (j && j['artist-credit']) || []) {
+        const art = c.artist; if (!art) continue;
+        const names = [...new Set((art.aliases || []).map(x => x.name).filter(x => x !== art.name && x !== c.name))]; if (!names.length) continue;
+        for (const a of links) {
+          if (!a.getAttribute('href').includes(art.id) || a.nextElementSibling?.classList.contains('tc-al-inl')) continue;
+          const s = document.createElement('span'); s.className = 'tc-al-inl';
+          s.append(' (' + names.slice(0, 2).join(', '));
+          if (names.length > 2) { const more = document.createElement('a'); more.className = 'tc-al-pill'; more.href = '/artist/' + art.id + '/aliases'; more.textContent = '+' + (names.length - 2); more.title = names.slice(2).join(', '); s.append(' ', more); }
+          s.append(')'); a.after(s);
+        }
+      }
+    } catch (e) { Log.cat('Alias').debug('release artist aliases failed', e.message); }
+  }
+
+  // #849 the names an artist is credited as on recordings (up to 500), with how many each, for the
+  // alias table's "From artist credits"
+  async function aliasCreditNames(gid) {
+    const seen = new Map();
+    for (let off = 0; off < 500; off += 100) {
+      const j = await (await mbWebFetch(`${ORIGIN}/ws/2/recording?artist=${gid}&inc=artist-credits&limit=100&offset=${off}&fmt=json`)).json();
+      const recs = (j && j.recordings) || [];
+      for (const r of recs) for (const c of r['artist-credit'] || []) if (c.artist && c.artist.id === gid && c.name) seen.set(c.name, (seen.get(c.name) || 0) + 1);
+      if (recs.length < 100 || off + 100 >= (j['recording-count'] || 0)) break;
+    }
+    return [...seen].sort((a, b) => b[1] - a[1]);
+  }
+
   function aliasStyle() {
     if (document.getElementById('tc-alias-style')) return;
     const s = document.createElement('style'); s.id = 'tc-alias-style';
@@ -15939,7 +16010,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-paste{margin-top:8px}
     #tc-alias .tc-al-paste button{margin-top:4px}
     #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}
-    #tc-alias .tc-al-go:disabled{opacity:.5}`;
+    #tc-alias .tc-al-go:disabled{opacity:.5}
+    #tc-alias .tc-al-src{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0 8px}
+    #tc-alias .tc-al-chip{padding:2px 6px}
+    .tc-al-pill{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;background:var(--mbu-border);color:var(--mbu-text);font-size:11px;font-weight:600;line-height:16px;text-decoration:none}
+    .tc-al-inl{color:var(--mbu-text-weak, #666)}`;
     document.head.appendChild(s);
   }
 
@@ -15955,7 +16030,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     if (ALIAS_PAGE_RE.test(location.pathname)) {   // #849 the bulk alias editor
       await whenDomReady(); await waitFor(() => document.querySelector('input[name="edit-alias.name"]'), { tries: 40, every: 250 });
-      applyAliasPage().catch(e => Log.cat('Alias').err('alias editor failed', e.message));
+      applyAliasPage().catch(e => Log.cat('Alias').err('alias editor failed', e.message)); aliasTabBadge();
       return;
     }
     if (ENT_KIND) {   // #842 #843
@@ -15967,7 +16042,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path
     if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { whenDomReady().then(() => { ensureDiscIdUi(); autoPickAttachMedium(); }); }
-    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { mountArchiveMenus(); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
+    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { mountArchiveMenus(); whenDomReady().then(() => { aliasTabBadge(); releaseArtistAliases(); }); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)

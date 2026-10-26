@@ -51,4 +51,22 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
 
   await open(page, inject, mbid);
   check('one alias left, with the new sort name', (await rows(page)).filter(r => r.name).map(r => [r.name, r.sort]), [['Alpha Person', 'Alpha, Person']]);
+  await page.goto(`${SANDBOX}/artist/${mbid}`, { waitUntil: 'domcontentloaded' });
+  await inject('apollo_editor');
+  await page.waitForSelector('.tabs .tc-al-pill', { timeout: 30000 });
+  check('the Aliases tab counts them', await page.textContent('.tabs .tc-al-pill'), '1');
+
+  // a release crediting the artist under another name: the name is offered from the credits, and
+  // the release page shows the artist's alias after it
+  const rel = await pristine(page, 'release', { 'artist_credit.names.0.mbid': mbid, 'artist_credit.names.0.name': 'Credited Otherwise' });
+  await open(page, inject, mbid);
+  await page.click('#tc-alias .tc-al-cred');
+  const chip = page.locator('#tc-alias .tc-al-chip', { hasText: 'Credited Otherwise' });
+  await chip.waitFor({ timeout: 60000 });
+  await chip.click();
+  check('a credited name becomes a new row', (await rows(page)).filter(r => r.cls === 'tc-al-new').map(r => r.name), ['Credited Otherwise']);
+  await page.goto(`${SANDBOX}/release/${rel.mbid}`, { waitUntil: 'domcontentloaded' });
+  await inject('apollo_editor');
+  await page.waitForSelector('.releaseheader .tc-al-inl', { timeout: 30000 });
+  check('the release shows the artist\'s alias', (await page.textContent('.releaseheader .tc-al-inl')).trim(), '(Alpha Person)');
 });

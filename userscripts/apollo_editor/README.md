@@ -70,8 +70,14 @@ An entity's **Add alias** page becomes a table of all its aliases, so several ar
 - **Add row** adds an empty row in the **Locale for new rows**, which Apollo remembers.
 - **Paste lines** adds a row for each line, written as `name | sort name | locale | type`; only the name is needed. The locale and type can be the code (`ja`) or the name MusicBrainz shows (*Japanese*).
 - **Guess sort names** fills every new row whose sort name is empty.
+- **From artist credits** (on an artist) lists the names the artist is credited as on recordings, each with how many; click one to add it as a row.
 - A new row is green, a changed one yellow, and a removed one red; **↺** brings a removed alias back.
 - **Submit** enters one edit per green, yellow or red row, all with the same edit note. A row that fails turns red underneath, and hovering it shows MusicBrainz's reason.
+
+Elsewhere:
+
+- An entity's **Aliases** tab shows how many aliases it has.
+- On a release's page, each credited artist's aliases follow its name: two of them, then **+N** for the rest, which opens the artist's aliases.
 
 ## Tracklist
 
