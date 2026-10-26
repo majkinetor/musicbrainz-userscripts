@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.104053
+// @version      2026.10.27.520100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2508,6 +2508,24 @@ async function ws(path) {
     if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
     return r.json();
 }
+// a release subpage's header release (title, credits, formats), kept for the next visit: `cb` gets the kept copy at once,
+// then MusicBrainz's when it differs; a copy under a minute old is not asked again. The 50 last-seen releases are kept
+const HD_KEY = 'eh.relhd', HD_TTL = 60000;
+function relHd(id, cb) {
+    let all = {}; try { all = JSON.parse(localStorage.getItem(HD_KEY) || '{}') || {}; } catch (e) { /* storage blocked */ }
+    const c = all[id];
+    if (c && c.r) { cb(c.r); if (Date.now() - c.at < HD_TTL) return Promise.resolve(); }
+    // the release group's release count rides along (r.rgCount), for the count beside its link
+    return ws('release/' + id + '?inc=artist-credits+media+release-groups').then(r => !r['release-group'] ? r
+        : ws('release?release-group=' + r['release-group'].id + '&limit=1').then(x => Object.assign(r, { rgCount: x['release-count'] || 0 }), () => r)).then(r => {
+        try {
+            all = JSON.parse(localStorage.getItem(HD_KEY) || '{}') || {}; all[id] = { at: Date.now(), r };
+            Object.keys(all).sort((a, b) => all[b].at - all[a].at).slice(50).forEach(k => delete all[k]);
+            localStorage.setItem(HD_KEY, JSON.stringify(all));
+        } catch (e) { /* full or blocked: the next visit just fetches again */ }
+        if (!c || JSON.stringify(c.r) !== JSON.stringify(r)) cb(r);
+    }, e => { if (!c) throw e; LOG.debug('Header: kept copy stays, ' + e.message); });
+}
 // ISO codes by their English names (eng → English, Latn → Latin); an unknown code stays as it is
 const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en'], { type, fallback: 'code' }).of(code); } catch (e) { return code; } };
 async function caa(id) {
@@ -4473,7 +4491,7 @@ function subHead(r, id, tab, name, none) {
     const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
 }
 // a release without a front cover drops the header's image
 const cvWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; LOG.debug('Header: no front cover'); }; };
@@ -4492,7 +4510,7 @@ async function artLoad(n, id) {
     // Art Station mounts after it reads the release's art: the slot waits for it beside the release's fetch, its note hidden until 20 s pass without it
     const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); else { const m = $('#as-slot .as-none'); if (m) m.hidden = false; } };
     wait();
-    try { const r = await ws('release/' + id + '?inc=artist-credits+media+release-groups'); if (n === showing) { data.rel = r; render(); } }
+    try { await relHd(id, r => { if (n === showing) { data.rel = r; render(); } }); }
     catch (e) { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
 }
 
@@ -4565,7 +4583,7 @@ function relHeader(id) {
     const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
     const draw = r => { hd.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); cvWire(hd); };
     draw(null);
-    Promise.resolve().then(() => ws('release/' + id + '?inc=artist-credits+media+release-groups')).then(r => r && r.id && draw(r)).catch(e => LOG.warn('Relate header: ' + e));
+    Promise.resolve().then(() => relHd(id, r => r && r.id && draw(r))).catch(e => LOG.warn('Relate header: ' + e));
     hd.addEventListener('click', e => {
         const b = e.target.closest('[data-srch]'); if (!b) return;
         e.preventDefault(); const s = b.closest('.srch'); s.classList.toggle('open'); const q = s.querySelector('input'); if (q && s.classList.contains('open')) q.focus();
@@ -4733,7 +4751,7 @@ async function histLoad(n, all) {
     const d = data; if (d.busy || !d.more) return;
     d.busy = true; render();
     // the header's release loads beside the edits, not after them
-    const relGet = () => { if (!d.rel && !d.relAsk && histRid(d.id)) { d.relAsk = true; ws('release/' + histRid(d.id) + '?inc=artist-credits+media+release-groups').then(r => { if (data === d) { d.rel = r; render(); } }, () => { d.relAsk = false; }); } };
+    const relGet = () => { if (!d.rel && !d.relAsk && histRid(d.id)) { d.relAsk = true; relHd(histRid(d.id), r => { if (data === d) { d.rel = r; render(); } }).catch(() => { d.relAsk = false; }); } };
     relGet();
     const target = d.edits.length + H_MIN;
     LOG.info(`History ${d.id}: loading ${all ? 'every page' : 'more'} from page ${d.page + 1}`);
