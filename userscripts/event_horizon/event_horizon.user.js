@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.490000
+// @version      2026.10.27.500000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4776,7 +4776,7 @@ function histRuns(es) {
     return (g ? `<div class="hshr">${histNote(g)}</div>` : '') + runs.map(r => {
         if (r.length === 1) return histEdit(r[0], gk);
         const s = !g && histShared(r), k = gk || (s && hnKey(s));
-        return `<details class="hrun"><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}${s ? `<span class="hnc" data-tip="1 edit note, on every edit">💬 1</span><span class="hnp">${esc(s.text.slice(0, 140))}</span>` : ''}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
+        return `<details class="hrun"><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}${s || g ? `<span class="hnc" data-tip="1 edit note, on every edit">💬 1</span><span class="hnp">${esc((s || g).text.slice(0, 140))}</span>` : ''}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
     }).join('');
 }
 function histGroup(key, title, es, av, nm) {
