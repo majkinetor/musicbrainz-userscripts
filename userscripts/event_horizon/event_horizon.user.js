@@ -2799,7 +2799,7 @@ function under(r, more = '') {
 }
 const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
 // the release group's link after the release's title: its layers and how many editions it has, muted
-const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + (data.edCount === 1 ? ' release' : ' releases') : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
+const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
 // no front cover (none on the CAA, or it failed to load): the format's mark, a word, and a way to add one
 const relNoCover = (r, fk) => `<div class="nocover rnc">${fmtSvg(fk, 96, 1.4)}<small>No cover art</small><a class="rnc-add" href="${MB}/release/${r.id}/add-cover-art">+ Add cover art</a></div>`;
 function hero(r) {
@@ -4488,7 +4488,7 @@ function subHead(r, id, tab, name, none) {
     const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + (r.rgCount === 1 ? ' release' : ' releases') : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
 }
 // a release without a front cover drops the header's image
 const cvWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; LOG.debug('Header: no front cover'); }; };
