@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.600100
+// @version      2026.10.27.600200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3707,16 +3707,35 @@ function insHero(d) {
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], '', pic);
 }
-// a table per subpage, as MusicBrainz shows its first page
-function tabSect(sid, name, x, href) {
+// a table per subpage, as MusicBrainz shows its first page; with cv ("release-group", "release" or "event"), each row
+// leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
+const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
+function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
     if (!rs.length) return '';
     // a column empty in every row goes
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = x.head.map((_, i) => rs.some(r => txt(r[i])));
     const head = x.head.filter((_, i) => on[i]), n = rs.length, cnt = x.more ? `${n}+` : n;
-    const tr = r => Array.isArray(r) ? `<tr>${r.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${head.length}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
+    const cvRe = cv && new RegExp('href="[^"]*/' + cv + '/(' + MBID.source + ')"', 'i');
+    const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${ART_URL[cv]}${m[1]}/front-250" alt="" loading="lazy" data-dgcover></a></td>` : '<td class="tc"></td>'; };
+    const srt = !x.rows.some(r => !Array.isArray(r) && r), hb = (h, i) => srt && h ? `<th aria-sort="none"><button type="button" class="dg-sort" data-tsort="${i}" data-tip="Sort by ${h.toLowerCase()}">${h}<i>↕</i></button></th>` : `<th>${h}</th>`;
+    if (cv) head.unshift('');
+    let ri = 0;
+    const tr = r => Array.isArray(r) ? `<tr data-ri="${ri++}">${cvTd(r)}${r.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${head.length}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
     const more = x.more ? `<div class="folded-note">The first ${n}. <button class="lnk" type="button" data-mbgo="${href}">All on MusicBrainz's page</button></div>` : '';
-    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${x.rows.map(tr).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(hb).join('')}</tr></thead><tbody>${x.rows.map(tr).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
+}
+// a click on a heading of a subpage's table sorts its rows by that column, a second turns them round, a third
+// brings back MusicBrainz's order; it sorts the rows in place, so it lasts until the page is drawn again
+function tabSort(b) {
+    const th = b.closest('th'), t = b.closest('table'), tb = t.tBodies[0], i = [...th.parentNode.children].indexOf(th);
+    const st = th.getAttribute('aria-sort'), next = st === 'none' ? 'ascending' : st === 'ascending' ? 'descending' : 'none';
+    for (const h of t.querySelectorAll('thead th[aria-sort]')) { h.setAttribute('aria-sort', 'none'); h.querySelector('.dg-sort').classList.remove('on'); h.querySelector('i').textContent = '↕'; }
+    th.setAttribute('aria-sort', next);
+    if (next !== 'none') { b.classList.add('on'); b.querySelector('i').textContent = next === 'ascending' ? '↑' : '↓'; }
+    const v = r => { const c = r.children[i], s = c ? c.textContent.trim() : ''; return s === '—' ? '' : s; }, dir = next === 'descending' ? -1 : 1;
+    const rows = [...tb.rows].sort((a, z) => next === 'none' ? a.dataset.ri - z.dataset.ri : (!v(a) - !v(z)) || dir * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }) || a.dataset.ri - z.dataset.ri);
+    tb.append(...rows);
 }
 function insList(d, i) {
     const [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
@@ -3876,7 +3895,9 @@ function serHero(d) {
         ['', g.links.length && rlQuiet(g), 'wide'],
     ]);
 }
-const serParts = d => tabSect('sp', serPartsName(d), d.listsX && d.listsX[0], `${MB}/series/${d.id}`);
+// the parts of a release group, release or event series lead with their covers
+const SER_CV = { 'Release groups': 'release-group', Episodes: 'release-group', Releases: 'release', Events: 'event' };
+const serParts = d => tabSect('sp', serPartsName(d), d.listsX && d.listsX[0], `${MB}/series/${d.id}`, SER_CV[serPartsName(d)]);
 // its events by date, from ws/2
 function placeEvents(d) {
     const x = d.listsX && d.listsX[0], xs = x && [...(x.events || [])].sort((a, b) => ((a['life-span'] || {}).begin || '9').localeCompare((b['life-span'] || {}).begin || '9'));
@@ -4528,6 +4549,7 @@ function onClick(ev) {
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
+    if (d.tsort) { tabSort(b); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }

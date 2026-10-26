@@ -58,6 +58,16 @@ test('a series page shows its type and its parts as a table', { tag: '@sandbox' 
   check(await until(() => page.locator('#app .sec.pend').count(), n => n === 0) === 0, 'every section has loaded');
   check(/release groups/i.test(await page.locator('#s-sp').innerText()), 'the parts are named after the type');
   check(await page.locator('#s-sp tbody tr').count() > 5, 'the parts table fills in');
+  check(await page.locator('#s-sp tbody tr td.tc img[src*="coverartarchive.org/release-group/"]').count() > 5, 'each part leads with its cover');
+  const first = () => page.locator('#s-sp tbody tr td:nth-child(4)').first().innerText();
+  const before = await first();
+  await page.locator('#s-sp thead button[data-tsort]').filter({ hasText: /title/i }).click();
+  await page.locator('#s-sp thead button[data-tsort]').filter({ hasText: /title/i }).click();
+  check(await page.locator('#s-sp thead th[aria-sort="descending"]').count() === 1, 'a second click sorts the other way');
+  const titles = await page.locator('#s-sp tbody tr td:nth-child(4)').allInnerTexts();
+  check(titles.every((t, i) => !i || titles[i - 1].localeCompare(t, undefined, { sensitivity: 'base', numeric: true }) >= 0), 'the rows are sorted by title, descending');
+  await page.locator('#s-sp thead button[data-tsort]').filter({ hasText: /title/i }).click();
+  check(await first() === before, "a third click brings back MusicBrainz's order");
   await attachShot(testInfo, page, 'series');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-series.png'), fullPage: true });
 });
