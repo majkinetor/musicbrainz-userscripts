@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.420000
+// @version      2026.10.27.430000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4475,18 +4475,20 @@ const cvWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = (
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`); cvWire(app.querySelector('.arthd'));
+    const mh = !r && mbBody && mbBody.querySelector('.releaseheader'), mt = mh && mh.querySelector('h1 a'), ma = mh ? [...mh.querySelectorAll('.subheader a[href*="/artist/"]')] : [];
+    const early = mt ? `<h1><a href="${MB}/release/${d.id}">${esc(mt.textContent)}</a></h1>${ma.length ? `<div class="by">by ${ma.map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ')}</div>` : ''}` : '';
+    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', d.err ? `<h1>${esc(d.err)}</h1>` : early || '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
     if (as) slot.append(as);
-    else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none">Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
+    else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none" hidden>Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
     const mb = slot.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
 }
 async function artLoad(n, id) {
+    // Art Station mounts after it reads the release's art: the slot waits for it beside the release's fetch, its note hidden until 20 s pass without it
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); else { const m = $('#as-slot .as-none'); if (m) m.hidden = false; } };
+    wait();
     try { const r = await ws('release/' + id + '?inc=artist-credits+media+release-groups'); if (n === showing) { data.rel = r; render(); } }
     catch (e) { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
-    // Art Station mounts after it reads the release's art: until then the slot waits for it
-    const t0 = Date.now(), wait = () => { if (n !== showing) return; const s = $('#as-slot'); if (s && s.querySelector('#as-root')) { const m = s.querySelector('.as-none'); if (m) m.remove(); return; } if (mbBody && mbBody.querySelector('#as-root')) { render(); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
-    if (!$('#as-slot .as-none')) wait(); else { const m = $('#as-slot .as-none'); m.hidden = true; setTimeout(() => { if (m.isConnected) m.hidden = false; }, 20000); wait(); }
 }
 
 /* ── relationship editor ───────────────────────────── */
