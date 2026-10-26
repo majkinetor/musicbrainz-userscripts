@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.600500
+// @version      2026.10.27.600501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2317,6 +2317,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .slot.off{opacity:0;pointer-events:none}
 .more{height:calc(var(--pl-size,22px) + 4px);min-width:34px;padding:0 8px;border-radius:8px;border:1px dashed var(--border);background:none;font-weight:700;font-size:12px;color:var(--soft);cursor:pointer}
 .more:hover{border-color:var(--accent);color:var(--text)}
+.lm{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px}.lm-auto{display:inline-flex;align-items:center;gap:5px;cursor:pointer;user-select:none}.lm-auto input{margin:0;accent-color:var(--accent)}
 .more.ph{visibility:hidden}
 .detail{position:relative;padding:6px 16px 20px 60px;font-size:14px;background:var(--hover)}
 .detail .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 48px;padding-right:44px}
@@ -2472,7 +2473,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2484,7 +2485,7 @@ const S = {
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
-    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
+    fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
     fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
@@ -2929,7 +2930,7 @@ const lost = (id, title) => `<section class="sec" id="s-${id}"><div class="secth
 function edHtml(r, eds, count) {
     if (eds.length < (r.id ? 2 : 1)) return '';
     const view = r.id ? S.edView : S.rgView;
-    // a label's or group's releases past the first 100 load as the list is scrolled; they come in MusicBrainz's
+    // a label's or group's releases past the first 100 load with "Load more" (lmFoot); they come in MusicBrainz's
     // order, so the list keeps it (sorting would reshuffle what is already on screen)
     const paged = !r.id && count > eds.length;
     const all = paged ? [...eds] : [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
@@ -2952,7 +2953,7 @@ function edHtml(r, eds, count) {
         }).join('')}</div>`;
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
-    const more = paged ? `<div class="folded-note ed-more" data-edmore>${all.length} of ${count}${data.edMoreErr ? '. MusicBrainz didn\'t answer. <button class="lnk" type="button" data-edretry>Try again</button>' : ', more as you scroll'}. ${go}</div>` : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
+    const more = paged ? lmFoot('ed', all.length, count, go) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
     return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, '', filters + body + more, folded);
 }
 
@@ -3616,11 +3617,13 @@ function areaList(d, i) {
         ['al', 'Labels', 'labels', 'labels', ['Name', 'Type', 'Label code'], e => [esc(e.type || ''), e['label-code'] ? 'LC-' + String(e['label-code']).padStart(5, '0') : '']],
         ['ap', 'Places', 'places', 'places', ['Name', 'Type', 'Address'], e => [esc(e.type || ''), esc(e.address || '')]],
     ][i];
-    const kind = ['artist', 'label', 'place'][i], xs = x && [...(x[key] || [])].sort((a, b) => (a['sort-name'] || a.name).localeCompare(b['sort-name'] || b.name));
-    if (!xs || !xs.length) return '';
-    const total = x[kind + '-count'] || xs.length;
+    const kind = ['artist', 'label', 'place'][i], all = x && (x[key] || []);
+    if (!all || !all.length) return '';
+    // by name once all are in; while more can come, in MusicBrainz's order, so a page loaded doesn't reshuffle the list
+    const total = x[kind + '-count'] || all.length, xs = total > all.length ? all : [...all].sort((a, b) => (a['sort-name'] || a.name).localeCompare(b['sort-name'] || b.name));
+    WSX[sid] = { x, key, q: `${kind}?area=${d.id}&limit=100` };
     const row = e => `<tr><td>${entA(kind, e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}</td>${cells(e).map((c, j) => `<td${j ? ' class="mono"' : ''}>${c || '—'}</td>`).join('')}</tr>`;
-    const more = total > xs.length ? `<div class="folded-note">The first ${xs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/area/${d.id}/${page}">All on MusicBrainz's page</button></div>` : '';
+    const more = total > xs.length ? lmFoot('ws:' + sid, xs.length, total, `<button class="lnk" type="button" data-mbgo="${MB}/area/${d.id}/${page}">All on MusicBrainz's page</button>`) : '';
     return sect(sid, `${name} <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} ${name.toLowerCase()}</div>`);
 }
 /* ── instrument ──────────────────────────────────── */
@@ -3660,13 +3663,13 @@ function instrument(a) {
     };
 }
 // one of MusicBrainz's subpages (an instrument's or a place's tab): its table as headings and rows, without the merge checkboxes and the ratings
-async function mbTab(type, id, sub) {
-    const t0 = performance.now(), r = await mbnFetch(`${MB}/${type}/${id}${sub ? '/' + sub : ''}`);
+async function mbTab(type, id, sub, page = 1) {
+    const t0 = performance.now(), r = await mbnFetch(`${MB}/${type}/${id}${sub ? '/' + sub : ''}${page > 1 ? '?page=' + page : ''}`);
     fetchLog(`${type}/${id}/${sub}`, t0, r);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = new DOMParser().parseFromString(await r.text(), 'text/html'), t = d.querySelector('#content table.tbl');
-    const more = !!d.querySelector('#content ul.pagination'), h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
-    if (!t) return { head: [], rows: [], more, name };
+    const more = [...d.querySelectorAll('#content ul.pagination a[href]')].some(a => { const m = /[?&]page=(\d+)/.exec(a.getAttribute('href')); return m && +m[1] > page; }), src = [type, id, sub], h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
+    if (!t) return { head: [], rows: [], more, name, src, page };
     const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && !th.classList.contains('rating') && !th.classList.contains('checkbox-cell'));
     const cell = td => {
         for (const e of td.querySelectorAll('input, .inline-rating, script')) e.remove();
@@ -3675,7 +3678,7 @@ async function mbTab(type, id, sub) {
     };
     // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
     const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
-    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(row), more, name };
+    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(row), more, name, src, page };
 }
 // the page shows as soon as either the instrument or its lists are in: lists first give a page
 // named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
@@ -3710,32 +3713,25 @@ function insHero(d) {
 // a table per subpage, as MusicBrainz shows its first page; with cv ("release-group", "release" or "event"), each row
 // leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
 const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
+const TSORT = {}, TABX = {};
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
     if (!rs.length) return '';
+    TABX[sid] = x;
     // a column empty in every row goes
-    const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = x.head.map((_, i) => rs.some(r => txt(r[i])));
-    const head = x.head.filter((_, i) => on[i]), n = rs.length, cnt = x.more ? `${n}+` : n;
+    const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), cols = x.head.map((_, i) => i).filter(i => rs.some(r => txt(r[i])));
+    const n = rs.length, cnt = x.more ? `${n}+` : n, span = cols.length + (cv ? 1 : 0);
     const cvRe = cv && new RegExp('href="[^"]*/' + cv + '/(' + MBID.source + ')"', 'i');
     const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${ART_URL[cv]}${m[1]}/front-250" alt="" loading="lazy" data-dgcover></a></td>` : '<td class="tc"></td>'; };
-    const srt = !x.rows.some(r => !Array.isArray(r) && r), hb = (h, i) => srt && h ? `<th aria-sort="none"><button type="button" class="dg-sort" data-tsort="${i}" data-tip="Sort by ${h.toLowerCase()}">${h}<i>↕</i></button></th>` : `<th>${h}</th>`;
-    if (cv) head.unshift('');
-    let ri = 0;
-    const tr = r => Array.isArray(r) ? `<tr data-ri="${ri++}">${cvTd(r)}${r.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${head.length}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
-    const more = x.more ? `<div class="folded-note">The first ${n}. <button class="lnk" type="button" data-mbgo="${href}">All on MusicBrainz's page</button></div>` : '';
-    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${head.map(hb).join('')}</tr></thead><tbody>${x.rows.map(tr).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
-}
-// a click on a heading of a subpage's table sorts its rows by that column, a second turns them round, a third
-// brings back MusicBrainz's order; it sorts the rows in place, so it lasts until the page is drawn again
-function tabSort(b) {
-    const th = b.closest('th'), t = b.closest('table'), tb = t.tBodies[0], i = [...th.parentNode.children].indexOf(th);
-    const st = th.getAttribute('aria-sort'), next = st === 'none' ? 'ascending' : st === 'ascending' ? 'descending' : 'none';
-    for (const h of t.querySelectorAll('thead th[aria-sort]')) { h.setAttribute('aria-sort', 'none'); h.querySelector('.dg-sort').classList.remove('on'); h.querySelector('i').textContent = '↕'; }
-    th.setAttribute('aria-sort', next);
-    if (next !== 'none') { b.classList.add('on'); b.querySelector('i').textContent = next === 'ascending' ? '↑' : '↓'; }
-    const v = r => { const c = r.children[i], s = c ? c.textContent.trim() : ''; return s === '—' ? '' : s; }, dir = next === 'descending' ? -1 : 1;
-    const rows = [...tb.rows].sort((a, z) => next === 'none' ? a.dataset.ri - z.dataset.ri : (!v(a) - !v(z)) || dir * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }) || a.dataset.ri - z.dataset.ri);
-    tb.append(...rows);
+    // a click on a heading sorts the rows by that column, a second turns them round, a third brings back MusicBrainz's order;
+    // a table with group rows inside keeps MusicBrainz's order
+    const srt = !x.rows.some(r => !Array.isArray(r) && r), [si, sd] = srt && TSORT[sid] || [];
+    const hb = i => { const h = x.head[i], st = si === i ? sd : 0; return srt && h ? `<th aria-sort="${st > 0 ? 'ascending' : st < 0 ? 'descending' : 'none'}"><button type="button" class="dg-sort${st ? ' on' : ''}" data-tsort="${i}" data-tip="${st < 0 ? 'Back to MusicBrainz\'s order' : 'Sort by ' + txt(h).toLowerCase()}">${h}<i>${st > 0 ? '↑' : st < 0 ? '↓' : '↕'}</i></button></th>` : `<th>${h}</th>`; };
+    const v = r => { const t = txt(r[si]); return t === '—' ? '' : t; };
+    const rows = si == null ? x.rows : [...x.rows].sort((a, z) => (!v(a) - !v(z)) || sd * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }));
+    const tr = r => Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map(i => `<td>${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
+    const more = x.more ? lmFoot('tab:' + sid, n, 0, `<button class="lnk" type="button" data-mbgo="${href}">All on MusicBrainz's page</button>`) : '';
+    return sect(sid, `${name} <span class="count">${cnt}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${rows.map(tr).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
 }
 function insList(d, i) {
     const [sid, name, sub] = [['ia', 'Artists', 'artists'], ['ir', 'Releases', 'releases'], ['ic', 'Recordings', 'recordings']][i];
@@ -3903,9 +3899,10 @@ function placeEvents(d) {
     const x = d.listsX && d.listsX[0], xs = x && [...(x.events || [])].sort((a, b) => ((a['life-span'] || {}).begin || '9').localeCompare((b['life-span'] || {}).begin || '9'));
     if (!xs || !xs.length) return '';
     const total = x['event-count'] || xs.length;
+    WSX.pe = { x, key: 'events', q: `event?place=${d.id}&limit=100` };
     const when = e => { const ls = e['life-span'] || {}; return ls.begin ? fdate(ls.begin) + (ls.end && ls.end !== ls.begin ? ' – ' + fdate(ls.end) : '') : ''; };
     const row = e => `<tr><td>${entA('event', e.id, e.name)}${e.disambiguation ? ` <span class="sub">(${esc(e.disambiguation)})</span>` : ''}${e.cancelled ? ' <span class="sub">· cancelled</span>' : ''}</td><td>${esc(e.type || '') || '—'}</td><td class="mono">${when(e) || '—'}</td><td class="mono">${esc(e.time || '') || '—'}</td></tr>`;
-    const more = total > xs.length ? `<div class="folded-note">The first ${xs.length} of ${total}. <button class="lnk" type="button" data-mbgo="${MB}/place/${d.id}/events">All on MusicBrainz's page</button></div>` : '';
+    const more = total > xs.length ? lmFoot('ws:pe', xs.length, total, `<button class="lnk" type="button" data-mbgo="${MB}/place/${d.id}/events">All on MusicBrainz's page</button>`) : '';
     return sect('pe', `Events <span class="count">${total}</span>`, '', `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Time</th></tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${more}`, `<div class="folded-note">${total} event${total === 1 ? '' : 's'}</div>`);
 }
 /* ── filter bar ──────────────────────────────────── */
@@ -4040,7 +4037,7 @@ function render(keepPop) {
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
-    if (FLT.of !== r.id) { FLT.of = r.id; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
+    if (FLT.of !== r.id) { FLT.of = r.id; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
     document.title = titleOf(data);
@@ -4107,35 +4104,62 @@ function render(keepPop) {
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     secRail(app);
     fitQuiet();
-    edWatch(app);
+    lmWatch(app);
     save();
 }
-// the paged list's foot: when it nears the view, the next 100 releases load
-let edIO = null, edBusy = false;
-function edWatch(app) {
-    if (edIO) edIO.disconnect();
-    const foot = app.querySelector('[data-edmore]');
-    const retry = app.querySelector('[data-edretry]');
-    if (retry) retry.onclick = () => { data.edMoreErr = false; render(); };
-    if (!foot || data.edMoreErr || !window.IntersectionObserver) return;
-    edIO = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) edMore(); }, { rootMargin: '800px 0px' });
-    edIO.observe(foot);
+// a paged list's foot (#845): how many are in, "Load more", and Auto, which loads the next page as the foot nears the view;
+// one setting for every list. k names the list: 'ed' the releases, 'tab:<section>' a MusicBrainz table, 'ws:<section>' a ws/2 list
+const LM_ERR = new Set(), LM_BUSY = new Set(), WSX = {};
+const lmFoot = (k, n, total, go) => `<div class="folded-note lm" data-lm="${k}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label>${go || ''}</div>`;
+let lmIO = null;
+function lmWatch(app) {
+    if (lmIO) { lmIO.disconnect(); lmIO = null; }
+    if (!S.lmAuto || !window.IntersectionObserver) return;
+    const feet = [...app.querySelectorAll('[data-lm]')].filter(f => !LM_ERR.has(f.dataset.lm));
+    if (!feet.length) return;
+    lmIO = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) lmMore(e.target.dataset.lm); }, { rootMargin: '800px 0px' });
+    for (const f of feet) lmIO.observe(f);
 }
-async function edMore() {
+async function lmMore(k) {
     const d = data;
-    if (edBusy || !d || d.edCount <= d.editions.length) return;
-    const id = (d.rel || d.g).id, q = (d.kind === 'label' ? 'label=' : d.kind === 'recording' ? 'recording=' : 'release-group=') + id;
-    edBusy = true;
-    try {
-        const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels&limit=100&offset=${d.editions.length}`);
-        if (data !== d) return;
-        const seen = new Set(d.editions.map(e => e.id));
-        const add = (x.releases || []).map(edition).filter(e => !seen.has(e.id));
-        if (!add.length) d.edCount = d.editions.length;
-        d.editions = d.editions.concat(add);
-    } catch (e) { if (data === d) d.edMoreErr = true; }
-    finally { edBusy = false; }
+    if (!d || LM_BUSY.has(k)) return;
+    LM_BUSY.add(k); LM_ERR.delete(k);
+    const b = document.querySelector(`[data-lmgo="${k}"]`);
+    if (b) { b.disabled = true; b.textContent = 'Loading…'; }
+    LOG.debug('Load more: ' + k);
+    try { await (k === 'ed' ? edMore(d) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
+    catch (e) { LOG.debug('Load more failed: ' + k, e); LM_ERR.add(k); }
+    finally { LM_BUSY.delete(k); }
     if (data === d) { const y = scrollY; render(); scrollTo(0, y); }
+}
+// the next 100 releases
+async function edMore(d) {
+    if (d.edCount <= d.editions.length) return;
+    const id = (d.rel || d.g).id, q = (d.kind === 'label' ? 'label=' : d.kind === 'recording' ? 'recording=' : 'release-group=') + id;
+    const x = await ws(`release?${q}&inc=media+labels+artist-credits+url-rels&limit=100&offset=${d.editions.length}`);
+    if (data !== d) return;
+    const seen = new Set(d.editions.map(e => e.id));
+    const add = (x.releases || []).map(edition).filter(e => !seen.has(e.id));
+    if (!add.length) d.edCount = d.editions.length;
+    d.editions = d.editions.concat(add);
+}
+// a MusicBrainz table's next page
+async function tabMore(d, sid) {
+    const x = TABX[sid];
+    if (!x || !x.more) return;
+    const y = await mbTab(...x.src, x.page + 1);
+    if (data !== d) return;
+    x.rows = x.rows.concat(y.rows); x.page = y.page; x.more = y.more && y.rows.length > 0;
+}
+// a ws/2 list's next 100
+async function wsMore(d, sid) {
+    const w = WSX[sid];
+    if (!w) return;
+    const y = await ws(`${w.q}&offset=${w.x[w.key].length}`);
+    if (data !== d) return;
+    const seen = new Set(w.x[w.key].map(e => e.id)), add = (y[w.key] || []).filter(e => !seen.has(e.id));
+    w.x[w.key] = w.x[w.key].concat(add);
+    if (!add.length) w.x[w.key.replace(/s$/, '') + '-count'] = w.x[w.key].length;
 }
 /* ── home page ─────────────────────────────────────── */
 // MusicBrainz's front page as a launch pad: search, adding things, your own pages and the pages you last opened.
@@ -4549,7 +4573,8 @@ function onClick(ev) {
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
-    if (d.tsort) { tabSort(b); return; }
+    if (d.lmgo) { lmMore(d.lmgo); return; }
+    if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = TSORT[sid] || []; TSORT[sid] = t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []; const y = scrollY; render(); scrollTo(0, y); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -5088,6 +5113,7 @@ function build() {
     });
     // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
     document.addEventListener('change', ev => {
+        if (ev.target.matches && ev.target.matches('[data-lmauto]')) { S.lmAuto = ev.target.checked; save(); for (const c of document.querySelectorAll('[data-lmauto]')) c.checked = S.lmAuto; lmWatch($('#app')); return; }
         const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
         if (!sc || !t.value) return;
         // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
