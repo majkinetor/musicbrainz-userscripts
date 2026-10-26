@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.340000
+// @version      2026.10.27.350000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4708,9 +4708,9 @@ async function histLoad(n) {
 }
 const histHue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 // a time, with its date where no day header above gives it
-const histTm = t => !t ? '' : (data && data.grp !== 'burst' && data.grp !== 'day' ? new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) + ' ' : '') + new Date(t).toISOString().slice(11, 16);
+const histTm = t => !t ? '' : new Date(t).toISOString().slice(0, 16).replace('T', ' ');
 const histSpan = (a, b) => { const x = histTm(a), y = histTm(b); if (x === y) return y; const i = x.lastIndexOf(' '); return i > 0 && x.slice(0, i) === y.slice(0, y.lastIndexOf(' ')) ? x + '–' + y.slice(i + 1) : x + '–' + y; };
-const histDay = t => t ? new Date(t).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : 'Unknown date';
+const histDay = t => t ? new Date(t).toISOString().slice(0, 10) + ' ' + new Date(t).toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' }) : 'Unknown date';
 const histPills = es => Object.keys(H_ST).map(k => { const c = es.filter(e => e.st === k).length; return c ? `<span class="hst ${k}">${c > 1 || es.length > 1 ? c + ' ' : ''}${H_ST[k]}</span>` : ''; }).join('');
 // a note's header says how its writer voted (MusicBrainz's class on it); the edit's own editor is marked as such
 const H_VT = { yes: 'voted Yes', no: 'voted No', abstain: 'abstained', approve: 'approved' };
@@ -4720,7 +4720,7 @@ const hnKey = n => (n.by || '') + '\n' + n.text;
 const histShared = es => { if (es.length < 2) return null; const n = es[0].notes.find(n => n.own); return n && es.every(e => e.notes.some(m => hnKey(m) === hnKey(n))) ? n : null; };
 function histEdit(e, sh) {
     const ns = sh ? e.notes.filter(n => hnKey(n) !== sh) : e.notes;
-    return `<details class="hed"><summary>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="d">${histTm(e.t)}</span><span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${ns.map(histNote).join('')}</div></details>`;
+    return `<details class="hed"><summary><span class="d">${histTm(e.t)}</span>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span><a class="id" href="${MB}/edit/${e.id}">#${e.id}</a>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}">${H_ST[e.st]}</span>${e.votes ? `<span class="v">${esc(e.votes)}</span>` : ''}${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}</summary><div class="hdt">${e.det}${ns.map(histNote).join('')}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
@@ -4729,7 +4729,7 @@ function histRuns(es) {
     return (g ? `<div class="hshr">${histNote(g)}</div>` : '') + runs.map(r => {
         if (r.length === 1) return histEdit(r[0], gk);
         const s = !g && histShared(r), k = gk || (s && hnKey(s));
-        return `<details class="hrun"><summary>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histPills(r)}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
+        return `<details class="hrun"><summary><span class="hed"><span class="d">${histSpan(r[r.length - 1].t, r[0].t)}</span></span>${histIco(r[0].tk)}<span class="hty">${esc(r[0].type)}</span><span class="n">×${r.length}</span>${data.grp !== 'burst' && data.grp !== 'editor' && r.every(e => e.ed === r[0].ed) ? `<span class="hwho">${r[0].ed ? `<a href="${MB}/user/${encodeURIComponent(r[0].ed)}">${esc(r[0].ed)}</a>` : 'Editor hidden'}</span>` : ''}${histPills(r)}</summary>${s ? `<div class="hshr">${histNote(s)}</div>` : ''}${r.map(e => histEdit(e, k)).join('')}</details>`;
     }).join('');
 }
 function histGroup(key, title, es, av, nm) {
