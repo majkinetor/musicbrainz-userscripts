@@ -2066,6 +2066,9 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         /* Occupies row1's height in the flow while row1 is fixed, so the page
            content below the bar doesn't jump up under it. Height set by JS. */
         .discogs-sticky-spacer { display: none; }
+        /* With row1 pinned the bar's box would hold only the spacer: the output below carries the box instead */
+        .discogs-bar:is(.is-importing, .is-pinned) { border-color: transparent; background: none; overflow: visible; }
+        .discogs-bar:is(.is-importing, .is-pinned) > .discogs-output { border: 1px solid var(--mbu-border); border-radius: 10px; background: var(--mbu-bg-raised); overflow: hidden; }
         .discogs-bar.is-importing .discogs-sticky-spacer,
         .discogs-bar.is-pinned .discogs-sticky-spacer { display: block; }
         .discogs-progress-track {
