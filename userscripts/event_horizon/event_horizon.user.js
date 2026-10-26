@@ -2086,7 +2086,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
-.disamb{font-size:15px;color:var(--muted);font-weight:500;opacity:.75;margin-top:4px}
+.disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;margin-left:.5em;letter-spacing:0;white-space:normal}
 .by{font-size:16px;font-weight:600}
 .hist{margin-top:24px}.hbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.hbar .lb{color:var(--muted);font-size:13px}
 .hseg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}.hseg button{font:500 13px Manrope,system-ui,sans-serif;height:30px;padding:0 12px;border:0;border-right:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}.hseg button:last-child{border-right:0}.hseg button.on{background:var(--accent);color:#fff}
@@ -2106,7 +2106,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}
 .hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
-.arthd{margin:0 0 -16px}.edhd{display:flex;gap:28px;align-items:center;margin:0 0 8px}.edhd .edhi{flex:1;min-width:0}.edhd h1{margin:6px 0 4px}.edcv img{width:150px;height:150px;object-fit:cover;border-radius:12px;display:block;box-shadow:0 4px 16px rgba(0,0,0,.3)}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
+.arthd{margin:0 0 -16px;display:flex;gap:20px;align-items:center}.arthd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}.arthd>.rhcv[hidden]{display:none}.arthd>.rhtx{flex:1;min-width:0}.arthd .kicker.label{font-size:10.5px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
@@ -2782,8 +2782,7 @@ function hero(r) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(r.title)}${rgLink(r)}</h1>
-            ${r.disambig ? `<div class="disamb">${esc(r.disambig)}</div>` : ''}
+            <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}${rgLink(r)}</h1>
             <div class="by">by ${acHtml(r.ac)}</div>
             ${facts(r)}
         </div>
@@ -3143,8 +3142,7 @@ function rgHero(d) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             <div class="by">by ${acHtml(g.ac)}</div>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -3365,8 +3363,7 @@ function lbHero(d) {
         <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${LB_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/label/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
     </section>`;
@@ -3392,8 +3389,7 @@ function arHero(d) {
         <div class="art">${pic}${under(g, tags)}</div>
         <div class="facts-col">
             <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/artist/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -3445,8 +3441,7 @@ function pgHero(g, type, icon, kind, F, by, pic) {
         <div class="art">${pic || picHtml(g, 'mpic', `<div class="nocover pg">${bigMk(icon)}</div>`)}${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
-            <h1>${esc(g.title)}</h1>
-            ${g.disambig ? `<div class="disamb">${esc(g.disambig)}</div>` : ''}
+            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${by ? `<div class="by">${by}</div>` : ''}
             ${factsHtml(F)}
         </div>
@@ -4439,17 +4434,21 @@ const PAGE_ID = keyOf(location.href);
 // the release's title and artist, then Art Station's gallery: it mounts in the slot, or moves there from
 // MusicBrainz's page when it came first. The slot is drawn once: a redraw would drop the gallery
 // a release subpage's header: the release page's kicker, the open tab `tab` lit, and its title and credits without the facts
+// a release subpage's way back to the release's overview: an arrow left of Edit
+const backA = id => `<a class="ab ov" href="${MB}/release/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>`;
 function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+    const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
-    return `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none);
+    return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
 }
+// a release without a front cover drops the header's image
+const cvWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; LOG.debug('Header: no front cover'); }; };
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
-    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`);
+    app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', `<h1>${d.err ? esc(d.err) : '&nbsp;'}</h1>`); cvWire(app.querySelector('.arthd'));
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
     if (as) slot.append(as);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none">Art Station shows this release\'s cover art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
@@ -4467,7 +4466,9 @@ async function artLoad(n, id) {
 
 // Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
-:root[data-eh-rel] body{background:var(--bg)!important;color:var(--text);font-family:Manrope,system-ui,sans-serif}
+body{background:var(--bg)}
+:root[data-eh-rel] :is(#page,#content,#container){background:none!important}
+:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3){font-size:inherit}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
@@ -4484,7 +4485,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -4509,11 +4510,11 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 6px!important;overflow:visible!important}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td{background:var(--bg)!important;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;position:relative;padding-left:20px}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;white-space:nowrap}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
-:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child::before{content:"";position:absolute;left:8px;top:14px;width:5px;height:5px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
-:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf>td:first-child::before{transform:rotate(-45deg)}
-:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf .rel-editor-table{display:none}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child::before{content:"";display:inline-block;vertical-align:middle;margin:-3px 8px 0 2px;width:5px;height:5px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
+:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf>td:first-child::before{transform:rotate(-45deg);margin-top:0}
+:root[data-eh-rel] #tracklist>tbody>tr.track.eh-tf :is(.rel-editor-table,td.works>h3){display:none}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child:hover::before{border-color:var(--text)}
 :root[data-eh-rel] #relationship-editor-form legend{display:flex!important;align-items:center;gap:10px;cursor:pointer;user-select:none}
 :root[data-eh-rel] #relationship-editor-form legend::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 2px 0}
@@ -4521,14 +4522,14 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #relationship-editor-form.eh-fold>:not(fieldset),:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset>:not(legend){display:none!important}
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
-const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd)/.test(l)).join('\n')
+const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l)/.test(l)).join('\n')
     .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => '#eh-relhd ' + x.trim()).join(',') + '{');
 // the header: the same as the cover-art page's; title and artist read off MusicBrainz's own header at once, then the full kicker from the release
 function relHeader(id) {
     const rh = document.querySelector('#content > .releaseheader'), t = rh && rh.querySelector('h1 a'), sub = rh && rh.querySelector('.subheader');
     const by = sub ? [...sub.querySelectorAll('a[href*="/artist/"]')].map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ') : '';
     const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
-    const draw = r => { hd.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); };
+    const draw = r => { hd.innerHTML = subHead(r, id, 'edit-relationships', 'Relationships', `<h1><a href="${MB}/release/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}`); cvWire(hd); };
     draw(null);
     Promise.resolve().then(() => ws('release/' + id + '?inc=artist-credits+media+release-groups')).then(r => r && r.id && draw(r)).catch(e => LOG.warn('Relate header: ' + e));
     hd.addEventListener('click', e => {
@@ -4560,16 +4561,27 @@ function relCards() {
     if (ed.dataset.ehCards) return; ed.dataset.ehCards = '1';
     ed.addEventListener('click', e => {
         if (!ehOn) return;
-        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        // a click anywhere on a track's row folds it, as its chevron does; its links, fields, relationships and works keep theirs
+        const t = e.target, tr = t.closest('#tracklist > tbody > tr.track');
+        if (!tr || t.closest('a,button,input,select,textarea,label,.rel-editor-table,.works-list,td.works li') || String(getSelection())) return;
+        const td = tr.firstElementChild;
         if (td) { const k = relTrkKey(td.parentNode); if (!k) return; relTrkFold.has(k) ? relTrkFold.delete(k) : relTrkFold.add(k); relCardsApply(); }
     });
-    // right-click a track's number, as on Event Horizon's pages: fold every track, or open them all when that one is folded
+    // right-click a track or a region's heading, as on Event Horizon's pages: fold it with its siblings, or open them all
+    // when that one is folded. A link, button or field keeps the browser's own menu
     ed.addEventListener('contextmenu', e => {
-        if (!ehOn) return;
-        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        if (!ehOn || e.target.closest('a,button,input,select,textarea,label')) return;
+        const h = e.target.closest('.release-relationship-editor > h2, #relationship-editor-form legend');
+        if (h) {
+            e.preventDefault();
+            const hs = [...ed.querySelectorAll(':scope > h2')], k = h.tagName === 'LEGEND' ? 'note' : h.dataset.ehFold, fold = !relFold[k];
+            hs.forEach(x => { relFold[x.dataset.ehFold] = fold; }); relFold.note = fold; relSaveFold();
+            LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every region'); relCardsApply(); return;
+        }
+        const td = e.target.closest('#tracklist > tbody > tr.track');
         if (td) {
             e.preventDefault();
-            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = !relTrkFold.has(relTrkKey(td.parentNode));
+            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = !relTrkFold.has(relTrkKey(td));
             trs.forEach(tr => fold ? relTrkFold.add(relTrkKey(tr)) : relTrkFold.delete(relTrkKey(tr)));
             LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every track'); relCardsApply();
         }
@@ -4738,7 +4750,7 @@ function histGroup(key, title, es, av, nm) {
     return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
-    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? ACTS.map(([p, nm, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}/release/${rid}/${p}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${nm}</span></a>`).join('') : '') + SRCH();
+    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + ACTS.map(([p, nm, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}/release/${rid}/${p}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${nm}</span></a>`).join('') : '') + SRCH();
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
@@ -4760,8 +4772,8 @@ function histPage(app, d) {
     const cnt = k => d.edits.filter(e => e.st === k).length;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}</div>` + `<div class="hql">${[...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = d.busy ? '<div class="hmore">Loading edits…</div>' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.more ? `<div class="hmore">${d.edits.length} edits loaded <button type="button" class="sk-b" data-hmore>Load more</button></div>` : d.edits.length ? `<div class="hmore">All ${d.edits.length} edits</div>` : '<div class="hmore">No edits</div>';
-    const cv = histOne(d.id) && r && (r['cover-art-archive'] || {}).front ? `<a class="edcv" href="${MB}/release/${r.id}/cover-art"><img src="https://coverartarchive.org/release/${r.id}/front-250" alt="" onerror="this.parentNode.remove()"></a>` : '';
-    app.innerHTML = `<section class="arthd${histOne(d.id) ? ' edhd' : ''}">${cv}<div class="edhi"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>${r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : rid ? '<h1>&nbsp;</h1>' : `<h1>${esc(histName(d.id))}</h1>`}</div></section><section class="hist">${d.edits.length && !histOne(d.id) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
+    app.innerHTML = `<section class="arthd">${r || rid ? subHead(r, r ? r.id : rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1></div>`}</section><section class="hist">${d.edits.length && !histOne(d.id) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
+    cvWire(app);
     app.onclick = ev => {
         if (data !== d) return;
         const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');

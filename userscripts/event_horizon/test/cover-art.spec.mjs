@@ -11,7 +11,7 @@ for (const add of [false, true]) for (const asFirst of [true, false]) test(`the 
   await inject('event_horizon');
   if (!asFirst) await inject('art_station');
   check(await until(() => page.locator('#app #as-slot #as-root').count(), n => n === 1) === 1, 'the gallery sits in the slot');
-  check(await until(() => page.locator('.arthd h1 a').count(), n => n === 1) === 1, 'the title links back to the release');
+  check(await until(() => page.locator('.arthd h1 a:not(.rg-l)').count(), n => n === 1) === 1, 'the title links back to the release');
   check(await page.locator('.arthd .by a').count() > 0, 'the artist shows');
   check(await page.locator('.as-none:not([hidden])').count() === 0, 'no "install Art Station" note');
   check(await until(() => page.locator('#as-root .as-card').count(), n => n > 0) > 0, 'the gallery shows its covers');

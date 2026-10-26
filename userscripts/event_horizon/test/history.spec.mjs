@@ -9,7 +9,7 @@ test('the history page groups a release\'s edits', { tag: '@sandbox' }, async ({
   await idle(page);
   await inject('event_horizon');
   check(await until(() => page.locator('.hist .hgrp').count(), n => n > 0) > 0, 'the edits show as groups');
-  check(await until(() => page.locator('.arthd h1 a').count(), n => n === 1) === 1, 'the title links back to the release');
+  check(await until(() => page.locator('.arthd h1 a:not(.rg-l)').count(), n => n === 1) === 1, 'the title links back to the release');
   check(await page.locator('.arthd .ab.on[href$="/edits"]').count() === 1, 'History is the open tab');
   check(await page.locator('.hday').count() > 0, 'bursts sit under day headers');
   await page.locator('.hgrp .hgh').first().click();
@@ -55,7 +55,7 @@ test('a single edit shows in the history viewer', { tag: '@sandbox' }, async ({ 
   await inject('event_horizon');
   check(await until(() => page.locator('.hist .hed.one[open] .hdt table.details').count(), n => n === 1) === 1, 'the edit shows open with its changes');
   check(await page.locator('.hist .hbar').count() === 0, 'no group bar for one edit');
-  check(await until(() => page.locator('.arthd h1 a').count(), n => n === 1) === 1, 'the release it touches heads the page');
+  check(await until(() => page.locator('.arthd h1 a:not(.rg-l)').count(), n => n === 1) === 1, 'the release it touches heads the page');
   await attachShot(testInfo, page, 'edit');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });
