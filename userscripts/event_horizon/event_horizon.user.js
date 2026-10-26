@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.600200
+// @version      2026.10.27.600300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4625,7 +4625,7 @@ const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id ===
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
 const FORMS = { 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation' };
 const formKey = href => {
-    const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place)/(' + MBID.source + ')/(edit_annotation|set-cover-art)/?$', 'i'));
+    const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] === 'edit_annotation' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
 };
 const keyOf = href => navTo(href) || artKey(href) || histKey(href) || relKey(href) || formKey(href);
@@ -4773,12 +4773,12 @@ function mbHead() {
     return { t, by: sub ? [...sub.querySelectorAll('a[href*="/artist/"]')].map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ') : '' };
 }
 // a form's header: a release's as on its other subpages; any other entity's kind and the form's name, its cover if it is a
-// release group, and its title and credits off MusicBrainz's header
+// release group or an event, and its title and credits off MusicBrainz's header
 function formHeader(key) {
     const [, type, id, form] = key.split('/');
     if (type === 'release') return relHeader(id, form, FORMS[form]);
     const { t, by } = mbHead(), hd = hdSect(), kind = type === 'release-group' ? 'Release group' : type[0].toUpperCase() + type.slice(1);
-    hd.innerHTML = (type === 'release-group' ? `<img class="rhcv" alt="" src="https://coverartarchive.org/release-group/${id}/front-250">` : '')
+    hd.innerHTML = (type === 'release-group' ? `<img class="rhcv" alt="" src="https://coverartarchive.org/release-group/${id}/front-250">` : type === 'event' ? `<img class="rhcv" alt="" src="https://eventartarchive.org/event/${id}/front-250">` : '')
         + `<div class="rhtx"><div class="kicker label"><span>${esc(kind + ' · ' + FORMS[form])}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
         + `<h1><a href="${MB}/${type}/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}</div>`;
     cvWire(hd);

@@ -96,6 +96,18 @@ test('an event-art page puts the event in its header', { tag: '@sandbox' }, asyn
   await attachShot(testInfo, page, 'event-art');
 });
 
+test("an event's and a series' annotation forms take Event Horizon's header", { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  for (const [type, id, name] of [['event', 'b453f5ec-149b-4240-abaf-e12d32573ca9', /EH test concert/], ['series', 'bcef3f59-7559-4736-9228-dfeba507b5c0', /Think Global/]]) {
+    await page.goto(`https://test.musicbrainz.org/${type}/${id}/edit_annotation`);
+    await inject('event_horizon');
+    check(await until(() => page.locator('#eh-relhd h1 a').count(), n => n === 1) === 1, `the ${type} form has the header`);
+    check(name.test(await page.locator('#eh-relhd h1').innerText()), `it names the ${type}`);
+    check(/annotation/i.test(await page.locator('#eh-relhd .kicker').innerText()), 'the kicker names the form');
+    check(await page.locator('textarea[name$="text"]').count() === 1, "MusicBrainz's form is still there");
+    await attachShot(testInfo, page, type + '-annotation');
+  }
+});
+
 test('a work page shows its hero, credits and recordings', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/work/afec4a5d-5ac6-309a-be7c-ee4f919730c3');
   await inject('event_horizon');
