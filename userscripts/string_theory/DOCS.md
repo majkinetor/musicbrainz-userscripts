@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-26 16:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-26 16:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -34,7 +34,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Release group editor](#release-group-editor)**: the release group's edit page laid out like Release information.
-- **[Artist editor](#artist-editor)**: the artist's edit page laid out the same way.
+- **[Artist, label and place editors](#artist-label-and-place-editors)**: their edit pages laid out the same way.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
@@ -72,13 +72,13 @@ The release group's edit page gets Release information's layout.
 - **External links** sit in a right column with the dead-link checker, and the release group's cover under them.
 - The help bubbles are gone, and a changed artist credit adds Apollo's line to the edit note.
 
-### Artist editor
+### Artist, label and place editors
 
-The artist's edit page (and a new artist's) gets the same layout.
+The edit pages of artists, labels and places (and their create pages) get the same layout.
 
 - **External links** sit in a right column with the dead-link checker.
 - **Name** and **Sort name** show their look-alike and invisible characters, double spaces and leading or trailing spaces on a line under the field.
-- [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, when installed, sits under the links.
+- [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, when installed, and a place's map are cards at the end of whichever column is shorter.
 - The help bubbles are gone, and Apollo's bar has ✓ Enter edit and ✕ Cancel.
 
 ### Tracklist
