@@ -883,7 +883,9 @@ export async function dispatchAllRelationships(companies, artistRoles, tracklist
                         const mbid = mbUrl.replace(/.*\//, '').replace(/[^a-f0-9-]/gi, '').substring(0, 36);
                         try {
                             const artistEntity = await fetchMBEntity(mbid);
-                            dispatchRelationship(re, workEntity, artistEntity, linkTypeID, credit, buildAttributes(role.attributes || [], linkTypeID));
+                            // #844: the review table's Credited as wins here too, as in processOne
+                            const ov = String(creditOverrides.get(mbUrl) || '').trim();
+                            dispatchRelationship(re, workEntity, artistEntity, linkTypeID, ov || credit, buildAttributes(role.attributes || [], linkTypeID));
                             added++;
                         } catch(e) {
                             log.error(`Failed to add ${role.linkType} for new work: ${e.message}`);
