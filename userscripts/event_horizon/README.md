@@ -45,6 +45,8 @@ A recording shows its length, ISRCs and credits, its works beside them with thei
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 
+In other tables (an instrument's releases, a work's recordings and so on), the filter also takes `column:value`, such as `artist:elvis`; put the value in quotes when it has spaces. The funnel next to a column's heading starts one for that column.
+
 ## Settings
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.

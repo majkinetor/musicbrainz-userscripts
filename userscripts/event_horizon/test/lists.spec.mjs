@@ -43,3 +43,21 @@ test('an instrument tab past its first page loads more, and a sort lasts', { tag
   check(await page.locator('#s-ir thead th[aria-sort="none"]').count() > 0 && await page.locator('#s-ir thead .dg-sort.on').count() === 0, 'a third click brings back MusicBrainz\'s order');
   await attachShot(testInfo, page, 'instrument-more');
 });
+
+test('a heading\'s funnel filters the table by that column (#845)', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/instrument/63021302-86cd-4aee-80df-2270d54f4978');
+  await inject('event_horizon');
+  const fun = page.locator('#s-ir thead button[data-tqcol$="\tartist"]');
+  check(await until(() => fun.count(), n => n === 1) === 1, 'the artist heading has a funnel');
+  const col = await page.$$eval('#s-ir thead th', ths => ths.findIndex(th => th.querySelector('[data-tqcol$="\tartist"]')));
+  const cells = () => page.$$eval(`#s-ir tbody tr td:nth-child(${col + 1})`, tds => tds.map(td => td.textContent.trim()));
+  const all = await cells(), word = all[0].split(/\s+/)[0];
+  await fun.click();
+  const box = page.locator('#s-ir input[data-tq]');
+  check(await box.inputValue(), 'artist:');
+  await box.press('End');
+  await box.pressSequentially(word);
+  const left = await cells();
+  check(left.length > 0 && left.every(t => t.toLowerCase().includes(word.toLowerCase())), `every row left has "${word}" in its artist`);
+  check(left.length <= all.length, 'the filter does not add rows');
+});

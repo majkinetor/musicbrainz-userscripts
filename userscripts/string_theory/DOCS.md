@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-26 20:32 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-26 20:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -804,6 +804,8 @@ A release group lists its releases, and an artist or label its discography, grou
 A recording shows its length, ISRCs and credits, its works beside them with their writers, and the releases it appears on. A work shows its writers, ISWCs and other codes, related works, and its recordings in a table by first release.
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
+
+In other tables (an instrument's releases, a work's recordings and so on), the filter also takes `column:value`, such as `artist:elvis`; put the value in quotes when it has spaces. The funnel next to a column's heading starts one for that column.
 
 ### Settings
 

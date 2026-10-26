@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.600502
+// @version      2026.10.26.203458
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2195,6 +2195,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .fs-n{margin-left:auto;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .fs-ft{display:flex;gap:12px;border-top:1px solid var(--border);margin:6px -6px -6px;padding:6px 12px;color:var(--muted);font-size:11px}
 .fs-ft kbd{font:inherit;border:1px solid var(--border);border-radius:4px;padding:0 4px;background:var(--bg)}
+.ed-t th .tq-col{border:0;background:none;padding:2px 3px;margin-left:2px;color:inherit;opacity:.35;cursor:pointer;vertical-align:middle;line-height:0}.ed-t th .tq-col:hover,.ed-t th .tq-col:focus-visible{opacity:1}
 .fbar .fq{height:30px;width:220px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
 .fbar .fadd{height:30px;width:240px;max-width:100%;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px}
 .fbar select{height:30px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;padding:0 6px;cursor:pointer;max-width:260px}
@@ -3714,6 +3715,18 @@ function insHero(d) {
 // leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
 const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
 const TSORT = {}, TABX = {}, TQ = {};    // TQ: a table's filter text, absent while its box is shut
+// a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
+const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
+// the box's text, split into column terms (key:value, the value in quotes when it has spaces) and the rest, searched in the whole row
+function tqParse(q, keys) {
+    const terms = [];
+    const rest = q.replace(/(\S+?):("[^"]*"?|\S*)/g, (m, k, v) => {
+        const c = keys.findIndex(x => x && x.startsWith(fltFold(k)));
+        if (c < 0) return m;
+        terms.push([c, fltFold(v.replace(/"/g, '').trim())]); return ' ';
+    });
+    return { terms, rest: fltFold(rest.replace(/\s+/g, ' ').trim()) };
+}
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
     if (!rs.length) return '';
@@ -3726,15 +3739,17 @@ function tabSect(sid, name, x, href, cv) {
     // a click on a heading sorts the rows by that column, a second turns them round, a third brings back MusicBrainz's order;
     // a table with group rows inside keeps MusicBrainz's order
     const srt = !x.rows.some(r => !Array.isArray(r) && r), [si, sd] = srt && TSORT[sid] || [];
-    const hb = i => { const h = x.head[i], st = si === i ? sd : 0; return srt && h ? `<th aria-sort="${st > 0 ? 'ascending' : st < 0 ? 'descending' : 'none'}"><button type="button" class="dg-sort${st ? ' on' : ''}" data-tsort="${i}" data-tip="${st < 0 ? 'Back to MusicBrainz\'s order' : 'Sort by ' + txt(h).toLowerCase()}">${h}<i>${st > 0 ? '↑' : st < 0 ? '↓' : '↕'}</i></button></th>` : `<th>${h}</th>`; };
+    const hb = i => { const h = x.head[i], st = si === i ? sd : 0; const fb = h && tqKey(h) ? `<button type="button" class="tq-col" data-tqcol="${sid}\t${tqKey(h)}" aria-label="Filter by ${esc(txt(h).toLowerCase())}" data-tip="Filter by ${esc(txt(h).toLowerCase())}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button>` : ''; return srt && h ? `<th aria-sort="${st > 0 ? 'ascending' : st < 0 ? 'descending' : 'none'}"><button type="button" class="dg-sort${st ? ' on' : ''}" data-tsort="${i}" data-tip="${st < 0 ? 'Back to MusicBrainz\'s order' : 'Sort by ' + txt(h).toLowerCase()}">${h}<i>${st > 0 ? '↑' : st < 0 ? '↓' : '↕'}</i></button>${fb}</th>` : `<th>${h}${fb}</th>`; };
     const v = r => { const t = txt(r[si]); return t === '—' ? '' : t; };
     const rows = si == null ? x.rows : [...x.rows].sort((a, z) => (!v(a) - !v(z)) || sd * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }));
     // the filter keeps the rows whose text holds what is typed, and every group row
-    const q = fltFold((TQ[sid] || '').trim()), shown = q ? rows.filter(r => !Array.isArray(r) || fltFold(r.map(txt).join(' ')).includes(q)) : rows;
+    // and "column:value" keeps those whose column holds the value
+    const q = fltFold((TQ[sid] || '').trim()), tqp = q && tqParse(q, x.head.map(tqKey));
+    const shown = q ? rows.filter(r => !Array.isArray(r) || (tqp.terms.every(([c, v]) => fltFold(txt(r[c])).includes(v)) && fltFold(r.map(txt).join(' ')).includes(tqp.rest))) : rows;
     const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
     const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
     const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${ART_URL[cv]}${m[1]}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
-    const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter" aria-label="Filter" autocomplete="off"></span>` : '')
+    const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter, or column:value" aria-label="Filter" autocomplete="off"></span>` : '')
         + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
     const tr = r => Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map(i => `<td>${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
@@ -4583,6 +4598,8 @@ function onClick(ev) {
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
+    // a heading's funnel opens the box with "column:" added, ready for the value
+    if (d.tqcol) { const [k, c] = d.tqcol.split('\t'), cur = (TQ[k] || '').trim(); TQ[k] = (cur ? cur + ' ' : '') + c + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
     if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = TSORT[sid] || []; TSORT[sid] = t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []; const y = scrollY; render(); scrollTo(0, y); return; }
