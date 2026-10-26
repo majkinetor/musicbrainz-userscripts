@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.201500
+// @version      2026.10.26.195136
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -374,22 +374,6 @@
       const top = ranked[0], next = ranked[1];
       const best = top && (top.level !== 'weak' || mbmHolds(top, name)) && (!next || top.points - next.points >= 30) ? { gid: top.gid, level: top.level } : null;
       return { ranked, best };
-  }
-  function mbmGuessSortName(name) {
-      if (!name || !name.trim()) return name;
-      name = name.trim().replace(/\s+/g, ' ');
-      // names in other scripts are not "given family" in Latin order: leave them to the editor
-      if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
-      const words = name.split(' ');
-      if (words.length === 1) return name;
-      const article = name.match(/^(the|a|an)\s+(.+)$/i);
-      if (article) return article[2] + ', ' + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
-      let base = name, suffix = '';
-      const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
-      if (sfx) { base = sfx[1].trim(); suffix = ' ' + sfx[2]; }
-      const parts = base.split(' ');
-      if (parts.length === 1) return name;
-      return parts[parts.length - 1] + ', ' + parts.slice(0, -1).join(' ') + suffix;
   }
   // </ST-MATCH>
 

@@ -1,7 +1,7 @@
 // Unit tests for dev/match/artist-match.mjs (#613). node dev/match/test-artist-match.mjs
 import {
     mbmFold, mbmSameName, mbmHolds, mbmIdentityQuery, mbmExactIdentity,
-    mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmRankCandidates, mbmGuessSortName, MBM_SPECIAL_PURPOSE, MBM_EXACT_LIMIT,
+    mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmRankCandidates, MBM_SPECIAL_PURPOSE, MBM_EXACT_LIMIT,
 } from './artist-match.mjs';
 
 let fail = 0;
@@ -89,17 +89,6 @@ rk = mbmRankCandidates('John Smith', smiths, { history: [{ gid: 's1', role: 'mas
 ck(rk.best && rk.best.gid === 's2' && rk.best.level === 'strong' && rk.ranked[0].reasons.some(x => x.text === 'mastering ×12') && rk.ranked[1].reasons.some(x => x.text === 'never mastering' && x.sign < 0), 'role history: the one who held the role is picked, the others say they never did', rk.ranked.map(x => x.reasons));
 rk = mbmRankCandidates('John Smith', smiths, { known: [{ gid: 's1', why: 'x' }], sibling: [{ gid: 's1', why: 'y' }] });
 ck(!rk.ranked[0].reasons.some(x => x.text === 'same group'), 'step 4: on the release already, the group adds nothing', rk.ranked[0].reasons);
-
-// sort-name guess, shared by Apollo and Credit Hoarder (#623)
-for (const [n, want] of [
-    ['The Rolling Stones', 'Rolling Stones, The'], ['a tribe called quest', 'tribe called quest, A'],
-    ['John Smith', 'Smith, John'], ['John Smith Jr.', 'Smith, John Jr.'], ['  Pink   Floyd ', 'Floyd, Pink'],
-    ['Björk Guðmundsdóttir', 'Guðmundsdóttir, Björk'], ['Madonna', 'Madonna'],
-    ['坂本 龍一', '坂本 龍一'], ['Кино Группа', 'Кино Группа'], ['', ''],
-]) {
-    const got = mbmGuessSortName(n);
-    ck(got === want, 'sort name: ' + JSON.stringify(n) + ' → ' + JSON.stringify(want), got);
-}
 
 console.log(fail ? `\n${fail} FAIL` : '\nALL PASS');
 process.exit(fail ? 1 : 0);

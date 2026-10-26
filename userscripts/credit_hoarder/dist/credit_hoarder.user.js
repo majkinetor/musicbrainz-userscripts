@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.26.160515
+// @version      2026.10.26.195106
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -2134,129 +2134,1324 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     "Wobble Board": null
   };
 
-  // ../../dev/match/artist-match.mjs
-  var MBM_EXACT_LIMIT = 100;
-  var MBM_SPECIAL_PURPOSE = [
-    "125ec42a-7229-4250-afc5-e057484327fe",
-    // [unknown]
-    "f731ccc4-e22a-43af-a747-64213329e088",
-    // [anonymous]
-    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
-    // [data]
-    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
-    // [dialogue]
-    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
-    // [no artist]
-    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
-    // [traditional]
-    "89ad4ac3-39f7-470e-963a-56509c546377",
-    // Various Artists
-    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
-    // MusicBrainz Test Artist
-    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
-    // [Disney]
-    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
-    // [theatre]
-    "90068d37-bae7-4292-be4a-704c145bd616",
-    // [church chimes]
-    "80a8851f-444c-4539-892b-ad2a49292aa9"
-    // [language instruction]
-  ];
-  function mbmFold(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
-  }
-  function mbmFoldKeepCase(s) {
-    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
-  }
-  function mbmSameName(a, b) {
-    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
-  }
-  function mbmSameNameCase(a, b) {
-    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
-  }
-  function mbmHolds(entity, name, caseExact) {
-    if (!entity) return null;
-    const same = caseExact ? mbmSameNameCase : mbmSameName;
-    if (same(entity.name, name)) return "name";
-    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
-    return null;
-  }
-  function mbmIdentityQuery(name, field) {
-    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
-    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
-  }
-  function mbmExactIdentity(json, name, opts) {
-    const o = opts || {};
-    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
-    const list = json.artists || json.labels || json.places || [];
-    let exact = list.filter((e) => mbmHolds(e, name));
-    if (exact.length > 1) {
-      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
-      if (caseExact.length === 1) exact = caseExact;
-      else if (o.scoreGap) {
-        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
-        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+  // ../../dev/guesscase/guess-case.mjs
+  var mbuGuessCase = (() => {
+    "use strict";
+    const empty = (v) => v === null || v === void 0 || v === "";
+    const nonEmpty = (v) => !empty(v);
+    const clean = (s) => String(s || "").trim().replace(/\s+/g, " ");
+    const escapeRegExp = (s) => s.replace(/([.*+?^=!:${}()|[\]/\\])/g, "\\$1");
+    const capitalize = (s) => s[0].toUpperCase() + s.slice(1).toLowerCase();
+    const trim = (w) => clean(w).replace(/([([])\s+/, "$1").replace(/\s+([)\]])/, "$1");
+    const BRACKET_PAIRS = [["(", ")"], ["[", "]"], ["<", ">"], ["\uFF08", "\uFF09"], ["\uFF3B", "\uFF3D"], ["{", "}"], ["\u3010", "\u3011"]];
+    const bracketChars = new RegExp("^[" + escapeRegExp(BRACKET_PAIRS.flat().join("")) + "]$");
+    const bracketPairs = BRACKET_PAIRS.reduce((r, [o, c]) => {
+      r[o] = c;
+      r[c] = o;
+      return r;
+    }, {});
+    class Flags {
+      constructor() {
+        this.context = {};
+        this.init();
+      }
+      resetContext() {
+        const c = this.context;
+        c.acronym_split = false;
+        c.colon = false;
+        c.ellipsis = false;
+        c.hyphen = false;
+        c.openingBracket = false;
+        c.singlequote = false;
+        c.whitespace = false;
+      }
+      isInsideBrackets() {
+        return this.context.openBrackets.length > 0;
+      }
+      pushBracket(b) {
+        this.context.openBrackets.push(b);
+      }
+      popBracket() {
+        const cb = this.getCurrentCloseBracket();
+        this.context.openBrackets.pop();
+        return cb;
+      }
+      getCurrentCloseBracket() {
+        const ob = this.context.openBrackets[this.context.openBrackets.length - 1];
+        return ob ? bracketChars.test(ob) ? bracketPairs[ob] : "" : null;
+      }
+      init() {
+        const c = this.context;
+        c.forceCaps = true;
+        c.spaceNextWord = false;
+        c.openBrackets = [];
+        c.slurpExtraTitleInformation = false;
+        this.resetContext();
+        c.acronym = false;
+        c.number = false;
+        c.openedSingleQuote = false;
+        c.numberSplitChar = null;
+        c.numberSplitExpect = false;
       }
     }
-    const offset = typeof json.offset === "number" ? json.offset : 0;
-    const complete = typeof json.count === "number" && json.count <= offset + list.length;
-    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
-    if (exact.length > 1) return { status: "ambiguous", exact, complete };
-    if (!complete) return { status: "incomplete", exact, complete };
-    return { status: "none", exact, complete };
-  }
-  function mbmRelatedArtists(artistJson) {
-    if (!artistJson || !artistJson.id) return [];
-    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
-    for (const r of artistJson.relations || []) {
-      const a = r && r.artist;
-      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
-      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
+    const preBracketSingleWordsList = ["acoustic", "airplay", "album", "alternate", "alternative", "ambient", "bit", "bonus", "censored", "chillout", "clean", "club", "composition", "cut", "dance", "dialogue", "dirty", "disc", "disco", "dub", "early", "explicit", "extended", "feat", "featuring", "ft", "instrumental", "live", "long", "loop", "main", "megamix", "mix", "official", "original", "piano", "radio", "rap", "rehearsal", "remixed", "remode", "rework", "reworked", "session", "short", "single", "studio", "take", "takes", "techno", "trance", "uncensored", "unknown", "untitled", "version", "video", "vocal", "with", "without"];
+    const preBracketSingleWords = new RegExp("^(" + preBracketSingleWordsList.join("|") + ")$", "i");
+    const isPrepBracketSingleWord = (w) => preBracketSingleWords.test(w);
+    const lowerCaseBracketWordsList = ["a_cappella", "clubmix", "demo", "edit", "excerpt", "interlude", "intro", "karaoke", "maxi", "mono", "orchestral", "outro", "outtake", "outtakes", "quadraphonic", "reedit", "re_edit", "refix", "reinterpreted", "remake", "remaster", "remastered", "remix", "rmx", "reprise", "skit", "stereo", "unplugged", "vs"].concat(preBracketSingleWordsList);
+    const lowerCaseBracketWords = new RegExp("^(" + lowerCaseBracketWordsList.join("|") + ")$", "i");
+    const isLowerCaseBracketWord = (w) => w != null && lowerCaseBracketWords.test(w);
+    const prepBracketWords = /^(?:cd|disk|12["”]|7["”]|a_cappella|re_edit)$/i;
+    const isPrepBracketWord = (w) => w != null && (prepBracketWords.test(w) || isLowerCaseBracketWord(w));
+    const isSentenceStopChar = (w) => w != null && /^[:.;?!/]$/.test(w);
+    const isApostrophe = (w) => w != null && /^['’]$/.test(w);
+    const isPunctuationChar = (w) => w != null && /^[:.;?!,]$/.test(w);
+    const LOWER_CASE_WORDS = /^(a|an|and|as|at|but|by|da|de|di|fe|fi|for|in|ina|inna|n|nor|o|of|on|or|tha|the|to)$/;
+    const LOWER_CASE_WORDS_TURKISH = /^(ve|ile|ya|veya|yahut|ki|mı|mi|mu|mü|mısın|musun|mudur|mıdır|midir|miyim|misin|misiniz|mısınız|müsün|müyüm|müsünüz|mıyım|muyum|musunuz|miyiz|mıyız|muyuz|müyüz|müdür)$/;
+    const UPPER_CASE_WORDS = /^(dj|mc|tv|mtv|ep|lp|ymca|nyc|ny|ussr|usa|r&b|bbc|fm|bc|ac|dc|uk|bpm|ok|nba|rza|gza|odb|dmx|2xlc)$/;
+    const ROMAN_NUMERALS = /^m{0,4}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$/;
+    const EXCLUDED_ROMAN_NUMERALS = /^(?:mi|mix)$/;
+    const PREPROCESS_FIXLIST = [
+      [/(^|\s)([({[])\s+($|\b)/i, "$2"],
+      // spaces after opening brackets
+      [/(\b|^)\s+([)}\]])($|\b)/i, "$2"],
+      // spaces before closing brackets
+      [/(\s|^|\()(\d+)''(\s|$)/i, '$2"'],
+      // 12'' -> 12"
+      [/(\s|^|\()(\d+)in(ch)?(\s|$)/i, '$2"'],
+      // 12in -> 12"
+      // combined words, put back together in post-processing
+      [/(\b|^)a\s?c+ap+el+a(\b)/ig, "a_cappella"],
+      [/(\b|^)oc\sremix(\b)/ig, "oc_remix"],
+      [/(\b|^)re-edit(\b)/ig, "re_edit"],
+      [/(\b|^)a\/k\/a(\b)/ig, "a_k_a_"],
+      [/(\b|^)a\.k\.a\.(\s)/ig, "a_k_a_"]
+    ];
+    const POSTPROCESS_FIXLIST = [
+      [/(\b|^)a_cappella(\b)/g, "a cappella"],
+      [/(\b|^)A_cappella(\b)/g, "A Cappella"],
+      [/(\b|^)oc_remix(\b)/ig, "OC ReMix"],
+      [/(\b|^)re_edit(\b)/g, "re-edit"],
+      [/(\b|^)Re_edit(\b)/g, "Re-Edit"],
+      [/(\b|^)a_k_a_(\b|$)/ig, "a.k.a."],
+      [/(\b|^)aka(\b|$)/ig, "aka"],
+      [/(\b|^)Santa fe(\b|$)/g, "Santa Fe"],
+      // "fe" is a lowercase word
+      [/(\b|^)R\s*&\s*B(\b)/ig, "R&B"],
+      [/(\b|^)\[live\](\b)/i, "(live)"],
+      [/(\b|^)Djs(\b)/ig, "DJs"],
+      [/(\b|^)imac(\b)/ig, "iMac"],
+      [/(\b|^)ipad(\b)/ig, "iPad"],
+      [/(\b|^)iphone(\b)/ig, "iPhone"],
+      [/(\b|^)ipod(\b)/ig, "iPod"],
+      [/(\b|^)itunes(\b)/ig, "iTunes"],
+      [/(\b|^)tiktok(\b)/ig, "TikTok"],
+      [/(\b|^)youtube(\b)/ig, "YouTube"],
+      [/(\s|^)Rock '?n'? Roll(\s|$)/ig, "Rock 'n' Roll"],
+      [/(\b)w([/／])o(\b)/i, "w$2o"],
+      [/(\b)f([.．/／])(\b)/i, "f$2"]
+    ];
+    function replaceMatch(matches, inputString, regex, replacement) {
+      const a = matches[1] || "";
+      const b = matches[matches.length - 1] || "";
+      return inputString.replace(regex, [a, replacement, b].join(""));
     }
-    return out;
-  }
-  function mbmContextHolders(related, name, candidates) {
-    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
-    const out = [];
-    for (const r of related || []) {
-      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
-      if (!via) {
-        const c = cand.get(r.gid);
-        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
+    function runFixes(inputString, fixes) {
+      let output = inputString;
+      fixes.forEach(([regex, replacement]) => {
+        let matches;
+        if (regex.global) {
+          let previousOutput;
+          while (matches = regex.exec(output)) {
+            previousOutput = output;
+            output = replaceMatch(matches, output, regex, replacement);
+            if (previousOutput === output) break;
+          }
+        } else {
+          const m = output.match(regex);
+          if (m !== null) output = replaceMatch(m, output, regex, replacement);
+        }
+      });
+      return output;
+    }
+    function makeDefaultMode(opts) {
+      return {
+        doWord() {
+          return false;
+        },
+        fixVinylSizes(s) {
+          return s.replace(/(\s+|\()(7|10|12)(?:inch\b|in\b|'|''|")([^s]|$)/ig, '$1$2"$3').replace(/((?:\s+|\()(?:7|10|12)")([^),\s])/, "$1 $2");
+        },
+        isLowerCaseWord(w) {
+          return LOWER_CASE_WORDS.test(w);
+        },
+        isRomanNumber(w) {
+          return !!opts.romanUpper && ROMAN_NUMERALS.test(w) && !EXCLUDED_ROMAN_NUMERALS.test(w);
+        },
+        isSentenceCaps() {
+          return true;
+        },
+        isUpperCaseWord(w) {
+          return UPPER_CASE_WORDS.test(w);
+        },
+        name: "",
+        // My Track Extended Dub remix => My Track (extended dub remix)
+        prepExtraTitleInfo(words) {
+          let outputWords = words;
+          const lastWord = outputWords.length - 1;
+          let wordIndex = lastWord;
+          let handlePreProcess = false;
+          while (wordIndex >= 0 && (outputWords[wordIndex] === " " || outputWords[wordIndex] === '"' && (outputWords[wordIndex - 1] === "7" || outputWords[wordIndex - 1] === "12") || (outputWords[wordIndex + 1] || "") === '"' && (outputWords[wordIndex] === "7" || outputWords[wordIndex] === "12") || isPrepBracketWord(outputWords[wordIndex]))) {
+            handlePreProcess = true;
+            wordIndex--;
+          }
+          if (wordIndex < lastWord) {
+            wordIndex++;
+            while (outputWords[wordIndex] === " " && wordIndex < lastWord) wordIndex++;
+            const probe = outputWords[lastWord];
+            if (wordIndex === lastWord && isPrepBracketSingleWord(probe)) handlePreProcess = false;
+            if (handlePreProcess && wordIndex > 0 && wordIndex <= lastWord) {
+              let newWords = outputWords.slice(0, wordIndex);
+              if (newWords[wordIndex - 1] === "(") newWords.pop();
+              if (newWords[wordIndex - 1] === "-") newWords.pop();
+              newWords.push("(");
+              newWords = newWords.concat(outputWords.slice(wordIndex, outputWords.length));
+              newWords.push(")");
+              outputWords = newWords;
+            }
+          }
+          return outputWords;
+        },
+        preProcessTitles(s) {
+          return runFixes(s, PREPROCESS_FIXLIST);
+        },
+        runPostProcess(s) {
+          return runFixes(s, POSTPROCESS_FIXLIST);
+        },
+        toLowerCase(s) {
+          return s.toLowerCase();
+        },
+        toUpperCase(s) {
+          return s.toUpperCase();
+        }
+      };
+    }
+    const MODES = {
+      English(D) {
+        return {
+          ...D,
+          name: "English",
+          isSentenceCaps() {
+            return false;
+          },
+          runPostProcess(s) {
+            return D.runPostProcess(s).replace(
+              /\bin ([a-g])(?:[\s-]([Ff]lat|[Ss]harp))?\s(dorian|lydian|major|minor|mixolydian)(?:\b|$)/ig,
+              (m, p1, p2, p3) => "in " + p1.toUpperCase() + (p2 ? "-" + p2.toLowerCase() : "") + " " + p3.toLowerCase()
+            );
+          }
+        };
+      },
+      French(D) {
+        return {
+          ...D,
+          name: "French",
+          runPostProcess(s) {
+            return D.runPostProcess(s).replace(/([!?;:]+)/gi, " $1").replace(/([«]+)/gi, "$1 ").replace(/([»]+)/gi, " $1").replace(/^(Le\s|La\s|Les\s|L[’'])(\S+)$/gi, (_, m1, m2) => m1.replace("'", "\u2019") + capitalize(m2));
+          }
+        };
+      },
+      Sentence(D) {
+        return { ...D, name: "Sentence" };
+      },
+      // Ours: sentence case under the language's name. Their own lowercase words would change
+      // nothing: sentence case lowercases every word but the forced ones, and a forced word
+      // skips the lowercase list.
+      Spanish(D) {
+        return { ...D, name: "Spanish" };
+      },
+      Italian(D) {
+        return { ...D, name: "Italian" };
+      },
+      Portuguese(D) {
+        return { ...D, name: "Portuguese" };
+      },
+      // Dutch capitalises the IJ digraph as one letter: IJsland, IJzer
+      Dutch(D) {
+        return { ...D, name: "Dutch", runPostProcess(s) {
+          return D.runPostProcess(s).replace(/(^|[^\p{L}\p{N}])Ij/gu, "$1IJ");
+        } };
+      },
+      Turkish(D) {
+        return {
+          ...D,
+          name: "Turkish",
+          isSentenceCaps() {
+            return false;
+          },
+          isLowerCaseWord(w) {
+            return LOWER_CASE_WORDS.test(w) || LOWER_CASE_WORDS_TURKISH.test(w);
+          },
+          toLowerCase(w) {
+            return w.replace(/İ/g, "i").replace(/I/g, "\u0131").replace(/İ/g, "i").toLowerCase();
+          },
+          toUpperCase(w) {
+            return w.replace(/i/g, "\u0130").toUpperCase();
+          }
+        };
       }
-      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+    };
+    function titleString(input, output, inputString, mode, keepUpper, forceCaps) {
+      if (empty(inputString)) return "";
+      const flags = input.flags;
+      const localForceCaps = forceCaps == null ? flags.context.forceCaps : forceCaps;
+      const len = input.getLength();
+      let pos = input.getCursorPosition();
+      if (pos === len) {
+        pos = len - 1;
+        input.setCursorPosition(pos);
+      }
+      let outputString;
+      let lowercase = mode.toLowerCase(inputString);
+      let uppercase = mode.toUpperCase(inputString);
+      if (inputString === uppercase && inputString.length > 1 && keepUpper) {
+        outputString = uppercase;
+      } else if (lowercase.length === 1 && isApostrophe(input.getPreviousWord())) {
+        outputString = lowercase;
+      } else if (mode.name === "English" && isApostrophe(input.getPreviousWord()) && lowercase.match(/^(?:all|ve|ll|cha|re|mon)$/i)) {
+        outputString = lowercase;
+      } else if (mode.name === "English" && isApostrophe(input.getPreviousWord()) && input.getWordAtIndex(pos - 2) === "Ev") {
+        outputString = lowercase;
+      } else if (mode.name === "English" && lowercase.match(/^[coy]$/i) && isApostrophe(input.getNextWord())) {
+        outputString = uppercase;
+      } else {
+        outputString = titleStringByMode(input, output, mode, lowercase, localForceCaps);
+        lowercase = mode.toLowerCase(outputString);
+        uppercase = mode.toUpperCase(outputString);
+        const nextWord = input.getNextWord();
+        const followedByPunctuation = nonEmpty(nextWord) && nextWord.length === 1 && isPunctuationChar(nextWord);
+        const followedByApostrophe = nonEmpty(nextWord) && nextWord.length === 1 && isApostrophe(nextWord);
+        if (!localForceCaps && mode.isLowerCaseWord(lowercase) && !followedByPunctuation) {
+          outputString = lowercase;
+        } else if (mode.isRomanNumber(lowercase) && !followedByApostrophe && !(flags.isInsideBrackets() && isLowerCaseBracketWord(lowercase))) {
+          outputString = uppercase;
+        } else if (mode.isUpperCaseWord(lowercase)) {
+          outputString = uppercase;
+        } else if (flags.isInsideBrackets() && isLowerCaseBracketWord(lowercase)) {
+          outputString = lowercase;
+        }
+      }
+      return outputString;
     }
-    return out;
-  }
-  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
-    const out = [];
-    for (const rec of recordingsJson && recordingsJson.recordings || []) {
-      for (const c of rec["artist-credit"] || []) {
-        const a = c && c.artist;
-        if (!a || !a.id || a.id === ctxGid) continue;
-        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+    function titleStringByMode(input, output, mode, inputString, forceCaps) {
+      if (empty(inputString)) return "";
+      const flags = input.flags;
+      let outputString = mode.toLowerCase(inputString);
+      const opos = output.getLength();
+      let wordBefore = "";
+      if (opos > 1) wordBefore = output.getWordAtIndex(opos - 2);
+      const doCaps = forceCaps || !mode.isSentenceCaps() || flags.context.slurpExtraTitleInformation || flags.context.openingBracket || input.isFirstWord() || isSentenceStopChar(wordBefore);
+      if (doCaps) {
+        const chars = outputString.split("");
+        chars[0] = mode.toUpperCase(chars[0]);
+        if (inputString.length > 2 && inputString.substring(0, 2) === "mc") chars[2] = mode.toUpperCase(chars[2]);
+        outputString = chars.join("");
+      }
+      return outputString;
+    }
+    class Input {
+      constructor(inputString, mode, keepUpper, regexes, flags) {
+        this.keepUpper = keepUpper;
+        this.mode = mode;
+        this.regexes = regexes;
+        this.flags = flags;
+        this.source = inputString || "";
+        this.wordList = [];
+        this.wordIndex = 0;
+      }
+      init(wordlist, output) {
+        this.output = output;
+        this.wordList = wordlist || [];
+      }
+      getLength() {
+        return this.wordList.length;
+      }
+      isEmpty() {
+        return this.getLength() === 0;
+      }
+      getCursorPosition() {
+        return this.wordIndex;
+      }
+      setCursorPosition(i) {
+        if (i >= 0 && i < this.getLength()) this.wordIndex = i;
+      }
+      getWordAtIndex(i) {
+        return this.wordList[i] || null;
+      }
+      getNextWord() {
+        return this.getWordAtIndex(this.wordIndex + 1);
+      }
+      getCurrentWord() {
+        return this.getWordAtIndex(this.wordIndex);
+      }
+      getPreviousWord() {
+        return this.getWordAtIndex(this.wordIndex - 1);
+      }
+      isFirstWord() {
+        return this.wordIndex === 0;
+      }
+      isLastWord() {
+        return this.getLength() === this.wordIndex - 1;
+      }
+      isNextWord(w) {
+        return this.hasMoreWords() && this.getNextWord() === w;
+      }
+      isPreviousWord(w) {
+        return !this.isFirstWord() && this.getPreviousWord() === w;
+      }
+      matchCurrentWord(re) {
+        return this.matchWordAtIndex(this.getCursorPosition(), re);
+      }
+      matchWordAtIndex(i, re) {
+        const word = this.getWordAtIndex(i) || "";
+        return typeof re === "string" ? re === word : word.match(re) != null;
+      }
+      hasMoreWords() {
+        return this.wordIndex === 0 && this.getLength() > 0 || this.wordIndex - 1 < this.getLength();
+      }
+      isIndexAtEnd() {
+        return this.wordIndex === this.getLength();
+      }
+      nextIndex() {
+        this.wordIndex++;
+      }
+      dropLastWord() {
+        if (this.getLength() > 0) {
+          this.wordList.pop();
+          if (this.isIndexAtEnd()) this.wordIndex--;
+        }
+      }
+      insertWordsAtIndex(i, newWords) {
+        this.wordList = this.wordList.slice(0, i).concat(newWords).concat(this.wordList.slice(i));
+      }
+      capitalizeCurrentWord() {
+        const word = this.getCurrentWord();
+        if (word == null) return null;
+        const out = titleString(this, this.output, word, this.mode, this.keepUpper);
+        if (word !== out) this.updateCurrentWord(out);
+        return out;
+      }
+      updateCurrentWord(w) {
+        if (this.wordIndex < this.wordList.length) this.wordList[this.wordIndex] = w;
+      }
+      // words, punctuation and spaces of the input
+      splitWordsAndPunctuation(inputString) {
+        const input = inputString.replace(/^\s\s*/, "").replace(/\s\s*$/, "").replace(/\s\s*/g, " ");
+        const chars = input.split("");
+        const splitwords = [];
+        let word = [];
+        if (!this.regexes.SPLITWORDSANDPUNCTUATION) this.regexes.SPLITWORDSANDPUNCTUATION = /[^!¿¡"%&'´`‘’‹›“”„“«»()[\]{}*+‐\-,./:;<=>?\s#]/;
+        for (let i = 0; i < chars.length; i++) {
+          if (chars[i].match(this.regexes.SPLITWORDSANDPUNCTUATION)) {
+            word.push(chars[i]);
+          } else {
+            if (word.length > 0) splitwords.push(word.join(""));
+            splitwords.push(chars[i]);
+            word = [];
+          }
+        }
+        if (word.length > 0) splitwords.push(word.join(""));
+        return splitwords;
       }
     }
-    return out;
-  }
-  function mbmGuessSortName(name) {
-    if (!name || !name.trim()) return name;
-    name = name.trim().replace(/\s+/g, " ");
-    if (/[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(name)) return name;
-    const words = name.split(" ");
-    if (words.length === 1) return name;
-    const article = name.match(/^(the|a|an)\s+(.+)$/i);
-    if (article) return article[2] + ", " + article[1].charAt(0).toUpperCase() + article[1].slice(1).toLowerCase();
-    let base = name, suffix = "";
-    const sfx = name.match(/^(.*?),?\s+(jr\.?|sr\.?|ii|iii|iv|v|esq\.?)$/i);
-    if (sfx) {
-      base = sfx[1].trim();
-      suffix = " " + sfx[2];
+    class Output {
+      constructor(input, mode, keepUpper, flags) {
+        this.keepUpper = keepUpper;
+        this.mode = mode;
+        this.input = input;
+        this.flags = flags;
+        this.wordList = [];
+      }
+      getLength() {
+        return this.wordList.length;
+      }
+      isEmpty() {
+        return this.getLength() === 0;
+      }
+      appendCurrentWord() {
+        const w = this.input.getCurrentWord();
+        if (w != null) this.appendWord(w);
+      }
+      appendWord(w) {
+        if (w === " ") this.appendSpace();
+        else if (w !== "" && w != null) this.wordList.push(w);
+      }
+      appendSpace() {
+        this.wordList.push(" ");
+      }
+      appendSpaceIfNeeded() {
+        if (this.flags.context.spaceNextWord) this.appendSpace();
+      }
+      getWordAtIndex(i) {
+        return this.wordList[i] ? this.wordList[i] : null;
+      }
+      setWordAtIndex(i, w) {
+        if (this.getWordAtIndex(i)) this.wordList[i] = w;
+      }
+      getLastWord() {
+        return this.isEmpty() ? null : this.wordList[this.wordList.length - 1];
+      }
+      capitalizeWordAtIndex(index, overrideCaps) {
+        const flags = this.flags;
+        const forceCaps = overrideCaps == null ? flags.context.forceCaps : overrideCaps;
+        if ((!this.mode.isSentenceCaps() || forceCaps) && !this.isEmpty()) {
+          const word = this.getWordAtIndex(index);
+          if (word != null) {
+            let output = word;
+            if (word.match(/^\w\..*/) == null) {
+              const probe = trim(word.toLowerCase());
+              if (!forceCaps && flags.isInsideBrackets() && isLowerCaseBracketWord(probe)) {
+              } else if (!forceCaps && this.mode.isUpperCaseWord(probe)) {
+              } else {
+                const originalPosition = this.input.getCursorPosition();
+                let position = originalPosition - 1;
+                while (position >= 0) {
+                  const w = this.input.getWordAtIndex(position);
+                  if (w == null || trim(w.toLowerCase()) === probe) break;
+                  position--;
+                }
+                this.input.setCursorPosition(position);
+                output = titleString(this.input, this, word, this.mode, this.keepUpper, forceCaps);
+                this.input.setCursorPosition(originalPosition);
+                if (word !== output) this.setWordAtIndex(index, output);
+              }
+            }
+          }
+        }
+      }
+      capitalizeLastWord(overrideCaps) {
+        this.capitalizeWordAtIndex(this.getLength() - 1, overrideCaps);
+      }
+      getOutput() {
+        this.flags.context.forceCaps = !this.mode.isSentenceCaps();
+        this.capitalizeLastWord();
+        this.closeOpenBrackets();
+        return trim(this.wordList.join(""));
+      }
+      closeOpenBrackets() {
+        const parts = [];
+        while (this.flags.isInsideBrackets()) parts[parts.length] = this.flags.popBracket();
+        this.appendWord(parts.join(""));
+      }
+      appendWordPreserveWhiteSpace(capitalizeLast) {
+        const ws = { after: this.input.isNextWord(" "), before: this.input.isPreviousWord(" ") };
+        if (capitalizeLast) this.capitalizeLastWord(!this.mode.isSentenceCaps());
+        if (ws.before) this.appendSpace();
+        this.appendCurrentWord();
+        this.flags.context.spaceNextWord = ws.after;
+      }
     }
-    const parts = base.split(" ");
-    if (parts.length === 1) return name;
-    return parts[parts.length - 1] + ", " + parts.slice(0, -1).join(" ") + suffix;
-  }
+    const SPECIAL3 = {
+      NOT_A_SPECIALCASE: -1,
+      SPECIALCASE_CROWD_NOISE: 33,
+      SPECIALCASE_DATA_TRACK: 30,
+      SPECIALCASE_DIALOGUE: 35,
+      SPECIALCASE_GUITAR_SOLO: 34,
+      SPECIALCASE_SILENCE: 31,
+      SPECIALCASE_UNKNOWN: 10,
+      SPECIALCASE_UNTITLED: 32
+    };
+    class Handler {
+      constructor(mode, regexes, input, output, flags) {
+        this.mode = mode;
+        this.regexes = regexes;
+        this.input = input;
+        this.output = output;
+        this.flags = flags;
+        this.specialCaseValues = SPECIAL3;
+      }
+      checkSpecialCase() {
+        return SPECIAL3.NOT_A_SPECIALCASE;
+      }
+      isSpecialCase(n) {
+        return n !== SPECIAL3.NOT_A_SPECIALCASE;
+      }
+      getSpecialCaseFormatted(inputString, n) {
+        switch (n) {
+          case SPECIAL3.SPECIALCASE_DATA_TRACK:
+            return "[data track]";
+          case SPECIAL3.SPECIALCASE_SILENCE:
+            return "[silence]";
+          case SPECIAL3.SPECIALCASE_UNTITLED:
+            return "[untitled]";
+          case SPECIAL3.SPECIALCASE_UNKNOWN:
+            return "[unknown]";
+          case SPECIAL3.SPECIALCASE_CROWD_NOISE:
+            return "[crowd noise]";
+          case SPECIAL3.SPECIALCASE_GUITAR_SOLO:
+            return "[guitar solo]";
+          case SPECIAL3.SPECIALCASE_DIALOGUE:
+            return "[dialogue]";
+          default:
+            return inputString;
+        }
+      }
+      getWordsForProcessing(s) {
+        return this.input.splitWordsAndPunctuation(s);
+      }
+      process(s) {
+        this.input.init(this.getWordsForProcessing(s), this.output);
+        while (!this.input.isIndexAtEnd()) this.processWord();
+        return this.mode.runPostProcess(this.output.getOutput());
+      }
+      processWord() {
+        if (!this.doWhiteSpace()) {
+          let handled = false;
+          if (!this.regexes.SPECIALCASES) this.regexes.SPECIALCASES = /(&|¿|¡|\?|!|;|:|'|‘|’|‹|›|"|“|”|„|“|«|»|-|‐|\+|,|\*|\.|#|%|\/|\(|\)|\{|\}|\[|\])/;
+          if (this.input.matchCurrentWord(this.regexes.SPECIALCASES)) {
+            handled = this.doDoubleQuote() || this.doSingleQuote() || this.doOpeningBracket() || this.doClosingBracket() || this.doComma() || this.doPeriod() || this.doLineStop() || this.doAmpersand() || this.doSlash() || this.doColon() || this.doHyphen() || this.doInvertedMarks() || this.doPlus() || this.doAsterisk() || this.doDiamond() || this.doPercent();
+          }
+          handled || this.doDigits() || this.doAcronym() || this.doWord();
+        }
+        this.input.nextIndex();
+      }
+      doWord() {
+        return true;
+      }
+      doNormalWord() {
+        const c = this.flags.context;
+        this.output.appendSpaceIfNeeded();
+        this.input.capitalizeCurrentWord();
+        this.output.appendCurrentWord();
+        this.flags.resetContext();
+        c.forceCaps = false;
+        c.spaceNextWord = true;
+      }
+      doWhiteSpace() {
+        if (!this.regexes.WHITESPACE) this.regexes.WHITESPACE = /^ $/;
+        if (this.input.matchCurrentWord(this.regexes.WHITESPACE)) {
+          const c = this.flags.context;
+          c.whitespace = true;
+          c.spaceNextWord = true;
+          if (c.openingBracket) c.spaceNextWord = false;
+          return true;
+        }
+        return false;
+      }
+      // a sub-title split, also disc/box name splits
+      doColon() {
+        if (!this.regexes.COLON) this.regexes.COLON = /^:$/;
+        if (this.input.matchCurrentWord(this.regexes.COLON)) {
+          const c = this.flags.context;
+          const featIndex = this.output.getLength() - 3;
+          const role = this.output.getLastWord();
+          if (c.slurpExtraTitleInformation && featIndex > 0 && this.output.getWordAtIndex(featIndex) === "feat." && nonEmpty(role)) {
+            this.output.setWordAtIndex(this.output.getLength() - 1, role.toLowerCase());
+          } else {
+            this.output.capitalizeLastWord(!this.mode.isSentenceCaps());
+          }
+          let skip = false;
+          const cursorPosition = this.input.getCursorPosition();
+          const length = this.input.getLength();
+          if (cursorPosition < length - 2) {
+            const nextWord = this.input.getWordAtIndex(cursorPosition + 1);
+            const afterNextWord = this.input.getWordAtIndex(cursorPosition + 2);
+            if (nextWord != null && nextWord.match(this.regexes.OPENBRACKET)) {
+              skip = true;
+              c.spaceNextWord = true;
+            }
+            if (this.input.isNextWord(" ") && afterNextWord != null && afterNextWord.match(this.regexes.OPENBRACKET)) {
+              c.spaceNextWord = true;
+              skip = true;
+              this.input.nextIndex();
+            }
+          }
+          if (!skip) {
+            this.output.appendCurrentWord();
+            this.flags.resetContext();
+            c.forceCaps = true;
+            c.colon = true;
+            c.spaceNextWord = this.input.isNextWord(" ");
+          }
+          return true;
+        }
+        return false;
+      }
+      doPreserving(name, re) {
+        if (!this.regexes[name]) this.regexes[name] = re;
+        if (this.input.matchCurrentWord(this.regexes[name])) {
+          this.output.appendWordPreserveWhiteSpace(true);
+          this.flags.resetContext();
+          return true;
+        }
+        return false;
+      }
+      doAsterisk() {
+        return this.doPreserving("ASTERISK", /^\*$/);
+      }
+      doDiamond() {
+        return this.doPreserving("DIAMOND", /^#$/);
+      }
+      doPercent() {
+        return this.doPreserving("PERCENT", /^%$/);
+      }
+      doPlus() {
+        return this.doPreserving("PLUS", /^\+$/);
+      }
+      doAmpersand() {
+        if (!this.regexes.AMPERSAND) this.regexes.AMPERSAND = /^&$/;
+        if (this.input.matchCurrentWord(this.regexes.AMPERSAND)) {
+          this.flags.resetContext();
+          this.flags.context.forceCaps = true;
+          this.output.appendSpace();
+          this.flags.context.spaceNextWord = true;
+          this.output.appendCurrentWord();
+          return true;
+        }
+        return false;
+      }
+      // ? ! ;
+      doLineStop() {
+        if (!this.regexes.LINESTOP) this.regexes.LINESTOP = /[?!;]/;
+        if (this.input.matchCurrentWord(this.regexes.LINESTOP)) {
+          this.flags.resetContext();
+          this.output.capitalizeLastWord(!this.mode.isSentenceCaps());
+          this.flags.context.forceCaps = true;
+          this.flags.context.spaceNextWord = true;
+          this.output.appendCurrentWord();
+          return true;
+        }
+        return false;
+      }
+      // a spaced hyphen is a pause, an unspaced one part of a word
+      doHyphen() {
+        if (!this.regexes.HYPHEN) this.regexes.HYPHEN = /^[-‐]$/;
+        if (this.input.matchCurrentWord(this.regexes.HYPHEN)) {
+          this.output.appendWordPreserveWhiteSpace(true);
+          this.flags.resetContext();
+          this.flags.context.forceCaps = !this.mode.isSentenceCaps();
+          this.flags.context.hyphen = true;
+          return true;
+        }
+        return false;
+      }
+      doInvertedMarks() {
+        if (!this.regexes.INVERTEDMARKS) this.regexes.INVERTEDMARKS = /(¿|¡)/;
+        if (this.input.matchCurrentWord(this.regexes.INVERTEDMARKS)) {
+          this.output.appendWordPreserveWhiteSpace(false);
+          this.flags.resetContext();
+          this.flags.context.forceCaps = true;
+          return true;
+        }
+        return false;
+      }
+      doSlash() {
+        if (!this.regexes.SLASH) this.regexes.SLASH = /[\\/]/;
+        if (this.input.matchCurrentWord(this.regexes.SLASH)) {
+          this.output.appendWordPreserveWhiteSpace(true);
+          this.flags.resetContext();
+          this.flags.context.forceCaps = true;
+          return true;
+        }
+        return false;
+      }
+      doDoubleQuote() {
+        if (!this.regexes.DOUBLEQUOTE) this.regexes.DOUBLEQUOTE = /["“”„“«»]/;
+        if (this.input.matchCurrentWord(this.regexes.DOUBLEQUOTE)) {
+          this.output.appendWordPreserveWhiteSpace(false);
+          this.flags.resetContext();
+          this.flags.context.forceCaps = !this.input.isNextWord(" ");
+          return true;
+        }
+        return false;
+      }
+      doSingleQuote() {
+        if (!this.regexes.SINGLEQUOTE) this.regexes.SINGLEQUOTE = /['‘’‹›]/;
+        if (this.input.matchCurrentWord(this.regexes.SINGLEQUOTE)) {
+          const c = this.flags.context;
+          c.forceCaps = false;
+          const isPreviousSpace = this.input.isPreviousWord(" ");
+          const isNextSpace = this.input.isNextWord(" ");
+          const state = c.openedSingleQuote;
+          if (isPreviousSpace && !isNextSpace) {
+            this.output.appendSpace();
+            c.openedSingleQuote = true;
+            c.forceCaps = true;
+          } else if (!isPreviousSpace && isNextSpace) {
+            if (state) {
+              c.forceCaps = true;
+              c.openedSingleQuote = false;
+            }
+            this.output.capitalizeLastWord();
+          }
+          c.spaceNextWord = isNextSpace;
+          this.output.appendCurrentWord();
+          this.flags.resetContext();
+          if (state === c.openedSingleQuote) c.forceCaps = false;
+          c.singlequote = true;
+          return true;
+        }
+        return false;
+      }
+      doOpeningBracket() {
+        if (!this.regexes.OPENBRACKET) this.regexes.OPENBRACKET = /[([{<]/;
+        const currentWord = this.input.getCurrentWord();
+        if (currentWord != null && currentWord.match(this.regexes.OPENBRACKET)) {
+          const c = this.flags.context;
+          this.output.capitalizeLastWord(!this.mode.isSentenceCaps());
+          this.flags.pushBracket(currentWord);
+          const closingBracket = this.flags.getCurrentCloseBracket();
+          let forcelowercase = false;
+          const cursorPosition = this.input.getCursorPosition() + 1;
+          for (let i = cursorPosition; i < this.input.getLength(); i++) {
+            const word = this.input.getWordAtIndex(i) || "";
+            if (word !== " ") {
+              if (isLowerCaseBracketWord(word) || word.match(/^featuring$|^ft$|^feat$/i) != null) {
+                c.slurpExtraTitleInformation = true;
+                if (i === cursorPosition) forcelowercase = true;
+              }
+              if (word === closingBracket) break;
+            }
+          }
+          this.output.appendSpace();
+          this.flags.resetContext();
+          c.spaceNextWord = false;
+          c.openingBracket = true;
+          c.forceCaps = !forcelowercase;
+          this.output.appendCurrentWord();
+          return true;
+        }
+        return false;
+      }
+      doClosingBracket() {
+        if (!this.regexes.CLOSEBRACKET) this.regexes.CLOSEBRACKET = /[)\]}>]/;
+        if (this.input.matchCurrentWord(this.regexes.CLOSEBRACKET)) {
+          const c = this.flags.context;
+          this.output.capitalizeLastWord();
+          if (this.flags.isInsideBrackets()) {
+            this.flags.popBracket();
+            c.slurpExtraTitleInformation = false;
+          }
+          this.flags.resetContext();
+          c.forceCaps = !this.mode.isSentenceCaps();
+          c.spaceNextWord = true;
+          this.output.appendCurrentWord();
+          return true;
+        }
+        return false;
+      }
+      doComma() {
+        if (!this.regexes.COMMA) this.regexes.COMMA = /^,$/;
+        if (this.input.matchCurrentWord(this.regexes.COMMA)) {
+          if (this.output.getLastWord() !== ",") {
+            this.flags.resetContext();
+            this.flags.context.spaceNextWord = true;
+            this.flags.context.forceCaps = false;
+            this.output.appendCurrentWord();
+          }
+          return true;
+        }
+        return false;
+      }
+      // a full stop, a number split, an ellipsis or an acronym
+      doPeriod() {
+        if (!this.regexes.PERIOD) this.regexes.PERIOD = /^\.$/;
+        if (this.input.matchCurrentWord(this.regexes.PERIOD)) {
+          const c = this.flags.context;
+          if (this.output.getLastWord() === ".") {
+            if (!c.ellipsis) {
+              this.output.appendWord("..");
+              while (this.input.isNextWord(".")) this.input.nextIndex();
+              this.flags.resetContext();
+              c.ellipsis = true;
+            }
+            c.forceCaps = true;
+            c.spaceNextWord = true;
+          } else {
+            if (!this.input.hasMoreWords() || this.input.getNextWord() !== ".") this.output.capitalizeLastWord();
+            this.output.appendWord(".");
+            this.flags.resetContext();
+            c.forceCaps = true;
+            c.spaceNextWord = this.input.isNextWord(" ");
+          }
+          return true;
+        }
+        return false;
+      }
+      // "A. B. C. I Love You" => "A.B.C. I Love You"
+      doAcronym() {
+        if (!this.regexes.ACRONYM) this.regexes.ACRONYM = /^\w$/;
+        let subIndex = this.input.getCursorPosition() + 1;
+        const tmp = [];
+        const currentWord = this.input.getCurrentWord();
+        if (currentWord != null && currentWord.match(this.regexes.ACRONYM)) {
+          tmp.push(currentWord.toUpperCase());
+          let expectWord = false;
+          let gotPeriod = false;
+          for (; subIndex < this.input.getLength(); ) {
+            const wordAtIndex = this.input.getWordAtIndex(subIndex);
+            if (expectWord && wordAtIndex != null && wordAtIndex.match(this.regexes.ACRONYM)) {
+              tmp.push(wordAtIndex.toUpperCase());
+              expectWord = false;
+              gotPeriod = false;
+            } else {
+              if (wordAtIndex === "." && !gotPeriod) {
+                tmp[tmp.length] = ".";
+                gotPeriod = true;
+                expectWord = true;
+              } else if (gotPeriod && wordAtIndex === " ") {
+                expectWord = true;
+              } else if (tmp[tmp.length - 1] !== ".") {
+                tmp.pop();
+                subIndex--;
+              }
+              break;
+            }
+            subIndex++;
+          }
+        }
+        if (tmp.length > 2) {
+          const string = tmp.join("").replace(/(\.)*$/, ".");
+          const c = this.flags.context;
+          this.output.appendSpaceIfNeeded();
+          this.output.appendWord(string);
+          this.flags.resetContext();
+          c.acronym = true;
+          c.spaceNextWord = true;
+          c.forceCaps = false;
+          this.input.setCursorPosition(subIndex - 1);
+          return true;
+        }
+        return false;
+      }
+      doDigits() {
+        if (!this.regexes.DIGITS) {
+          this.regexes.DIGITS = /^\d+$/;
+          this.regexes.DIGITS_NUMBERSPLIT = /[,.]/;
+          this.regexes.DIGITS_DUPLE = /^\d\d$/;
+          this.regexes.DIGITS_TRIPLE = /^\d\d\d$/;
+          this.regexes.DIGITS_NTUPLE = /^\d\d\d\d+$/;
+        }
+        const c = this.flags.context;
+        let subIndex = this.input.getCursorPosition() + 1;
+        const tmp = [];
+        if (this.input.matchCurrentWord(this.regexes.DIGITS)) {
+          tmp.push(this.input.getCurrentWord());
+          c.numberSplitExpect = true;
+          for (; subIndex < this.input.getLength(); ) {
+            if (c.numberSplitExpect) {
+              if (this.input.matchWordAtIndex(subIndex, this.regexes.DIGITS_NUMBERSPLIT)) {
+                tmp.push(this.input.getWordAtIndex(subIndex));
+                c.numberSplitExpect = false;
+              } else {
+                break;
+              }
+            } else if (this.input.matchWordAtIndex(subIndex, this.regexes.DIGITS_TRIPLE)) {
+              if (c.numberSplitChar == null) c.numberSplitChar = tmp[tmp.length - 1];
+              tmp.push(this.input.getWordAtIndex(subIndex));
+              c.numberSplitExpect = true;
+            } else {
+              if (this.input.matchWordAtIndex(subIndex, this.regexes.DIGITS_DUPLE)) {
+                if (tmp.length > 2 && c.numberSplitChar !== tmp[tmp.length - 1]) {
+                  tmp.push(this.input.getWordAtIndex(subIndex++));
+                } else {
+                  tmp.pop();
+                  subIndex--;
+                }
+              } else if (this.input.matchWordAtIndex(subIndex, this.regexes.DIGITS_NTUPLE)) {
+                tmp.push(this.input.getWordAtIndex(subIndex++));
+              } else {
+                tmp.pop();
+                subIndex--;
+              }
+              break;
+            }
+            subIndex++;
+          }
+          this.input.setCursorPosition(subIndex - 1);
+          this.output.appendSpaceIfNeeded();
+          this.output.appendWord(tmp.join(""));
+          this.flags.resetContext();
+          c.forceCaps = false;
+          c.number = true;
+          return true;
+        }
+        return false;
+      }
+      doIgnoreWords() {
+        if (this.input.getCurrentWord() === "dB") {
+          this.output.appendSpaceIfNeeded();
+          this.output.appendCurrentWord();
+          return true;
+        }
+        return false;
+      }
+      // featuring, f., ft[.], feat[.] → (feat. …)
+      doFeaturingArtistStyle() {
+        if (!this.regexes.FEAT) {
+          this.regexes.FEAT = /^featuring$|^f$|^ft$|^feat$/i;
+          this.regexes.FEAT_F = /^f$/i;
+          this.regexes.FEAT_FEAT = /^feat$/i;
+        }
+        const flags = this.flags, c = flags.context;
+        const currentWord = this.input.getCurrentWord();
+        if (currentWord == null) return false;
+        if (currentWord.match(this.regexes.FEAT)) {
+          const nextWord = this.input.getNextWord();
+          if (currentWord.match(this.regexes.FEAT_F) && nextWord != null && !nextWord.match(/^[/.]$/)) return false;
+          if (this.input.getCursorPosition() < this.input.getLength() - 2) {
+            const nw = this.input.getNextWord();
+            const featWord = currentWord + (nw != null && (nw === "." || nw === "/") ? nw : currentWord.match(this.regexes.FEAT_FEAT) ? "." : "");
+            if (!c.openingBracket && !flags.isInsideBrackets()) {
+              if (flags.isInsideBrackets()) {
+                while (flags.isInsideBrackets()) {
+                  const cb = flags.popBracket();
+                  this.output.appendWord(cb);
+                  if (this.input.getWordAtIndex(this.input.getLength() - 1) === cb) this.input.dropLastWord();
+                }
+              }
+              const cursorPosition = this.input.getCursorPosition();
+              const length = this.input.getLength();
+              let i = cursorPosition;
+              for (; i < length; i++) if (this.input.getWordAtIndex(i) === "(") break;
+              if (i !== cursorPosition && i < length - 1) this.input.insertWordsAtIndex(i, [")", " "]);
+              this.input.updateCurrentWord("(");
+              this.doOpeningBracket();
+            } else {
+              this.output.appendWord(" ");
+            }
+            this.output.appendWord(featWord);
+            flags.resetContext();
+            c.forceCaps = true;
+            c.openingBracket = false;
+            c.spaceNextWord = true;
+            c.slurpExtraTitleInformation = true;
+            if (this.input.isNextWord(".") || this.input.isNextWord("/")) this.input.nextIndex();
+            return true;
+          }
+        }
+        return false;
+      }
+      moveArticleToEnd(s) {
+        return trim(s).replace(/^(The|Los) (.+)$/, (m, article, name) => name + ", " + article);
+      }
+      sortCompoundName(s, callback) {
+        const t = trim(s);
+        let joinPhrase = " and ";
+        joinPhrase = t.indexOf(" + ") === -1 ? joinPhrase : " + ";
+        joinPhrase = t.indexOf(" & ") === -1 ? joinPhrase : " & ";
+        return t.split(joinPhrase).map((x) => callback(x, this.regexes)).join(joinPhrase);
+      }
+      // the word handling the track, release, work and area handlers share
+      doTitleWord(ignoreWords, featuring) {
+        ignoreWords && this.doIgnoreWords() || featuring && this.doFeaturingArtistStyle() || this.mode.doWord() || this.doNormalWord();
+        this.flags.context.number = false;
+        return true;
+      }
+      doNameWord() {
+        const c = this.flags.context;
+        this.output.appendSpaceIfNeeded();
+        this.input.capitalizeCurrentWord();
+        this.output.appendCurrentWord();
+        this.flags.resetContext();
+        c.number = false;
+        c.forceCaps = false;
+        c.spaceNextWord = true;
+        return true;
+      }
+    }
+    const UNTITLED = /^([([]?\s*untitled\s*[)\]]?)$/i;
+    class TrackHandler extends Handler {
+      removeBonusInfo(s) {
+        return s.replace(/[([]?bonus(\s+track)?s?\s*[)\]]?$/i, "").replace(/[([]?retail(\s+version)?\s*[)\]]?$/i, "");
+      }
+      process(s) {
+        return this.mode.fixVinylSizes(super.process(s));
+      }
+      getWordsForProcessing(s) {
+        return this.mode.prepExtraTitleInfo(this.input.splitWordsAndPunctuation(this.mode.preProcessTitles(this.removeBonusInfo(s))));
+      }
+      checkSpecialCase(s) {
+        if (s != null) {
+          if (/^([([]?\s*data(\s+track)?\s*[)\]]?$)/i.test(s)) return SPECIAL3.SPECIALCASE_DATA_TRACK;
+          if (/^([([]?\s*(silen(t|ce)|blank)(\s+track)?\s*[)\]]?)$/i.test(s)) return SPECIAL3.SPECIALCASE_SILENCE;
+          if (/^([([]?\s*untitled(\s+track)?\s*[)\]]?)$/i.test(s)) return SPECIAL3.SPECIALCASE_UNTITLED;
+          if (/^([([]?\s*(unknown|bonus|hidden)(\s+track)?\s*[)\]]?)$/i.test(s)) return SPECIAL3.SPECIALCASE_UNKNOWN;
+          if (/^\?+$/i.test(s)) return SPECIAL3.SPECIALCASE_UNKNOWN;
+        }
+        return SPECIAL3.NOT_A_SPECIALCASE;
+      }
+      doWord() {
+        const c = this.flags.context;
+        if (!this.doIgnoreWords() && !this.doFeaturingArtistStyle() && !this.mode.doWord()) {
+          if (this.input.matchCurrentWord(/7in/i)) {
+            this.output.appendSpaceIfNeeded();
+            this.output.appendWord('7"');
+            this.flags.resetContext();
+            c.spaceNextWord = false;
+            c.forceCaps = false;
+          } else if (this.input.matchCurrentWord(/12in/i)) {
+            this.output.appendSpaceIfNeeded();
+            this.output.appendWord('12"');
+            this.flags.resetContext();
+            c.spaceNextWord = false;
+            c.forceCaps = false;
+          } else {
+            this.output.appendSpaceIfNeeded();
+            this.input.capitalizeCurrentWord();
+            this.output.appendCurrentWord();
+            this.flags.resetContext();
+            c.spaceNextWord = true;
+            c.forceCaps = false;
+          }
+        }
+        c.number = false;
+        return true;
+      }
+      guessSortName(s) {
+        return this.moveArticleToEnd(s);
+      }
+    }
+    class ReleaseHandler extends Handler {
+      checkSpecialCase(s) {
+        return s != null && UNTITLED.test(s) ? SPECIAL3.SPECIALCASE_UNTITLED : SPECIAL3.NOT_A_SPECIALCASE;
+      }
+      process(s) {
+        return this.mode.fixVinylSizes(super.process(s));
+      }
+      getWordsForProcessing(s) {
+        return this.mode.prepExtraTitleInfo(this.input.splitWordsAndPunctuation(this.mode.preProcessTitles(s)));
+      }
+      doWord() {
+        return this.doTitleWord(false, true);
+      }
+      guessSortName(s) {
+        return this.moveArticleToEnd(s);
+      }
+    }
+    class WorkHandler extends Handler {
+      checkSpecialCase(s) {
+        return s != null && UNTITLED.test(s) ? SPECIAL3.SPECIALCASE_UNTITLED : SPECIAL3.NOT_A_SPECIALCASE;
+      }
+      getWordsForProcessing(s) {
+        return this.mode.prepExtraTitleInfo(this.input.splitWordsAndPunctuation(this.mode.preProcessTitles(s)));
+      }
+      doWord() {
+        return this.doTitleWord(true, true);
+      }
+      guessSortName(s) {
+        return this.moveArticleToEnd(s);
+      }
+    }
+    function noneCase(s, what) {
+      if (s == null) return SPECIAL3.NOT_A_SPECIALCASE;
+      const res = [
+        /^\s*$/i,
+        /^[([]?\s*Unknown\s*[)\]]?$/i,
+        /^[([]?\s*none\s*[)\]]?$/i,
+        new RegExp("^[([]?\\s*no[\\s-]+" + what + "\\s*[)\\]]?$", "i"),
+        /^[([]?\s*not[\s-]+applicable\s*[)\]]?$/i,
+        /^[([]?\s*n\s*[\\/]\s*a\s*[)\]]?$/i
+      ];
+      return res.some((re) => re.test(s)) ? SPECIAL3.SPECIALCASE_UNKNOWN : SPECIAL3.NOT_A_SPECIALCASE;
+    }
+    class ArtistHandler extends Handler {
+      checkSpecialCase(s) {
+        return noneCase(s, "artist");
+      }
+      doWord() {
+        return this.doNameWord();
+      }
+      guessSortName(s, isPerson) {
+        return this.sortCompoundName(s, (artistName) => {
+          if (!artistName) return "";
+          let name = trim(artistName);
+          let append = "";
+          if (/,\s*Sr\.?$/i.test(name)) {
+            name = name.replace(/,\s*Sr\.?$/i, "");
+            append = ", Sr.";
+          } else if (/,\s*Jr\.?$/i.test(name)) {
+            name = name.replace(/,\s*Jr\.?$/i, "");
+            append = ", Jr.";
+          }
+          let names = name.split(" ");
+          let reorder = false;
+          const firstName = names[0];
+          if (/^DJ$/i.test(firstName)) {
+            append = ", DJ" + append;
+            names.shift();
+          } else if (/^The$/i.test(firstName)) {
+            append = ", The" + append;
+            names.shift();
+          } else if (/^Los$/i.test(firstName)) {
+            append = ", Los" + append;
+            names.shift();
+          } else if (/^Dr\.$/i.test(firstName)) {
+            append = ", Dr." + append;
+            names.shift();
+            reorder = true;
+          } else reorder = true;
+          if (!isPerson) reorder = false;
+          if (reorder) {
+            const reordered = [];
+            if (names.length > 1) {
+              for (let i = 0; i < names.length - 1; i++) {
+                if (i === names.length - 2 && names[i] === "St.") names[i + 1] = names[i] + " " + names[i + 1];
+                else if (names[i]) reordered[i + 1] = names[i];
+              }
+              reordered[0] = names[names.length - 1];
+              if (reordered.length > 1) reordered[0] += ",";
+              names = reordered;
+            }
+          }
+          return trim(names.filter(Boolean).join(" ") + (append || ""));
+        });
+      }
+    }
+    class LabelHandler extends Handler {
+      checkSpecialCase(s) {
+        return noneCase(s, "label");
+      }
+      doWord() {
+        return this.doNameWord();
+      }
+      guessSortName(s) {
+        return this.sortCompoundName(s, (x) => this.moveArticleToEnd(x));
+      }
+    }
+    class AreaHandler extends Handler {
+      doWord() {
+        return this.doTitleWord(true, true);
+      }
+      guessSortName(s) {
+        return trim(s);
+      }
+    }
+    class PlaceHandler extends Handler {
+      doWord() {
+        return this.doTitleWord(true, false);
+      }
+      guessSortName(s) {
+        return this.sortCompoundName(s, (x) => this.moveArticleToEnd(x));
+      }
+    }
+    const HANDLERS = {
+      area: AreaHandler,
+      artist: ArtistHandler,
+      event: WorkHandler,
+      label: LabelHandler,
+      place: PlaceHandler,
+      recording: TrackHandler,
+      release: ReleaseHandler,
+      release_group: ReleaseHandler,
+      series: WorkHandler,
+      track: TrackHandler,
+      work: WorkHandler
+    };
+    const MODE_NAMES = Object.keys(MODES);
+    const LANGUAGE_MODES = { eng: "English", fra: "French", tur: "Turkish", spa: "Spanish", ita: "Italian", por: "Portuguese", nld: "Dutch" };
+    const LANGUAGE_IDS = { 113: "nld", 120: "eng", 134: "fra", 195: "ita", 340: "por", 393: "spa", 433: "tur" };
+    function modeFor(language) {
+      if (language == null || language === "") return "English";
+      const code = /^\d+$/.test(String(language)) ? LANGUAGE_IDS[language] : String(language).toLowerCase();
+      return LANGUAGE_MODES[code] || "Sentence";
+    }
+    const VERSION_PHRASES = [
+      "official lyric video",
+      "official music video",
+      "official video",
+      "official visualizer",
+      "official visualiser",
+      "official audio",
+      "kinetic lyric video",
+      "lyric video",
+      "lyrics video",
+      "music video",
+      "backing track",
+      "animated",
+      "animation",
+      "super slowed",
+      "extra slowed",
+      "ultra slowed",
+      "slowed down",
+      "slowed",
+      "super sped up",
+      "sped up",
+      "super speed up",
+      "speed up",
+      "low pitched",
+      "reverb",
+      "nightcore",
+      "bootleg",
+      "mashup",
+      "flip"
+    ];
+    const wholeWord = (alternatives, flags) => new RegExp(String.raw`(?<![\p{L}\p{N}])(` + alternatives + String.raw`)(?![\p{L}\p{N}])`, flags);
+    const VERSION_RE = wholeWord(VERSION_PHRASES.join("|"), "giu");
+    const TITLE_ENTITIES = /* @__PURE__ */ new Set(["track", "recording", "release", "release_group", "work"]);
+    function versionWords(out, keepUpper) {
+      return out.replace(/([([［（【])([^()[\]［］（）【】]*)([)\]］）】])/g, (m, open, inner, close) => open + inner.replace(VERSION_RE, (w) => keepUpper && w.length > 1 && w === w.toUpperCase() && w !== w.toLowerCase() ? w : w.toLowerCase()) + close);
+    }
+    function camelCase(out, source) {
+      const words = source.match(/[\p{L}\p{N}]+/gu) || [];
+      for (const w of new Set(words.filter((x) => /\p{Ll}\p{Lu}/u.test(x)))) out = out.replace(wholeWord(escapeRegExp(w), "giu"), w);
+      return out;
+    }
+    function run(method, s, o) {
+      o = o || {};
+      const entity = o.entity || "track";
+      if (entity === "genre" || entity === "instrument") return String(s).toLowerCase();
+      const H = HANDLERS[entity];
+      if (!H) throw new Error("mbuGuessCase: unknown entity " + entity);
+      const modeName = o.mode && MODES[o.mode] ? o.mode : modeFor(o.language);
+      const mode = MODES[modeName](makeDefaultMode(o));
+      const keepUpper = o.keepUpperCase !== false;
+      const flags = new Flags();
+      const regexes = { SERIES_NUMBER: /^(\d+|[ivx]+)$/i, SPACES_DOTS: /\s|\./i };
+      const input = new Input(s, mode, keepUpper, regexes, flags);
+      const output = new Output(input, mode, keepUpper, flags);
+      const handler = new H(mode, regexes, input, output, flags);
+      const num = handler.checkSpecialCase(s);
+      if (handler.isSpecialCase(num)) return handler.getSpecialCaseFormatted(s, num);
+      if (method === "guessSortName") return handler.guessSortName(s, !!o.isPerson);
+      let out = handler.process(s);
+      if (o.extras !== false && TITLE_ENTITIES.has(entity)) {
+        out = versionWords(out, keepUpper);
+        if (keepUpper) out = camelCase(out, s);
+      }
+      return out;
+    }
+    const count = (s, re) => (s.match(re) || []).length;
+    const isCasedOther = (s) => count(s, /[\p{Script=Cyrillic}\p{Script=Greek}\p{Script=Armenian}]/gu) > count(s, /\p{Script=Latin}/gu);
+    function partMode(p, o) {
+      if (isCasedOther(p)) return "Sentence";
+      if (typeof o.detect !== "function" || !/\p{Script=Latin}/u.test(p)) return null;
+      let lang = null;
+      try {
+        lang = o.detect(p);
+      } catch (e) {
+      }
+      return lang ? modeFor(lang) : null;
+    }
+    function byScript(s, o) {
+      const sep = o.separator == null ? "/" : String(o.separator);
+      const parts = sep.trim() ? s.split(new RegExp(String.raw`(\s*` + escapeRegExp(sep.trim()) + String.raw`\s*)`)) : [s];
+      const modes = parts.map((p, i) => i % 2 ? null : partMode(p, o));
+      const opts = (m) => m ? Object.assign({}, o, { mode: m }) : o;
+      const texts = modes.filter((m, i) => i % 2 === 0);
+      if (texts.every((m) => m === texts[0])) return run("process", s, opts(texts[0]));
+      return parts.map((p, i) => i % 2 ? p : run("process", p, opts(modes[i]))).join("");
+    }
+    function guessCase(title, opts) {
+      const s = String(title == null ? "" : title), o = opts || {};
+      if (!(o.mode && MODES[o.mode]) && o.byScript !== false && o.extras !== false && TITLE_ENTITIES.has(o.entity || "track")) return byScript(s, o);
+      return run("process", s, o);
+    }
+    guessCase.sortName = (name, opts) => run("guessSortName", String(name == null ? "" : name), opts);
+    guessCase.modeFor = modeFor;
+    guessCase.modes = MODE_NAMES;
+    return guessCase;
+  })();
+  var guess_case_default = mbuGuessCase;
 
   // src/mappers.js
   var INSTRUMENTS_CI = Object.fromEntries(
@@ -2271,6 +3466,7 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
     [/^synthesizer$/, /\bmoog\b/i, "Moog"]
   ];
   var isBareInstrument = (r) => r.linkType === "instrument" && !(r.attributes || []).some((a) => a && a._type === "instrument");
+  var guessSortName = (name) => guess_case_default.sortName(name, { entity: "artist", isPerson: true });
   function flattenTracklist(tracklist) {
     if (!Array.isArray(tracklist)) return [];
     return tracklist.flatMap((t) => {
@@ -2509,6 +3705,112 @@ if (!mbuClaim('credit_hoarder', 'Credit Hoarder')) return;
       }
       return rolesArr;
     }, []) || [];
+  }
+
+  // ../../dev/match/artist-match.mjs
+  var MBM_EXACT_LIMIT = 100;
+  var MBM_SPECIAL_PURPOSE = [
+    "125ec42a-7229-4250-afc5-e057484327fe",
+    // [unknown]
+    "f731ccc4-e22a-43af-a747-64213329e088",
+    // [anonymous]
+    "33cf029c-63b0-41a0-9855-be2a3665fb3b",
+    // [data]
+    "314e1c25-dde7-4e4d-b2f4-0a7b9f7c56dc",
+    // [dialogue]
+    "eec63d3c-3b81-4ad4-b1e4-7c147d4d2b61",
+    // [no artist]
+    "9be7f096-97ec-4615-8957-8d40b5dcbc41",
+    // [traditional]
+    "89ad4ac3-39f7-470e-963a-56509c546377",
+    // Various Artists
+    "7e84f845-ac16-41fe-9ff8-df12eb32af55",
+    // MusicBrainz Test Artist
+    "66ea0139-149f-4a0c-8fbf-5ea9ec4a6e49",
+    // [Disney]
+    "a0ef7e1d-44ff-4039-9435-7d5fefdeecc9",
+    // [theatre]
+    "90068d37-bae7-4292-be4a-704c145bd616",
+    // [church chimes]
+    "80a8851f-444c-4539-892b-ad2a49292aa9"
+    // [language instruction]
+  ];
+  function mbmFold(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").toLowerCase().replace(/\s+/g, " ").trim();
+  }
+  function mbmFoldKeepCase(s) {
+    return String(s == null ? "" : s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "d").replace(/[‐‑‒–—―−]/g, "-").replace(/\s+/g, " ").trim();
+  }
+  function mbmSameName(a, b) {
+    return mbmFold(a) === mbmFold(b) && mbmFold(a) !== "";
+  }
+  function mbmSameNameCase(a, b) {
+    return mbmFoldKeepCase(a) === mbmFoldKeepCase(b) && mbmFoldKeepCase(a) !== "";
+  }
+  function mbmHolds(entity, name, caseExact) {
+    if (!entity) return null;
+    const same = caseExact ? mbmSameNameCase : mbmSameName;
+    if (same(entity.name, name)) return "name";
+    if ((entity.aliases || []).some((al) => same(al && (al.name != null ? al.name : al), name))) return "alias";
+    return null;
+  }
+  function mbmIdentityQuery(name, field) {
+    const q = String(name == null ? "" : name).replace(/["\\]/g, " ").replace(/\s+/g, " ").trim();
+    return q ? 'alias:"' + q + '" OR ' + (field || "artist") + ':"' + q + '"' : "";
+  }
+  function mbmExactIdentity(json, name, opts) {
+    const o = opts || {};
+    if (!json || typeof json !== "object") return { status: "failed", exact: [] };
+    const list = json.artists || json.labels || json.places || [];
+    let exact = list.filter((e) => mbmHolds(e, name));
+    if (exact.length > 1) {
+      const caseExact = exact.filter((e) => mbmHolds(e, name, true));
+      if (caseExact.length === 1) exact = caseExact;
+      else if (o.scoreGap) {
+        const scored = exact.filter((e) => typeof e.score === "number").sort((a, b) => b.score - a.score);
+        if (scored.length >= 2 && scored[0].score - scored[1].score >= o.scoreGap) exact = [scored[0]];
+      }
+    }
+    const offset = typeof json.offset === "number" ? json.offset : 0;
+    const complete = typeof json.count === "number" && json.count <= offset + list.length;
+    if (exact.length === 1 && complete) return { status: "unique", hit: exact[0], via: mbmHolds(exact[0], name) === "name" ? "name" : "alias", exact, complete };
+    if (exact.length > 1) return { status: "ambiguous", exact, complete };
+    if (!complete) return { status: "incomplete", exact, complete };
+    return { status: "none", exact, complete };
+  }
+  function mbmRelatedArtists(artistJson) {
+    if (!artistJson || !artistJson.id) return [];
+    const out = [{ gid: artistJson.id, name: artistJson.name || "", aliases: (artistJson.aliases || []).map((a) => a && a.name).filter(Boolean), rel: "self" }];
+    for (const r of artistJson.relations || []) {
+      const a = r && r.artist;
+      if (!a || !a.id || out.some((x) => x.gid === a.id)) continue;
+      out.push({ gid: a.id, name: a.name || "", aliases: [], rel: r.type || "" });
+    }
+    return out;
+  }
+  function mbmContextHolders(related, name, candidates) {
+    const cand = new Map((candidates || []).map((c) => [c.id || c.gid, c]));
+    const out = [];
+    for (const r of related || []) {
+      let via = mbmSameName(r.name, name) ? "name" : (r.aliases || []).some((a) => mbmSameName(a, name)) ? "alias" : null;
+      if (!via) {
+        const c = cand.get(r.gid);
+        if (c && mbmHolds(c, name)) via = mbmHolds(c, name);
+      }
+      if (via && !out.some((x) => x.gid === r.gid)) out.push({ gid: r.gid, name: r.name, via, rel: r.rel });
+    }
+    return out;
+  }
+  function mbmCoCreditHits(recordingsJson, ctxGid, name) {
+    const out = [];
+    for (const rec of recordingsJson && recordingsJson.recordings || []) {
+      for (const c of rec["artist-credit"] || []) {
+        const a = c && c.artist;
+        if (!a || !a.id || a.id === ctxGid) continue;
+        if ((mbmSameName(c.name, name) || mbmSameName(a.name, name)) && !out.some((x) => x.gid === a.id)) out.push({ gid: a.id, name: a.name });
+      }
+    }
+    return out;
   }
 
   // src/sources/split-names.js
@@ -5753,7 +7055,7 @@ Right-click: add ${_addCount > 1 ? "them" : "it"} silently in the background`;
             if (entityType === "artist") {
               createParams = {
                 "edit-artist.name": finalName,
-                "edit-artist.sort_name": mbmGuessSortName(finalName),
+                "edit-artist.sort_name": guessSortName(finalName),
                 "edit-artist.type_id": "1"
               };
               seedUrls(createParams, "artist");

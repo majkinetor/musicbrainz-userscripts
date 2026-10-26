@@ -34,8 +34,10 @@ const BRACKET_REFINES = [
 // and MB shows each as one more line under "instruments:"
 const isBareInstrument = r => r.linkType === 'instrument' && !(r.attributes || []).some(a => a && a._type === 'instrument');
 
-// the sort-name guess is shared with Apollo (dev/match/artist-match.mjs, #623)
-export { mbmGuessSortName as guessSortName } from '../../../dev/match/artist-match.mjs';
+// MusicBrainz's own sort-name guess for a person, ported in the shared guess case (#848); the
+// created artist is seeded as a Person
+import mbuGuessCase from '../../../dev/guesscase/guess-case.mjs';
+export const guessSortName = name => mbuGuessCase.sortName(name, { entity: 'artist', isPerson: true });
 
 /**
  * Flatten Discogs `tracklist`: classical / multi-movement releases group
