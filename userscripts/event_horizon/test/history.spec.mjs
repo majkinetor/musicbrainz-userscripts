@@ -44,3 +44,18 @@ test('open edits show in the history viewer', { tag: '@sandbox' }, async ({ page
   await attachShot(testInfo, page, 'open-edits');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace(/\.png$/, '-open.png'), fullPage: true });
 });
+
+// a single edit opens in the same viewer: the release it touches above, the edit open with its changes
+test('a single edit shows in the history viewer', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/edits`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await idle(page);
+  const id = await page.locator('.edit-list .edit-header h2 a').first().getAttribute('href');
+  await page.goto('https://test.musicbrainz.org' + id, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await idle(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('.hist .hed.one[open] .hdt table.details').count(), n => n === 1) === 1, 'the edit shows open with its changes');
+  check(await page.locator('.hist .hbar').count() === 0, 'no group bar for one edit');
+  check(await until(() => page.locator('.arthd h1 a').count(), n => n === 1) === 1, 'the release it touches heads the page');
+  await attachShot(testInfo, page, 'edit');
+  if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
+});

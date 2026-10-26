@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.320000
+// @version      2026.10.27.330000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -17,8 +17,7 @@
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://*.musicbrainz.org/user/*
 // @match        https://*.musicbrainz.org/search*
-// @match        https://*.musicbrainz.org/edit/open*
-// @match        https://*.musicbrainz.org/edit/subscribed*
+// @match        https://*.musicbrainz.org/edit/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -4407,19 +4406,20 @@ function navTo(href) {
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
 const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
-// a release's cover-art page → "art/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
+// a release's cover-art page, or its add-cover-art page → "art/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
-const artKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/cover-art/?$', 'i')); return m ? 'art/' + m[1].toLowerCase() : null; };
+const artKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/(?:add-)?cover-art/?$', 'i')); return m ? 'art/' + m[1].toLowerCase() : null; };
 // a release's relationship editor → "relate/<mbid>". MusicBrainz's React app stays where it is: Event Horizon only
 // dresses it (its header, theme and fonts over MusicBrainz's own sheets), never swaps its body, which would kill the editor
 const relKey = href => { const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edit-relationships/?$', 'i')); return m ? 'relate/' + m[1].toLowerCase() : null; };
 // a release's edit history → "hist/<mbid>"; MusicBrainz's other edit lists (a release's open edits, open and subscribed
-// edits, an edit search) → "hist/<its address, encoded>"
+// edits, an edit search) and a single edit → "hist/<its address, encoded>"
 const H_LISTS = { '/edit/open': 'Open edits', '/edit/subscribed': 'Subscribed entities', '/edit/subscribed_editors': 'Subscribed editors', '/search/edits': 'Edit search' };
 const histKey = href => {
     const u = new URL(href, location.href); if (u.origin !== location.origin) return null;
     const m = !u.search && u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/edits/?$', 'i'));
     if (m) return 'hist/' + m[1].toLowerCase();
+    if (/^\/edit\/\d+\/?$/.test(u.pathname)) return 'hist/' + encodeURIComponent(u.pathname.replace(/\/$/, ''));
     const pa = u.pathname.replace(/\/$/, ''), o = new RegExp('^/release/' + MBID.source + '/open_edits$', 'i').test(pa);
     if (!o && !H_LISTS[pa]) return null;
     if (pa === '/search/edits' && !u.searchParams.has('conditions.0.field')) return null; // the empty search form stays MusicBrainz's
@@ -4428,8 +4428,9 @@ const histKey = href => {
 };
 // the list a hist key loads, and the release it belongs to if any
 const histSrc = id => MBID.test(id) && id.length === 36 ? `/release/${id}/edits` : decodeURIComponent(id);
-const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return /\/open_edits$/.test(pa) ? 'Open edits' : H_LISTS[pa] || 'Edit history'; };
-const histRid = id => (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
+const histOne = id => (histSrc(id).match(/^\/edit\/(\d+)$/) || [])[1];
+const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return histOne(id) ? 'Edit #' + histOne(id) : /\/open_edits$/.test(pa) ? 'Open edits' : H_LISTS[pa] || 'Edit history'; };
+const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 const keyOf = href => navTo(href) || artKey(href) || histKey(href) || relKey(href);
 const PAGE_ID = keyOf(location.href);
 
@@ -4620,25 +4621,28 @@ const histTime = el => {
 };
 function histParse(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    const edits = [...doc.querySelectorAll('.edit-list')].map(el => {
-        const h = el.querySelector('.edit-header'), a = h.querySelector('h2 a'), c = h.className.split(/\s+/);
-        const ed = h.querySelector('.subheader a[href*="/user/"]'), det = el.querySelector('.edit-details');
+    const one = !doc.querySelector('.edit-list') && doc.querySelector('#content > .edit-header');
+    const edits = (one ? [doc.querySelector('#content')] : [...doc.querySelectorAll('.edit-list')]).map(el => {
+        const h = el.querySelector('.edit-header'), c = h.className.split(/\s+/);
+        const ed = h.querySelector('.subheader a[href*="/user/"]'), det = one ? (t => { const w = doc.createElement('div'); if (t) w.append(t); return w; })(el.querySelector('table.details')) : el.querySelector('.edit-details');
         if (det) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
             det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
             det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
         }
         const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/(yes|no|abstain|approve)/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
-        const vc = h.querySelector('.vote-count');
+        const vc = one ? el.querySelector('.vote-tally td.vote') : h.querySelector('.vote-count'), a = one ? h.querySelector('h1') : h.querySelector('h2 a');
+        if (one) { const x = doc.querySelector('#sidebar .edit-expiration'); if (x) el.append(x); }
         return {
-            id: +(a.getAttribute('href').match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
+            id: +((one ? a.textContent : a.getAttribute('href')).match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
             st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el),
             notes, votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
         };
     });
     const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
     const next = [...doc.querySelectorAll('.pagination a[href*="page="]')].some(x => +(x.getAttribute('href').match(/page=(\d+)/) || [])[1] > (cur || 1));
-    return { edits, next };
+    const rl = one && edits[0] && new DOMParser().parseFromString(edits[0].det, 'text/html').querySelector('a[href^="/release/"]');
+    return { edits, next: !one && next, rid: rl ? (rl.getAttribute('href').match(MBID) || [''])[0] : '' };
 }
 // an edit type's icon: what it changes, coloured by what it does (add green, edit blue, remove red, the rest violet)
 const H_ICO = {
@@ -4691,7 +4695,7 @@ async function histLoad(n) {
             else { const sr = histSrc(d.id), r = await mbnFetch(`${MB}${sr}${sr.includes('?') ? '&' : '?'}page=${p}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
             if (n !== showing || data !== d) return;
             const x = histParse(html), seen = new Set(d.edits.map(e => e.id));
-            d.edits.push(...x.edits.filter(e => !seen.has(e.id))); d.page = p;
+            d.edits.push(...x.edits.filter(e => !seen.has(e.id))); d.page = p; if (x.rid) d.rid = x.rid;
             // a voted or failed edit carries when it closed: an edit is never later than the next newer one, ids go in the order they were made
             d.edits.sort((a, b) => b.id - a.id).forEach((e, i, a) => { e.t = e.t0 = e.t0 || e.t; if (i && a[i - 1].t && (!e.t || e.t > a[i - 1].t)) e.t = a[i - 1].t; }); d.more = x.next && x.edits.length > 0;
             render();
@@ -4740,7 +4744,8 @@ function histPage(app, d) {
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
     const name = e => e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden';
     let body = '';
-    if (d.grp === 'burst' || d.grp === 'day') {
+    if (histOne(d.id)) body = d.edits.map(e => histEdit(e).replace('<details class="hed">', '<details class="hed one" open>')).join('');
+    else if (d.grp === 'burst' || d.grp === 'day') {
         const gs = d.grp === 'burst' ? histBursts(es) : es.reduce((a, e) => { const g = a[a.length - 1]; if (g && histDay(g.es[0].t) === histDay(e.t)) g.es.push(e); else a.push({ es: [e] }); return a; }, []);
         let day = '';
         for (const g of gs) {
@@ -4755,7 +4760,7 @@ function histPage(app, d) {
     const cnt = k => d.edits.filter(e => e.st === k).length;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}</div>` + `<div class="hql">${[...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = d.busy ? '<div class="hmore">Loading edits…</div>' : d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.more ? `<div class="hmore">${d.edits.length} edits loaded <button type="button" class="sk-b" data-hmore>Load more</button></div>` : d.edits.length ? `<div class="hmore">All ${d.edits.length} edits</div>` : '<div class="hmore">No edits</div>';
-    app.innerHTML = `<section class="arthd"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>${r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : rid ? '<h1>&nbsp;</h1>' : `<h1>${esc(histName(d.id))}</h1>`}</section><section class="hist">${d.edits.length ? bar : ''}${body}${foot}</section>`;
+    app.innerHTML = `<section class="arthd"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>${r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : rid ? '<h1>&nbsp;</h1>' : `<h1>${esc(histName(d.id))}</h1>`}</section><section class="hist">${d.edits.length && !histOne(d.id) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
     app.onclick = ev => {
         if (data !== d) return;
         const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');

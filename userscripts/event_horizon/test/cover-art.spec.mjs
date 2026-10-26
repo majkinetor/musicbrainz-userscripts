@@ -4,8 +4,8 @@ import { RELEASE } from '../../art_station/test/as.mjs';
 test.use({ gm: { name: 'Event Horizon' } });
 
 // the release page's Art opens the cover-art page: Event Horizon shows the title and artist, Art Station's gallery under them
-for (const asFirst of [true, false]) test(`the cover-art page holds Art Station's gallery (${asFirst ? 'Art Station' : 'Event Horizon'} first)`, { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
-  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/cover-art`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+for (const add of [false, true]) for (const asFirst of [true, false]) test(`the ${add ? 'add-' : ''}cover-art page holds Art Station's gallery (${asFirst ? 'Art Station' : 'Event Horizon'} first)`, { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/${add ? 'add-' : ''}cover-art`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await idle(page);
   if (asFirst) { await inject('art_station'); await page.waitForSelector('#as-root', { timeout: 20000 }); }
   await inject('event_horizon');

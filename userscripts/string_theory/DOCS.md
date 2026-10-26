@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-25 22:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-26 08:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -736,11 +736,13 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 
 ### The viewer
 
-Event Horizon shows its own page for each of these, and for search results; subpages (edit, history, …) stay MusicBrainz's. A link to another such page opens in place. The round corner icon switches back to MusicBrainz's page; right-click it for the settings.
+Event Horizon shows its own page for each of these, and for search results. A link to another such page opens in place. The round corner icon switches back to MusicBrainz's page; right-click it for the settings.
 
 - **Pictures**: an artist's or label's comes from its linked sites (click for the next, the badge opens its source); an area's is its Wikidata map with the flag; a place's its Commons or Wikidata image.
 - **Areas, instruments and places** list what is in, uses or happened at them.
 - **Search results** keep MusicBrainz's columns, with the score as a bar.
+- **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
+- **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - If a page can't load, **Retry**, or **Show MusicBrainz's page**.
 
