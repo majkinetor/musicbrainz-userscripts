@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-26 14:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-26 15:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -754,6 +754,7 @@ Event Horizon shows its own page for each of these, and for search results. A li
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
+- **Annotation** and, for a release group, **Cover art** open from Edit's menu (point at Edit); a release group's cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
 - If a page can't load, **Retry**, or **Show MusicBrainz's page**.
 
 ### Sections

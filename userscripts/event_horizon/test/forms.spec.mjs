@@ -1,0 +1,33 @@
+import { test, check, until, settled, requireLogin, attachShot } from '../../../dev/test/harness.mjs';
+
+test.use({ gm: { name: 'Event Horizon' } });
+
+const RG = 'ed64def7-4a2f-4ff7-9ae3-fbdfac9f8e0e';
+
+// a release group's Set cover art and its Edit annotation keep MusicBrainz's form, dressed in Event Horizon's header and theme
+for (const [form, name] of [['set-cover-art', 'Set cover art'], ['edit_annotation', 'Annotation']]) {
+  test(`${name}: the form takes Event Horizon's header`, { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+    await page.goto(`https://test.musicbrainz.org/release-group/${RG}/${form}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await requireLogin(page);
+    await settled(page);
+    await inject('event_horizon');
+    check(await until(() => page.locator(`#eh-relhd h1 a[href$="/release-group/${RG}"]`).count(), n => n === 1) === 1, 'the header shows, its title linking to the release group');
+    check(new RegExp(name, 'i').test(await page.locator('#eh-relhd .kicker').textContent()), 'the kicker names the form');
+    check(!(await page.locator('#content > .rgheader').isVisible()), 'MusicBrainz\'s header hides');
+    check(await page.locator('#content form button.submit').isVisible(), 'the form stays');
+    await attachShot(testInfo, page, form);
+  });
+}
+
+// the release group's Edit opens both forms on hover, and its cover offers Set cover art
+test('the release group page leads to its forms', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('.hero .kicker .abx').count(), n => n === 1) === 1, 'Edit has a menu');
+  await page.locator('.hero .kicker .abx > a.ab').hover();
+  check(await page.locator(`.abm a[href$="/release-group/${RG}/edit_annotation"]`).isVisible(), 'the menu offers the annotation');
+  check(await page.locator(`.abm a[href$="/release-group/${RG}/set-cover-art"]`).isVisible(), 'and the cover art');
+  await page.locator('.hero .picw').hover();
+  check(await until(() => page.locator('.hero .cvact').evaluate(e => getComputedStyle(e).opacity), o => o === '1') === '1', 'hovering the cover shows Set cover art');
+});
