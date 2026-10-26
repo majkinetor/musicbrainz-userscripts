@@ -39,6 +39,10 @@ test('the artist edit page gets the links column, the name highlight and loujine
   check(s.bar, 'Apollo\'s header bar is there');
   const c = await until(() => shorterColumn(page), v => v.in === v.want);
   check(c.in === c.want, `loujine's card ends the shorter column (${c.in}, want ${c.want})`);
+  // links with a platform we draw get our SVG icon in place of MusicBrainz's favicon
+  const fav = await until(() => page.evaluate(() => [...document.querySelectorAll('#external-links-editor tr.external-link-item')].filter(tr => tr.querySelector('a[href]')).map(tr => [new URL(tr.querySelector('a[href]').href).hostname, tr.querySelector('.favicon')?.dataset.tcIcon || '', !!tr.querySelector('.favicon > svg')])), v => v.some(r => /discogs/.test(r[0]) && r[2]));
+  const dc = fav.find(r => /discogs/.test(r[0]));
+  check(dc && dc[1] === 'discogs' && dc[2], `Discogs gets our icon (${JSON.stringify(dc)})`);
   // Sort name: guess is Apollo's Aa, MusicBrainz's copy button is gone
   const sn = await page.evaluate(() => ({ gc: getComputedStyle(document.querySelector('button.guesscase-sortname'), '::before').content, copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
   check(sn.gc === '"Aa"' && sn.copy === 'none', `sort name: Aa guess, no copy (${sn.gc}, ${sn.copy})`);
