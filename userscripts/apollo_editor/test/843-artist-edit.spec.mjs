@@ -46,6 +46,10 @@ test('the artist edit page gets the links column, the name highlight and loujine
   // Sort name: guess is Apollo's Aa, MusicBrainz's copy button is gone
   const sn = await page.evaluate(() => ({ gc: getComputedStyle(document.querySelector('button.guesscase-sortname'), '::before').content, copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
   check(sn.gc === '"Aa"' && sn.copy === 'none', `sort name: Aa guess, no copy (${sn.gc}, ${sn.copy})`);
+  check(await page.evaluate(() => getComputedStyle(document.querySelector('button.guesscase-options')).display) === 'none', 'the guess-case ⚙ is hidden');
+  await page.locator('button.guesscase-sortname').click({ button: 'right' });
+  check(await until(() => page.evaluate(() => !!document.querySelector('.tc-gcpop')), v => v), 'right-click on Aa opens the guess-case options');
+  await page.keyboard.press('Escape');
   await attachShot(testInfo, page.locator('[id="id-edit-artist.name"]').locator('xpath=ancestor::fieldset[1]'), 'artist-details');
   // right-click a link's favicon: MusicBrainz's own URL editor opens, as on Release information
   const inputs = () => page.evaluate(() => [...document.querySelectorAll('#external-links-editor input, .external-link-dialog input, [role=dialog] input')].filter(i => i.offsetParent).length);
