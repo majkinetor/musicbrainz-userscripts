@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.145911
+// @version      2026.10.26.160220
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13369,7 +13369,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   let _apolloUsed = false;   // set true once a tracklist/recordings mirror is shown — i.e. Apollo is in use
   function ensureApolloEditNote() {
     if (!_apolloUsed) return;
-    const ta = document.getElementById('edit-note-text') || document.getElementById('id-edit-release-group.edit_note'); if (!ta) return;   // #842: the release group form's   // MB's plain edit-note textarea (name=edit_note)
+    const ta = document.getElementById('edit-note-text') || document.getElementById('id-edit-release-group.edit_note') || document.getElementById('id-edit-artist.edit_note'); if (!ta) return;   // #842 #843: the release group's and artist's forms   // MB's plain edit-note textarea (name=edit_note)
     const cur = ta.value || '';
     if (/Apollo Editor/i.test(cur)) return;   // already credited — don't duplicate
     const s = (typeof GM_info !== 'undefined' && GM_info.script) || {};   // same shape as the other scripts' edit notes
@@ -13876,6 +13876,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // Append/refresh a front-cover thumbnail (Cover Art Archive) at the bottom of the
   // right column, below external links. Display only; hides itself when there's no art.
   function riCover(col) {
+    if (AR_PAGE) return;   // #843: an artist has no cover
     const mbid = currentMbid(), kind = RG_PAGE ? 'release-group' : 'release';   // #842: the release group's cover on its edit page
     let box = col.querySelector(':scope > #tc-ri-cover');
     if (!mbid) { box?.remove(); return; }
@@ -14674,7 +14675,37 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       _rgAC = { names: ((v && v.names) || []).map(n => ({ artist: u(n.artist) || null, name: u(n.name) || '', joinPhrase: u(n.joinPhrase) || '' })) };
     },
   };
-  const rgForm = () => document.querySelector('form.edit-release-group');
+  // #843: the artist's edit page, the same layout without the artist cell; ENT_KIND names the page's entity for both
+  const AR_PAGE = new RegExp('^/artist/(?:create|' + MBID_RE.source + '/edit)/?$', 'i').test(location.pathname);
+  const ENT_KIND = RG_PAGE ? 'release-group' : AR_PAGE ? 'artist' : '';
+  const rgForm = () => document.querySelector('form.edit-' + ENT_KIND);
+  // Name and Sort name: a line under the field shows its confusable and invisible characters and stray spaces, while it has any
+  function entNameHl(inp) {
+    if (!inp) return;
+    let box = inp._tcHl;
+    if (!box) {
+      recStyle();   // the marks' own look
+      box = inp._tcHl = document.createElement('div'); box.className = 'tc-ent-hl mbu-ui';
+      (inp.closest('.row') || inp.parentElement).appendChild(box);   // under the field and its guess-case buttons
+      inp.addEventListener('input', () => entNameHl(inp));
+    }
+    const v = inp.value || '', html = dhRun(v);
+    const sp = /^\s|\s$|\s{2}/.test(v);
+    const show = riWant() && (/tc-cf/.test(html) || sp);
+    box.hidden = !show;
+    if (show) box.innerHTML = html.replace(/ {2,}/g, m => '<span class="tc-jp" data-tip="Double space">' + '␣'.repeat(m.length) + '</span>').replace(/^ | $/g, '<span class="tc-jp" data-tip="Leading or trailing space">␣</span>');
+  }
+  // loujine's "Add external link" box: under the links, in the right column, rather than floating beside the form
+  function entLoujine(on) {
+    const m = document.getElementById('loujine-menu'); if (!m) return;
+    const col = document.querySelector('#information > #tc-ri-rightcol');
+    if (on && col) {
+      if (!m._tcHome) m._tcHome = m.parentElement;
+      const fs = _riExtFs && _riExtFs.parentElement === col ? _riExtFs : null;
+      if (m.parentElement !== col || m.previousElementSibling !== fs) (fs ? fs.after(m) : col.prepend(m));
+      m.classList.add('tc-ent-loujine');
+    } else if (m._tcHome && m.parentElement !== m._tcHome) { m._tcHome.appendChild(m); m.classList.remove('tc-ent-loujine'); }
+  }
   const rgKey = () => JSON.stringify(((_rgAC && _rgAC.names) || []).map(n => [(n.artist && u(n.artist.gid)) || '', n.name, n.joinPhrase]));
   // the credit as the page has it: MusicBrainz's own state ($c.stash, with the artists' gids), else its hidden inputs
   function rgReadCredit() {
@@ -14758,23 +14789,26 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   let _rgObs = null;
   function applyRgEdit() {
-    if (!RG_PAGE) return;
+    if (!ENT_KIND) return;
     const form = rgForm(); if (!form) return;
     const on = riWant();
     riStyle(); rgStyle();
     form.id = 'information';   // Release information's rules and helpers find the panel by this id
+    form.classList.add('tc-ent-form');
     mbuCls(document.body, 'tc-ri-on', on);
-    if (!_rgAC) rgReadCredit();
-    rgArtistRow(form);
-    rgTypeBar(document.getElementById('id-edit-release-group.primary_type_id'), false);
-    rgTypeBar(document.getElementById('id-edit-release-group.secondary_type_ids'), true);
+    if (RG_PAGE) {
+      if (!_rgAC) rgReadCredit();
+      rgArtistRow(form);
+      rgTypeBar(document.getElementById('id-edit-release-group.primary_type_id'), false);
+      rgTypeBar(document.getElementById('id-edit-release-group.secondary_type_ids'), true);
+    }
     relocateLinks(on);
-    renderRiArtist(true);
-    rgWatchSubmit(form);
+    if (AR_PAGE) { entLoujine(on); ['name', 'sort_name'].forEach(k => entNameHl(document.getElementById('id-edit-artist.' + k))); }
+    if (RG_PAGE) { renderRiArtist(true); rgWatchSubmit(form); }
     rgNav(form);
     if (!_rgObs) {   // the links editor loads late and re-renders: keep it in the column, and its dead-link marks
       let t = 0;
-      _rgObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { relocateLinks(riWant()); remarkDeadLinks(); rgNav(form); }, 120); });
+      _rgObs = new MutationObserver(() => { clearTimeout(t); t = setTimeout(() => { relocateLinks(riWant()); remarkDeadLinks(); if (AR_PAGE) entLoujine(riWant()); rgNav(form); }, 120); });
       _rgObs.observe(form, { childList: true, subtree: true });
     }
   }
@@ -14806,18 +14840,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const title = document.createElement('div'); title.id = 'tc-nav-title';
       const pager = document.createElement('div'); pager.id = 'tc-nav-pager';
       const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'tc-nav-wbtn tc-wiz-cancel'; cancel.textContent = '✕ Cancel';
-      cancel.onclick = () => { location.href = rgGid() ? ORIGIN + '/release-group/' + rgGid() : ORIGIN + '/'; };
+      cancel.onclick = () => { location.href = rgGid() ? ORIGIN + '/' + ENT_KIND + '/' + rgGid() : ORIGIN + '/'; };
       pager.appendChild(cancel);
       bar.append(left, title, pager);
       form.before(bar);
     }
     const en = document.getElementById('tc-rg-enter'); if (en) mbuProp(en.style, 'display', rgDirty(form) ? '' : 'none');
-    const t = document.getElementById('tc-nav-title'), name = (document.getElementById('id-edit-release-group.name') || {}).value || '';
+    const t = document.getElementById('tc-nav-title'), name = (document.getElementById('id-edit-' + ENT_KIND + '.name') || {}).value || '';
     const sig = name + '\x01' + rgKey();
     if (t && t.dataset.sig !== sig) {
       t.dataset.sig = sig;
-      const nm = rgGid() ? '<a href="' + ORIGIN + '/release-group/' + esc(rgGid()) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
-      t.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + nm + '</span></div><div class="tc-nav-title-artist">' + (acLinks(_rgAC) || '') + '</div>';
+      const nm = rgGid() ? '<a href="' + ORIGIN + '/' + ENT_KIND + '/' + esc(rgGid()) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
+      t.innerHTML = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + nm + '</span></div><div class="tc-nav-title-artist">' + (RG_PAGE ? acLinks(_rgAC) || '' : '') + '</div>';
     }
   }
   let _rgStyled = false;
@@ -14825,22 +14859,27 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (_rgStyled) return; _rgStyled = true;
     const s = document.createElement('style'); s.id = 'tc-rg-style';
     s.textContent = `
-    body:not(.tc-ri-on) form.edit-release-group .tc-rg-arttbl,body:not(.tc-ri-on) form.edit-release-group .tc-rg-seg{display:none!important}
-    body.tc-ri-on form.edit-release-group #artist-credit-editor{display:none!important}
-    body.tc-ri-on form.edit-release-group > div.half-width{order:0}
-    body.tc-ri-on form.edit-release-group > #tc-ri-rightcol{order:1}
-    body.tc-ri-on form.edit-release-group > :not(.half-width):not(#tc-ri-rightcol){order:2;flex:1 1 100%}
-    body.tc-ri-on form.edit-release-group > div.documentation:empty{display:none}
-    body.tc-zen-on :is(.rgheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
-    body:has(#tc-nav-bar) form.edit-release-group{margin-top:4px}
-    body.tc-ri-on form.edit-release-group input[id="id-edit-release-group.comment"]{box-sizing:border-box;width:calc(100% - 170px)!important}
-    body.tc-ri-on form.edit-release-group .row:has(input[name*="make_votable"]){padding-left:0!important;margin-left:0!important}
-    body.tc-ri-on form.edit-release-group .row:has(input[name*="make_votable"]) > *{margin-left:0!important;padding-left:0!important}
-    body.tc-ri-on form.edit-release-group table.tc-rg-arttbl{margin:2px 0 6px}
-    body.tc-ri-on form.edit-release-group .tc-rg-artlbl{width:150px;text-align:right;vertical-align:top!important;padding-top:7px!important;font-weight:600;color:var(--mbu-text-dim);font-size:12px}
-    body.tc-ri-on form.edit-release-group .row > label{font-size:12px;color:var(--mbu-text-dim);font-weight:normal}
-    body.tc-ri-on form.edit-release-group label[for="id-edit-release-group.name"]{font-weight:600}
-    body.tc-ri-on form.edit-release-group :is(#id-edit-release-group\\.primary_type_id,#id-edit-release-group\\.secondary_type_ids){display:none!important}
+    body:not(.tc-ri-on) form.tc-ent-form .tc-rg-arttbl,body:not(.tc-ri-on) form.tc-ent-form .tc-rg-seg{display:none!important}
+    body.tc-ri-on form.tc-ent-form #artist-credit-editor{display:none!important}
+    body.tc-ri-on form.tc-ent-form > div.half-width{order:0}
+    body.tc-ri-on form.tc-ent-form > #tc-ri-rightcol{order:1}
+    body.tc-ri-on form.tc-ent-form > :not(.half-width):not(#tc-ri-rightcol){order:2;flex:1 1 100%}
+    body.tc-ri-on form.tc-ent-form > div.documentation:empty{display:none}
+    body.tc-ri-on form.tc-ent-form > #side-col:empty{display:none}
+    body.tc-ri-on #tc-ri-rightcol > #loujine-menu{margin:10px 0 0!important;width:auto!important;box-sizing:border-box}
+    body.tc-ri-on #tc-ri-rightcol > #loujine-menu #linkParser{width:100%!important;box-sizing:border-box}
+    .tc-ent-hl{margin:2px 0 0 170px;font:13px var(--mbu-font);color:var(--mbu-text);white-space:pre-wrap;word-break:break-word}
+    .tc-ent-hl[hidden]{display:none}
+    body.tc-zen-on :is(.rgheader,.artistheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
+    body:has(#tc-nav-bar) form.tc-ent-form{margin-top:4px}
+    body.tc-ri-on form.tc-ent-form input[id$=".comment"]{box-sizing:border-box;width:calc(100% - 170px)!important}
+    body.tc-ri-on form.tc-ent-form .row:has(input[name*="make_votable"]){padding-left:0!important;margin-left:0!important}
+    body.tc-ri-on form.tc-ent-form .row:has(input[name*="make_votable"]) > *{margin-left:0!important;padding-left:0!important}
+    body.tc-ri-on form.tc-ent-form table.tc-rg-arttbl{margin:2px 0 6px}
+    body.tc-ri-on form.tc-ent-form .tc-rg-artlbl{width:150px;text-align:right;vertical-align:top!important;padding-top:7px!important;font-weight:600;color:var(--mbu-text-dim);font-size:12px}
+    body.tc-ri-on form.tc-ent-form .row > label{font-size:12px;color:var(--mbu-text-dim);font-weight:normal}
+    body.tc-ri-on form.tc-ent-form label[for$=".name"]{font-weight:600}
+    body.tc-ri-on form.tc-ent-form :is(#id-edit-release-group\\.primary_type_id,#id-edit-release-group\\.secondary_type_ids){display:none!important}
     .tc-rg-seg{display:inline-flex;flex-wrap:wrap;max-width:calc(100% - 170px);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;background:var(--mbu-bg);vertical-align:middle}
     .tc-rg-seg > button{all:unset;box-sizing:border-box;padding:4px 10px;min-height:28px;display:inline-flex;align-items:center;font:12.5px var(--mbu-font);color:var(--mbu-text-dim);cursor:pointer;border-left:1px solid var(--mbu-border);border-top:1px solid var(--mbu-border);margin:-1px 0 0 -1px}
     .tc-rg-seg.multi{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));width:calc(100% - 170px)}
@@ -15547,10 +15586,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       if (!tryMount()) { const t = setInterval(() => { if (tryMount()) clearInterval(t); }, 200); setTimeout(() => clearInterval(t), 8000); }
       return;
     }
-    if (RG_PAGE) {   // #842
+    if (ENT_KIND) {   // #842 #843
       await whenDomReady(); applyRgEdit(); installMultiLinkPaste(); ensureLauncher();
-      Log.cat('System').info('release group edit page:', rgGid() ? ORIGIN + '/release-group/' + rgGid() : 'new');
-      if (apolloEnabled()) matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message));
+      Log.cat('System').info(ENT_KIND + ' edit page:', rgGid() ? ORIGIN + '/' + ENT_KIND + '/' + rgGid() : 'new');
+      if (RG_PAGE && apolloEnabled()) matchReleaseArtist().catch(e => Log.cat('Artist').warn('artist auto-match failed', e.message));
       return;
     }
     // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path

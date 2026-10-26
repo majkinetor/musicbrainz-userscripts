@@ -13,6 +13,7 @@ A faster release editor for MusicBrainz: artists and recordings auto-matched, cl
 
 - **[Release information](#release-information)**: external links in a right column with a dead-link checker, a cover thumbnail, no help bubbles.
 - **[Release group editor](#release-group-editor)**: the release group's edit page laid out like Release information.
+- **[Artist editor](#artist-editor)**: the artist's edit page laid out the same way.
 - **[Tracklist](#tracklist)**: an artist table with confidence colours, splitting, reordering and keyboard navigation.
 - **[Pinned and recent](#pinned-and-recent)** artists and labels at the top of their pickers.
 - **[Recordings](#recordings)**: track and recording side by side, with the differing characters highlighted.
@@ -49,6 +50,15 @@ The release group's edit page gets Release information's layout.
 - **Primary type** and **Secondary types** are bars of buttons. Click a primary type to choose it and again to clear it; click secondary types to turn each on or off.
 - **External links** sit in a right column with the dead-link checker, and the release group's cover under them.
 - The help bubbles are gone, and a changed artist credit adds Apollo's line to the edit note.
+
+## Artist editor
+
+The artist's edit page (and a new artist's) gets the same layout.
+
+- **External links** sit in a right column with the dead-link checker.
+- **Name** and **Sort name** show their look-alike and invisible characters, double spaces and leading or trailing spaces on a line under the field.
+- [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, when installed, sits under the links.
+- The help bubbles are gone, and Apollo's bar has ✓ Enter edit and ✕ Cancel.
 
 ## Tracklist
 
