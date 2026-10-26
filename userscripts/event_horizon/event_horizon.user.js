@@ -2107,7 +2107,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hnote{margin-top:10px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--line);border-radius:0 8px 8px 0;max-width:820px}.hnote.bot{border-left-color:var(--muted)}
 .hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
-.arthd{margin:0 0 -16px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
+.arthd{margin:0 0 -16px}.arthd .kicker.label{font-size:10.5px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
 .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
@@ -4443,7 +4443,7 @@ function subHead(r, id, tab, name, none) {
     const acts = ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a></h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none);
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group" aria-label="Release group">${LAYERS(20)}</a>` : ''}</h1>${r.disambiguation ? `<div class="disamb">${esc(r.disambiguation)}</div>` : ''}<div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none);
 }
 function artPage(app, d) {
     const r = d.rel;
@@ -4468,7 +4468,7 @@ async function artLoad(n, id) {
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
 body{background:var(--bg)}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
-:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif}
+:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3){font-size:inherit}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
@@ -4485,7 +4485,7 @@ body{background:var(--bg)}
 :root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:0 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:12px 0 10px!important}#eh-relhd .disamb{margin:0 0 10px}#eh-relhd h1 a{white-space:normal!important}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -4522,7 +4522,7 @@ body{background:var(--bg)}
 :root[data-eh-rel] #relationship-editor-form.eh-fold>:not(fieldset),:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset>:not(legend){display:none!important}
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
-const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd)/.test(l)).join('\n')
+const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l)/.test(l)).join('\n')
     .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => '#eh-relhd ' + x.trim()).join(',') + '{');
 // the header: the same as the cover-art page's; title and artist read off MusicBrainz's own header at once, then the full kicker from the release
 function relHeader(id) {
@@ -4566,13 +4566,21 @@ function relCards() {
         const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
         if (td) { const k = relTrkKey(td.parentNode); if (!k) return; relTrkFold.has(k) ? relTrkFold.delete(k) : relTrkFold.add(k); relCardsApply(); }
     });
-    // right-click a track's number, as on Event Horizon's pages: fold every track, or open them all when that one is folded
+    // right-click a track or a region's heading, as on Event Horizon's pages: fold it with its siblings, or open them all
+    // when that one is folded. A link, button or field keeps the browser's own menu
     ed.addEventListener('contextmenu', e => {
-        if (!ehOn) return;
-        const td = e.target.closest('#tracklist > tbody > tr.track > td:first-child');
+        if (!ehOn || e.target.closest('a,button,input,select,textarea,label')) return;
+        const h = e.target.closest('.release-relationship-editor > h2, #relationship-editor-form legend');
+        if (h) {
+            e.preventDefault();
+            const hs = [...ed.querySelectorAll(':scope > h2')], k = h.tagName === 'LEGEND' ? 'note' : h.dataset.ehFold, fold = !relFold[k];
+            hs.forEach(x => { relFold[x.dataset.ehFold] = fold; }); relFold.note = fold; relSaveFold();
+            LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every region'); relCardsApply(); return;
+        }
+        const td = e.target.closest('#tracklist > tbody > tr.track');
         if (td) {
             e.preventDefault();
-            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = !relTrkFold.has(relTrkKey(td.parentNode));
+            const trs = [...ed.querySelectorAll('#tracklist > tbody > tr.track')], fold = !relTrkFold.has(relTrkKey(td));
             trs.forEach(tr => fold ? relTrkFold.add(relTrkKey(tr)) : relTrkFold.delete(relTrkKey(tr)));
             LOG.debug('Relate: ' + (fold ? 'folded' : 'unfolded') + ' every track'); relCardsApply();
         }
