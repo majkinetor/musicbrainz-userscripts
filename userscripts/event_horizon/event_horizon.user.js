@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.090100
+// @version      2026.10.28.100000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2150,6 +2150,8 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hgh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 12px;cursor:pointer}.hgh .t{font-weight:700}.hgh .m{color:var(--muted);font-size:12px}.hgh .sp{flex:1}.hgh .cv{transition:transform .15s;color:var(--muted)}.hgrp.open .hgh .cv{transform:rotate(90deg)}
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
+.hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}
+.hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
 .hst{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff}.hst.ok{background:#2e8b57}.hst.op{background:#c08a00}.hst.no{background:#c0392b}.hst.cx{background:#888}
 .hgb{display:none;border-top:1px solid var(--line)}.hgrp.open .hgb{display:block}
 .hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
@@ -6875,7 +6877,7 @@ const histKey = href => {
     if (/^\/edit\/\d+\/?$/.test(u.pathname)) return 'hist/' + encodeURIComponent(u.pathname.replace(/\/$/, ''));
     const pa = u.pathname.replace(/\/$/, ''), o = new RegExp('^/release/' + MBID.source + '/open_edits$', 'i').test(pa);
     // an editor's open and all edits: the user name keeps its case
-    if (/^\/user\/[^/]+\/edits(\/open)?$/.test(pa)) { u.searchParams.delete('page'); return 'hist/' + encodeURIComponent(pa + (u.search === '?' ? '' : u.search)); }
+    if (/^\/user\/[^/]+\/(edits(\/open)?|votes)$/.test(pa)) { u.searchParams.delete('page'); return 'hist/' + encodeURIComponent(pa + (u.search === '?' ? '' : u.search)); }
     // a collection's edit lists (all, open, others'): their items' edits
     const co = new RegExp('^/collection/' + MBID.source + '/[a-z_]*edits$', 'i').test(pa);
     if (!o && !co && !H_LISTS[pa]) return null;
@@ -6886,7 +6888,7 @@ const histKey = href => {
 // the list a hist key loads, and the release it belongs to if any
 const histSrc = id => MBID.test(id) && id.length === 36 ? `/release/${id}/edits` : decodeURIComponent(id);
 const histOne = id => (histSrc(id).match(/^\/edit\/(\d+)$/) || [])[1];
-const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return histOne(id) ? 'Edit #' + histOne(id) : /\/open_edits$|^\/user\/[^/]+\/edits\/open$/.test(pa) ? 'Open edits' : /^\/collection\/[^/]+\/[a-z_]*others[a-z_]*$/.test(pa) ? 'Others’ edits' : /^\/user\/[^/]+\/edits$/.test(pa) ? 'All edits' : H_LISTS[pa] || 'Edit history'; };
+const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return histOne(id) ? 'Edit #' + histOne(id) : /\/open_edits$|^\/user\/[^/]+\/edits\/open$/.test(pa) ? 'Open edits' : /^\/collection\/[^/]+\/[a-z_]*others[a-z_]*$/.test(pa) ? 'Others’ edits' : /^\/user\/[^/]+\/edits$/.test(pa) ? 'All edits' : /^\/user\/[^/]+\/votes$/.test(pa) ? 'Votes' : H_LISTS[pa] || 'Edit history'; };
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
@@ -7211,9 +7213,13 @@ function histParse(html) {
         const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/(yes|no|abstain|approve)/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
         const vc = one ? el.querySelector('.vote-tally td.vote') : h.querySelector('.vote-count'), a = one ? h.querySelector('h1') : h.querySelector('h2 a');
         if (one) { const x = doc.querySelector('#sidebar .edit-expiration'); if (x) el.append(x); }
+        // an open edit you may vote on carries MusicBrainz's radios, the checked one your vote; any other shows your vote as text
+        const vo = el.querySelector('.voteopts') || (one && doc.querySelector('.voteopts')), my = vo && vo.querySelector('input[type=radio]:checked');
+        const mv = !vo && (one ? doc : h).querySelector('.my-vote'), mvt = mv ? mv.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '';
         return {
             id: +((one ? a.textContent : a.getAttribute('href')).match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
             st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el) || histNoteTime(notes),
+            can: !!vo, my: my ? my.value : vo ? '-2' : '', myt: mvt,
             notes, votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
         };
     });
@@ -7304,9 +7310,27 @@ const histNote = n => `<div class="hnote${n.bot ? ' bot' : ''}"><div class="hnh"
 // the note a burst's editor left on every one of several edits, shown once on their parent instead of on each
 const hnKey = n => (n.by || '') + '\n' + n.text;
 const histShared = es => { if (es.length < 2) return null; const n = es[0].notes.find(n => n.own); return n && es.every(e => e.notes.some(m => hnKey(m) === hnKey(n))) ? n : null; };
+// your vote on an open edit: MusicBrainz's own vote form, one edit at a time
+const H_VOTES = [['1', 'Yes'], ['0', 'No'], ['-1', 'Abstain'], ['-2', 'None']];
+const histVote = e => `<div class="hvote" role="radiogroup" aria-label="Your vote"><span class="lb">Your vote</span>${H_VOTES.map(([v, t]) => `<button type="button" class="v${v}${e.my === v ? ' on' : ''}" role="radio" aria-checked="${e.my === v}" data-hvote="${e.id}:${v}">${t}</button>`).join('')}</div>`;
+async function histVoteSend(b) {
+    const [id, v] = b.dataset.hvote.split(':'), e = data && data.edits && data.edits.find(x => String(x.id) === id); if (!e || e.my === v) return;
+    const box = b.parentNode; box.querySelectorAll('button').forEach(x => { x.disabled = true; });
+    try {
+        const r = await mbnFetch(`${MB}/edit/enter_votes`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ 'enter-vote.vote.0.edit_id': id, 'enter-vote.vote.0.vote': v, url: `${MB}/edit/${id}` }) });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        e.my = v; LOG.info('Voted ' + H_VOTES.find(x => x[0] === v)[1] + ' on edit #' + id);
+    } catch (err) { LOG.err('Vote on edit #' + id + ' failed: ' + err.message); toast('MusicBrainz didn\'t take the vote'); }
+    // the page may have redrawn meanwhile: every copy of the edit's buttons shows the vote
+    document.querySelectorAll('[data-hvote^="' + id + ':"]').forEach(x => { const on = x.dataset.hvote === id + ':' + e.my; x.disabled = false; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); });
+}
+document.addEventListener('click', ev => {
+    const b = ehOn && data && data.kind === 'hist' && ev.target.closest('[data-hvote]'); if (!b) return;
+    ev.preventDefault(); histVoteSend(b);
+});
 function histEdit(e, sh) {
     const ns = sh ? e.notes.filter(n => hnKey(n) !== sh) : e.notes;
-    return `<details class="hed"><summary><span class="d">${histTm(e.t)}</span>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}<a class="id" href="${MB}/edit/${e.id}">#${e.id}</a></summary><div class="hdt">${e.det}${ns.map(histNote).join('')}</div></details>`;
+    return `<details class="hed"><summary><span class="d">${histTm(e.t)}</span>${histIco(e.tk)}<span class="hty">${esc(e.type)}</span>${data.grp !== 'burst' && data.grp !== 'editor' ? `<span class="hwho">${e.ed ? `<a href="${MB}/user/${encodeURIComponent(e.ed)}">${esc(e.ed)}</a>` : 'Editor hidden'}</span>` : ''}<span class="hst ${e.st}"${e.votes ? ` data-tip="${esc(e.votes[0].toUpperCase() + e.votes.slice(1))}"` : ''}>${H_ST[e.st]}</span>${ns.length ? `<span class="hnc" data-tip="${ns.length} edit note${ns.length > 1 ? 's' : ''}">💬 ${ns.length}</span><span class="hnp">${esc(ns[0].text.slice(0, 140))}</span>` : ''}${!e.can && e.myt && !/^none$/i.test(e.myt) ? `<span class="hmy" data-tip="Your vote">${esc(e.myt)}</span>` : ''}<a class="id" href="${MB}/edit/${e.id}">#${e.id}</a></summary><div class="hdt">${e.can ? histVote(e) : ''}${e.det}${ns.map(histNote).join('')}</div></details>`;
 }
 // a group's edits, a run of one type folded into one line
 function histRuns(es) {
