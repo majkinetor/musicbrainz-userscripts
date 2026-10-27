@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.120500
+// @version      2026.10.27.120600
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13208,8 +13208,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
        release name — the native header that carries it is hidden by zen. Inline span
        so it hugs the text; same gold as native. */
     #tc-nav-title .tc-nav-title-name{border-radius:3px;padding:0 1px}
-    #tc-nav-title .tc-nav-kind{display:inline-flex;align-items:center;gap:4px;margin-right:8px;padding:1px 7px;border:1px solid var(--mbu-border);border-radius:999px;font:600 10.5px Arial;letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-dim);flex:none}
-    #tc-nav-title .tc-nav-title-album:has(> .tc-nav-kind){display:flex;align-items:center;justify-content:center}#tc-nav-title .tc-nav-title-album:has(> .tc-nav-kind) > .tc-nav-title-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+    #tc-nav-title .tc-nav-split{display:flex;align-items:center;justify-content:center;gap:12px;min-width:0}
+    #tc-nav-title .tc-nav-kind{display:inline-flex;align-items:center;gap:4px;padding-right:12px;border-right:1px solid var(--mbu-border);align-self:stretch;font:700 10px Arial;letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-text-weak);white-space:nowrap;flex:none}
+    #tc-nav-title .tc-nav-split-b{text-align:left;min-width:0}#tc-nav-title .tc-nav-split-b .tc-nav-title-artist:empty{display:none}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:var(--mbu-warn-bg);padding:0 5px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:var(--mbu-warn)}
     #tc-nav-title .tc-nav-title-artist{font:12px Arial;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -15042,7 +15043,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (t && t.dataset.sig !== sig) {
       t.dataset.sig = sig;
       const nm = rgGid() ? '<a href="' + ORIGIN + '/' + ENT_KIND + '/' + esc(rgGid()) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
-      t.innerHTML = '<div class="tc-nav-title-album">' + entKindHtml() + '<span class="tc-nav-title-name">' + nm + '</span></div><div class="tc-nav-title-artist">' + (RG_PAGE ? acLinks(_rgAC) || '' : '') + '</div>';
+      const body = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + nm + '</span></div><div class="tc-nav-title-artist">' + (RG_PAGE ? acLinks(_rgAC) || '' : '') + '</div>';
+      // the entity's type to the left, divided from its name and artist (majkinetor, from a mock)
+      t.innerHTML = ENT_KIND ? '<div class="tc-nav-split">' + entKindHtml() + '<div class="tc-nav-split-b">' + body + '</div></div>' : body;
     }
   }
   let _rgStyled = false;
