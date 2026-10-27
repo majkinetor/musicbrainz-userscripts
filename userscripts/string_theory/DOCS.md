@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-27 02:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-27 02:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -91,7 +91,8 @@ An entity's **Add alias** page becomes a table of all its aliases, so several ar
 - The last line is empty: type a name there to add an alias, and a new empty line follows. A new alias takes the locale you picked last.
 - A new alias's sort name follows its name, the way MusicBrainz guesses it (an artist's alias gets a person's, *Presley, Elvis*), until you type one yourself; **Aa** guesses it again.
 - A new row is green, a changed one yellow, and a removed one red; **↺** brings a removed alias back.
-- **Submit** enters one edit per green, yellow or red row, all with the same edit note. A row that fails turns red underneath, and hovering it shows MusicBrainz's reason.
+- **Enter edit** appears once something has changed and enters one edit per green, yellow or red row. A row that fails turns red underneath, and hovering it shows MusicBrainz's reason.
+- **↺** on a changed alias puts it back as it was; on a removed one it keeps the alias.
 
 Elsewhere:
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.025211
+// @version      2026.10.27.025536
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15835,7 +15835,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     navStyle();
     const on = navOn(), go = box.querySelector('.tc-al-go');
     mbuCls(document.body, 'tc-zen-on', !!(on && SETTINGS.zenMode));
-    if (go) mbuProp(go.style, 'display', on ? 'none' : '');
+    if (go) mbuProp(go.style, 'display', on || !n ? 'none' : '');
     let bar = document.getElementById('tc-nav-bar');
     if (!on) { if (bar) bar.remove(); return; }
     if (!bar) {
@@ -15884,7 +15884,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
     box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
       + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
-      + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled>Submit</button></div>';
+      + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled></button></div>';
     if (list) { const h = mbPart || document.querySelector('#content h2:last-of-type'); if (mbPart) { mbPart.before(box); mbPart.style.display = 'none'; } else if (h) h.after(box); else document.getElementById('content')?.appendChild(box); }
     else { form.before(box); form.style.display = 'none'; }
     const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
@@ -15942,14 +15942,14 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       for (const r of rows) {
         const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '');
         if (s && (s === 'del' || r.name.trim())) n++;
-        const x = r.tr.querySelector('.tc-al-x'); x.textContent = r.removed ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : r.id ? 'Remove this alias' : 'Drop this row';
+        const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
         mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
         const p = r.tr.querySelector('.tc-al-p'); p.textContent = r.primary ? '★' : '☆'; p.classList.toggle('on', !!r.primary);
       }
       const invalid = rows.some(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad'));
       if (invalid) n = 0;
       msg.textContent = invalid ? 'Fix the fields underlined in red' : msg.textContent === 'Fix the fields underlined in red' ? '' : msg.textContent;
-      go.textContent = n ? 'Submit ' + n + ' edit' + (n > 1 ? 's' : '') : 'Submit'; go.disabled = !n;
+      go.textContent = '\u2713 Enter ' + (n > 1 ? n + ' edits' : 'edit'); go.disabled = !n;
       aliasNav(box, ent, gid, n); aliasNavRefresh = sync;
       box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
     };
@@ -15996,7 +15996,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       tr.addEventListener('input', read); tr.addEventListener('change', read);
       $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); r.autoSort = true; read(); };
       $('.tc-al-p').onclick = () => { r.primary = !r.primary; sync(); };
-      $('.tc-al-x').onclick = () => { if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); if (!ghost()) addRow(blank()); sync(); } };
+      $('.tc-al-x').onclick = () => {
+        if (r.id && !r.removed && state(r) === 'chg') {
+          [r.name, r.sort, r.locale, r.primary, r.type, r.begin, r.end] = JSON.parse(r.orig);
+          $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
+          locIn.value = locName(r.locale); locIn.dataset.v = r.locale; tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
+          tr.querySelectorAll('.tc-al-bad').forEach(e => e.classList.remove('tc-al-bad'));
+          Log.cat('Alias').info('reverted "' + r.name + '"'); sync(); return;
+        }
+        if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); if (!ghost()) addRow(blank()); sync(); } };
       rows.push(r);
       const g = ghost(); if (g && g !== r) tb.insertBefore(tr, g.tr); else tb.appendChild(tr);
       return r;
@@ -16108,8 +16116,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-row.tc-al-del{background:rgba(220,60,60,.16)}
     #tc-alias .tc-al-row.tc-al-del input{text-decoration:line-through}
     #tc-alias .tc-al-row.tc-al-err{box-shadow:inset 0 -2px 0 #d33}
-    #tc-alias .tc-al-go{background:transparent !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:3px 12px;font:inherit;cursor:pointer;filter:none!important}
-    #tc-alias .tc-al-go:not(:disabled):hover{border-color:var(--mbu-accent)}
+    #tc-alias .tc-al-go{background:transparent !important;color:var(--mbu-ok, #2a8a3a) !important;border:0;border-radius:3px;padding:3px 8px;font:inherit;font-weight:600;cursor:pointer;filter:none!important}
+    #tc-alias .tc-al-go:not(:disabled):hover{background:var(--mbu-border)!important}
     #tc-alias .tc-al-go:disabled{opacity:.5}
     body.tc-zen-on:has(#tc-alias) :is(#content [class*="header"]:has(> h1),#content > .tabs,#content > h2,#content > p,#sidebar,.header,#footer){display:none!important}
     body.tc-zen-on:has(#tc-alias) #content{margin-right:0!important}
