@@ -11,6 +11,7 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   await settled(page);
   await inject('mission_control');
   await inject('art_station');
+  await inject('fusion');
   await inject('event_horizon');
   const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
   if (!(await on())) await page.locator('#eh-launch').click();
@@ -25,6 +26,10 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   const mc = await page.locator('#mc-launch').boundingBox(), dock = await page.locator('#mbu-dock').boundingBox();
   check(mc.y + mc.height <= dock.y, 'above the dock');
   await attachShot(testInfo, page, 'dock-open');
+  await page.evaluate(() => { localStorage.setItem('mbu.cornerFlow', '"row"'); });
+  await page.locator('#mbu-dock').click(); await page.locator('#mbu-dock').click();
+  await attachShot(testInfo, page, 'dock-row');
+  await page.evaluate(() => { localStorage.removeItem('mbu.cornerFlow'); });
   await page.locator('#eh-launch').click();
   check(await until(on, v => !v) === false, 'EH off turns the dock off');
 });
