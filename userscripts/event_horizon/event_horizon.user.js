@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.183000
+// @version      2026.10.28.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7002,7 +7002,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] :is(#tracklist,#page .ars) table :is(td,th){background:transparent!important}
 :root[data-eh-rel] #page .ars,:root[data-eh-rel] #content>.releaseheader{background:none!important;padding:0!important;margin:0!important;min-height:0!important}
 :root[data-eh-rel] #relationship-editor-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
-:root[data-eh-rel] #page :is(input[type=text],textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
+:root[data-eh-rel] :is(#page,#content) :is(input[type=text],input[type=email],input[type=url],input[type=password],input[type=date],input:not([type]),textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] #content>[class*=header]:not(.releaseheader):not(#eh-relhd){display:none!important}
 :root[data-eh-rel] #page .buttons button:not(.submit){background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:9px;padding:6px 16px;font-weight:600}
@@ -7111,6 +7111,8 @@ function userFormHeader(id, form) {
     const name = id === '-' ? ME || (h1 ? h1.textContent.trim() : '') : decodeURIComponent(id), tx = n => n.textContent.replace(/\s+/g, ' ').trim();
     const ul = c && c.querySelector('ul.tabs'), tabs = ul ? [...ul.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]) : [];
     const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? (img.getAttribute('src') || '').replace(/^\/\//, 'https://') : '';
+    // your account's pages carry only the public tabs: its own (Edit profile, Preferences, Donation check) join them, the open one lit
+    if (id === '-' && name && !tabs.some(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1]))) tabs.push(...['edit', 'preferences', 'donation'].map(f => [FORMS[f], '/account/' + f, f === form]));
     [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
     hd.innerHTML = userAv(name, av)
         + `<div class="rhtx"><div class="kicker label u-k"><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
