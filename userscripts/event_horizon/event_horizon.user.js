@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.004000
+// @version      2026.10.28.005000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1951,6 +1951,7 @@ const CSS = `
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
+.tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
 .tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
@@ -5907,7 +5908,7 @@ function tagxHtml(d) {
     const cur = location.href.split(/[?#]/)[0].replace(/\/$/, '');
     const tabs = d.name ? `<a class="u-tab" href="${MB}/user/${U}/tags">All tags</a>${d.type ? `<a class="u-tab" href="${MB}/user/${U}/tag/${T}">Every type</a>` : ''}<a class="u-tab" href="${MB}/tag/${T}">Everyone's use of it</a>`
         + (t ? t.tabs.filter(x => !/\/tags$/.test(x[1])).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '')
-        : (t ? t.tabs.filter(x => x[1].replace(/\/$/, '') !== cur).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '') + (ME ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/tag/${T}">Your use of it</a>` : '');
+        : (t ? (k => k ? `<span class="ed-views tgx-ic">${k}</span>` : '')(t.tabs.map(([x, h]) => { const ty = (h.replace(/\/$/, '').match(/\/tag\/[^/]+\/([a-z_-]+)$/) || [])[1], mk = ty && HM_KIND[ty.replace('_', '-')]; return mk ? `<a href="${esc(h)}" aria-label="${esc(x)}" data-tip="${esc(x)}" aria-pressed="${h.replace(/\/$/, '') === cur}">${mkSvg(mk[1])}</a>` : ''; }).join('')) + t.tabs.filter(([, h]) => !/\/tag\/[^/]+\/[a-z_-]+\/?$/.test(h) && h.replace(/\/$/, '') !== cur).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '') + (ME ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/tag/${T}">Your use of it</a>` : '');
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading…' : esc(t.found) + (d.name ? ` · ${d.dn ? 'downvoted' : 'tagged'} by <a href="${MB}/user/${U}">${esc(d.name)}</a>` : '');
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tag${d.type ? ' · ' + esc(d.type.replace('_', ' ').replace('-', ' ')) + 's' : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.tag)}</h1>`
         + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav></div></section>`;
