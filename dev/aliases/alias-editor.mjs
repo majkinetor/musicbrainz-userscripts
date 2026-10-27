@@ -71,6 +71,23 @@ const mbuAliasEditor = (() => {
       return [...doc.querySelectorAll('.error, ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join('; ') || 'HTTP ' + r.status;
     }
 
+    async function readOnly(o) {
+      const doc = new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + o.ent + '/' + o.gid + '/aliases', { credentials: 'include' })).text(), 'text/html');
+      const tb = doc.querySelector('table.tbl');
+      if (!tb) throw new Error('no add-alias form');
+      tb.querySelectorAll('a[href*="/alias/"]').forEach(a => a.closest('td')?.remove());
+      tb.querySelectorAll('th').forEach(th => { if (!th.textContent.trim()) th.remove(); });
+      tb.querySelectorAll('a[href^="/"]').forEach(a => { a.href = ORIGIN + a.getAttribute('href'); a.target = '_blank'; });
+      const n = tb.querySelectorAll('tbody tr').length;
+      Log.info('add-alias form missing: listing', n, 'aliases read-only');
+      style();
+      const box = document.createElement('div'); box.id = 'tc-alias';
+      box.innerHTML = '<p class="tc-al-ro">You can\'t edit these aliases.</p>';
+      tb.className = 'tc-al-tbl'; box.append(tb);
+      o.mount(box);
+      if (o.onCount) o.onCount(n);
+    }
+
     async function editor(o) {
       const ent = o.ent, gid = o.gid;
       let form = o.form;
@@ -78,7 +95,8 @@ const mbuAliasEditor = (() => {
         form = new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/add-alias')).text(), 'text/html').querySelector('input[name="edit-alias.name"]')?.closest('form');
         Log.info('add-alias form', form ? 'read' : 'missing');
       }
-      if (!form) throw new Error('no add-alias form');
+      // no add form: this user may not edit the entity's aliases (a country's need a location editor), so they're listed read-only
+      if (!form) return readOnly(o);
       const locales = aliasOpts(form.querySelector('select[name="edit-alias.locale"]')), types = aliasOpts(form.querySelector('select[name="edit-alias.type_id"]'));
       const guess = n => o.guess ? o.guess(n) : n;
       style();
@@ -320,6 +338,7 @@ const mbuAliasEditor = (() => {
       #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
       #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
       #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
+      #tc-alias .tc-al-ro{margin:0 0 8px;color:var(--mbu-text-weak)}#tc-alias .tc-al-tbl{width:100%;border-collapse:collapse}#tc-alias .tc-al-tbl th,#tc-alias .tc-al-tbl td{text-align:left;padding:4px 8px;border-bottom:1px solid color-mix(in srgb, currentColor 12%, transparent)}
       #tc-alias{max-width:860px}
       #tc-alias .tc-al-dt{grid-column:1/-1;display:none;gap:16px;align-items:center;padding:2px 0 5px 10px;font-size:12px;color:var(--mbu-text-weak)}
       #tc-alias .tc-al-dopen .tc-al-dt{display:flex}

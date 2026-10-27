@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.120700
+// @version      2026.10.27.121500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15912,6 +15912,23 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         return [...doc.querySelectorAll('.error, ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join('; ') || 'HTTP ' + r.status;
       }
 
+      async function readOnly(o) {
+        const doc = new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + o.ent + '/' + o.gid + '/aliases', { credentials: 'include' })).text(), 'text/html');
+        const tb = doc.querySelector('table.tbl');
+        if (!tb) throw new Error('no add-alias form');
+        tb.querySelectorAll('a[href*="/alias/"]').forEach(a => a.closest('td')?.remove());
+        tb.querySelectorAll('th').forEach(th => { if (!th.textContent.trim()) th.remove(); });
+        tb.querySelectorAll('a[href^="/"]').forEach(a => { a.href = ORIGIN + a.getAttribute('href'); a.target = '_blank'; });
+        const n = tb.querySelectorAll('tbody tr').length;
+        Log.info('add-alias form missing: listing', n, 'aliases read-only');
+        style();
+        const box = document.createElement('div'); box.id = 'tc-alias';
+        box.innerHTML = '<p class="tc-al-ro">You can\'t edit these aliases.</p>';
+        tb.className = 'tc-al-tbl'; box.append(tb);
+        o.mount(box);
+        if (o.onCount) o.onCount(n);
+      }
+
       async function editor(o) {
         const ent = o.ent, gid = o.gid;
         let form = o.form;
@@ -15919,7 +15936,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           form = new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/add-alias')).text(), 'text/html').querySelector('input[name="edit-alias.name"]')?.closest('form');
           Log.info('add-alias form', form ? 'read' : 'missing');
         }
-        if (!form) throw new Error('no add-alias form');
+        // no add form: this user may not edit the entity's aliases (a country's need a location editor), so they're listed read-only
+        if (!form) return readOnly(o);
         const locales = aliasOpts(form.querySelector('select[name="edit-alias.locale"]')), types = aliasOpts(form.querySelector('select[name="edit-alias.type_id"]'));
         const guess = n => o.guess ? o.guess(n) : n;
         style();
@@ -16161,6 +16179,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
         #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
         #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
+        #tc-alias .tc-al-ro{margin:0 0 8px;color:var(--mbu-text-weak)}#tc-alias .tc-al-tbl{width:100%;border-collapse:collapse}#tc-alias .tc-al-tbl th,#tc-alias .tc-al-tbl td{text-align:left;padding:4px 8px;border-bottom:1px solid color-mix(in srgb, currentColor 12%, transparent)}
         #tc-alias{max-width:860px}
         #tc-alias .tc-al-dt{grid-column:1/-1;display:none;gap:16px;align-items:center;padding:2px 0 5px 10px;font-size:12px;color:var(--mbu-text-weak)}
         #tc-alias .tc-al-dopen .tc-al-dt{display:flex}

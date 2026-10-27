@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.120100
+// @version      2026.10.27.121500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3179,8 +3179,14 @@ const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class=
 // an alias that has ended (MusicBrainz's "no longer current") is muted and struck in the list; a name some
 // current alias also carries isn't
 const ALIAS_ENDED = new Set(), ALIAS_LIVE = new Set();
-const aliasName = x => { (x.ended ? ALIAS_ENDED : ALIAS_LIVE).add(x.name); return x.name; };
-const aliasSpan = (a, tag) => ALIAS_ENDED.has(a) && !ALIAS_LIVE.has(a) ? `<${tag} class="als-end" data-tip="No longer current">${esc(a)}</${tag}>` : `<${tag}>${esc(a)}</${tag}>`;
+// one name can stand for several aliases (Kanada in German, Estonian and Finnish): its tip names their locales
+const ALIAS_LOC = new Map(), LANG_NAMES = (() => { try { return new Intl.DisplayNames(['en'], { type: 'language' }); } catch { return null; } })();
+const aliasName = x => {
+    (x.ended ? ALIAS_ENDED : ALIAS_LIVE).add(x.name);
+    if (x.locale) { let l = x.locale; try { l = LANG_NAMES?.of(x.locale.replace('_', '-')) || l; } catch {} ALIAS_LOC.set(x.name, [...new Set([...(ALIAS_LOC.get(x.name) || []), l])]); }
+    return x.name;
+};
+const aliasSpan = (a, tag) => { const loc = (ALIAS_LOC.get(a) || []).join(', '); return ALIAS_ENDED.has(a) && !ALIAS_LIVE.has(a) ? `<${tag} class="als-end" data-tip="No longer current${loc ? ' (' + esc(loc) + ')' : ''}">${esc(a)}</${tag}>` : loc ? `<${tag} data-tip="${esc(loc)}">${esc(a)}</${tag}>` : `<${tag}>${esc(a)}</${tag}>`; };
 const aliasesHref = () => { const m = location.pathname.match(/^\/[a-z-]+\/[0-9a-f-]{36}/i); return m ? MB + m[0] + '/aliases' : ''; };
 const aliasList = as => { const n = 4, h = aliasesHref(), go = h ? `<button type="button" class="eh-edit als-go" data-aliases="1" aria-label="${as.length ? 'Edit the aliases' : 'Add aliases'}" data-tip="${as.length ? 'Edit the aliases' : 'Add aliases'}">${MBU_EDIT_ICON}</button>` : ''; if (!as.length && !go) return ''; return `<div class="als">${as.slice(0, n).map(a => aliasSpan(a, 'span')).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => aliasSpan(a, 'div')).join('')}</div></span>` : ''}${go}</div>`; };
 function rgHero(d) {
@@ -4518,6 +4524,23 @@ const mbuAliasEditor = (() => {
       return [...doc.querySelectorAll('.error, ul.errors li')].map(e => e.textContent.trim()).filter(Boolean).join('; ') || 'HTTP ' + r.status;
     }
 
+    async function readOnly(o) {
+      const doc = new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + o.ent + '/' + o.gid + '/aliases', { credentials: 'include' })).text(), 'text/html');
+      const tb = doc.querySelector('table.tbl');
+      if (!tb) throw new Error('no add-alias form');
+      tb.querySelectorAll('a[href*="/alias/"]').forEach(a => a.closest('td')?.remove());
+      tb.querySelectorAll('th').forEach(th => { if (!th.textContent.trim()) th.remove(); });
+      tb.querySelectorAll('a[href^="/"]').forEach(a => { a.href = ORIGIN + a.getAttribute('href'); a.target = '_blank'; });
+      const n = tb.querySelectorAll('tbody tr').length;
+      Log.info('add-alias form missing: listing', n, 'aliases read-only');
+      style();
+      const box = document.createElement('div'); box.id = 'tc-alias';
+      box.innerHTML = '<p class="tc-al-ro">You can\'t edit these aliases.</p>';
+      tb.className = 'tc-al-tbl'; box.append(tb);
+      o.mount(box);
+      if (o.onCount) o.onCount(n);
+    }
+
     async function editor(o) {
       const ent = o.ent, gid = o.gid;
       let form = o.form;
@@ -4525,7 +4548,8 @@ const mbuAliasEditor = (() => {
         form = new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/add-alias')).text(), 'text/html').querySelector('input[name="edit-alias.name"]')?.closest('form');
         Log.info('add-alias form', form ? 'read' : 'missing');
       }
-      if (!form) throw new Error('no add-alias form');
+      // no add form: this user may not edit the entity's aliases (a country's need a location editor), so they're listed read-only
+      if (!form) return readOnly(o);
       const locales = aliasOpts(form.querySelector('select[name="edit-alias.locale"]')), types = aliasOpts(form.querySelector('select[name="edit-alias.type_id"]'));
       const guess = n => o.guess ? o.guess(n) : n;
       style();
@@ -4767,6 +4791,7 @@ const mbuAliasEditor = (() => {
       #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
       #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
       #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
+      #tc-alias .tc-al-ro{margin:0 0 8px;color:var(--mbu-text-weak)}#tc-alias .tc-al-tbl{width:100%;border-collapse:collapse}#tc-alias .tc-al-tbl th,#tc-alias .tc-al-tbl td{text-align:left;padding:4px 8px;border-bottom:1px solid color-mix(in srgb, currentColor 12%, transparent)}
       #tc-alias{max-width:860px}
       #tc-alias .tc-al-dt{grid-column:1/-1;display:none;gap:16px;align-items:center;padding:2px 0 5px 10px;font-size:12px;color:var(--mbu-text-weak)}
       #tc-alias .tc-al-dopen .tc-al-dt{display:flex}
