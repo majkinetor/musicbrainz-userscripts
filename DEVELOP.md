@@ -107,6 +107,7 @@ Code several scripts need is written once and copied into each between marker co
 | `// <ST-IMGMAX>` | `dev/imgmax/image-maximizer.js` | the largest cover behind a store page or image URL ([API](dev/imgmax/README.md)) |
 | `// <ST-ARTIMG>` | `dev/artimg/artist-image.js` | an artist's picture or a label's logo from its URL relationships, the answer cached by MBID ([API](dev/artimg/README.md)) |
 | `// <ST-GUESSCASE>` | `dev/guesscase/guess-case.mjs` | MusicBrainz's guess case without its editors, with more languages ([API](dev/guesscase/README.md)) |
+| `// <ST-ALIASES>` | `dev/aliases/alias-editor.mjs` | the bulk alias editor: an entity's aliases as rows to edit, remove and add, each sent as its own edit |
 | `// <ST-NET>` | `dev/net/mb-gate.mjs` | the MusicBrainz request gate (`mbnFetch`): ws/2 paced for every script and tab, and MusicBrainz's browser check passed again when it answers a website request |
 | `// <ST-MBPAGE>` | `dev/mbpage/mb-page.mjs` | MusicBrainz's page read in any language: cover-art type ids, the release's own external links |
 | `// <ST-ARCHIVE>` | `dev/archive/wayback.mjs` | saving pages on the Wayback Machine, and the archive.org keys (GM `mbu.archive`) with their settings fields |

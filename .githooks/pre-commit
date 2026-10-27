@@ -127,6 +127,16 @@ if printf '%s\n' "$STAGED" | grep -qE '^dev/guesscase/(guess-case|sync-guesscase
     STAGED=$(git diff --cached --name-only)
 fi
 
+# shared alias editor (#849) — dev/aliases/alias-editor.mjs, re-inlined into every script
+# carrying a `// <ST-ALIASES>` marker.
+if printf '%s\n' "$STAGED" | grep -qE '^dev/aliases/(alias-editor|sync-aliases)\.mjs$'; then
+    echo "[pre-commit] syncing the shared alias editor…"
+    node dev/aliases/sync-aliases.mjs >/dev/null
+    ALIASES_FILES=$(grep -rl '// <ST-ALIASES>' userscripts --include='*.js' 2>/dev/null || true)
+    [ -n "$ALIASES_FILES" ] && git add $ALIASES_FILES
+    STAGED=$(git diff --cached --name-only)
+fi
+
 # shared MusicBrainz page helpers (#722, #723) — dev/mbpage/mb-page.mjs, re-inlined into every
 # script carrying a `// <ST-MBPAGE>` marker (Credit Hoarder imports it via esbuild — its
 # rebuild below watches dev/mbpage too).
