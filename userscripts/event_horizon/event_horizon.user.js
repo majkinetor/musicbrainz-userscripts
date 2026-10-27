@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.180000
+// @version      2026.10.27.190500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2836,6 +2836,8 @@ function rateStars(t, ref, rt, sm, mine) {
     const st = i => can ? `<button type="button" class="st${i <= k ? ' on' : ''}" data-rate="${t}\t${ref}\t${i}" aria-label="Rate ${i} of 5">★</button>` : `<span class="st${i <= k ? ' on' : ''}">★</span>`;
     return `<span class="stars${sm ? ' sm' : ''}${mine ? ' mine' : ''}${can ? ' rt' : ''}" data-tip="${esc(tip)}" aria-label="${esc(avg)}">${[1, 2, 3, 4, 5].map(st).join('')}</span>`;
 }
+// the stars a rating shows: yours when you gave one, else the average rounded (the filter's rating:n matches these)
+const starsShown = (t, ref, rt) => { const key = t + ':' + ref, m = myR(), mine = key in RATED ? RATED[key] : m[key], v = (rt || {}).value; return mine || (v == null ? 0 : Math.round(v)); };
 // the rating your stars show now (MB's own, when none was made here)
 const rateCur = (t, ref) => { const b = document.querySelector(`.stars.mine [data-rate^="${t}\t${ref}\t"]`); return b ? b.parentNode.querySelectorAll('.st.on').length : 0; };
 async function rateSet(t, ref, i) {
@@ -5567,14 +5569,14 @@ const FLT_TEXT = { dg: g => [g.title, g.disambiguation], ed: e => [e.title, e.di
 // the box also takes column:value, as the other tables do (artist:elvis, catno:"bec 57"), a column by its name's start
 const FLT_COLS = {
     dg: [['title', g => g.title], ['artist', g => acText(g['artist-credit'] || [])], ['type', g => [g['primary-type'], ...(g['secondary-types'] || [])].join(' ')],
-        ['date', g => g['first-release-date']], ['year', g => yearOf(g['first-release-date'])], ['rating', g => String((g.rating || {}).value ?? '')]],
+        ['date', g => g['first-release-date']], ['year', g => yearOf(g['first-release-date'])], ['rating', g => String(starsShown('release_group', g.id, g.rating))]],
     ed: [['release', e => e.title], ['title', e => e.title], ['artist', e => acText(e.ac)], ['format', e => e.formats.join(' ')], ['tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0))],
         ['country', e => e.where.join(' ')], ['date', e => e.date], ['year', e => yearOf(e.date)], ['label', e => e.labels.join(' ')], ['catno', e => e.li.map(l => l.catno).join(' ')],
         ['barcode', e => e.barcode], ['status', e => e.status]],
 };
 function fltPass(sc, x, skip) {
     const f = FLT[sc], cols = FLT_COLS[sc], p = tqParse(f.q.trim(), cols.map(c => c[0])), q = p.rest;
-    if (!p.terms.every(([c, v]) => fltFold(cols[c][1](x) || '').includes(v))) return false;
+    if (!p.terms.every(([c, v]) => !v || (cols[c][0] === 'rating' ? cols[c][1](x) === v : fltFold(cols[c][1](x) || '').includes(v)))) return false;
     if (q && !FLT_TEXT[sc](x).some(t => fltFold(t).includes(q))) return false;
     return FLT_FIELDS[sc].every(([k, , get]) => k === skip || !(k in f.f) || get(x).includes(f.f[k]));
 }
@@ -5602,7 +5604,11 @@ function fltSug(sc, inp) {
     if (!pop) return;
     if (!q || document.activeElement !== inp) { pop.hidden = true; pop.innerHTML = ''; return; }
     const hi = v => { const t = fltFold(v), i = t.indexOf(q); return i < 0 ? esc(v) : esc(v.slice(0, i)) + '<mark>' + esc(v.slice(i, i + q.length)) + '</mark>' + esc(v.slice(i + q.length)); };
-    let h = `<div class="fs-row on" data-fsv="">Title contains <b>“${esc(inp.value.trim())}”</b></div>`, n = 0;
+    // column:value terms are named as what they do, what's left is the title
+    const cols = FLT_COLS[sc], p = tqParse(inp.value.trim(), cols.map(c => c[0])), cap = w => w.charAt(0).toUpperCase() + w.slice(1);
+    const what = p.terms.map(([c, v]) => v ? `${cap(cols[c][0])} ${cols[c][0] === 'rating' ? 'is' : 'contains'} <b>“${esc(v)}”</b>` : `${cap(cols[c][0])}: type a value`);
+    if (p.rest) what.push(`Title contains <b>“${esc(p.rest)}”</b>`);
+    let h = `<div class="fs-row on" data-fsv="">${what.join(' · ')}</div>`, n = 0;
     for (const [k, name, get] of FLT_FIELDS[sc]) {
         if (k in f.f) continue;
         const vs = fltVals(sc, k, get).filter(([v]) => fltFold(v).includes(q)).slice(0, 6);
