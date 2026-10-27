@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.150400
+// @version      2026.10.27.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1950,6 +1950,14 @@ const CSS = `
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
+.tg-tools{display:flex;margin:0 0 14px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-bar .fbox{flex:1 1 200px;max-width:320px}.tg-bar .fbox input{width:100%}
+.tg-add{display:flex;gap:8px;margin:0 0 16px;max-width:560px}.tg-add input{flex:1;min-width:0;height:30px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:inherit}
+.tg-c{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}a.tg-g{font-weight:700}
+.tg-bars{display:grid;grid-template-columns:minmax(120px,max-content) minmax(80px,1fr) 44px auto;gap:5px 12px;align-items:center}.tg-row{display:contents}.tg-row>i{height:14px;border-radius:3px;background:var(--chip)}.tg-row>i>b{display:block;height:100%;border-radius:3px;background:var(--accent)}.tg-row>.tg-c{text-align:right}.tg-row.tg-neg>i>b{background:var(--muted)}
+.tg-cloud{line-height:2;text-align:center;padding:8px 0}.tg-cloud a{margin:0 7px;white-space:nowrap}.tg-cloud a.tg-mine{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:4px}
+.tg-chips{display:flex;flex-wrap:wrap;gap:6px}.tg-chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:2px 6px 2px 12px;border:1px solid var(--border);border-radius:16px;background:var(--surface);font-size:13px}.tg-chip.tg-gc{border-color:var(--accent)}.tg-chip.tg-mine{background:var(--chip)}.tg-chip>b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);color:var(--chip-text);border-radius:10px;padding:1px 7px}
+.tg-az{columns:4 190px;column-gap:24px}.tg-az>div{break-inside:avoid;margin-bottom:12px}.tg-az strong{display:block;color:var(--accent2);border-bottom:1px solid var(--border);margin-bottom:3px}.tg-az span{display:flex;justify-content:space-between;gap:8px}
+.tg-vote{display:inline-flex;gap:3px}.tg-vote button{width:26px;height:26px;padding:0;border:1px solid var(--border);border-radius:50%;background:var(--surface);color:var(--muted);font-size:14px;font-weight:700;line-height:1;cursor:pointer}.tg-vote button:hover{border-color:var(--accent);color:var(--text)}.tg-vote .tg-up.on{background:#2f8a4e;border-color:#2f8a4e;color:#fff}.tg-vote .tg-dn.on{background:#c94a3a;border-color:#c94a3a;color:#fff}
 .kicker .ab.eh-home svg{width:26px!important;height:26px!important}.kicker .srch>.ab svg{width:20px;height:20px}
 #eh-relhd .kicker button.ab{filter:none!important;color:var(--accent)!important}
 :root{
@@ -2487,7 +2495,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'etagView', 'tagSort', 'tagScope'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2506,6 +2514,7 @@ const S = {
     imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
     imgOff: [], // the image providers not used
     hgrp: 'burst', // the history page's grouping
+    tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', // the tags pages' view (an editor's, an entity's), order and kind
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -5634,6 +5643,137 @@ function collsHtml(d) {
     return hero + c.secs.map((s, i) => s.note ? sect('cl' + i, esc(s.grp), '', `<p class="hm-none">${esc(s.note)}</p>`, '')
         : tabSect('cl' + i, esc(s.gi > 0 ? `${s.grp} · ${s.name}` : s.name), s.x, '')).join('');
 }
+/* ── tags ─────────────────────────────────────────── */
+// an editor's tags (/user/<name>/tags, its upvotes or downvotes) and an entity's (/<type>/<mbid>/tags), read off MusicBrainz's own
+// pages: the editor's from its genre and tag lists, the entity's from the page's JSON, which also holds your own votes.
+// Five views of one list: bars, cloud, chips, A–Z and table; a vote goes through MusicBrainz's own /tags/upvote|downvote|withdraw
+const TG_VIEWS = [['bars', 'Bars'], ['cloud', 'Cloud'], ['chips', 'Chips'], ['az', 'A–Z'], ['table', 'Table']];
+const TG_VOTE = { '-1': 'downvote', 0: 'withdraw', 1: 'upvote' };
+function tagsParse(html, ent) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
+    const h1 = d.querySelector('#content h1') || d.querySelector('#page h1') || d.querySelector('h1');
+    const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
+    let tags = null;
+    if (ent) for (const s of d.querySelectorAll('script[type="application/json"]')) {
+        let j; try { j = JSON.parse(s.textContent); } catch (e) { continue; }
+        if (!j || !Array.isArray(j.aggregatedTags)) continue;
+        const mine = new Map((j.userTags || []).map(u => [u.tag.name, u.vote]));
+        tags = j.aggregatedTags.map(t => ({ n: t.tag.name, c: t.count, g: !!t.tag.genre, v: mine.get(t.tag.name) || 0 }));
+        // your own downvotes aren't in the aggregate: they show too, as MusicBrainz's "Show all tags" does
+        for (const u of j.userTags || []) if (!tags.some(t => t.n === u.tag.name)) tags.push({ n: u.tag.name, c: u.count || 0, g: !!u.tag.genre, v: u.vote });
+        break;
+    }
+    if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
+    return { name: h1 ? tx(h1) : '', tabs, tags };
+}
+async function tagsLoad(n, key, down) {
+    const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
+    const url = kind === 'utags' ? `${MB}/user/${id}/tags${down ? '?show_downvoted=1' : ''}` : `${MB}/${id.replace(':', '/')}/tags`;
+    try {
+        let html;
+        if (key === PAGE_ID && mbBody && !down && !/show_downvoted=1/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const t = tagsParse(html, kind === 'etags');
+        if (n === showing && data === d) { if (down) d.down = t.tags; else d.t = t; d.err = ''; render(); }
+    } catch (e) {
+        LOG.err('Loading the tags of ' + d.name + ' failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+const tgHref = (d, t) => d.ent ? `${MB}/tag/${encodeURIComponent(t.n)}` : `${MB}/user/${encodeURIComponent(d.name)}/tag/${encodeURIComponent(t.n)}`;
+function tgList(d) {
+    const q = (d.q || '').trim().toLowerCase(), all = d.ent || !d.dn ? (d.t ? d.t.tags : []) : d.down || [];
+    // as on MusicBrainz, a tag scored zero or below is left out, unless it carries your vote
+    const xs = all.filter(t => (!d.ent || t.c > 0 || t.v) && (d.sc === 'g' ? t.g : d.sc === 'o' ? !t.g : true) && (!q || t.n.toLowerCase().includes(q)));
+    const byN = (a, b) => a.n.localeCompare(b.n);
+    return xs.sort(d.so === 'name' ? byN : (a, b) => b.c - a.c || byN(a, b));
+}
+function tgVoteBs(t, i) {
+    return `<span class="tg-vote"><button type="button" class="tg-up${t.v > 0 ? ' on' : ''}" data-tgvote="${i}:${t.v > 0 ? 0 : 1}" aria-label="Upvote ${esc(t.n)}" data-tip="${t.v > 0 ? 'Withdraw your upvote' : 'Upvote'}">+</button><button type="button" class="tg-dn${t.v < 0 ? ' on' : ''}" data-tgvote="${i}:${t.v < 0 ? 0 : -1}" aria-label="Downvote ${esc(t.n)}" data-tip="${t.v < 0 ? 'Withdraw your downvote' : 'Downvote'}">−</button></span>`;
+}
+function tgBody(d) {
+    const xs = tgList(d), v = d.view, vote = d.ent && !!ME, idx = t => d.t.tags.indexOf(t);
+    if (!d.t) return `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the tags…'}</p>`;
+    if (d.dn && !d.down) return '<p class="hm-none">Loading the downvotes…</p>';
+    if (!xs.length) return `<p class="hm-none">${d.q ? 'No tag matches the filter.' : 'No tags.'}</p>`;
+    const max = Math.max(...xs.map(t => t.c), 1), a = t => `<a href="${esc(tgHref(d, t))}"${t.g ? ' class="tg-g"' : ''}>${esc(t.n)}</a>`, cnt = t => `<span class="tg-c">${fmtN(t.c)}</span>`;
+    const mine = t => t.v > 0 ? ' tg-mine' : t.v < 0 ? ' tg-mine tg-neg' : '';
+    if (v === 'cloud') return `<div class="tg-cloud">${[...xs].sort((x, y) => x.n.localeCompare(y.n)).map(t => `<a href="${esc(tgHref(d, t))}" class="${t.g ? 'tg-g' : ''}${mine(t)}" style="font-size:${(12 + Math.sqrt(t.c / max) * 22).toFixed(1)}px" data-tip="${esc(t.n)}: ${fmtN(t.c)}${t.g ? ' · genre' : ''}">${esc(t.n)}</a>`).join(' ')}</div>`;
+    if (v === 'chips') return `<div class="tg-chips">${xs.map(t => `<span class="tg-chip${t.g ? ' tg-gc' : ''}${mine(t)}">${a(t)}<b>${fmtN(t.c)}</b>${vote ? tgVoteBs(t, idx(t)) : ''}</span>`).join('')}</div>`;
+    if (v === 'az') {
+        const L = new Map(); for (const t of [...xs].sort((x, y) => x.n.localeCompare(y.n))) { const k = /[a-z]/i.test(t.n[0]) ? t.n[0].toUpperCase() : '#'; if (!L.has(k)) L.set(k, []); L.get(k).push(t); }
+        return `<div class="tg-az">${[...L].map(([k, ts]) => `<div><strong>${esc(k)}</strong>${ts.map(t => `<span class="${mine(t)}">${a(t)}${cnt(t)}</span>`).join('')}</div>`).join('')}</div>`;
+    }
+    if (v === 'table') return `<div class="ed-tw"><table class="ed-t tg-t"><thead><tr><th>Tag</th><th>Kind</th><th>${d.ent ? 'Score' : 'Count'}</th>${vote ? '<th>Your vote</th>' : ''}</tr></thead><tbody>${xs.map(t => `<tr class="${mine(t)}"><td>${a(t)}</td><td>${t.g ? 'genre' : 'tag'}</td><td>${cnt(t)}</td>${vote ? `<td>${tgVoteBs(t, idx(t))}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+    return `<div class="tg-bars">${xs.map(t => `<span class="tg-row${mine(t)}">${a(t)}<i><b style="width:${Math.max(1.5, t.c / max * 100)}%"></b></i>${cnt(t)}${vote ? tgVoteBs(t, idx(t)) : ''}</span>`).join('')}</div>`;
+}
+function tgTools(d) {
+    const sg = (k, cur, opts, lbl) => `<span class="seg" role="group" aria-label="${lbl}">${opts.map(([v, t]) => `<button type="button" data-tgset="${k}:${v}" aria-pressed="${cur === v}">${t}</button>`).join('')}</span>`;
+    return `<div class="tg-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="tg-q" data-tgq value="${esc(d.q || '')}" placeholder="Filter tags" aria-label="Filter tags" autocomplete="off"></span>`
+        + (d.ent ? '' : sg('dn', d.dn ? '1' : '0', [['0', 'Upvotes'], ['1', 'Downvotes']], 'Votes'))
+        + sg('sc', d.sc, [['a', 'All'], ['g', 'Genres'], ['o', 'Other']], 'Kind')
+        + sg('so', d.so, [['count', 'Count'], ['name', 'Name']], 'Sort')
+        + sg('view', d.view, TG_VIEWS, 'View') + '</div>';
+}
+function tagsHtml(d) {
+    const t = d.t, abs = h => h.startsWith('/') ? MB + h : h;
+    const tabs = t ? t.tabs.filter(x => !x[2]).map(([x, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(x)}</a>`).join('') : '';
+    const back = d.ent ? `<a class="u-tab" href="${MB}/${d.ent.replace(':', '/')}">Back to the ${esc(d.ent.split(':')[0].replace('-', ' '))}</a>` : '';
+    const title = d.ent ? (t && t.name || 'Tags') : (t && t.name || d.name);
+    const all = t ? t.tags : [], gs = all.filter(x => x.g).length;
+    const sub = d.err && t ? `<span class="u-err">${esc(d.err)}</span>` : t ? `${fmtN(all.length)} tag${all.length === 1 ? '' : 's'}${gs ? `, ${fmtN(gs)} of them genres` : ''}` : '';
+    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>${d.ent ? 'Tags' : 'Tags · ' + (d.dn ? 'downvoted' : 'upvoted')}</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
+        + `<p class="u-sub">${sub}</p>${tabs || back ? `<nav class="u-tabs">${back}${tabs}</nav>` : ''}</div></section>`;
+    const add = d.ent && ME ? `<form class="tg-add" data-tgadd><input id="tg-new" placeholder="Add tags, comma-separated" aria-label="Add tags" autocomplete="off"><button type="submit" class="u-tab">Tag</button></form>` : '';
+    return hero + `<section class="sec" id="s-tg"><div class="tg-tools">${tgTools(d)}</div>${add}<div id="tg-body">${tgBody(d)}</div></section>`;
+}
+function tagsDraw() { const b = $('#tg-body'); if (b && data && data.kind === 'tags') b.innerHTML = tgBody(data); }
+async function tagsVote(d, i, v) {
+    const t = d.t.tags[i]; if (!t) return;
+    const was = { c: t.c, v: t.v };
+    t.c += v - t.v; t.v = v; tagsDraw();
+    try {
+        const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(t.n)}`, { headers: { Accept: 'application/json' } });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        tagsUpdate(d, (await r.json()).updates);
+    } catch (e) { Object.assign(t, was); LOG.err('Voting on the tag ' + t.n + ' failed: ' + e.message); toast('The vote failed: ' + e.message); }
+    if (data === d) tagsDraw();
+}
+function tagsUpdate(d, ups) {
+    for (const u of ups || []) {
+        const i = d.t.tags.findIndex(t => t.n === u.tag);
+        if (u.deleted) { if (i >= 0) d.t.tags.splice(i, 1); continue; }
+        const g = i >= 0 ? d.t.tags[i].g : false, x = { n: u.tag, c: u.count, g, v: u.vote };
+        if (i >= 0) d.t.tags[i] = x; else d.t.tags.push(x);
+    }
+}
+async function tagsAdd(d, s) {
+    const names = s.trim().toLowerCase().split(/\s*,\s*/).filter(Boolean); if (!names.length) return;
+    try {
+        const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/upvote?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        tagsUpdate(d, (await r.json()).updates); toast(names.length === 1 ? 'Tagged' : `Added ${names.length} tags`);
+    } catch (e) { LOG.err('Adding tags failed: ' + e.message); toast('Adding the tags failed: ' + e.message); }
+    if (data === d) render();
+}
+let tgWired = false;
+function tagsWire() {
+    if (tgWired) return; tgWired = true;
+    document.addEventListener('click', ev => {
+        const b = ehOn && data && data.kind === 'tags' && ev.target.closest('[data-tgset],[data-tgvote]'); if (!b) return;
+        const d = data;
+        if (b.dataset.tgvote) { const [i, v] = b.dataset.tgvote.split(':').map(Number); tagsVote(d, i, v); return; }
+        const [k, v] = b.dataset.tgset.split(':');
+        if (k === 'dn') { d.dn = v === '1'; if (d.dn && !d.down) tagsLoad(showing, d.key, true); render(); return; }
+        d[k] = v;
+        if (k === 'view') { S[d.ent ? 'etagView' : 'tagView'] = v; save(); }
+        if (k === 'so' || k === 'sc') { S.tagSort = d.so; S.tagScope = d.sc; save(); }
+        for (const x of document.querySelectorAll(`[data-tgset^="${k}:"]`)) x.setAttribute('aria-pressed', x.dataset.tgset === k + ':' + v);
+        tagsDraw();
+    });
+    document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'tags' && ev.target.matches('[data-tgq]')) { data.q = ev.target.value; tagsDraw(); } });
+    document.addEventListener('submit', ev => { const f = ev.target; if (!ehOn || !data || data.kind !== 'tags' || !f.matches('[data-tgadd]')) return; ev.preventDefault(); const i = f.querySelector('input'); tagsAdd(data, i.value); i.value = ''; });
+}
 // its events by date, from ws/2
 function placeEvents(d) {
     const x = d.listsX && d.listsX[0], xs = x && [...(x.events || [])].sort((a, b) => ((a['life-span'] || {}).begin || '9').localeCompare((b['life-span'] || {}).begin || '9'));
@@ -5794,6 +5934,7 @@ function render(keepPop) {
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
+    if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
@@ -6387,6 +6528,11 @@ function navTo(href) {
     // an editor's collections → "colls/<name as in the path>"
     const cl = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/collections\/?$/);
     if (cl) return 'colls/' + cl[1];
+    // an editor's tags → "utags/<name>"; an entity's → "etags/<type>:<mbid>"
+    const ut = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tags\/?$/);
+    if (ut) return 'utags/' + ut[1];
+    const et = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/tags/?$', 'i'));
+    if (et) return 'etags/' + et[1].toLowerCase() + ':' + et[2].toLowerCase();
     // an editor's profile → "user/<name as in the path>"
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
@@ -6395,7 +6541,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -7268,6 +7414,11 @@ async function show(key) {
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
+    if (kind === 'utags' || kind === 'etags') {
+        const ent = kind === 'etags' ? id : '';
+        data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false };
+        scrollTo(0, 0); render(); tagsLoad(n, key); return;
+    }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
