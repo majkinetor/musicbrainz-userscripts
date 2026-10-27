@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.023736
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.27.023732, art_station 2026.10.26.181244, credit_hoarder 2026.10.26.195106, event_horizon 2026.10.26.222555, falcon 2026.10.26, first_contact 2026.10.26, fusion 2026.10.26, group_therapy 2026.10.26.195030, isrc_scout 2026.10.26.103354, mammoth 2026.10.26, mission_control 2026.10.26.155921, platform_check 2026.10.26.103354). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.27.024723
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.27.024719, art_station 2026.10.26.181244, credit_hoarder 2026.10.26.195106, event_horizon 2026.10.26.222555, falcon 2026.10.26, first_contact 2026.10.26, fusion 2026.10.26, group_therapy 2026.10.26.195030, isrc_scout 2026.10.26.103354, mammoth 2026.10.26, mission_control 2026.10.26.155921, platform_check 2026.10.26.103354). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -180,8 +180,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.27.023736 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.27.023732\n  · Art Station v2026.10.26.181244\n  · Credit Hoarder v2026.10.26.195106\n  · Event Horizon v2026.10.26.222555\n  · Falcon v2026.10.26\n  · First Contact v2026.10.26\n  · Fusion v2026.10.26\n  · Group Therapy v2026.10.26.195030\n  · ISRC Scout v2026.10.26.103354\n  · Mammoth v2026.10.26\n  · Mission Control v2026.10.26.155921\n  · Platform Check v2026.10.26.103354");
+  console.log('%c String Theory %c v2026.10.27.024723 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.27.024719\n  · Art Station v2026.10.26.181244\n  · Credit Hoarder v2026.10.26.195106\n  · Event Horizon v2026.10.26.222555\n  · Falcon v2026.10.26\n  · First Contact v2026.10.26\n  · Fusion v2026.10.26\n  · Group Therapy v2026.10.26.195030\n  · ISRC Scout v2026.10.26.103354\n  · Mammoth v2026.10.26\n  · Mission Control v2026.10.26.155921\n  · Platform Check v2026.10.26.103354");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -191,7 +191,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.27.023732"],["art_station","Art Station","2026.10.26.181244"],["credit_hoarder","Credit Hoarder","2026.10.26.195106"],["event_horizon","Event Horizon","2026.10.26.222555"],["falcon","Falcon","2026.10.26"],["first_contact","First Contact","2026.10.26"],["fusion","Fusion","2026.10.26"],["group_therapy","Group Therapy","2026.10.26.195030"],["isrc_scout","ISRC Scout","2026.10.26.103354"],["mammoth","Mammoth","2026.10.26"],["mission_control","Mission Control","2026.10.26.155921"],["platform_check","Platform Check","2026.10.26.103354"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.27.024719"],["art_station","Art Station","2026.10.26.181244"],["credit_hoarder","Credit Hoarder","2026.10.26.195106"],["event_horizon","Event Horizon","2026.10.26.222555"],["falcon","Falcon","2026.10.26"],["first_contact","First Contact","2026.10.26"],["fusion","Fusion","2026.10.26"],["group_therapy","Group Therapy","2026.10.26.195030"],["isrc_scout","ISRC Scout","2026.10.26.103354"],["mammoth","Mammoth","2026.10.26"],["mission_control","Mission Control","2026.10.26.155921"],["platform_check","Platform Check","2026.10.26.103354"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -4190,7 +4190,7 @@ return { ArtistImage };
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*/edit_annotation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/cdtoc/attach.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/area/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/instrument/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/genre/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/area/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/instrument/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/genre/.*/aliases$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.27.023732","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.27.023732","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.27.024719","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.27.024719","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -16854,13 +16854,57 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // B layout: one line per alias (name, sort name with its guess, primary, a pill for type and dates, locale last);
     // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
     box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
-      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><datalist id="tc-al-locs">' + locales.filter(o => o.v).map(o => '<option value="' + esc(o.t) + '">').join('') + '</datalist>'
+      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
       + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled>Submit</button></div>';
     if (list) { const h = mbPart || document.querySelector('#content h2:last-of-type'); if (mbPart) { mbPart.before(box); mbPart.style.display = 'none'; } else if (h) h.after(box); else document.getElementById('content')?.appendChild(box); }
     else { form.before(box); form.style.display = 'none'; }
     const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
     const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
     const typeName = v => (types.find(o => o.v === v) || {}).t || '';
+    // a filterable list under a locale or type field, in place of the browser's datalist and select popups
+    const pop = box.querySelector('.tc-al-pop');
+    let popIn = null, popHit = [], popAt = 0;
+    const popDraw = () => {
+      pop.innerHTML = popHit.map((o, i) => '<div class="tc-al-opt' + (i === popAt ? ' on' : '') + '" data-i="' + i + '">' + esc(o.t || '\u2014') + '</div>').join('') || '<div class="tc-al-none">No match</div>';
+      pop.querySelector('.on')?.scrollIntoView({ block: 'nearest' });
+    };
+    const popOpen = (inp, list, all) => {
+      popIn = inp; const t = all ? '' : inp.value.trim().toLowerCase();
+      popHit = list.filter(o => !t || (o.t || '').toLowerCase().includes(t) || o.v.toLowerCase() === t);
+      popHit.sort((a, b) => t ? ((a.t || '').toLowerCase().startsWith(t) ? 0 : 1) - ((b.t || '').toLowerCase().startsWith(t) ? 0 : 1) : 0);
+      popAt = Math.max(0, popHit.findIndex(o => o.v === inp.dataset.v)); popDraw();
+      const br = box.getBoundingClientRect(), ir = inp.getBoundingClientRect();
+      pop.style.left = (ir.left - br.left) + 'px'; pop.style.top = (ir.bottom - br.top) + 'px'; pop.style.minWidth = ir.width + 'px';
+      pop.hidden = false;
+    };
+    const popClose = () => { pop.hidden = true; popIn = null; };
+    const popPick = o => { const inp = popIn; popClose(); if (!inp || !o) return; inp.value = o.v ? o.t : ''; inp.dataset.v = o.v; inp.dispatchEvent(new Event('change', { bubbles: true })); };
+    pop.addEventListener('mousedown', ev => { ev.preventDefault(); const d = ev.target.closest('.tc-al-opt'); if (d) popPick(popHit[+d.dataset.i]); });
+    const combo = (inp, list) => {
+      inp.autocomplete = 'off';
+      inp.addEventListener('focus', () => popOpen(inp, list, true));
+      inp.addEventListener('click', () => { if (popIn !== inp) popOpen(inp, list, true); });
+      inp.addEventListener('input', () => popOpen(inp, list));
+      inp.addEventListener('blur', () => { if (popIn === inp) popClose(); });
+      inp.addEventListener('keydown', ev => {
+        if (popIn !== inp) { if (ev.key === 'ArrowDown') { popOpen(inp, list, true); ev.preventDefault(); } return; }
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { popAt = Math.min(popHit.length - 1, Math.max(0, popAt + (ev.key === 'ArrowDown' ? 1 : -1))); popDraw(); ev.preventDefault(); }
+        else if (ev.key === 'Enter' || (ev.key === 'Tab' && inp.value.trim())) { if (popHit[popAt]) popPick(popHit[popAt]); if (ev.key === 'Enter') ev.preventDefault(); }
+        else if (ev.key === 'Escape') popClose();
+      });
+    };
+    // a date as MusicBrainz takes it: YYYY, YYYY-MM or YYYY-MM-DD; dots, slashes and spaces work as dashes, and
+    // a day-first date (31.12.2020) is turned round; null when it isn't a date
+    const normDate = t => {
+      t = t.trim(); if (!t) return '';
+      let p = t.split(/[-./\s]+/).filter(Boolean);
+      if (p.length > 1 && p[p.length - 1].length === 4 && p[0].length <= 2) p.reverse();
+      if (p.length > 3 || !/^\d{4}$/.test(p[0]) || p.slice(1).some(x => !/^\d{1,2}$/.test(x))) return null;
+      const [y, m, d] = p.map(Number);
+      if (m !== undefined && (m < 1 || m > 12)) return null;
+      if (d !== undefined && (d < 1 || d > new Date(y, m, 0).getDate())) return null;
+      return [p[0], ...p.slice(1).map(x => x.padStart(2, '0'))].join('-');
+    };
     const rows = [];
     const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end]);
     const state = r => r.removed ? 'del' : !r.id ? (r.name.trim() ? 'new' : '') : key(r) !== r.orig ? 'chg' : '';
@@ -16880,14 +16924,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
     const addRow = r => {
       const tr = document.createElement('div'); r.tr = tr;
-      tr.innerHTML = '<input class="tc-al-n" placeholder="New alias…"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
+      tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
         + '<button type="button" class="tc-al-p" title="Primary for its locale"></button>'
-        + '<input class="tc-al-l" list="tc-al-locs" placeholder="Locale" title="Type to filter the locales">'
-        + '<select class="tc-al-t">' + optHtml(types, r.type, '—') + '</select>'
-        + '<input class="tc-al-b" placeholder="YYYY-MM-DD"><input class="tc-al-e" placeholder="YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
+        + '<input class="tc-al-l" title="Type to filter the locales">'
+        + '<input class="tc-al-t" title="Type to filter the types">'
+        + '<input class="tc-al-b" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
       const $ = c => tr.querySelector(c);
       const locIn = $('.tc-al-l'), locName = v => (locales.find(o => o.v === v) || {}).t || '';
       locIn.value = locName(r.locale); locIn.dataset.v = r.locale;
+      const tyIn = $('.tc-al-t'); tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
+      combo(locIn, locales); combo(tyIn, types);
       $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
       // a new alias's sort name follows its name until it is typed by hand
       r.autoSort = !r.id && (!r.sort || r.sort === guess(r.name));
@@ -16897,7 +16943,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (ev && ev.target === $('.tc-al-n') && r.autoSort) $('.tc-al-s').value = r.name.trim() ? guess(r.name.trim()) : '';
         r.sort = $('.tc-al-s').value;
         { const t = locIn.value.trim().toLowerCase(), o = t ? locales.find(x => x.v && (x.t.toLowerCase() === t || x.v.toLowerCase() === t)) : { v: '' };
-          locIn.classList.toggle('tc-al-bad', !o); if (o) { r.locale = o.v; locIn.dataset.v = o.v; if (ev && ev.type === 'change' && ev.target === locIn) locIn.value = locName(o.v); } } r.type = $('.tc-al-t').value; r.begin = $('.tc-al-b').value.trim(); r.end = $('.tc-al-e').value.trim();
+          locIn.classList.toggle('tc-al-bad', !o); if (o) { r.locale = o.v; locIn.dataset.v = o.v; if (ev && ev.type === 'change' && ev.target === locIn) locIn.value = locName(o.v); } } 
+        { const t = tyIn.value.trim().toLowerCase(), o = t ? types.find(x => x.v && x.t.toLowerCase() === t) : { v: '' };
+          tyIn.classList.toggle('tc-al-bad', !o); if (o) { r.type = o.v; tyIn.dataset.v = o.v; } }
+        for (const [c, k] of [['.tc-al-b', 'begin'], ['.tc-al-e', 'end']]) {
+          const inp = $(c), d = normDate(inp.value); inp.classList.toggle('tc-al-bad', d === null);
+          if (d !== null) { r[k] = d; if (ev && ev.type === 'change' && ev.target === inp) inp.value = d; } else r[k] = inp.value.trim();
+        }
         if (ev && ev.target === locIn && !locIn.classList.contains('tc-al-bad') && SETTINGS.aliasLocale !== r.locale) { SETTINGS.aliasLocale = r.locale; saveSettings(); }
         if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
         sync();
@@ -17000,19 +17052,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
     #tc-alias .tc-al-p{font-size:15px;line-height:1;color:var(--mbu-text-weak)}
     #tc-alias .tc-al-p.on{color:#e0a800}
-    #tc-alias .tc-al-l.tc-al-bad{border-bottom-color:#d33!important}
+    #tc-alias .tc-al-bad{border-bottom-color:#d33!important}
+    #tc-alias{position:relative}
+    #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow:auto;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0}
+    #tc-alias .tc-al-pop[hidden]{display:none}
+    #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;cursor:pointer}
+    #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
+    #tc-alias .tc-al-opt:hover{background:var(--mbu-border)}
+    #tc-alias .tc-al-opt.on{background:var(--mbu-accent);color:#fff}
     #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
     #tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
     #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
     #content:has(#tc-alias) > p:has(> a[href$="/add-alias"]){display:none}
-    #tc-alias select{color-scheme:light dark;filter:none!important;appearance:auto}
-    #tc-alias select option{background:var(--mbu-bg);color:var(--mbu-text)}
     #tc-alias .tc-al-row.tc-al-new{background:rgba(60,170,80,.14)}
     #tc-alias .tc-al-row.tc-al-chg{background:rgba(230,190,40,.18)}
     #tc-alias .tc-al-row.tc-al-del{background:rgba(220,60,60,.16)}
     #tc-alias .tc-al-row.tc-al-del input{text-decoration:line-through}
     #tc-alias .tc-al-row.tc-al-err{box-shadow:inset 0 -2px 0 #d33}
-    #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}
+    #tc-alias .tc-al-go{background:transparent !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:3px 12px;font:inherit;cursor:pointer;filter:none!important}
+    #tc-alias .tc-al-go:not(:disabled):hover{border-color:var(--mbu-accent)}
     #tc-alias .tc-al-go:disabled{opacity:.5}
     body.tc-zen-on:has(#tc-alias) :is(#content [class*="header"]:has(> h1),#content > .tabs,#content > h2,#content > p,#sidebar,.header,#footer){display:none!important}
     body.tc-zen-on:has(#tc-alias) #content{margin-right:0!important}

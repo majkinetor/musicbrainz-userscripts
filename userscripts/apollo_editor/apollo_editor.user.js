@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.023732
+// @version      2026.10.27.024719
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15883,13 +15883,57 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // B layout: one line per alias (name, sort name with its guess, primary, a pill for type and dates, locale last);
     // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
     box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
-      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><datalist id="tc-al-locs">' + locales.filter(o => o.v).map(o => '<option value="' + esc(o.t) + '">').join('') + '</datalist>'
+      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
       + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled>Submit</button></div>';
     if (list) { const h = mbPart || document.querySelector('#content h2:last-of-type'); if (mbPart) { mbPart.before(box); mbPart.style.display = 'none'; } else if (h) h.after(box); else document.getElementById('content')?.appendChild(box); }
     else { form.before(box); form.style.display = 'none'; }
     const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
     const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
     const typeName = v => (types.find(o => o.v === v) || {}).t || '';
+    // a filterable list under a locale or type field, in place of the browser's datalist and select popups
+    const pop = box.querySelector('.tc-al-pop');
+    let popIn = null, popHit = [], popAt = 0;
+    const popDraw = () => {
+      pop.innerHTML = popHit.map((o, i) => '<div class="tc-al-opt' + (i === popAt ? ' on' : '') + '" data-i="' + i + '">' + esc(o.t || '\u2014') + '</div>').join('') || '<div class="tc-al-none">No match</div>';
+      pop.querySelector('.on')?.scrollIntoView({ block: 'nearest' });
+    };
+    const popOpen = (inp, list, all) => {
+      popIn = inp; const t = all ? '' : inp.value.trim().toLowerCase();
+      popHit = list.filter(o => !t || (o.t || '').toLowerCase().includes(t) || o.v.toLowerCase() === t);
+      popHit.sort((a, b) => t ? ((a.t || '').toLowerCase().startsWith(t) ? 0 : 1) - ((b.t || '').toLowerCase().startsWith(t) ? 0 : 1) : 0);
+      popAt = Math.max(0, popHit.findIndex(o => o.v === inp.dataset.v)); popDraw();
+      const br = box.getBoundingClientRect(), ir = inp.getBoundingClientRect();
+      pop.style.left = (ir.left - br.left) + 'px'; pop.style.top = (ir.bottom - br.top) + 'px'; pop.style.minWidth = ir.width + 'px';
+      pop.hidden = false;
+    };
+    const popClose = () => { pop.hidden = true; popIn = null; };
+    const popPick = o => { const inp = popIn; popClose(); if (!inp || !o) return; inp.value = o.v ? o.t : ''; inp.dataset.v = o.v; inp.dispatchEvent(new Event('change', { bubbles: true })); };
+    pop.addEventListener('mousedown', ev => { ev.preventDefault(); const d = ev.target.closest('.tc-al-opt'); if (d) popPick(popHit[+d.dataset.i]); });
+    const combo = (inp, list) => {
+      inp.autocomplete = 'off';
+      inp.addEventListener('focus', () => popOpen(inp, list, true));
+      inp.addEventListener('click', () => { if (popIn !== inp) popOpen(inp, list, true); });
+      inp.addEventListener('input', () => popOpen(inp, list));
+      inp.addEventListener('blur', () => { if (popIn === inp) popClose(); });
+      inp.addEventListener('keydown', ev => {
+        if (popIn !== inp) { if (ev.key === 'ArrowDown') { popOpen(inp, list, true); ev.preventDefault(); } return; }
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { popAt = Math.min(popHit.length - 1, Math.max(0, popAt + (ev.key === 'ArrowDown' ? 1 : -1))); popDraw(); ev.preventDefault(); }
+        else if (ev.key === 'Enter' || (ev.key === 'Tab' && inp.value.trim())) { if (popHit[popAt]) popPick(popHit[popAt]); if (ev.key === 'Enter') ev.preventDefault(); }
+        else if (ev.key === 'Escape') popClose();
+      });
+    };
+    // a date as MusicBrainz takes it: YYYY, YYYY-MM or YYYY-MM-DD; dots, slashes and spaces work as dashes, and
+    // a day-first date (31.12.2020) is turned round; null when it isn't a date
+    const normDate = t => {
+      t = t.trim(); if (!t) return '';
+      let p = t.split(/[-./\s]+/).filter(Boolean);
+      if (p.length > 1 && p[p.length - 1].length === 4 && p[0].length <= 2) p.reverse();
+      if (p.length > 3 || !/^\d{4}$/.test(p[0]) || p.slice(1).some(x => !/^\d{1,2}$/.test(x))) return null;
+      const [y, m, d] = p.map(Number);
+      if (m !== undefined && (m < 1 || m > 12)) return null;
+      if (d !== undefined && (d < 1 || d > new Date(y, m, 0).getDate())) return null;
+      return [p[0], ...p.slice(1).map(x => x.padStart(2, '0'))].join('-');
+    };
     const rows = [];
     const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end]);
     const state = r => r.removed ? 'del' : !r.id ? (r.name.trim() ? 'new' : '') : key(r) !== r.orig ? 'chg' : '';
@@ -15909,14 +15953,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
     const addRow = r => {
       const tr = document.createElement('div'); r.tr = tr;
-      tr.innerHTML = '<input class="tc-al-n" placeholder="New alias…"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
+      tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
         + '<button type="button" class="tc-al-p" title="Primary for its locale"></button>'
-        + '<input class="tc-al-l" list="tc-al-locs" placeholder="Locale" title="Type to filter the locales">'
-        + '<select class="tc-al-t">' + optHtml(types, r.type, '—') + '</select>'
-        + '<input class="tc-al-b" placeholder="YYYY-MM-DD"><input class="tc-al-e" placeholder="YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
+        + '<input class="tc-al-l" title="Type to filter the locales">'
+        + '<input class="tc-al-t" title="Type to filter the types">'
+        + '<input class="tc-al-b" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
       const $ = c => tr.querySelector(c);
       const locIn = $('.tc-al-l'), locName = v => (locales.find(o => o.v === v) || {}).t || '';
       locIn.value = locName(r.locale); locIn.dataset.v = r.locale;
+      const tyIn = $('.tc-al-t'); tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
+      combo(locIn, locales); combo(tyIn, types);
       $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
       // a new alias's sort name follows its name until it is typed by hand
       r.autoSort = !r.id && (!r.sort || r.sort === guess(r.name));
@@ -15926,7 +15972,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         if (ev && ev.target === $('.tc-al-n') && r.autoSort) $('.tc-al-s').value = r.name.trim() ? guess(r.name.trim()) : '';
         r.sort = $('.tc-al-s').value;
         { const t = locIn.value.trim().toLowerCase(), o = t ? locales.find(x => x.v && (x.t.toLowerCase() === t || x.v.toLowerCase() === t)) : { v: '' };
-          locIn.classList.toggle('tc-al-bad', !o); if (o) { r.locale = o.v; locIn.dataset.v = o.v; if (ev && ev.type === 'change' && ev.target === locIn) locIn.value = locName(o.v); } } r.type = $('.tc-al-t').value; r.begin = $('.tc-al-b').value.trim(); r.end = $('.tc-al-e').value.trim();
+          locIn.classList.toggle('tc-al-bad', !o); if (o) { r.locale = o.v; locIn.dataset.v = o.v; if (ev && ev.type === 'change' && ev.target === locIn) locIn.value = locName(o.v); } } 
+        { const t = tyIn.value.trim().toLowerCase(), o = t ? types.find(x => x.v && x.t.toLowerCase() === t) : { v: '' };
+          tyIn.classList.toggle('tc-al-bad', !o); if (o) { r.type = o.v; tyIn.dataset.v = o.v; } }
+        for (const [c, k] of [['.tc-al-b', 'begin'], ['.tc-al-e', 'end']]) {
+          const inp = $(c), d = normDate(inp.value); inp.classList.toggle('tc-al-bad', d === null);
+          if (d !== null) { r[k] = d; if (ev && ev.type === 'change' && ev.target === inp) inp.value = d; } else r[k] = inp.value.trim();
+        }
         if (ev && ev.target === locIn && !locIn.classList.contains('tc-al-bad') && SETTINGS.aliasLocale !== r.locale) { SETTINGS.aliasLocale = r.locale; saveSettings(); }
         if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
         sync();
@@ -16029,19 +16081,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
     #tc-alias .tc-al-p{font-size:15px;line-height:1;color:var(--mbu-text-weak)}
     #tc-alias .tc-al-p.on{color:#e0a800}
-    #tc-alias .tc-al-l.tc-al-bad{border-bottom-color:#d33!important}
+    #tc-alias .tc-al-bad{border-bottom-color:#d33!important}
+    #tc-alias{position:relative}
+    #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow:auto;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0}
+    #tc-alias .tc-al-pop[hidden]{display:none}
+    #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;cursor:pointer}
+    #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
+    #tc-alias .tc-al-opt:hover{background:var(--mbu-border)}
+    #tc-alias .tc-al-opt.on{background:var(--mbu-accent);color:#fff}
     #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
     #tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
     #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
     #content:has(#tc-alias) > p:has(> a[href$="/add-alias"]){display:none}
-    #tc-alias select{color-scheme:light dark;filter:none!important;appearance:auto}
-    #tc-alias select option{background:var(--mbu-bg);color:var(--mbu-text)}
     #tc-alias .tc-al-row.tc-al-new{background:rgba(60,170,80,.14)}
     #tc-alias .tc-al-row.tc-al-chg{background:rgba(230,190,40,.18)}
     #tc-alias .tc-al-row.tc-al-del{background:rgba(220,60,60,.16)}
     #tc-alias .tc-al-row.tc-al-del input{text-decoration:line-through}
     #tc-alias .tc-al-row.tc-al-err{box-shadow:inset 0 -2px 0 #d33}
-    #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}
+    #tc-alias .tc-al-go{background:transparent !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:3px 12px;font:inherit;cursor:pointer;filter:none!important}
+    #tc-alias .tc-al-go:not(:disabled):hover{border-color:var(--mbu-accent)}
     #tc-alias .tc-al-go:disabled{opacity:.5}
     body.tc-zen-on:has(#tc-alias) :is(#content [class*="header"]:has(> h1),#content > .tabs,#content > h2,#content > p,#sidebar,.header,#footer){display:none!important}
     body.tc-zen-on:has(#tc-alias) #content{margin-right:0!important}
