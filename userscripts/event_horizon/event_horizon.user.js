@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.080229
+// @version      2026.10.27.080734
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4824,9 +4824,9 @@ function openAliases() {
     document.documentElement.append(ov);
     const panel = ov.firstChild, body = panel.querySelector('.mbu-ov-body');
     let entered = 0;
-    const close = () => {
+    const close = force => {
         const go = panel.querySelector('.tc-al-go');
-        if (go && !go.disabled && !confirm('Close the alias editor? The changes not entered are lost.')) return;
+        if (force !== true && go && !go.disabled && !confirm('Close the alias editor? The changes not entered are lost.')) return;
         ov.remove(); removeEventListener('keydown', key, true);
         if (entered) show(ent + '/' + gid);
     };
@@ -4839,7 +4839,7 @@ function openAliases() {
     const guess = n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent });
     mbuAliasEditor.open({
         ent, gid, origin: MB, fetch: (u, i) => mbnFetch(u, i), guess, log: LOG, toast: msg => toast(msg),
-        onSubmit: ok => { entered += ok; },
+        onSubmit: (ok, bad) => { entered += ok; if (ok && !bad) close(true); },
         onCount: n => { panel.querySelector('.eh-al-n').textContent = '(' + n + ')'; },
         mount: box => { body.textContent = ''; body.append(box); box.querySelector('.tc-al-n')?.focus(); },
     }).catch(e => { LOG.warn('alias editor failed', e.message); body.innerHTML = '<p class="msg">Could not open the alias editor: ' + esc(e.message) + '</p>'; });
