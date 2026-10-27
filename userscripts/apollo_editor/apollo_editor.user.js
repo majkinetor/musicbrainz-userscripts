@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.032417
+// @version      2026.10.27.033636
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15857,7 +15857,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // B layout: one line per alias (name, sort name with its guess, primary, a pill for type and dates, locale last);
     // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
     box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
-      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
+      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
       + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
     if (list) { const h = mbPart || document.querySelector('#content h2:last-of-type'); if (mbPart) { mbPart.before(box); mbPart.style.display = 'none'; } else if (h) h.after(box); else document.getElementById('content')?.appendChild(box); }
     else { form.before(box); form.style.display = 'none'; }
@@ -15935,7 +15935,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
         mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
         // primary needs a locale, and an ended alias or a search hint can't be one, as on MusicBrainz's form
-        const p = r.tr.querySelector('.tc-al-p'); p.disabled = !r.locale || !!r.end || (!!r.type && r.type === hintType); if (p.disabled) r.primary = false;
+        const p = r.tr.querySelector('.tc-al-p'); p.disabled = !r.locale || !!r.end || (!!r.type && r.type === hintType); if (p.disabled) r.primary = false; p.hidden = p.disabled; r.tr.querySelector('.tc-al-l').classList.toggle('tc-al-lp', !p.disabled);
         p.textContent = r.primary ? '★' : '☆'; p.classList.toggle('on', !!r.primary);
       }
       const invalid = rows.some(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad'));
@@ -15952,8 +15952,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const addRow = r => {
       const tr = document.createElement('div'); r.tr = tr;
       tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
-        + '<button type="button" class="tc-al-p" title="Primary for its locale"></button>'
-        + '<input class="tc-al-l" title="Type to filter the locales">'
+        + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
         + '<input class="tc-al-t" title="Type to filter the types">'
         + '<input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
       const $ = c => tr.querySelector(c);
@@ -16084,14 +16083,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
     #tc-alias{max-width:1100px}
     #tc-alias input:not([type=checkbox]),#tc-alias select{box-sizing:border-box;width:100%;min-width:0;background:transparent !important;color:var(--mbu-text) !important;border:0;border-bottom:1px solid transparent;border-radius:0;padding:3px 4px;font:inherit;outline:0;filter:none!important}
-    #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) 26px minmax(0,2fr) minmax(0,1.6fr) 96px 96px 26px;gap:4px;align-items:center;padding:1px 4px}
+    #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) minmax(0,2fr) minmax(0,1.6fr) 96px 96px 26px;gap:4px;align-items:center;padding:1px 4px}
     #tc-alias .tc-al-head{font-weight:600;font-size:12px;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border);padding-bottom:3px}
-    #tc-alias .tc-al-head span:nth-child(3){text-align:center}
     #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
     #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
     #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}
     #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
-    #tc-alias .tc-al-p{font-size:15px;line-height:1;color:var(--mbu-text-weak)}
+    #tc-alias .tc-al-lw{position:relative;display:flex;min-width:0}
+    #tc-alias .tc-al-lw .tc-al-l.tc-al-lp{padding-right:22px}
+    #tc-alias .tc-al-p{position:absolute;right:0;top:50%;transform:translateY(-50%);width:20px;font-size:15px;line-height:1;color:var(--mbu-text-weak)}
+    #tc-alias .tc-al-p[hidden]{display:none}
     #tc-alias .tc-al-p.on{color:#e0a800}
     #tc-alias .tc-al-row :disabled{opacity:.35;cursor:not-allowed}
     #tc-alias input.tc-al-bad:not([type=checkbox]){border-bottom:2px solid #e53935!important;background:rgba(229,57,53,.18)!important;color:#e53935!important;border-radius:3px 3px 0 0}
