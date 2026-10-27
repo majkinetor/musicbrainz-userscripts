@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.031336
+// @version      2026.10.27.031628
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15882,15 +15882,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     };
     const popClose = () => { pop.hidden = true; popIn = null; };
     const popPick = o => { const inp = popIn; popClose(); if (!inp || !o) return; inp.value = o.v ? o.t : ''; inp.dataset.v = o.v; inp.dispatchEvent(new Event('change', { bubbles: true })); };
+    // Up and Down move to the same column of the row above or below
+    box.addEventListener('keydown', ev => {
+      if (ev.defaultPrevented || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey || (ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown')) return;
+      const el = ev.target, tr = el.closest && el.closest('.tc-al-row'), col = el.classList && [...el.classList].find(c => /^tc-al-[a-z]$/.test(c));
+      if (!tr || !col) return;
+      let to = ev.key === 'ArrowUp' ? tr.previousElementSibling : tr.nextElementSibling;
+      while (to && !to.classList.contains('tc-al-row')) to = ev.key === 'ArrowUp' ? to.previousElementSibling : to.nextElementSibling;
+      const t = to && to.querySelector('.' + col); if (!t) return;
+      ev.preventDefault(); popClose(); t.focus();
+      if (t.tagName === 'INPUT') { const n = t.value.length; try { t.setSelectionRange(n, n); } catch {} }
+    });
     pop.addEventListener('mousedown', ev => { ev.preventDefault(); const d = ev.target.closest('.tc-al-opt'); if (d) popPick(popHit[+d.dataset.i]); });
     const combo = (inp, list) => {
       inp.autocomplete = 'off';
-      inp.addEventListener('focus', () => popOpen(inp, list, true));
       inp.addEventListener('click', () => { if (popIn !== inp) popOpen(inp, list, true); });
       inp.addEventListener('input', () => popOpen(inp, list));
       inp.addEventListener('blur', () => { if (popIn === inp) popClose(); });
       inp.addEventListener('keydown', ev => {
-        if (popIn !== inp) { if (ev.key === 'ArrowDown') { popOpen(inp, list, true); ev.preventDefault(); } return; }
+        if (popIn !== inp) { if (ev.key === 'ArrowDown' && ev.altKey) { popOpen(inp, list, true); ev.preventDefault(); } return; }
         if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { popAt = Math.min(popHit.length - 1, Math.max(0, popAt + (ev.key === 'ArrowDown' ? 1 : -1))); popDraw(); ev.preventDefault(); }
         else if (ev.key === 'Enter' || (ev.key === 'Tab' && inp.value.trim())) { if (popHit[popAt]) popPick(popHit[popAt]); if (ev.key === 'Enter') ev.preventDefault(); }
         else if (ev.key === 'Escape') popClose();

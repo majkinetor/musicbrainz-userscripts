@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-27 03:14 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-27 03:16 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -445,6 +445,8 @@ Right-click Apollo's corner icon.
 | Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                |
 | Guess case    | right-click a track's **Aa**           | every track                                     |
 | Guess case    | right-click the release title's **Aa** | the options                                     |
+| Aliases       | ↓ ↑                                    | the same column in the next, previous row       |
+| Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |
 
 ### Notes
 

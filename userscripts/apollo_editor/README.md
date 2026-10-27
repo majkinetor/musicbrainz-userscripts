@@ -424,6 +424,8 @@ Right-click Apollo's corner icon.
 | Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                |
 | Guess case    | right-click a track's **Aa**           | every track                                     |
 | Guess case    | right-click the release title's **Aa** | the options                                     |
+| Aliases       | ↓ ↑                                    | the same column in the next, previous row       |
+| Aliases       | Alt+↓, then ↓ ↑, Enter                 | open the locale or type list, move, pick        |
 
 ## Notes
 

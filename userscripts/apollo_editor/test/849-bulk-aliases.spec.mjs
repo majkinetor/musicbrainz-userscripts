@@ -38,6 +38,14 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   eq(r1.filter(r => r.name).map(r => [r.cls, r.name, r.locale]), [['tc-al-new', 'Alpha Person', 'ja'], ['tc-al-new', 'Beta Person', '']], 'typed rows are new, with the picked locale');
   eq(r1.filter(r => r.name).map(r => r.sort), ['Person, Alpha', 'Person, Beta'], 'sort names follow the names');
   eq(await page.textContent('#tc-al-enter'), '✓ Enter 2 edits', 'the bar counts the edits');
+
+  // Up and Down move between rows in the same column, the locale's list included
+  const at = () => page.evaluate(() => { const e = document.activeElement, tr = e.closest('.tc-al-row'); return [[...tr.parentElement.children].indexOf(tr), e.className.split(' ')[0]]; });
+  await page.locator('#tc-alias .tc-al-row').nth(0).locator('.tc-al-l').focus();
+  await page.keyboard.press('ArrowDown'); eq(await at(), [1, 'tc-al-l'], 'Down goes to the locale below');
+  await page.keyboard.press('ArrowDown'); eq(await at(), [2, 'tc-al-l'], 'and on to the empty line');
+  await page.keyboard.press('ArrowUp'); eq(await at(), [1, 'tc-al-l'], 'Up comes back');
+  eq(await page.$eval('#tc-alias .tc-al-pop', p => p.hidden), true, 'the locale list stays shut');
   await page.click('#tc-al-enter');
   await page.waitForFunction(() => /entered/.test(document.querySelector('#tc-alias .tc-al-msg').textContent), null, { timeout: 120000 });
   eq(await page.textContent('#tc-alias .tc-al-msg'), '2 edits entered', 'both entered');
