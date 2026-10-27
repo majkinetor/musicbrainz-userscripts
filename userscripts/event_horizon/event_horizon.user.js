@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.223000
+// @version      2026.10.28.224000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7044,7 +7044,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}
 :root[data-eh-rel] #page :is(p,td,th,label,span,input,select,textarea,button){font-family:Manrope,system-ui,sans-serif}
 :root[data-eh-rel] #tracklist{border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
-:root[data-eh-rel] #tracklist>tbody table th{font-size:12px!important;text-align:right!important;background:none!important}:root[data-eh-rel] #page :is(th.link-phrase,th.link-phrase *){background:none!important;box-shadow:none!important}:root[data-eh-rel] #tracklist>tbody table :is(th,td){padding:2px 3px!important;border:0!important}:root[data-eh-rel] #tracklist>thead th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+:root[data-eh-rel] #tracklist>tbody table th{font-size:12px!important;text-align:right!important;background:none!important}:root[data-eh-rel] #page :is(th.link-phrase,th.link-phrase *){background-color:transparent!important;box-shadow:none!important}:root[data-eh-rel] #tracklist>tbody table :is(th,td){padding:2px 3px!important;border:0!important}:root[data-eh-rel] #tracklist>thead th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
 :root[data-eh-rel] #tracklist .subh th,:root[data-eh-rel] #tracklist tr.subh>*{background:var(--hover)!important;color:var(--text);border-color:var(--border)}
 :root[data-eh-rel] #tracklist>tbody>tr>td{background:var(--surface)!important;border-color:var(--line)}
 :root[data-eh-rel] #tracklist>tbody>tr.even>td{background:var(--hover)!important}
