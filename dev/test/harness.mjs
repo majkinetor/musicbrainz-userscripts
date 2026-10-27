@@ -128,7 +128,8 @@ export const test = base.extend({
   blockedWrites: async ({}, use) => { await use([]); },
 
   context: async ({ headless, viewport, deviceScaleFactor, isMobile, hasTouch, profile, gm, prodWrites, prodPostAllow, pageErrors, blockedWrites: refused }, use, testInfo) => {
-    const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch });
+    // bypassCSP: a userscript manager's injection isn't held by a page's CSP; Playwright's addScriptTag is (MusicBrainz's /account pages)
+    const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch, bypassCSP: true });
     const errors = [];
     const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
     // the scripts build their test hooks (window.__falconTest, …) only on a page marked so (#623)

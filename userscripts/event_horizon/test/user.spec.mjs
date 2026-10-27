@@ -13,3 +13,15 @@ test('an editor\'s profile shows its hero and statistics', { tag: '@sandbox' }, 
   await attachShot(testInfo, page, 'user');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT, fullPage: true });
 });
+
+for (const [path, form] of [['/account/edit', 'Edit profile'], ['/account/preferences', 'Preferences'], ['/user/majkinetor/subscriptions/artist', 'Subscriptions'], ['/user/majkinetor/subscribers', 'Subscribers']]) {
+  test(`an editor's ${form.toLowerCase()} page keeps MusicBrainz's page under the editor's header`, { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+    await page.goto('https://test.musicbrainz.org' + path);
+    await inject('event_horizon');
+    check(await until(() => page.locator('#eh-relhd .kicker').textContent(), t => t && t.includes(form)), 'the header names the page');
+    check(await page.locator('#eh-relhd .u-tab').count() >= 3, 'the editor\'s tabs are in the header');
+    check(!(await page.locator('#content ul.tabs').isVisible()), 'MusicBrainz\'s own tabs hide');
+    await attachShot(testInfo, page, form.replace(/ /g, '-').toLowerCase());
+    if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-' + form.replace(/ /g, '-').toLowerCase() + '.png'), fullPage: true });
+  });
+}

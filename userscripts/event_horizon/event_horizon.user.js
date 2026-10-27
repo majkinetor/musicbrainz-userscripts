@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.070000
+// @version      2026.10.28.080000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -19,6 +19,8 @@
 // @match        https://*.musicbrainz.org/event/*
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://*.musicbrainz.org/user/*
+// @match        https://*.musicbrainz.org/account/edit
+// @match        https://*.musicbrainz.org/account/preferences
 // @match        https://*.musicbrainz.org/tag/*
 // @match        https://*.musicbrainz.org/search*
 // @match        https://*.musicbrainz.org/edit/*
@@ -1924,7 +1926,7 @@ const CSS = `
 .sr-pg{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.sr-pg a,.sr-pg span{min-width:30px;padding:4px 9px;border-radius:8px;text-align:center;font-weight:600;font-size:13px}.sr-pg a{border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important}.sr-pg a:hover{border-color:var(--accent)}.sr-pg span{color:var(--muted)}.sr-pg span.on{background:var(--accent);color:#fff}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
 .u-hero{position:relative}.u-hero .kicker .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}
-@media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}
+@media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}@media (min-width:901px){.u-hero>.u-facts{margin-top:44px}}
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
@@ -6888,9 +6890,13 @@ const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return his
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
-const FORMS = { 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation' };
+const FORMS = { 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
+// an editor's subscriptions and subscribers, and your own profile and preferences (/account/…) → "form/user/<name, or - for yours>/<form>"
 const formKey = href => {
-    const u = new URL(href, location.href), m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(edit_annotation|set-cover-art)/?$', 'i'));
+    const u = new URL(href, location.href);
+    const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences)\/?$/));
+    if (us) return us[2] ? `form/user/${us[1]}/${us[2]}` : `form/user/-/${us[1]}`;
+    const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] === 'edit_annotation' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
 };
 const keyOf = href => navTo(href) || artKey(href) || histKey(href) || relKey(href) || formKey(href);
@@ -6968,6 +6974,16 @@ body{background:var(--bg)}
 :root[data-eh-rel] #page .buttons button:not(.submit){background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:9px;padding:6px 16px;font-weight:600}
 :root[data-eh-rel] #page fieldset.editnote{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:24px 0 12px}:root[data-eh-rel] #page fieldset.editnote legend{float:left;width:100%;margin:0 0 10px;padding:0;font-size:17px}:root[data-eh-rel] #page fieldset.editnote legend+*{clear:left}:root[data-eh-rel] #page fieldset.editnote .row,:root[data-eh-rel] #page form>.row.no-label,:root[data-eh-rel] #page form>div>.row.no-label{margin-left:0!important;padding-left:0!important}:root[data-eh-rel] #page fieldset.editnote .row>label{display:none}:root[data-eh-rel] #page fieldset.editnote p{margin-left:0;padding-left:0}
 :root[data-eh-rel] #page fieldset.editnote textarea,:root[data-eh-rel] #page textarea[name$=".text"]{width:100%!important;box-sizing:border-box}
+:root[data-eh-rel] .eh-mbhd{display:none!important}
+#eh-relhd>.u-av{flex:none;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--chip);color:var(--chip-text);font-size:40px;font-weight:800}#eh-relhd>.u-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#eh-relhd .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}#eh-relhd .u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}#eh-relhd .u-tab:hover{border-color:var(--accent)}#eh-relhd .u-tab.on{background:var(--accent);border-color:var(--accent);color:#fff!important}
+:root[data-eh-rel] #page table.tbl{border-collapse:separate;border-spacing:0;width:100%;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
+:root[data-eh-rel] #page table.tbl th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+:root[data-eh-rel] #page table.tbl td{background:transparent!important;padding:7px 12px;border-top:1px solid var(--line)}:root[data-eh-rel] #page table.tbl tr:first-child td{border-top:0}:root[data-eh-rel] #page table.tbl tbody tr:hover td{background:var(--hover)!important}
+:root[data-eh-rel] #page :is(input[type=checkbox],input[type=radio]){accent-color:var(--accent)}
+:root[data-eh-rel] #page form :is(input[type=text],input[type=url],input[type=email],input:not([type]),select){min-height:32px;padding:4px 10px;box-sizing:border-box}
+:root[data-eh-rel] #page form .row{margin:8px 0}:root[data-eh-rel] #page form .row>label:first-child{color:var(--muted);font-weight:600}
+:root[data-eh-rel] #page .pagination a,:root[data-eh-rel] #page ul.pagination li>*{border-radius:8px}
 :root[data-eh-rel] #page table.details th{color:var(--muted);text-align:left;padding-right:12px}
 :root[data-eh-rel] #set-cover-art-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
 :root[data-eh-rel] #set-cover-art-images .editimage{float:none!important;width:auto!important;margin:0!important;padding:10px!important;display:flex;flex-direction:column;gap:10px;background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:14px;box-sizing:border-box;cursor:pointer;font-size:13px;line-height:1.45;transition:border-color .12s}
@@ -7042,11 +7058,29 @@ function mbHead() {
 function formHeader(key) {
     const [, type, id, form] = key.split('/');
     if (type === 'release') return relHeader(id, form, FORMS[form]);
+    if (type === 'user') return userFormHeader(id, form);
     const { t, by } = mbHead(), hd = hdSect(), kind = type === 'release-group' ? 'Release group' : type[0].toUpperCase() + type.slice(1);
     hd.innerHTML = (type === 'release-group' ? `<img class="rhcv" alt="" src="https://coverartarchive.org/release-group/${id}/front-250">` : type === 'event' ? `<img class="rhcv" alt="" src="https://eventartarchive.org/event/${id}/front-250">` : '')
         + `<div class="rhtx"><div class="kicker label"><span>${esc(kind + ' · ' + FORMS[form])}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
         + `<h1><a href="${MB}/${type}/${id}">${esc(t ? t.textContent : document.title)}</a></h1>${by ? `<div class="by">by ${by}</div>` : ''}</div>`;
     cvWire(hd);
+    return hd;
+}
+// an editor's page kept as MusicBrainz's: the editor's avatar, name and tabs over it; MusicBrainz's own title and tabs hide
+function userFormHeader(id, form) {
+    const hd = document.createElement('section'), c = document.getElementById('content') || document.getElementById('page'), h1 = c && c.querySelector('h1');
+    hd.id = 'eh-relhd'; hd.className = 'arthd';
+    hd.addEventListener('click', e => {
+        const b = e.target.closest('[data-srch]'); if (!b) return;
+        e.preventDefault(); const s = b.closest('.srch'); s.classList.toggle('open'); const q = s.querySelector('input'); if (q && s.classList.contains('open')) q.focus();
+    });
+    const name = id === '-' ? ME || (h1 ? h1.textContent.trim() : '') : decodeURIComponent(id), tx = n => n.textContent.replace(/\s+/g, ' ').trim();
+    const ul = c && c.querySelector('ul.tabs'), tabs = ul ? [...ul.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]) : [];
+    const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? (img.getAttribute('src') || '').replace(/^\/\//, 'https://') : '';
+    [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
+    hd.innerHTML = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${av ? `<img src="${esc(av)}" alt="" onerror="this.remove()">` : ''}</span>`
+        + `<div class="rhtx"><div class="kicker label"><span>${esc('Editor · ' + FORMS[form])}</span><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
+        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${tabs.length ? `<nav class="u-tabs">${tabs.map(([t, h, on]) => `<a class="u-tab${on ? ' on' : ''}" href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`).join('')}</nav>` : ''}</div>`;
     return hd;
 }
 // the header's section; its search opens in place
@@ -7129,7 +7163,7 @@ function relSet(on) {
     const de = document.documentElement;
     if (on && !document.getElementById('eh-rel-css')) {
         (document.head || de).insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-rel-css">${REL_CSS()}</style>`);
-        const rel = PAGE_ID.startsWith('relate/'), c = document.getElementById('content');
+        const rel = PAGE_ID.startsWith('relate/'), c = document.getElementById('content') || document.getElementById('page');
         if (c) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
         LOG.info(rel ? 'Dressing the relationship editor of ' + PAGE_ID.split('/')[1] : 'Dressing the form ' + PAGE_ID.slice(5));
         if (rel) relCards();
