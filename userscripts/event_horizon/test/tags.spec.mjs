@@ -76,3 +76,23 @@ test('an editor\'s ratings open in place: a card per type, in every view, with t
   await row().locator('[data-rtrate]').nth(was - 1).click();
   await until(() => page.locator('#toast').textContent().catch(() => ''), t => /Rated/.test(t));
 });
+
+test('the header\'s pencil edits the tags in place: add, withdraw, done', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}`);
+  await inject('event_horizon');
+  await until(() => page.locator('button.eh-edit[data-tgin="open"]').count(), n => n > 0);
+  check(await page.locator('.tgi button').count() === 0, 'no × or ▲ out of edit mode');
+  await page.click('button.eh-edit[data-tgin="open"]');
+  const i = page.locator('.tgi-in');
+  await i.waitFor();
+  check(await page.locator('.tgi').count() >= 5, 'every tag shows');
+  await i.fill('eh inline test');
+  await i.press('Enter');
+  const mine = page.locator('.tgi.mine', { hasText: 'eh inline test' });
+  check(await until(() => mine.count(), n => n === 1) === 1, 'the new tag shows as yours');
+  await attachShot(testInfo, page, 'editing');
+  await mine.locator('button').click();
+  check(await until(() => mine.count(), n => n === 0) === 0, 'withdrawn');
+  await page.click('button[data-tgin="close"]');
+  check(await until(() => page.locator('.tgi-in').count(), n => n === 0) === 0, 'Done closes the editor');
+});

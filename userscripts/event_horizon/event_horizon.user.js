@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.200000
+// @version      2026.10.28.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2137,6 +2137,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .kmk{all:unset;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
+.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
 .gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
@@ -2866,7 +2867,7 @@ function heroFacts(app) {
     const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector(':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
-    if (tg && ME) tg.insertAdjacentHTML('beforeend', `<a class="eh-edit" href="${MB}${location.pathname.replace(/\/$/, '')}/tags#add" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</a>`);
+    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
     if (tg) add('Tags', tg, true);
     u.remove();
 }
@@ -3272,6 +3273,49 @@ async function loadRg(id, step = () => {}) {
 // the folksonomy tags (not the genres) sit behind a chip that opens them
 let tagsOpen = false;
 const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
+// the header's tags edited in place: the pencil loads the entity's tags page (all tags, your votes), then
+// your tags get × (withdraw), the others ▲ (upvote), and an input adds; ✓ or Esc closes and redraws the page
+let tgIn = null, tgInWired = false;
+const tgPath = () => location.pathname.replace(/\/$/, '');
+const tgInBox = () => document.querySelector('[data-tgin]:not(button)');
+function tgInHtml() {
+    const d = tgIn;
+    const chips = !d.t ? `<span class="chip tag">Loading…</span>` : d.t.tags.map((t, i) => `<span class="chip tag tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}<span class="tgi-n">${t.c}</span>${t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
+    return chips + (d.t ? `<input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off">` : '') + `<button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
+}
+function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; b.innerHTML = tgInHtml(); if (focus) { const i = b.querySelector('.tgi-in'); if (i) i.focus(); } }
+async function tgInOpen() {
+    const d = tgIn = { path: tgPath(), t: null }; tgInDraw();
+    try {
+        const r = await mbnFetch(MB + d.path + '/tags'); if (!r.ok) throw new Error('HTTP ' + r.status);
+        d.t = tagsParse(await r.text(), true); if (tgIn === d) tgInDraw(true);
+    } catch (e) { LOG.err('Loading the tags failed: ' + e.message); toast('Loading the tags failed: ' + e.message); if (tgIn === d) { tgIn = null; render(); } }
+}
+async function tgInSend(names, v) {
+    const d = tgIn; if (!d || !d.t || !names.length) return;
+    try {
+        const r = await mbnFetch(`${MB}${d.path}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        tagsUpdate(d, (await r.json()).updates); d.dirty = true;
+    } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
+    if (tgIn === d) tgInDraw(true);
+}
+function tgInClose() { const dirty = tgIn && tgIn.dirty && tgIn.t.tags; tgIn = null; if (dirty && data && data.g) { const ts = dirty.filter(t => t.c > 0); data.g.genres = ts.filter(t => t.g).slice(0, 5).map(t => t.n); data.g.tags = ts.filter(t => !t.g).map(t => t.n); } render(); }
+function tgInWire() {
+    if (tgInWired) return; tgInWired = true;
+    document.addEventListener('click', ev => {
+        const b = ehOn && ev.target.closest('button[data-tgin]'); if (!b) return;
+        ev.preventDefault(); const [a, i, v] = b.dataset.tgin.split(':');
+        if (a === 'open') tgInOpen();
+        else if (a === 'close') tgInClose();
+        else if (a === 'v' && tgIn && tgIn.t) { const t = tgIn.t.tags[+i]; if (t) tgInSend([t.n], +v); }
+    });
+    document.addEventListener('keydown', ev => {
+        if (!ehOn || !tgIn || !ev.target.matches('.tgi-in')) return;
+        if (ev.key === 'Escape') { ev.preventDefault(); tgInClose(); }
+        else if (ev.key === 'Enter') { ev.preventDefault(); const ns = ev.target.value.toLowerCase().split(',').map(x => x.trim()).filter(Boolean); ev.target.value = ''; tgInSend(ns, 1); }
+    });
+}
 // a few aliases inline; a +N button shows the rest
 // the first four aliases, the rest in a popover behind +N
 // and a pencil that opens the alias editor in a popup
