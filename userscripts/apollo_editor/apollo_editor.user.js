@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.074810
+// @version      2026.10.27.075628
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15834,6 +15834,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   const mbuAliasEditor = (() => {
       'use strict';
       const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>';
       let Log = { debug() {}, info() {}, warn() {}, err() {} }, fetchMb = (u, i) => fetch(u, i), ORIGIN = typeof location !== 'undefined' ? location.origin : '';
 
       function aliasOpts(sel) { return sel ? [...sel.options].map(o => ({ v: o.value, t: o.textContent.trim() })) : []; }
@@ -15896,7 +15897,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         // B layout: one line per alias (name, sort name with its guess, primary, a pill for type and dates, locale last);
         // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
         box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
-          + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span>Locale</span><span>Type</span><span>Begin</span><span>End</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
+          + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span>Locale</span><span>Type</span><span>Dates</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
           + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
         o.mount(box);
         const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
@@ -15934,7 +15935,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           let to = ev.key === 'ArrowUp' ? tr.previousElementSibling : tr.nextElementSibling;
           while (to && !to.classList.contains('tc-al-row')) to = ev.key === 'ArrowUp' ? to.previousElementSibling : to.nextElementSibling;
           const t = to && to.querySelector('.' + col); if (!t) return;
-          ev.preventDefault(); popClose(); t.focus();
+          ev.preventDefault(); popClose(); if (t.closest('.tc-al-dt')) { to.classList.add('tc-al-dopen'); to.querySelector('.tc-al-c').setAttribute('aria-expanded', 'true'); } t.focus();
           if (t.tagName === 'INPUT') { const n = t.value.length; try { t.setSelectionRange(n, n); } catch {} }
         });
         pop.addEventListener('mousedown', ev => { ev.preventDefault(); const d = ev.target.closest('.tc-al-opt'); if (d) popPick(popHit[+d.dataset.i]); });
@@ -15992,9 +15993,18 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
             + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
             + '<input class="tc-al-t" title="Type to filter the types">'
-            + '<input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
+            + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
+            + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label></span>';
           const $ = c => tr.querySelector(c);
-          const HINT_OFF = ['.tc-al-s', '.tc-al-g', '.tc-al-l', '.tc-al-b', '.tc-al-e'];
+          const HINT_OFF = ['.tc-al-s', '.tc-al-g', '.tc-al-l', '.tc-al-b', '.tc-al-e', '.tc-al-c'];
+          // the calendar shows the dates it holds; a row with a bad date stays open
+          const dates = () => {
+            const c = $('.tc-al-c'), has = !!(r.begin || r.end);
+            c.innerHTML = CAL + (has ? '<span>' + esc(r.begin || '\u2026') + '\u2013' + esc(r.end || '') + '</span>' : '');
+            c.classList.toggle('tc-al-has', has);
+            if (tr.querySelector('.tc-al-dt .tc-al-bad')) tr.classList.add('tc-al-dopen');
+            c.setAttribute('aria-expanded', String(tr.classList.contains('tc-al-dopen')));
+          };
           // a search hint keeps only its name: the rest is emptied (the sort name is the name) and shut, and comes back when the type changes
           const hint = () => {
             const on = !!r.type && r.type === hintType;
@@ -16044,24 +16054,25 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
                 e.classList.add('tc-al-bad'); e.title = 'The end comes before the begin';
               }
             }
-            hint();
+            hint(); dates();
             if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
             sync();
           };
           tr.addEventListener('input', read); tr.addEventListener('change', read);
           $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); r.autoSort = true; read(); };
           $('.tc-al-p').onclick = () => { r.primary = !r.primary; sync(); };
+          $('.tc-al-c').onclick = () => { const on = tr.classList.toggle('tc-al-dopen'); dates(); if (on) $('.tc-al-b').focus(); };
           $('.tc-al-x').onclick = () => {
             if (r.id && !r.removed && state(r) === 'chg') {
               [r.name, r.sort, r.locale, r.primary, r.type, r.begin, r.end] = JSON.parse(r.orig);
               $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
               locIn.value = locName(r.locale); locIn.dataset.v = r.locale; tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
               tr.querySelectorAll('.tc-al-bad').forEach(e => e.classList.remove('tc-al-bad'));
-              r.hintPrev = null; hint();
+              r.hintPrev = null; hint(); dates();
               Log.info('reverted "' + r.name + '"'); sync(); return;
             }
             if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); if (!ghost()) addRow(blank()); sync(); } };
-          hint();
+          hint(); dates();
           rows.push(r);
           const g = ghost(); if (g && g !== r) tb.insertBefore(tr, g.tr); else tb.appendChild(tr);
           return r;
@@ -16108,9 +16119,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
         #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
         #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
-        #tc-alias{max-width:1100px}
+        #tc-alias{max-width:860px}
+        #tc-alias .tc-al-dt{grid-column:1/-1;display:none;gap:16px;align-items:center;padding:2px 0 5px 10px;font-size:12px;color:var(--mbu-text-weak)}
+        #tc-alias .tc-al-dopen .tc-al-dt{display:flex}
+        #tc-alias .tc-al-dt label{display:inline-flex;align-items:center;gap:6px}
+        #tc-alias .tc-al-dt input:not([type=checkbox]){width:110px;border-bottom:1px solid var(--mbu-border);font-size:13px}
+        #tc-alias .tc-al-c{display:inline-flex;align-items:center;gap:4px;justify-content:flex-start;height:24px;padding:0 4px;font:inherit;font-size:12px;white-space:nowrap;overflow:hidden}
+        #tc-alias .tc-al-c svg{width:15px;height:15px;flex:0 0 auto}
+        #tc-alias .tc-al-c.tc-al-has{color:var(--mbu-accent-text, var(--mbu-accent));font-weight:600}
+        #tc-alias .tc-al-dopen .tc-al-c{background:var(--mbu-border)!important}
         #tc-alias input:not([type=checkbox]),#tc-alias select{box-sizing:border-box;width:100%;min-width:0;background:transparent !important;color:var(--mbu-text) !important;border:0;border-bottom:1px solid transparent;border-radius:0;padding:3px 4px;font:inherit;outline:0;filter:none!important}
-        #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) minmax(0,2fr) minmax(0,1.6fr) 96px 96px 26px;gap:4px;align-items:center;padding:1px 4px}
+        #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) minmax(0,2fr) minmax(0,1.6fr) 92px 26px;gap:4px;align-items:center;padding:1px 4px}
         #tc-alias .tc-al-head{font-weight:600;font-size:12px;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border);padding-bottom:3px}
         #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
         #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
@@ -16131,9 +16150,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
         #tc-alias .tc-al-opt:hover{background:var(--mbu-border)}
         #tc-alias .tc-al-opt.on{background:var(--mbu-accent);color:#fff}
-        #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
+        #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x,#tc-alias .tc-al-c{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
         #tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
-        #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
+        #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p,.tc-al-c):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
         #content:has(#tc-alias) > p:has(> a[href$="/add-alias"]){display:none}
         #tc-alias .tc-al-row.tc-al-new{background:rgba(60,170,80,.14)}
         #tc-alias .tc-al-row.tc-al-chg{background:rgba(230,190,40,.18)}
