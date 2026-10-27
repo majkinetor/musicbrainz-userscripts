@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.080734
+// @version      2026.10.27.082308
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4525,10 +4525,15 @@ const mbuAliasEditor = (() => {
       // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
       box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
         + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span>Locale</span><span>Type</span><span>Dates</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
-        + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
+        + '<div class="tc-al-nw" hidden><b>Edit note</b> <span class="tc-al-nh">Added to every edit this makes: say why, so a voter can see it.</span><textarea class="tc-al-note" rows="3" placeholder="e.g. Aliases from the artist\'s official site"></textarea></div>'
+        + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-nb" title="Add an edit note">' + (typeof MBU_EDIT_ICON === 'string' ? MBU_EDIT_ICON : '') + ' Note</button><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
       if (o.onCount) box.querySelector('.tc-al-bar').hidden = true;
       o.mount(box);
       const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
+      const nw = box.querySelector('.tc-al-nw'), nb = box.querySelector('.tc-al-nb'), noteIn = box.querySelector('.tc-al-note');
+      const noteMark = () => nb.classList.toggle('tc-al-on', !nw.hidden || !!noteIn.value.trim());
+      nb.onclick = () => { nw.hidden = !nw.hidden; noteMark(); if (!nw.hidden) noteIn.focus(); };
+      noteIn.addEventListener('input', noteMark);
       const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
       const typeName = v => (types.find(o => o.v === v) || {}).t || '';
       // a search hint has only a name, as on MusicBrainz's form: its id is in the form's props, else found by name, else MusicBrainz's own
@@ -4714,7 +4719,7 @@ const mbuAliasEditor = (() => {
       const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc || '', primary: false, type: typ || '', begin: '', end: '', ended: false });
       const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
       go.onclick = async () => {
-        const note = '';
+        const note = noteIn.value.trim();
         const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
         go.disabled = true; let ok = 0, bad = 0;
         for (const r of todo) {
@@ -4757,6 +4762,14 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-dt{grid-column:1/-1;display:none;gap:16px;align-items:center;padding:2px 0 5px 10px;font-size:12px;color:var(--mbu-text-weak)}
       #tc-alias .tc-al-dopen .tc-al-dt{display:flex}
       #tc-alias .tc-al-dt label{display:inline-flex;align-items:center;gap:6px}
+      #tc-alias .tc-al-nw{margin:10px 0 4px}
+      #tc-alias .tc-al-nw:not([hidden]){display:block}
+      #tc-alias .tc-al-nh{color:var(--mbu-text-weak);font-size:12px;margin-left:6px}
+      #tc-alias .tc-al-note{display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:6px 8px;font:inherit;font-size:13px;resize:vertical;border:1px solid var(--mbu-border);border-radius:6px;background:transparent;color:inherit}
+      #tc-alias .tc-al-nb{display:inline-flex;align-items:center;gap:5px;background:none;border:0;color:var(--mbu-text-weak);cursor:pointer;font:inherit;font-size:13px;padding:4px 8px;border-radius:4px}
+      #tc-alias .tc-al-nb svg{width:14px;height:14px}
+      #tc-alias .tc-al-nb:hover{background:var(--mbu-border);color:var(--mbu-text)}
+      #tc-alias .tc-al-nb.tc-al-on{color:var(--mbu-accent-text, var(--mbu-accent))}
       #tc-alias .tc-al-dt .tc-al-ew{margin-left:6px;cursor:pointer}
       #tc-alias .tc-al-dt .tc-al-ed{margin:0;accent-color:var(--mbu-accent)}
       #tc-alias .tc-al-cp{background:none;border:0;color:var(--mbu-text-weak);cursor:pointer;padding:2px 6px;border-radius:4px;font-size:14px;margin:0 -10px}

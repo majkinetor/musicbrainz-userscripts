@@ -31,6 +31,10 @@ test('the alias pencil opens the alias editor in a popup', { tag: ['@sandbox', '
   check(/\(\d+\)/.test(await page.locator('#eh-aliases .eh-al-n').innerText()), 'the title counts the aliases');
   check(/\/aliases$/.test(await page.locator('#eh-aliases .eh-al-tab').getAttribute('href')), 'the header links the Aliases tab');
   check(!(await page.locator('#eh-aliases .tc-al-bar').isVisible()), 'without the editor\'s own bar');
+  // Note opens the edit note box
+  await page.locator('#eh-aliases .tc-al-nb').click();
+  check(await page.locator('#eh-aliases .tc-al-note').isVisible(), 'Note opens the edit note');
+  await page.keyboard.type('why');
   await attachShot(testInfo, page, 'aliases');
   await page.keyboard.press('Escape');
   check(await until(() => page.locator('#eh-aliases').count(), n => n === 0) === 0, 'Escape closes it');
