@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.130000
+// @version      2026.10.28.140000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1931,7 +1931,7 @@ const CSS = `
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
-.u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 18px;flex-basis:100%}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
+.u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 22px;flex-basis:100%}.u-hero:has(+.u-nav){margin-bottom:4px}.u-nav+.u-bio{margin:0 0 26px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
 .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}.u-nt:hover{color:var(--text)!important}.u-nt.on{color:var(--text)!important;border-color:var(--accent)}
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
@@ -5679,7 +5679,10 @@ async function collsLoad(n, key) {
     }
 }
 // every editor page heads the same: the editor's avatar (its section's icon as a badge), and MusicBrainz's tabs underneath, the open one underlined, your account's pages set apart
-const userAv = (name, av, ic) => `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${av ? `<img src="${esc(av.replace(/^\/\//, 'https://'))}" alt="" width="96" height="96" onerror="this.remove()">` : ''}${ic ? `<span class="u-avb">${ic}</span>` : ''}</span>`;
+// MusicBrainz's subpages carry no avatar: the profile's (its Gravatar) is kept per editor for them
+const avKept = (name, av) => { let m = {}; try { m = JSON.parse(GM_getValue('avatars', '{}')) || {}; } catch (e) {} if (av === undefined) return m[name] || ''; if (av && m[name] !== av) { m[name] = av; try { GM_setValue('avatars', JSON.stringify(m)); } catch (e) {} } return av; };
+const avOf = (name, av) => { if (av) return av; const k = avKept(name); if (k) return k; let gh = ''; if (name === ME) { try { gh = GM_getValue('gravatar', ''); } catch (e) {} } return gh ? `https://gravatar.com/avatar/${gh}?s=192&d=404` : ''; };
+const userAv = (name, av0, ic, av = avOf(name, av0)) => `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${av ? `<img src="${esc(av.replace(/^\/\//, 'https://'))}" alt="" width="96" height="96" onerror="this.remove()">` : ''}${ic ? `<span class="u-avb">${ic}</span>` : ''}</span>`;
 function userNav(tabs) {
     if (!tabs || !tabs.length) return '';
     const a = ([t, h, on]) => `<a class="u-nt${on ? ' on' : ''}"${on ? ' aria-current="page"' : ''} href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`;
@@ -6026,7 +6029,8 @@ function ratesParse(html) {
     }
     const pg = [...(c.querySelector('ul.pagination') || d.createElement('ul')).querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href')]);
     const h1 = c.querySelector('h1');
-    return { name: tx(h1), groups, pg };
+    const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
+    return { name: tx(h1), groups, pg, tabs };
 }
 async function ratesLoad(n, d, url) {
     try {
@@ -6053,12 +6057,12 @@ function ratesHtml(d) {
     const all = t ? t.groups.flatMap((g, gi) => g.items.map((x, ii) => Object.assign(x, { gi, ii }))) : [];
     // the types as icons, the open one marked; then the editor's other pages
     const ic = `<span class="ed-views tgx-ic"><a href="${base}" aria-label="Every type" data-tip="Every type" aria-pressed="${!d.type}">${SVG(RT_STAR)}</a>${RT_TYPES.map(([k, x]) => `<a href="${base}/${k}" aria-label="${x}" data-tip="${x}" aria-pressed="${d.type === k}">${mkSvg(HM_KIND[k.replace('_', '-')][1])}</a>`).join('')}</span>`;
-    const tabs = `${ic}<span class="tgx-tb"><a class="u-tab" href="${MB}/user/${U}">Profile</a><a class="u-tab" href="${MB}/user/${U}/tags">Tags</a>${ME && ME !== d.name ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/ratings">Your ratings</a>` : ''}</span>`;
+    const tabs = `${ic}${ME && ME !== d.name ? `<span class="tgx-tb"><a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/ratings">Your ratings</a></span>` : ''}`;
     const ty = d.type && RT_TYPES.find(x => x[0] === d.type);
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading the ratings…' : !t.groups.length ? 'Nothing rated' : `${fmtN(all.length)} shown${d.type ? '' : ', the highest of each type'} · rated by <a href="${MB}/user/${U}">${esc(d.name)}</a>`;
     const pg = t && t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-rtpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
-    const hero = `<section class="u-hero tgx-hero"><span class="hm-av u-av">${SVG(RT_STAR).replace(/width="\d+" height="\d+"/, 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Ratings${ty ? ' · ' + ty[1].toLowerCase() : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.name)}</h1>`
-        + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav>${pg}</div></section>`;
+    const hero = `<section class="u-hero tgx-hero">${userAv(d.name, '', avIco(SVG(RT_STAR)))}<div class="u-id"><div class="kicker label"><span>Ratings${ty ? ' · ' + ty[1].toLowerCase() : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.name)}</h1>`
+        + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav>${pg}</div></section>${t ? userNav(t.tabs) : ''}`;
     if (!t) return hero;
     // the stars to show: every rating, or those of one score
     const cn = k => all.filter(x => x.r === k).length;
@@ -6623,7 +6627,7 @@ async function userLoad(n, key) {
 }
 function userHtml(d) {
     const name = d.name, u = d.u, abs = h => h.startsWith('/') ? MB + h : h;
-    const avImg = u && (u.av || (u.gh && `https://gravatar.com/avatar/${u.gh}?s=192&d=404`));
+    const avImg = u && avKept(u.name || name, u.av || (u.gh && `https://gravatar.com/avatar/${u.gh}?s=192&d=404`));
     const avatar = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${avImg ? `<img src="${esc(avImg)}" alt="" width="96" height="96" onerror="this.remove()">` : ''}</span>`;
     if (!u) return `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(name)}</h1><p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p></div></section>`;
     const bio = u.info.find(x => x.bio), langs = u.info.find(x => x.langs), loc = u.info.find(x => x.loc);
@@ -6635,7 +6639,7 @@ function userHtml(d) {
     const rest = u.info.filter(x => x !== bio && x !== langs && x !== loc);
     const facts = rest.length ? `<dl class="u-facts">${rest.map(x => `<dt>${esc(x.l)}</dt><dd>${x.h}</dd>`).join('')}</dl>` : '';
     const hero = `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(u.name || name)}</h1>${sub ? `<p class="u-sub">${sub}</p>` : ''}
-        ${langHtml}</div>${facts}${bio ? `<div class="u-bio">${bio.h}</div>` : ''}</section>${userNav(u.tabs)}`;
+        ${langHtml}</div>${facts}</section>${userNav(u.tabs)}${bio ? `<div class="u-bio">${bio.h}</div>` : ''}`;
     const link = (r, inner, cls) => r.href ? `<a class="${cls}" href="${esc(abs(r.href))}">${inner}</a>` : `<span class="${cls}">${inner}</span>`;
     const ids = ['ued', 'uvo', 'uad', 'utg'];
     const secs = u.stats.map((t, i) => {
