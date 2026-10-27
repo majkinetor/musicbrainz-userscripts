@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.120000
+// @version      2026.10.27.120100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4908,7 +4908,10 @@ async function loadArtist(id, step = () => {}) {
     const disc = ws(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
     // how many releases each group has, as MB's table shows: a browse can't tell, the search can (its "count");
     // asked beside the browse and filled in when it comes, so it holds nothing up (majkinetor)
-    const rcount = ws(`release-group?query=arid:${id}&limit=100`).then(x => new Map((x['release-groups'] || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`));
+    // the search answers 100 a page, so an artist with more groups takes a few pages (at most 5), or the rest show no count
+    const rcPage = o => ws(`release-group?query=arid:${id}&limit=100&offset=${o}`);
+    const rcount = rcPage(0).then(x => Promise.all([x, ...Array.from({ length: Math.max(0, Math.min(4, Math.ceil(((x.count || 0) - 100) / 100))) }, (_, i) => rcPage(100 * (i + 1)).catch(() => null))]))
+        .then(xs => new Map(xs.flatMap(x => (x && x['release-groups']) || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`));
     const wiki = wikiOf('artist', id);
     const gP = ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
@@ -5562,10 +5565,10 @@ function discoHtml(d) {
         rating: g => rv(g) == null ? '' : String(rv(g)), releases: g => rc(g) == null ? '' : String(rc(g)) }[sk] || (g => g['first-release-date'] || '9');
     const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
-    const th = (k, n) => `<th aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
+    const th = (k, n, c) => `<th${c ? ` class="${c}"` : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
     const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td><td>${starsTd(g.rating)}</td><td class="num">${rc(g) != null ? rc(g) : '—'}</td><td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
-    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}${th('rating', 'Rating')}${th('releases', 'Releases')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="7">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
+    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}${th('rating', 'Rating')}${th('releases', 'Releases', 'num')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="7">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
     return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
