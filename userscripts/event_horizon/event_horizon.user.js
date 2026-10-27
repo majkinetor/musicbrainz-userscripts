@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.120000
+// @version      2026.10.28.130000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -21,6 +21,7 @@
 // @match        https://*.musicbrainz.org/user/*
 // @match        https://*.musicbrainz.org/account/edit
 // @match        https://*.musicbrainz.org/account/preferences
+// @match        https://*.musicbrainz.org/account/donation
 // @match        https://*.musicbrainz.org/tag/*
 // @match        https://*.musicbrainz.org/search*
 // @match        https://*.musicbrainz.org/edit/*
@@ -1930,6 +1931,9 @@ const CSS = `
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
+.u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 18px;flex-basis:100%}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
+.u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}.u-nt:hover{color:var(--text)!important}.u-nt.on{color:var(--text)!important;border-color:var(--accent)}
+.u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
 .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}.u-tab:hover{border-color:var(--accent)}
 .u-facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:13px}.u-facts dt{color:var(--muted);font-weight:600}.u-facts dd{margin:0;overflow-wrap:anywhere}
 .u-sts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.u-st.positive b{color:#3f8f7a}.u-st.negative b{color:#c4466a}span.hm-st:hover{outline:none}
@@ -5656,7 +5660,8 @@ function collsParse(html) {
         else out.push({ grp, gi, name: name || grp, x: { ...tblParse(e, false), more: false, src: null, page: 1 } });
     }
     const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
-    return { name: tx(c.querySelector('h1')), tabs, secs: out };
+    const img = c.querySelector('h1 img.avatar:not(.no-avatar)');
+    return { name: tx(c.querySelector('h1')), av: img ? img.getAttribute('src') || '' : '', tabs, secs: out };
 }
 async function collsLoad(n, key) {
     const d = data;
@@ -5673,12 +5678,20 @@ async function collsLoad(n, key) {
         if (n === showing && data === d) { d.err = e.message; render(); }
     }
 }
+// every editor page heads the same: the editor's avatar (its section's icon as a badge), and MusicBrainz's tabs underneath, the open one underlined, your account's pages set apart
+const userAv = (name, av, ic) => `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${av ? `<img src="${esc(av.replace(/^\/\//, 'https://'))}" alt="" width="96" height="96" onerror="this.remove()">` : ''}${ic ? `<span class="u-avb">${ic}</span>` : ''}</span>`;
+function userNav(tabs) {
+    if (!tabs || !tabs.length) return '';
+    const a = ([t, h, on]) => `<a class="u-nt${on ? ' on' : ''}"${on ? ' aria-current="page"' : ''} href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`;
+    const acc = tabs.filter(t => /^(https?:\/\/[^/]+)?\/account\//.test(t[1])), pub = tabs.filter(t => !acc.includes(t));
+    return `<nav class="u-nav" aria-label="Editor"><span class="u-ng">${pub.map(a).join('')}</span>${acc.length ? `<span class="u-ng acc">${acc.map(a).join('')}</span>` : ''}</nav>`;
+}
+const avIco = d => d.replace(/width="\d+" height="\d+"/, 'width="16" height="16"');
 function collsHtml(d) {
     const c = d.c, abs = h => h.startsWith('/') ? MB + h : h, mine = d.name === ME;
-    const tabs = c ? c.tabs.filter(t => !t[2]).map(([t, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(t)}</a>`).join('') : '';
     const add = mine ? `<a class="u-tab" href="${MB}/collection/create">Add a new collection</a>` : '';
-    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(MK_COL).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Collections</span><span class="acts">${SRCH()}</span></div><h1>${esc(c && c.name || d.name)}</h1>`
-        + `<p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : !c ? 'Loading the collections…' : ''}</p>${tabs || add ? `<nav class="u-tabs">${add}${tabs}</nav>` : ''}</div></section>`;
+    const hero = `<section class="u-hero">${userAv(c && c.name || d.name, c && c.av, avIco(mkSvg(MK_COL)))}<div class="u-id"><div class="kicker label"><span>Collections</span><span class="acts">${SRCH()}</span></div><h1>${esc(c && c.name || d.name)}</h1>`
+        + `<p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : !c ? 'Loading the collections…' : ''}</p>${add ? `<nav class="u-tabs">${add}</nav>` : ''}</div></section>${c ? userNav(c.tabs) : ''}`;
     if (!c) return hero;
     // the editor's own tables keep their type's heading; a collaborative one says so
     return hero + c.secs.map((s, i) => s.note ? sect('cl' + i, esc(s.grp), '', `<p class="hm-none">${esc(s.note)}</p>`, '')
@@ -5694,6 +5707,7 @@ function tagsParse(html, ent) {
     const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
     const h1 = d.querySelector('#content h1') || d.querySelector('#page h1') || d.querySelector('h1');
     const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
+    const avi = h1 && h1.querySelector('img.avatar:not(.no-avatar)');
     let tags = null, gen = [];
     const links = [...d.querySelectorAll('ul.external_links a[href^="http"]')].map(a => a.href);
     if (ent) for (const s of d.querySelectorAll('script[type="application/json"]')) {
@@ -5708,7 +5722,7 @@ function tagsParse(html, ent) {
     }
     if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
     const hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
-    return { links, gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
+    return { av: avi ? avi.getAttribute('src') || '' : '', links, gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
 }
 async function tagsLoad(n, key, down) {
     const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
@@ -5777,13 +5791,12 @@ function entHead({ type, id, img, kick, title, disamb, acts }) {
 const entHeadWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; const i = el.querySelector('.rhic'); if (i) i.hidden = false; }; };
 function tagsHtml(d) {
     const t = d.t, abs = h => h.startsWith('/') ? MB + h : h;
-    const tabs = t ? t.tabs.filter(x => !x[2]).map(([x, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(x)}</a>`).join('') : '';
     const back = d.ent ? `<a class="u-tab" href="${MB}/${d.ent.replace(':', '/')}">Back to the ${esc(d.ent.split(':')[0].replace('-', ' '))}</a>` : '';
     const title = d.ent ? (t && t.name || 'Tags') : (t && t.name || d.name);
     const all = t ? t.tags : [], gs = all.filter(x => x.g).length;
     const sub = d.err && t ? `<span class="u-err">${esc(d.err)}</span>` : t ? `${fmtN(all.length)} tag${all.length === 1 ? '' : 's'}${gs ? `, ${fmtN(gs)} of them genres` : ''}` : '';
-    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>${d.ent ? 'Tags' : 'Tags · ' + (d.dn ? 'downvoted' : 'upvoted')}</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
-        + `<p class="u-sub">${sub}</p>${tabs || back ? `<nav class="u-tabs">${back}${tabs}</nav>` : ''}</div></section>`;
+    const hero = `<section class="u-hero">${d.ent ? `<span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span>` : userAv(d.name, t && t.av, avIco(mkSvg(CI_TAG)))}<div class="u-id"><div class="kicker label"><span>${d.ent ? 'Tags' : 'Tags · ' + (d.dn ? 'downvoted' : 'upvoted')}</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
+        + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>${!d.ent && t ? userNav(t.tabs) : ''}`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
     const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed })}</section>` : hero;
     return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
@@ -6619,11 +6632,10 @@ function userHtml(d) {
     const langHtml = langs ? `<div class="u-langs">${[...new DOMParser().parseFromString(langs.h, 'text/html').querySelectorAll('li')].map(li => {
         const t = li.textContent.replace(/\s+/g, ' ').trim(), m = t.match(/^(.*?)\s*\((.*)\)$/);
         return `<span class="u-lang">${esc(m ? m[1] : t)}${m ? `<small>${esc(m[2])}</small>` : ''}</span>`; }).join('')}</div>` : '';
-    const tabs = u.tabs.filter(t => !t[2]).map(([t, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(t)}</a>`).join('');
     const rest = u.info.filter(x => x !== bio && x !== langs && x !== loc);
     const facts = rest.length ? `<dl class="u-facts">${rest.map(x => `<dt>${esc(x.l)}</dt><dd>${x.h}</dd>`).join('')}</dl>` : '';
     const hero = `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(u.name || name)}</h1>${sub ? `<p class="u-sub">${sub}</p>` : ''}
-        ${langHtml}${tabs ? `<nav class="u-tabs">${tabs}</nav>` : ''}</div>${facts}${bio ? `<div class="u-bio">${bio.h}</div>` : ''}</section>`;
+        ${langHtml}</div>${facts}${bio ? `<div class="u-bio">${bio.h}</div>` : ''}</section>${userNav(u.tabs)}`;
     const link = (r, inner, cls) => r.href ? `<a class="${cls}" href="${esc(abs(r.href))}">${inner}</a>` : `<span class="${cls}">${inner}</span>`;
     const ids = ['ued', 'uvo', 'uad', 'utg'];
     const secs = u.stats.map((t, i) => {
@@ -6894,11 +6906,11 @@ const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return his
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
-const FORMS = { 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
+const FORMS = { 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
 // an editor's subscriptions and subscribers, and your own profile and preferences (/account/…) → "form/user/<name, or - for yours>/<form>"
 const formKey = href => {
     const u = new URL(href, location.href);
-    const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences)\/?$/));
+    const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences|donation)\/?$/));
     if (us) return us[2] ? `form/user/${us[1]}/${us[2]}` : `form/user/-/${us[1]}`;
     const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] === 'edit_annotation' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
@@ -7005,7 +7017,7 @@ body{background:var(--bg)}
 :root[data-eh-rel] #set-cover-art-images .release-description li{display:inline;margin-left:4px}
 :root[data-eh-rel] #set-cover-art-images .release-description strong{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:11.5px}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
-#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;gap:20px;align-items:center}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
+#eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}#eh-relhd>.u-nav{margin:0}#eh-relhd .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;margin:0 0 -21px;flex-basis:100%}#eh-relhd .u-ng{display:flex;flex-wrap:wrap;gap:0 22px}#eh-relhd .u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}#eh-relhd .u-ng.acc .u-nt{margin-bottom:-10px}#eh-relhd .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}#eh-relhd .u-nt:hover{color:var(--text)!important}#eh-relhd .u-nt.on{color:var(--text)!important;border-color:var(--accent)}#eh-relhd .u-av{position:relative;overflow:visible!important}#eh-relhd .u-av>img{border-radius:50%}#eh-relhd .u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -7082,9 +7094,9 @@ function userFormHeader(id, form) {
     const ul = c && c.querySelector('ul.tabs'), tabs = ul ? [...ul.querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]) : [];
     const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? (img.getAttribute('src') || '').replace(/^\/\//, 'https://') : '';
     [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
-    hd.innerHTML = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${av ? `<img src="${esc(av)}" alt="" onerror="this.remove()">` : ''}</span>`
+    hd.innerHTML = userAv(name, av)
         + `<div class="rhtx"><div class="kicker label"><span>${esc(FORMS[form])}</span><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
-        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${tabs.some(x => !x[2]) ? `<nav class="u-tabs">${tabs.filter(x => !x[2]).map(([t, h]) => `<a class="u-tab" href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`).join('')}</nav>` : ''}</div>`;
+        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1></div>${userNav(tabs)}`;
     return hd;
 }
 // the header's section; its search opens in place
