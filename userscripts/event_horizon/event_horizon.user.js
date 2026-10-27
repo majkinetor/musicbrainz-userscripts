@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.080000
+// @version      2026.10.28.090000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2867,7 +2867,7 @@ function under(r, more = '') {
     const t = r.rgId ? 'release_group' : RATE_T[data && data.kind], ref = r.rgId || (data && data.id);
     const nat = mbBody && mbBody.querySelector('#sidebar .inline-rating .current-user-rating'), w = nat && /width:\s*([\d.]+)%/.exec(nat.getAttribute('style') || '');
     const stars = on('rating') && (t || r.rating.value != null) ? rateStars(t, ref, r.rating, false, w ? Math.round(+w[1] / 20) : mbBody && mbBody.querySelector('#sidebar .inline-rating') ? 0 : null) : '';
-    const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<a class="chip" href="${MB}/tag/${encodeURIComponent(g)}">${esc(g)}</a>`).join('')}${more}</div>` : '';
+    const tags = on('tags') && (r.genres.length || more || ME) ? `<div class="gtags">${r.genres.map(g => `<a class="chip" href="${MB}/tag/${encodeURIComponent(g)}">${esc(g)}</a>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
 // stars, as MusicBrainz's own: the average lit in the accent, yours once set in gold; logged in, a click rates
@@ -7779,8 +7779,8 @@ async function show(key) {
     }
     if (kind === 'utags' || kind === 'etags') {
         const ent = kind === 'etags' ? id : '';
-        data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false, ao: !!ent && location.hash === '#add' };
-        scrollTo(0, 0); render(); tagsLoad(n, key); return;
+        data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: !ent && key === PAGE_ID && /[?&]show_downvoted=1/.test(location.search), ao: !!ent && location.hash === '#add' };
+        scrollTo(0, 0); render(); tagsLoad(n, key); if (data.dn) tagsLoad(n, key, true); return;
     }
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
