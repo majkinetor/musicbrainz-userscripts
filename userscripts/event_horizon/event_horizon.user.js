@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.190000
+// @version      2026.10.28.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1922,7 +1922,7 @@ const CSS = `
 .hm-st b{display:block;font-size:18px}.hm-st small{color:var(--muted)}
 .hm-bars div{display:grid;grid-template-columns:100px 1fr 56px;gap:8px;align-items:center;font-size:12px;padding:2px 0}
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
-.sr-hero{position:relative;margin:-14px 0 22px}.sr-top{min-height:150px;padding-right:400px}.sr-home{position:absolute;inset:0 0 auto auto;width:400px;height:150px}.sr-home .hm-orb{top:0}.sr-home .hm-wm{top:75px}@media (max-width:900px){.sr-top{padding-right:190px}.sr-home{width:190px}.sr-home .hm-wm{display:none}}@media (max-width:600px){.sr-top{padding-right:0;min-height:0}.sr-home{display:none}}.sr-hero h1{margin:4px 0 6px;font-size:32px;overflow-wrap:anywhere}.sr-f{margin-top:14px;max-width:none}
+.hm-home{position:absolute;inset:0 0 auto auto;width:400px;height:190px}@media (max-width:1100px){.hm-home{width:190px}}@media (max-width:700px){.hm-home{display:none}}.hm-hi{overflow-wrap:anywhere}.sr-sub{position:relative;margin:-8px 0 20px}
 .sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
 .sr-pg{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.sr-pg a,.sr-pg span{min-width:30px;padding:4px 9px;border-radius:8px;text-align:center;font-weight:600;font-size:13px}.sr-pg a{border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important}.sr-pg a:hover{border-color:var(--accent)}.sr-pg span{color:var(--muted)}.sr-pg span.on{background:var(--accent);color:#fff}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
@@ -6274,7 +6274,7 @@ function render(keepPop) {
     if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
-    if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); save(); return; }
+    if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); srchWire(app); secRail(app); save(); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
     if (data.kind === 'hist') { document.title = titleOf(data); histPage(app, data); return; }
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
@@ -6559,31 +6559,39 @@ Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || 
 }
 const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
 const searches = () => { try { return GM_getValue('searches', []) || []; } catch (e) { return []; } };
-function hmWire(app) {
-    const f = app.querySelector('.hm-srch'); if (!f) return;
+function srchWire(app) {
+    const f = app.querySelector('.hm-srch'); if (!f) return false;
     f.addEventListener('submit', () => {
         const q = f.query.value.trim(), t = f.type.value; if (!q) return;
         try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) {}
     });
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
+    return true;
+}
+function hmWire(app) {
+    if (!srchWire(app)) return;
     for (const im of app.querySelectorAll('[data-hmimg]')) hmImg(im);
     app.addEventListener('click', e => { if (e.target.closest('button.hm-av')) gravForm(app); });
     visitFill(app);
     if (ME) profLoad(app);
 }
 function hmImg(im) { im.nextElementSibling.style.display = 'none'; im.onerror = () => { im.nextElementSibling.style.display = ''; im.remove(); }; }
+// the home page's hero: the logo, a heading, the search form (filled in on the search page) and the recent searches
+function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', lim = '50', add = '') {
+    const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}>${srchName(t)}</option>`).join('');
+    const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
+    return `<header class="hm-hero"><a class="hm-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="hm-hi">${hi}</div>${sub}
+        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" value="${esc(q)}" placeholder="Search MusicBrainz" required${q ? '' : ' autofocus'}><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button><button type="submit">Search</button>
+        <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method">${[['indexed', 'Indexed'], ['advanced', 'Indexed, with advanced query syntax'], ['direct', 'Direct database search']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <label>Results per page</label><span class="hm-seg" role="radiogroup" aria-label="Results per page">${[25, 50, 100].map(n => `<label><input type="radio" name="limit" value="${n}"${String(n) === lim ? ' checked' : ''}><span>${n}</span></label>`).join('')}</span>
+        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
+        ${qs ? `<div class="hm-qr">${qs}</div>` : ''}${add}</header>`;
+}
 function homeHtml() {
     const u = ME && `${MB}/user/${encodeURIComponent(ME)}/`, h = new Date().getHours();
-    const kinds = SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('');
     const hi = (h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + (ME ? `, <em>${esc(ME)}</em>` : '');
-    const ss = searches(), qs = ss.map(x => `<a href="${MB}/search?query=${encodeURIComponent(x.q)}&type=${x.t}&method=indexed">${x.t === 'artist' ? '' : `<b>${x.t.replace('_', ' ')}:</b> `}${esc(x.q)}</a>`).join('');
-    const hero = `<header class="hm-hero">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div><div class="hm-hi">${hi}</div>
-        <form class="hm-srch" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" placeholder="Search MusicBrainz" required autofocus><select name="type">${kinds}</select><button type="button" class="hm-tg${S.hmAdv ? ' on' : ''}" data-tip="Advanced search" aria-label="Advanced search">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button><button type="submit">Search</button>
-        <div class="hm-adv"${S.hmAdv ? '' : ' hidden'}><label>Search method</label><select name="method"><option value="indexed">Indexed</option><option value="advanced">Indexed, with advanced query syntax</option><option value="direct">Direct database search</option></select>
-        <label>Results per page</label><span class="hm-seg" role="radiogroup" aria-label="Results per page">${[25, 50, 100].map(n => `<label><input type="radio" name="limit" value="${n}"${n === 50 ? ' checked' : ''}><span>${n}</span></label>`).join('')}</span>
-        <span class="hm-hint">Advanced syntax: <code>artist:"Hania Rani" AND date:2023</code> · <a href="${MB}/doc/Indexed_Search_Syntax" target="_blank">syntax help</a></span></div></form>
-        ${qs ? `<div class="hm-qr">${qs}</div>` : ''}<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav></header>`;
+    const hero = srchHero(hi, '', '', 'artist', 'indexed', '50', `<nav class="hm-add"><span>Add</span>${HM_ADD.map(([p, n, ic], i) => `<a href="${MB}/${p}" style="--c:${HM_CLR[i]}" data-tip="Add ${n.toLowerCase()}" aria-label="Add ${n.toLowerCase()}">${SVG(ic)}</a>`).join('')}</nav>`);
     const hmPh = t => { let h = 0; for (const c of t) h = (h * 31 + c.codePointAt(0)) >>> 0; return `--h1:${h % 360};--h2:${(h % 360 + 40 + (h >> 9) % 80) % 360}`; };
     const fr = hmFront(), cov = xs => `<div class="hm-covers">${xs.map(x => `<a class="hm-cv" href="${x.href}" title="${esc(x.t + (x.by ? ' by ' + x.by : ''))}"><span class="hm-art" style="${hmPh(x.t)}"><span class="hm-ph"><i>${esc((x.t.match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase())}</i></span>${x.img ? `<img src="${esc(x.img)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><b>${esc(x.t)}</b>${x.by ? `<small>${esc(x.by)}</small>` : ''}</a>`).join('')}</div>`;
     const nrel = fr.rel.length ? sect('hnew', 'Recently added releases', '', cov(fr.rel), '') : '';
@@ -6701,12 +6709,9 @@ async function searchLoad(n, key) {
 }
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
-    const p = new URLSearchParams(d.qs), lim = p.get('limit') || '25', meth = p.get('method') || 'indexed';
-    const form = `<form class="hm-srch sr-f" action="${MB}/search" method="get">${SVG(LENS)}<input name="query" value="${esc(d.q)}" placeholder="Search MusicBrainz" required><select name="type">${SRCH_T.map(t => `<option value="${t}"${t === d.t ? ' selected' : ''}>${srchName(t)}</option>`).join('')}</select>`
-        + `<select name="method" aria-label="Search method">${[['indexed', 'Indexed'], ['advanced', 'Advanced syntax'], ['direct', 'Direct database']].map(([v, l]) => `<option value="${v}"${v === meth ? ' selected' : ''}>${l}</option>`).join('')}</select>`
-        + `<select name="limit" aria-label="Results per page">${[25, 50, 100].map(v => `<option value="${v}"${String(v) === lim ? ' selected' : ''}>${v} a page</option>`).join('')}</select><button type="submit">Search</button></form>`;
-    const s = d.s, sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : esc(s.found || (s.rows.length ? '' : s.err || 'No results'));
-    const hero = `<section class="sr-hero"><a class="sr-home" href="${MB}/" data-tip="Event Horizon's home" aria-label="Event Horizon's home">${LOGO.replace('<svg', '<svg class="hm-orb"')}<div class="hm-wm"><b>Event<br>Horizon</b><small>MUSICBRAINZ</small></div></a><div class="sr-top"><div class="kicker label"><span>Search · ${esc(srchName(d.t))}</span></div><h1>${esc(d.q)}</h1><p class="u-sub">${sub}</p></div>${form}</section>`;
+    const p = new URLSearchParams(d.qs), s = d.s;
+    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !s ? 'Searching…' : esc(s.found || (s.rows.length ? '' : s.err || 'No results'));
+    const hero = srchHero(esc(d.q), `<p class="u-sub sr-sub">${sub}</p>`, d.q, d.t, p.get('method') || 'indexed', p.get('limit') || '25');
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
