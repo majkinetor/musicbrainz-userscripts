@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.021000
+// @version      2026.10.28.022000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1953,7 +1953,7 @@ const CSS = `
 .hm-none{color:var(--muted);margin:0}
 .tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
 .tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}
-.tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-p{display:block}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
@@ -5916,6 +5916,19 @@ async function tagxLoad(n, d, url) {
         if (n === showing && data === d) { d.err = e.message; render(); }
     }
 }
+const TGX_ART = {};
+let tgxIo = null;
+// a grid's artists and labels without a cached picture: their links once on screen, a few at a time
+function tagxArt(app) {
+    if (tgxIo) tgxIo.disconnect();
+    const q = [], busy = { n: 0 };
+    const next = () => { while (busy.n < 2 && q.length) { const el = q.shift(), [k, id] = el.dataset.tgxart.split(':'); if (TGX_ART[id] !== undefined) continue; busy.n++;
+        ws(`${k}/${id}?inc=url-rels`).then(g => ARTIMG.findAll(id, (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(xs => xs[0] || null, () => null)
+            .then(a => { TGX_ART[id] = a; for (const t of document.querySelectorAll(`[data-tgxart$=":${id}"]`)) { t.removeAttribute('data-tgxart'); if (a) t.outerHTML = `<img src="${esc(a.src)}" alt="" referrerpolicy="no-referrer">`; } })
+            .finally(() => { busy.n--; next(); }); } };
+    tgxIo = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { tgxIo.unobserve(e.target); q.push(e.target); } next(); }, { rootMargin: '300px' });
+    for (const el of app.querySelectorAll('[data-tgxart]')) tgxIo.observe(el);
+}
 function tagxHtml(d) {
     const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
     const cur = location.href.split(/[?#]/)[0].replace(/\/$/, '');
@@ -5933,7 +5946,8 @@ function tagxHtml(d) {
         const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-tgxf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-tgxf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
         const body = !xs.length ? '<p class="hm-none">Nothing matches the filter.</p>'
             : view === 'grid' ? `<div class="tgx-g">${xs.map(x => { const m = (x.u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
-                return `<div class="tgx-c">${k === 'release' || k === 'release-group' ? `<img src="https://coverartarchive.org/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}<div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`; }).join('')}</div>`
+                const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
+                return `<div class="tgx-c"><a class="tgx-p" href="${esc(x.u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' ? `<img src="https://coverartarchive.org/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a><div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`; }).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
         return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span></h2></span><div class="tools">${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}</div></div>`
@@ -6120,7 +6134,7 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); document.getElementById('eh-rail')?.remove(); return; }
-    if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); secRail(app); return; }
+    if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
