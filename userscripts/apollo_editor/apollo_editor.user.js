@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.024719
+// @version      2026.10.27.025211
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15946,6 +15946,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
         const p = r.tr.querySelector('.tc-al-p'); p.textContent = r.primary ? '★' : '☆'; p.classList.toggle('on', !!r.primary);
       }
+      const invalid = rows.some(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad'));
+      if (invalid) n = 0;
+      msg.textContent = invalid ? 'Fix the fields underlined in red' : msg.textContent === 'Fix the fields underlined in red' ? '' : msg.textContent;
       go.textContent = n ? 'Submit ' + n + ' edit' + (n > 1 ? 's' : '') : 'Submit'; go.disabled = !n;
       aliasNav(box, ent, gid, n); aliasNavRefresh = sync;
       box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
@@ -15957,7 +15960,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         + '<button type="button" class="tc-al-p" title="Primary for its locale"></button>'
         + '<input class="tc-al-l" title="Type to filter the locales">'
         + '<input class="tc-al-t" title="Type to filter the types">'
-        + '<input class="tc-al-b" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
+        + '<input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
       const $ = c => tr.querySelector(c);
       const locIn = $('.tc-al-l'), locName = v => (locales.find(o => o.v === v) || {}).t || '';
       locIn.value = locName(r.locale); locIn.dataset.v = r.locale;
@@ -15967,7 +15970,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // a new alias's sort name follows its name until it is typed by hand
       r.autoSort = !r.id && (!r.sort || r.sort === guess(r.name));
       const read = ev => {
+        const wasEmpty = !r.name.trim();
         r.name = $('.tc-al-n').value;
+        if (ev && ev.target === locIn) r.locTouched = true;
+        // the empty last line shows no locale; a new alias takes the locale picked last once it has a name
+        if (!r.id && wasEmpty && r.name.trim() && !r.locTouched && !locIn.value && SETTINGS.aliasLocale) { locIn.value = locName(SETTINGS.aliasLocale); locIn.dataset.v = SETTINGS.aliasLocale; }
         if (ev && ev.target === $('.tc-al-s')) r.autoSort = !$('.tc-al-s').value;
         if (ev && ev.target === $('.tc-al-n') && r.autoSort) $('.tc-al-s').value = r.name.trim() ? guess(r.name.trim()) : '';
         r.sort = $('.tc-al-s').value;
@@ -15976,7 +15983,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         { const t = tyIn.value.trim().toLowerCase(), o = t ? types.find(x => x.v && x.t.toLowerCase() === t) : { v: '' };
           tyIn.classList.toggle('tc-al-bad', !o); if (o) { r.type = o.v; tyIn.dataset.v = o.v; } }
         for (const [c, k] of [['.tc-al-b', 'begin'], ['.tc-al-e', 'end']]) {
-          const inp = $(c), d = normDate(inp.value); inp.classList.toggle('tc-al-bad', d === null);
+          const inp = $(c);
+          // a date field takes digits and separators only
+          if (ev && ev.target === inp && /[^\d./\- ]/.test(inp.value)) inp.value = inp.value.replace(/[^\d./\- ]/g, '');
+          const d = normDate(inp.value); inp.classList.toggle('tc-al-bad', d === null);
           if (d !== null) { r[k] = d; if (ev && ev.type === 'change' && ev.target === inp) inp.value = d; } else r[k] = inp.value.trim();
         }
         if (ev && ev.target === locIn && !locIn.classList.contains('tc-al-bad') && SETTINGS.aliasLocale !== r.locale) { SETTINGS.aliasLocale = r.locale; saveSettings(); }
@@ -15991,9 +16001,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const g = ghost(); if (g && g !== r) tb.insertBefore(tr, g.tr); else tb.appendChild(tr);
       return r;
     };
-    // a new row takes the locale picked last
-    const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc != null ? loc : SETTINGS.aliasLocale || '', primary: false, type: typ || '', begin: '', end: '' });
-    const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
+    const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc || '', primary: false, type: typ || '', begin: '', end: '' });
+    // a seeded alias takes the locale picked last
+    const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc != null ? loc : SETTINGS.aliasLocale || '', typ);
     go.onclick = async () => {
       const note = '';
       const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
