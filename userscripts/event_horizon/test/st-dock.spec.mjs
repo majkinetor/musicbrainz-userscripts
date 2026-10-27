@@ -13,6 +13,8 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   await inject('mission_control');
   await inject('art_station');
   await inject('fusion');
+  await inject('platform_check');
+  await inject('isrc_scout');
   await inject('event_horizon');
   const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
   if (!(await on())) await page.locator('#eh-launch').click();
@@ -24,10 +26,18 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   await page.locator('#mbu-dock').click();
   check(await page.locator('#mc-launch').isVisible(), 'a click unrolls it');
   check(await page.evaluate(() => localStorage.getItem('mbu.dockOpen')) === 'true', 'and it is remembered');
+  check(await page.locator('#ii-dock').isVisible() && await page.locator('#mb-pc-dock').isVisible(), 'ISRC Scout and Platform Check are in it');
+  await page.locator('#mb-pc-dock').click();
+  check(await page.locator('.mbu-dock-win #mb-pc-panel').isVisible(), 'Platform Check opens its panel in a window');
+  await attachShot(testInfo, page, 'dock-pc');
+  await page.locator('#mb-pc-dock').click();
+  check(await page.locator('.mbu-dock-win').count() === 0, 'and closes it');
   check(!(await page.locator('#as-switch').isVisible()), 'Art Station stays hidden');
   const mc = await page.locator('#mc-launch').boundingBox(), dock = await page.locator('#mbu-dock').boundingBox();
   check(mc.y + mc.height <= dock.y, 'above the dock');
+  await page.mouse.move(10, 10);
   await attachShot(testInfo, page, 'dock-open');
+  check(await page.locator('#mb-pc-dock').evaluate(e => getComputedStyle(e, '::after').display) === 'block', 'Platform Check shows its name');
   await page.evaluate(() => { localStorage.setItem('mbu.cornerFlow', '"row"'); });
   await page.locator('#mbu-dock').click(); await page.locator('#mbu-dock').click();
   await attachShot(testInfo, page, 'dock-row');

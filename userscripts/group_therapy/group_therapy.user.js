@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.212103
+// @version      2026.10.27.212635
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -923,14 +923,12 @@
       var btn = document.getElementById('mbu-dock');
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
           .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
-      if (!on) {
-          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
-          if (btn) btn.remove();
-          return;
-      }
       if (!document.getElementById('mbu-dock-css')) {
           var css = document.createElement('style'); css.id = 'mbu-dock-css';
-          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}'
+          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
+              + '.mbu-dock-item{position:fixed;z-index:2147483000;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+              + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
+              + '.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
               + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
               + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
@@ -942,6 +940,11 @@
               + ':root[data-mbu-flow=row] [data-mbu-docked=show]::after{display:none}'
               + '[data-mbu-docked=show]:hover::after{display:none}';
           root.appendChild(css);
+      }
+      if (!on) {
+          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+          if (btn) btn.remove();
+          return;
       }
       if (!btn) {
           btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
@@ -967,6 +970,25 @@
           el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
       });
       btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+  }
+  // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
+  // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
+  // paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+  // with .status(text) to show a short state after its name.
+  function mbuDockItem(o) {
+      var b = document.getElementById(o.id);
+      if (!b) {
+          b = document.createElement('button'); b.type = 'button'; b.id = o.id; b.className = 'mbu-dock-item';
+          b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = String(o.order || 60); b.dataset.mbCornerDock = 'only';
+          if (o.paths) b.dataset.mbCornerPaths = o.paths;
+          var img = document.createElement('img'); img.src = o.icon; img.alt = ''; b.appendChild(img);
+          b.onclick = o.click;
+          document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
+      }
+      b.status = function (t) { b.dataset.mbCornerLabel = o.label + (t ? ' · ' + t : ''); };
+      b.status('');
+      mbRestackCorner('br');
+      return b;
   }
   function mbRestackCorner(corner) {
       if (corner === 'br') mbuDock();

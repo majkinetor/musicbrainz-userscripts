@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.212103
+// @version      2026.10.27.212635
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1015,14 +1015,12 @@
       var btn = document.getElementById('mbu-dock');
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
           .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
-      if (!on) {
-          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
-          if (btn) btn.remove();
-          return;
-      }
       if (!document.getElementById('mbu-dock-css')) {
           var css = document.createElement('style'); css.id = 'mbu-dock-css';
-          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}'
+          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
+              + '.mbu-dock-item{position:fixed;z-index:2147483000;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+              + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
+              + '.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
               + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
               + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
@@ -1034,6 +1032,11 @@
               + ':root[data-mbu-flow=row] [data-mbu-docked=show]::after{display:none}'
               + '[data-mbu-docked=show]:hover::after{display:none}';
           root.appendChild(css);
+      }
+      if (!on) {
+          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+          if (btn) btn.remove();
+          return;
       }
       if (!btn) {
           btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
@@ -1059,6 +1062,25 @@
           el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
       });
       btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+  }
+  // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
+  // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
+  // paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+  // with .status(text) to show a short state after its name.
+  function mbuDockItem(o) {
+      var b = document.getElementById(o.id);
+      if (!b) {
+          b = document.createElement('button'); b.type = 'button'; b.id = o.id; b.className = 'mbu-dock-item';
+          b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = String(o.order || 60); b.dataset.mbCornerDock = 'only';
+          if (o.paths) b.dataset.mbCornerPaths = o.paths;
+          var img = document.createElement('img'); img.src = o.icon; img.alt = ''; b.appendChild(img);
+          b.onclick = o.click;
+          document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
+      }
+      b.status = function (t) { b.dataset.mbCornerLabel = o.label + (t ? ' · ' + t : ''); };
+      b.status('');
+      mbRestackCorner('br');
+      return b;
   }
   function mbRestackCorner(corner) {
       if (corner === 'br') mbuDock();
@@ -8803,6 +8825,15 @@
   // Only the release *overview* page (`/release/<mbid>`) — not its subpages
   // (/edit, /edit-relationships, /aliases, /tags, …) which also match `release/*`.
   const IS_OVERVIEW = /^\/release\/[a-f0-9-]{36}\/?$/i.test(location.pathname);   // case-insensitive: MB serves mixed-case MBID URLs as-is
+  // In Event Horizon, which replaces this page, the badge's state and the editor are in String Theory's dock (#847)
+  whenDomReady(() => {
+    if (!IS_OVERVIEW) return;
+    const item = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
+      paths: '^' + location.pathname.replace(/\/$/, '') + '/?$', click: openModal });
+    const mirror = () => { const s = btnStatus(); item.status(s ? s.textContent : ''); };
+    new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
+    mirror();
+  });
   whenDomReady(() => {
     if (!IS_OVERVIEW) return;
     if (!injectButton()) {
