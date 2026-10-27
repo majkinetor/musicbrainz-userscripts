@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-27 03:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-27 03:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -87,7 +87,7 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 
 An entity's **Add alias** page becomes a table of all its aliases, so several are added, changed and removed at once.
 
-- Each line is one alias, in columns: name, sort name, **☆** primary for its locale, the locale and the type (both filter as you type), and begin and end dates. A date is a year, year-month or full date; dots or slashes work too, and a day-first date like 31.12.2020 becomes 2020-12-31. Date fields take only digits and separators. A date that isn't whole when you leave the field, or an end before the begin, is underlined in red (hover it for why), and nothing is submitted while it is.
+- Each line is one alias, in columns: name, sort name, **☆** primary for its locale, the locale and the type (both filter as you type), and begin and end dates. A date is a year, year-month or full date; dots or slashes work too, and a day-first date like 31.12.2020 becomes 2020-12-31. Date fields take only digits and separators. A date that isn't whole when you leave the field, or an end before the begin, is marked in red, with the reason under the table, and nothing is submitted while it is.
 - The last line is empty: type a name there to add an alias, and a new empty line follows.
 - A new alias's sort name follows its name, the way MusicBrainz guesses it (an artist's alias gets a person's, *Presley, Elvis*), until you type one yourself; **Aa** guesses it again.
 - A new row is green, a changed one yellow, and a removed one red; **↺** brings a removed alias back.

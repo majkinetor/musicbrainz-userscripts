@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.030817
+// @version      2026.10.27.031128
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15920,7 +15920,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       }
       const invalid = rows.some(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad'));
       if (invalid) n = 0;
-      msg.textContent = invalid ? 'Fix the fields underlined in red' : msg.textContent === 'Fix the fields underlined in red' ? '' : msg.textContent;
+      // the footer says what is wrong, not only where
+      const why = invalid ? (rows.map(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad')).find(Boolean)?.title || 'Fix the fields marked in red') : '';
+      if (invalid || msg.classList.contains('tc-al-err')) msg.textContent = why;
+      msg.classList.toggle('tc-al-err', invalid);
       go.textContent = '\u2713 Enter ' + (n > 1 ? n + ' edits' : 'edit'); go.disabled = !n;
       mbuProp(go.style, 'display', n ? '' : 'none');
       box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
@@ -16040,8 +16043,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
     #tc-alias{max-width:1100px}
     #tc-alias input:not([type=checkbox]),#tc-alias select{box-sizing:border-box;width:100%;min-width:0;background:transparent !important;color:var(--mbu-text) !important;border:0;border-bottom:1px solid transparent;border-radius:0;padding:3px 4px;font:inherit;outline:0;filter:none!important}
-    #tc-alias input:not([type=checkbox]):hover,#tc-alias select:hover{border-bottom-color:var(--mbu-border)}
-    #tc-alias input:not([type=checkbox]):focus,#tc-alias select:focus{border-bottom-color:var(--mbu-accent)}
     #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) 26px minmax(0,2fr) minmax(0,1.6fr) 96px 96px 26px;gap:4px;align-items:center;padding:1px 4px}
     #tc-alias .tc-al-head{font-weight:600;font-size:12px;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border);padding-bottom:3px}
     #tc-alias .tc-al-head span:nth-child(3){text-align:center}
@@ -16051,7 +16052,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
     #tc-alias .tc-al-p{font-size:15px;line-height:1;color:var(--mbu-text-weak)}
     #tc-alias .tc-al-p.on{color:#e0a800}
-    #tc-alias .tc-al-bad{border-bottom-color:#d33!important}
+    #tc-alias input.tc-al-bad:not([type=checkbox]){border-bottom:2px solid #e53935!important;background:rgba(229,57,53,.18)!important;color:#e53935!important;border-radius:3px 3px 0 0}
+    #tc-alias .tc-al-msg.tc-al-err{color:#e53935;font-weight:600}
     #tc-alias{position:relative}
     #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
     #tc-alias .tc-al-pop[hidden]{display:none}
