@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.170000
+// @version      2026.10.27.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1953,7 +1953,7 @@ const CSS = `
 .tg-tools{display:flex;margin:0 0 14px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-bar .fbox{flex:1 1 200px;max-width:320px}.tg-bar .fbox input{width:100%}
 .tg-add{display:flex;gap:8px;margin:0 0 16px;max-width:560px}.tg-add input{flex:1;min-width:0;height:30px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:inherit}
 .tg-c{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}a.tg-g{font-weight:700}
-.tg-bars{display:grid;grid-template-columns:minmax(120px,max-content) minmax(80px,1fr) 44px auto;gap:5px 12px;align-items:center}.tg-row{display:contents}.tg-row>i{height:14px;border-radius:3px;background:var(--chip)}.tg-row>i>b{display:block;height:100%;border-radius:3px;background:var(--accent)}.tg-row>.tg-c{text-align:right}.tg-row.tg-neg>i>b{background:var(--muted)}
+.tg-bars{display:grid;grid-template-columns:minmax(120px,max-content) minmax(80px,1fr) 44px auto;gap:5px 12px;align-items:center}.tg-bars.tg-nv{grid-template-columns:minmax(120px,max-content) minmax(80px,1fr) 44px}.tg-row{display:contents}.tg-row>i{height:14px;border-radius:3px;background:var(--chip)}.tg-row>i>b{display:block;height:100%;border-radius:3px;background:var(--accent)}.tg-row>.tg-c{text-align:right}.tg-row.tg-neg>i>b{background:var(--muted)}
 .tg-cloud{line-height:2;text-align:center;padding:8px 0}.tg-cloud a{margin:0 7px;white-space:nowrap}.tg-cloud a.tg-mine{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:4px}
 .tg-chips{display:flex;flex-wrap:wrap;gap:6px}.tg-chip{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:2px 6px 2px 12px;border:1px solid var(--border);border-radius:16px;background:var(--surface);font-size:13px}.tg-chip.tg-gc{border-color:var(--accent)}.tg-chip.tg-mine{background:var(--chip)}.tg-chip>b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);color:var(--chip-text);border-radius:10px;padding:1px 7px}
 .tg-az{columns:4 190px;column-gap:24px}.tg-az>div{break-inside:avoid;margin-bottom:12px}.tg-az strong{display:block;color:var(--accent2);border-bottom:1px solid var(--border);margin-bottom:3px}.tg-az span{display:flex;justify-content:space-between;gap:8px}
@@ -5705,7 +5705,7 @@ function tgBody(d) {
         return `<div class="tg-az">${[...L].map(([k, ts]) => `<div><strong>${esc(k)}</strong>${ts.map(t => `<span class="${mine(t)}">${a(t)}${cnt(t)}</span>`).join('')}</div>`).join('')}</div>`;
     }
     if (v === 'table') return `<div class="ed-tw"><table class="ed-t tg-t"><thead><tr><th>Tag</th><th>Kind</th><th>${d.ent ? 'Score' : 'Count'}</th>${vote ? '<th>Your vote</th>' : ''}</tr></thead><tbody>${xs.map(t => `<tr class="${mine(t)}"><td>${a(t)}</td><td>${t.g ? 'genre' : 'tag'}</td><td>${cnt(t)}</td>${vote ? `<td>${tgVoteBs(t, idx(t))}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
-    return `<div class="tg-bars">${xs.map(t => `<span class="tg-row${mine(t)}">${a(t)}<i><b style="width:${Math.max(1.5, t.c / max * 100)}%"></b></i>${cnt(t)}${vote ? tgVoteBs(t, idx(t)) : ''}</span>`).join('')}</div>`;
+    return `<div class="tg-bars${vote ? '' : ' tg-nv'}">${xs.map(t => `<span class="tg-row${mine(t)}">${a(t)}<i><b style="width:${Math.max(1.5, t.c / max * 100)}%"></b></i>${cnt(t)}${vote ? tgVoteBs(t, idx(t)) : ''}</span>`).join('')}</div>`;
 }
 function tgTools(d) {
     const sg = (k, cur, opts, lbl) => `<span class="seg" role="group" aria-label="${lbl}">${opts.map(([v, t]) => `<button type="button" data-tgset="${k}:${v}" aria-pressed="${cur === v}">${t}</button>`).join('')}</span>`;
