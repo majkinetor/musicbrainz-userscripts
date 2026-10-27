@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.203000
+// @version      2026.10.27.104243
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2215,6 +2215,8 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .fbtn{all:unset;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
 .fbtn:hover{color:var(--text)}.fbtn[aria-pressed=true]{color:var(--accent);border-color:var(--accent)}
 .fbar .fn{font-size:13px;color:var(--muted)}
+.fdone{display:inline-flex;align-items:center;gap:8px;margin-right:10px;font-size:13px}
+.fdone .fn{color:var(--muted);white-space:nowrap}
 .ed-seg{display:inline-flex;flex-wrap:wrap;gap:2px;padding:3px;border-radius:10px;background:var(--chip)}
 .ed-seg button{all:unset;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
 .ed-seg button:hover{color:var(--text)}
@@ -2991,7 +2993,7 @@ function edHtml(r, eds, count) {
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed')}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
+    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
@@ -5591,11 +5593,10 @@ function fltVals(sc, k, get) {
 }
 function fltBar(sc, xs) {
     const f = FLT[sc]; f.xs = xs;
-    const n = fltApply(sc, xs).length, on = f.q || Object.keys(f.f).length;
-    if (!on) return '';
+    if (!Object.keys(f.f).length) return '';
     const opt = (k, v, c, sel) => `<option value="${esc(k + '\t' + v)}"${sel ? ' selected' : ''}>${esc(v)} (${c})</option>`;
     const chips = FLT_FIELDS[sc].filter(([k]) => k in f.f).map(([k, name, get]) => `<span class="fchip"><span class="fk">${name}</span><select data-fset="${sc}" aria-label="${name}">${fltVals(sc, k, get).map(([v, c]) => opt(k, v, c, v === f.f[k])).join('')}</select><button type="button" data-fdel="${sc}:${k}" aria-label="Drop the ${name.toLowerCase()} filter">×</button></span>`).join('');
-    return `<div class="fbar">${chips}<button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${n} of ${xs.length}</span></div>`;
+    return `<div class="fbar">${chips}</div>`;
 }
 // the suggestions under the box (majkinetor, option C of a mock): the title as typed first, then each field's
 // values that contain it, grouped under the field's name; Enter or a click takes the lit one
@@ -5628,7 +5629,8 @@ function fltTake(sc, row) {
     const b = $(`[data-fq="${sc}"]`); if (b) b.focus();
 }
 // the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
-const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `${on ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter: title, ${sc === 'ed' ? 'cat#, label, format' : 'artist, type'}, year…" aria-label="Filter" autocomplete="off"><div class="fpop" hidden></div></span>` : ''}<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
+// Clear and the count sit left of the box, in the section's tools (majkinetor)
+const fltBtn = (sc, xs) => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `${f.q || Object.keys(f.f).length ? `<span class="fdone"><button type="button" class="lnk" data-fclr="${sc}">Clear</button><span class="fn">${fltApply(sc, xs).length} of ${xs.length}</span></span>` : ''}${on ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter: title, ${sc === 'ed' ? 'cat#, label, format' : 'artist, type'}, year…" aria-label="Filter" autocomplete="off"><div class="fpop" hidden></div></span>` : ''}<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
 const total0 = x => x['release-group-count'] || (x['release-groups'] || []).length;
 // a heading's funnel in the discography and the releases: "column:" added to the filter box, ready for the value
@@ -5659,7 +5661,7 @@ function discoHtml(d) {
     const paged = x.q && total0(x) > allRgs.length;
     if (paged) WSX.dg = { x, key: 'release-groups', q: x.q };
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
+    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg', allRgs) + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
