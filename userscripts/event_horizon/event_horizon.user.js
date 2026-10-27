@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.235000
+// @version      2026.10.28.000000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5691,7 +5691,8 @@ async function tagsLoad(n, key, down) {
         const t = tagsParse(html, kind === 'etags');
         if (n === showing && data === d) { if (down) d.down = t.tags; else d.t = t; d.err = ''; render(); }
         const [ty, eid] = kind === 'etags' ? id.split(':') : [];
-        if ((ty === 'artist' || ty === 'label') && !ARTIMG.cached(eid) && t.links.length) ARTIMG.findAll(eid, t.links).then(x => { if (x[0] && n === showing && data === d) { d.img = x[0].src; render(); } }).catch(() => {});
+        // no picture cached: the page's links, else the entity's own (fetched once; the picture, found or not, is cached)
+        if ((ty === 'artist' || ty === 'label') && ARTIMG.cached(eid) === undefined) (t.links.length ? Promise.resolve(t.links) : ws(`${ty}/${eid}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(ls => ARTIMG.findAll(eid, ls)).then(x => { if (x[0] && n === showing && data === d) { d.img = x[0].src; render(); } }).catch(() => {});
     } catch (e) {
         LOG.err('Loading the tags of ' + d.name + ' failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
