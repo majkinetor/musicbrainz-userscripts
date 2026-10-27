@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.26.103354
+// @version      2026.10.27.205916
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1648,7 +1648,57 @@ function mbuShared(key, value) {
 // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
 // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
 // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+//
+// The dock (#847): while the page sets data-mbu-dock on <html> (Event Horizon, while it shows),
+// the bottom-right launchers fold behind one String Theory button. A click unrolls them, each
+// with its name (data-mb-corner-label) beside it. data-mb-corner-dock="no" keeps a launcher out
+// of the dock (Event Horizon's own switch); "hide" hides it while docked (Art Station and Apollo,
+// whose pages Event Horizon replaces).
+function mbuDock() {
+    var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+    var btn = document.getElementById('mbu-dock');
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+        .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+    if (!on) {
+        els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+        if (btn) btn.remove();
+        return;
+    }
+    if (!document.getElementById('mbu-dock-css')) {
+        var css = document.createElement('style'); css.id = 'mbu-dock-css';
+        css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}'
+            + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:#1f1d2b;color:#fff;font:700 14px/40px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.9}'
+            + '#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+            + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+            + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}'
+            + '[data-mbu-docked=show]::after{content:attr(data-mb-corner-label);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 10px;border-radius:14px;background:#fff;color:#1f1d2b;border:1px solid #dcd9e6;box-shadow:0 2px 6px rgba(0,0,0,.2);font:500 12px/1.3 system-ui,sans-serif;pointer-events:none}'
+            + ':root[data-mbu-side=left] [data-mbu-docked=show]::after{right:auto;left:calc(100% + 8px)}';
+        root.appendChild(css);
+    }
+    if (!btn) {
+        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+        btn.setAttribute('aria-label', 'String Theory');
+        btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+        btn.onclick = function () {
+            if (root.hasAttribute('data-mbu-dock-open')) root.removeAttribute('data-mbu-dock-open'); else root.setAttribute('data-mbu-dock-open', '');
+            mbRestackCorner('br');
+        };
+        root.appendChild(btn);   // outside the body, which Event Horizon swaps
+    }
+    var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+    if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+    els.forEach(function (el) {
+        if (el.dataset.mbCornerDock === 'hide') { el.setAttribute('data-mbu-docked', 'off'); return; }
+        el.removeAttribute('data-mbu-docked');   // measured as its script left it
+        var shown = getComputedStyle(el).display !== 'none';
+        if (shown) n++;
+        el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
+    });
+    btn.innerHTML = 'ST' + (n ? '<b>' + n + '</b>' : '');
+    btn.hidden = !n;
+}
 function mbRestackCorner(corner) {
+    if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
     var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -1674,7 +1724,7 @@ function mbRestackCorner(corner) {
     }
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
-        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
     var pos = 14;
     els.forEach(function (el) {

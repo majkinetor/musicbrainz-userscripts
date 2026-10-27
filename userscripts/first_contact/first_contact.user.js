@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26
+// @version      2026.10.27.205916
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -4873,7 +4873,57 @@ function mbuShared(key, value) {
 // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
 // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
 // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+//
+// The dock (#847): while the page sets data-mbu-dock on <html> (Event Horizon, while it shows),
+// the bottom-right launchers fold behind one String Theory button. A click unrolls them, each
+// with its name (data-mb-corner-label) beside it. data-mb-corner-dock="no" keeps a launcher out
+// of the dock (Event Horizon's own switch); "hide" hides it while docked (Art Station and Apollo,
+// whose pages Event Horizon replaces).
+function mbuDock() {
+    var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+    var btn = document.getElementById('mbu-dock');
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+        .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+    if (!on) {
+        els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+        if (btn) btn.remove();
+        return;
+    }
+    if (!document.getElementById('mbu-dock-css')) {
+        var css = document.createElement('style'); css.id = 'mbu-dock-css';
+        css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}'
+            + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:#1f1d2b;color:#fff;font:700 14px/40px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.9}'
+            + '#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+            + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+            + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}'
+            + '[data-mbu-docked=show]::after{content:attr(data-mb-corner-label);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 10px;border-radius:14px;background:#fff;color:#1f1d2b;border:1px solid #dcd9e6;box-shadow:0 2px 6px rgba(0,0,0,.2);font:500 12px/1.3 system-ui,sans-serif;pointer-events:none}'
+            + ':root[data-mbu-side=left] [data-mbu-docked=show]::after{right:auto;left:calc(100% + 8px)}';
+        root.appendChild(css);
+    }
+    if (!btn) {
+        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+        btn.setAttribute('aria-label', 'String Theory');
+        btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+        btn.onclick = function () {
+            if (root.hasAttribute('data-mbu-dock-open')) root.removeAttribute('data-mbu-dock-open'); else root.setAttribute('data-mbu-dock-open', '');
+            mbRestackCorner('br');
+        };
+        root.appendChild(btn);   // outside the body, which Event Horizon swaps
+    }
+    var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+    if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+    els.forEach(function (el) {
+        if (el.dataset.mbCornerDock === 'hide') { el.setAttribute('data-mbu-docked', 'off'); return; }
+        el.removeAttribute('data-mbu-docked');   // measured as its script left it
+        var shown = getComputedStyle(el).display !== 'none';
+        if (shown) n++;
+        el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
+    });
+    btn.innerHTML = 'ST' + (n ? '<b>' + n + '</b>' : '');
+    btn.hidden = !n;
+}
 function mbRestackCorner(corner) {
+    if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
     var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -4899,7 +4949,7 @@ function mbRestackCorner(corner) {
     }
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
-        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
     var pos = 14;
     els.forEach(function (el) {

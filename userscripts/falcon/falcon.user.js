@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26
+// @version      2026.10.27.205916
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -591,7 +591,57 @@
   // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
   // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
   // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+  //
+  // The dock (#847): while the page sets data-mbu-dock on <html> (Event Horizon, while it shows),
+  // the bottom-right launchers fold behind one String Theory button. A click unrolls them, each
+  // with its name (data-mb-corner-label) beside it. data-mb-corner-dock="no" keeps a launcher out
+  // of the dock (Event Horizon's own switch); "hide" hides it while docked (Art Station and Apollo,
+  // whose pages Event Horizon replaces).
+  function mbuDock() {
+      var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+      var btn = document.getElementById('mbu-dock');
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+          .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+      if (!on) {
+          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+          if (btn) btn.remove();
+          return;
+      }
+      if (!document.getElementById('mbu-dock-css')) {
+          var css = document.createElement('style'); css.id = 'mbu-dock-css';
+          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}'
+              + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:#1f1d2b;color:#fff;font:700 14px/40px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.9}'
+              + '#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+              + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+              + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}'
+              + '[data-mbu-docked=show]::after{content:attr(data-mb-corner-label);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 10px;border-radius:14px;background:#fff;color:#1f1d2b;border:1px solid #dcd9e6;box-shadow:0 2px 6px rgba(0,0,0,.2);font:500 12px/1.3 system-ui,sans-serif;pointer-events:none}'
+              + ':root[data-mbu-side=left] [data-mbu-docked=show]::after{right:auto;left:calc(100% + 8px)}';
+          root.appendChild(css);
+      }
+      if (!btn) {
+          btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+          btn.setAttribute('aria-label', 'String Theory');
+          btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+          btn.onclick = function () {
+              if (root.hasAttribute('data-mbu-dock-open')) root.removeAttribute('data-mbu-dock-open'); else root.setAttribute('data-mbu-dock-open', '');
+              mbRestackCorner('br');
+          };
+          root.appendChild(btn);   // outside the body, which Event Horizon swaps
+      }
+      var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+      if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+      els.forEach(function (el) {
+          if (el.dataset.mbCornerDock === 'hide') { el.setAttribute('data-mbu-docked', 'off'); return; }
+          el.removeAttribute('data-mbu-docked');   // measured as its script left it
+          var shown = getComputedStyle(el).display !== 'none';
+          if (shown) n++;
+          el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
+      });
+      btn.innerHTML = 'ST' + (n ? '<b>' + n + '</b>' : '');
+      btn.hidden = !n;
+  }
   function mbRestackCorner(corner) {
+      if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
       var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -617,7 +667,7 @@
       }
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
-          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
           .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
       var pos = 14;
       els.forEach(function (el) {
@@ -6781,7 +6831,7 @@
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
     launcher.dataset.tip = `${NAME} — bulk MusicBrainz editor\nClick / Ctrl+Alt+F: open the panel\nRight-click: settings`;
-    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90';   // lowest priority: furthest from the corner
+    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90'; launcher.dataset.mbCornerLabel = 'Falcon';   // lowest priority: furthest from the corner
     // #588: a page Falcon reloaded after a clean run wears a green icon instead
     // of the usual translucent one — majkinetor's ask was to be able to pick
     // that tab out of many. It is also the only visible trace that the reload

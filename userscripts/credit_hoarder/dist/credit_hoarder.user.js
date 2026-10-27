@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.27.203505
+// @version      2026.10.27.210448
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -9660,7 +9660,57 @@ Its \u{1F517} chip adds the link.`;
       }
       return value;
     }
+    function mbuDock() {
+      var root = document.documentElement, on = root.hasAttribute("data-mbu-dock");
+      var btn = document.getElementById("mbu-dock");
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]')).filter(function(el) {
+        return el.id !== "mbu-dock" && el.dataset.mbCornerDock !== "no";
+      });
+      if (!on) {
+        els.forEach(function(el) {
+          el.removeAttribute("data-mbu-docked");
+        });
+        if (btn) btn.remove();
+        return;
+      }
+      if (!document.getElementById("mbu-dock-css")) {
+        var css = document.createElement("style");
+        css.id = "mbu-dock-css";
+        css.textContent = "[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:#1f1d2b;color:#fff;font:700 14px/40px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.9}#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock{opacity:1}#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}[data-mbu-docked=show]::after{content:attr(data-mb-corner-label);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 10px;border-radius:14px;background:#fff;color:#1f1d2b;border:1px solid #dcd9e6;box-shadow:0 2px 6px rgba(0,0,0,.2);font:500 12px/1.3 system-ui,sans-serif;pointer-events:none}:root[data-mbu-side=left] [data-mbu-docked=show]::after{right:auto;left:calc(100% + 8px)}";
+        root.appendChild(css);
+      }
+      if (!btn) {
+        btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "mbu-dock";
+        btn.setAttribute("aria-label", "String Theory");
+        btn.dataset.mbCorner = "br";
+        btn.dataset.mbCornerOrder = "-1";
+        btn.onclick = function() {
+          if (root.hasAttribute("data-mbu-dock-open")) root.removeAttribute("data-mbu-dock-open");
+          else root.setAttribute("data-mbu-dock-open", "");
+          mbRestackCorner("br");
+        };
+        root.appendChild(btn);
+      }
+      var open = root.hasAttribute("data-mbu-dock-open"), n = 0;
+      if (mbuShared("cornerSide") === "left") root.setAttribute("data-mbu-side", "left");
+      else root.removeAttribute("data-mbu-side");
+      els.forEach(function(el) {
+        if (el.dataset.mbCornerDock === "hide") {
+          el.setAttribute("data-mbu-docked", "off");
+          return;
+        }
+        el.removeAttribute("data-mbu-docked");
+        var shown = getComputedStyle(el).display !== "none";
+        if (shown) n++;
+        el.setAttribute("data-mbu-docked", shown && open ? "show" : "hide");
+      });
+      btn.innerHTML = "ST" + (n ? "<b>" + n + "</b>" : "");
+      btn.hidden = !n;
+    }
     function mbRestackCorner(corner) {
+      if (corner === "br") mbuDock();
       var bottom = corner[0] === "b", right = corner[1] === "r" !== (mbuShared("cornerSide") === "left");
       var row = mbuShared("cornerFlow") === "row";
       var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -9688,7 +9738,7 @@ Its \u{1F517} chip adds the link.`;
         }
       }
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
-        return getComputedStyle(el).display !== "none";
+        return !el.hidden && getComputedStyle(el).display !== "none";
       }).sort(function(a, b) {
         return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
       });

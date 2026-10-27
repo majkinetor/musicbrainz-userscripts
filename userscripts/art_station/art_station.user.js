@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.26.181244
+// @version      2026.10.27.205916
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1153,7 +1153,7 @@
     let sw = document.getElementById('as-switch');
     if (!sw) {
       sw = document.createElement('button'); sw.type = 'button'; sw.id = 'as-switch';
-      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10';
+      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10'; sw.dataset.mbCornerDock = 'hide';   // Event Horizon replaces its page (#847)
       sw.innerHTML = `<img src="${ICON_URL}" alt="">`;
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
       sw.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('as-setup')) document.getElementById('as-setup').remove(); else openSetup(); };
@@ -5855,7 +5855,57 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
   // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
   // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+  //
+  // The dock (#847): while the page sets data-mbu-dock on <html> (Event Horizon, while it shows),
+  // the bottom-right launchers fold behind one String Theory button. A click unrolls them, each
+  // with its name (data-mb-corner-label) beside it. data-mb-corner-dock="no" keeps a launcher out
+  // of the dock (Event Horizon's own switch); "hide" hides it while docked (Art Station and Apollo,
+  // whose pages Event Horizon replaces).
+  function mbuDock() {
+      var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+      var btn = document.getElementById('mbu-dock');
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+          .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+      if (!on) {
+          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+          if (btn) btn.remove();
+          return;
+      }
+      if (!document.getElementById('mbu-dock-css')) {
+          var css = document.createElement('style'); css.id = 'mbu-dock-css';
+          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off]{display:none!important}'
+              + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:#1f1d2b;color:#fff;font:700 14px/40px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.9}'
+              + '#mbu-dock:hover,:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+              + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+              + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}'
+              + '[data-mbu-docked=show]::after{content:attr(data-mb-corner-label);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 10px;border-radius:14px;background:#fff;color:#1f1d2b;border:1px solid #dcd9e6;box-shadow:0 2px 6px rgba(0,0,0,.2);font:500 12px/1.3 system-ui,sans-serif;pointer-events:none}'
+              + ':root[data-mbu-side=left] [data-mbu-docked=show]::after{right:auto;left:calc(100% + 8px)}';
+          root.appendChild(css);
+      }
+      if (!btn) {
+          btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+          btn.setAttribute('aria-label', 'String Theory');
+          btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+          btn.onclick = function () {
+              if (root.hasAttribute('data-mbu-dock-open')) root.removeAttribute('data-mbu-dock-open'); else root.setAttribute('data-mbu-dock-open', '');
+              mbRestackCorner('br');
+          };
+          root.appendChild(btn);   // outside the body, which Event Horizon swaps
+      }
+      var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+      if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+      els.forEach(function (el) {
+          if (el.dataset.mbCornerDock === 'hide') { el.setAttribute('data-mbu-docked', 'off'); return; }
+          el.removeAttribute('data-mbu-docked');   // measured as its script left it
+          var shown = getComputedStyle(el).display !== 'none';
+          if (shown) n++;
+          el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
+      });
+      btn.innerHTML = 'ST' + (n ? '<b>' + n + '</b>' : '');
+      btn.hidden = !n;
+  }
   function mbRestackCorner(corner) {
+      if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
       var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -5881,7 +5931,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       }
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
-          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
           .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
       var pos = 14;
       els.forEach(function (el) {
