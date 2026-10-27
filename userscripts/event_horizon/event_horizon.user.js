@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.181000
+// @version      2026.10.28.182000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5691,7 +5691,16 @@ function userNav(tabs) {
     return `<nav class="u-nav" aria-label="Editor"><span class="u-ng">${pub.map(a).join('')}</span>${acc.length ? `<span class="u-ng acc">${acc.map(a).join('')}</span>` : ''}</nav>`;
 }
 // the one header of an editor's pages: avatar, name and tabs; what the page itself says or does sits in a bar under it
-const userHead = (name, av, tabs) => `<section class="u-hero u-hd">${userAv(name, av)}<div class="u-id"><div class="kicker label u-k"><span class="acts">${SRCH()}</span></div><h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(tabs) || '<nav class="u-nav"></nav>'}</div></section>`;
+// a page's tabs arrive with its data: until then the editor's last ones stand in, the open one by this address, so the header draws whole at once
+function tabsKept(name, tabs) {
+    const k = 'eh-tabs:' + name;
+    if (tabs && tabs.length) { try { sessionStorage.setItem(k, JSON.stringify(tabs)); } catch (e) {} return tabs; }
+    let t = null; try { t = JSON.parse(sessionStorage.getItem(k)); } catch (e) {}
+    if (!Array.isArray(t)) return tabs;
+    const path = u => u.replace(/^https?:\/\/[^/]+/, '').replace(/[?#].*$/, '').replace(/\/$/, ''), here = path(location.pathname);
+    return t.map(([a, h]) => [a, h, path(h) === here]);
+}
+const userHead = (name, av, tabs, _t = tabsKept(name, tabs)) => `<section class="u-hero u-hd">${userAv(name, av)}<div class="u-id"><div class="kicker label u-k"><span class="acts">${SRCH()}</span></div><h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(_t) || '<nav class="u-nav"></nav>'}</div></section>`;
 const userBar = (...xs) => { xs = xs.filter(Boolean); return xs.length ? `<div class="u-pbar">${xs.join('')}</div>` : ''; };
 const avIco = d => d.replace(/width="\d+" height="\d+"/, 'width="16" height="16"');
 function collsHtml(d) {
