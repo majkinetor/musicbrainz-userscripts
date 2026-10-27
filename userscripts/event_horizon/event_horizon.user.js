@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.150100
+// @version      2026.10.27.150400
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1922,6 +1922,7 @@ const CSS = `
 .sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
 .sr-pg{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.sr-pg a,.sr-pg span{min-width:30px;padding:4px 9px;border-radius:8px;text-align:center;font-weight:600;font-size:13px}.sr-pg a{border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important}.sr-pg a:hover{border-color:var(--accent)}.sr-pg span{color:var(--muted)}.sr-pg span.on{background:var(--accent);color:#fff}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
+.u-hero{position:relative}.u-hero .kicker .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}
 @media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
@@ -5571,9 +5572,11 @@ function colMeta(d, id) {
         else if (/^[\d,.\s]+$/.test(tx(dd))) total = +tx(dd).replace(/\D/g, '');
         else { dd.querySelectorAll('img').forEach(x => x.remove()); for (const a of dd.querySelectorAll('a[href^="/"]')) a.setAttribute('href', MB + a.getAttribute('href')); facts.push([esc(tx(dt).replace(/:$/, '')), dd.innerHTML]); }
     }
+    // the sidebar's links (open edits, merge, subscribe, subscribers, …), but its history: the header's History has it
+    const side = [...d.querySelectorAll('#sidebar ul.links a[href]')].filter(a => !/\/edits$/.test(a.getAttribute('href'))).map(a => [a.textContent.replace(/\s+/g, ' ').trim(), a.getAttribute('href')]);
     const t = d.querySelector('table.tbl tbody'), m = t && t.innerHTML.match(new RegExp('href="/(' + COL_ENT.join('|') + ')/' + MBID.source + '"'));
     return { id, title: tx(h.querySelector('h1')), disambig: '', rating: {}, genres: [], tags: [], imgs: [], type, total, facts,
-        owner: tx(own), by: sh ? sh.innerHTML.trim() : '', desc: ds ? ds.innerHTML.trim() : '', ent: m ? m[1] : '' };
+        side, owner: tx(own), by: sh ? sh.innerHTML.trim() : '', desc: ds ? ds.innerHTML.trim() : '', ent: m ? m[1] : '' };
 }
 async function loadCollection(id, step = () => {}) {
     const lists = mbTab('collection', id, '').then(x => { step('items'); return [x]; }, noSec('tab collection/' + id));
@@ -5586,6 +5589,7 @@ function colHero(d) {
         ['', g.desc && `<div class="col-desc">${g.desc}</div>`, 'wide'],
         ...g.facts.map(([l, v]) => [l, v, 'wide']),
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+        ['', g.side.length && `<nav class="u-tabs">${g.side.map(([t, h]) => `<a class="u-tab" href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`).join('')}</nav>`, 'wide'],
     ], g.by);
 }
 const colItems = d => { const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
@@ -5623,7 +5627,7 @@ function collsHtml(d) {
     const c = d.c, abs = h => h.startsWith('/') ? MB + h : h, mine = d.name === ME;
     const tabs = c ? c.tabs.filter(t => !t[2]).map(([t, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(t)}</a>`).join('') : '';
     const add = mine ? `<a class="u-tab" href="${MB}/collection/create">Add a new collection</a>` : '';
-    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(MK_COL).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Collections</span></div><h1>${esc(c && c.name || d.name)}</h1>`
+    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(MK_COL).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Collections</span><span class="acts">${SRCH()}</span></div><h1>${esc(c && c.name || d.name)}</h1>`
         + `<p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : !c ? 'Loading the collections…' : ''}</p>${tabs || add ? `<nav class="u-tabs">${add}${tabs}</nav>` : ''}</div></section>`;
     if (!c) return hero;
     // the editor's own tables keep their type's heading; a collaborative one says so
@@ -6158,7 +6162,7 @@ function userHtml(d) {
     const name = d.name, u = d.u, abs = h => h.startsWith('/') ? MB + h : h;
     const avImg = u && (u.av || (u.gh && `https://gravatar.com/avatar/${u.gh}?s=192&d=404`));
     const avatar = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${avImg ? `<img src="${esc(avImg)}" alt="" width="96" height="96" onerror="this.remove()">` : ''}</span>`;
-    if (!u) return `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span></div><h1>${esc(name)}</h1><p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p></div></section>`;
+    if (!u) return `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(name)}</h1><p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the profile…'}</p></div></section>`;
     const bio = u.info.find(x => x.bio), langs = u.info.find(x => x.langs), loc = u.info.find(x => x.loc);
     const since = (u.info.map(x => x.t.match(/^(\d{4})-\d\d-\d\d \d\d:\d\d/)).find(Boolean) || [])[1], yrs = since ? new Date().getFullYear() - since : 0;
     const sub = [loc && loc.h.replace(/<span class="comment">[\s\S]*?<\/span>/, ''), since && esc(`member since ${since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`)].filter(Boolean).join(' · ');
@@ -6168,7 +6172,7 @@ function userHtml(d) {
     const tabs = u.tabs.filter(t => !t[2]).map(([t, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(t)}</a>`).join('');
     const rest = u.info.filter(x => x !== bio && x !== langs && x !== loc);
     const facts = rest.length ? `<dl class="u-facts">${rest.map(x => `<dt>${esc(x.l)}</dt><dd>${x.h}</dd>`).join('')}</dl>` : '';
-    const hero = `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span></div><h1>${esc(u.name || name)}</h1>${sub ? `<p class="u-sub">${sub}</p>` : ''}
+    const hero = `<section class="u-hero">${avatar}<div class="u-id"><div class="kicker label"><span>Editor</span><span class="acts">${SRCH()}</span></div><h1>${esc(u.name || name)}</h1>${sub ? `<p class="u-sub">${sub}</p>` : ''}
         ${langHtml}${tabs ? `<nav class="u-tabs">${tabs}</nav>` : ''}</div>${facts}${bio ? `<div class="u-bio">${bio.h}</div>` : ''}</section>`;
     const link = (r, inner, cls) => r.href ? `<a class="${cls}" href="${esc(abs(r.href))}">${inner}</a>` : `<span class="${cls}">${inner}</span>`;
     const ids = ['ued', 'uvo', 'uad', 'utg'];
