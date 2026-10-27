@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.200000
+// @version      2026.10.27.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -19,6 +19,7 @@
 // @match        https://*.musicbrainz.org/event/*
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://*.musicbrainz.org/user/*
+// @match        https://*.musicbrainz.org/tag/*
 // @match        https://*.musicbrainz.org/search*
 // @match        https://*.musicbrainz.org/edit/*
 // @run-at       document-start
@@ -5801,10 +5802,10 @@ function tagxParse(html) {
 async function tagxLoad(n, d, url) {
     try {
         let html;
-        if (!url && d.key === PAGE_ID && mbBody && !d.dn === !/show_downvoted=1/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        if (!url && d.key === PAGE_ID && mbBody && !d.dn === !/show_downvoted=1/.test(location.search) && !/[?&]page=/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
         else {
-            const u = new URL(url || `${MB}/user/${encodeURIComponent(d.name)}/tag/${encodeURIComponent(d.tag)}${d.type ? '/' + d.type : ''}`);
-            u.searchParams.set('show_downvoted', d.dn ? '1' : '0');
+            const u = new URL(url || `${MB}${d.name ? '/user/' + encodeURIComponent(d.name) : ''}/tag/${encodeURIComponent(d.tag)}${d.type ? '/' + d.type : ''}`);
+            if (d.name) u.searchParams.set('show_downvoted', d.dn ? '1' : '0');
             const r = await mbnFetch(u.href); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text();
         }
         const t = tagxParse(html);
@@ -5816,13 +5817,15 @@ async function tagxLoad(n, d, url) {
 }
 function tagxHtml(d) {
     const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
-    const tabs = `<a class="u-tab" href="${MB}/user/${U}/tags">All tags</a>${d.type ? `<a class="u-tab" href="${MB}/user/${U}/tag/${T}">Every type</a>` : ''}<a class="u-tab" href="${MB}/tag/${T}">The tag on MusicBrainz</a>`
-        + (t ? t.tabs.filter(x => !/\/tags$/.test(x[1])).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '');
-    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : t ? esc(t.found) + ` · ${d.dn ? 'downvoted' : 'tagged'} by <a href="${MB}/user/${U}">${esc(d.name)}</a>` : 'Loading…';
+    const cur = location.href.split(/[?#]/)[0].replace(/\/$/, '');
+    const tabs = d.name ? `<a class="u-tab" href="${MB}/user/${U}/tags">All tags</a>${d.type ? `<a class="u-tab" href="${MB}/user/${U}/tag/${T}">Every type</a>` : ''}<a class="u-tab" href="${MB}/tag/${T}">Everyone's use of it</a>`
+        + (t ? t.tabs.filter(x => !/\/tags$/.test(x[1])).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '')
+        : (t ? t.tabs.filter(x => x[1].replace(/\/$/, '') !== cur).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '') + (ME ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/tag/${T}">Your use of it</a>` : '');
+    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading…' : esc(t.found) + (d.name ? ` · ${d.dn ? 'downvoted' : 'tagged'} by <a href="${MB}/user/${U}">${esc(d.name)}</a>` : '');
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tag${d.type ? ' · ' + esc(d.type.replace('_', ' ').replace('-', ' ')) + 's' : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.tag)}</h1>`
         + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav></div></section>`;
     const tools = `<div class="tg-tools"><div class="tg-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq value="${esc(d.q || '')}" placeholder="Filter" aria-label="Filter" autocomplete="off"></span>`
-        + `<span class="seg" role="group" aria-label="Votes">${[['0', 'Upvotes'], ['1', 'Downvotes']].map(([v, x]) => `<button type="button" data-tgxdn="${v}" aria-pressed="${(d.dn ? '1' : '0') === v}">${x}</button>`).join('')}</span></div></div>`;
+        + (d.name ? `<span class="seg" role="group" aria-label="Votes">${[['0', 'Upvotes'], ['1', 'Downvotes']].map(([v, x]) => `<button type="button" data-tgxdn="${v}" aria-pressed="${(d.dn ? '1' : '0') === v}">${x}</button>`).join('')}</span>` : '') + '</div></div>';
     if (!t) return hero + tools;
     const keep = h => !q || h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q);
     const secs = t.groups.map(g => { const xs = g.items.filter(keep), id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-');
@@ -6607,6 +6610,9 @@ function navTo(href) {
     if (ut) return 'utags/' + ut[1];
     // one tag of an editor's → "utag/<name>/<tag>[/<type>]"
     const ux = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tag\/([^/]+)(?:\/([a-z_-]+))?\/?$/);
+    // a tag → "gtag/<tag>[/<type>]"
+    const gx = u.origin === location.origin && u.pathname.match(/^\/tag\/([^/]+)(?:\/([a-z_-]+))?\/?$/);
+    if (gx) return 'gtag/' + gx[1] + (gx[2] ? '/' + gx[2] : '');
     if (ux) return 'utag/' + ux[1] + '/' + ux[2] + (ux[3] ? '/' + ux[3] : '') + (/show_downvoted=1/.test(u.search) ? '/-' : '');
     const et = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/tags/?$', 'i'));
     if (et) return 'etags/' + et[1].toLowerCase() + ':' + et[2].toLowerCase();
@@ -6618,7 +6624,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'tagx' ? d.tag + ' · ' + d.name + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -7491,6 +7497,11 @@ async function show(key) {
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
+    if (kind === 'gtag') {
+        const p = key.split('/').slice(1);
+        data = { kind: 'tagx', key, name: '', tag: decodeURIComponent(p[0]), type: p[1] || '', dn: false, q: '' };
+        scrollTo(0, 0); render(); tagxLoad(n, data); return;
+    }
     if (kind === 'utag') {
         const p = key.split('/').slice(1), dn = p[p.length - 1] === '-'; if (dn) p.pop();
         data = { kind: 'tagx', key, name: decodeURIComponent(p[0]), tag: decodeURIComponent(p[1]), type: p[2] || '', dn, q: '' };
