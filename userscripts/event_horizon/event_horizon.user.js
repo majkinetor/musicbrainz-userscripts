@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.170000
+// @version      2026.10.27.173000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5563,8 +5563,17 @@ const FLT_FIELDS = {
 };
 // what the box searches: the title, and a release's catalog numbers and barcode
 const FLT_TEXT = { dg: g => [g.title, g.disambiguation], ed: e => [e.title, e.disambig, e.barcode, ...e.li.map(l => l.catno)] };
+// the box also takes column:value, as the other tables do (artist:elvis, catno:"bec 57"), a column by its name's start
+const FLT_COLS = {
+    dg: [['title', g => g.title], ['artist', g => acText(g['artist-credit'] || [])], ['type', g => [g['primary-type'], ...(g['secondary-types'] || [])].join(' ')],
+        ['date', g => g['first-release-date']], ['year', g => yearOf(g['first-release-date'])], ['rating', g => String((g.rating || {}).value ?? '')]],
+    ed: [['release', e => e.title], ['title', e => e.title], ['artist', e => acText(e.ac)], ['format', e => e.formats.join(' ')], ['tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0))],
+        ['country', e => e.where.join(' ')], ['date', e => e.date], ['year', e => yearOf(e.date)], ['label', e => e.labels.join(' ')], ['catno', e => e.li.map(l => l.catno).join(' ')],
+        ['barcode', e => e.barcode], ['status', e => e.status]],
+};
 function fltPass(sc, x, skip) {
-    const f = FLT[sc], q = fltFold(f.q.trim());
+    const f = FLT[sc], cols = FLT_COLS[sc], p = tqParse(f.q.trim(), cols.map(c => c[0])), q = p.rest;
+    if (!p.terms.every(([c, v]) => fltFold(cols[c][1](x) || '').includes(v))) return false;
     if (q && !FLT_TEXT[sc](x).some(t => fltFold(t).includes(q))) return false;
     return FLT_FIELDS[sc].every(([k, , get]) => k === skip || !(k in f.f) || get(x).includes(f.f[k]));
 }
@@ -5615,9 +5624,9 @@ function fltTake(sc, row) {
 const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `${on ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter: title, ${sc === 'ed' ? 'cat#, label, format' : 'artist, type'}, year…" aria-label="Filter" autocomplete="off"><div class="fpop" hidden></div></span>` : ''}<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
 const total0 = x => x['release-group-count'] || (x['release-groups'] || []).length;
-// a heading's funnel in the discography and the releases: the filter's chip for that column (or its box for the text ones)
+// a heading's funnel in the discography and the releases: "column:" added to the filter box, ready for the value
 const fFun = (sc, k, n) => k ? `<button type="button" class="tq-col" data-ffun="${sc}\t${k}" aria-label="Filter by ${n}" data-tip="Filter by ${n}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button>` : '';
-const DG_FUN = { title: 'q', artist: 'artist', date: 'year' }, ED_FUN = { title: 'q', artist: 'artist', format: 'format', date: 'year', label: 'label', catno: 'q', barcode: 'q' };
+const DG_FUN = { title: 'title', artist: 'artist', date: 'date', rating: 'rating' }, ED_FUN = { title: 'release', artist: 'artist', format: 'format', tracks: 'tracks', date: 'date', label: 'label', catno: 'catno', barcode: 'barcode' };
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
@@ -6228,7 +6237,7 @@ function onClick(ev) {
     }
     // a heading's funnel opens the box with "column:" added, ready for the value
     if (d.rate) { const [t, ref, i] = d.rate.split('\t'); rateSet(t, ref, +i); return; }
-    if (d.ffun) { const [sc, k] = d.ffun.split('\t'), f = FLT[sc]; f.open = true; if (k !== 'q' && !(k in f.f)) { const fd = FLT_FIELDS[sc].find(x => x[0] === k), vs = fd && fltVals(sc, k, fd[2]); if (vs && vs.length) f.f[k] = vs[0][0]; } const y = scrollY; render(); scrollTo(0, y); const i = k === 'q' ? $(`[data-fq="${sc}"]`) : [...document.querySelectorAll(`[data-fset="${sc}"]`)].find(x => x.value.startsWith(k + '\t')); if (i) { i.focus(); if (i.showPicker) try { i.showPicker(); } catch (e) { } } return; }
+    if (d.ffun) { const [sc, k] = d.ffun.split('\t'), f = FLT[sc], cur = f.q.trim(); f.open = true; f.q = (cur ? cur + ' ' : '') + k + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
     if (d.tqcol) { const [k, c] = d.tqcol.split('\t'), cur = (TQ[k] || '').trim(); TQ[k] = (cur ? cur + ' ' : '') + c + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
     if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
