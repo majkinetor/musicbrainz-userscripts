@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.211000
+// @version      2026.10.28.212000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3280,7 +3280,7 @@ const tgPath = () => location.pathname.replace(/\/$/, '');
 const tgInBox = () => document.querySelector('[data-tgin]:not(button)');
 function tgInHtml() {
     const d = tgIn;
-    const chips = !d.t ? `<span class="chip tag">Loading…</span>` : d.t.tags.map((t, i) => `<span class="chip tag tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}<span class="tgi-n">${t.c}</span>${t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
+    const chips = !d.t ? `<span class="chip tag">Loading…</span>` : d.t.tags.map((t, i) => `<span class="chip tag tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}${t.c > 0 ? `<span class="tgi-n">${t.c}</span>` : ''}${t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
     return chips + (d.t ? `<input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off">` : '') + `<button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
 }
 function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; b.innerHTML = tgInHtml(); if (focus) { const i = b.querySelector('.tgi-in'); if (i) i.focus(); } }
