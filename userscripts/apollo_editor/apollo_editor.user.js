@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.021646
+// @version      2026.10.27.023031
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15880,52 +15880,80 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const guess = n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent });
     aliasStyle();
     const box = document.createElement('div'); box.id = 'tc-alias';
-    box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span><span style="flex:1"></span>'
-      + '<label>Locale for new rows <select class="tc-al-defloc"></select></label>'
-      + '<button type="button" class="tc-al-guessall" title="Guess the sort name of every new row">Guess sort names</button>'
-      + (ent === 'artist' ? '<button type="button" class="tc-al-cred" title="The names this artist is credited as on recordings">From artist credits</button>' : '')
-      + '<button type="button" class="tc-al-add">Add row</button></div><div class="tc-al-src" hidden></div>'
-      + '<table class="tc-al-tbl"><thead><tr><th>Alias</th><th>Sort name</th><th></th><th>Locale</th><th title="Primary for its locale">Primary</th><th>Type</th><th>Begin</th><th>End</th><th></th></tr></thead><tbody></tbody></table>'
-      + '<details class="tc-al-paste"><summary>Paste lines</summary><textarea rows="5" placeholder="name | sort name | locale | type   (one alias per line; only the name is needed)"></textarea><button type="button">Add lines</button></details>'
+    // B layout: one line per alias (name, sort name with its guess, primary, a pill for type and dates, locale last);
+    // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
+    box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div><div class="tc-al-src" hidden></div>'
+      + '<div class="tc-al-list"></div><datalist id="tc-al-locs">' + locales.filter(o => o.v).map(o => '<option value="' + esc(o.t) + '">').join('') + '</datalist>'
+      + '<div class="tc-al-links">' + (ent === 'artist' ? '<button type="button" class="tc-al-link tc-al-cred" title="The names this artist is credited as on recordings">From artist credits</button>' : '')
+      + '<details class="tc-al-paste"><summary class="tc-al-link">Paste lines</summary><textarea rows="5" placeholder="name | sort name | locale | type   (one alias per line; only the name is needed)"></textarea><button type="button">Add lines</button></details></div>'
       + '<label class="tc-al-notel">Edit note<textarea class="tc-al-note" rows="3"></textarea></label>'
       + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled>Submit</button></div>';
     if (list) { const h = mbPart || document.querySelector('#content h2:last-of-type'); if (mbPart) { mbPart.before(box); mbPart.style.display = 'none'; } else if (h) h.after(box); else document.getElementById('content')?.appendChild(box); }
     else { form.before(box); form.style.display = 'none'; }
-    const tb = box.querySelector('tbody'), defloc = box.querySelector('.tc-al-defloc'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
-    const optHtml = (list, v) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.t) + '</option>').join('');
-    defloc.innerHTML = optHtml(locales, SETTINGS.aliasLocale || '');
-    defloc.onchange = () => { SETTINGS.aliasLocale = defloc.value; saveSettings(); };
+    const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
+    const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
+    const typeName = v => (types.find(o => o.v === v) || {}).t || '';
     const rows = [];
     const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end]);
-    const state = r => r.removed ? 'del' : !r.id ? 'new' : key(r) !== r.orig ? 'chg' : '';
+    const state = r => r.removed ? 'del' : !r.id ? (r.name.trim() ? 'new' : '') : key(r) !== r.orig ? 'chg' : '';
     const sync = () => {
       let n = 0;
-      for (const r of rows) { const s = state(r); r.tr.className = s ? 'tc-al-' + s : ''; if (s && (s === 'del' || r.name.trim())) n++; r.tr.querySelector('.tc-al-x').textContent = r.removed ? '↺' : '×'; r.tr.querySelector('.tc-al-x').title = r.removed ? 'Keep this alias' : r.id ? 'Remove this alias' : 'Drop this row'; }
+      for (const r of rows) {
+        const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '') + (r.open ? ' tc-al-open' : '');
+        if (s && (s === 'del' || r.name.trim())) n++;
+        const x = r.tr.querySelector('.tc-al-x'); x.textContent = r.removed ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : r.id ? 'Remove this alias' : 'Drop this row';
+        mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
+        const p = r.tr.querySelector('.tc-al-p'); p.textContent = r.primary ? '★' : '☆'; p.classList.toggle('on', !!r.primary);
+        const pill = r.tr.querySelector('.tc-al-tp'), dates = r.begin || r.end ? (r.begin || '') + '–' + (r.end || '') : '';
+        pill.textContent = [typeName(r.type), dates].filter(Boolean).join(' · '); pill.hidden = !pill.textContent;
+      }
       go.textContent = n ? 'Submit ' + n + ' edit' + (n > 1 ? 's' : '') : 'Submit'; go.disabled = !n;
       aliasNav(box, ent, gid, n); aliasNavRefresh = sync;
       box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
     };
-    const addRow = (r, top) => {
-      const tr = document.createElement('tr'); r.tr = tr;
-      tr.innerHTML = '<td><input class="tc-al-n"></td><td><input class="tc-al-s"></td><td><button type="button" class="tc-al-g" title="Guess sort name">Guess</button></td>'
-        + '<td><select class="tc-al-l">' + optHtml(locales, r.locale) + '</select></td><td><input type="checkbox" class="tc-al-p"></td>'
-        + '<td><select class="tc-al-t">' + optHtml(types, r.type) + '</select></td><td><input class="tc-al-b" placeholder="YYYY-MM-DD"></td><td><input class="tc-al-e" placeholder="YYYY-MM-DD"></td>'
-        + '<td><button type="button" class="tc-al-x"></button></td>';
+    const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
+    const addRow = r => {
+      const tr = document.createElement('div'); r.tr = tr;
+      tr.innerHTML = '<input class="tc-al-n" placeholder="New alias…"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
+        + '<button type="button" class="tc-al-p" title="Primary for its locale"></button><button type="button" class="tc-al-tp" title="Type and dates"></button>'
+        + '<input class="tc-al-l" list="tc-al-locs" placeholder="Locale" title="Type to filter the locales">'
+        + '<button type="button" class="tc-al-more" title="Type and dates">⋯</button><button type="button" class="tc-al-x"></button>'
+        + '<div class="tc-al-det"><label>Type <select class="tc-al-t">' + optHtml(types, r.type, '—') + '</select></label>'
+        + '<label>Begin <input class="tc-al-b" placeholder="YYYY-MM-DD"></label><label>End <input class="tc-al-e" placeholder="YYYY-MM-DD"></label></div>';
       const $ = c => tr.querySelector(c);
-      $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-p').checked = !!r.primary; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
-      const read = () => { r.name = $('.tc-al-n').value; r.sort = $('.tc-al-s').value; r.locale = $('.tc-al-l').value; r.primary = $('.tc-al-p').checked; r.type = $('.tc-al-t').value; r.begin = $('.tc-al-b').value.trim(); r.end = $('.tc-al-e').value.trim(); sync(); };
+      const locIn = $('.tc-al-l'), locName = v => (locales.find(o => o.v === v) || {}).t || '';
+      locIn.value = locName(r.locale); locIn.dataset.v = r.locale;
+      $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
+      // a new alias's sort name follows its name until it is typed by hand
+      r.autoSort = !r.id && (!r.sort || r.sort === guess(r.name));
+      const read = ev => {
+        r.name = $('.tc-al-n').value;
+        if (ev && ev.target === $('.tc-al-s')) r.autoSort = !$('.tc-al-s').value;
+        if (ev && ev.target === $('.tc-al-n') && r.autoSort) $('.tc-al-s').value = r.name.trim() ? guess(r.name.trim()) : '';
+        r.sort = $('.tc-al-s').value;
+        { const t = locIn.value.trim().toLowerCase(), o = t ? locales.find(x => x.v && (x.t.toLowerCase() === t || x.v.toLowerCase() === t)) : { v: '' };
+          locIn.classList.toggle('tc-al-bad', !o); if (o) { r.locale = o.v; locIn.dataset.v = o.v; if (ev && ev.type === 'change' && ev.target === locIn) locIn.value = locName(o.v); } } r.type = $('.tc-al-t').value; r.begin = $('.tc-al-b').value.trim(); r.end = $('.tc-al-e').value.trim();
+        if (ev && ev.target === locIn && !locIn.classList.contains('tc-al-bad') && SETTINGS.aliasLocale !== r.locale) { SETTINGS.aliasLocale = r.locale; saveSettings(); }
+        if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
+        sync();
+      };
       tr.addEventListener('input', read); tr.addEventListener('change', read);
-      $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); read(); };
-      $('.tc-al-x').onclick = () => { if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); sync(); } };
-      rows.push(r); if (top) tb.insertBefore(tr, tb.firstChild); else tb.appendChild(tr);
+      $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); r.autoSort = true; read(); };
+      $('.tc-al-p').onclick = () => { r.primary = !r.primary; sync(); };
+      $('.tc-al-more').onclick = $('.tc-al-tp').onclick = () => { r.open = !r.open; sync(); };
+      $('.tc-al-x').onclick = () => { if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); if (!ghost()) addRow(blank()); sync(); } };
+      rows.push(r);
+      const g = ghost(); if (g && g !== r) tb.insertBefore(tr, g.tr); else tb.appendChild(tr);
       return r;
     };
-    const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc != null ? loc : defloc.value, primary: false, type: typ || '', begin: '', end: '' });
+    // a new row takes the locale picked last
+    const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc != null ? loc : SETTINGS.aliasLocale || '', primary: false, type: typ || '', begin: '', end: '' });
+    const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
     const credBtn = box.querySelector('.tc-al-cred');
     if (credBtn) credBtn.onclick = async () => {
       const src = box.querySelector('.tc-al-src');
       if (!src.hidden) { src.hidden = true; return; }
-      credBtn.disabled = true; src.hidden = false; src.textContent = 'Reading the artist credits\u2026';
+      credBtn.disabled = true; src.hidden = false; src.textContent = 'Reading the artist credits…';
       try {
         const names = await aliasCreditNames(gid), own = document.querySelector('.artistheader h1 a, h1 a')?.textContent.trim();
         src.innerHTML = '<b>From artist credits</b> ';
@@ -15936,15 +15964,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const b = document.createElement('button'); b.type = 'button'; b.className = 'tc-al-chip'; b.disabled = has;
           b.textContent = n + ' '; const pill = document.createElement('span'); pill.className = 'tc-al-pill'; pill.textContent = c; b.appendChild(pill);
           b.title = has ? 'Already an alias or a row' : c + ' recording' + (c === 1 ? '' : 's') + '; click to add a row';
-          b.onclick = () => { addRow(blank(n)); b.disabled = true; sync(); };
+          b.onclick = () => { addRow(filled(n)); b.disabled = true; sync(); };
           src.appendChild(b);
         }
         Log.cat('Alias').info('credited names:', names.length);
       } catch (e) { src.textContent = 'Could not read the artist credits'; Log.cat('Alias').warn('artist credits failed', e.message); }
       credBtn.disabled = false;
     };
-    box.querySelector('.tc-al-add').onclick = () => { addRow(blank()); sync(); rows[rows.length - 1].tr.querySelector('.tc-al-n').focus(); };
-    box.querySelector('.tc-al-guessall').onclick = () => { for (const r of rows) if (!r.id && r.name.trim() && !r.sort.trim()) { r.tr.querySelector('.tc-al-s').value = r.sort = guess(r.name.trim()); } sync(); };
     // a pasted locale or type matches by code or by the name MusicBrainz shows, either case
     const pick = (list, s) => { s = (s || '').trim().toLowerCase(); if (!s) return null; const o = list.find(x => x.v.toLowerCase() === s) || list.find(x => x.t.toLowerCase() === s); return o ? o.v : null; };
     const pasteBox = box.querySelector('.tc-al-paste');
@@ -15955,9 +15981,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const loc = pick(locales, lo), typ = pick(types, ty);
         if (lo && loc == null) Log.cat('Alias').warn('unknown locale "' + lo + '" for', nm);
         if (ty && typ == null) Log.cat('Alias').warn('unknown type "' + ty + '" for', nm);
-        addRow(blank(nm, so || '', loc, typ)); n++;
+        addRow(filled(nm, so || '', loc, typ)); n++;
       }
-      ta.value = ''; sync(); msg.textContent = n + ' row' + (n === 1 ? '' : 's') + ' added';
+      ta.value = ''; pasteBox.open = false; sync(); msg.textContent = n + ' row' + (n === 1 ? '' : 's') + ' added';
     };
     go.onclick = async () => {
       const note = box.querySelector('.tc-al-note').value.trim();
@@ -15986,7 +16012,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     } catch (e) { Log.cat('Alias').warn('could not load the aliases', e.message); msg.textContent = 'Could not load the existing aliases'; }
     // a seed in the URL fills the first row; MusicBrainz's own form arrives with the entity's name typed in, which isn't one
     const seeded = !list && new URLSearchParams(location.search).has('edit-alias.name') ? nameIn.value.trim() : '';
-    addRow(blank(seeded, seeded ? (form.querySelector('input[name="edit-alias.sort_name"]')?.value || '') : ''), false);
+    if (seeded) addRow(filled(seeded, form.querySelector('input[name="edit-alias.sort_name"]')?.value || ''));
+    addRow(blank());
     sync();
   }
 
@@ -16045,19 +16072,38 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
     #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
     #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
-    #tc-alias .tc-al-tbl{border-collapse:collapse;width:100%}
-    #tc-alias .tc-al-tbl th{text-align:left;font-weight:600;padding:4px;border-bottom:1px solid var(--mbu-border)}
-    #tc-alias .tc-al-tbl td{padding:2px 4px;border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
-    #tc-alias input:not([type=checkbox]),#tc-alias select,#tc-alias textarea{box-sizing:border-box;width:100%;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:2px 4px;font:inherit}
-    #tc-alias .tc-al-b,#tc-alias .tc-al-e{width:96px}
-    #tc-alias .tc-al-defloc{width:auto}
-    #tc-alias tr.tc-al-new td{background:rgba(60,170,80,.14)}
-    #tc-alias tr.tc-al-chg td{background:rgba(230,190,40,.18)}
-    #tc-alias tr.tc-al-del td{background:rgba(220,60,60,.16)}
-    #tc-alias tr.tc-al-del input{text-decoration:line-through}
-    #tc-alias tr.tc-al-err td{box-shadow:inset 0 -2px 0 #d33}
-    #tc-alias .tc-al-x{min-width:26px;min-height:22px}
-    #tc-alias .tc-al-notel{display:block;margin-top:8px}
+    #tc-alias input:not([type=checkbox]),#tc-alias select,#tc-alias textarea{box-sizing:border-box;width:100%;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:3px 6px;font:inherit}
+    #tc-alias .tc-al-list{border-top:1px solid var(--mbu-border)}
+    #tc-alias .tc-al-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 4px;border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
+    #tc-alias .tc-al-row > .tc-al-n{flex:3 1 160px}
+    #tc-alias .tc-al-sw{flex:3 1 160px;position:relative;display:flex}
+    #tc-alias .tc-al-sw .tc-al-s{padding-right:30px}
+    #tc-alias .tc-al-g{position:absolute;right:2px;top:50%;transform:translateY(-50%);padding:1px 5px;font:600 11px var(--mbu-font, inherit)}
+    #tc-alias .tc-al-l{flex:2 1 120px;width:auto}
+    #tc-alias .tc-al-l.tc-al-bad{border-color:#d33!important}
+    #tc-alias .tc-al-p{font-size:16px;line-height:1;min-width:26px;color:var(--mbu-text-weak)}
+    #tc-alias .tc-al-p.on{color:#e0a800}
+    #tc-alias .tc-al-tp{border-radius:10px;padding:1px 8px;font-size:11px;background:var(--mbu-border)!important;color:var(--mbu-text)!important;white-space:nowrap}
+    #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-more,#tc-alias .tc-al-x,#tc-alias .tc-al-link{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important}
+    #tc-alias .tc-al-more,#tc-alias .tc-al-x{min-width:26px;min-height:24px;font-size:14px}
+    #tc-alias :is(.tc-al-g,.tc-al-more,.tc-al-x,.tc-al-p):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
+    #tc-alias .tc-al-det{display:none;flex-basis:100%;gap:12px;align-items:center;padding:2px 0 4px}
+    #tc-alias .tc-al-open .tc-al-det{display:flex}
+    #tc-alias .tc-al-det label{display:flex;gap:4px;align-items:center;color:var(--mbu-text-weak)}
+    #tc-alias .tc-al-det select{width:auto}
+    #tc-alias .tc-al-links{display:flex;gap:16px;align-items:baseline;margin-top:6px}
+    #tc-alias .tc-al-link{color:var(--mbu-accent)!important;padding:2px 0;font:inherit}
+    #tc-alias .tc-al-paste summary{list-style:none;cursor:pointer}
+    #tc-alias .tc-al-paste summary::-webkit-details-marker{display:none}
+    #tc-alias select{color-scheme:light dark;filter:none!important;appearance:auto}
+    #tc-alias select option{background:var(--mbu-bg);color:var(--mbu-text)}
+    #tc-alias .tc-al-row.tc-al-new{background:rgba(60,170,80,.14)}
+    #tc-alias .tc-al-row.tc-al-chg{background:rgba(230,190,40,.18)}
+    #tc-alias .tc-al-row.tc-al-del{background:rgba(220,60,60,.16)}
+    #tc-alias .tc-al-row.tc-al-del input{text-decoration:line-through}
+    #tc-alias .tc-al-row.tc-al-err{box-shadow:inset 0 -2px 0 #d33}
+    #tc-alias .tc-al-notel{display:block;margin-top:10px}
+    #tc-alias .tc-al-det .tc-al-b,#tc-alias .tc-al-det .tc-al-e{width:110px}
     #tc-alias .tc-al-paste{margin-top:8px}
     #tc-alias .tc-al-paste button{margin-top:4px}
     #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}

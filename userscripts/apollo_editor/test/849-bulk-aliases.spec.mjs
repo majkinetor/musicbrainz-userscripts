@@ -16,9 +16,9 @@ async function open(page, inject, mbid) {
   await requireLogin(page);
   await page.waitForSelector('input[name="edit-alias.name"]', { state: 'attached', timeout: 30000 });
   await inject('apollo_editor');
-  await page.waitForSelector('#tc-alias tbody tr', { timeout: 30000 });
+  await page.waitForSelector('#tc-alias .tc-al-row', { timeout: 30000 });
 }
-const rows = page => page.$$eval('#tc-alias tbody tr', trs => trs.map(tr => ({ cls: tr.className, name: tr.querySelector('.tc-al-n').value, sort: tr.querySelector('.tc-al-s').value, locale: tr.querySelector('.tc-al-l').value })));
+const rows = page => page.$$eval('#tc-alias .tc-al-row', trs => trs.map(tr => ({ cls: tr.className.replace(/\s*tc-al-row\s*/, ''), name: tr.querySelector('.tc-al-n').value, sort: tr.querySelector('.tc-al-s').value, locale: tr.querySelector('.tc-al-l').dataset.v })));
 
 test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   test.setTimeout(240000);
@@ -30,10 +30,9 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   await page.click('#tc-alias .tc-al-paste summary');
   await page.fill('#tc-alias .tc-al-paste textarea', 'Alpha Person | | ja\nBeta Person');
   await page.click('#tc-alias .tc-al-paste button');
-  await page.click('#tc-alias .tc-al-guessall');
   const r1 = await rows(page);
-  eq(r1.slice(1).map(r => [r.cls, r.name, r.locale]), [['tc-al-new', 'Alpha Person', 'ja'], ['tc-al-new', 'Beta Person', '']], 'pasted rows are new, with the pasted locale');
-  eq(r1.slice(1).map(r => r.sort), ['Person, Alpha', 'Person, Beta'], 'sort names guessed');
+  eq(r1.filter(r => r.name).map(r => [r.cls, r.name, r.locale]), [['tc-al-new', 'Alpha Person', 'ja'], ['tc-al-new', 'Beta Person', '']], 'pasted rows are new, with the pasted locale');
+  eq(r1.filter(r => r.name).map(r => r.sort), ['Person, Alpha', 'Person, Beta'], 'sort names follow the names');
   eq(await page.textContent('#tc-al-enter'), '✓ Enter 2 edits', 'the bar counts the edits');
   eq(await page.evaluate(() => document.body.classList.contains('tc-zen-on')), true, 'Zen hides MusicBrainz\'s header');
   await page.fill('#tc-alias .tc-al-note', 'Bulk alias test (mb-userscripts)');
@@ -44,7 +43,7 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   await open(page, inject, mbid);
   const r2 = await rows(page);
   eq(r2.filter(r => r.name).map(r => [r.name, r.sort, r.locale]).sort(), [['Alpha Person', 'Person, Alpha', 'ja'], ['Beta Person', 'Person, Beta', '']], 'the aliases load back');
-  const tr = n => page.locator('#tc-alias tbody tr').nth(n);
+  const tr = n => page.locator('#tc-alias .tc-al-row').nth(n);
   const idx = name => r2.findIndex(r => r.name === name);
   await tr(idx('Alpha Person')).locator('.tc-al-s').fill('Alpha, Person');
   await tr(idx('Beta Person')).locator('.tc-al-x').click();
@@ -62,7 +61,7 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   // the aliases list is taken over too
   await page.goto(`${SANDBOX}/artist/${mbid}/aliases`, { waitUntil: 'domcontentloaded' });
   await inject('apollo_editor');
-  await page.waitForSelector('#tc-alias tbody tr', { timeout: 30000 });
+  await page.waitForSelector('#tc-alias .tc-al-row', { timeout: 30000 });
   eq((await rows(page)).filter(r => r.name).map(r => r.name), ['Alpha Person'], 'the list page has the editor, with the alias');
   eq(await page.$eval('#content table.tbl', t => t.style.display), 'none', 'MusicBrainz\'s table is hidden');
 

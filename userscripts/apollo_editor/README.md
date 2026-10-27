@@ -66,10 +66,10 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 
 An entity's **Add alias** page becomes a table of all its aliases, so several are added, changed and removed with one edit note.
 
-- Each row is one alias: name, sort name, locale, primary for its locale, type, and begin and end dates. **Guess** fills the sort name the way MusicBrainz does; an artist's alias gets a person's sort name (*Presley, Elvis*).
-- **Add row** adds an empty row in the **Locale for new rows**, which Apollo remembers.
-- **Paste lines** adds a row for each line, written as `name | sort name | locale | type`; only the name is needed. The locale and type can be the code (`ja`) or the name MusicBrainz shows (*Japanese*).
-- **Guess sort names** fills every new row whose sort name is empty.
+- Each line is one alias: name, sort name, **☆** primary for its locale, and the locale, which filters as you type. **⋯** opens its type and begin and end dates; once set, they show as a pill on the line.
+- The last line is empty: type a name there to add an alias, and a new empty line follows. A new alias takes the locale you picked last.
+- A new alias's sort name follows its name, the way MusicBrainz guesses it (an artist's alias gets a person's, *Presley, Elvis*), until you type one yourself; **Aa** guesses it again.
+- **Paste lines** adds a line for each pasted line, written as `name | sort name | locale | type`; only the name is needed. The locale and type can be the code (`ja`) or the name MusicBrainz shows (*Japanese*).
 - **From artist credits** (on an artist) lists the names the artist is credited as on recordings, each with how many; click one to add it as a row.
 - A new row is green, a changed one yellow, and a removed one red; **↺** brings a removed alias back.
 - **Submit** enters one edit per green, yellow or red row, all with the same edit note. A row that fails turns red underneath, and hovering it shows MusicBrainz's reason.
