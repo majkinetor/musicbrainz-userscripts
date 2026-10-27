@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.150000
+// @version      2026.10.27.153000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4934,7 +4934,7 @@ async function loadArtist(id, step = () => {}) {
         return { 'release-groups': [...m.values()], 'release-group-count': m.size, va: true };
     }, noSec(`release?track_artist=${id}`));
     // ratings and links ride along for the table's columns
-    const disc = ws(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
+    const disc = ws(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); if (x && !x.va) x.q = `release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`; return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
     // how many releases each group has, as MB's table shows: a browse can't tell, the search can (its "count");
     // asked beside the browse and filled in when it comes, so it holds nothing up (majkinetor)
     // the search answers 100 a page, so an artist with more groups takes a few pages (at most 5), or the rest show no count
@@ -5578,6 +5578,7 @@ function fltTake(sc, row) {
 // the filter row shows only once asked for (majkinetor); the button stays lit while a filter is on
 const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `${on ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter: title, ${sc === 'ed' ? 'cat#, label, format' : 'artist, type'}, year…" aria-label="Filter" autocomplete="off"><div class="fpop" hidden></div></span>` : ''}<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
+const total0 = x => x['release-group-count'] || (x['release-groups'] || []).length;
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
@@ -5599,8 +5600,11 @@ function discoHtml(d) {
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}${th('rating', 'Rating')}${th('releases', 'Releases', 'num')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="7">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
+    // past the first 100, the rest page in by Load more or Auto, as the other ws/2 lists
+    const paged = x.q && total0(x) > allRgs.length;
+    if (paged) WSX.dg = { x, key: 'release-groups', q: x.q };
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
+    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
