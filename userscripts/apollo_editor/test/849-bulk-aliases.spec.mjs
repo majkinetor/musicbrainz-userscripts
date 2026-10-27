@@ -54,7 +54,7 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   eq(await shut(), [false, true, true, true, true, true], 'a search hint shuts all but the name');
   eq((await rows(page))[1].sort, 'Beta Person', 'its sort name is the name');
   await ty.fill(''); await ty.dispatchEvent('change');
-  eq(await shut(), [false, false, false, false, false, false], 'another type opens them again');
+  eq(await shut(), [false, false, true, false, false, false], 'another type opens them again, but primary, with no locale');
   eq((await rows(page))[1].sort, 'Person, Beta', 'with the guessed sort name back');
   await page.click('#tc-al-enter');
   await page.waitForFunction(() => /entered/.test(document.querySelector('#tc-alias .tc-al-msg').textContent), null, { timeout: 120000 });
