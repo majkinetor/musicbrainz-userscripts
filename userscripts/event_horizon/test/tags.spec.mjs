@@ -20,6 +20,7 @@ test('an entity\'s tags show in every view, genres apart, with the filter', { ta
   await page.click('[data-tgset="sc:o"]');
   check(await until(() => page.locator('#tg-body a.tg-g').count(), n => n === 0) === 0, 'Other leaves the genres out');
   await page.click('[data-tgset="sc:a"]');
+  await page.click('[data-tgf="open"]');
   await page.fill('#tg-q', 'cool');
   check(await until(() => page.locator('#tg-body .tg-t tbody tr').count(), n => n === 1) === 1, 'the filter keeps cool jazz');
   await page.click('[data-tgset="view:chips"]');

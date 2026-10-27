@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.210000
+// @version      2026.10.27.220000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1952,7 +1952,8 @@ const CSS = `
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .tgx-l{columns:3 300px;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
-.tg-tools{display:flex;margin:0 0 14px}.tg-tools>.tg-bar{flex:1}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-sp{flex:1}
+.tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
+.arthd>.rhic{flex:none;width:112px;height:112px;border-radius:10px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.arthd>.rhic[hidden]{display:none}.arthd>.rhic svg{width:64px;height:64px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-sp{flex:1}
 .tg-ch{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-ch[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--chip)}.tg-ch i{font:400 11px 'JetBrains Mono',ui-monospace,monospace;font-style:normal;color:var(--muted);background:var(--chip);border-radius:9px;padding:0 6px}.tg-ch[aria-pressed="true"] i{background:var(--surface)}
 .tg-sw{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 4px;border:0;background:none;color:var(--text);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-sw u{width:34px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .15s}.tg-sw u::after{content:'';position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--surface);transition:left .15s}.tg-sw[aria-checked="true"] u{background:#c94a3a}.tg-sw[aria-checked="true"] u::after{left:17px}
 .tg-vw button{display:inline-flex;align-items:center;padding:0 10px}.tg-bar .fbox{flex:1 1 200px;max-width:320px}.tg-bar .fbox input{width:100%}
@@ -5669,7 +5670,8 @@ function tagsParse(html, ent) {
         break;
     }
     if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
-    return { name: h1 ? tx(h1) : '', tabs, tags };
+    const hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
+    return { name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
 }
 async function tagsLoad(n, key, down) {
     const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
@@ -5718,13 +5720,21 @@ function tgTools(d) {
     // Genres and Other switch on and off apiece; turning off the only one that's on swaps to the other
     const ch = (lbl, n, on, to) => `<button type="button" class="tg-ch" data-tgset="sc:${to}" aria-pressed="${on}">${lbl} <i>${fmtN(n)}</i></button>`;
     const g = d.sc !== 'o', o = d.sc !== 'g';
-    return `<div class="tg-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="tg-q" data-tgq value="${esc(d.q || '')}" placeholder="Filter tags" aria-label="Filter tags" autocomplete="off"></span>`
+    const fo = d.fo || d.q, n = d.q ? tgList(d).length : 0;
+    return `<div class="tg-bar">${d.q ? `<span class="fdone"><button type="button" class="lnk" data-tgf="clr">Clear</button><span class="fn">${n} of ${all.length}</span></span>` : ''}`
+        + (fo ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="tg-q" data-tgq value="${esc(d.q || '')}" placeholder="Filter tags" aria-label="Filter tags" autocomplete="off"></span>` : '')
+        + `<span class="ed-views"><button type="button" data-tgf="open" aria-pressed="${!!fo}" aria-label="Filter" data-tip="${fo ? 'Hide the filter, clearing it' : 'Filter the tags'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + ch('Genres', gs, g, g ? 'o' : 'a') + ch('Other', all.length - gs, o, o ? 'g' : 'a')
-        + '<span class="tg-sp"></span>'
         + `<button type="button" class="tg-ch" data-tgset="so:${d.so === 'name' ? 'count' : 'name'}" data-tip="Sort by ${d.so === 'name' ? 'count' : 'name'}">⇅ ${d.so === 'name' ? 'Name' : 'Count'}</button>`
         + (d.ent ? '' : `<button type="button" class="tg-sw" role="switch" data-tgset="dn:${d.dn ? 0 : 1}" aria-checked="${d.dn}"><u></u>Downvotes</button>`)
         + `<span class="seg tg-vw" role="group" aria-label="View">${TG_VIEWS.map(([v, t]) => `<button type="button" data-tgset="view:${v}" aria-pressed="${d.view === v}" aria-label="${t}" data-tip="${t}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TG_IC[v]}</svg></button>`).join('')}</span></div>`;
 }
+function entHead({ type, id, img, kick, title, disamb, acts }) {
+    const mk = (HM_KIND[type] || ['', CI_TAG])[1];
+    return `${img ? `<img class="rhcv" alt="" src="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
+        + `<h1>${title ? `<a href="${MB}/${type}/${id}">${esc(title)}</a>` : '&nbsp;'}${disamb ? `<span class="disamb">(${esc(disamb)})</span>` : ''}</h1></div>`;
+}
+const entHeadWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; const i = el.querySelector('.rhic'); if (i) i.hidden = false; }; };
 function tagsHtml(d) {
     const t = d.t, abs = h => h.startsWith('/') ? MB + h : h;
     const tabs = t ? t.tabs.filter(x => !x[2]).map(([x, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(x)}</a>`).join('') : '';
@@ -5735,7 +5745,9 @@ function tagsHtml(d) {
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>${d.ent ? 'Tags' : 'Tags · ' + (d.dn ? 'downvoted' : 'upvoted')}</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${tabs || back ? `<nav class="u-tabs">${back}${tabs}</nav>` : ''}</div></section>`;
     const add = d.ent && ME ? `<form class="tg-add" data-tgadd><input id="tg-new" placeholder="Add tags, comma-separated" aria-label="Add tags" autocomplete="off"><button type="submit" class="u-tab">Tag</button></form>` : '';
-    return hero + `<section class="sec" id="s-tg"><div class="tg-tools">${tgTools(d)}</div>${add}<div id="tg-body">${tgBody(d)}</div></section>`;
+    const [ty, eid] = d.ent ? d.ent.split(':') : [];
+    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: ty === 'release' ? `https://coverartarchive.org/release/${eid}/front-250` : ty === 'release-group' ? `https://coverartarchive.org/release-group/${eid}/front-250` : '', kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed })}</section>` : hero;
+    return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2><div class="tools tg-tools">${tgTools(d)}</div></div>${add}<div id="tg-body">${tgBody(d)}</div></section>`;
 }
 function tagsDraw() { const b = $('#tg-body'); if (b && data && data.kind === 'tags') b.innerHTML = tgBody(data); }
 async function tagsVote(d, i, v) {
@@ -5770,8 +5782,12 @@ let tgWired = false;
 function tagsWire() {
     if (tgWired) return; tgWired = true;
     document.addEventListener('click', ev => {
-        const b = ehOn && data && data.kind === 'tags' && ev.target.closest('[data-tgset],[data-tgvote]'); if (!b) return;
+        const b = ehOn && data && data.kind === 'tags' && ev.target.closest('[data-tgset],[data-tgvote],[data-tgf]'); if (!b) return;
         const d = data;
+        if (b.dataset.tgf) {
+            if (b.dataset.tgf === 'clr' || d.fo || d.q) { d.q = ''; d.fo = b.dataset.tgf === 'clr'; } else d.fo = true;
+            const tl = $('.tg-tools'); if (tl) tl.innerHTML = tgTools(d); tagsDraw(); const i = $('#tg-q'); if (i) i.focus(); return;
+        }
         if (b.dataset.tgvote) { const [i, v] = b.dataset.tgvote.split(':').map(Number); tagsVote(d, i, v); return; }
         const [k, v] = b.dataset.tgset.split(':');
         if (k === 'dn') { d.dn = v === '1'; if (d.dn && !d.down) tagsLoad(showing, d.key, true); render(); return; }
@@ -5780,7 +5796,7 @@ function tagsWire() {
         if (k === 'so' || k === 'sc') { S.tagSort = d.so; S.tagScope = d.sc; save(); }
         const tl = $('.tg-tools'); if (tl) { tl.innerHTML = tgTools(d); } tagsDraw();
     });
-    document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'tags' && ev.target.matches('[data-tgq]')) { data.q = ev.target.value; tagsDraw(); } });
+    document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'tags' && ev.target.matches('[data-tgq]')) { data.q = ev.target.value; tagsDraw(); const fn = $('.tg-tools .fn'), cl = $('.tg-tools .fdone'); if (fn) fn.textContent = `${tgList(data).length} of ${(data.ent || !data.dn ? (data.t ? data.t.tags : []) : data.down || []).length}`; else if (data.q && !cl) { const at = ev.target.selectionStart, tl = $('.tg-tools'); tl.innerHTML = tgTools(data); const i = $('#tg-q'); i.focus(); i.setSelectionRange(at, at); } } });
     document.addEventListener('submit', ev => { const f = ev.target; if (!ehOn || !data || data.kind !== 'tags' || !f.matches('[data-tgadd]')) return; ev.preventDefault(); const i = f.querySelector('input'); tagsAdd(data, i.value); i.value = ''; });
 }
 // one tag of an editor's: what they tagged with it, by entity type (or one type, paged)
@@ -6010,7 +6026,7 @@ function render(keepPop) {
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
-    if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); document.getElementById('eh-rail')?.remove(); return; }
+    if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); document.getElementById('eh-rail')?.remove(); return; }
     if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); secRail(app); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
