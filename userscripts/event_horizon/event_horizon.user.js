@@ -232,6 +232,8 @@ function mbuHelpHref(name) {
     return 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/' + name + '/README.md';
 }
 var MBU_HELP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.6"/><path d="M12 17h.01"/></svg>';
+// the sort-name guess, A over Z with a down arrow, for every button that guesses a sort name
+var MBU_SORT_ICON = '<svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v18M1 17l4 4 4-4"/><path d="M13 11l3-8 3 8M14.1 8h3.8M13 14h6l-6 7h6"/></svg>';
 // the edit pencil, for every button that opens an editor (#849)
 var MBU_EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 function mbuHelpHtml(name, label) {
@@ -4631,7 +4633,7 @@ const mbuAliasEditor = (() => {
       const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
       const addRow = r => {
         const tr = document.createElement('div'); r.tr = tr;
-        tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
+        tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
           + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
           + '<input class="tc-al-t" title="Type to filter the types">'
           + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
@@ -4792,7 +4794,7 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
       #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
       #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}
-      #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
+      #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);line-height:0}#tc-alias .tc-al-g svg{width:16px;height:14px}
       #tc-alias .tc-al-lw{position:relative;display:flex;min-width:0}
       #tc-alias .tc-al-lw .tc-al-l.tc-al-lp{padding-right:22px}
       #tc-alias .tc-al-p{position:absolute;right:0;top:50%;transform:translateY(-50%);width:20px;font-size:15px;line-height:1;color:var(--mbu-text-weak)}

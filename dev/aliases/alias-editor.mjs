@@ -186,7 +186,7 @@ const mbuAliasEditor = (() => {
       const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
       const addRow = r => {
         const tr = document.createElement('div'); r.tr = tr;
-        tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
+        tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
           + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
           + '<input class="tc-al-t" title="Type to filter the types">'
           + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
@@ -347,7 +347,7 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
       #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
       #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}
-      #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
+      #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);line-height:0}#tc-alias .tc-al-g svg{width:16px;height:14px}
       #tc-alias .tc-al-lw{position:relative;display:flex;min-width:0}
       #tc-alias .tc-al-lw .tc-al-l.tc-al-lp{padding-right:22px}
       #tc-alias .tc-al-p{position:absolute;right:0;top:50%;transform:translateY(-50%);width:20px;font-size:15px;line-height:1;color:var(--mbu-text-weak)}

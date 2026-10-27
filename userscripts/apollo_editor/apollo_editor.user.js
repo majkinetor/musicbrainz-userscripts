@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.120400
+// @version      2026.10.27.120500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4511,6 +4511,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       return 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/' + name + '/README.md';
   }
   var MBU_HELP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.6"/><path d="M12 17h.01"/></svg>';
+  // the sort-name guess, A over Z with a down arrow, for every button that guesses a sort name
+  var MBU_SORT_ICON = '<svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v18M1 17l4 4 4-4"/><path d="M13 11l3-8 3 8M14.1 8h3.8M13 14h6l-6 7h6"/></svg>';
   // the edit pencil, for every button that opens an editor (#849)
   var MBU_EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
   function mbuHelpHtml(name, label) {
@@ -14972,6 +14974,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       });
       // our tips, not MusicBrainz's titles too; the sort name's guess has no options
       form.addEventListener('mouseover', e => { const b = riWant() && e.target.closest && e.target.closest('button.guesscase-title, button.guesscase-sortname'); if (b) b.removeAttribute('title'); }, true);
+      form.querySelectorAll('button.guesscase-sortname').forEach(b => { if (!b.querySelector('svg')) b.insertAdjacentHTML('afterbegin', MBU_SORT_ICON); });
       mbuTipOn('form.tc-ent-plain button.guesscase-title', () => riWant() ? 'Guess case\nRight-click: its options' : null);
       mbuTipOn('form.tc-ent-plain button.guesscase-sortname', () => riWant() ? 'Guess sort name\n"The Beatles" → "Beatles, The", "John Smith" → "Smith, John"' : null);
     }
@@ -15070,7 +15073,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     /* #843: the artist form: its fields end on one line, the links column starts level with Artist details, the dates fit their hints */
     body.tc-ri-on form.tc-ent-plain > #tc-ri-rightcol{margin-top:12px}
     body.tc-ri-on form.tc-ent-plain button.guesscase-sortname{background-image:none!important;width:auto;height:auto;min-width:0;margin:0 0 0 4px;padding:1px 5px;border-radius:3px;font:bold 11px/16px Arial;cursor:pointer;vertical-align:middle;box-shadow:none;border:1px solid var(--mbu-warn)!important;background-color:var(--mbu-warn-bg)!important;color:var(--mbu-warn)}
-    body.tc-ri-on form.tc-ent-plain button.guesscase-sortname::before{content:"Z,A"}
+    body.tc-ri-on form.tc-ent-plain button.guesscase-sortname{line-height:0;padding:2px 5px}body.tc-ri-on form.tc-ent-plain button.guesscase-sortname svg{width:16px;height:14px}
+    body:not(.tc-ri-on) form.tc-ent-plain button.guesscase-sortname svg{display:none}
     body.tc-ri-on form.tc-ent-plain :is(button.sortname-copy,button.guesscase-options){display:none!important}
     body.tc-ri-on form.tc-ent-plain .half-width > fieldset:first-of-type .row > :is(input[type=text],select),body.tc-ri-on form.tc-ent-plain .half-width > fieldset:first-of-type .text-list-row > input.value{width:400px!important;box-sizing:border-box}
     body.tc-ri-on form.tc-ent-plain .half-width > fieldset:first-of-type .form-row-add{width:418px!important}
@@ -16020,7 +16024,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
         const addRow = r => {
           const tr = document.createElement('div'); r.tr = tr;
-          tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">Aa</button></span>'
+          tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
             + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
             + '<input class="tc-al-t" title="Type to filter the types">'
             + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
@@ -16181,7 +16185,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
         #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
         #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}
-        #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
+        #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);line-height:0}#tc-alias .tc-al-g svg{width:16px;height:14px}
         #tc-alias .tc-al-lw{position:relative;display:flex;min-width:0}
         #tc-alias .tc-al-lw .tc-al-l.tc-al-lp{padding-right:22px}
         #tc-alias .tc-al-p{position:absolute;right:0;top:50%;transform:translateY(-50%);width:20px;font-size:15px;line-height:1;color:var(--mbu-text-weak)}
