@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.150000
+// @version      2026.10.27.150100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -15,6 +15,7 @@
 // @match        https://*.musicbrainz.org/area/*
 // @match        https://*.musicbrainz.org/instrument/*
 // @match        https://*.musicbrainz.org/series/*
+// @match        https://*.musicbrainz.org/collection/*
 // @match        https://*.musicbrainz.org/event/*
 // @match        https://*.musicbrainz.org/place/*
 // @match        https://*.musicbrainz.org/user/*
@@ -5092,7 +5093,7 @@ async function loadWork(id, step = () => {}) {
     const gP = ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
     return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
-const pgActs = (type, id) => (type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS).map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+const pgActs = (type, id) => (type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS).map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by, pic) {
@@ -5284,11 +5285,15 @@ async function mbTab(type, id, sub, page = 1) {
     const t0 = performance.now(), r = await mbnFetch(`${MB}/${type}/${id}${sub ? '/' + sub : ''}${page > 1 ? '?page=' + page : ''}`);
     fetchLog(`${type}/${id}/${sub}`, t0, r);
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = new DOMParser().parseFromString(await r.text(), 'text/html'), t = d.querySelector('#content table.tbl');
-    const more = [...d.querySelectorAll('#content ul.pagination a[href]')].some(a => { const m = /[?&]page=(\d+)/.exec(a.getAttribute('href')); return m && +m[1] > page; }), src = [type, id, sub], h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
-    if (!t) return { head: [], rows: [], more, name, src, page };
-    // a series keeps its ratings, as MB's release-group lists show them (majkinetor): each as its own stars
-    const rated = type === 'series';
+    const d = new DOMParser().parseFromString(await r.text(), 'text/html'), c = d.querySelector('#content') || d.querySelector('#page') || d, t = c.querySelector('table.tbl');
+    const more = [...c.querySelectorAll('ul.pagination a[href]')].some(a => { const m = /[?&]page=(\d+)/.exec(a.getAttribute('href')); return m && +m[1] > page; }), src = [type, id, sub], h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
+    const col = type === 'collection' && page === 1 ? colMeta(d, id) : undefined;
+    if (!t) return { head: [], rows: [], more, name, src, page, col, total: col && col.total };
+    // a series and a collection keep their ratings, as MB's release-group lists show them (majkinetor): each as its own stars
+    return { ...tblParse(t, type === 'series' || type === 'collection'), more, name, src, page, col, total: col && col.total };
+}
+// a MusicBrainz table as headings and rows, without the merge checkboxes, the cover-art icons and (unless rated) the ratings
+function tblParse(t, rated) {
     const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && (rated || !th.classList.contains('rating')) && !th.classList.contains('checkbox-cell'));
     const cell = td => {
         for (const e of td.querySelectorAll('.inline-rating')) {
@@ -5297,13 +5302,13 @@ async function mbTab(type, id, sub, page = 1) {
             const ae = e.querySelector('a[href*="/rating/rate"]'), a = rated && ae && /entity_type=(\w+)&(?:amp;)?entity_id=(\d+)/.exec(ae.getAttribute('href') || '');
             if (rated) e.replaceWith(Object.assign(document.createElement('eh-r'), { textContent: [w ? +w[1] / 20 : '', u ? Math.round(+u[1] / 20) : '', a ? a[1] : '', a ? a[2] : ''].join('|') })); else e.remove();
         }
-        for (const e of td.querySelectorAll('input, script')) e.remove();
+        for (const e of td.querySelectorAll('input, script, .artwork-icon, a[href$="/cover-art"]')) e.remove();
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
         return td.innerHTML.trim().replace(/<eh-r>([\d.]*)\|(\d*)\|(\w*)\|(\d*)<\/eh-r>/g, (_, v, u, t, id) => rateStars(t, id, { value: v ? +v : null, 'votes-count': null }, true, u ? +u : t ? 0 : null));
     };
     // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
     const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
-    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.trim())), rows: [...t.querySelectorAll('tbody tr')].map(row), more, name, src, page };
+    return { head: ths.filter((_, i) => keep[i]).map(th => esc(th.textContent.replace(/\s*▴\/▾/g, '').replace(/\s+/g, ' ').trim())), rows: [...t.querySelectorAll('tbody tr')].map(row) };
 }
 // the page shows as soon as either the instrument or its lists are in: lists first give a page
 // named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
@@ -5357,7 +5362,7 @@ function tabSect(sid, name, x, href, cv) {
     TABX[sid] = x;
     // a column empty in every row goes
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), cols = x.head.map((_, i) => i).filter(i => rs.some(r => txt(r[i])));
-    const n = rs.length, cnt = x.more ? `${n}+` : n, span = cols.length + (cv ? 1 : 0);
+    const n = rs.length, cnt = x.total ? x.total.toLocaleString('en') : x.more ? `${n}+` : n, span = cols.length + (cv ? 1 : 0);
     const cvRe = cv && new RegExp('href="[^"]*/' + cv + '/(' + MBID.source + ')"', 'i');
     const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${ART_URL[cv]}${m[1]}/front-250" alt="" loading="lazy" data-dgcover></a></td>` : '<td class="tc"></td>'; };
     // a click on a heading sorts the rows by that column, a second turns them round, a third brings back MusicBrainz's order;
@@ -5377,7 +5382,7 @@ function tabSect(sid, name, x, href, cv) {
         + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
     const tr = r => Array.isArray(r) ? `<tr>${cvTd(r)}${cols.map(i => `<td>${txt(r[i]) ? r[i] : '—'}</td>`).join('')}</tr>` : `<tr class="tsub"><td colspan="${span}">${esc(r.charAt(0).toUpperCase() + r.slice(1))}</td></tr>`;
-    const more = x.more ? lmFoot('tab:' + sid, n, 0) : '';
+    const more = x.more ? lmFoot('tab:' + sid, n, x.total || 0) : '';
     const body = view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${cv ? '<th></th>' : ''}${cols.map(hb).join('')}</tr></thead><tbody>${shown.map(tr).join('')}</tbody></table></div>`
         : `<div class="${view === 'row' ? 'ed-row disco' : 'disco'}">${shown.map(tile).join('')}</div>`;
     return sect(sid, `${name} <span class="count">${cnt}</span>`, tools, (q ? `<div class="fbar"><span class="fn">${shown.filter(Array.isArray).length} of ${n}</span></div>` : '') + body + more, `<div class="folded-note">${cnt} ${name.toLowerCase()}</div>`);
@@ -5543,6 +5548,88 @@ function serHero(d) {
 // the parts of a release group, release or event series lead with their covers
 const SER_CV = { 'Release groups': 'release-group', Episodes: 'release-group', Releases: 'release', Events: 'event' };
 const serParts = d => tabSect('sp', serPartsName(d), d.listsX && d.listsX[0], `${MB}/series/${d.id}`, SER_CV[serPartsName(d)]);
+/* ── collection ──────────────────────────────────── */
+// an editor's collection: one read of MusicBrainz's own page gives both its facts (header, description, sidebar) and its
+// items, as ws/2 has no private collections and no description. Neither says when an item was added
+const MK_COL = '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M6 5h12M8 2h8"/>';
+const COL_ENT = ['release-group', 'release', 'recording', 'artist', 'label', 'work', 'event', 'place', 'area', 'instrument', 'series'];
+const COL_NAME = { 'release-group': 'Release groups', release: 'Releases', recording: 'Recordings', artist: 'Artists', label: 'Labels', work: 'Works', event: 'Events', place: 'Places', area: 'Areas', instrument: 'Instruments', series: 'Series' };
+const COL_ACTS = [['own_collection/edit', 'Edit', 'Edit collection', ACTS[0][3]], ['edits', 'History', 'Edit history', ACTS[3][3]]];
+function colMeta(d, id) {
+    const tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '', h = d.querySelector('.collectionheader');
+    if (!h) return undefined;
+    const sh = h.querySelector('.subheader'), own = sh && sh.querySelector('a[href^="/user/"]');
+    if (sh) { sh.querySelectorAll('.small, .prefix, img').forEach(x => x.remove()); for (const a of sh.querySelectorAll('a[href^="/"]')) a.setAttribute('href', MB + a.getAttribute('href')); }
+    const ds = d.querySelector('.description'); if (ds) ds.querySelectorAll('h2').forEach(x => x.remove());
+    // the sidebar's facts, as labelled there (translated): the owner and the type go to the header, the number to the list's count
+    const dl = d.querySelector('#sidebar dl.properties'), facts = [];
+    let type = '', total = 0, skip = false;
+    for (const dt of dl ? dl.querySelectorAll('dt') : []) {
+        const dd = dt.nextElementSibling; if (!dd) continue;
+        if (dd.classList.contains('type')) type = tx(dd);
+        else if (!skip && dd.querySelector('a[href^="/user/"]')) { skip = true; continue; }
+        else if (/^[\d,.\s]+$/.test(tx(dd))) total = +tx(dd).replace(/\D/g, '');
+        else { dd.querySelectorAll('img').forEach(x => x.remove()); for (const a of dd.querySelectorAll('a[href^="/"]')) a.setAttribute('href', MB + a.getAttribute('href')); facts.push([esc(tx(dt).replace(/:$/, '')), dd.innerHTML]); }
+    }
+    const t = d.querySelector('table.tbl tbody'), m = t && t.innerHTML.match(new RegExp('href="/(' + COL_ENT.join('|') + ')/' + MBID.source + '"'));
+    return { id, title: tx(h.querySelector('h1')), disambig: '', rating: {}, genres: [], tags: [], imgs: [], type, total, facts,
+        owner: tx(own), by: sh ? sh.innerHTML.trim() : '', desc: ds ? ds.innerHTML.trim() : '', ent: m ? m[1] : '' };
+}
+async function loadCollection(id, step = () => {}) {
+    const lists = mbTab('collection', id, '').then(x => { step('items'); return [x]; }, noSec('tab collection/' + id));
+    const gP = lists.then(x => { if (!x || !x[0].col) throw new Error('MusicBrainz shows no such collection'); step('collection'); return x[0].col; });
+    return { kind: 'collection', g: null, gP, lists, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+}
+function colHero(d) {
+    const g = d.g;
+    return pgHero(g, 'collection', MK_COL, g.type || 'Collection', [
+        ['', g.desc && `<div class="col-desc">${g.desc}</div>`, 'wide'],
+        ...g.facts.map(([l, v]) => [l, v, 'wide']),
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
+    ], g.by);
+}
+const colItems = d => { const g = d.g || {}, x = d.listsX && d.listsX[0], ent = g.ent || ''; return tabSect('cp', COL_NAME[ent] || 'Items', x, `${MB}/collection/${d.id}`, ART_URL[ent] ? ent : undefined); };
+/* ── an editor's collections ─────────────────────── */
+// MusicBrainz's /user/<name>/collections: a table per entity type, under the editor's own and the collaborative ones
+function collsParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), c = d.querySelector('#content') || d.querySelector('#page') || d.body;
+    const tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '', out = [];
+    let grp = '', gi = -1, name = '';
+    for (const e of c.querySelectorAll('h2, h3, table.tbl, h2 + p')) {
+        if (e.tagName === 'H2') { grp = tx(e); gi++; name = ''; }
+        else if (e.tagName === 'H3') name = tx(e);
+        else if (e.tagName === 'P') out.push({ grp, gi, note: tx(e) });
+        else out.push({ grp, gi, name: name || grp, x: { ...tblParse(e, false), more: false, src: null, page: 1 } });
+    }
+    const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
+    return { name: tx(c.querySelector('h1')), tabs, secs: out };
+}
+async function collsLoad(n, key) {
+    const d = data;
+    for (const k in TQ) if (k.startsWith('cl')) delete TQ[k];
+    for (const k in TSORT) if (k.startsWith('cl')) delete TSORT[k];
+    try {
+        let html;
+        if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(`${MB}/user/${key.slice(6)}/collections`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const c = collsParse(html);
+        if (n === showing && data === d) { d.c = c; render(); }
+    } catch (e) {
+        LOG.err('Loading the collections of ' + d.name + ' failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+function collsHtml(d) {
+    const c = d.c, abs = h => h.startsWith('/') ? MB + h : h, mine = d.name === ME;
+    const tabs = c ? c.tabs.filter(t => !t[2]).map(([t, h]) => `<a class="u-tab" href="${esc(abs(h))}">${esc(t)}</a>`).join('') : '';
+    const add = mine ? `<a class="u-tab" href="${MB}/collection/create">Add a new collection</a>` : '';
+    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(MK_COL).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Collections</span></div><h1>${esc(c && c.name || d.name)}</h1>`
+        + `<p class="u-sub">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : !c ? 'Loading the collections…' : ''}</p>${tabs || add ? `<nav class="u-tabs">${add}${tabs}</nav>` : ''}</div></section>`;
+    if (!c) return hero;
+    // the editor's own tables keep their type's heading; a collaborative one says so
+    return hero + c.secs.map((s, i) => s.note ? sect('cl' + i, esc(s.grp), '', `<p class="hm-none">${esc(s.note)}</p>`, '')
+        : tabSect('cl' + i, esc(s.gi > 0 ? `${s.grp} · ${s.name}` : s.name), s.x, '')).join('');
+}
 // its events by date, from ws/2
 function placeEvents(d) {
     const x = d.listsX && d.listsX[0], xs = x && [...(x.events || [])].sort((a, b) => ((a['life-span'] || {}).begin || '9').localeCompare((b['life-span'] || {}).begin || '9'));
@@ -5703,6 +5790,7 @@ function render(keepPop) {
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
+    if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
     if (data.kind === 'hist') { document.title = titleOf(data); histPage(app, data); return; }
@@ -5719,11 +5807,12 @@ function render(keepPop) {
     const editions = (x, eds, n) => w('ed', x.id ? 'Editions' : 'Releases', edHtml(x, eds, n));
     // keyed by the markup an image was drawn from: a fallback that changed its src since still matches
     const oldImgs = new Map([...app.querySelectorAll('img')].filter(i => i.complete && i.naturalWidth).map(i => [imgKey.get(i) || i.outerHTML, i]));
-    const KN = { rg: 'group', recording: 'recording', work: 'work', area: 'area', label: 'label', artist: 'artist', instrument: 'instrument', place: 'place', series: 'series', event: 'event' };
+    const KN = { rg: 'group', recording: 'recording', work: 'work', area: 'area', label: 'label', artist: 'artist', instrument: 'instrument', place: 'place', series: 'series', event: 'event', collection: 'collection' };
     app.innerHTML = !data.g && !data.rel ? heroSk(KN[data.kind] || data.kind, data.gErr) + (data.kind === 'recording' ? editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount)
         : data.kind === 'place' ? wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`))
         : data.kind === 'event' ? wikipedia(data.wikiX)
         : data.kind === 'series' ? wikipedia(data.wikiX) + w('sp', serPartsName(data), serParts(data))
+        : data.kind === 'collection' ? w('cp', 'Items', colItems(data))
         : data.kind === 'instrument' ? wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2))
         : data.kind === 'area' ? wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
         : data.kind === 'work' ? wikipedia(data.wikiX) + w('rc', 'Recordings', recsHtml(data))
@@ -5733,6 +5822,7 @@ function render(keepPop) {
         : data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
         : data.kind === 'place' ? placeHero(data) + wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`)) + annotation(r)
         : data.kind === 'event' ? evHero(data) + wikipedia(data.wikiX) + setlist(data) + annotation(r)
+        : data.kind === 'collection' ? colHero(data) + w('cp', 'Items', colItems(data))
         : data.kind === 'series' ? serHero(data) + wikipedia(data.wikiX) + w('sp', serPartsName(data), serParts(data)) + annotation(r)
         : data.kind === 'instrument' ? insHero(data) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2)) + annotation(r)
         : data.kind === 'area' ? areaHero(data) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2)) + annotation(r)
@@ -5857,7 +5947,7 @@ const HM_ME = [
     ['ratings', 'Ratings', '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>'],
     ['tags', 'Tags', CI_TAG],
 ];
-const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT] };
+const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT], collection: ['Collection', MK_COL] };
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -6286,10 +6376,13 @@ function onClick(ev) {
 }
 
 // a release's or release group's page on this site → "release/<mbid>" or "release-group/<mbid>"; not their subpages (/edit, …)
-const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/?$', 'i');
+const PAGE = new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event|collection)/(' + MBID.source + ')/?$', 'i');
 function navTo(href) {
     const u = new URL(href, location.href);
     if (u.origin === location.origin && u.pathname === '/' && !u.search) return 'home';
+    // an editor's collections → "colls/<name as in the path>"
+    const cl = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/collections\/?$/);
+    if (cl) return 'colls/' + cl[1];
     // an editor's profile → "user/<name as in the path>"
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
@@ -6298,7 +6391,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -7153,8 +7246,8 @@ function skeleton() {
         <div class="sk-sec">${sk('h', 'width:140px')}<div class="sk-rows">${Array.from({ length: 8 }, (_, i) => `<div class="sk-r">${sk('')}${sk('', `width:${45 + (i * 37) % 40}%`)}${sk('')}${sk('')}</div>`).join('')}</div></div></div>`;
 }
 // each kind's list sections, filled in by its loader's lists
-const LIST_IDS = { area: ['aa', 'al', 'ap'], instrument: ['ia', 'ir', 'ic'], place: ['pe', 'pr'], series: ['sp'] };
-const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork, area: loadArea, instrument: loadInstrument, place: loadPlace, series: loadSeries, event: loadEvent };
+const LIST_IDS = { area: ['aa', 'al', 'ap'], instrument: ['ia', 'ir', 'ic'], place: ['pe', 'pr'], series: ['sp'], collection: ['cp'] };
+const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork, area: loadArea, instrument: loadInstrument, place: loadPlace, series: loadSeries, event: loadEvent, collection: loadCollection };
 // this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
 let early = null;
 function prefetch(key) {
@@ -7167,10 +7260,11 @@ function prefetch(key) {
 async function show(key) {
     const app = $('#app'), n = ++showing;
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
-    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
+    const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
+    if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
