@@ -22,6 +22,7 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(!(await page.locator('#as-switch').isVisible()), 'Art Station is hidden');
   await page.locator('#mbu-dock').click();
   check(await page.locator('#mc-launch').isVisible(), 'a click unrolls it');
+  check(await page.evaluate(() => localStorage.getItem('mbu.dockOpen')) === 'true', 'and it is remembered');
   check(!(await page.locator('#as-switch').isVisible()), 'Art Station stays hidden');
   const mc = await page.locator('#mc-launch').boundingBox(), dock = await page.locator('#mbu-dock').boundingBox();
   check(mc.y + mc.height <= dock.y, 'above the dock');

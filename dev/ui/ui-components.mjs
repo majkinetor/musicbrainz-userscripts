@@ -735,10 +735,13 @@ function mbuDock() {
         btn.setAttribute('aria-label', 'String Theory');
         btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
         btn.onclick = function () {
-            if (root.hasAttribute('data-mbu-dock-open')) root.removeAttribute('data-mbu-dock-open'); else root.setAttribute('data-mbu-dock-open', '');
+            var open = !root.hasAttribute('data-mbu-dock-open');
+            root.toggleAttribute('data-mbu-dock-open', open);
+            mbuShared('dockOpen', open || null);   // remembered for the next page
             mbRestackCorner('br');
         };
         root.appendChild(btn);   // outside the body, which Event Horizon swaps
+        root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
     }
     var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
     if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
