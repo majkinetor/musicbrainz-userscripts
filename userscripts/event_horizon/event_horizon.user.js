@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.026000
+// @version      2026.10.28.027000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1954,7 +1954,7 @@ const CSS = `
 .tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
 .tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}
 .tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-p{display:block}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
 .tg-tok{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;height:32px;box-sizing:border-box;width:min(380px,40vw);overflow-x:auto;scrollbar-width:none;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;min-width:110px;flex:1;font-size:13px;color:var(--text)}
@@ -5959,7 +5959,8 @@ function tagxHtml(d) {
         // a card folds as every other: its caret, right-click for all
         return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : ''), ''); }).join('');
     const pg = t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-tgxpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
-    return hero + tools + (secs || '<p class="hm-none">Nothing tagged.</p>') + pg;
+    // the pager sits in the hero, under the tabs, so no empty band opens between it and the cards
+    return hero.replace('</nav></div></section>', '</nav>' + pg + '</div></section>') + tools + (secs || '<p class="hm-none">Nothing tagged.</p>');
 }
 let tgxWired = false;
 function tagxWire() {
