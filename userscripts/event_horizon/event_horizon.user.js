@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.160000
+// @version      2026.10.28.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1931,7 +1931,7 @@ const CSS = `
 .u-av{width:96px;height:96px;font-size:40px}.u-id h1{margin:4px 0 6px;font-size:32px}.u-sub{margin:0;color:var(--muted)}.u-err{color:#c4466a}
 .u-bio{grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;max-height:320px;overflow:auto;overflow-wrap:anywhere}.u-bio p{margin:0 0 6px}.u-bio *{background:none!important}
 .u-langs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.u-lang{background:var(--chip);color:var(--chip-text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.u-lang small{color:var(--muted);font-weight:500;margin-left:5px}
-.u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 22px;flex-basis:100%}.u-hd{display:flex!important;align-items:center;margin:8px 0 0!important}.u-hd .u-id{flex:1;min-width:0}.u-hd h1{margin:0 0 4px!important}.u-hd h1 a{color:inherit!important;text-decoration:none!important}.u-hd .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}.u-hd .u-nav{border-bottom:0;margin:0}
+.u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;border-bottom:1px solid var(--border);margin:4px 0 22px;flex-basis:100%}.u-hd{display:flex!important;align-items:center;margin:8px 0 0!important}.u-hd .u-id{flex:1;min-width:0}.u-hd h1{margin:0 0 4px!important}.u-hd h1 a{color:inherit!important;text-decoration:none!important}.u-hd .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}.u-hd .u-nav{border-bottom:0;margin:0;min-height:44px}
 .u-pbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:-24px}.u-pbar .u-sub{margin:0}.u-pbar .u-tabs{margin-top:0}.u-pbar+.u-facts,.u-hd+.u-facts{margin-top:-24px}.u-facts+.u-bio{margin-top:-24px}.u-ng{display:flex;flex-wrap:wrap;gap:0 22px}.u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}.u-ng.acc .u-nt{margin-bottom:-10px}
 .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}.u-nt:hover{color:var(--text)!important}.u-nt.on{color:var(--text)!important;border-color:var(--accent)}
 .u-av{position:relative;overflow:visible!important}.u-av>img{border-radius:50%}.u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}
@@ -5691,7 +5691,7 @@ function userNav(tabs) {
     return `<nav class="u-nav" aria-label="Editor"><span class="u-ng">${pub.map(a).join('')}</span>${acc.length ? `<span class="u-ng acc">${acc.map(a).join('')}</span>` : ''}</nav>`;
 }
 // the one header of an editor's pages: avatar, name and tabs; what the page itself says or does sits in a bar under it
-const userHead = (name, av, tabs) => `<section class="u-hero u-hd">${userAv(name, av)}<div class="u-id"><div class="kicker label u-k"><span class="acts">${SRCH()}</span></div><h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(tabs)}</div></section>`;
+const userHead = (name, av, tabs) => `<section class="u-hero u-hd">${userAv(name, av)}<div class="u-id"><div class="kicker label u-k"><span class="acts">${SRCH()}</span></div><h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${userNav(tabs) || '<nav class="u-nav"></nav>'}</div></section>`;
 const userBar = (...xs) => { xs = xs.filter(Boolean); return xs.length ? `<div class="u-pbar">${xs.join('')}</div>` : ''; };
 const avIco = d => d.replace(/width="\d+" height="\d+"/, 'width="16" height="16"');
 function collsHtml(d) {
@@ -6975,7 +6975,8 @@ async function artLoad(n, id) {
 
 // Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
 const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
-body{background:var(--bg)}
+:root[data-eh-rel] body{background:var(--bg)!important}
+:root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3){font-size:inherit}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
@@ -7194,8 +7195,8 @@ function relSet(on) {
     }
     const theme = on && mbuTheme();
     ehOn = on;
-    if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); }
-    else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); }
+    if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.setAttribute('data-eh-bg', S.bg || 'flat'); de.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); }
+    else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); de.removeAttribute('data-eh-bg'); }
     for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }
     const hd = document.getElementById('eh-relhd'); if (hd) hd.hidden = !on;   // its sheet is off with it
     const h = document.getElementById('eh-hide'); if (h) h.remove();
