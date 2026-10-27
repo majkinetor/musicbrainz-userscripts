@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.023000
+// @version      2026.10.28.026000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2128,6 +2128,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
+.kmk{all:unset;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
 .gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
@@ -2843,9 +2844,14 @@ function facts(r) {
     return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k) && F[k][1]).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
 function heroFacts(app) {
-    const h = app.querySelector('section.hero'), u = h && h.querySelector('.art .under'), f = h && h.querySelector('.facts'); if (!u || !f) return;
+    const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
     const mb = [...f.children].find(c => { const l = c.querySelector('.label'); return l && l.textContent.trim() === 'MBID'; }) || null;
-    const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, mb); return c; };
+    // no MBID row: the kind's mark by the kicker copies it
+    const k = h.querySelector('.kicker>svg'), id = mb && (mb.querySelector('.v').textContent.match(/[0-9a-f-]{36}/) || [])[0];
+    if (mb) mb.remove();
+    if (k && id) k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-tip="Copy the MBID&#10;${id}" aria-label="Copy the MBID">${k.outerHTML}</button>`;
+    const u = h.querySelector('.art .under'); if (!u) return;
+    const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector(':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
     if (tg && ME) tg.insertAdjacentHTML('beforeend', `<a class="eh-edit" href="${MB}${location.pathname.replace(/\/$/, '')}/tags#add" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</a>`);
@@ -5947,12 +5953,11 @@ function tagxHtml(d) {
         const body = !xs.length ? '<p class="hm-none">Nothing matches the filter.</p>'
             : view === 'grid' ? `<div class="tgx-g">${xs.map(x => { const m = (x.u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
                 const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
-                return `<div class="tgx-c"><a class="tgx-p" href="${esc(x.u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' ? `<img src="https://coverartarchive.org/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a><div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`; }).join('')}</div>`
+                return `<div class="tgx-c"><a class="tgx-p" href="${esc(x.u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img src="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a><div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`; }).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
-        return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span></h2></span><div class="tools">${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}</div></div>`
-            + body
-            + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : '') + '</section>'; }).join('');
+        // a card folds as every other: its caret, right-click for all
+        return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : ''), ''); }).join('');
     const pg = t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-tgxpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
     return hero + tools + (secs || '<p class="hm-none">Nothing tagged.</p>') + pg;
 }
