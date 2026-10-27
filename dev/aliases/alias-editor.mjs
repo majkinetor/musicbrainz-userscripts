@@ -156,7 +156,7 @@ const mbuAliasEditor = (() => {
       const sync = () => {
         let n = 0;
         for (const r of rows) {
-          const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '') + (r.type && r.type === hintType ? ' tc-al-hint' : '');
+          const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '') + (r.type && r.type === hintType ? ' tc-al-hint' : '') + (r.tr.classList.contains('tc-al-dopen') ? ' tc-al-dopen' : '');
           if (s && (s === 'del' || r.name.trim())) n++;
           const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
           mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');

@@ -14,6 +14,16 @@ test('the alias pencil opens the alias editor in a popup', { tag: ['@sandbox', '
   await page.locator('button.eh-edit[data-aliases]').first().click();
   check(await until(() => page.locator('#eh-aliases #tc-alias').count(), n => n === 1) === 1, 'the popup holds the alias editor');
   check(await until(() => page.locator('#eh-aliases .tc-al-list input').count(), n => n > 0) > 0, 'with a row to type a new alias in');
+  // the calendar opens the row's dates, and they stay open, unflagged, while a date is typed
+  const row = page.locator('#eh-aliases .tc-al-row').first();
+  await row.locator('.tc-al-c').click();
+  await page.keyboard.type('2');
+  await page.keyboard.type('0', { delay: 80 });
+  check(await row.evaluate(r => r.classList.contains('tc-al-dopen')), 'the dates stay open while typing');
+  check(await row.locator('.tc-al-b').evaluate(i => document.activeElement === i), 'the begin keeps the focus');
+  check(!(await row.locator('.tc-al-b').evaluate(i => i.classList.contains('tc-al-bad'))), 'a half-typed date is not flagged');
+  await page.keyboard.type('05');
+  check((await row.locator('.tc-al-c').innerText()).includes('2005'),'the calendar shows the date');
   await attachShot(testInfo, page, 'aliases');
   await page.keyboard.press('Escape');
   check(await until(() => page.locator('#eh-aliases').count(), n => n === 0) === 0, 'Escape closes it');
