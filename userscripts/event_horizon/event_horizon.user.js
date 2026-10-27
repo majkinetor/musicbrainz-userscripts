@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.153000
+// @version      2026.10.27.170000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2104,6 +2104,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
+.stars .st{color:var(--border)}.stars .st.on{color:var(--accent)}.stars.mine .st.on{color:var(--gold,#e0a800)}
+.stars.rt .st{all:unset;cursor:pointer;color:var(--border);filter:none!important}.stars.rt .st.on{color:var(--accent)}.stars.rt.mine .st.on{color:var(--gold,#e0a800)}.stars.rt:hover .st{color:var(--gold,#e0a800)}.stars.rt .st:hover~.st{color:var(--border)}.stars.rt .st:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .stars.sm{font-size:14px;letter-spacing:1px;white-space:nowrap}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;margin-left:.5em;letter-spacing:0;white-space:normal}
@@ -2810,11 +2812,43 @@ function facts(r) {
 }
 function under(r, more = '') {
     const on = k => S.extras.includes(k);
-    const v = r.rating.value, n = r.rating['votes-count'] || 0;
-    const tip = v != null ? `${v} from ${n} vote${n === 1 ? '' : 's'} (release group)` : '';
-    const stars = on('rating') && v != null ? `<span class="stars" data-tip="${esc(tip)}" aria-label="Rated ${esc(tip)}">${'★'.repeat(Math.round(v))}<span class="off">${'★'.repeat(5 - Math.round(v))}</span></span>` : '';
+    // a page MB rates gets its stars even unrated, to rate it; the rest show theirs only when they have one
+    const t = r.rgId ? 'release_group' : RATE_T[data && data.kind], ref = r.rgId || (data && data.id);
+    const nat = mbBody && mbBody.querySelector('#sidebar .inline-rating .current-user-rating'), w = nat && /width:\s*([\d.]+)%/.exec(nat.getAttribute('style') || '');
+    const stars = on('rating') && (t || r.rating.value != null) ? rateStars(t, ref, r.rating, false, w ? Math.round(+w[1] / 20) : null) : '';
     const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
+}
+// stars, as MusicBrainz's own: the average lit in the accent, yours once set in gold; logged in, a click rates
+// (your star again clears it). t is MB's entity_type, ref a gid or MB's row id; yours come from MB's page when it
+// shows them, else from what was rated here (kept in this browser)
+const RATE_T = { artist: 'artist', label: 'label', recording: 'recording', rg: 'release_group', work: 'work', event: 'event', place: 'place' };
+const MYR_KEY = 'event_horizon.myRatings';
+const myR = () => { try { return JSON.parse(localStorage.getItem(MYR_KEY) || '{}'); } catch (e) { return {}; } };
+function rateStars(t, ref, rt, sm, mine) {
+    rt = rt || {};
+    const v = rt.value, n = rt['votes-count'], m = myR(), key = t + ':' + ref;
+    if (key in m) mine = m[key];
+    const k = mine || (v == null ? 0 : Math.round(v)), can = !!(ME && t && ref);
+    const avg = v == null ? 'Not rated' : n == null ? `Rated ${v} of 5` : `${v} from ${n} vote${n === 1 ? '' : 's'}`;
+    const tip = avg + (mine ? `\nYours: ${mine} of 5` : '') + (can ? `\nClick to rate${mine ? ', your star again to clear yours' : ''}` : t ? '\nLog in to rate' : '');
+    const st = i => can ? `<button type="button" class="st${i <= k ? ' on' : ''}" data-rate="${t}\t${ref}\t${i}" aria-label="Rate ${i} of 5">★</button>` : `<span class="st${i <= k ? ' on' : ''}">★</span>`;
+    return `<span class="stars${sm ? ' sm' : ''}${mine ? ' mine' : ''}${can ? ' rt' : ''}" data-tip="${esc(tip)}" aria-label="${esc(avg)}">${[1, 2, 3, 4, 5].map(st).join('')}</span>`;
+}
+// the rating your stars show now (MB's own, when none was made here)
+const rateCur = (t, ref) => { const b = document.querySelector(`.stars.mine [data-rate^="${t}\t${ref}\t"]`); return b ? b.parentNode.querySelectorAll('.st.on').length : 0; };
+async function rateSet(t, ref, i) {
+    const m = myR(), key = t + ':' + ref, v = m[key] === i || (!(key in m) && i === rateCur(t, ref)) ? 0 : i;
+    LOG.debug(`Rating ${key}: ${v}`);
+    try {
+        let id = ref;
+        if (!/^\d+$/.test(ref)) { const r = await mbnFetch(`${MB}/ws/js/entity/${ref}`, { headers: { Accept: 'application/json' } }); id = r && r.ok && (await r.json()).id; if (!id) throw new Error('no row id'); }
+        const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${t}&entity_id=${id}&rating=${v * 20}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
+        if (!r || !r.ok || /\/login/.test(r.url)) throw new Error('HTTP ' + (r && r.status) + ' ' + (r && r.url));
+        m[key] = v; localStorage.setItem(MYR_KEY, JSON.stringify(m));
+        toast(v ? `Rated ${v} of 5` : 'Your rating is cleared');
+        const y = scrollY; render(); scrollTo(0, y);
+    } catch (e) { LOG.debug('Rating failed: ' + key, e); toast('MusicBrainz didn\'t take the rating'); }
 }
 // a table's rating cell: five small stars, lit as many as the rating, all dim with none (as MB's tables show it)
 const starsTd = (rt = {}) => { const v = rt.value, n = rt['votes-count'] || 0, k = v == null ? 0 : Math.round(v), tip = v == null ? 'Not rated' : rt['votes-count'] == null ? `Rated ${v} of 5` : `${v} from ${n} vote${n === 1 ? '' : 's'}`; return `<span class="stars sm" data-tip="${esc(tip)}" aria-label="${esc(tip)}">${'★'.repeat(k)}<span class="off">${'★'.repeat(5 - k)}</span></span>`; };
@@ -2911,7 +2945,7 @@ function evCell(e) {
 function edTable(es, curId, flat, part) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
     if (col) es = [...es].sort((a, b) => (desc ? -1 : 1) * col[2](a).localeCompare(col[2](b), undefined, { sensitivity: 'base', numeric: true }) || (a.date || '9').localeCompare(b.date || '9'));
-    const th = ([k, n]) => `<th${k === 'tracks' ? ' class="num"' : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
+    const th = ([k, n]) => `<th${k === 'tracks' ? ' class="num"' : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('ed', ED_FUN[k], n.toLowerCase())}</th>`;
     const ST = ['Official', 'Promotion', 'Bootleg', 'Pseudo-Release', 'Withdrawn', 'Expunged', 'Cancelled'];
     const groups = [...new Set(es.map(e => e.status || ''))].sort((a, b) => (ST.indexOf(a) + 1 || 99) - (ST.indexOf(b) + 1 || 99));
     const row = e => {
@@ -5253,11 +5287,13 @@ async function mbTab(type, id, sub, page = 1) {
     const cell = td => {
         for (const e of td.querySelectorAll('.inline-rating')) {
             const w = rated && /width:\s*([\d.]+)%/.exec((e.querySelector('.current-rating') || e).getAttribute('style') || '');
-            if (rated) e.replaceWith(Object.assign(document.createElement('eh-r'), { textContent: w ? +w[1] / 20 : '' })); else e.remove();
+            const ue = e.querySelector('.current-user-rating'), u = rated && ue && /width:\s*([\d.]+)%/.exec(ue.getAttribute('style') || '');
+            const ae = e.querySelector('a[href*="/rating/rate"]'), a = rated && ae && /entity_type=(\w+)&(?:amp;)?entity_id=(\d+)/.exec(ae.getAttribute('href') || '');
+            if (rated) e.replaceWith(Object.assign(document.createElement('eh-r'), { textContent: [w ? +w[1] / 20 : '', u ? Math.round(+u[1] / 20) : '', a ? a[1] : '', a ? a[2] : ''].join('|') })); else e.remove();
         }
         for (const e of td.querySelectorAll('input, script')) e.remove();
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
-        return td.innerHTML.trim().replace(/<eh-r>([\d.]*)<\/eh-r>/g, (_, v) => starsTd({ value: v ? +v : null, 'votes-count': null }));
+        return td.innerHTML.trim().replace(/<eh-r>([\d.]*)\|(\d*)\|(\w*)\|(\d*)<\/eh-r>/g, (_, v, u, t, id) => rateStars(t, id, { value: v ? +v : null, 'votes-count': null }, true, u ? +u : null));
     };
     // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
     const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
@@ -5579,6 +5615,9 @@ function fltTake(sc, row) {
 const fltBtn = sc => { const f = FLT[sc], on = f.open || f.q || Object.keys(f.f).length; return `${on ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-fq="${sc}" value="${esc(f.q)}" placeholder="Filter: title, ${sc === 'ed' ? 'cat#, label, format' : 'artist, type'}, year…" aria-label="Filter" autocomplete="off"><div class="fpop" hidden></div></span>` : ''}<span class="ed-views"><button type="button" data-fopen="${sc}" aria-pressed="${!!on}" aria-label="Filter" data-tip="${on ? 'Hide the filter, clearing it' : 'Filter by title, artist, year…'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`; };
 // the release groups by type, albums first, each type by date
 const total0 = x => x['release-group-count'] || (x['release-groups'] || []).length;
+// a heading's funnel in the discography and the releases: the filter's chip for that column (or its box for the text ones)
+const fFun = (sc, k, n) => k ? `<button type="button" class="tq-col" data-ffun="${sc}\t${k}" aria-label="Filter by ${n}" data-tip="Filter by ${n}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button>` : '';
+const DG_FUN = { title: 'q', artist: 'artist', date: 'year' }, ED_FUN = { title: 'q', artist: 'artist', format: 'format', date: 'year', label: 'label', catno: 'q', barcode: 'q' };
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
@@ -5595,8 +5634,8 @@ function discoHtml(d) {
         rating: g => rv(g) == null ? '' : String(rv(g)), releases: g => rc(g) == null ? '' : String(rc(g)) }[sk] || (g => g['first-release-date'] || '9');
     const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
-    const th = (k, n, c) => `<th${c ? ` class="${c}"` : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td><td>${starsTd(g.rating)}</td><td class="num">${rc(g) != null ? rc(g) : '—'}</td><td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
+    const th = (k, n, c) => `<th${c ? ` class="${c}"` : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}</th>`;
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td><td>${rateStars('release_group', g.id, g.rating, true)}</td><td class="num">${rc(g) != null ? rc(g) : '—'}</td><td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
     const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}${th('rating', 'Rating')}${th('releases', 'Releases', 'num')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="7">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
@@ -6188,6 +6227,8 @@ function onClick(ev) {
         return;
     }
     // a heading's funnel opens the box with "column:" added, ready for the value
+    if (d.rate) { const [t, ref, i] = d.rate.split('\t'); rateSet(t, ref, +i); return; }
+    if (d.ffun) { const [sc, k] = d.ffun.split('\t'), f = FLT[sc]; f.open = true; if (k !== 'q' && !(k in f.f)) { const fd = FLT_FIELDS[sc].find(x => x[0] === k), vs = fd && fltVals(sc, k, fd[2]); if (vs && vs.length) f.f[k] = vs[0][0]; } const y = scrollY; render(); scrollTo(0, y); const i = k === 'q' ? $(`[data-fq="${sc}"]`) : [...document.querySelectorAll(`[data-fset="${sc}"]`)].find(x => x.value.startsWith(k + '\t')); if (i) { i.focus(); if (i.showPicker) try { i.showPicker(); } catch (e) { } } return; }
     if (d.tqcol) { const [k, c] = d.tqcol.split('\t'), cur = (TQ[k] || '').trim(); TQ[k] = (cur ? cur + ' ' : '') + c + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
     if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
