@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.005000
+// @version      2026.10.28.011000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1952,7 +1952,7 @@ const CSS = `
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
-.tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
 .tg-tok{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;height:32px;box-sizing:border-box;width:min(380px,40vw);overflow-x:auto;scrollbar-width:none;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;min-width:110px;flex:1;font-size:13px;color:var(--text)}
@@ -2510,7 +2510,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'etagView', 'tagSort', 'tagScope'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2529,7 +2529,7 @@ const S = {
     imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
     imgOff: [], // the image providers not used
     hgrp: 'burst', // the history page's grouping
-    tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', // the tags pages' view (an editor's, an entity's), order and kind
+    tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
@@ -5882,7 +5882,7 @@ function tagxParse(html) {
         let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL' && !/^H[23]$/.test(ul.tagName)) ul = ul.nextElementSibling;
         if (!ul || ul.tagName !== 'UL' || ul.classList.contains('pagination')) continue;
         const lis = [...ul.children], more = lis.find(li => li.querySelector('em > a'));
-        groups.push({ t: h.tagName === 'H2' ? tx(h).replace(/ .*$/, '') : tx(h), items: lis.filter(li => li !== more).map(li => li.innerHTML.trim()), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
+        groups.push({ t: h.tagName === 'H2' ? tx(h).replace(/ .*$/, '') : tx(h), items: lis.filter(li => li !== more).map(li => { const as = [...li.querySelectorAll('a')], m = li.textContent.match(/^\s*([\d,]+)\s*-\s/); return { h: li.innerHTML.trim(), c: m ? m[1] : '', a: as[0] ? as[0].outerHTML : tx(li), by: as.slice(1).map(x => x.outerHTML).join(', '), cm: tx(li.querySelector('.comment')).replace(/^\(|\)$/g, '') }; }), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
     }
     const pg = [...(c.querySelector('ul.pagination') || d.createElement('ul')).querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href')]);
     return { found: tx([...c.querySelectorAll('p')].find(p => /\d/.test(p.textContent) && /found/i.test(p.textContent))), tabs, groups, pg };
@@ -5912,30 +5912,36 @@ function tagxHtml(d) {
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading…' : esc(t.found) + (d.name ? ` · ${d.dn ? 'downvoted' : 'tagged'} by <a href="${MB}/user/${U}">${esc(d.name)}</a>` : '');
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tag${d.type ? ' · ' + esc(d.type.replace('_', ' ').replace('-', ' ')) + 's' : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.tag)}</h1>`
         + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav></div></section>`;
-    const tools = `<div class="tg-tools"><div class="tg-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq value="${esc(d.q || '')}" placeholder="Filter" aria-label="Filter" autocomplete="off"></span>`
-        + (d.name ? `<span class="seg" role="group" aria-label="Votes">${[['0', 'Upvotes'], ['1', 'Downvotes']].map(([v, x]) => `<button type="button" data-tgxdn="${v}" aria-pressed="${(d.dn ? '1' : '0') === v}">${x}</button>`).join('')}</span>` : '') + '</div></div>';
+    const tools = (d.name ? `<div class="tg-tools"><div class="tg-bar">` : '')
+        + (d.name ? `<span class="seg" role="group" aria-label="Votes">${[['0', 'Upvotes'], ['1', 'Downvotes']].map(([v, x]) => `<button type="button" data-tgxdn="${v}" aria-pressed="${(d.dn ? '1' : '0') === v}">${x}</button>`).join('')}</span></div></div>` : '');
     if (!t) return hero + tools;
-    const keep = h => !q || h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q);
-    const secs = t.groups.map(g => { const xs = g.items.filter(keep), id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-');
-        return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)}</h2></span></div>`
-            + (xs.length ? `<ul class="tgx-l">${xs.map(h => `<li>${h}</li>`).join('')}</ul>` : '<p class="hm-none">Nothing matches the filter.</p>')
+    const view = S.tgxView || 'row', qs = d.qs || (d.qs = {}), fo = d.fo || (d.fo = {});
+    const secs = t.groups.map(g => { const id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-'), q = (qs[id] || '').trim().toLowerCase(), xs = g.items.filter(x => !q || x.h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q)), cnt = g.items.some(x => x.c);
+        const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-tgxf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-tgxf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
+        const body = !xs.length ? '<p class="hm-none">Nothing matches the filter.</p>'
+            : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
+            : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
+        return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span></h2></span><div class="tools">${fb}<span class="ed-div"></span>${viewBs(['row', 'table'], view, 'tgxview', 'View')}</div></div>`
+            + body
             + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : '') + '</section>'; }).join('');
     const pg = t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-tgxpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
-    return hero + tools + (secs || '<section class="sec" id="s-tgx-none"><p class="hm-none">Nothing tagged.</p></section>') + pg;
+    return hero + tools + (secs || '<p class="hm-none">Nothing tagged.</p>') + pg;
 }
 let tgxWired = false;
 function tagxWire() {
     if (tgxWired) return; tgxWired = true;
     document.addEventListener('click', ev => {
-        const b = ehOn && data && data.kind === 'tagx' && ev.target.closest('[data-tgxdn],[data-tgxpg]'); if (!b) return;
+        const b = ehOn && data && data.kind === 'tagx' && ev.target.closest('[data-tgxdn],[data-tgxpg],[data-tgxf],[data-tgxview]'); if (!b) return;
         const d = data;
+        if (b.dataset.tgxview) { S.tgxView = b.dataset.tgxview; save(); render(); return; }
+        if (b.dataset.tgxf) { const [a, id] = b.dataset.tgxf.split(':'); if (a === 'clr' || d.fo[id] || d.qs[id]) { d.qs[id] = ''; d.fo[id] = a === 'clr'; } else d.fo[id] = true; render(); const i = $(`[data-tgxq="${id}"]`); if (i) i.focus(); return; }
         if (b.dataset.tgxpg) { tagxLoad(showing, d, b.dataset.tgxpg); return; }
         d.dn = b.dataset.tgxdn === '1'; d.t = null; render(); tagxLoad(showing, d);
     });
     document.addEventListener('input', ev => {
         if (!ehOn || !data || data.kind !== 'tagx' || !ev.target.matches('[data-tgxq]')) return;
-        data.q = ev.target.value; const at = ev.target.selectionStart; render();
-        const i = $('[data-tgxq]'); if (i) { i.focus(); i.setSelectionRange(at, at); }
+        const id = ev.target.dataset.tgxq; data.qs[id] = ev.target.value; const at = ev.target.selectionStart; render();
+        const i = $(`[data-tgxq="${id}"]`); if (i) { i.focus(); i.setSelectionRange(at, at); }
     });
 }
 // its events by date, from ws/2
