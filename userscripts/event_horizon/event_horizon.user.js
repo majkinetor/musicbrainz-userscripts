@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.210000
+// @version      2026.10.28.211000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2867,7 +2867,7 @@ function heroFacts(app) {
     const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector(':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
-    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
+    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.t && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
     if (tg) add('Tags', tg, true);
     u.remove();
 }
@@ -3285,11 +3285,11 @@ function tgInHtml() {
 }
 function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; b.innerHTML = tgInHtml(); if (focus) { const i = b.querySelector('.tgi-in'); if (i) i.focus(); } }
 async function tgInOpen() {
-    const d = tgIn = { path: tgPath(), t: null }; tgInDraw();
+    const d = tgIn = { path: tgPath(), t: null }, p = document.querySelector('button[data-tgin="open"]'); if (p) p.style.opacity = .4; // the tags stay as they are until all of them load
     try {
         const r = await mbnFetch(MB + d.path + '/tags'); if (!r.ok) throw new Error('HTTP ' + r.status);
         d.t = tagsParse(await r.text(), true); if (tgIn === d) tgInDraw(true);
-    } catch (e) { LOG.err('Loading the tags failed: ' + e.message); toast('Loading the tags failed: ' + e.message); if (tgIn === d) { tgIn = null; render(); } }
+    } catch (e) { LOG.err('Loading the tags failed: ' + e.message); toast('Loading the tags failed: ' + e.message); if (tgIn === d) { tgIn = null; if (p) p.style.opacity = ""; } }
 }
 async function tgInSend(names, v) {
     const d = tgIn; if (!d || !d.t || !names.length) return;
