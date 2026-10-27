@@ -46,7 +46,7 @@ test('#784: a clean Execute closes the gallery\'s dialog and leaves nothing stag
   const plan = await until(() => page.locator('#mc-root .mc-ax-plan').textContent().catch(() => ''), v => /Edit/.test(v) && !/Add/.test(v));
   check(n === 'Execute (1)' && /Edit/.test(plan) && !/Add/.test(plan), `the comment alone counts, nothing is uploaded (${n}; ${plan})`);
   if (/Add/.test(plan)) return;   // never a second upload: after a release's first, signing answers 500 for a long while
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   const applied = await until(() => page.evaluate(() => { const a = document.querySelector('#mc-root [data-card="as"] .mc-applied'); return a ? a.className + ' · ' + a.textContent : ''; }), v => /ok|err|fail/.test(v), { timeout: 180_000 });
   console.log('applied: ' + applied);
   check(/\bok\b/.test(applied), `Art Station entered it (${applied})`);

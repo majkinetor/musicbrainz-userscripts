@@ -33,13 +33,13 @@ test('#748: a late answer is still taken; doneKeys from a "nothing left" answer 
   await until(() => page.evaluate(() => (window.__mcTest.picked().is || []).length), n => n === 4);
   // a silent provider: given up after 3 s of no word (60 s in use); its answer at 6 s is still taken
   await page.evaluate(() => window.__mcTest.setApplyWait(3000, 60_000));
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   await until(() => page.evaluate(() => window.__mcTest.results().is.applied && window.__mcTest.results().is.applied.note), n => /no word for 3 s/.test(n || ''), { timeout: 10_000 });
   check((await page.evaluate(() => window.__mcTest.picked().is.length)) === 4, 'nothing marked while no answer came');
   const left = await until(() => page.evaluate(() => window.__mcTest.picked().is.slice().sort()), v => v.length === 2, { timeout: 10_000 });
   check(JSON.stringify(left) === JSON.stringify(recs.slice().sort()), `the late answer's links are done; the ISRCs are left (${JSON.stringify(left)})`);
   check(/links submitted/.test(await page.evaluate(() => window.__mcTest.results().is.applied.note)), 'the late answer replaced the timeout on the card');
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   await until(() => page.evaluate(() => window.__applies.length), n => n === 2);
   const none = await until(() => page.evaluate(() => window.__mcTest.picked().is.length), n => n === 0, { timeout: 10_000 });
   check(none === 0, 'the doneKeys of a "nothing left to add" answer count as done');

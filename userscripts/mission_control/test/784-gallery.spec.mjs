@@ -56,7 +56,7 @@ test('#784: the gallery\'s slot, stage and plan; Execute runs what the gallery h
   check(await until(() => page.evaluate(() => window.__stage.slice(-1)[0]), v => v === false) === false, 'leaving the source out stages the front out');
   await page.evaluate(() => window.__plan({ ops: [{ kind: 'add', label: 'Add Back (upload)' }], more: 1 }));
   check(await until(() => exec(), v => v === 'Execute (1)') === 'Execute (1)', `the gallery's change alone counts (${await exec()})`);
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   const sent = await until(() => page.evaluate(() => window.__applied[0] || null), Boolean);
   check(sent && JSON.stringify(sent.keys) === '[]' && !('extras' in sent), `Execute runs Art Station with no source and no extras (${JSON.stringify(sent)})`);
   await page.screenshot({ path: 'test-results/mc-784-gallery.png' });

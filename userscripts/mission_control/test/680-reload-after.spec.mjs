@@ -34,7 +34,7 @@ test('#680: reload the release page after an Execute without errors', { tag: ['@
   check((await page.evaluate(() => window.__mcTest.settings())).reloadAfter === true, 'the reload is on by default');
   await page.click('#mc-root [data-act="cfg"]');
   const keys = await page.locator('.mc-cfg [data-k]').evaluateAll(n => n.map(x => x.type + ':' + x.dataset.k));
-  check(JSON.stringify(keys) === '["checkbox:autoProbe","checkbox:reloadAfter","checkbox:consAfter","checkbox:consExec","checkbox:ccDiffOpen"]', `⚙ holds only Auto probe, the reload, after a consolidation with its Execute and countdown, and the track differences (${JSON.stringify(keys)})`);
+  check(JSON.stringify(keys) === '["checkbox:autoProbe","checkbox:review","checkbox:reloadAfter","checkbox:consAfter","checkbox:consExec","number:consExecS","checkbox:ccDiffOpen"]', `⚙ holds only Auto probe, the review, the reload, after a consolidation with its Execute and countdown, and the track differences (${JSON.stringify(keys)})`);
   await page.locator('.mc-cfg input[data-k="reloadAfter"]').check();
   check((await page.evaluate(() => window.__mcTest.settings())).reloadAfter === true, 'ticking it stores it');
   await page.screenshot({ path: 'test-results/mc-680-settings.png' });

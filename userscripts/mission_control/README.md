@@ -143,6 +143,8 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 
 **Execute** applies what is taken in, in the Execution order (steps on one line together), counting it on the button. A failed step doesn't stop the next.
 
+First it lists what it will send, a line per change under its step: untick one to leave it out, then **Execute**, or **Cancel**. A right-click on **Execute** skips the list, and so does the Execute that runs itself [after a consolidation](#consolidate-a-new-release). *Review the changes before Execute* in the settings turns the list off.
+
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
 
 A failed step that can be tried again shows **Retry** beside its error; what got through before shows as done.
@@ -182,6 +184,7 @@ A label with another catalog number keeps it. A new label is added with its cata
 | Setting                                                         | Default |                                                                                 |
 | --------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------- |
 | Probe as soon as Mission Control opens                          | on      | no need to click ↻                                                              |
+| Review the changes before Execute                               | on      | lists what Execute will send first; a right-click on Execute skips it           |
 | Reload the release page after an Execute without errors         | on      | shows the result at once; waits until every added link is through               |
 | After saving a consolidated release, open Mission Control on it | on      | [probes the new release](#consolidate-a-new-release) for what it lacks          |
 | …and Execute once the probe has finished                        | off     | then applies what is taken in, after a countdown (10 s by default) you can stop |
@@ -195,4 +198,5 @@ A label with another catalog number keeps it. A new label is added with its cata
 | Ctrl / Alt  | a click in Tracks   | the whole track / the whole column ([Tracks](#tracks)) |
 | drag        | ISRCs or duplicates | take in or leave out every one you pass                |
 | ← →         | a cover full screen | the other cover                                        |
+| right-click | Execute             | execute without the review                             |
 | right-click | the corner icon     | settings                                               |

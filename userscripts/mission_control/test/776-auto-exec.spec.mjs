@@ -68,7 +68,7 @@ test.describe('on', () => {
     check(await label(page) === 'Execute (1)', `the button is Execute again (${await label(page)})`);
     await page.waitForTimeout(6500);
     check(await page.evaluate(() => window.__applied.length) === 0, 'nothing is applied');
-    await page.click('#mc-root [data-act="exec"]');
+    await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
     const applied = await until(() => page.evaluate(() => window.__applied.length), n => n > 0, { timeout: 5000 });
     check(applied === 1, 'a second click executes');
   });

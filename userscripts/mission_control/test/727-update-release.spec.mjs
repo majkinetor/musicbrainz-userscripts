@@ -67,7 +67,7 @@ test('#727: a consolidation brings its barcode, catalog number and links to a re
     window.__falconGot = [];
     for (const ev of ['falcon:run', 'falcon:import']) document.addEventListener(ev, e => { window.__falconGot.push({ ev, json: JSON.parse(e.detail) }); document.dispatchEvent(new CustomEvent('falcon:import-ok')); });
   });
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   await page.waitForFunction(() => window.__falconGot.some(g => g.ev === 'falcon:run'), null, { timeout: 30_000 });
   const run = await page.evaluate(() => window.__falconGot.find(g => g.ev === 'falcon:run').json);
   const item = run.items.find(i => i.entityType === 'release');

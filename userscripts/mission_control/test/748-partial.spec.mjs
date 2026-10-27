@@ -33,7 +33,7 @@ test('#748: what went through is done, though the step failed', { tag: ['@sandbo
   await page.click('#mc-root [data-act="probe"]');
   await until(() => page.evaluate(() => (window.__mcTest.picked().is || []).length), n => n === 4);
   check((await page.locator('#mc-root [data-act="exec"]').textContent()).trim() === 'Execute (4)', 'four to send: two ISRCs, two links');
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   const left = await until(() => page.evaluate(() => window.__mcTest.picked().is.slice().sort()), v => v.length === 2, { timeout: 10_000 });
   check(JSON.stringify(left) === JSON.stringify(recs.slice().sort()), `the links that went through are done; the ISRCs are left (${JSON.stringify(left)})`);
   check((await page.locator('#mc-root [data-act="exec"]').textContent()).trim() === 'Execute (2)', `Execute counts what is left (${(await page.locator('#mc-root [data-act="exec"]').textContent()).trim()})`);

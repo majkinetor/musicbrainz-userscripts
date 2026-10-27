@@ -142,7 +142,7 @@ test('#782: Compare reads the release\'s platforms and offers what it lacks', { 
   await sub.locator('[data-pf-len="1"]').press('Enter');
   check((await page.evaluate(() => window.__mcTest.cmp())).picks[1].ms === 310000 && await sub.locator('[data-pf-len="1"]').inputValue() === '5:10', 'what isn\'t a length is put back');
   await page.locator('#mc-root').screenshot({ path: 'dev/_782-picked.png' });
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   const applied = await until(() => page.evaluate(() => window.__applies[0] || null), Boolean);
   const tr = applied && applied.tracks;
   console.log(JSON.stringify(tr));

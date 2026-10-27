@@ -35,7 +35,7 @@ test('#680: a found Discogs master goes to the release group', { tag: ['@sandbox
     window.__falconGot = [];
     document.addEventListener('falcon:run', e => { window.__falconGot.push(JSON.parse(e.detail)); document.dispatchEvent(new CustomEvent('falcon:import-ok')); });
   });
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   await page.waitForFunction(() => window.__falconGot.length === 1);
   const items = (await page.evaluate(() => window.__falconGot[0])).items;
   console.log('items: ' + JSON.stringify(items));

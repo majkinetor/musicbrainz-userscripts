@@ -46,7 +46,7 @@ test('#680: Probe asks Art Station; covers are sourced in a hidden frame', { tag
   await page.waitForSelector('#mc-root [data-card="as"] .mc-applied.ok');
   check(/dry run: would enter the best cover of 1 source/.test(await page.locator('#mc-root [data-card="as"] .mc-applied').textContent()), 'dry run says what it would do');
 
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   const frame = await page.waitForFunction(() => { const f = document.querySelector('iframe[src*="mc_frame="]'); return f && f.src; }, null, { timeout: 30_000 }).then(h => h.jsonValue());
   const url = new URL(frame);
   check(url.pathname === `/release/${RELEASE}/cover-art`, 'the hidden frame is this release\'s cover-art page');

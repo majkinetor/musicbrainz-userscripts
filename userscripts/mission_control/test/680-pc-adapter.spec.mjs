@@ -96,7 +96,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   await page.evaluate(() => { let c, n = 0; while ((c = document.querySelector('#mc-root .mc-pick.on')) && n++ < 500) c.click(); });
   await pickable.first().locator('.mc-tick').click();   // the row's edge: its middle can be the url, a link that opens
   check(await page.locator('#mc-root [data-act="exec"]').isEnabled(), 'Execute enabled once something is selected');
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied');
   check(/Falcon is not running/.test(await page.locator('#mc-root [data-card="pc"] .mc-applied.err').textContent()), 'no Falcon: failure on the card');
 
@@ -107,7 +107,7 @@ test('#680: Probe asks Platform Check and shows its platforms', { tag: ['@sandbo
   });
   await page.evaluate(() => { window.__mcTest.execute(true); });   // Dry run: the test hook only (#680)
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-applied.ok');
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   await page.waitForFunction(() => window.__falconGot.length === 2);
   const got = await page.evaluate(() => window.__falconGot);
   check(got[0].ev === 'falcon:import' && got[1].ev === 'falcon:run', 'dry run queues, Execute runs');

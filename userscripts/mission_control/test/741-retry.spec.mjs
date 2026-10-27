@@ -32,7 +32,7 @@ test('#741: Retry on a card applies its provider again', { tag: ['@sandbox'] }, 
   await page.waitForSelector('#mc-root');
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForSelector('#mc-root [data-card="as"] .mc-line');
-  await page.click('#mc-root [data-act="exec"]');
+  await page.click('#mc-root [data-act="exec"]', { button: 'right' });   // #841: past the review
   const btn = page.locator('#mc-root [data-card="as"] .mc-applied.err [data-act="retry-apply"]');
   await btn.waitFor({ timeout: 20_000 });
   check(/sign 400/.test(await page.locator('#mc-root [data-card="as"] .mc-applied').textContent()), 'the card says why it failed, with Retry');
