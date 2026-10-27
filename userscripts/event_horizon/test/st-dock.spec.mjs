@@ -9,6 +9,7 @@ const REL = '0a0d6d1b-8a4b-4ab4-9de3-9f4a5c5b8a6e';
 test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/release/54b7bca2-7ed6-4484-bdd3-fe35a3f33dda', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await settled(page);
+  await page.evaluate(() => localStorage.removeItem('mbu.dockOpen'));   // folded, whatever an earlier run left
   await inject('mission_control');
   await inject('art_station');
   await inject('fusion');
@@ -31,6 +32,10 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   await page.locator('#mbu-dock').click(); await page.locator('#mbu-dock').click();
   await attachShot(testInfo, page, 'dock-row');
   await page.evaluate(() => { localStorage.removeItem('mbu.cornerFlow'); });
+  // to the artist inside EH: Mission Control runs on release pages only, and stays behind
+  await page.locator('#app a[href*="/artist/"]').first().click();
+  check(await until(() => page.evaluate(() => location.pathname), p => p.startsWith('/artist/')) !== null, 'on the artist');
+  check(await until(() => page.locator('#mc-launch').isVisible(), v => !v) === false, 'Mission Control is gone from the artist');
   await page.locator('#eh-launch').click();
   check(await until(on, v => !v) === false, 'EH off turns the dock off');
 });
