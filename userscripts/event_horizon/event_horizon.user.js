@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.173000
+// @version      2026.10.27.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2815,7 +2815,7 @@ function under(r, more = '') {
     // a page MB rates gets its stars even unrated, to rate it; the rest show theirs only when they have one
     const t = r.rgId ? 'release_group' : RATE_T[data && data.kind], ref = r.rgId || (data && data.id);
     const nat = mbBody && mbBody.querySelector('#sidebar .inline-rating .current-user-rating'), w = nat && /width:\s*([\d.]+)%/.exec(nat.getAttribute('style') || '');
-    const stars = on('rating') && (t || r.rating.value != null) ? rateStars(t, ref, r.rating, false, w ? Math.round(+w[1] / 20) : null) : '';
+    const stars = on('rating') && (t || r.rating.value != null) ? rateStars(t, ref, r.rating, false, w ? Math.round(+w[1] / 20) : mbBody && mbBody.querySelector('#sidebar .inline-rating') ? 0 : null) : '';
     const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
@@ -2823,12 +2823,13 @@ function under(r, more = '') {
 // (your star again clears it). t is MB's entity_type, ref a gid or MB's row id; yours come from MB's page when it
 // shows them, else from what was rated here (kept in this browser)
 const RATE_T = { artist: 'artist', label: 'label', recording: 'recording', rg: 'release_group', work: 'work', event: 'event', place: 'place' };
-const MYR_KEY = 'event_horizon.myRatings';
+const MYR_KEY = 'event_horizon.myRatings', RATED = {};
 const myR = () => { try { return JSON.parse(localStorage.getItem(MYR_KEY) || '{}'); } catch (e) { return {}; } };
 function rateStars(t, ref, rt, sm, mine) {
     rt = rt || {};
     const v = rt.value, n = rt['votes-count'], m = myR(), key = t + ':' + ref;
-    if (key in m) mine = m[key];
+    // this page's own ratings first, then MB's page (fresher than the browser's), then the browser's
+    if (key in RATED) mine = RATED[key]; else if (mine == null && key in m) mine = m[key];
     const k = mine || (v == null ? 0 : Math.round(v)), can = !!(ME && t && ref);
     const avg = v == null ? 'Not rated' : n == null ? `Rated ${v} of 5` : `${v} from ${n} vote${n === 1 ? '' : 's'}`;
     const tip = avg + (mine ? `\nYours: ${mine} of 5` : '') + (can ? `\nClick to rate${mine ? ', your star again to clear yours' : ''}` : t ? '\nLog in to rate' : '');
@@ -2838,14 +2839,14 @@ function rateStars(t, ref, rt, sm, mine) {
 // the rating your stars show now (MB's own, when none was made here)
 const rateCur = (t, ref) => { const b = document.querySelector(`.stars.mine [data-rate^="${t}\t${ref}\t"]`); return b ? b.parentNode.querySelectorAll('.st.on').length : 0; };
 async function rateSet(t, ref, i) {
-    const m = myR(), key = t + ':' + ref, v = m[key] === i || (!(key in m) && i === rateCur(t, ref)) ? 0 : i;
+    const m = myR(), key = t + ':' + ref, v = i === rateCur(t, ref) ? 0 : i;
     LOG.debug(`Rating ${key}: ${v}`);
     try {
         let id = ref;
         if (!/^\d+$/.test(ref)) { const r = await mbnFetch(`${MB}/ws/js/entity/${ref}`, { headers: { Accept: 'application/json' } }); id = r && r.ok && (await r.json()).id; if (!id) throw new Error('no row id'); }
         const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${t}&entity_id=${id}&rating=${v * 20}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
         if (!r || !r.ok || /\/login/.test(r.url)) throw new Error('HTTP ' + (r && r.status) + ' ' + (r && r.url));
-        m[key] = v; localStorage.setItem(MYR_KEY, JSON.stringify(m));
+        m[key] = RATED[key] = v; localStorage.setItem(MYR_KEY, JSON.stringify(m));
         toast(v ? `Rated ${v} of 5` : 'Your rating is cleared');
         const y = scrollY; render(); scrollTo(0, y);
     } catch (e) { LOG.debug('Rating failed: ' + key, e); toast('MusicBrainz didn\'t take the rating'); }
@@ -5293,7 +5294,7 @@ async function mbTab(type, id, sub, page = 1) {
         }
         for (const e of td.querySelectorAll('input, script')) e.remove();
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
-        return td.innerHTML.trim().replace(/<eh-r>([\d.]*)\|(\d*)\|(\w*)\|(\d*)<\/eh-r>/g, (_, v, u, t, id) => rateStars(t, id, { value: v ? +v : null, 'votes-count': null }, true, u ? +u : null));
+        return td.innerHTML.trim().replace(/<eh-r>([\d.]*)\|(\d*)\|(\w*)\|(\d*)<\/eh-r>/g, (_, v, u, t, id) => rateStars(t, id, { value: v ? +v : null, 'votes-count': null }, true, u ? +u : t ? 0 : null));
     };
     // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
     const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
