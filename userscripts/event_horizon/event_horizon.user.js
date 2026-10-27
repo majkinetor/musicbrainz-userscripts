@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.230000
+// @version      2026.10.27.233000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5665,6 +5665,7 @@ function tagsParse(html, ent) {
     const h1 = d.querySelector('#content h1') || d.querySelector('#page h1') || d.querySelector('h1');
     const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
     let tags = null, gen = [];
+    const links = [...d.querySelectorAll('ul.external_links a[href^="http"]')].map(a => a.href);
     if (ent) for (const s of d.querySelectorAll('script[type="application/json"]')) {
         let j; try { j = JSON.parse(s.textContent); } catch (e) { continue; }
         if (!j || !Array.isArray(j.aggregatedTags)) continue;
@@ -5677,7 +5678,7 @@ function tagsParse(html, ent) {
     }
     if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
     const hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
-    return { gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
+    return { links, gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
 }
 async function tagsLoad(n, key, down) {
     const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
@@ -5688,6 +5689,8 @@ async function tagsLoad(n, key, down) {
         else { const r = await mbnFetch(url); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const t = tagsParse(html, kind === 'etags');
         if (n === showing && data === d) { if (down) d.down = t.tags; else d.t = t; d.err = ''; render(); }
+        const [ty, eid] = kind === 'etags' ? id.split(':') : [];
+        if ((ty === 'artist' || ty === 'label') && !ARTIMG.cached(eid) && t.links.length) ARTIMG.findAll(eid, t.links).then(x => { if (x[0] && n === showing && data === d) { d.img = x[0].src; render(); } }).catch(() => {});
     } catch (e) {
         LOG.err('Loading the tags of ' + d.name + ' failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
@@ -5751,7 +5754,7 @@ function tagsHtml(d) {
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>${d.ent ? 'Tags' : 'Tags · ' + (d.dn ? 'downvoted' : 'upvoted')}</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${tabs || back ? `<nav class="u-tabs">${back}${tabs}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
-    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: ty === 'release' ? `https://coverartarchive.org/release/${eid}/front-250` : ty === 'release-group' ? `https://coverartarchive.org/release-group/${eid}/front-250` : '', kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed })}</section>` : hero;
+    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed })}</section>` : hero;
     return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
 }
 const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
@@ -5774,8 +5777,8 @@ function tgNewDraw(d, focus) {
 }
 function tgAc(d) {
     const i = $('#tg-new'), ac = $('.tg-ac'); if (!i || !ac) return;
-    const xs = tgSugg(d, i.value); d.acs = xs;
-    ac.hidden = !xs.length; ac.innerHTML = xs.map((x, k) => `<button type="button" class="${k ? '' : 'on'}" data-tgnew="pick:${k}">${esc(x)}${d.t.gen.includes(x) ? '<small>genre</small>' : ''}</button>`).join('');
+    const xs = tgSugg(d, i.value); d.acs = xs; d.aci = 0;
+    ac.hidden = !xs.length; ac.innerHTML = xs.map((x, k) => `<button type="button" class="${k === (d.aci || 0) ? 'on' : ''}" data-tgnew="pick:${k}">${esc(x)}${d.t.gen.includes(x) ? '<small>genre</small>' : ''}</button>`).join('');
 }
 function tgPush(d, x) {
     x = x.trim().toLowerCase(); if (x && !(d.nt = d.nt || []).includes(x)) d.nt.push(x);
@@ -5854,7 +5857,9 @@ function tagsWire() {
         const d = data, i = ev.target;
         if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); tgCommit(d); }
         // Enter takes the first suggestion, else what's typed
-        else if (ev.key === 'Enter') { ev.preventDefault(); const x = (d.acs && d.acs[0] && i.value.trim()) ? d.acs[0] : i.value; if (x.trim()) tgPush(d, x); }
+        // up and down move through the suggestions
+        else if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && (d.acs || []).length) { ev.preventDefault(); const L = d.acs.length; d.aci = ((d.aci || 0) + (ev.key === 'ArrowDown' ? 1 : -1) + L) % L; document.querySelectorAll('.tg-ac button').forEach((b, k) => b.classList.toggle('on', k === d.aci)); }
+        else if (ev.key === 'Enter') { ev.preventDefault(); const x = (d.acs && d.acs[d.aci || 0] && i.value.trim()) ? d.acs[d.aci || 0] : i.value; if (x.trim()) tgPush(d, x); }
         else if (ev.key === 'Escape') { ev.preventDefault(); d.ao = false; d.nt = []; tgNewDraw(d); }
         else if (ev.key === 'Backspace' && !i.value && (d.nt || []).length) { d.nt.pop(); tgNewDraw(d, true); }
     });
