@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.030327
+// @version      2026.10.27.030817
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -16031,29 +16031,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     } catch (e) { Log.cat('Alias').debug('alias count failed', e.message); }
   }
 
-  // #849 on a release's own page, each credited artist's aliases after its name: two, then +N to the
-  // artist's aliases, from the release's one ws/2 lookup
-  async function releaseArtistAliases() {
-    if (!aliasWant()) return;
-    const m = location.pathname.match(/^\/release\/([0-9a-f-]{36})\/?$/i); if (!m) return;
-    const links = [...document.querySelectorAll('.releaseheader .subheader a[href*="/artist/"]')]; if (!links.length) return;
-    try {
-      const j = await (await mbWebFetch(`${ORIGIN}/ws/2/release/${m[1]}?inc=artist-credits+aliases&fmt=json`)).json();
-      aliasStyle();
-      for (const c of (j && j['artist-credit']) || []) {
-        const art = c.artist; if (!art) continue;
-        const names = [...new Set((art.aliases || []).map(x => x.name).filter(x => x !== art.name && x !== c.name))]; if (!names.length) continue;
-        for (const a of links) {
-          if (!a.getAttribute('href').includes(art.id) || a.nextElementSibling?.classList.contains('tc-al-inl')) continue;
-          const s = document.createElement('span'); s.className = 'tc-al-inl';
-          s.append(' (' + names.slice(0, 2).join(', '));
-          if (names.length > 2) { const more = document.createElement('a'); more.className = 'tc-al-pill'; more.href = '/artist/' + art.id + '/aliases'; more.textContent = '+' + (names.length - 2); more.title = names.slice(2).join(', '); s.append(' ', more); }
-          s.append(')'); a.after(s);
-        }
-      }
-    } catch (e) { Log.cat('Alias').debug('release artist aliases failed', e.message); }
-  }
-
   function aliasStyle() {
     if (document.getElementById('tc-alias-style')) return;
     const s = document.createElement('style'); s.id = 'tc-alias-style';
@@ -16094,8 +16071,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-go{background:transparent !important;color:var(--mbu-ok, #2a8a3a) !important;border:0;border-radius:3px;padding:3px 8px;font:inherit;font-weight:600;cursor:pointer;filter:none!important}
     #tc-alias .tc-al-go:not(:disabled):hover{background:var(--mbu-border)!important}
     #tc-alias .tc-al-go:disabled{opacity:.5}
-    .tc-al-pill{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;background:var(--mbu-border);color:var(--mbu-text);font-size:11px;font-weight:600;line-height:16px;text-decoration:none}
-    .tc-al-inl{color:var(--mbu-text-weak, #666)}`;
+    .tc-al-pill{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;background:var(--mbu-border);color:var(--mbu-text);font-size:11px;font-weight:600;line-height:16px;text-decoration:none}`;
     document.head.appendChild(s);
   }
 
@@ -16131,7 +16107,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     }
     // #591 #808 a release's Disc IDs tab and MusicBrainz's attach page; each checks its own path
     if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { whenDomReady().then(() => { ensureDiscIdUi(); autoPickAttachMedium(); }); }
-    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { mountArchiveMenus(); whenDomReady().then(() => { aliasTabBadge(); releaseArtistAliases(); }); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
+    if (!/^\/release\/(add|.+\/edit)/.test(location.pathname)) { mountArchiveMenus(); whenDomReady().then(aliasTabBadge); return; }   // /artist/* and /label/* (non-callback) just load the channel listener; entity pages get the archive menu (#736)
     const ed = await waitFor(() => { const e = getEditor(); try { return e && u(e.rootField.release) && u(u(e.rootField.release).mediums) ? e : null; } catch (x) { return null; } });
     if (!ed) { Log.cat('System').err('MB.releaseEditor never became ready'); return; }
     try {   // line 2: the MB release, as a full link (real title now the editor is up)

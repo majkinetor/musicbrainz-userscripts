@@ -76,7 +76,6 @@ An entity's **Add alias** page becomes a table of all its aliases, so several ar
 Elsewhere:
 
 - An entity's **Aliases** tab shows how many aliases it has, and opens the same editor in place of MusicBrainz's list.
-- On a release's page, each credited artist's aliases follow its name: two of them, then **+N** for the rest, which opens the artist's aliases.
 
 ## Tracklist
 

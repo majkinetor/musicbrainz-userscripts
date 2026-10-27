@@ -67,10 +67,4 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   eq((await rows(page)).filter(r => r.name).map(r => r.name), ['Alpha Person'], 'the list page has the editor, with the alias');
   eq(await page.$eval('#content table.tbl', t => t.style.display), 'none', 'MusicBrainz\'s table is hidden');
 
-  // the release page shows the artist's alias after its credit
-  const rel = await pristine(page, 'release', { 'artist_credit.names.0.mbid': mbid, 'artist_credit.names.0.name': 'Credited Otherwise' });
-  await page.goto(`${SANDBOX}/release/${rel.mbid}`, { waitUntil: 'domcontentloaded' });
-  await inject('apollo_editor');
-  await page.waitForSelector('.releaseheader .tc-al-inl', { timeout: 30000 });
-  eq((await page.textContent('.releaseheader .tc-al-inl')).trim(), '(Alpha Person)', 'the release shows the artist\'s alias');
 });
