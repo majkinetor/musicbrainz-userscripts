@@ -27,11 +27,15 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   eq(await page.$eval('input[name="edit-alias.name"]', e => e.closest('form').style.display), 'none', 'the table replaces MusicBrainz\'s form');
   eq((await rows(page)).length, 1, 'a blank row to start');
 
-  await page.click('#tc-alias .tc-al-paste summary');
-  await page.fill('#tc-alias .tc-al-paste textarea', 'Alpha Person | | ja\nBeta Person');
-  await page.click('#tc-alias .tc-al-paste button');
+  // typing in the empty last line starts an alias and a new empty line
+  await page.locator('#tc-alias .tc-al-row').last().locator('.tc-al-n').fill('Alpha Person');
+  await page.locator('#tc-alias .tc-al-row').nth(0).locator('.tc-al-l').fill('Japanese');
+  await page.locator('#tc-alias .tc-al-row').nth(0).locator('.tc-al-l').dispatchEvent('change');
+  await page.locator('#tc-alias .tc-al-row').last().locator('.tc-al-n').fill('Beta Person');
+  await page.locator('#tc-alias .tc-al-row').nth(1).locator('.tc-al-l').fill('');
+  await page.locator('#tc-alias .tc-al-row').nth(1).locator('.tc-al-l').dispatchEvent('change');
   const r1 = await rows(page);
-  eq(r1.filter(r => r.name).map(r => [r.cls, r.name, r.locale]), [['tc-al-new', 'Alpha Person', 'ja'], ['tc-al-new', 'Beta Person', '']], 'pasted rows are new, with the pasted locale');
+  eq(r1.filter(r => r.name).map(r => [r.cls, r.name, r.locale]), [['tc-al-new', 'Alpha Person', 'ja'], ['tc-al-new', 'Beta Person', '']], 'typed rows are new, with the picked locale');
   eq(r1.filter(r => r.name).map(r => r.sort), ['Person, Alpha', 'Person, Beta'], 'sort names follow the names');
   eq(await page.textContent('#tc-al-enter'), '✓ Enter 2 edits', 'the bar counts the edits');
   eq(await page.evaluate(() => document.body.classList.contains('tc-zen-on')), true, 'Zen hides MusicBrainz\'s header');
@@ -65,15 +69,8 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   eq((await rows(page)).filter(r => r.name).map(r => r.name), ['Alpha Person'], 'the list page has the editor, with the alias');
   eq(await page.$eval('#content table.tbl', t => t.style.display), 'none', 'MusicBrainz\'s table is hidden');
 
-  // a release crediting the artist under another name: the name is offered from the credits, and
-  // the release page shows the artist's alias after it
+  // the release page shows the artist's alias after its credit
   const rel = await pristine(page, 'release', { 'artist_credit.names.0.mbid': mbid, 'artist_credit.names.0.name': 'Credited Otherwise' });
-  await open(page, inject, mbid);
-  await page.click('#tc-alias .tc-al-cred');
-  const chip = page.locator('#tc-alias .tc-al-chip', { hasText: 'Credited Otherwise' });
-  await chip.waitFor({ timeout: 60000 });
-  await chip.click();
-  eq((await rows(page)).filter(r => r.cls === 'tc-al-new' && r.name).map(r => r.name), ['Credited Otherwise'], 'a credited name becomes a new row');
   await page.goto(`${SANDBOX}/release/${rel.mbid}`, { waitUntil: 'domcontentloaded' });
   await inject('apollo_editor');
   await page.waitForSelector('.releaseheader .tc-al-inl', { timeout: 30000 });
