@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.000000
+// @version      2026.10.28.002000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5704,7 +5704,8 @@ function tgList(d) {
     // as on MusicBrainz, a tag scored zero or below is left out, unless it carries your vote
     const xs = all.filter(t => (!d.ent || t.c > 0 || t.v) && (d.sc === 'g' ? t.g : d.sc === 'o' ? !t.g : true) && (!q || t.n.toLowerCase().includes(q)));
     const byN = (a, b) => a.n.localeCompare(b.n);
-    return xs.sort(d.so === 'name' ? byN : (a, b) => b.c - a.c || byN(a, b));
+    const so = d.so || 'count', r = /-[ad]$/.test(so) ? -1 : 1;
+    return xs.sort(so.startsWith('name') ? (a, b) => r * byN(a, b) : so.startsWith('kind') ? (a, b) => r * (b.g - a.g) || b.c - a.c || byN(a, b) : (a, b) => r * (b.c - a.c) || byN(a, b));
 }
 function tgVoteBs(t, i) {
     return `<span class="tg-vote"><button type="button" class="tg-up${t.v > 0 ? ' on' : ''}" data-tgvote="${i}:${t.v > 0 ? 0 : 1}" aria-label="Upvote ${esc(t.n)}" data-tip="${t.v > 0 ? 'Withdraw your upvote' : 'Upvote'}">+</button><button type="button" class="tg-dn${t.v < 0 ? ' on' : ''}" data-tgvote="${i}:${t.v < 0 ? 0 : -1}" aria-label="Downvote ${esc(t.n)}" data-tip="${t.v < 0 ? 'Withdraw your downvote' : 'Downvote'}">−</button></span>`;
@@ -5722,7 +5723,7 @@ function tgBody(d) {
         const L = new Map(); for (const t of [...xs].sort((x, y) => x.n.localeCompare(y.n))) { const k = /[a-z]/i.test(t.n[0]) ? t.n[0].toUpperCase() : '#'; if (!L.has(k)) L.set(k, []); L.get(k).push(t); }
         return `<div class="tg-az">${[...L].map(([k, ts]) => `<div><strong>${esc(k)}</strong>${ts.map(t => `<span class="${mine(t)}">${a(t)}${cnt(t)}</span>`).join('')}</div>`).join('')}</div>`;
     }
-    if (v === 'table') return `<div class="ed-tw"><table class="ed-t tg-t"><thead><tr>${[['name', 'Tag'], ['', 'Kind'], ['count', d.ent ? 'Score' : 'Count']].map(([k, x]) => k ? `<th aria-sort="${(d.so === 'name') === (k === 'name') ? (k === 'name' ? 'ascending' : 'descending') : 'none'}"><button type="button" class="tg-th" data-tgset="so:${k}" data-tip="Sort by ${x.toLowerCase()}">${x}${(d.so === 'name') === (k === 'name') ? (k === 'name' ? ' ↑' : ' ↓') : ''}</button></th>` : `<th>${x}</th>`).join('')}${vote ? '<th>Your vote</th>' : ''}</tr></thead><tbody>${xs.map(t => `<tr class="${mine(t)}"><td>${a(t)}</td><td>${t.g ? 'genre' : 'tag'}</td><td>${cnt(t)}</td>${vote ? `<td>${tgVoteBs(t, idx(t))}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+    if (v === 'table') return `<div class="ed-tw"><table class="ed-t tg-t"><thead><tr>${[['name', 'Tag'], ['kind', 'Kind'], ['count', d.ent ? 'Score' : 'Count']].map(([k, x]) => { if (!k) return `<th>${x}</th>`; const so = d.so || 'count', on = so.startsWith(k), up = so === 'name' || so === 'count-a' || so === 'kind-d', nx = so === k ? k + (k === 'name' ? '-d' : k === 'kind' ? '-d' : '-a') : k; return `<th aria-sort="${on ? (up ? 'ascending' : 'descending') : 'none'}"><button type="button" class="tg-th" data-tgset="so:${nx}" data-tip="Sort by ${x.toLowerCase()}">${x}${on ? (up ? ' ↑' : ' ↓') : ''}</button></th>`; }).join('')}${vote ? '<th>Your vote</th>' : ''}</tr></thead><tbody>${xs.map(t => `<tr class="${mine(t)}"><td>${a(t)}</td><td>${t.g ? 'genre' : 'tag'}</td><td>${cnt(t)}</td>${vote ? `<td>${tgVoteBs(t, idx(t))}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
     return `<div class="tg-bars${vote ? '' : ' tg-nv'}">${xs.map(t => `<span class="tg-row${mine(t)}">${a(t)}<i><b style="width:${Math.max(1.5, t.c / max * 100)}%"></b></i>${cnt(t)}${vote ? tgVoteBs(t, idx(t)) : ''}</span>`).join('')}</div>`;
 }
 const TG_IC = { bars: '<path d="M4 6h10M4 12h16M4 18h7"/>', cloud: '<path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.6 1.5A3.5 3.5 0 0 0 7 18z"/>', chips: '<rect x="3" y="5" width="8" height="5" rx="2.5"/><rect x="13" y="5" width="8" height="5" rx="2.5"/><rect x="3" y="14" width="11" height="5" rx="2.5"/>', az: '<path d="M4 18 7.5 6 11 18M5.2 14h4.6M14 6h6l-6 12h6"/>', table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>' };
