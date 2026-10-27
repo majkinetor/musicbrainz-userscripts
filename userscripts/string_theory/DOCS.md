@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-27 09:23 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-27 09:24 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -805,7 +805,7 @@ A recording shows its length, ISRCs and credits, its works beside them with thei
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 
-In other tables (an instrument's releases, a work's recordings and so on), the filter also takes `column:value`, such as `artist:elvis`; put the value in quotes when it has spaces. The funnel next to a column's heading starts one for that column.
+Every table's filter (the discography, the releases, an instrument's releases, a work's recordings and so on) also takes `column:value`, such as `artist:elvis`; put the value in quotes when it has spaces. The funnel next to a column's heading starts one for that column.
 
 ### Settings
 
