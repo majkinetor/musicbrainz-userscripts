@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.141500
+// @version      2026.10.27.143000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6669,16 +6669,18 @@ function histBursts(es) {
     }
     return out;
 }
+const H_BATCH = 2000;
 async function histLoad(n, all) {
     const d = data; if (d.busy || !d.more) return;
     d.busy = true; render();
     // the header's release loads beside the edits, not after them
     const relGet = () => { if (!d.rel && !d.relAsk && histRid(d.id)) { d.relAsk = true; relHd(histRid(d.id), r => { if (data === d) { d.rel = r; render(); } }).catch(() => { d.relAsk = false; }); } };
     relGet();
-    const target = d.edits.length + H_MIN;
-    LOG.info(`History ${d.id}: loading ${all ? 'every page' : 'more'} from page ${d.page + 1}`);
+    // "Load 2,000" takes a fixed batch per click: a list of 100,000 edits never loads whole by accident
+    const target = d.edits.length + H_MIN, cap = d.edits.length + H_BATCH;
+    LOG.info(`History ${d.id}: loading ${all ? H_BATCH + ' more' : 'more'} from page ${d.page + 1}`);
     try {
-        for (let i = 0; (all || i < H_MAXP) && d.more; i++) {
+        for (let i = 0; (all ? d.edits.length < cap : i < H_MAXP) && d.more; i++) {
             const p = d.page + 1;
             let html;
             if (p === 1 && 'hist/' + d.id === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
@@ -6750,7 +6752,7 @@ function histPage(app, d) {
     }
     const cnt = k => d.edits.filter(e => e.st === k).length;
     // how much is loaded, and the buttons for more, sit at the bar's right end
-    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <button type="button" class="sk-b" data-hmore>Load more</button><button type="button" class="sk-b" data-hmore="all">Load all</button>` : `All ${d.edits.length} edits`}</span>`;
+    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <button type="button" class="sk-b" data-hmore>Load more</button><button type="button" class="sk-b" data-hmore="all">Load 2,000</button>` : `All ${d.edits.length} edits`}</span>`;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}${hload}</div>` + `<div class="hql">${[...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
     app.innerHTML = `<section class="arthd">${r || rid ? subHead(r, r ? r.id : rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1></div>`}</section><section class="hist">${d.edits.length && !histOne(d.id) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
