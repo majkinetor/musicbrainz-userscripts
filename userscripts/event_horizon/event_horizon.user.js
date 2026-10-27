@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.181000
+// @version      2026.10.27.190000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1950,6 +1950,7 @@ const CSS = `
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
+.tgx-l{columns:3 300px;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-bar .fbox{flex:1 1 200px;max-width:320px}.tg-bar .fbox input{width:100%}
 .tg-add{display:flex;gap:8px;margin:0 0 16px;max-width:560px}.tg-add input{flex:1;min-width:0;height:30px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:inherit}
 .tg-c{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}a.tg-g{font-weight:700}
@@ -5774,6 +5775,71 @@ function tagsWire() {
     document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'tags' && ev.target.matches('[data-tgq]')) { data.q = ev.target.value; tagsDraw(); } });
     document.addEventListener('submit', ev => { const f = ev.target; if (!ehOn || !data || data.kind !== 'tags' || !f.matches('[data-tgadd]')) return; ev.preventDefault(); const i = f.querySelector('input'); tagsAdd(data, i.value); i.value = ''; });
 }
+// one tag of an editor's: what they tagged with it, by entity type (or one type, paged)
+function tagxParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
+    const c = d.querySelector('#page') || d.body, abs = h => h && h.startsWith('/') ? MB + h : h;
+    for (const a of c.querySelectorAll('a[href]')) a.setAttribute('href', abs(a.getAttribute('href')));
+    const tabs = [...c.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href')]);
+    const groups = [];
+    for (const h of c.querySelectorAll('h3, h2')) {
+        let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL' && !/^H[23]$/.test(ul.tagName)) ul = ul.nextElementSibling;
+        if (!ul || ul.tagName !== 'UL' || ul.classList.contains('pagination')) continue;
+        const lis = [...ul.children], more = lis.find(li => li.querySelector('em > a'));
+        groups.push({ t: h.tagName === 'H2' ? tx(h).replace(/ .*$/, '') : tx(h), items: lis.filter(li => li !== more).map(li => li.innerHTML.trim()), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
+    }
+    const pg = [...c.querySelectorAll('ul.pagination a[href]')].map(a => [tx(a), a.getAttribute('href')]);
+    return { found: tx([...c.querySelectorAll('p')].find(p => /\d/.test(p.textContent) && /found/i.test(p.textContent))), tabs, groups, pg };
+}
+async function tagxLoad(n, d, url) {
+    try {
+        let html;
+        if (!url && d.key === PAGE_ID && mbBody && !d.dn === !/show_downvoted=1/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        else {
+            const u = new URL(url || `${MB}/user/${encodeURIComponent(d.name)}/tag/${encodeURIComponent(d.tag)}${d.type ? '/' + d.type : ''}`);
+            u.searchParams.set('show_downvoted', d.dn ? '1' : '0');
+            const r = await mbnFetch(u.href); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text();
+        }
+        const t = tagxParse(html);
+        if (n === showing && data === d) { d.t = t; d.err = ''; render(); if (url) scrollTo(0, 0); }
+    } catch (e) {
+        LOG.err('Loading the tag ' + d.tag + ' failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+function tagxHtml(d) {
+    const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
+    const tabs = `<a class="u-tab" href="${MB}/user/${U}/tags">All tags</a>${d.type ? `<a class="u-tab" href="${MB}/user/${U}/tag/${T}">Every type</a>` : ''}<a class="u-tab" href="${MB}/tag/${T}">The tag on MusicBrainz</a>`
+        + (t ? t.tabs.filter(x => !/\/tags$/.test(x[1])).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '');
+    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : t ? esc(t.found) + ` · ${d.dn ? 'downvoted' : 'tagged'} by <a href="${MB}/user/${U}">${esc(d.name)}</a>` : 'Loading…';
+    const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tag${d.type ? ' · ' + esc(d.type.replace('_', ' ').replace('-', ' ')) + 's' : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.tag)}</h1>`
+        + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav></div></section>`;
+    const tools = `<div class="tg-tools"><div class="tg-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq value="${esc(d.q || '')}" placeholder="Filter" aria-label="Filter" autocomplete="off"></span>`
+        + `<span class="seg" role="group" aria-label="Votes">${[['0', 'Upvotes'], ['1', 'Downvotes']].map(([v, x]) => `<button type="button" data-tgxdn="${v}" aria-pressed="${(d.dn ? '1' : '0') === v}">${x}</button>`).join('')}</span></div></div>`;
+    if (!t) return hero + tools;
+    const keep = h => !q || h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q);
+    const secs = t.groups.map(g => { const xs = g.items.filter(keep), id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-');
+        return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)}</h2></span></div>`
+            + (xs.length ? `<ul class="tgx-l">${xs.map(h => `<li>${h}</li>`).join('')}</ul>` : '<p class="hm-none">Nothing matches the filter.</p>')
+            + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : '') + '</section>'; }).join('');
+    const pg = t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-tgxpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
+    return hero + tools + (secs || '<section class="sec" id="s-tgx-none"><p class="hm-none">Nothing tagged.</p></section>') + pg;
+}
+let tgxWired = false;
+function tagxWire() {
+    if (tgxWired) return; tgxWired = true;
+    document.addEventListener('click', ev => {
+        const b = ehOn && data && data.kind === 'tagx' && ev.target.closest('[data-tgxdn],[data-tgxpg]'); if (!b) return;
+        const d = data;
+        if (b.dataset.tgxpg) { tagxLoad(showing, d, b.dataset.tgxpg); return; }
+        d.dn = b.dataset.tgxdn === '1'; d.t = null; render(); tagxLoad(showing, d);
+    });
+    document.addEventListener('input', ev => {
+        if (!ehOn || !data || data.kind !== 'tagx' || !ev.target.matches('[data-tgxq]')) return;
+        data.q = ev.target.value; const at = ev.target.selectionStart; render();
+        const i = $('[data-tgxq]'); if (i) { i.focus(); i.setSelectionRange(at, at); }
+    });
+}
 // its events by date, from ws/2
 function placeEvents(d) {
     const x = d.listsX && d.listsX[0], xs = x && [...(x.events || [])].sort((a, b) => ((a['life-span'] || {}).begin || '9').localeCompare((b['life-span'] || {}).begin || '9'));
@@ -5935,6 +6001,7 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); document.getElementById('eh-rail')?.remove(); return; }
+    if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); secRail(app); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
@@ -6531,6 +6598,9 @@ function navTo(href) {
     // an editor's tags → "utags/<name>"; an entity's → "etags/<type>:<mbid>"
     const ut = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tags\/?$/);
     if (ut) return 'utags/' + ut[1];
+    // one tag of an editor's → "utag/<name>/<tag>[/<type>]"
+    const ux = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tag\/([^/]+)(?:\/([a-z_-]+))?\/?$/);
+    if (ux) return 'utag/' + ux[1] + '/' + ux[2] + (ux[3] ? '/' + ux[3] : '') + (/show_downvoted=1/.test(u.search) ? '/-' : '');
     const et = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/tags/?$', 'i'));
     if (et) return 'etags/' + et[1].toLowerCase() + ':' + et[2].toLowerCase();
     // an editor's profile → "user/<name as in the path>"
@@ -6541,7 +6611,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'tagx' ? d.tag + ' · ' + d.name + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -7414,6 +7484,11 @@ async function show(key) {
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
+    if (kind === 'utag') {
+        const p = key.split('/').slice(1), dn = p[p.length - 1] === '-'; if (dn) p.pop();
+        data = { kind: 'tagx', key, name: decodeURIComponent(p[0]), tag: decodeURIComponent(p[1]), type: p[2] || '', dn, q: '' };
+        scrollTo(0, 0); render(); tagxLoad(n, data); return;
+    }
     if (kind === 'utags' || kind === 'etags') {
         const ent = kind === 'etags' ? id : '';
         data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false };
