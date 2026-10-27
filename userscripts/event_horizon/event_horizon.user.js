@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.131500
+// @version      2026.10.27.134500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6602,6 +6602,8 @@ const histTime = el => {
     const t = Date.parse(m[1] + 'T' + m[2] + 'Z');
     return /\bopen\b/.test(el.querySelector('.edit-header').className) ? t - 7 * 864e5 : t;
 };
+// an open edit past its week shows no expiry date: its editor's first note, written as it was entered, dates it instead
+const histNoteTime = notes => { const n = notes.find(x => x.own), m = n && n.date.match(/(\d{4}-\d\d-\d\d) (\d\d:\d\d)/); return m ? Date.parse(m[1] + 'T' + m[2] + 'Z') : 0; };
 function histParse(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const one = !doc.querySelector('.edit-list') && doc.querySelector('#content > .edit-header');
@@ -6618,10 +6620,12 @@ function histParse(html) {
         if (one) { const x = doc.querySelector('#sidebar .edit-expiration'); if (x) el.append(x); }
         return {
             id: +((one ? a.textContent : a.getAttribute('href')).match(/\d+/) || [0])[0], type: a.textContent.replace(/^.*?#\d+\s*[-–]\s*/, '').trim(), tk: c[c.length - 1],
-            st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el),
+            st: histSt(h.className), ed: ed ? ed.textContent.trim() : '', t: histTime(el) || histNoteTime(notes),
             notes, votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
         };
     });
+    // still undated: an edit's number orders it in time, so it takes the date of the nearest older edit with one
+    edits.forEach(e => { if (e.t) return; const o = edits.filter(x => x.t && x.id < e.id).sort((x, y) => y.id - x.id)[0]; if (o) e.t = o.t; });
     const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
     const next = [...doc.querySelectorAll('.pagination a[href*="page="]')].some(x => +(x.getAttribute('href').match(/page=(\d+)/) || [])[1] > (cur || 1));
     const rl = one && edits[0] && new DOMParser().parseFromString(edits[0].det, 'text/html').querySelector('a[href^="/release/"]');
