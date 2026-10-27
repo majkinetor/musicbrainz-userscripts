@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.233000
+// @version      2026.10.27.234000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1953,9 +1953,9 @@ const CSS = `
 .hm-none{color:var(--muted);margin:0}
 .tgx-l{columns:3 300px;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
-.secthead>.tg-new{display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex-wrap:wrap}
-.tg-tok{position:relative;display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:30px;max-width:420px;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;min-width:110px;flex:1;font-size:13px;color:var(--text)}
-.tg-tk{display:inline-flex;align-items:center;gap:2px;font-size:13px;font-weight:600;background:var(--chip);border-radius:12px;padding:1px 2px 1px 9px}.tg-tk button{all:unset;cursor:pointer;color:var(--muted);padding:0 5px}.tg-tk button:hover{color:var(--text)}
+.secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
+.tg-tok{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;height:32px;box-sizing:border-box;width:min(380px,40vw);overflow-x:auto;scrollbar-width:none;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;min-width:110px;flex:1;font-size:13px;color:var(--text)}
+.tg-tk{flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;font-size:13px;font-weight:600;background:var(--chip);border-radius:12px;padding:1px 2px 1px 9px}.tg-tk button{all:unset;cursor:pointer;color:var(--muted);padding:0 5px}.tg-tk button:hover{color:var(--text)}
 .tg-ac{position:absolute;left:0;top:calc(100% + 4px);z-index:20;display:grid;min-width:220px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 24px var(--shadow)}.tg-ac[hidden]{display:none}.tg-ac button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:5px 10px;border-radius:6px;font-size:13px}.tg-ac button.on,.tg-ac button:hover{background:var(--chip)}.tg-ac small{color:var(--muted);font-size:11px}
 .tg-go{height:30px;padding:0 12px;border:1px solid var(--accent);border-radius:9px;background:var(--accent);color:#fff;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-go:disabled{opacity:.45;cursor:default}
 .arthd>.rhic{flex:none;width:112px;height:112px;border-radius:10px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.arthd>.rhic[hidden]{display:none}.arthd>.rhic svg{width:64px;height:64px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-sp{flex:1}
@@ -5772,7 +5772,7 @@ function tgSugg(d, q) {
     return out.sort((a, b) => (b.toLowerCase().startsWith(q) - a.toLowerCase().startsWith(q)) || a.length - b.length).slice(0, 8);
 }
 function tgNewDraw(d, focus) {
-    const w = $('.tg-new'); if (!w) return; w.innerHTML = tgNew(d);
+    const w = $('.tg-new'); if (!w) return; w.innerHTML = tgNew(d); const tk = $('.tg-tok'); if (tk) tk.scrollLeft = tk.scrollWidth;
     if (focus) { const i = $('#tg-new'); if (i) i.focus(); }
 }
 function tgAc(d) {
