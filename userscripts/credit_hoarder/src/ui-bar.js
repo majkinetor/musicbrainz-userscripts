@@ -2546,9 +2546,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
     optsBtn.type = 'button';
     optsBtn.className = 'discogs-opts-btn';
     optsBtn.innerHTML = 'Options <span class="discogs-opts-caret">▾</span>';
-    optsBtn.dataset.tip = 'Options: duplicates and matching';
+    optsBtn.dataset.tip = 'Options: credits, duplicates and matching';
     const optsPanel = document.createElement('div');
     optsPanel.className = 'discogs-opts-panel mbu-ui';   // #564: floating, so same escape as the log menu
+    // "Move release credits to tracks" is rarely switched, so it waits in the popover too (maintainer)
+    const credHd = document.createElement('div');
+    credHd.className = 'discogs-opts-panel-hd';
+    credHd.textContent = 'Credits';
+    optsPanel.append(credHd, applyTracksCb.closest('label'));
     const dedupHd = document.createElement('div');
     dedupHd.className = 'discogs-opts-panel-hd';
     dedupHd.textContent = 'Deduplication';

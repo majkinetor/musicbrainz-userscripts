@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.214000
+// @version      2026.10.28.215000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7037,7 +7037,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] body{background:var(--bg)!important}
 :root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
-:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *){font-size:inherit}
+:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
