@@ -46,6 +46,16 @@ test('paste, guess, submit, then edit and remove', { tag: ['@sandbox', '@login']
   await page.keyboard.press('ArrowDown'); eq(await at(), [2, 'tc-al-l'], 'and on to the empty line');
   await page.keyboard.press('ArrowUp'); eq(await at(), [1, 'tc-al-l'], 'Up comes back');
   eq(await page.$eval('#tc-alias .tc-al-pop', p => p.hidden), true, 'the locale list stays shut');
+
+  // a search hint keeps only its name, the rest shut until the type changes back
+  const ty = page.locator('#tc-alias .tc-al-row').nth(1).locator('.tc-al-t');
+  const shut = () => page.locator('#tc-alias .tc-al-row').nth(1).evaluate(tr => ['.tc-al-n', '.tc-al-s', '.tc-al-p', '.tc-al-l', '.tc-al-b', '.tc-al-e'].map(c => tr.querySelector(c).disabled));
+  await ty.fill('Search hint'); await ty.dispatchEvent('change');
+  eq(await shut(), [false, true, true, true, true, true], 'a search hint shuts all but the name');
+  eq((await rows(page))[1].sort, 'Beta Person', 'its sort name is the name');
+  await ty.fill(''); await ty.dispatchEvent('change');
+  eq(await shut(), [false, false, false, false, false, false], 'another type opens them again');
+  eq((await rows(page))[1].sort, 'Person, Beta', 'with the guessed sort name back');
   await page.click('#tc-al-enter');
   await page.waitForFunction(() => /entered/.test(document.querySelector('#tc-alias .tc-al-msg').textContent), null, { timeout: 120000 });
   eq(await page.textContent('#tc-alias .tc-al-msg'), '2 edits entered', 'both entered');

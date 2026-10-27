@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.031628
+// @version      2026.10.27.031949
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15864,6 +15864,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
     const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
     const typeName = v => (types.find(o => o.v === v) || {}).t || '';
+    // a search hint has only a name, as on MusicBrainz's form: its id is in the form's props, else found by name, else MusicBrainz's own
+    const hintType = (() => {
+      const m = /"searchHintType"\s*:\s*"?(\d+)/.exec([...form.ownerDocument.querySelectorAll('script')].map(x => x.textContent).find(t => t.includes('searchHintType')) || '');
+      return m ? m[1] : (types.find(o => /search hint/i.test(o.t)) || {}).v || (ent === 'artist' ? '3' : '2');
+    })();
+    Log.cat('Alias').debug('search hint type', hintType);
     // a filterable list under a locale or type field, in place of the browser's datalist and select popups
     const pop = box.querySelector('.tc-al-pop');
     let popIn = null, popHit = [], popAt = 0;
@@ -15924,7 +15930,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const sync = () => {
       let n = 0;
       for (const r of rows) {
-        const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '');
+        const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '') + (r.type && r.type === hintType ? ' tc-al-hint' : '');
         if (s && (s === 'del' || r.name.trim())) n++;
         const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
         mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
@@ -15949,6 +15955,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         + '<input class="tc-al-t" title="Type to filter the types">'
         + '<input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"><button type="button" class="tc-al-x"></button>';
       const $ = c => tr.querySelector(c);
+      const HINT_OFF = ['.tc-al-s', '.tc-al-g', '.tc-al-p', '.tc-al-l', '.tc-al-b', '.tc-al-e'];
+      // a search hint keeps only its name: the rest is emptied (the sort name is the name) and shut, and comes back when the type changes
+      const hint = () => {
+        const on = !!r.type && r.type === hintType;
+        if (on && !r.hintPrev) { r.hintPrev = { sort: r.sort, locale: r.locale, primary: r.primary, begin: r.begin, end: r.end, auto: r.autoSort }; }
+        else if (!on && r.hintPrev) {
+          const p = r.hintPrev; r.hintPrev = null; Object.assign(r, { sort: p.sort, locale: p.locale, primary: p.primary, begin: p.begin, end: p.end, autoSort: p.auto });
+          if (r.autoSort) r.sort = r.name.trim() ? guess(r.name.trim()) : '';
+          $('.tc-al-s').value = r.sort; locIn.value = locName(r.locale); locIn.dataset.v = r.locale; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
+        }
+        if (on) {
+          Object.assign(r, { sort: r.name, locale: '', primary: false, begin: '', end: '' });
+          $('.tc-al-s').value = r.name; locIn.value = ''; locIn.dataset.v = ''; $('.tc-al-b').value = ''; $('.tc-al-e').value = '';
+          for (const c of ['.tc-al-l', '.tc-al-b', '.tc-al-e']) { $(c).classList.remove('tc-al-bad'); $(c).title = ''; }
+        }
+        for (const c of HINT_OFF) { $(c).disabled = on; }
+        tr.classList.toggle('tc-al-hint', on);
+      };
       const locIn = $('.tc-al-l'), locName = v => (locales.find(o => o.v === v) || {}).t || '';
       locIn.value = locName(r.locale); locIn.dataset.v = r.locale;
       const tyIn = $('.tc-al-t'); tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
@@ -15981,6 +16005,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             e.classList.add('tc-al-bad'); e.title = 'The end comes before the begin';
           }
         }
+        hint();
         if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
         sync();
       };
@@ -15993,9 +16018,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
           locIn.value = locName(r.locale); locIn.dataset.v = r.locale; tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
           tr.querySelectorAll('.tc-al-bad').forEach(e => e.classList.remove('tc-al-bad'));
+          r.hintPrev = null; hint();
           Log.cat('Alias').info('reverted "' + r.name + '"'); sync(); return;
         }
         if (r.id) { r.removed = !r.removed; sync(); } else { tr.remove(); rows.splice(rows.indexOf(r), 1); if (!ghost()) addRow(blank()); sync(); } };
+      hint();
       rows.push(r);
       const g = ghost(); if (g && g !== r) tb.insertBefore(tr, g.tr); else tb.appendChild(tr);
       return r;
@@ -16064,6 +16091,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);}
     #tc-alias .tc-al-p{font-size:15px;line-height:1;color:var(--mbu-text-weak)}
     #tc-alias .tc-al-p.on{color:#e0a800}
+    #tc-alias .tc-al-row :disabled{opacity:.35;cursor:not-allowed}
     #tc-alias input.tc-al-bad:not([type=checkbox]){border-bottom:2px solid #e53935!important;background:rgba(229,57,53,.18)!important;color:#e53935!important;border-radius:3px 3px 0 0}
     #tc-alias .tc-al-msg.tc-al-err{color:#e53935;font-weight:600}
     #tc-alias{position:relative}
