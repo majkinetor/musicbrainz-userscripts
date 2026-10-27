@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.190500
+// @version      2026.10.27.203000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -4626,10 +4626,21 @@ const mbuAliasEditor = (() => {
         popHit = list.filter(o => !t || (o.t || '').toLowerCase().includes(t) || o.v.toLowerCase() === t);
         popHit.sort((a, b) => t ? ((a.t || '').toLowerCase().startsWith(t) ? 0 : 1) - ((b.t || '').toLowerCase().startsWith(t) ? 0 : 1) : 0);
         popAt = Math.max(0, popHit.findIndex(o => o.v === inp.dataset.v)); popDraw();
-        const br = box.getBoundingClientRect(), ir = inp.getBoundingClientRect();
-        pop.style.left = (ir.left - br.left) + 'px'; pop.style.top = (ir.bottom - br.top) + 'px'; pop.style.minWidth = ir.width + 'px';
-        pop.hidden = false;
+        popPlace();
       };
+      // fixed to the window, so the dialog's scrolling box doesn't cut it off; it opens upward when there's more room above
+      const popPlace = () => {
+        if (!popIn) return;
+        const ir = popIn.getBoundingClientRect(), below = innerHeight - ir.bottom - 8, above = ir.top - 8, up = below < 160 && above > below;
+        pop.style.maxHeight = Math.min(240, up ? above : below) + 'px'; pop.style.minWidth = ir.width + 'px';
+        pop.style.left = '0px'; pop.style.top = '0px'; pop.hidden = false;
+        // a transformed ancestor would move a fixed box: measure where 0,0 lands and correct for it
+        const o = pop.getBoundingClientRect(), h = pop.offsetHeight;
+        pop.style.left = (Math.min(ir.left, innerWidth - pop.offsetWidth - 8) - o.left) + 'px';
+        pop.style.top = ((up ? ir.top - h : ir.bottom) - o.top) + 'px';
+      };
+      box.addEventListener('scroll', ev => { if (ev.target !== pop) popClose(); }, true);
+      addEventListener('resize', popPlace);
       const popClose = () => { pop.hidden = true; popIn = null; };
       const popPick = o => { const inp = popIn; popClose(); if (!inp || !o) return; inp.value = o.v ? o.t : ''; inp.dataset.v = o.v; inp.dispatchEvent(new Event('change', { bubbles: true })); };
       // Up and Down move to the same column of the row above or below
@@ -4868,7 +4879,7 @@ const mbuAliasEditor = (() => {
       #tc-alias input.tc-al-bad:not([type=checkbox]){border-bottom:2px solid #e53935!important;background:rgba(229,57,53,.18)!important;color:#e53935!important;border-radius:3px 3px 0 0}
       #tc-alias .tc-al-msg.tc-al-err{color:#e53935;font-weight:600}
       #tc-alias{position:relative}
-      #tc-alias .tc-al-pop{position:absolute;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
+      #tc-alias .tc-al-pop{position:fixed;z-index:50;max-height:240px;overflow-y:auto;overflow-x:hidden;background:var(--mbu-bg, #fff);color:var(--mbu-text);border:1px solid var(--mbu-border);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:2px 0;scrollbar-gutter:stable}
       #tc-alias .tc-al-pop[hidden]{display:none}
       #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
       #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
