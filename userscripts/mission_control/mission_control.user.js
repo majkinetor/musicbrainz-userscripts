@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.095138
+// @version      2026.10.27.100713
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -574,11 +574,16 @@ function reviewTrack(gid) {
     const t = rel && rel.tracks.find(t => t.rec === gid);
     return t ? (rel.media > 1 ? t.medium + '.' : '') + t.pos + ' ' + t.title : 'a recording';
 }
+// the platform's icon beside a link's line
+function reviewIco(id, x) {
+    if (id === 'is') return x.kind === 'link' ? stIcon(urlIcon(x.url), 16) : '';
+    if (id === 'as' || (id === 'pc' && !x.kind)) return stIcon(x.icon || x.key, 16);
+    return '';
+}
 // one selected finding as a line: what it is, and where it goes
 function reviewLine(id, x) {
     const k = x.kind;
     if (id === 'is') return k === 'link' ? reviewTrack(x.track) + ': link ' + x.url : reviewTrack(x.track) + ': ISRC ' + (x.isrc || '?') + ((x.existing || []).length ? ' (beside ' + x.existing.join(', ') + ')' : '');
-    if (id === 'fusion') return reviewTrack(x.track) + ': merge with ' + (x.matches || []).length + ' recording' + ((x.matches || []).length === 1 ? '' : 's');
     if (id === 'as') { const b = results.as && results.as.best; return 'Front cover from ' + (x.name || x.key) + (b && b.w ? ', ' + b.w + '×' + b.h : '') + (b && b.replace ? ', replacing the current one' : ''); }
     if (k === 'barcode') return 'Barcode ' + x.code;
     if (k === 'catno') return 'Catalog number ' + x.code + (x.label && x.label.name ? ' on ' + x.label.name : '');
@@ -592,18 +597,28 @@ function reviewWindow() {
     PROVIDERS.forEach(p => {
         if (providerOff(p.id) || !found[p.id] || !(found[p.id].capabilities || []).includes('apply')) return;
         const set = picked[p.id], xs = set && set.size ? ((results[p.id] || {}).findings || []).filter(x => set.has(x.key)) : [];
-        const items = xs.map(x => ({ key: x.key, text: reviewLine(p.id, x) }));
+        let items = xs.map(x => ({ keys: [x.key], text: reviewLine(p.id, x), ico: reviewIco(p.id, x) }));
+        // Fusion: the tracks of one group are one merge
+        if (p.id === 'fusion') {
+            const by = new Map();
+            xs.forEach(x => {
+                const gids = [x.track, ...(x.matches || []).map(m => m.gid)].sort(), g = gids.join(' ');
+                const e = by.get(g) || by.set(g, { keys: [], names: [], n: gids.length }).get(g);
+                e.keys.push(x.key); e.names.push(reviewTrack(x.track));
+            });
+            items = [...by.values()].map(e => ({ keys: e.keys, text: 'One merge of ' + e.n + ' recordings: ' + e.names.join(', ') + (e.n > e.names.length ? ' and ' + (e.n - e.names.length) + ' from elsewhere' : '') }));
+        }
         if (p.id === 'as' && asMore()) items.push({ text: asMore() + ' gallery change' + (asMore() === 1 ? '' : 's') });
         if (p.id === 'pc') pfChanges().forEach(c => items.push({ text: 'Track ' + c.position + ': ' + [c.title != null && '“' + (c.was.title || '') + '” → “' + c.title + '”', c.ms && 'length ' + (c.was.ms ? reviewLen(c.was.ms) : 'none') + ' → ' + reviewLen(c.ms)].filter(Boolean).join(', ') }));
         if (items.length) groups.push({ p, items });
     });
-    const n = changeCount();
+    const n = groups.reduce((k, g) => k + g.items.length, 0);   // a line each: one Fusion merge is one
     const ov = el('div', 'mbu-ov');
     const panel = el('div', 'mbu-ov-panel mc-review');
     panel.style.width = 'min(640px, 94vw)';
     panel.innerHTML = mbuHtml('<div class="mbu-ov-body"><h2 class="mc-sec">Execute ' + n + ' change' + (n === 1 ? '' : 's') + '?</h2>'
         + groups.map(g => '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
-            + g.items.map(it => '<label class="mc-rv-i"><input type="checkbox" checked' + (it.key != null ? ' data-p="' + g.p.id + '" data-key="' + esc(it.key) + '"' : ' disabled') + '><span>' + esc(it.text) + '</span></label>').join('')).join('')
+            + g.items.map(it => '<label class="mc-rv-i"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + '>' + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + esc(it.text) + '</span></label>').join('')).join('')
         + '<div class="mc-rv-f"><button type="button" class="mc-btn" data-rv="cancel">Cancel</button><button type="button" class="mc-btn mc-exec" data-rv="go">Execute</button></div></div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
@@ -613,7 +628,7 @@ function reviewWindow() {
     panel.querySelector('[data-rv="cancel"]').onclick = () => { off(); close(); Log.cat('Execute').info('review: cancelled'); };
     panel.querySelector('[data-rv="go"]').onclick = () => {
         const dropped = [...panel.querySelectorAll('input[data-key]:not(:checked)')];
-        dropped.forEach(i => picked[i.dataset.p] && picked[i.dataset.p].delete(i.dataset.key));
+        dropped.forEach(i => JSON.parse(i.dataset.key).forEach(k => picked[i.dataset.p] && picked[i.dataset.p].delete(k)));
         if (dropped.length) { Log.cat('Execute').info('review: left out ' + dropped.map(i => i.dataset.p + ':' + i.dataset.key).join(', ')); paintAll(); }
         off(); close();
         if (changeCount()) execute(false);
@@ -921,7 +936,7 @@ function mcStyle() {
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
         + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}'
         // #841: the review before Execute
-        + '.mc-review .mc-rv-g{display:flex;align-items:center;gap:6px;font-weight:600;margin:12px 0 4px}.mc-review .mc-rv-g img{width:18px;height:18px}.mc-review .mc-rv-g span{font-weight:400;color:var(--mbu-text-weak)}.mc-review .mc-rv-i{display:flex;gap:8px;align-items:flex-start;padding:2px 0 2px 24px;font-size:13px;overflow-wrap:anywhere}.mc-review .mc-rv-f{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.mc-review .mc-rv-f button{height:30px;padding:0 16px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius);font:inherit;font-size:13px;cursor:pointer}.mc-review .mc-rv-f button:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}.mc-review .mc-rv-f [data-rv=go]{font-weight:600;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}.mc-review .mc-rv-f [data-rv=go]:hover{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}'
+        + '.mc-review .mc-rv-g{display:flex;align-items:center;gap:6px;font-weight:600;margin:12px 0 4px}.mc-review .mc-rv-g img{width:18px;height:18px}.mc-review .mc-rv-g span{font-weight:400;color:var(--mbu-text-weak)}.mc-review .mc-rv-i{display:flex;gap:8px;align-items:flex-start;padding:2px 0 2px 24px;font-size:13px;overflow-wrap:anywhere}.mc-review .mc-rv-ico{display:inline-flex;flex:none;margin-top:1px}.mc-review .mc-rv-ico svg{display:block}.mc-review .mc-rv-f{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.mc-review .mc-rv-f button{height:30px;padding:0 16px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius);font:inherit;font-size:13px;cursor:pointer}.mc-review .mc-rv-f button:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}.mc-review .mc-rv-f [data-rv=go]{font-weight:600;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}.mc-review .mc-rv-f [data-rv=go]:hover{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}'
         + '#mc-root .mc-act .mc-exec.mc-cd{background:linear-gradient(90deg,color-mix(in srgb,var(--mbu-accent) 35%,var(--mbu-accent-soft)) var(--mc-cd,0%),var(--mbu-accent-soft) 0);border-color:var(--mbu-accent)}'
         // a phone: MusicBrainz's page is wider than the screen, so the browser widens the layout viewport
         // to it and MC (fixed, inset 0) with it, cut off at the sides. Pinning the page's body brings the
