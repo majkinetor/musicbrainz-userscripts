@@ -38,6 +38,12 @@ test('tags are added as tokens: Enter takes a suggestion, a comma ends one, Ctrl
   await page.goto(`https://test.musicbrainz.org/artist/${AR}/tags`);
   await inject('event_horizon');
   await until(() => page.locator('#tg-body .tg-chip').count(), n => n >= 5);
+  // the sandbox as it was: neither tag upvoted (a chip's votes show on hover)
+  const unvote = async () => { for (const n of ['eh test tag', 'boogie-woogie']) {
+    const chip = page.locator('#tg-body .tg-chip', { has: page.locator('a', { hasText: new RegExp('^' + n + '$') }) }), up = chip.locator('.tg-up.on');
+    if (await up.count()) { await chip.hover(); await up.click(); await page.waitForTimeout(1500); }
+  } };
+  await unvote();
   await page.click('[data-tgnew="open"]');
   await page.locator('#tg-new').pressSequentially('boogie-wo');
   check(/boogie-woogie/.test(await until(() => page.locator('.tg-ac').textContent(), t => /boogie/.test(t))), 'the genres are suggested');
@@ -47,9 +53,5 @@ test('tags are added as tokens: Enter takes a suggestion, a comma ends one, Ctrl
   await attachShot(testInfo, page, 'tokens');
   await page.keyboard.press('Control+Enter');
   check(await until(() => page.locator('#tg-body .tg-chip.tg-mine a', { hasText: /^eh test tag$/ }).count(), n => n === 1) === 1, 'the tags are added');
-  // put the sandbox back
-  for (const n of ['eh test tag', 'boogie-woogie']) {
-    const up = page.locator('#tg-body .tg-chip', { has: page.locator('a', { hasText: new RegExp('^' + n + '$') }) }).locator('.tg-up.on');
-    if (await up.count()) { await up.click(); await page.waitForTimeout(1500); }
-  }
+  await unvote();
 });
