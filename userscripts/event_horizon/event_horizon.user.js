@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.082914
+// @version      2026.10.27.120000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6315,7 +6315,7 @@ body{background:var(--bg)}
 :root[data-eh-rel] #set-cover-art-images{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
 :root[data-eh-rel] #set-cover-art-images .editimage{float:none!important;width:auto!important;margin:0!important;padding:10px!important;display:flex;flex-direction:column;gap:10px;background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:14px;box-sizing:border-box;cursor:pointer;font-size:13px;line-height:1.45;transition:border-color .12s}
 :root[data-eh-rel] #set-cover-art-images .editimage:hover{border-color:var(--accent)!important}
-:root[data-eh-rel] #set-cover-art-images .editimage.selected{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent)}
+:root[data-eh-rel] #set-cover-art-images .editimage.selected{border:2px solid var(--accent)!important;padding:9px!important;box-shadow:none!important;outline:none!important}
 :root[data-eh-rel] #set-cover-art-images .editimage>*{float:none!important;margin:0!important;width:auto!important}
 :root[data-eh-rel] #set-cover-art-images .cover-image{position:relative}:root[data-eh-rel] #set-cover-art-images .cover-image a{display:block}
 :root[data-eh-rel] #set-cover-art-images .cover-image img{width:100%;aspect-ratio:1;height:auto;object-fit:cover;border-radius:9px;display:block;background:var(--chip)}
