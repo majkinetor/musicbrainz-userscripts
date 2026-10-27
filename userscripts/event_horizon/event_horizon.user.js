@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.190000
+// @version      2026.10.27.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1951,7 +1951,10 @@ const CSS = `
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .tgx-l{columns:3 300px;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
-.tg-tools{display:flex;margin:0 0 14px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-bar .fbox{flex:1 1 200px;max-width:320px}.tg-bar .fbox input{width:100%}
+.tg-tools{display:flex;margin:0 0 14px}.tg-tools>.tg-bar{flex:1}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-sp{flex:1}
+.tg-ch{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-ch[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--chip)}.tg-ch i{font:400 11px 'JetBrains Mono',ui-monospace,monospace;font-style:normal;color:var(--muted);background:var(--chip);border-radius:9px;padding:0 6px}.tg-ch[aria-pressed="true"] i{background:var(--surface)}
+.tg-sw{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 4px;border:0;background:none;color:var(--text);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-sw u{width:34px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .15s}.tg-sw u::after{content:'';position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--surface);transition:left .15s}.tg-sw[aria-checked="true"] u{background:#c94a3a}.tg-sw[aria-checked="true"] u::after{left:17px}
+.tg-vw button{display:inline-flex;align-items:center;padding:0 10px}.tg-bar .fbox{flex:1 1 200px;max-width:320px}.tg-bar .fbox input{width:100%}
 .tg-add{display:flex;gap:8px;margin:0 0 16px;max-width:560px}.tg-add input{flex:1;min-width:0;height:30px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:inherit}
 .tg-c{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}a.tg-g{font-weight:700}
 .tg-bars{display:grid;grid-template-columns:minmax(120px,max-content) minmax(80px,1fr) 44px auto;gap:5px 12px;align-items:center}.tg-bars.tg-nv{grid-template-columns:minmax(120px,max-content) minmax(80px,1fr) 44px}.tg-row{display:contents}.tg-row>i{height:14px;border-radius:3px;background:var(--chip)}.tg-row>i>b{display:block;height:100%;border-radius:3px;background:var(--accent)}.tg-row>.tg-c{text-align:right}.tg-row.tg-neg>i>b{background:var(--muted)}
@@ -5708,13 +5711,18 @@ function tgBody(d) {
     if (v === 'table') return `<div class="ed-tw"><table class="ed-t tg-t"><thead><tr><th>Tag</th><th>Kind</th><th>${d.ent ? 'Score' : 'Count'}</th>${vote ? '<th>Your vote</th>' : ''}</tr></thead><tbody>${xs.map(t => `<tr class="${mine(t)}"><td>${a(t)}</td><td>${t.g ? 'genre' : 'tag'}</td><td>${cnt(t)}</td>${vote ? `<td>${tgVoteBs(t, idx(t))}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
     return `<div class="tg-bars${vote ? '' : ' tg-nv'}">${xs.map(t => `<span class="tg-row${mine(t)}">${a(t)}<i><b style="width:${Math.max(1.5, t.c / max * 100)}%"></b></i>${cnt(t)}${vote ? tgVoteBs(t, idx(t)) : ''}</span>`).join('')}</div>`;
 }
+const TG_IC = { bars: '<path d="M4 6h10M4 12h16M4 18h7"/>', cloud: '<path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.6 1.5A3.5 3.5 0 0 0 7 18z"/>', chips: '<rect x="3" y="5" width="8" height="5" rx="2.5"/><rect x="13" y="5" width="8" height="5" rx="2.5"/><rect x="3" y="14" width="11" height="5" rx="2.5"/>', az: '<path d="M4 18 7.5 6 11 18M5.2 14h4.6M14 6h6l-6 12h6"/>', table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>' };
 function tgTools(d) {
-    const sg = (k, cur, opts, lbl) => `<span class="seg" role="group" aria-label="${lbl}">${opts.map(([v, t]) => `<button type="button" data-tgset="${k}:${v}" aria-pressed="${cur === v}">${t}</button>`).join('')}</span>`;
+    const all = d.ent || !d.dn ? (d.t ? d.t.tags : []) : d.down || [], gs = all.filter(t => t.g).length;
+    // Genres and Other switch on and off apiece; turning off the only one that's on swaps to the other
+    const ch = (lbl, n, on, to) => `<button type="button" class="tg-ch" data-tgset="sc:${to}" aria-pressed="${on}">${lbl} <i>${fmtN(n)}</i></button>`;
+    const g = d.sc !== 'o', o = d.sc !== 'g';
     return `<div class="tg-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="tg-q" data-tgq value="${esc(d.q || '')}" placeholder="Filter tags" aria-label="Filter tags" autocomplete="off"></span>`
-        + (d.ent ? '' : sg('dn', d.dn ? '1' : '0', [['0', 'Upvotes'], ['1', 'Downvotes']], 'Votes'))
-        + sg('sc', d.sc, [['a', 'All'], ['g', 'Genres'], ['o', 'Other']], 'Kind')
-        + sg('so', d.so, [['count', 'Count'], ['name', 'Name']], 'Sort')
-        + sg('view', d.view, TG_VIEWS, 'View') + '</div>';
+        + ch('Genres', gs, g, g ? 'o' : 'a') + ch('Other', all.length - gs, o, o ? 'g' : 'a')
+        + '<span class="tg-sp"></span>'
+        + `<button type="button" class="tg-ch" data-tgset="so:${d.so === 'name' ? 'count' : 'name'}" data-tip="Sort by ${d.so === 'name' ? 'count' : 'name'}">⇅ ${d.so === 'name' ? 'Name' : 'Count'}</button>`
+        + (d.ent ? '' : `<button type="button" class="tg-sw" role="switch" data-tgset="dn:${d.dn ? 0 : 1}" aria-checked="${d.dn}"><u></u>Downvotes</button>`)
+        + `<span class="seg tg-vw" role="group" aria-label="View">${TG_VIEWS.map(([v, t]) => `<button type="button" data-tgset="view:${v}" aria-pressed="${d.view === v}" aria-label="${t}" data-tip="${t}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TG_IC[v]}</svg></button>`).join('')}</span></div>`;
 }
 function tagsHtml(d) {
     const t = d.t, abs = h => h.startsWith('/') ? MB + h : h;
@@ -5769,8 +5777,7 @@ function tagsWire() {
         d[k] = v;
         if (k === 'view') { S[d.ent ? 'etagView' : 'tagView'] = v; save(); }
         if (k === 'so' || k === 'sc') { S.tagSort = d.so; S.tagScope = d.sc; save(); }
-        for (const x of document.querySelectorAll(`[data-tgset^="${k}:"]`)) x.setAttribute('aria-pressed', x.dataset.tgset === k + ':' + v);
-        tagsDraw();
+        const tl = $('.tg-tools'); if (tl) { tl.innerHTML = tgTools(d); } tagsDraw();
     });
     document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'tags' && ev.target.matches('[data-tgq]')) { data.q = ev.target.value; tagsDraw(); } });
     document.addEventListener('submit', ev => { const f = ev.target; if (!ehOn || !data || data.kind !== 'tags' || !f.matches('[data-tgadd]')) return; ev.preventDefault(); const i = f.querySelector('input'); tagsAdd(data, i.value); i.value = ''; });
