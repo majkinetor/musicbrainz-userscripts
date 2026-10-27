@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.180000
+// @version      2026.10.28.181000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6066,7 +6066,7 @@ function ratesHtml(d) {
     const ty = d.type && RT_TYPES.find(x => x[0] === d.type);
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading the ratings…' : !t.groups.length ? 'Nothing rated' : `${fmtN(all.length)} shown${d.type ? '' : ', the highest of each type'} · rated by <a href="${MB}/user/${U}">${esc(d.name)}</a>`;
     const pg = t && t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-rtpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
-    const hero = userHead(d.name, '', t && t.tabs) + `<div class="u-pbar tgx-hero"><p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav>${pg}</div>`;
+    const hero = userHead(d.name, '', t && t.tabs) + `<div class="u-pbar tgx-hero"><nav class="u-tabs">${tabs}</nav><p class="u-sub">${sub}</p>${pg}</div>`;
     if (!t) return hero;
     // the stars to show: every rating, or those of one score
     const cn = k => all.filter(x => x.r === k).length;
