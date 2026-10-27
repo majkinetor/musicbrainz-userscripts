@@ -30,3 +30,11 @@ test('an editor\'s collections list in place and open a collection', { tag: '@sa
   await a.first().click();
   check(await until(() => page.locator('.hero h1').textContent().catch(() => ''), t => t === 'Event Horizon test') === 'Event Horizon test', 'the collection opens in Event Horizon');
 });
+
+test('a collection\'s edits open on the history page', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/collection/${COL}/edits`);
+  await inject('event_horizon');
+  check(await until(() => page.locator('section.hist').count(), n => n === 1) === 1, 'the history page shows');
+  await until(() => page.locator('section.hist').textContent(), t => !/Loading/i.test(t));
+  await attachShot(testInfo, page, 'edits');
+});
