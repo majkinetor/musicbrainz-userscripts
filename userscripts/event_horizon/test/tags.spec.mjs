@@ -33,3 +33,23 @@ test('an editor\'s tags open in place', { tag: '@sandbox' }, async ({ page, inje
   check(await until(() => page.locator('#tg-body').textContent(), t => !/Loading/.test(t)).then(t => !/Loading/.test(t)), 'the tags load');
   await attachShot(testInfo, page, 'editor');
 });
+
+test('tags are added as tokens: Enter takes a suggestion, a comma ends one, Ctrl+Enter sends', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}/tags`);
+  await inject('event_horizon');
+  await until(() => page.locator('#tg-body .tg-chip').count(), n => n >= 5);
+  await page.click('[data-tgnew="open"]');
+  await page.locator('#tg-new').pressSequentially('boogie-wo');
+  check(/boogie-woogie/.test(await until(() => page.locator('.tg-ac').textContent(), t => /boogie/.test(t))), 'the genres are suggested');
+  await page.keyboard.press('Enter');
+  await page.locator('#tg-new').pressSequentially('eh test tag,');
+  check(await page.locator('.tg-tk').count() === 2, 'Enter and the comma each made a token');
+  await attachShot(testInfo, page, 'tokens');
+  await page.keyboard.press('Control+Enter');
+  check(await until(() => page.locator('#tg-body .tg-chip.tg-mine a', { hasText: /^eh test tag$/ }).count(), n => n === 1) === 1, 'the tags are added');
+  // put the sandbox back
+  for (const n of ['eh test tag', 'boogie-woogie']) {
+    const up = page.locator('#tg-body .tg-chip', { has: page.locator('a', { hasText: new RegExp('^' + n + '$') }) }).locator('.tg-up.on');
+    if (await up.count()) { await up.click(); await page.waitForTimeout(1500); }
+  }
+});

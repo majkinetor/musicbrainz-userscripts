@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.220000
+// @version      2026.10.27.230000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1953,6 +1953,11 @@ const CSS = `
 .hm-none{color:var(--muted);margin:0}
 .tgx-l{columns:3 300px;column-gap:28px;margin:0;padding:0 0 0 18px}.tgx-l li{break-inside:avoid;margin:0 0 4px}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
+.secthead>.tg-new{display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex-wrap:wrap}
+.tg-tok{position:relative;display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:30px;max-width:420px;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;min-width:110px;flex:1;font-size:13px;color:var(--text)}
+.tg-tk{display:inline-flex;align-items:center;gap:2px;font-size:13px;font-weight:600;background:var(--chip);border-radius:12px;padding:1px 2px 1px 9px}.tg-tk button{all:unset;cursor:pointer;color:var(--muted);padding:0 5px}.tg-tk button:hover{color:var(--text)}
+.tg-ac{position:absolute;left:0;top:calc(100% + 4px);z-index:20;display:grid;min-width:220px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 24px var(--shadow)}.tg-ac[hidden]{display:none}.tg-ac button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:5px 10px;border-radius:6px;font-size:13px}.tg-ac button.on,.tg-ac button:hover{background:var(--chip)}.tg-ac small{color:var(--muted);font-size:11px}
+.tg-go{height:30px;padding:0 12px;border:1px solid var(--accent);border-radius:9px;background:var(--accent);color:#fff;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-go:disabled{opacity:.45;cursor:default}
 .arthd>.rhic{flex:none;width:112px;height:112px;border-radius:10px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.arthd>.rhic[hidden]{display:none}.arthd>.rhic svg{width:64px;height:64px}.tg-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tg-sp{flex:1}
 .tg-ch{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border:1px solid var(--border);border-radius:16px;background:var(--surface);color:var(--text);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-ch[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--chip)}.tg-ch i{font:400 11px 'JetBrains Mono',ui-monospace,monospace;font-style:normal;color:var(--muted);background:var(--chip);border-radius:9px;padding:0 6px}.tg-ch[aria-pressed="true"] i{background:var(--surface)}
 .tg-sw{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 4px;border:0;background:none;color:var(--text);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}.tg-sw u{width:34px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .15s}.tg-sw u::after{content:'';position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--surface);transition:left .15s}.tg-sw[aria-checked="true"] u{background:#c94a3a}.tg-sw[aria-checked="true"] u::after{left:17px}
@@ -5659,10 +5664,11 @@ function tagsParse(html, ent) {
     const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
     const h1 = d.querySelector('#content h1') || d.querySelector('#page h1') || d.querySelector('h1');
     const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
-    let tags = null;
+    let tags = null, gen = [];
     if (ent) for (const s of d.querySelectorAll('script[type="application/json"]')) {
         let j; try { j = JSON.parse(s.textContent); } catch (e) { continue; }
         if (!j || !Array.isArray(j.aggregatedTags)) continue;
+        const gm = j.genreMap || {}; gen = Array.isArray(gm) ? gm.map(g => g && g.name).filter(Boolean) : Object.values(gm).map(g => g && g.name || '').filter(Boolean); if (!gen.length) gen = Object.keys(gm);
         const mine = new Map((j.userTags || []).map(u => [u.tag.name, u.vote]));
         tags = j.aggregatedTags.map(t => ({ n: t.tag.name, c: t.count, g: !!t.tag.genre, v: mine.get(t.tag.name) || 0 }));
         // your own downvotes aren't in the aggregate: they show too, as MusicBrainz's "Show all tags" does
@@ -5671,7 +5677,7 @@ function tagsParse(html, ent) {
     }
     if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
     const hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
-    return { name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
+    return { gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
 }
 async function tagsLoad(n, key, down) {
     const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
@@ -5744,10 +5750,42 @@ function tagsHtml(d) {
     const sub = d.err && t ? `<span class="u-err">${esc(d.err)}</span>` : t ? `${fmtN(all.length)} tag${all.length === 1 ? '' : 's'}${gs ? `, ${fmtN(gs)} of them genres` : ''}` : '';
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>${d.ent ? 'Tags' : 'Tags · ' + (d.dn ? 'downvoted' : 'upvoted')}</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${tabs || back ? `<nav class="u-tabs">${back}${tabs}</nav>` : ''}</div></section>`;
-    const add = d.ent && ME ? `<form class="tg-add" data-tgadd><input id="tg-new" placeholder="Add tags, comma-separated" aria-label="Add tags" autocomplete="off"><button type="submit" class="u-tab">Tag</button></form>` : '';
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
     const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: ty === 'release' ? `https://coverartarchive.org/release/${eid}/front-250` : ty === 'release-group' ? `https://coverartarchive.org/release-group/${eid}/front-250` : '', kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed })}</section>` : hero;
-    return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2><div class="tools tg-tools">${tgTools(d)}</div></div>${add}<div id="tg-body">${tgBody(d)}</div></section>`;
+    return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
+}
+const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+function tgNew(d) {
+    if (!d.ao) return `<span class="ed-views"><button type="button" data-tgnew="open" aria-label="Add tags" data-tip="Add tags">${TG_PLUS}</button></span>`;
+    const nt = d.nt || [];
+    return `<span class="tg-tok">${nt.map((x, i) => `<span class="tg-tk">${esc(x)}<button type="button" data-tgnew="rm:${i}" aria-label="Remove ${esc(x)}">×</button></span>`).join('')}<input id="tg-new" placeholder="${nt.length ? '' : 'Tag'}" aria-label="New tag" autocomplete="off"><span class="tg-ac" hidden></span></span>`
+        + `<button type="button" class="tg-go" data-tgnew="go" data-tip="Add ${nt.length ? 'these tags' : 'the tag'}&#10;Ctrl+Enter">Tag${nt.length > 1 ? ' ' + nt.length : ''}</button><span class="ed-views"><button type="button" data-tgnew="close" aria-label="Close" data-tip="Close&#10;Esc">×</button></span>`;
+}
+// the genres and this entity's own tags that hold what's typed, those starting with it first
+function tgSugg(d, q) {
+    q = q.trim().toLowerCase(); if (!q || !d.t) return [];
+    const have = new Set([...(d.nt || []), ...d.t.tags.filter(t => t.v > 0).map(t => t.n)]), seen = new Set(), out = [];
+    for (const n of [...d.t.tags.map(t => t.n), ...d.t.gen]) { const l = n.toLowerCase(); if (!seen.has(l) && !have.has(l) && l.includes(q)) { seen.add(l); out.push(n); } }
+    return out.sort((a, b) => (b.toLowerCase().startsWith(q) - a.toLowerCase().startsWith(q)) || a.length - b.length).slice(0, 8);
+}
+function tgNewDraw(d, focus) {
+    const w = $('.tg-new'); if (!w) return; w.innerHTML = tgNew(d);
+    if (focus) { const i = $('#tg-new'); if (i) i.focus(); }
+}
+function tgAc(d) {
+    const i = $('#tg-new'), ac = $('.tg-ac'); if (!i || !ac) return;
+    const xs = tgSugg(d, i.value); d.acs = xs;
+    ac.hidden = !xs.length; ac.innerHTML = xs.map((x, k) => `<button type="button" class="${k ? '' : 'on'}" data-tgnew="pick:${k}">${esc(x)}${d.t.gen.includes(x) ? '<small>genre</small>' : ''}</button>`).join('');
+}
+function tgPush(d, x) {
+    x = x.trim().toLowerCase(); if (x && !(d.nt = d.nt || []).includes(x)) d.nt.push(x);
+    tgNewDraw(d, true);
+}
+async function tgCommit(d) {
+    const i = $('#tg-new'), rest = i ? i.value.trim() : ''; if (rest) (d.nt = d.nt || []).push(rest.toLowerCase());
+    const nt = d.nt || []; if (!nt.length) return;
+    d.nt = []; d.ao = false;
+    await tagsAdd(d, nt.join(','));
 }
 function tagsDraw() { const b = $('#tg-body'); if (b && data && data.kind === 'tags') b.innerHTML = tgBody(data); }
 async function tagsVote(d, i, v) {
@@ -5782,8 +5820,17 @@ let tgWired = false;
 function tagsWire() {
     if (tgWired) return; tgWired = true;
     document.addEventListener('click', ev => {
-        const b = ehOn && data && data.kind === 'tags' && ev.target.closest('[data-tgset],[data-tgvote],[data-tgf]'); if (!b) return;
+        const b = ehOn && data && data.kind === 'tags' && ev.target.closest('[data-tgset],[data-tgvote],[data-tgf],[data-tgnew]'); if (!b) return;
         const d = data;
+        if (b.dataset.tgnew) {
+            const [a, k] = b.dataset.tgnew.split(':');
+            if (a === 'open') { d.ao = true; tgNewDraw(d, true); }
+            else if (a === 'close') { d.ao = false; d.nt = []; tgNewDraw(d); }
+            else if (a === 'rm') { d.nt.splice(+k, 1); tgNewDraw(d, true); }
+            else if (a === 'pick') tgPush(d, d.acs[+k]);
+            else if (a === 'go') tgCommit(d);
+            return;
+        }
         if (b.dataset.tgf) {
             if (b.dataset.tgf === 'clr' || d.fo || d.q) { d.q = ''; d.fo = b.dataset.tgf === 'clr'; } else d.fo = true;
             const tl = $('.tg-tools'); if (tl) tl.innerHTML = tgTools(d); tagsDraw(); const i = $('#tg-q'); if (i) i.focus(); return;
@@ -5795,6 +5842,21 @@ function tagsWire() {
         if (k === 'view') { S[d.ent ? 'etagView' : 'tagView'] = v; save(); }
         if (k === 'so' || k === 'sc') { S.tagSort = d.so; S.tagScope = d.sc; save(); }
         const tl = $('.tg-tools'); if (tl) { tl.innerHTML = tgTools(d); } tagsDraw();
+    });
+    document.addEventListener('input', ev => {
+        if (!ehOn || !data || data.kind !== 'tags' || ev.target.id !== 'tg-new') return;
+        // a comma ends the tag, as typed
+        const v = ev.target.value; if (v.includes(',')) { const ps = v.split(','), last = ps.pop(); ps.forEach(x => { x = x.trim().toLowerCase(); if (x && !(data.nt = data.nt || []).includes(x)) data.nt.push(x); }); tgNewDraw(data, true); $('#tg-new').value = last; }
+        tgAc(data);
+    });
+    document.addEventListener('keydown', ev => {
+        if (!ehOn || !data || data.kind !== 'tags' || ev.target.id !== 'tg-new') return;
+        const d = data, i = ev.target;
+        if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); tgCommit(d); }
+        // Enter takes the first suggestion, else what's typed
+        else if (ev.key === 'Enter') { ev.preventDefault(); const x = (d.acs && d.acs[0] && i.value.trim()) ? d.acs[0] : i.value; if (x.trim()) tgPush(d, x); }
+        else if (ev.key === 'Escape') { ev.preventDefault(); d.ao = false; d.nt = []; tgNewDraw(d); }
+        else if (ev.key === 'Backspace' && !i.value && (d.nt || []).length) { d.nt.pop(); tgNewDraw(d, true); }
     });
     document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'tags' && ev.target.matches('[data-tgq]')) { data.q = ev.target.value; tagsDraw(); const fn = $('.tg-tools .fn'), cl = $('.tg-tools .fdone'); if (fn) fn.textContent = `${tgList(data).length} of ${(data.ent || !data.dn ? (data.t ? data.t.tags : []) : data.down || []).length}`; else if (data.q && !cl) { const at = ev.target.selectionStart, tl = $('.tg-tools'); tl.innerHTML = tgTools(data); const i = $('#tg-q'); i.focus(); i.setSelectionRange(at, at); } } });
     document.addEventListener('submit', ev => { const f = ev.target; if (!ehOn || !data || data.kind !== 'tags' || !f.matches('[data-tgadd]')) return; ev.preventDefault(); const i = f.querySelector('input'); tagsAdd(data, i.value); i.value = ''; });
