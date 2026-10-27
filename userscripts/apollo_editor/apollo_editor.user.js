@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.121500
+// @version      2026.10.27.203000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15003,7 +15003,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // the entity the form edits, as an icon and its type before the name: an artist's edit page and a label's looked alike
   const ENT_KIND_ICON = {
     artist: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
-    'release-group': '<rect x="3" y="7" width="14" height="14" rx="1"/><path d="M7 3h14v14"/>',
+    'release-group': '<path d="m12 3 9 4.5-9 4.5-9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/>',   // Event Horizon's layers
     label: '<path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
     place: '<path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
     work: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
@@ -15037,7 +15037,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       bar.append(left, title, pager);
       form.before(bar);
     }
-    const en = document.getElementById('tc-rg-enter'); if (en) mbuProp(en.style, 'display', rgDirty(form) ? '' : 'none');
+    const en = document.getElementById('tc-rg-enter'); if (en) mbuProp(en.style, 'visibility', rgDirty(form) ? '' : 'hidden');   // keeps its place: the bar doesn't shift when it shows
     const t = document.getElementById('tc-nav-title'), name = (document.getElementById('id-edit-' + ENT_KIND + '.name') || {}).value || '';
     const sig = name + '\x01' + rgKey();
     if (t && t.dataset.sig !== sig) {
