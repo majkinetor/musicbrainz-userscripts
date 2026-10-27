@@ -19,6 +19,19 @@ for (const [form, name] of [['set-cover-art', 'Set cover art'], ['edit_annotatio
   });
 }
 
+// any other entity's annotation wears the common entity header: its picture, else its kind's mark
+test('an artist\'s annotation form wears the entity header', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  const AR = 'a74b1b7f-71a5-4011-9441-d0b5e4122711';
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}/edit_annotation`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await settled(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator(`#eh-relhd h1 a[href$="/artist/${AR}"]`).count(), n => n === 1) === 1, 'the header shows, its title linking to the artist');
+  check(await until(() => page.locator('#eh-relhd :is(.rhcv:not([hidden]),.rhic:not([hidden]))').count(), n => n === 1) === 1, 'the header shows a picture or the kind\'s mark');
+  check(await page.locator('#eh-relhd .kicker svg').count() > 0, 'the kicker carries the kind\'s mark');
+  await attachShot(testInfo, page, 'artist-annotation');
+});
+
 // the release group's Edit opens both forms on hover, and its cover offers Set cover art
 test('the release group page leads to its forms', { tag: ['@sandbox'] }, async ({ page, inject }) => {
   await page.goto(`https://test.musicbrainz.org/release-group/${RG}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
