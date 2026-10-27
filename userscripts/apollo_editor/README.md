@@ -64,7 +64,7 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 
 ## Aliases
 
-An entity's **Add alias** page becomes a table of all its aliases, so several are added, changed and removed with one edit note.
+An entity's **Add alias** page becomes a table of all its aliases, so several are added, changed and removed at once.
 
 - Each line is one alias: name, sort name, **☆** primary for its locale, and the locale, which filters as you type. **⋯** opens its type and begin and end dates; once set, they show as a pill on the line.
 - The last line is empty: type a name there to add an alias, and a new empty line follows. A new alias takes the locale you picked last.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.023134
+// @version      2026.10.27.023634
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15883,8 +15883,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     // B layout: one line per alias (name, sort name with its guess, primary, a pill for type and dates, locale last);
     // type and dates fold under the row's ⋯; the last line is always empty, typing in it starts the next alias
     box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
-      + '<div class="tc-al-list"></div><datalist id="tc-al-locs">' + locales.filter(o => o.v).map(o => '<option value="' + esc(o.t) + '">').join('') + '</datalist>'
-      + '<label class="tc-al-notel">Edit note<textarea class="tc-al-note" rows="3"></textarea></label>'
+      + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span title="Primary for its locale">\u2605</span><span>Type \u00b7 dates</span><span>Locale</span></div><div class="tc-al-list"></div><datalist id="tc-al-locs">' + locales.filter(o => o.v).map(o => '<option value="' + esc(o.t) + '">').join('') + '</datalist>'
       + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" disabled>Submit</button></div>';
     if (list) { const h = mbPart || document.querySelector('#content h2:last-of-type'); if (mbPart) { mbPart.before(box); mbPart.style.display = 'none'; } else if (h) h.after(box); else document.getElementById('content')?.appendChild(box); }
     else { form.before(box); form.style.display = 'none'; }
@@ -15948,7 +15947,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc != null ? loc : SETTINGS.aliasLocale || '', primary: false, type: typ || '', begin: '', end: '' });
     const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
     go.onclick = async () => {
-      const note = box.querySelector('.tc-al-note').value.trim();
+      const note = '';
       const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
       go.disabled = true; let ok = 0, bad = 0;
       for (const r of todo) {
@@ -16021,22 +16020,28 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias{font:13px var(--mbu-font, inherit);color:var(--mbu-text);margin:8px 0 16px}
     #tc-alias .tc-al-bar,#tc-alias .tc-al-foot{display:flex;gap:8px;align-items:center;margin:6px 0}
     #tc-alias .tc-al-sum,#tc-alias .tc-al-msg{color:var(--mbu-text-weak)}
-    #tc-alias input:not([type=checkbox]),#tc-alias select,#tc-alias textarea{box-sizing:border-box;width:100%;background:var(--mbu-bg) !important;color:var(--mbu-text) !important;border:1px solid var(--mbu-border);border-radius:3px;padding:3px 6px;font:inherit}
-    #tc-alias .tc-al-list{border-top:1px solid var(--mbu-border)}
-    #tc-alias .tc-al-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:4px 4px;border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
-    #tc-alias .tc-al-row > .tc-al-n{flex:3 1 160px}
-    #tc-alias .tc-al-sw{flex:3 1 160px;position:relative;display:flex}
-    #tc-alias .tc-al-sw .tc-al-s{padding-right:30px}
-    #tc-alias .tc-al-g{position:absolute;right:2px;top:50%;transform:translateY(-50%);padding:1px 5px;font:600 11px var(--mbu-font, inherit)}
-    #tc-alias .tc-al-l{flex:2 1 120px;width:auto}
-    #tc-alias .tc-al-l.tc-al-bad{border-color:#d33!important}
-    #tc-alias .tc-al-p{font-size:16px;line-height:1;min-width:26px;color:var(--mbu-text-weak)}
+    #tc-alias{max-width:1100px}
+    #tc-alias input:not([type=checkbox]),#tc-alias select{box-sizing:border-box;width:100%;min-width:0;background:transparent !important;color:var(--mbu-text) !important;border:0;border-bottom:1px solid transparent;border-radius:0;padding:3px 4px;font:inherit;outline:0;filter:none!important}
+    #tc-alias input:not([type=checkbox]):hover,#tc-alias select:hover{border-bottom-color:var(--mbu-border)}
+    #tc-alias input:not([type=checkbox]):focus,#tc-alias select:focus{border-bottom-color:var(--mbu-accent)}
+    #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) 26px minmax(0,1.6fr) minmax(0,2fr) 26px 26px;gap:4px;align-items:center;padding:1px 4px}
+    #tc-alias .tc-al-head{font-weight:600;font-size:12px;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border);padding-bottom:3px}
+    #tc-alias .tc-al-head span:nth-child(3){text-align:center}
+    #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
+    #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
+    #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}
+    #tc-alias .tc-al-g{position:absolute;right:0;top:50%;transform:translateY(-50%);padding:1px 4px;font:600 11px var(--mbu-font, inherit);opacity:0}
+    #tc-alias .tc-al-row:hover .tc-al-g,#tc-alias .tc-al-g:focus{opacity:1}
+    #tc-alias .tc-al-p{font-size:15px;line-height:1;color:var(--mbu-text-weak)}
     #tc-alias .tc-al-p.on{color:#e0a800}
-    #tc-alias .tc-al-tp{border-radius:10px;padding:1px 8px;font-size:11px;background:var(--mbu-border)!important;color:var(--mbu-text)!important;white-space:nowrap}
-    #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-more,#tc-alias .tc-al-x{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important}
-    #tc-alias .tc-al-more,#tc-alias .tc-al-x{min-width:26px;min-height:24px;font-size:14px}
+    #tc-alias .tc-al-tp{justify-self:start;max-width:100%;overflow:hidden;text-overflow:ellipsis;border-radius:9px;padding:0 7px;font-size:11px;line-height:17px;background:var(--mbu-border)!important;color:var(--mbu-text)!important;white-space:nowrap;border:0;cursor:pointer;filter:none!important}
+    #tc-alias .tc-al-tp[hidden]{display:block;visibility:hidden}
+    #tc-alias .tc-al-l.tc-al-bad{border-bottom-color:#d33!important}
+    #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-more,#tc-alias .tc-al-x{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
+    #tc-alias .tc-al-more,#tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
     #tc-alias :is(.tc-al-g,.tc-al-more,.tc-al-x,.tc-al-p):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
-    #tc-alias .tc-al-det{display:none;flex-basis:100%;gap:12px;align-items:center;padding:2px 0 4px}
+    #content:has(#tc-alias) > p:has(> a[href$="/add-alias"]){display:none}
+    #tc-alias .tc-al-det{display:none;grid-column:1/-1;gap:12px;align-items:center;padding:2px 0 4px}
     #tc-alias .tc-al-open .tc-al-det{display:flex}
     #tc-alias .tc-al-det label{display:flex;gap:4px;align-items:center;color:var(--mbu-text-weak)}
     #tc-alias .tc-al-det select{width:auto}
@@ -16047,7 +16052,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-alias .tc-al-row.tc-al-del{background:rgba(220,60,60,.16)}
     #tc-alias .tc-al-row.tc-al-del input{text-decoration:line-through}
     #tc-alias .tc-al-row.tc-al-err{box-shadow:inset 0 -2px 0 #d33}
-    #tc-alias .tc-al-notel{display:block;margin-top:10px}
     #tc-alias .tc-al-det .tc-al-b,#tc-alias .tc-al-det .tc-al-e{width:110px}
     #tc-alias .tc-al-go{background:var(--mbu-accent) !important;color:var(--mbu-accent-text, #fff) !important;border:0;border-radius:3px;padding:4px 12px;font-weight:600}
     #tc-alias .tc-al-go:disabled{opacity:.5}
