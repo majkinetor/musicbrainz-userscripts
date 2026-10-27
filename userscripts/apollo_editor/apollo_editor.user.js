@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.025536
+// @version      2026.10.27.025645
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15970,11 +15970,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       // a new alias's sort name follows its name until it is typed by hand
       r.autoSort = !r.id && (!r.sort || r.sort === guess(r.name));
       const read = ev => {
-        const wasEmpty = !r.name.trim();
         r.name = $('.tc-al-n').value;
-        if (ev && ev.target === locIn) r.locTouched = true;
-        // the empty last line shows no locale; a new alias takes the locale picked last once it has a name
-        if (!r.id && wasEmpty && r.name.trim() && !r.locTouched && !locIn.value && SETTINGS.aliasLocale) { locIn.value = locName(SETTINGS.aliasLocale); locIn.dataset.v = SETTINGS.aliasLocale; }
         if (ev && ev.target === $('.tc-al-s')) r.autoSort = !$('.tc-al-s').value;
         if (ev && ev.target === $('.tc-al-n') && r.autoSort) $('.tc-al-s').value = r.name.trim() ? guess(r.name.trim()) : '';
         r.sort = $('.tc-al-s').value;
@@ -15989,7 +15985,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const d = normDate(inp.value); inp.classList.toggle('tc-al-bad', d === null);
           if (d !== null) { r[k] = d; if (ev && ev.type === 'change' && ev.target === inp) inp.value = d; } else r[k] = inp.value.trim();
         }
-        if (ev && ev.target === locIn && !locIn.classList.contains('tc-al-bad') && SETTINGS.aliasLocale !== r.locale) { SETTINGS.aliasLocale = r.locale; saveSettings(); }
         if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
         sync();
       };
@@ -16010,8 +16005,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       return r;
     };
     const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc || '', primary: false, type: typ || '', begin: '', end: '' });
-    // a seeded alias takes the locale picked last
-    const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc != null ? loc : SETTINGS.aliasLocale || '', typ);
+    const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
     go.onclick = async () => {
       const note = '';
       const todo = rows.filter(r => { const s = state(r); return s === 'del' || (s && r.name.trim()); });
