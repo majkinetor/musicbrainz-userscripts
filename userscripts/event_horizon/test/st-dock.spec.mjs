@@ -40,10 +40,13 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(mc.y + mc.height <= dock.y, 'above the dock');
   await page.mouse.move(10, 10);
   await attachShot(testInfo, page, 'dock-open');
-  check(await page.locator('#mb-pc-dock').evaluate(e => getComputedStyle(e, '::after').display) === 'block', 'Platform Check shows its name');
+  // no names beside the entries, only a state where one has it: ISRC Scout's count
+  check(await page.locator('#mb-pc-dock').evaluate(e => getComputedStyle(e, '::after').content) === 'none', 'Platform Check shows no name');
+  check(await until(() => page.locator('#ii-dock').evaluate(e => getComputedStyle(e, '::after').content), c => /d/.test(c)) !== null, 'ISRC Scout shows its count');
   await page.evaluate(() => { localStorage.setItem('mbu.cornerFlow', '"row"'); });
   await page.locator('#mbu-dock').click(); await page.locator('#mbu-dock').click();
   await attachShot(testInfo, page, 'dock-row');
+  check(await page.locator('#ii-dock').evaluate(e => getComputedStyle(e, '::after').bottom) !== 'auto', 'its count goes over the icon in a row');
   await page.evaluate(() => { localStorage.removeItem('mbu.cornerFlow'); });
   // to the artist inside EH: Mission Control runs on release pages only, and stays behind
   await page.locator('#app a[href*="/artist/"]').first().click();

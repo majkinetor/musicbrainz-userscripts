@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.213510
+// @version      2026.10.27.231500
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -661,8 +661,20 @@ function discover() {
 
 // Read once from the rendered page, no request: the header and the tracklist
 // are already there.
+// The page MC started on (#847): Event Horizon swaps the body for its own and moves to other pages
+// without loading them, so the release is read from MusicBrainz's body, and a release reached inside
+// Event Horizon (no MC, Platform Check or the others ran for it) is loaded first.
+const MC_HOME = location.pathname;
+let mcBody = null;
+function mcPage() {
+    if (document.querySelector('.releaseheader')) return (mcBody = document.body, document);
+    return mcBody || document;
+}
+mcPage();   // at the start, before Event Horizon can swap the body
+function mcElsewhere() { if (location.pathname === MC_HOME) return false; location.reload(); return true; }
 function readRelease() {
-    const h = document.querySelector('.releaseheader');
+    const D = mcPage();
+    const h = D.querySelector('.releaseheader');
     // the h1's own link: other scripts append to the h1 (ISRC Scout's "ISRC ✓ 12/12")
     const h1 = h && h.querySelector('h1');
     const tl = h1 && (h1.querySelector('a[href*="/release/"] bdi') || h1.querySelector('a[href*="/release/"]'));
@@ -672,12 +684,12 @@ function readRelease() {
     const va = h && (h.querySelector('.subheader .small a[href*="/release-group/"]') || Array.from(h.querySelectorAll('.subheader a')).find(x => /version/i.test(x.textContent || '')));   // #722 by its address
     const vn = va && (va.textContent.match(/(\d+)/) || [])[1];
     const versions = va ? { href: va.href, text: vn ? vn + (vn === '1' ? ' version' : ' versions') : 'all versions' } : null;
-    const cover = document.querySelector('.cover-art img');
-    const fmt = document.querySelector('#sidebar dd.format');
+    const cover = D.querySelector('.cover-art img');
+    const fmt = D.querySelector('#sidebar dd.format');
     const format = fmt ? fmt.textContent.trim() : '';
     const tracks = [];
     let medium = 0;
-    document.querySelectorAll('#content table.medium').forEach(tbl => {
+    D.querySelectorAll('#content table.medium').forEach(tbl => {
         medium++;
         tbl.querySelectorAll('tbody tr').forEach(tr => {
             const rec = tr.querySelector('a[href*="/recording/"]');
@@ -692,11 +704,11 @@ function readRelease() {
     });
     Log.cat('Release').info('release: "' + title + '" by ' + (artist || '?') + ' · ' + location.origin + '/release/' + RELEASE + ' · ' + tracks.length + ' tracks on ' + medium + ' medium(s) · format ' + (format || '?'));
     // #782: the release's events, from the JSON its sidebar embeds after the heading (none: no heading)
-    const evh = document.querySelector('#sidebar h2.release-events');
+    const evh = D.querySelector('#sidebar h2.release-events');
     let events = 0;
     if (evh) { try { events = (JSON.parse((evh.nextElementSibling || {}).textContent || '{}').events || []).length; } catch (e) { events = 1; } }
     // #785: the release's language (ISO 639-3) from its sidebar link's address (a search for lang:"eng"), for guess case
-    const la = document.querySelector('#sidebar dd.language a[href*="lang"]');
+    const la = D.querySelector('#sidebar dd.language a[href*="lang"]');
     let language = null;
     try { language = la ? (decodeURIComponent(la.getAttribute('href')).match(/lang:"?([a-z]{3})\b/) || [])[1] || null : null; } catch (e) { language = null; }
     return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format, versions, events, language };
@@ -4479,7 +4491,7 @@ function ccLauncher() {
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control — the consolidation';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match
-    b.onclick = () => { b.remove(); mbRestackCorner('br'); ccOpen(); };
+    b.onclick = () => { if (mcElsewhere()) return; b.remove(); mbRestackCorner('br'); ccOpen(); };
     document.body.appendChild(b);
     mbRestackCorner('br');
 }
@@ -4913,7 +4925,7 @@ function launcher() {
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control\nRight-click: settings';
     b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match   // highest priority: closest to the corner
-    b.onclick = () => open();
+    b.onclick = () => { if (!mcElsewhere()) open(); };
     b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(b);
     mbRestackCorner('br');
@@ -5267,10 +5279,12 @@ function mbuDock() {
             + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
             + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
             + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}'
-            + '[data-mbu-docked=show]::after{content:attr(data-mb-corner-label);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;padding:4px 10px;border-radius:14px;background:#fff;color:#1f1d2b;border:1px solid #dcd9e6;box-shadow:0 2px 6px rgba(0,0,0,.2);font:500 12px/1.3 system-ui,sans-serif;pointer-events:none}'
-            + ':root[data-mbu-side=left] [data-mbu-docked=show]::after{right:auto;left:calc(100% + 8px)}'
-            // in a row the names would cover each other: the launchers' tooltips name them there
-            + ':root[data-mbu-flow=row] [data-mbu-docked=show]::after{display:none}'
+            // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
+            // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
+            + '.mbu-dock-item,#mbu-dock{filter:none!important}'
+            + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#ba478f;font:700 12px/1 system-ui,sans-serif;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff;pointer-events:none}'
+            + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
+            + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
             + '[data-mbu-docked=show]:hover::after{display:none}';
         root.appendChild(css);
     }
@@ -5307,7 +5321,7 @@ function mbuDock() {
 // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
 // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
 // paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
-// with .status(text) to show a short state after its name.
+// with .status(text) to show a short state (a count) beside it.
 function mbuDockItem(o) {
     var b = document.getElementById(o.id);
     if (!b) {
@@ -5318,7 +5332,8 @@ function mbuDockItem(o) {
         b.onclick = o.click;
         document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
     }
-    b.status = function (t) { b.dataset.mbCornerLabel = o.label + (t ? ' · ' + t : ''); };
+    b.dataset.mbCornerLabel = o.label;
+    b.status = function (t) { if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
     b.status('');
     mbRestackCorner('br');
     return b;
