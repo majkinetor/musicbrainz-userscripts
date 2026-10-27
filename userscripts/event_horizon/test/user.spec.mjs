@@ -19,7 +19,7 @@ for (const [path, form] of [['/account/edit', 'Edit profile'], ['/account/prefer
   test(`an editor's ${form.toLowerCase()} page keeps MusicBrainz's page under the editor's header`, { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
     await page.goto('https://test.musicbrainz.org' + path);
     await inject('event_horizon');
-    check(await until(() => page.locator('#eh-relhd .kicker').textContent(), t => t && t.includes(form)), 'the header names the page');
+    check(await until(() => page.locator('#eh-relhd .u-nt.on').textContent(), t => t && t.includes(form)), 'the header marks the page');
     check(await page.locator('#eh-relhd .u-nt').count() >= 3, 'the editor\'s tabs are in the header');
     check(!(await page.locator('#content ul.tabs').isVisible()), 'MusicBrainz\'s own tabs hide');
     check(await page.locator('#eh-relhd .u-av').evaluate(e => getComputedStyle(e).borderRadius) === '50%', 'EH\'s styles apply, CSP or not');

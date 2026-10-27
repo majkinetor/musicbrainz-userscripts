@@ -29,7 +29,7 @@ test('an entity\'s tags show in every view, genres apart, with the filter', { ta
 test('an editor\'s tags open in place', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/user/majkinetor/tags');
   await inject('event_horizon');
-  check(/Tags/.test(await until(() => page.locator('.u-hero .kicker').textContent().catch(() => ''), t => /Tags/.test(t))), 'the tags page shows');
+  check(/Tags/.test(await until(() => page.locator('.u-nav .u-nt.on').textContent().catch(() => ''), t => /Tags/.test(t))), 'the tags page shows');
   check(await until(() => page.locator('#tg-body').textContent(), t => !/Loading/.test(t)).then(t => !/Loading/.test(t)), 'the tags load');
   await attachShot(testInfo, page, 'editor');
 });
@@ -59,8 +59,8 @@ test('tags are added as tokens: Enter takes a suggestion, a comma ends one, Ctrl
 test('an editor\'s ratings open in place: a card per type, in every view, with the stars to filter by', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/user/majkinetor/ratings');
   await inject('event_horizon');
-  check(/Ratings/.test(await until(() => page.locator('.u-hero .kicker').textContent().catch(() => ''), t => /Ratings/.test(t))), 'the ratings page shows');
-  check(!/Loading/.test(await until(() => page.locator('.u-hero .u-sub').textContent(), t => !/Loading/.test(t))), 'the ratings load');
+  check(/Ratings/.test(await until(() => page.locator('.u-nav .u-nt.on').textContent().catch(() => ''), t => /Ratings/.test(t))), 'the ratings page shows');
+  check(!/Loading/.test(await until(() => page.locator('.u-pbar .u-sub').textContent(), t => !/Loading/.test(t))), 'the ratings load');
   await attachShot(testInfo, page, 'row');
   for (const v of ['grid', 'table']) { await page.click(`[data-rtview="${v}"]`); await attachShot(testInfo, page, v); }
   await page.click('[data-rtview="row"]');
