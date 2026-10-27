@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.082308
+// @version      2026.10.27.082914
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2162,7 +2162,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
 .rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
-.eh-edit{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted, currentColor);cursor:pointer;vertical-align:middle}.eh-edit:hover{color:var(--link);background:color-mix(in srgb, var(--link) 14%, transparent)}.eh-edit svg{width:16px;height:16px}#eh-aliases{font:14px Manrope,system-ui,sans-serif}#eh-aliases .eh-al{width:min(820px,94vw)}#eh-aliases .eh-al-n{font-weight:400;opacity:.6}#eh-aliases .eh-al-tab{margin-left:auto;margin-right:12px;font-size:13px;color:var(--mbu-accent-text, var(--mbu-accent));text-decoration:none}#eh-aliases .eh-al-tab:hover{text-decoration:underline}#eh-aliases #tc-alias{margin:0}
+.eh-edit{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted, currentColor);cursor:pointer;vertical-align:middle}.eh-edit:hover{color:var(--link);background:color-mix(in srgb, var(--link) 14%, transparent)}.eh-edit svg{width:16px;height:16px}#eh-aliases{font:14px Manrope,system-ui,sans-serif}.als-end{opacity:.55;text-decoration:line-through}#eh-aliases .eh-al{width:min(820px,94vw)}#eh-aliases .eh-al-n{font-weight:400;opacity:.6}#eh-aliases .eh-al-tab{margin-left:auto;margin-right:12px;font-size:13px;color:var(--mbu-accent-text, var(--mbu-accent));text-decoration:none}#eh-aliases .eh-al-tab:hover{text-decoration:underline}#eh-aliases #tc-alias{margin:0}
 .lnk{font-size:13px;font-weight:700;background:none;border:0;color:var(--link);cursor:pointer;padding:0 4px}
 
 .popwrap{position:relative;display:inline-flex}
@@ -3153,7 +3153,7 @@ function group(g) {
         types: [g['primary-type'], ...(g['secondary-types'] || [])].filter(Boolean), first: g['first-release-date'] || '',
         rating: g.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (g.tags || []).filter(t => !gn.has(t.name)).sort((a, b) => b.count - a.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((g.aliases || []).map(a => a.name))], annotation: g.annotation || '',
+        aliases: [...new Set((g.aliases || []).map(aliasName))], annotation: g.annotation || '',
         links: urlsOf(g.relations || []), rg: { title: g.title, rels: g.relations || [] },
     };
 }
@@ -3174,8 +3174,13 @@ const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class=
 // a few aliases inline; a +N button shows the rest
 // the first four aliases, the rest in a popover behind +N
 // and a pencil that opens the alias editor in a popup
+// an alias that has ended (MusicBrainz's "no longer current") is muted and struck in the list; a name some
+// current alias also carries isn't
+const ALIAS_ENDED = new Set(), ALIAS_LIVE = new Set();
+const aliasName = x => { (x.ended ? ALIAS_ENDED : ALIAS_LIVE).add(x.name); return x.name; };
+const aliasSpan = (a, tag) => ALIAS_ENDED.has(a) && !ALIAS_LIVE.has(a) ? `<${tag} class="als-end" data-tip="No longer current">${esc(a)}</${tag}>` : `<${tag}>${esc(a)}</${tag}>`;
 const aliasesHref = () => { const m = location.pathname.match(/^\/[a-z-]+\/[0-9a-f-]{36}/i); return m ? MB + m[0] + '/aliases' : ''; };
-const aliasList = as => { const n = 4, h = aliasesHref(), go = h ? `<button type="button" class="eh-edit als-go" data-aliases="1" aria-label="${as.length ? 'Edit the aliases' : 'Add aliases'}" data-tip="${as.length ? 'Edit the aliases' : 'Add aliases'}">${MBU_EDIT_ICON}</button>` : ''; if (!as.length && !go) return ''; return `<div class="als">${as.slice(0, n).map(a => `<span>${esc(a)}</span>`).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => `<div>${esc(a)}</div>`).join('')}</div></span>` : ''}${go}</div>`; };
+const aliasList = as => { const n = 4, h = aliasesHref(), go = h ? `<button type="button" class="eh-edit als-go" data-aliases="1" aria-label="${as.length ? 'Edit the aliases' : 'Add aliases'}" data-tip="${as.length ? 'Edit the aliases' : 'Add aliases'}">${MBU_EDIT_ICON}</button>` : ''; if (!as.length && !go) return ''; return `<div class="als">${as.slice(0, n).map(a => aliasSpan(a, 'span')).join('')}${as.length > n ? `<span class="popwrap"><button class="chip pn" type="button" data-pop="als" aria-expanded="false" data-tip="${as.length - n} more aliases">+${as.length - n}</button><div class="pop ra-pop" id="pop-als" hidden><div class="h label">${as.length} aliases</div>${as.map(a => aliasSpan(a, 'div')).join('')}</div></span>` : ''}${go}</div>`; };
 function rgHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
@@ -4481,7 +4486,9 @@ const mbuAliasEditor = (() => {
         const [begin, end, typeT, locT] = rest;
         const primary = /\(primary\)/i.test(locT || ''), locName = (locT || '').replace(/\s*\(primary\)\s*$/i, '');
         const loc = locales.find(o => o.t === locName), typ = types.find(o => o.t === typeT);
-        rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: begin || '', end: end || '', ended: !!end });
+        // an alias ended without a date has "[unknown]" (translated) for its end: any end that isn't a date
+        const dt = s => /^\d{4}(-\d\d){0,2}$/.test((s || '').trim()) ? s.trim() : '';
+        rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: dt(begin), end: dt(end), ended: !!(end || '').trim() });
       }
       // MusicBrainz lists them by locale; the editor keeps the order they were added in
       rows.sort((a, b) => a.id - b.id);
@@ -4884,7 +4891,7 @@ function artist(a) {
         area: a.area, begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, beginArea: a['begin-area'], endArea: a['end-area'],
         rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         ipis: a.ipis || [], isnis: a.isnis || [], links: urlsOf(a.relations || []), rels: a.relations || [], imgs: [],
     };
 }
@@ -4913,7 +4920,7 @@ function label(l) {
         id: l.id, title: l.name, disambig: l.disambiguation, type: l.type || '', area: l.area, code: l['label-code'],
         begin: ls.begin || '', end: ls.end || '', ended: !!ls.ended, rating: l.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (l.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((l.aliases || []).map(x => x.name))].filter(n => n !== l.name), annotation: l.annotation || '',
+        aliases: [...new Set((l.aliases || []).map(aliasName))].filter(n => n !== l.name), annotation: l.annotation || '',
         ipis: l.ipis || [], isnis: l.isnis || [], links: urlsOf(l.relations || []), rels: l.relations || [], imgs: [],
     };
 }
@@ -4987,7 +4994,7 @@ function recording(x) {
     return {
         id: x.id, title: x.title, disambig: x.disambiguation, ac: x['artist-credit'] || [], len: x.length || 0, video: !!x.video,
         first: x['first-release-date'] || '', isrcs: x.isrcs || [], rating: x.rating || {}, genres: genres.slice(0, 5).map(g => g.name), tags: tagsOf(x, gn),
-        aliases: [...new Set((x.aliases || []).map(a => a.name))].filter(n => n !== x.title), annotation: x.annotation || '',
+        aliases: [...new Set((x.aliases || []).map(aliasName))].filter(n => n !== x.title), annotation: x.annotation || '',
         cr: creditsOf(rels), links: urlsOf(rels),
         works: rels.filter(r => r['target-type'] === 'work').map(r => Object.assign(wkOf(r.work), { perf: r.attributes || [] })),
     };
@@ -5003,7 +5010,7 @@ function work(w) {
     const genres = genresOf(w), gn = new Set(genres.map(g => g.name)), rels = w.relations || [];
     return Object.assign(wkOf(w), {
         disambig: w.disambiguation, rating: w.rating || {}, genres: genres.slice(0, 5).map(g => g.name), tags: tagsOf(w, gn),
-        aliases: [...new Set((w.aliases || []).map(a => a.name))].filter(n => n !== w.title), annotation: w.annotation || '', links: urlsOf(rels),
+        aliases: [...new Set((w.aliases || []).map(aliasName))].filter(n => n !== w.title), annotation: w.annotation || '', links: urlsOf(rels),
         related: rels.filter(r => r['target-type'] === 'work').map(r => ({ role: phrase(r) + (r.direction === 'backward' ? ' of' : ''), id: r.work.id, title: r.work.title })),
     });
 }
@@ -5087,7 +5094,7 @@ function area(a) {
         partOf: ar.filter(x => x.direction === 'backward').map(x => x.area), parts: ar.filter(x => x.direction === 'forward').map(x => x.area),
         rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(a.relations || []), rels: a.relations || [], imgs: [],
         anthem: relsTo(a, 'work', 'anthem'), instruments: relsTo(a, 'instrument', 'instrument origin'),
         held: [...relsTo(a, 'series', 'held in'), ...relsTo(a, 'event', 'held in')],
@@ -5196,7 +5203,7 @@ function instrument(a) {
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', desc: a.description || '', groups,
         img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels.filter(x => x.type !== 'image')), rels,
     };
 }
@@ -5330,7 +5337,7 @@ function place(a) {
         address: a.address || '', area: a.area || null, coords: c && c.latitude != null ? [+c.latitude, +c.longitude] : null, groups,
         img: im ? im.url.resource : '', rating: a.rating || {}, genres: genres.slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels.filter(x => x.type !== 'image')), rels, imgs: [],
     };
 }
@@ -5383,7 +5390,7 @@ function event(a) {
         cancelled: !!a.cancelled, setlist: a.setlist || '', groups, rating: a.rating || {},
         genres: (a.genres || []).sort((x, y) => y.count - x.count).slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels), rels, imgs: [],
     };
 }
@@ -5439,7 +5446,7 @@ function series(a) {
         id: a.id, title: a.name, disambig: a.disambiguation, type: a.type || '', groups, rating: {},
         genres: (a.genres || []).sort((x, y) => y.count - x.count).slice(0, 5).map(x => x.name),
         tags: (a.tags || []).filter(t => !gn.has(t.name)).sort((x, y) => y.count - x.count).slice(0, 8).map(t => t.name),
-        aliases: [...new Set((a.aliases || []).map(x => x.name))].filter(n => n !== a.name), annotation: a.annotation || '',
+        aliases: [...new Set((a.aliases || []).map(aliasName))].filter(n => n !== a.name), annotation: a.annotation || '',
         links: urlsOf(rels), rels, imgs: [],
     };
 }

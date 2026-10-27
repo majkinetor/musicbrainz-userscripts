@@ -41,7 +41,9 @@ const mbuAliasEditor = (() => {
         const [begin, end, typeT, locT] = rest;
         const primary = /\(primary\)/i.test(locT || ''), locName = (locT || '').replace(/\s*\(primary\)\s*$/i, '');
         const loc = locales.find(o => o.t === locName), typ = types.find(o => o.t === typeT);
-        rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: begin || '', end: end || '', ended: !!end });
+        // an alias ended without a date has "[unknown]" (translated) for its end: any end that isn't a date
+        const dt = s => /^\d{4}(-\d\d){0,2}$/.test((s || '').trim()) ? s.trim() : '';
+        rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: dt(begin), end: dt(end), ended: !!(end || '').trim() });
       }
       // MusicBrainz lists them by locale; the editor keeps the order they were added in
       rows.sort((a, b) => a.id - b.id);
