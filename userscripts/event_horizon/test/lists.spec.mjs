@@ -2,6 +2,22 @@ import { test, check, until, attachShot } from '../../../dev/test/harness.mjs';
 
 test.use({ gm: { name: 'Event Horizon' } });
 
+// the discography table has MB's own columns, Rating and Releases, and the groups' links; the release counts fill in on their own
+test('the discography table shows ratings, release counts and links', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d');
+  await inject('event_horizon');
+  const tbl = page.locator('#s-dg [data-dgview="table"]');
+  check(await until(() => tbl.count(), n => n === 1) === 1, 'the discography has a table view');
+  await tbl.click();
+  const heads = await until(() => page.locator('#s-dg thead th').allInnerTexts(), t => t.some(x => /title/i.test(x)));
+  for (const h of ['Rating', 'Releases', 'Links']) check(heads.some(t => t.toLowerCase().includes(h.toLowerCase())), `the table has a ${h} column`);
+  check(await until(() => page.locator('#s-dg tbody td .stars.sm').count(), n => n > 0) > 0, 'each row has its stars');
+  const counts = () => page.locator('#s-dg tbody td.num').allInnerTexts().then(t => t.filter(x => /^\d+$/.test(x.trim())).length);
+  check(await until(counts, n => n > 0) > 0, 'the release counts fill in');
+  check(await page.locator('#s-dg tbody td.lk a').count() > 0, 'some groups show their links');
+  await attachShot(testInfo, page, 'disco-table');
+});
+
 // #845: a paged list ends in "Load more" and Auto; Auto off, the button loads the next page, and toggling Auto keeps the page still
 test('an area list loads its next page with Load more, and Auto keeps the page still', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
   await page.goto('https://test.musicbrainz.org/area/02b60d8d-7164-339d-868d-22d147d9f74a');

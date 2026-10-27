@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.26.222555
+// @version      2026.10.27.073904
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2100,6 +2100,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
+.stars.sm{font-size:14px;letter-spacing:1px;white-space:nowrap}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
 .disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;margin-left:.5em;letter-spacing:0;white-space:normal}
 .by{font-size:16px;font-weight:600}
@@ -2808,7 +2809,9 @@ function under(r, more = '') {
     const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
-const thumbOf = i => (i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
+// a table's rating cell: five small stars, lit as many as the rating, all dim with none (as MB's tables show it)
+const starsTd = (rt = {}) => { const v = rt.value, n = rt['votes-count'] || 0, k = v == null ? 0 : Math.round(v), tip = v == null ? 'Not rated' : rt['votes-count'] == null ? `Rated ${v} of 5` : `${v} from ${n} vote${n === 1 ? '' : 's'}`; return `<span class="stars sm" data-tip="${esc(tip)}" aria-label="${esc(tip)}">${'★'.repeat(k)}<span class="off">${'★'.repeat(5 - k)}</span></span>`; };
+const thumbOf = i =>(i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
 // the release group's link after the release's title: its layers and how many editions it has, muted
 const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
 // no front cover (none on the CAA, or it failed to load): the format's mark, a word, and a way to add one
@@ -3366,11 +3369,15 @@ async function loadArtist(id, step = () => {}) {
         LOG.debug(`artist ${id}: no own release groups, ${m.size} for various artists`);
         return { 'release-groups': [...m.values()], 'release-group-count': m.size, va: true };
     }, noSec(`release?track_artist=${id}`));
-    const disc = ws(`release-group?artist=${id}&inc=artist-credits&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); return x; }, noSec(`release-group?artist=${id}&inc=artist-credits&limit=100`));
+    // ratings and links ride along for the table's columns
+    const disc = ws(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
+    // how many releases each group has, as MB's table shows: a browse can't tell, the search can (its "count");
+    // asked beside the browse and filled in when it comes, so it holds nothing up (majkinetor)
+    const rcount = ws(`release-group?query=arid:${id}&limit=100`).then(x => new Map((x['release-groups'] || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`));
     const wiki = wikiOf('artist', id);
     const gP = ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
-    return { kind: 'artist', g: null, gP, disc, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
+    return { kind: 'artist', g: null, gP, disc, rcount, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function label(l) {
     const genres = (l.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = l['life-span'] || {};
@@ -3673,11 +3680,17 @@ async function mbTab(type, id, sub, page = 1) {
     const d = new DOMParser().parseFromString(await r.text(), 'text/html'), t = d.querySelector('#content table.tbl');
     const more = [...d.querySelectorAll('#content ul.pagination a[href]')].some(a => { const m = /[?&]page=(\d+)/.exec(a.getAttribute('href')); return m && +m[1] > page; }), src = [type, id, sub], h = d.querySelector(`.${type}header h1`), name = h ? h.textContent.trim() : '';
     if (!t) return { head: [], rows: [], more, name, src, page };
-    const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && !th.classList.contains('rating') && !th.classList.contains('checkbox-cell'));
+    // a series keeps its ratings, as MB's release-group lists show them (majkinetor): each as its own stars
+    const rated = type === 'series';
+    const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && (rated || !th.classList.contains('rating')) && !th.classList.contains('checkbox-cell'));
     const cell = td => {
-        for (const e of td.querySelectorAll('input, .inline-rating, script')) e.remove();
+        for (const e of td.querySelectorAll('.inline-rating')) {
+            const w = rated && /width:\s*([\d.]+)%/.exec((e.querySelector('.current-rating') || e).getAttribute('style') || '');
+            if (rated) e.replaceWith(Object.assign(document.createElement('eh-r'), { textContent: w ? +w[1] / 20 : '' })); else e.remove();
+        }
+        for (const e of td.querySelectorAll('input, script')) e.remove();
         for (const e of td.querySelectorAll('*')) for (const at of [...e.attributes]) if (at.name !== 'href') e.removeAttribute(at.name);
-        return td.innerHTML.trim();
+        return td.innerHTML.trim().replace(/<eh-r>([\d.]*)<\/eh-r>/g, (_, v) => starsTd({ value: v ? +v : null, 'votes-count': null }));
     };
     // a row of headings inside the body names the group below it (a place's "recording location for"): kept as its text
     const row = tr => tr.querySelector('td') ? [...tr.children].filter((_, i) => keep[i]).map(cell) : tr.textContent.trim().replace(/\s+/g, ' ');
@@ -4008,13 +4021,16 @@ function discoHtml(d) {
     const tile = g => `<a href="${MB}/release-group/${g.id}"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover><span class="dt">${esc(g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''}</span><span class="dy">${esc((g['first-release-date'] || '').slice(0, 4) || '—')}</span></a>`;
     // each type sorts by the chosen column (date by default), a leading '-' reversing it
     const sk = (S.dgSort || 'date').replace(/^-/, ''), desc = (S.dgSort || '').startsWith('-');
-    const kv = { title: g => g.title || '', artist: g => (g['artist-credit'] || []).map(c => (c.name || '') + (c.joinphrase || '')).join(''), date: g => g['first-release-date'] || '9' }[sk] || (g => g['first-release-date'] || '9');
+    // the table's columns, as MB's own (Rating, Releases) and the group's links; its release counts come from d.rcX, once the search is in
+    const rv = g => (g.rating || {}).value, rc = g => d.rcX && d.rcX.get(g.id);
+    const kv = { title: g => g.title || '', artist: g => (g['artist-credit'] || []).map(c => (c.name || '') + (c.joinphrase || '')).join(''), date: g => g['first-release-date'] || '9',
+        rating: g => rv(g) == null ? '' : String(rv(g)), releases: g => rc(g) == null ? '' : String(rc(g)) }[sk] || (g => g['first-release-date'] || '9');
     const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
     const th = (k, n) => `<th aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button></th>`;
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td></tr>`;
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td><td>${starsTd(g.rating)}</td><td class="num">${rc(g) != null ? rc(g) : '—'}</td><td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
-    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}</tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="4">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
+    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}${th('rating', 'Rating')}${th('releases', 'Releases')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="7">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
     return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body, `<div class="folded-note">${n}</div>`);
@@ -5562,6 +5578,7 @@ async function show(key) {
         if (d.gP) d.gP.then(g => { if (n === showing && data === d && d.g !== g) { d.g = g; render(); visited(key, d); } }, e => { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing && data === d) { d.gErr = e.message; render(); } });
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
+        if (d.rcount) d.rcount.then(x => { if (n === showing && data === d && x) { d.rcX = x; if (d.discX && S.dgView === 'table') render(); } });
         if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; if (x.some(i => i.front)) d.rel.front = true; render(); } });
