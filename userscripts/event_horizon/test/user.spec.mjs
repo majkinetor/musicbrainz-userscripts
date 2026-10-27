@@ -21,6 +21,7 @@ for (const [path, form] of [['/account/edit', 'Edit profile'], ['/account/prefer
     check(await until(() => page.locator('#eh-relhd .kicker').textContent(), t => t && t.includes(form)), 'the header names the page');
     check(await page.locator('#eh-relhd .u-tab').count() >= 3, 'the editor\'s tabs are in the header');
     check(!(await page.locator('#content ul.tabs').isVisible()), 'MusicBrainz\'s own tabs hide');
+    check(await page.locator('#eh-relhd .u-av').evaluate(e => getComputedStyle(e).borderRadius) === '50%', 'EH\'s styles apply, CSP or not');
     await attachShot(testInfo, page, form.replace(/ /g, '-').toLowerCase());
     if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', '-' + form.replace(/ /g, '-').toLowerCase() + '.png'), fullPage: true });
   });

@@ -128,8 +128,8 @@ export const test = base.extend({
   blockedWrites: async ({}, use) => { await use([]); },
 
   context: async ({ headless, viewport, deviceScaleFactor, isMobile, hasTouch, profile, gm, prodWrites, prodPostAllow, pageErrors, blockedWrites: refused }, use, testInfo) => {
-    // bypassCSP: a userscript manager's injection isn't held by a page's CSP; Playwright's addScriptTag is (MusicBrainz's /account pages)
-    const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch, bypassCSP: true });
+    // the page's CSP stays on, as it does for a userscript manager: injection goes through evaluate, which CSP doesn't hold (MusicBrainz's /account pages block inline scripts and styles)
+    const ctx = await chromium.launchPersistentContext(profile === 'fresh' ? '' : PROFILE, { headless, viewport, deviceScaleFactor, isMobile, hasTouch });
     const errors = [];
     const guard = await installProdGuard(ctx, { allow: prodPostAllow, gm: gm === false ? null : gm, onRefused: w => refused.push(w) });
     // the scripts build their test hooks (window.__falconTest, …) only on a page marked so (#623)
@@ -159,7 +159,7 @@ export const test = base.extend({
       let code = await readFile(file, 'utf8');
       if (transform) code = transform(code);   // e.g. a default flipped for the test
       if (atStart) await target.addInitScript({ content: code });
-      else await target.addScriptTag({ content: code });
+      else await target.evaluate(code);
       if (waitFor && !atStart) await target.waitForFunction(g => !!window[g], waitFor, { timeout: 20000 });
       return { file, version: (code.match(/@version\s+(\S+)/) || [])[1] || '' };
     });

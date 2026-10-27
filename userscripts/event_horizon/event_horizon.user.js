@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.100000
+// @version      2026.10.28.110000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2151,6 +2151,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hav{width:26px;height:26px;border-radius:50%;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .htc{font-size:11px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--chip-text)}
 .hvote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:4px 0 10px}.hvote .lb{color:var(--muted);font-weight:600;margin-right:4px}.hvote button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font:inherit;font-weight:600;cursor:pointer}.hvote button:hover{border-color:var(--accent)}.hvote button[disabled]{opacity:.5;cursor:default}.hvote button.on{color:#fff;border-color:transparent}.hvote .v1.on{background:#2e8b57}.hvote .v0.on{background:#c0392b}.hvote .v-1.on{background:#888}.hvote .v-2.on{background:var(--accent)}
+.hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
 .hst{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff}.hst.ok{background:#2e8b57}.hst.op{background:#c08a00}.hst.no{background:#c0392b}.hst.cx{background:#888}
 .hgb{display:none;border-top:1px solid var(--line)}.hgrp.open .hgb{display:block}
@@ -7081,8 +7082,8 @@ function userFormHeader(id, form) {
     const img = h1 && h1.querySelector('img.avatar:not(.no-avatar)'), av = img ? (img.getAttribute('src') || '').replace(/^\/\//, 'https://') : '';
     [ul, h1 && (h1.closest('#content > *, #page > *') || h1)].forEach(x => x && x.classList.add('eh-mbhd'));
     hd.innerHTML = `<span class="hm-av u-av">${esc((name[0] || '?').toUpperCase())}${av ? `<img src="${esc(av)}" alt="" onerror="this.remove()">` : ''}</span>`
-        + `<div class="rhtx"><div class="kicker label"><span>${esc('Editor · ' + FORMS[form])}</span><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
-        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${tabs.length ? `<nav class="u-tabs">${tabs.map(([t, h, on]) => `<a class="u-tab${on ? ' on' : ''}" href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`).join('')}</nav>` : ''}</div>`;
+        + `<div class="rhtx"><div class="kicker label"><span>${esc(FORMS[form])}</span><span class="acts"><a class="ab ov" href="${MB}/user/${encodeURIComponent(name)}" data-tip="Profile" aria-label="Profile">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${SRCH()}</span></div>`
+        + `<h1><a href="${MB}/user/${encodeURIComponent(name)}">${esc(name)}</a></h1>${tabs.some(x => !x[2]) ? `<nav class="u-tabs">${tabs.filter(x => !x[2]).map(([t, h]) => `<a class="u-tab" href="${esc(h.startsWith('/') ? MB + h : h)}">${esc(t)}</a>`).join('')}</nav>` : ''}</div>`;
     return hd;
 }
 // the header's section; its search opens in place
@@ -7871,6 +7872,17 @@ async function show(key) {
         box.querySelector('[data-retry]').onclick = () => show(key);
         const mb = box.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
     }
+}
+// /account/… pages send a CSP that blocks inline <style>: every style element mirrors into a constructed sheet, which CSP doesn't check
+if (/^\/account\//.test(location.pathname) && document.adoptedStyleSheets) {
+    const sheets = new Map(), sync = () => {
+        document.querySelectorAll('style').forEach(st => { let c = sheets.get(st); if (!c) { c = { sh: new CSSStyleSheet(), t: null }; sheets.set(st, c); } if (c.t !== st.textContent) { c.t = st.textContent; try { c.sh.replaceSync(c.t); } catch (e) {} } });
+        for (const st of [...sheets.keys()]) if (!st.isConnected) sheets.delete(st);
+        const mine = [...sheets.values()].map(c => c.sh);
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets.filter(x => ![...sheets.values()].some(c => c.sh === x) && !x.ehMirror), ...mine];
+        mine.forEach(x => { x.ehMirror = 1; });
+    };
+    new MutationObserver(sync).observe(document, { childList: true, subtree: true, characterData: true });
 }
 if (PAGE_ID) {
     // hide MusicBrainz's page before it paints; the style goes once the viewer or the page itself is shown
