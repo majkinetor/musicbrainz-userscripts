@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.080028
+// @version      2026.10.27.080229
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15854,7 +15854,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const [begin, end, typeT, locT] = rest;
           const primary = /\(primary\)/i.test(locT || ''), locName = (locT || '').replace(/\s*\(primary\)\s*$/i, '');
           const loc = locales.find(o => o.t === locName), typ = types.find(o => o.t === typeT);
-          rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: begin || '', end: end || '' });
+          rows.push({ id, name, sort, locale: loc ? loc.v : '', primary, type: typ ? typ.v : '', begin: begin || '', end: end || '', ended: !!end });
         }
         // MusicBrainz lists them by locale; the editor keeps the order they were added in
         rows.sort((a, b) => a.id - b.id);
@@ -15868,7 +15868,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         p.set('edit-alias.locale', row.locale || ''); if (row.locale && row.primary) p.set('edit-alias.primary_for_locale', '1');
         p.set('edit-alias.type_id', row.type || '');
         d('edit-alias.period.begin_date', row.begin); d('edit-alias.period.end_date', row.end);
-        if (row.end) p.set('edit-alias.period.ended', '1');
+        if (row.end || row.ended) p.set('edit-alias.period.ended', '1');
         p.set('edit-alias.edit_note', note);
         return p;
       }
@@ -15899,6 +15899,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
           + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span>Locale</span><span>Type</span><span>Dates</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
           + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
+        if (o.onCount) box.querySelector('.tc-al-bar').hidden = true;
         o.mount(box);
         const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
         const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
@@ -15964,7 +15965,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           return [p[0], ...p.slice(1).map(x => x.padStart(2, '0'))].join('-');
         };
         const rows = [];
-        const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end]);
+        const key = r => JSON.stringify([r.name, r.sort, r.locale, !!r.primary, r.type, r.begin, r.end, !!(r.ended || r.end)]);
         const state = r => r.removed ? 'del' : !r.id ? (r.name.trim() ? 'new' : '') : key(r) !== r.orig ? 'chg' : '';
         const sync = () => {
           let n = 0;
@@ -15974,7 +15975,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
             mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
             // primary needs a locale, and an ended alias or a search hint can't be one, as on MusicBrainz's form
-            const p = r.tr.querySelector('.tc-al-p'); p.disabled = !r.locale || !!r.end || (!!r.type && r.type === hintType); if (p.disabled) r.primary = false; p.hidden = p.disabled; r.tr.querySelector('.tc-al-l').classList.toggle('tc-al-lp', !p.disabled);
+            const p = r.tr.querySelector('.tc-al-p'); p.disabled = !r.locale || !!r.end || !!r.ended || (!!r.type && r.type === hintType); if (p.disabled) r.primary = false; p.hidden = p.disabled; r.tr.querySelector('.tc-al-l').classList.toggle('tc-al-lp', !p.disabled);
             p.textContent = r.primary ? '★' : '☆'; p.classList.toggle('on', !!r.primary);
           }
           const invalid = rows.some(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad'));
@@ -15985,7 +15986,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           msg.classList.toggle('tc-al-err', invalid);
           go.textContent = '\u2713 Enter ' + (n > 1 ? n + ' edits' : 'edit'); go.disabled = !n;
           mbuProp(go.style, 'display', n ? '' : 'none');
-          box.querySelector('.tc-al-sum').textContent = rows.filter(r => r.id).length + ' existing';
+          const cnt = rows.filter(r => r.id).length;
+          box.querySelector('.tc-al-sum').textContent = cnt + ' existing'; if (o.onCount) o.onCount(cnt);
         };
         const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
         const addRow = r => {
@@ -15994,28 +15996,30 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
             + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
             + '<input class="tc-al-t" title="Type to filter the types">'
             + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
-            + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label></span>';
+            + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label><button type="button" class="tc-al-cp" title="Copy the begin date to the end">\u2192</button><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label>'
+            + '<label class="tc-al-ew"><input type="checkbox" class="tc-al-ed"> This alias is no longer current</label></span>';
           const $ = c => tr.querySelector(c);
-          const HINT_OFF = ['.tc-al-s', '.tc-al-g', '.tc-al-l', '.tc-al-b', '.tc-al-e', '.tc-al-c'];
+          const HINT_OFF = ['.tc-al-s', '.tc-al-g', '.tc-al-l', '.tc-al-b', '.tc-al-e', '.tc-al-c', '.tc-al-cp', '.tc-al-ed'];
           // the calendar shows the dates it holds; a row with a bad date stays open
           const dates = () => {
             const c = $('.tc-al-c'), has = !!(r.begin || r.end);
-            c.innerHTML = CAL + (has ? '<span>' + esc(r.begin || '\u2026') + '\u2013' + esc(r.end || '') + '</span>' : '');
-            c.classList.toggle('tc-al-has', has);
+            c.innerHTML = CAL + (has ? '<span>' + esc(r.begin || '\u2026') + '\u2013' + esc(r.end || '') + '</span>' : r.ended ? '<span>ended</span>' : '');
+            c.classList.toggle('tc-al-has', has || !!r.ended);
+            const ed = $('.tc-al-ed'); ed.checked = !!(r.ended || r.end); ed.disabled = !!r.end || (!!r.type && r.type === hintType);
             if (tr.querySelector('.tc-al-dt .tc-al-bad')) tr.classList.add('tc-al-dopen');
             c.setAttribute('aria-expanded', String(tr.classList.contains('tc-al-dopen')));
           };
           // a search hint keeps only its name: the rest is emptied (the sort name is the name) and shut, and comes back when the type changes
           const hint = () => {
             const on = !!r.type && r.type === hintType;
-            if (on && !r.hintPrev) { r.hintPrev = { sort: r.sort, locale: r.locale, primary: r.primary, begin: r.begin, end: r.end, auto: r.autoSort }; }
+            if (on && !r.hintPrev) { r.hintPrev = { sort: r.sort, locale: r.locale, primary: r.primary, begin: r.begin, end: r.end, ended: r.ended, auto: r.autoSort }; }
             else if (!on && r.hintPrev) {
-              const p = r.hintPrev; r.hintPrev = null; Object.assign(r, { sort: p.sort, locale: p.locale, primary: p.primary, begin: p.begin, end: p.end, autoSort: p.auto });
+              const p = r.hintPrev; r.hintPrev = null; Object.assign(r, { sort: p.sort, locale: p.locale, primary: p.primary, begin: p.begin, end: p.end, ended: p.ended, autoSort: p.auto });
               if (r.autoSort) r.sort = r.name.trim() ? guess(r.name.trim()) : '';
               $('.tc-al-s').value = r.sort; locIn.value = locName(r.locale); locIn.dataset.v = r.locale; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
             }
             if (on) {
-              Object.assign(r, { sort: r.name, locale: '', primary: false, begin: '', end: '' });
+              Object.assign(r, { sort: r.name, locale: '', primary: false, begin: '', end: '', ended: false });
               $('.tc-al-s').value = r.name; locIn.value = ''; locIn.dataset.v = ''; $('.tc-al-b').value = ''; $('.tc-al-e').value = '';
               for (const c of ['.tc-al-l', '.tc-al-b', '.tc-al-e']) { $(c).classList.remove('tc-al-bad'); $(c).title = ''; }
             }
@@ -16054,6 +16058,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
                 e.classList.add('tc-al-bad'); e.title = 'The end comes before the begin';
               }
             }
+            if (ev && ev.target === $('.tc-al-ed')) r.ended = $('.tc-al-ed').checked;
+            if (r.end) r.ended = true;
             hint(); dates();
             if (!r.id && r.name.trim() && tb.lastElementChild === tr) addRow(blank());
             sync();
@@ -16061,10 +16067,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           tr.addEventListener('input', read); tr.addEventListener('change', read);
           $('.tc-al-g').onclick = () => { if (!r.name.trim()) return; $('.tc-al-s').value = guess(r.name.trim()); r.autoSort = true; read(); };
           $('.tc-al-p').onclick = () => { r.primary = !r.primary; sync(); };
+          $('.tc-al-cp').onclick = () => { const e = $('.tc-al-e'); e.value = $('.tc-al-b').value; e.dispatchEvent(new Event('change', { bubbles: true })); e.focus(); };
           $('.tc-al-c').onclick = () => { const on = tr.classList.toggle('tc-al-dopen'); dates(); if (on) $('.tc-al-b').focus(); };
           $('.tc-al-x').onclick = () => {
             if (r.id && !r.removed && state(r) === 'chg') {
-              [r.name, r.sort, r.locale, r.primary, r.type, r.begin, r.end] = JSON.parse(r.orig);
+              [r.name, r.sort, r.locale, r.primary, r.type, r.begin, r.end, r.ended] = JSON.parse(r.orig);
               $('.tc-al-n').value = r.name; $('.tc-al-s').value = r.sort; $('.tc-al-b').value = r.begin; $('.tc-al-e').value = r.end;
               locIn.value = locName(r.locale); locIn.dataset.v = r.locale; tyIn.value = typeName(r.type); tyIn.dataset.v = r.type || '';
               tr.querySelectorAll('.tc-al-bad').forEach(e => e.classList.remove('tc-al-bad'));
@@ -16077,7 +16084,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           const g = ghost(); if (g && g !== r) tb.insertBefore(tr, g.tr); else tb.appendChild(tr);
           return r;
         };
-        const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc || '', primary: false, type: typ || '', begin: '', end: '' });
+        const blank = (name, sort, loc, typ) => ({ id: '', name: name || '', sort: sort || '', locale: loc || '', primary: false, type: typ || '', begin: '', end: '', ended: false });
         const filled = (name, sort, loc, typ) => blank(name, sort || guess(name), loc, typ);
         go.onclick = async () => {
           const note = '';
@@ -16123,6 +16130,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias .tc-al-dt{grid-column:1/-1;display:none;gap:16px;align-items:center;padding:2px 0 5px 10px;font-size:12px;color:var(--mbu-text-weak)}
         #tc-alias .tc-al-dopen .tc-al-dt{display:flex}
         #tc-alias .tc-al-dt label{display:inline-flex;align-items:center;gap:6px}
+        #tc-alias .tc-al-dt .tc-al-ew{margin-left:6px;cursor:pointer}
+        #tc-alias .tc-al-dt .tc-al-ed{margin:0;accent-color:var(--mbu-accent)}
+        #tc-alias .tc-al-cp{background:none;border:0;color:var(--mbu-text-weak);cursor:pointer;padding:2px 6px;border-radius:4px;font-size:14px;margin:0 -10px}
+        #tc-alias .tc-al-cp:hover{background:var(--mbu-border);color:var(--mbu-text)}
         #tc-alias .tc-al-dt input:not([type=checkbox]){width:110px;border-bottom:1px solid var(--mbu-border);font-size:13px}
         #tc-alias .tc-al-c{display:inline-flex;align-items:center;gap:4px;justify-content:flex-start;height:24px;padding:0 4px;font:inherit;font-size:12px;white-space:nowrap;overflow:hidden}
         #tc-alias .tc-al-c svg{width:15px;height:15px;flex:0 0 auto}

@@ -24,6 +24,13 @@ test('the alias pencil opens the alias editor in a popup', { tag: ['@sandbox', '
   check(!(await row.locator('.tc-al-b').evaluate(i => i.classList.contains('tc-al-bad'))), 'a half-typed date is not flagged');
   await page.keyboard.type('05');
   check((await row.locator('.tc-al-c').innerText()).includes('2005'),'the calendar shows the date');
+  // the arrow copies the begin to the end, and an end date checks and locks "no longer current"
+  await row.locator('.tc-al-cp').click();
+  check(await row.locator('.tc-al-e').inputValue() === '2005', 'the arrow copies the begin to the end');
+  check(await row.locator('.tc-al-ed').evaluate(i => i.checked && i.disabled), 'an end date marks the alias ended');
+  check(/\(\d+\)/.test(await page.locator('#eh-aliases .eh-al-n').innerText()), 'the title counts the aliases');
+  check(/\/aliases$/.test(await page.locator('#eh-aliases .eh-al-tab').getAttribute('href')), 'the header links the Aliases tab');
+  check(!(await page.locator('#eh-aliases .tc-al-bar').isVisible()), 'without the editor\'s own bar');
   await attachShot(testInfo, page, 'aliases');
   await page.keyboard.press('Escape');
   check(await until(() => page.locator('#eh-aliases').count(), n => n === 0) === 0, 'Escape closes it');
