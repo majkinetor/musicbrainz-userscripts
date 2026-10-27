@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.143000
+// @version      2026.10.27.150000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5934,18 +5934,21 @@ function profParse(html) {
         av: ((d.querySelector('#content img.avatar:not(.no-avatar)') || d.querySelector('img.avatar:not(.no-avatar)') || { getAttribute: () => '' }).getAttribute('src') || '').replace(/^\/\//, 'https://').replace(/([?&]s=)\d+/, '$1104'),
         mail: ((info ? info.textContent : '').match(/[^\s@()]+@[^\s@()]+\.[a-z]{2,}/i) || [''])[0].toLowerCase(),
         bio: (info && info.querySelector('tr.biography a[href]') || {}).href || '',
-        total: num(row(ed, 0) && row(ed, 0).querySelector('td')), open: num(row(ed, 7) && row(ed, 7).querySelector('td')), day: num(row(ed, 8) && row(ed, 8).querySelector('td')),
+        total: num(row(ed, 0) && row(ed, 0).querySelector('td')), open: num(row(ed, 7) && row(ed, 7).querySelector('td')), day: num(row(ed, 8) && row(ed, 8).querySelector('td')), dayHref: ((row(ed, 8) && row(ed, 8).querySelector('td a[href]')) || { getAttribute: () => '' }).getAttribute('href'),
         votes: votes && votes[2] ? num({ textContent: votes[2].textContent.split('(')[0] }) : 0, added: added.sort((a, b) => b[1] - a[1]), sec,
     };
 }
 async function profLoad(app) {
     let p = null; try { p = GM_getValue('profile', null); } catch (e) {}
     let fresh = false; try { fresh = sessionStorage.getItem('eh.prof') === ME; } catch (e) {}
-    if (p && p.me === ME && 'gh' in p && (fresh || Date.now() - p.at < PROF_TTL)) return profFill(app, p);
-    if (p && p.me === ME) profFill(app, p);
+    // one cache serves every MusicBrainz server, and the same name can be a different editor on each (test's majkinetor
+    // isn't production's): a profile counts only on the server it came from
+    if (p && (p.me !== ME || p.site !== MB)) p = null;
+    if (p && 'gh' in p && 'dayHref' in p && (fresh || Date.now() - p.at < PROF_TTL)) return profFill(app, p);
+    if (p) profFill(app, p);
     try {
         const r = await mbnFetch(`${MB}/user/${encodeURIComponent(ME)}`); if (!r.ok) throw new Error('HTTP ' + r.status);
-        const n = profParse(await r.text()); n.me = ME; n.gh = n.mail ? await sha256(n.mail) : ''; delete n.mail; console.info('[Event Horizon] profile', n);
+        const n = profParse(await r.text()); n.me = ME; n.site = MB; n.gh = n.mail ? await sha256(n.mail) : ''; delete n.mail; console.info('[Event Horizon] profile', n);
         try { GM_setValue('profile', n); sessionStorage.setItem('eh.prof', ME); } catch (e) {}
         profFill(app, n);
     } catch (e) { console.warn('[Event Horizon] profile fetch failed', e); }
@@ -5971,12 +5974,12 @@ function profFill(app, p) {
     const el = app.querySelector('.hm-pf'); if (!el) return;
     const yrs = p.since ? new Date().getFullYear() - p.since : 0, top = p.added[0] ? p.added[0][1] : 1, u = `${MB}/user/${encodeURIComponent(ME)}`;
     const sub = [p.loc, p.since && `member since ${p.since}${yrs ? ` (${yrs} year${yrs > 1 ? 's' : ''})` : ''}`, p.langs.join(', ')].filter(Boolean).map(esc).join(' · ');
-    const stat = (n, l, h) => `<a class="hm-st" href="${u}/${h}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
+    const stat = (n, l, h) => `<a class="hm-st" href="${/^\//.test(h) ? MB + esc(h) : `${u}/${h}`}"><b>${fmtN(n)}</b><small>${l}</small></a>`;
     profP = p; let gh = ''; try { gh = GM_getValue('gravatar', ''); } catch (e) {}
     gh = gh || p.gh; const av = p.av || (gh && `https://gravatar.com/avatar/${gh}?s=104&d=404`);
     el.innerHTML = `<a class="hm-pl" href="${u}" data-tip="Your profile" aria-label="Your profile">${SVG(MK_CR)}</a><div class="hm-pid"><button type="button" class="hm-av" data-tip="Your Gravatar
 Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || '?').toUpperCase()}${av ? `<img src="${esc(av)}" alt="" width="52" height="52" onerror="this.remove()">` : ''}</button><div><b>${esc(ME)}</b><small>${sub}</small>${p.bio ? `<small><a href="${esc(p.bio)}" target="_blank">${esc(p.bio.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></small>` : ''}</div></div>
-        <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
+        <div class="hm-sts">${stat(p.total, 'edits', 'edits')}${stat(p.open, 'open', 'edits/open')}${stat(p.day, 'last 24 hours', p.dayHref || 'edits')}${stat(p.votes, 'votes', 'votes')}</div>
         ${p.added.length ? `<div class="hm-bars">${p.added.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(2, v / top * 100)}%"></i><em>${fmtN(v)}</em></div>`).join('')}</div>` : ''}
         ${p.sec.length ? `<small class="hm-sec">${p.sec.map(([n, v]) => `${esc(n)} ${fmtN(v)}`).join(' · ')}</small>` : ''}`;
 }
