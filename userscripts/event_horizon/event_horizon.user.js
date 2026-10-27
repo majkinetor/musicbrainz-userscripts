@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.030000
+// @version      2026.10.28.040000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1955,6 +1955,7 @@ const CSS = `
 .tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}
 .tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-p{display:block}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
 .tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.u-hero.tgx-hero{grid-template-columns:auto minmax(0,1fr)}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.rt-l li>.stars,.tgx-c>.stars{flex:none;font-size:14px;letter-spacing:1px;line-height:1}.tg-bar .seg button[disabled]{opacity:.4;cursor:default}.u-hero .tg-tools{margin:12px 0 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
 .tg-tok{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;height:32px;box-sizing:border-box;max-width:min(460px,34vw);overflow-x:auto;scrollbar-width:none;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;width:110px;flex:none;font-size:13px;color:var(--text)}
@@ -5935,6 +5936,12 @@ function tagxArt(app) {
     tgxIo = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { tgxIo.unobserve(e.target); q.push(e.target); } next(); }, { rootMargin: '300px' });
     for (const el of app.querySelectorAll('[data-tgxart]')) tgxIo.observe(el);
 }
+// a grid card's picture, linking to its entity: a cover or poster, an artist's or label's picture (found once on screen), else the kind's mark
+function tgxPic(u) {
+    const m = (u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
+    const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
+    return `<a class="tgx-p" href="${esc(u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img src="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a>`;
+}
 function tagxHtml(d) {
     const t = d.t, q = (d.q || '').trim().toLowerCase(), U = encodeURIComponent(d.name), T = encodeURIComponent(d.tag);
     const cur = location.href.split(/[?#]/)[0].replace(/\/$/, '');
@@ -5951,9 +5958,7 @@ function tagxHtml(d) {
     const secs = t.groups.map(g => { const id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-'), q = (qs[id] || '').trim().toLowerCase(), xs = g.items.filter(x => !q || x.h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q)), cnt = g.items.some(x => x.c);
         const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-tgxf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-tgxf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
         const body = !xs.length ? '<p class="hm-none">Nothing matches the filter.</p>'
-            : view === 'grid' ? `<div class="tgx-g">${xs.map(x => { const m = (x.u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
-                const pic = k === 'artist' || k === 'label' ? (a => a ? `<img src="${esc(a.src)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="tgx-mk"${a === undefined ? ` data-tgxart="${k}:${m[2]}"` : ''}>${bigMk(mk)}</span>`)(TGX_ART[m[2]] !== undefined ? TGX_ART[m[2]] : ARTIMG.cached(m[2])) : null;
-                return `<div class="tgx-c"><a class="tgx-p" href="${esc(x.u)}" tabindex="-1" aria-hidden="true">${pic !== null ? pic : k === 'release' || k === 'release-group' || k === 'event' ? `<img src="${k === 'event' ? 'https://eventartarchive.org' : 'https://coverartarchive.org'}/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}</a><div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`; }).join('')}</div>`
+            : view === 'grid' ? `<div class="tgx-g">${xs.map(x => `<div class="tgx-c">${tgxPic(x.u)}<div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
         // a card folds as every other: its caret, right-click for all
@@ -5977,6 +5982,96 @@ function tagxWire() {
         if (!ehOn || !data || data.kind !== 'tagx' || !ev.target.matches('[data-tgxq]')) return;
         const id = ev.target.dataset.tgxq; data.qs[id] = ev.target.value; const at = ev.target.selectionStart; render();
         const i = $(`[data-tgxq="${id}"]`); if (i) { i.focus(); i.setSelectionRange(at, at); }
+    });
+}
+/* ── ratings ──────────────────────────────────────── */
+// an editor's ratings (/user/<name>/ratings, a few of each type; /ratings/<type>, one type paged), read off MusicBrainz's page:
+// a card per type as the tag pages have, with Grid, Row and Table views, and the stars to filter by
+const RT_TYPES = [['artist', 'Artists'], ['label', 'Labels'], ['recording', 'Recordings'], ['release_group', 'Release groups'], ['work', 'Works'], ['event', 'Events'], ['place', 'Places']];
+const RT_STAR = '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>';
+function ratesParse(html) {
+    const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
+    const c = d.querySelector('#content') || d.querySelector('#page') || d.body, abs = h => h && h.startsWith('/') ? MB + h : h;
+    for (const a of c.querySelectorAll('a[href]')) a.setAttribute('href', abs(a.getAttribute('href')));
+    const groups = [];
+    for (const h of c.querySelectorAll('h2')) {
+        let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL' && ul.tagName !== 'H2') ul = ul.nextElementSibling;
+        if (!ul || ul.tagName !== 'UL' || ul.classList.contains('pagination')) continue;
+        const lis = [...ul.children], has = li => li.querySelector('.current-rating, .current-user-rating'), more = lis.find(li => !has(li) && li.querySelector('a[href*="/ratings/"]'));
+        groups.push({ t: tx(h).replace(/ ratings$/i, ''), items: lis.filter(li => li !== more && has(li)).map(li => {
+            const r = li.querySelector('.current-rating, .current-user-rating'), as = [...li.querySelectorAll(':scope > a, :scope > bdi > a')];
+            // your own page links each star to MusicBrainz's rate: its entity, to rate from here
+            const sr = li.querySelector('a.set-rating, a.remove-rating'), sq = sr && new URL(sr.href, MB).searchParams;
+            return { u: as[0] ? as[0].getAttribute('href') : '', et: sq ? sq.get('entity_type') : '', ei: sq ? sq.get('entity_id') : '', r: Math.round((parseFloat(r.style.width) || 0) / 20) || +tx(r) || 0, n: tx(as[0]), a: as[0] ? as[0].outerHTML : '', by: as.slice(1).map(x => x.outerHTML).join(', '), cm: tx(li.querySelector(':scope > .comment')).replace(/^\(|\)$/g, '') };
+        }), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
+    }
+    const pg = [...(c.querySelector('ul.pagination') || d.createElement('ul')).querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href')]);
+    const h1 = c.querySelector('h1');
+    return { name: tx(h1), groups, pg };
+}
+async function ratesLoad(n, d, url) {
+    try {
+        let html;
+        if (!url && d.key === PAGE_ID && mbBody && !/[?&]page=/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(url || `${MB}/user/${encodeURIComponent(d.name)}/ratings${d.type ? '/' + d.type : ''}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const t = ratesParse(html);
+        if (n === showing && data === d) { d.t = t; d.err = ''; render(); if (url) scrollTo(0, 0); }
+    } catch (e) {
+        LOG.err('Loading the ratings of ' + d.name + ' failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+// stars to click where the item can be rated from here (your own page): a star rates, your current one removes the rating
+const rtStars = (r, x) => x && x.ei ? `<span class="stars sm rt mine" role="group" aria-label="Rated ${r} of 5">${[1, 2, 3, 4, 5].map(k => `<button type="button" class="st${k <= r ? ' on' : ''}" data-rtrate="${x.gi}:${x.ii}:${k === r ? 0 : k}" data-tip="${k === r ? 'Remove your rating' : 'Rate ' + k + ' of 5'}">★</button>`).join('')}</span>`
+    : `<span class="stars sm" data-tip="Rated ${r} of 5" aria-label="Rated ${r} of 5">${'★'.repeat(r)}<span class="off">${'★'.repeat(5 - r)}</span></span>`;
+async function ratesRate(d, gi, ii, k) {
+    const x = d.t.groups[gi].items[ii], was = x.r; x.r = k; render();
+    try { const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${x.et}&entity_id=${x.ei}&rating=${k * 20}`); if (!r.ok) throw new Error('HTTP ' + r.status); toast(k ? `Rated ${k} of 5` : 'Rating removed'); }
+    catch (e) { x.r = was; LOG.err('Rating ' + x.n + ' failed: ' + e.message); toast('The rating failed: ' + e.message); if (data === d) render(); }
+}
+function ratesHtml(d) {
+    const t = d.t, U = encodeURIComponent(d.name), base = `${MB}/user/${U}/ratings`;
+    const all = t ? t.groups.flatMap((g, gi) => g.items.map((x, ii) => Object.assign(x, { gi, ii }))) : [];
+    // the types as icons, the open one marked; then the editor's other pages
+    const ic = `<span class="ed-views tgx-ic"><a href="${base}" aria-label="Every type" data-tip="Every type" aria-pressed="${!d.type}">${SVG(RT_STAR)}</a>${RT_TYPES.map(([k, x]) => `<a href="${base}/${k}" aria-label="${x}" data-tip="${x}" aria-pressed="${d.type === k}">${mkSvg(HM_KIND[k.replace('_', '-')][1])}</a>`).join('')}</span>`;
+    const tabs = `${ic}<span class="tgx-tb"><a class="u-tab" href="${MB}/user/${U}">Profile</a><a class="u-tab" href="${MB}/user/${U}/tags">Tags</a>${ME && ME !== d.name ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/ratings">Your ratings</a>` : ''}</span>`;
+    const ty = d.type && RT_TYPES.find(x => x[0] === d.type);
+    const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading the ratings…' : !t.groups.length ? 'Nothing rated' : `${fmtN(all.length)} shown${d.type ? '' : ', the highest of each type'} · rated by <a href="${MB}/user/${U}">${esc(d.name)}</a>`;
+    const pg = t && t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-rtpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
+    const hero = `<section class="u-hero tgx-hero"><span class="hm-av u-av">${SVG(RT_STAR).replace(/width="\d+" height="\d+"/, 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Ratings${ty ? ' · ' + ty[1].toLowerCase() : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.name)}</h1>`
+        + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav>${pg}</div></section>`;
+    if (!t) return hero;
+    // the stars to show: every rating, or those of one score
+    const cn = k => all.filter(x => x.r === k).length;
+    const tools = `<div class="tg-tools"><div class="tg-bar"><span class="seg" role="group" aria-label="Stars"><button type="button" data-rtst="0" aria-pressed="${!d.st}">All <i>${fmtN(all.length)}</i></button>${[5, 4, 3, 2, 1].map(k => `<button type="button" data-rtst="${k}" aria-pressed="${d.st === k}"${cn(k) ? '' : ' disabled'}>${k}★ <i>${fmtN(cn(k))}</i></button>`).join('')}</span></div></div>`;
+    const view = S.rtView || 'row', qs = d.qs || (d.qs = {}), fo = d.fo || (d.fo = {});
+    const secs = t.groups.map(g => { const id = 'rt-' + g.t.toLowerCase().replace(/\W+/g, '-'), q = (qs[id] || '').trim().toLowerCase(), xs = g.items.filter(x => (!d.st || x.r === d.st) && (!q || (x.n + ' ' + x.by.replace(/<[^>]+>/g, ' ') + ' ' + x.cm).toLowerCase().includes(q)));
+        const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-rtf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-rtq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-rtf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
+        const by = xs.some(x => x.by);
+        const body = !xs.length ? `<p class="hm-none">${q ? 'Nothing matches the filter.' : d.st ? 'Nothing rated ' + d.st + '★ here.' : 'Nothing rated.'}</p>`
+            : view === 'grid' ? `<div class="tgx-g">${xs.map(x => `<div class="tgx-c">${tgxPic(x.u)}${rtStars(x.r, x)}<div class="tgx-n">${x.a}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`).join('')}</div>`
+            : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Rating</th><th>${esc(g.t.replace(/s$/, ''))}</th>${by ? '<th>By</th>' : ''}<th>Disambiguation</th></tr></thead><tbody>${xs.map(x => `<tr><td>${rtStars(x.r, x)}</td><td>${x.a}</td>${by ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td></tr>`).join('')}</tbody></table></div>`
+            : `<ul class="tgx-l rt-l">${xs.map(x => `<li>${rtStars(x.r, x)}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
+        return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'rtview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">See all ${esc(g.t.toLowerCase().replace(/(?<!s)$/, 's'))}</a></p>` : ''), ''); }).join('');
+    // the stars sit in the hero, under its tabs, as a tag page's pager does
+    return hero.replace(/<\/div><\/section>$/, tools + '</div></section>') + (secs || '<p class="hm-none">Nothing rated.</p>');
+}
+let rtWired = false;
+function ratesWire() {
+    if (rtWired) return; rtWired = true;
+    document.addEventListener('click', ev => {
+        const b = ehOn && data && data.kind === 'rates' && ev.target.closest('[data-rtst],[data-rtpg],[data-rtf],[data-rtview],[data-rtrate]'); if (!b) return;
+        const d = data;
+        if (b.dataset.rtrate) { const [gi, ii, k] = b.dataset.rtrate.split(':').map(Number); ratesRate(d, gi, ii, k); return; }
+        if (b.dataset.rtview) { S.rtView = b.dataset.rtview; save(); render(); return; }
+        if (b.dataset.rtf) { const [a, id] = b.dataset.rtf.split(':'); if (a === 'clr' || d.fo[id] || d.qs[id]) { d.qs[id] = ''; d.fo[id] = a === 'clr'; } else d.fo[id] = true; render(); const i = $(`[data-rtq="${id}"]`); if (i) i.focus(); return; }
+        if (b.dataset.rtpg) { ratesLoad(showing, d, b.dataset.rtpg); return; }
+        d.st = +b.dataset.rtst; render();
+    });
+    document.addEventListener('input', ev => {
+        if (!ehOn || !data || data.kind !== 'rates' || !ev.target.matches('[data-rtq]')) return;
+        const id = ev.target.dataset.rtq; data.qs[id] = ev.target.value; const at = ev.target.selectionStart; render();
+        const i = $(`[data-rtq="${id}"]`); if (i) { i.focus(); i.setSelectionRange(at, at); }
     });
 }
 // its events by date, from ws/2
@@ -6141,6 +6236,7 @@ function render(keepPop) {
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); document.getElementById('eh-rail')?.remove(); return; }
     if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); save(); return; }
+    if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); secRail(app); save(); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); return; }
@@ -6738,6 +6834,9 @@ function navTo(href) {
     // an editor's tags → "utags/<name>"; an entity's → "etags/<type>:<mbid>"
     const ut = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tags\/?$/);
     if (ut) return 'utags/' + ut[1];
+    // an editor's ratings → "urates/<name>[/<type>]"
+    const ur = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/ratings(?:\/([a-z_]+))?\/?$/);
+    if (ur) return 'urates/' + ur[1] + (ur[2] ? '/' + ur[2] : '');
     // one tag of an editor's → "utag/<name>/<tag>[/<type>]"
     const ux = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/tag\/([^/]+)(?:\/([a-z_-]+))?\/?$/);
     // a tag → "gtag/<tag>[/<type>]"
@@ -6754,7 +6853,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -7642,6 +7741,7 @@ async function show(key) {
         data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false, ao: !!ent && location.hash === '#add' };
         scrollTo(0, 0); render(); tagsLoad(n, key); return;
     }
+    if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {

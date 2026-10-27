@@ -55,3 +55,24 @@ test('tags are added as tokens: Enter takes a suggestion, a comma ends one, Ctrl
   check(await until(() => page.locator('#tg-body .tg-chip.tg-mine a', { hasText: /^eh test tag$/ }).count(), n => n === 1) === 1, 'the tags are added');
   await unvote();
 });
+
+test('an editor\'s ratings open in place: a card per type, in every view, with the stars to filter by', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/user/majkinetor/ratings');
+  await inject('event_horizon');
+  check(/Ratings/.test(await until(() => page.locator('.u-hero .kicker').textContent().catch(() => ''), t => /Ratings/.test(t))), 'the ratings page shows');
+  check(!/Loading/.test(await until(() => page.locator('.u-hero .u-sub').textContent(), t => !/Loading/.test(t))), 'the ratings load');
+  await attachShot(testInfo, page, 'row');
+  for (const v of ['grid', 'table']) { await page.click(`[data-rtview="${v}"]`); await attachShot(testInfo, page, v); }
+  await page.click('[data-rtview="row"]');
+  check(await page.locator('.rt-l li').count() >= 1, 'the rows list the ratings');
+  // your own ratings: a star rates from here, and MusicBrainz keeps it
+  const li = page.locator('.rt-l li').first(), name = await li.locator('span > a').first().textContent(), b = li.locator('[data-rtrate]');
+  const was = await li.locator('.st.on').count(), to = was === 5 ? 4 : was + 1;
+  await b.nth(to - 1).click();
+  await until(() => page.locator('#toast').textContent().catch(() => ''), t => /Rated/.test(t));
+  await page.reload(); await inject('event_horizon');
+  const row = () => page.locator('.rt-l li').filter({ has: page.locator('span > a', { hasText: name }) }).first();
+  check(await until(() => row().locator('.st.on').count(), n => n === to) === to, 'the new rating holds after a reload');
+  await row().locator('[data-rtrate]').nth(was - 1).click();
+  await until(() => page.locator('#toast').textContent().catch(() => ''), t => /Rated/.test(t));
+});
