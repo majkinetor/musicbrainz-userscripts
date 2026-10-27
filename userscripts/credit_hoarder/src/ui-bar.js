@@ -2208,8 +2208,8 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             ? `Import the credits from ${s.name}\nRight-click: open the ${s.name} page`
             : 'Import remixer credits\nRead from the track titles';
         b.addEventListener('click', () => {
-            // Mid-run the ant cancels, not the source
-            if (importing) return;
+            // Mid-run the ant cancels, not the source; the active source's icon opens its page
+            if (importing) { if (s.url) window.open(s.url, '_blank', 'noopener,noreferrer'); return; }
             startImport(b, s.url, s.run);
         });
         if (s.url) b.addEventListener('contextmenu', e => { e.preventDefault(); window.open(s.url, '_blank', 'noopener,noreferrer'); });
@@ -2799,7 +2799,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             b.style.display = active ? '' : 'none';
             if (active) {
                 b._restoreTitle = b.dataset.tip;
-                b.dataset.tip = `Importing from ${srcBtn.dataset.src}`;
+                b.dataset.tip = `Importing from ${srcBtn.dataset.src}${sourceUrl ? `\nClick: open the ${srcBtn.dataset.src} page` : ''}`;
             }
         });
         importLabel._restoreTitle = importLabel.dataset.tip;
