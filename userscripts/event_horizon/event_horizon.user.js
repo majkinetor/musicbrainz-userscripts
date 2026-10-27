@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.011000
+// @version      2026.10.28.021000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -1952,7 +1952,9 @@ const CSS = `
 .hm-news .hm-more{color:var(--accent)!important}
 .hm-none{color:var(--muted);margin:0}
 .tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
-.tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}
+.tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
 .tg-tok{display:inline-flex;align-items:center;gap:4px;flex-wrap:nowrap;height:32px;box-sizing:border-box;width:min(380px,40vw);overflow-x:auto;scrollbar-width:none;padding:2px 4px 2px 6px;border:1px solid var(--accent);border-radius:9px;background:var(--surface)}.tg-tok input{all:unset;min-width:110px;flex:1;font-size:13px;color:var(--text)}
@@ -2126,6 +2128,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
+.gtags a.chip{color:inherit;text-decoration:none}.gtags a.chip:hover{color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
 .stars .off{color:var(--border)}
@@ -2839,13 +2842,23 @@ function facts(r) {
     };
     return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k) && F[k][1]).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
+function heroFacts(app) {
+    const h = app.querySelector('section.hero'), u = h && h.querySelector('.art .under'), f = h && h.querySelector('.facts'); if (!u || !f) return;
+    const mb = [...f.children].find(c => { const l = c.querySelector('.label'); return l && l.textContent.trim() === 'MBID'; }) || null;
+    const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, mb); return c; };
+    const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
+    if (st) add('Rating', st);
+    if (tg && ME) tg.insertAdjacentHTML('beforeend', `<a class="eh-edit" href="${MB}${location.pathname.replace(/\/$/, '')}/tags#add" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</a>`);
+    if (tg) add('Tags', tg, true);
+    u.remove();
+}
 function under(r, more = '') {
     const on = k => S.extras.includes(k);
     // a page MB rates gets its stars even unrated, to rate it; the rest show theirs only when they have one
     const t = r.rgId ? 'release_group' : RATE_T[data && data.kind], ref = r.rgId || (data && data.id);
     const nat = mbBody && mbBody.querySelector('#sidebar .inline-rating .current-user-rating'), w = nat && /width:\s*([\d.]+)%/.exec(nat.getAttribute('style') || '');
     const stars = on('rating') && (t || r.rating.value != null) ? rateStars(t, ref, r.rating, false, w ? Math.round(+w[1] / 20) : mbBody && mbBody.querySelector('#sidebar .inline-rating') ? 0 : null) : '';
-    const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}${more}</div>` : '';
+    const tags = on('tags') && (r.genres.length || more) ? `<div class="gtags">${r.genres.map(g => `<a class="chip" href="${MB}/tag/${encodeURIComponent(g)}">${esc(g)}</a>`).join('')}${more}</div>` : '';
     return stars || tags ? `<div class="under">${stars ? `<div class="meta">${stars}</div>` : ''}${tags}</div>` : '';
 }
 // stars, as MusicBrainz's own: the average lit in the accent, yours once set in gold; logged in, a click rates
@@ -3240,7 +3253,7 @@ async function loadRg(id, step = () => {}) {
 }
 // the folksonomy tags (not the genres) sit behind a chip that opens them
 let tagsOpen = false;
-const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<span class="chip tag">${esc(t)}</span>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
+const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
 // a few aliases inline; a +N button shows the rest
 // the first four aliases, the rest in a popover behind +N
 // and a pencil that opens the alias editor in a popup
@@ -5882,7 +5895,7 @@ function tagxParse(html) {
         let ul = h.nextElementSibling; while (ul && ul.tagName !== 'UL' && !/^H[23]$/.test(ul.tagName)) ul = ul.nextElementSibling;
         if (!ul || ul.tagName !== 'UL' || ul.classList.contains('pagination')) continue;
         const lis = [...ul.children], more = lis.find(li => li.querySelector('em > a'));
-        groups.push({ t: h.tagName === 'H2' ? tx(h).replace(/ .*$/, '') : tx(h), items: lis.filter(li => li !== more).map(li => { const as = [...li.querySelectorAll('a')], m = li.textContent.match(/^\s*([\d,]+)\s*-\s/); return { h: li.innerHTML.trim(), c: m ? m[1] : '', a: as[0] ? as[0].outerHTML : tx(li), by: as.slice(1).map(x => x.outerHTML).join(', '), cm: tx(li.querySelector('.comment')).replace(/^\(|\)$/g, '') }; }), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
+        groups.push({ t: tx(h).replace(/\s*[\d(].*$/, '').replace(/ tagged .*$/i, ''), items: lis.filter(li => li !== more).map(li => { const as = [...li.querySelectorAll('a')], m = li.textContent.match(/^\s*([\d,]+)\s*-\s/); return { u: as[0] ? as[0].getAttribute('href') : '', h: li.innerHTML.trim(), c: m ? m[1] : '', a: as[0] ? as[0].outerHTML : tx(li), by: as.slice(1).map(x => x.outerHTML).join(', '), cm: tx(li.querySelector('.comment')).replace(/^\(|\)$/g, '') }; }), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
     }
     const pg = [...(c.querySelector('ul.pagination') || d.createElement('ul')).querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href')]);
     return { found: tx([...c.querySelectorAll('p')].find(p => /\d/.test(p.textContent) && /found/i.test(p.textContent))), tabs, groups, pg };
@@ -5908,7 +5921,7 @@ function tagxHtml(d) {
     const cur = location.href.split(/[?#]/)[0].replace(/\/$/, '');
     const tabs = d.name ? `<a class="u-tab" href="${MB}/user/${U}/tags">All tags</a>${d.type ? `<a class="u-tab" href="${MB}/user/${U}/tag/${T}">Every type</a>` : ''}<a class="u-tab" href="${MB}/tag/${T}">Everyone's use of it</a>`
         + (t ? t.tabs.filter(x => !/\/tags$/.test(x[1])).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '')
-        : (t ? (k => k ? `<span class="ed-views tgx-ic">${k}</span>` : '')(t.tabs.map(([x, h]) => { const ty = (h.replace(/\/$/, '').match(/\/tag\/[^/]+\/([a-z_-]+)$/) || [])[1], mk = ty && HM_KIND[ty.replace('_', '-')]; return mk ? `<a href="${esc(h)}" aria-label="${esc(x)}" data-tip="${esc(x)}" aria-pressed="${h.replace(/\/$/, '') === cur}">${mkSvg(mk[1])}</a>` : ''; }).join('')) + t.tabs.filter(([, h]) => !/\/tag\/[^/]+\/[a-z_-]+\/?$/.test(h) && h.replace(/\/$/, '') !== cur).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '') + (ME ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/tag/${T}">Your use of it</a>` : '');
+        : (t ? (k => k ? `<span class="ed-views tgx-ic">${k}</span>` : '')(t.tabs.map(([x, h]) => { const ty = (h.replace(/\/$/, '').match(/\/tag\/[^/]+\/([a-z_-]+)$/) || [])[1], mk = ty && HM_KIND[ty.replace('_', '-')]; return mk ? `<a href="${esc(h)}" aria-label="${esc(x)}" data-tip="${esc(x)}" aria-pressed="${h.replace(/\/$/, '') === cur}">${mkSvg(mk[1])}</a>` : ''; }).join('')) + '<span class="tgx-tb">' + t.tabs.filter(([, h]) => !/\/tag\/[^/]+\/[a-z_-]+\/?$/.test(h) && h.replace(/\/$/, '') !== cur).map(([x, h]) => `<a class="u-tab" href="${esc(h)}">${esc(x)}</a>`).join('') : '<span class="tgx-tb">') + (ME ? `<a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/tag/${T}">Your use of it</a>` : '') + '</span>';
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading…' : esc(t.found) + (d.name ? ` · ${d.dn ? 'downvoted' : 'tagged'} by <a href="${MB}/user/${U}">${esc(d.name)}</a>` : '');
     const hero = `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tag${d.type ? ' · ' + esc(d.type.replace('_', ' ').replace('-', ' ')) + 's' : ''}</span><span class="acts">${SRCH()}</span></div><h1>${esc(d.tag)}</h1>`
         + `<p class="u-sub">${sub}</p><nav class="u-tabs">${tabs}</nav></div></section>`;
@@ -5919,9 +5932,11 @@ function tagxHtml(d) {
     const secs = t.groups.map(g => { const id = 'tgx-' + g.t.toLowerCase().replace(/\W+/g, '-'), q = (qs[id] || '').trim().toLowerCase(), xs = g.items.filter(x => !q || x.h.replace(/<[^>]+>/g, ' ').toLowerCase().includes(q)), cnt = g.items.some(x => x.c);
         const fb = `${q ? `<span class="fdone"><button type="button" class="lnk" data-tgxf="clr:${id}">Clear</button><span class="fn">${xs.length} of ${g.items.length}</span></span>` : ''}${fo[id] || q ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tgxq="${id}" value="${esc(qs[id] || '')}" placeholder="Filter" aria-label="Filter ${esc(g.t)}" autocomplete="off"></span>` : ''}<span class="ed-views"><button type="button" data-tgxf="open:${id}" aria-pressed="${!!(fo[id] || q)}" aria-label="Filter" data-tip="${fo[id] || q ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`;
         const body = !xs.length ? '<p class="hm-none">Nothing matches the filter.</p>'
+            : view === 'grid' ? `<div class="tgx-g">${xs.map(x => { const m = (x.u || '').match(/\/(release-group|release|artist|label|recording|work|area|place|instrument|series|event)\/([0-9a-f-]{36})/), k = m && m[1], mk = (HM_KIND[k] || ['', CI_TAG])[1];
+                return `<div class="tgx-c">${k === 'release' || k === 'release-group' ? `<img src="https://coverartarchive.org/${k}/${m[2]}/front-250" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'tgx-mk',innerHTML:this.dataset.mk}))" data-mk="${esc(bigMk(mk))}">` : `<span class="tgx-mk">${bigMk(mk)}</span>`}<div class="tgx-n">${x.a}${x.c ? ` <b>${x.c}</b>` : ''}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`; }).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
-        return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span></h2></span><div class="tools">${fb}<span class="ed-div"></span>${viewBs(['row', 'table'], view, 'tgxview', 'View')}</div></div>`
+        return `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span></h2></span><div class="tools">${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}</div></div>`
             + body
             + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : '') + '</section>'; }).join('');
     const pg = t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-tgxpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
@@ -6147,6 +6162,7 @@ function render(keepPop) {
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
     // a redraw keeps the images already loaded, so the covers don't blink
     for (const im of app.querySelectorAll('img')) { const k = im.outerHTML, o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
+    heroFacts(app);
     editMenu(app);
     const gc = app.querySelector('[data-rgcover]');
     if (gc) gc.onerror = () => { const e = data.editions.find(x => x.thumb); if (e && !gc.dataset.tried) { gc.dataset.tried = 1; gc.src = `https://coverartarchive.org/release/${e.id}/front-500`; } else gc.outerHTML = `<div class="nocover">${LAYERS(96, 1)}</div>`; };
@@ -7603,7 +7619,7 @@ async function show(key) {
     }
     if (kind === 'utags' || kind === 'etags') {
         const ent = kind === 'etags' ? id : '';
-        data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false };
+        data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: false, ao: !!ent && location.hash === '#add' };
         scrollTo(0, 0); render(); tagsLoad(n, key); return;
     }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
