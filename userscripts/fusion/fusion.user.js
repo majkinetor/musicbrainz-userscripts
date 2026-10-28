@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.231500
+// @version      2026.10.28.093000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2106,10 +2106,10 @@ function mbuDock() {
             // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
             + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-            + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#d65aa8;font:600 12px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}'
+            + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
             + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
             + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-            + '[data-mbu-docked=show]:hover::after{display:none}';
+            + '[data-mbu-docked=show]:hover::after{opacity:1}';
         root.appendChild(css);
     }
     if (!on) {

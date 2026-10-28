@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.27.231500
+// @version      2026.10.28.093000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1031,10 +1031,10 @@
               // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
               + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#d65aa8;font:600 12px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}'
+              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
               + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
               + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-              + '[data-mbu-docked=show]:hover::after{display:none}';
+              + '[data-mbu-docked=show]:hover::after{opacity:1}';
           root.appendChild(css);
       }
       if (!on) {

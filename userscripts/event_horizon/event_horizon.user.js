@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.080000
+// @version      2026.10.28.093000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -568,10 +568,10 @@ function mbuDock() {
             // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
             + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-            + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#d65aa8;font:600 12px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}'
+            + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
             + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
             + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-            + '[data-mbu-docked=show]:hover::after{display:none}';
+            + '[data-mbu-docked=show]:hover::after{opacity:1}';
         root.appendChild(css);
     }
     if (!on) {

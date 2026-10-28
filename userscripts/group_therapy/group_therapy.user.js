@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.27.231500
+// @version      2026.10.28.093000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -938,10 +938,10 @@
               // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
               + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#d65aa8;font:600 12px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}'
+              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
               + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
               + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-              + '[data-mbu-docked=show]:hover::after{display:none}';
+              + '[data-mbu-docked=show]:hover::after{opacity:1}';
           root.appendChild(css);
       }
       if (!on) {
