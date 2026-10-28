@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.170000
+// @version      2026.10.28.180000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2754,6 +2754,9 @@
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
     /* #768: the settings window, over the editor under its ⚙, built like Platform Check's */
+    #ii-modal.ii-cfgonly { visibility: hidden; pointer-events: none; }
+    #ii-modal.ii-cfgonly #ii-setup-pane { visibility: visible; pointer-events: auto; }
+    #ii-overlay.ii-cfgonly { display: none !important; }
     .ii-pane.ii-cfgwin.open { position: absolute; top: 52px; right: 12px; z-index: 6; width: 470px; max-width: calc(100% - 24px);
       max-height: calc(100% - 64px); box-sizing: border-box; padding: 14px 16px 16px; border: 1px solid var(--mbu-border);
       border-radius: var(--mbu-radius-lg); box-shadow: var(--mbu-shadow-lg); background: var(--mbu-bg); }
@@ -8866,9 +8869,19 @@
     item.oncontextmenu = e => {   // #695: right-click opens the settings
       e.preventDefault();
       if (location.pathname.replace(/\/$/, '').toLowerCase() !== HOME) return;
-      if (!document.getElementById('ii-modal')?.classList.contains('open')) openModal();
-      const pane = document.getElementById('ii-setup-pane');
-      if (pane && !pane.classList.contains('open')) document.getElementById('ii-setup-toggle')?.click();
+      if (document.getElementById('ii-modal')?.classList.contains('open')) { document.getElementById('ii-setup-toggle')?.click(); return; }
+      // the settings alone: the window opens hidden, only its settings pane shows; closing the pane closes the window
+      openModal();
+      const modal = document.getElementById('ii-modal'), ov = document.getElementById('ii-overlay'), pane = document.getElementById('ii-setup-pane');
+      modal.classList.add('ii-cfgonly'); ov.classList.add('ii-cfgonly');
+      if (!pane.classList.contains('open')) document.getElementById('ii-setup-toggle').click();
+      const done = () => { mo.disconnect(); document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', esc, true);
+        modal.classList.remove('ii-cfgonly'); ov.classList.remove('ii-cfgonly'); pane.classList.remove('open'); closeModal(); };
+      const out = ev => { if (!pane.contains(ev.target)) done(); };
+      const esc = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); done(); } };
+      const mo = new MutationObserver(() => { if (!pane.classList.contains('open')) done(); });
+      mo.observe(pane, { attributes: true, attributeFilter: ['class'] });
+      document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', esc, true);
     };
     const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no ISRC Scout: the click loads it
     // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
