@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.130000
+// @version      2026.10.28.134000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -596,14 +596,14 @@
               // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
               + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
+              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#d9479f;font:600 15px/1 system-ui,sans-serif;letter-spacing:.01em;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
               + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
               + '[data-mbu-docked=show]:hover::after{opacity:1}'
-              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#4cbf7a}'
-              + '[data-mbu-docked=show][data-mbu-busy]::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:#e46bb6;border-right-color:#e46bb6;animation:mbu-dock-spin .9s linear infinite;pointer-events:none}'
-              + '@keyframes mbu-dock-spin{to{transform:rotate(360deg)}}'
-              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::before{animation:none!important}}';
+              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#3fae6c}'
+              + '[data-mbu-docked=show][data-mbu-busy]::after{color:#cfc8d8;letter-spacing:2px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+              + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
+              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after{animation:none!important}}';
           root.appendChild(css);
       }
       if (!on) {
@@ -651,10 +651,13 @@
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
       b.dataset.mbCornerLabel = o.label;
-      b.status = function (t) { if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
-      // .card(fn): a hover card, fn() → its HTML (mbuTipCard); .busy(on): a ring turns round the icon while it works
+      // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+      // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
+      var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
+      b.status = function (t) { b.mbuSt = t || ''; show(); };
+      b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
-      b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; };
+      if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';
       b.status('');
       mbRestackCorner('br');
       return b;
