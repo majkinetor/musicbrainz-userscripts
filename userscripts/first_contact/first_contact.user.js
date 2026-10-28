@@ -4903,7 +4903,7 @@ function mbuDock() {
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
             + '.mbu-dock-item,#mbu-dock{filter:none!important}'
             // folded, an entry with something to do peeks beside the button, smaller
-            + '[data-mbu-docked=peek]{transform:scale(.8);animation:mbu-dock-in .35s ease-out}@keyframes mbu-dock-in{from{opacity:0}to{opacity:1}}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
@@ -4940,10 +4940,13 @@ function mbuDock() {
     if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
     els.forEach(function (el) {
         if (el.dataset.mbCornerDock === 'hide' || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
+        var was = el.getAttribute('data-mbu-docked');
         el.removeAttribute('data-mbu-docked');   // measured as its script left it
         var shown = getComputedStyle(el).display !== 'none';
         if (shown) n++;
         el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+        // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
+        if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
     });
     btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
 }
