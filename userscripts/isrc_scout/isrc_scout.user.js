@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.330000
+// @version      2026.10.28.211849
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2956,6 +2956,7 @@
     .ii-lookup.pending { color: var(--mbu-text-dim); cursor: pointer; text-decoration: underline dotted #adb5bd; text-underline-offset: 2px; }
     /* #431: a position-matched fill whose length/title doesn't fit the MB track */
     input.ii-in-suspect { border-color: var(--mbu-warn) !important; background: var(--mbu-bg-raised) !important; box-shadow: 0 0 0 2px rgba(224,137,42,.28); }
+    .ii-submit-wait { color: var(--mbu-warn) !important; border-color: var(--mbu-warn) !important; }
     #ii-suspect-badge { color: var(--mbu-warn); background: var(--mbu-warn-bg); border: 1px solid var(--mbu-warn); border-radius: 5px;
       padding: 2px 8px; font-weight: 700; font-size: 11.5px; cursor: pointer; flex-shrink: 0; white-space: nowrap; }
     #ii-suspect-badge:hover { background: var(--mbu-warn-bg); }
@@ -8731,6 +8732,12 @@
       const note = getEditNote();
       Log.info('Submitting ' + isrcCount + ' ISRC(s) across ' + Object.keys(map).length + ' recording(s)', map);
       Log.info('Edit note: ' + note.replace(/\n/g, ' '));
+      // a repeated submit (#748) says so on the button while it waits: the toast alone goes by unseen
+      repeatWatch = msg => {
+        const m = /repeating in (\d+) s \(attempt (\d+) of (\d+)\)/.exec(msg);
+        submitBtn.textContent = m ? 'Server busy · again in ' + m[1] + ' s (' + m[2] + '/' + m[3] + ')' : 'Submitting…';
+        submitBtn.classList.add('ii-submit-wait');
+      };
       try {
         await submitIsrcs(map, note);
         Log.info('ISRC submit OK');
@@ -8744,7 +8751,7 @@
         if (e.authCleared) refreshAuthState();   // shows "Not authorized" and opens ⚙ Setup
         Log.err('ISRC submit failed: ' + e.message);
         toast('ISRC submit failed: ' + e.message, 'err');
-      }
+      } finally { repeatWatch = null; submitBtn.classList.remove('ii-submit-wait'); submitBtn.textContent = 'Submitting…'; }
     }
 
     if (linkCount) {
