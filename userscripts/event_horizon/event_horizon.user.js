@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.310000
+// @version      2026.10.28.320000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2777,6 +2777,7 @@ const HOSTS = [
     ['muziekweb', 'Muziekweb', /muziekweb\.nl/], ['muzikum', 'Muzikum', /muzikum\.eu/], ['nla', 'Trove (NLA)', /nla\.gov\.au/], ['ocremix', 'OC ReMix', /ocremix\.org/],
     ['openlibrary', 'Open Library', /openlibrary\.org/], ['googleplus', 'Google+', /plus\.google\.com/], ['setlistfm', 'setlist.fm', /setlist\.fm/], ['snac', 'SNAC', /snaccooperative\.org/],
     ['sonyjp', 'Sony Music Japan', /sonymusic\.co\.jp/], ['vgmdb', 'VGMdb', /vgmdb\.net/], ['whosampled', 'WhoSampled', /whosampled\.com/], ['worldcat', 'WorldCat', /worldcat\.org/],
+    ['creativecommons', 'Creative Commons', /creativecommons\.org/],
 ];
 const KIND = t => /free streaming/.test(t) ? 'free' : /streaming/.test(t) ? 'listen' : /purchase|amazon/.test(t) ? 'buy' : 'info';
 const region = u => (u.match(/music\.apple\.com\/(\w\w)\//) || u.match(/amazon\.(co\.uk|de|fr|nl|com)/) || u.match(/qobuz\.com\/(\w\w-\w\w)\//) || [])[1] || '';
@@ -2915,6 +2916,7 @@ const EXTRA = {
     sonyjp: TILE('#000', '#fff', 'SONY', 7), vgmdb: TILE('#2b3a55', '#fff', 'VGM', 8),
     whosampled: '<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#ffe500"/><circle cx="7" cy="12" r="5" fill="#333"/><circle cx="17" cy="12" r="5" fill="#333"/><circle cx="7" cy="12" r="1.2" fill="#fff"/><circle cx="17" cy="12" r="1.2" fill="#fff"/></svg>',
     worldcat: '<svg viewBox="0 0 24 24"><g fill="none" stroke-width="3" stroke-linecap="round"><path d="M12 4a8 8 0 0 1 7 4" stroke="#6b3fa0"/><path d="M20 12a8 8 0 0 1-4 7" stroke="#e07b25"/><path d="M12 20a8 8 0 0 1-7-4" stroke="#3a9a3a"/><path d="M4 12a8 8 0 0 1 4-7" stroke="#1a7ab8"/><path d="M17 6a8 8 0 0 1 2.5 8" stroke="#b0207e"/></g></svg>',
+    creativecommons: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#000" stroke-width="2"/><text x="12" y="12" dy=".36em" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="10" fill="#000">cc</text></svg>',
 };
 const MONO = { amazon: 'a', allmusic: 'AM', mora: 'mo', ototoy: 'OT', pandora: 'P', jaxsta: 'Jx', ebay: 'eb', bol: 'bol' };
 // an icon's ids (Instagram's gradient, RYM's) made unique per copy: url(#id) resolves to the first copy, blank when that one is hidden
