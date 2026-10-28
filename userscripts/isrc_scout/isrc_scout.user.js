@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.220000
+// @version      2026.10.28.230000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2770,11 +2770,13 @@
     .ii-cfg-lnk { font: 600 12px system-ui; color: var(--mbu-accent-text); text-decoration: none; cursor: pointer;
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
+    .ii-cfg-hist { font-size: 16px; line-height: 1; padding: 2px 4px; }
+    .ii-cfg-hist:hover { text-decoration: none; }
     /* #768: the settings window, over the editor under its ⚙, built like Platform Check's */
     #ii-modal.ii-cfgonly { visibility: hidden; pointer-events: none; }
     #ii-modal.ii-cfgonly #ii-setup-pane { visibility: visible; pointer-events: auto; }
     #ii-overlay.ii-cfgonly { display: none !important; }
-    .ii-pane.ii-cfgwin.open { position: absolute; top: 52px; right: 12px; z-index: 6; width: 470px; max-width: calc(100% - 24px);
+    .ii-pane.ii-cfgwin.open { position: absolute; top: 52px; right: 12px; z-index: 6; width: 560px; max-width: calc(100% - 24px);
       max-height: calc(100% - 64px); box-sizing: border-box; padding: 14px 16px 16px; border: 1px solid var(--mbu-border);
       border-radius: var(--mbu-radius-lg); box-shadow: var(--mbu-shadow-lg); background: var(--mbu-bg); }
     .ii-cfgwin .ii-cfg-sec { font-weight: 700; color: var(--mbu-text); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
@@ -5168,7 +5170,9 @@
           icon: '<svg viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/>'
             + '<g fill="none" stroke="currentColor" stroke-width="9"><circle cx="64" cy="64" r="40"/>'
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
-        })}
+        }).replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span>' + `<a class="ii-cfg-lnk ii-cfg-hist" id="ii-history" target="_blank" rel="noopener"
+           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
+           data-tip="My ISRC edits on MusicBrainz&#10;Your Add ISRCs and Remove ISRC edits there" aria-label="My ISRC edits on MusicBrainz">🕓</a>`)}
         <div id="ii-cfg-main">
           <div style="display:flex; gap:8px"><button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button><button class="ii-cfg-nav" id="ii-cfg-to-logins" type="button"><span>Logins</span><span class="ii-cfg-navn" id="ii-cfg-logins-n"></span><span aria-hidden="true">›</span></button></div>
 
@@ -5196,10 +5200,6 @@
         <div class="ii-set-row"><label data-tip="Column toggles above the tracklist&#10;ISRC and Links beside MusicBrainz&#x27;s own &quot;Display credits at bottom&quot;, to show or hide each column there."><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist</span></label></div>
         <div class="ii-set-row"><label data-tip="Show ISRCs in parts&#10;CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain."><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts</span></label></div>
 
-          <div class="ii-cfg-sec">More</div>
-          <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
-           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
-           data-tip="Your Add ISRCs and Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
         </div>
 
         <div id="ii-cfg-logins" hidden>
