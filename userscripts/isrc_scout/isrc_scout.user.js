@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.210000
+// @version      2026.10.28.220000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5176,26 +5176,25 @@
           <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Import buttons</span>
             <label><input type="checkbox" id="ii-show-icons">icons</label>
             <label><input type="checkbox" id="ii-show-text">text</label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group<span class="ii-set-help">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-bg-links"><span>Check links in the background<span class="ii-set-help">On a release page, look for every track on each platform and show the links to add beside the dock icon in Event Horizon. It uses a lot of network, so it's off by default. What it finds is kept for a week.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms<span class="ii-set-help">Tidal takes about a second a track. Off: it waits until you run Find links.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence<span class="ii-set-help">Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong (#314).</span></span></label></div>
-          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Spotify ISRC source</span>
+        <div class="ii-set-row"><label data-tip="Use providers from the whole release group&#10;Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup."><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group</span></label></div>
+        <div class="ii-set-row"><label data-tip="Check links in the background&#10;On a release page, look for every track on each platform and show the links to add beside the dock icon in Event Horizon. It uses a lot of network, so it&#x27;s off by default. What it finds is kept for a week."><input type="checkbox" id="ii-bg-links"><span>Check links in the background</span></label></div>
+        <div class="ii-set-row"><label data-tip="Include slow platforms&#10;Tidal takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
+        <div class="ii-set-row"><label data-tip="Ignore Platform Check link confidence&#10;Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong."><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence</span></label></div>
+          <div class="ii-set-row ii-set-inline" data-tip="Where Spotify&#x27;s ISRCs come from&#10;Spotify&#x27;s own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another."><span class="ii-set-k">Spotify ISRC source</span>
             <select id="ii-sp-source">
               <option value="harmony">Harmony</option>
               <option value="molla">molla</option>
               <option value="isrchunt">ISRC Hunt</option>
             </select></div>
-          <div class="ii-set-help ii-set-under">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another (#603).</div>
 
           <div class="ii-cfg-sec">Submitting</div>
-          <div class="ii-set-row"><label><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times<span class="ii-set-help">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span></label></div>
+          <div class="ii-set-row"><label data-tip="Repeat failed submits up to … minutes or … times&#10;When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes."><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times</span></label></div>
 
           <div class="ii-cfg-sec">Release page</div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist<span class="ii-set-help">The release page's tracklist gets each track's ISRCs.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist<span class="ii-set-help">The release page's tracklist gets each recording's links, an icon per platform.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist<span class="ii-set-help">ISRC and Links beside MusicBrainz's own "Display credits at bottom", to show or hide each column there.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts<span class="ii-set-help">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span></label></div>
+        <div class="ii-set-row"><label data-tip="ISRC column on the tracklist&#10;The release page&#x27;s tracklist gets each track&#x27;s ISRCs."><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist</span></label></div>
+        <div class="ii-set-row"><label data-tip="Links column on the tracklist&#10;The release page&#x27;s tracklist gets each recording&#x27;s links, an icon per platform."><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist</span></label></div>
+        <div class="ii-set-row"><label data-tip="Column toggles above the tracklist&#10;ISRC and Links beside MusicBrainz&#x27;s own &quot;Display credits at bottom&quot;, to show or hide each column there."><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist</span></label></div>
+        <div class="ii-set-row"><label data-tip="Show ISRCs in parts&#10;CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain."><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts</span></label></div>
 
           <div class="ii-cfg-sec">More</div>
           <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
