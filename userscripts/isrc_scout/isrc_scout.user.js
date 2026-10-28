@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.300100
+// @version      2026.10.28.300200
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -6685,7 +6685,10 @@
     // Replace a row's ADD-column slot with a coloured "add" candidate: a link to the
     // resolved provider URL. Left-click opens the track; RIGHT-click adds the
     // relationship in the background.
-    function makeNew(idx, p, url) {
+    function makeNew(idx, p, url, cached) {
+      // a link found here is the background check's too, so the page button counts what the editor shows
+      const t0 = RELEASE.tracks[idx];
+      if (!cached && t0 && t0.recId) bgRemember(t0.recId, p.code, url);
       const el = cell(idx, p.code);
       if (!el) return;
       const a = document.createElement('a');
@@ -6818,6 +6821,15 @@
     // is just re-rendering each row's ADD column back to its default unresolved
     // state — nothing to touch on RELEASE.tracks, and already-linked
     // relationships (the LINKED column) are untouched.
+    // links the background check already found show in the editor without a Find links
+    function seedCached() {
+      bgLinksToAdd().forEach(l => {
+        const idx = RELEASE.tracks.findIndex(t => t.recId === l.rec), p = PROV.find(x => x.code === l.code);
+        const el = p && idx >= 0 ? cell(idx, p.code) : null;
+        if (el && el.classList.contains('cand')) makeNew(idx, p, l.url, true);
+      });
+    }
+
     function clearResolved() {
       (RELEASE ? RELEASE.tracks : []).forEach((t, idx) => {
         const box = addBox(idx);
@@ -7094,7 +7106,7 @@
       return out.concat(otherLinked(t)).map(o => Object.assign(o, { ended: !!(t.endedUrls && t.endedUrls.has(o.url)) }));
     }
 
-    return { findHeadless, PROV, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
+    return { findHeadless, seedCached, PROV, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -7258,6 +7270,7 @@
     // page is open) re-skins them, or SoundExchange when this release doesn't offer it
     setTrackProvider(trackProvAvailable(trackProv) ? trackProv : TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
     updateSummary();
+    TrackLinks.seedCached();
     TrackLinks.refresh();   // #301: set the Links tab "N missing" badge
   }
   function existingHtml(arr, pending, failed, recId) {
@@ -9035,6 +9048,12 @@
     const keys = Object.keys(all).sort((a, b) => all[b].at - all[a].at);
     keys.slice(50).forEach(k => delete all[k]);   // the 50 latest releases
     store.set('bg_links_cache', all);
+  }
+  function bgRemember(rec, code, url) {
+    const c = bgCache();
+    if (c.links.some(x => x.rec === rec && x.url === url)) return;
+    c.links.push({ rec, code, url }); bgSave(c);
+    updateBtnLinks();
   }
   // the cached links MusicBrainz doesn't have yet (one added since drops out)
   function bgLinksToAdd() {
