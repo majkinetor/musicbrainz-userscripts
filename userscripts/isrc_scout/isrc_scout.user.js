@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.180000
+// @version      2026.10.28.200000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5396,6 +5396,7 @@
       modal.addEventListener('click', eat, { capture: true, once: true });
       setTimeout(() => modal.removeEventListener('click', eat, { capture: true }), 400);
     }, true);
+    cfgDrag(modal.querySelector('#ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-maximize-toggle').addEventListener('click', toggleMaximize);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
@@ -5674,6 +5675,18 @@
       b.addEventListener('click', () => b.closest('.ii-pane').classList.remove('open')));
   }
 
+  // the settings window moves by its header (#847)
+  function cfgDrag(el) {
+    el.addEventListener('pointerdown', e => {
+      const h = e.target.closest('.mbu-cfg-h');
+      if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
+      const p = (el.offsetParent || document.body).getBoundingClientRect(), r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      el.style.transform = 'none'; el.style.right = 'auto'; el.style.bottom = 'auto';
+      const mv = ev => { el.style.left = (ev.clientX - dx - p.left) + 'px'; el.style.top = (ev.clientY - dy - p.top) + 'px'; };
+      const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };
+      mv(e); addEventListener('pointermove', mv); addEventListener('pointerup', up); e.preventDefault();
+    });
+  }
   function togglePane(id) {
     modal.querySelectorAll('.ii-pane').forEach(p => {
       if (p.id === id) p.classList.toggle('open');
@@ -8892,8 +8905,10 @@
       const modal = document.getElementById('ii-modal'), ov = document.getElementById('ii-overlay'), pane = document.getElementById('ii-setup-pane');
       modal.classList.add('ii-cfgonly'); ov.classList.add('ii-cfgonly');
       if (!pane.classList.contains('open')) document.getElementById('ii-setup-toggle').click();
+      const mr = modal.getBoundingClientRect();   // in the middle of the screen, not under the window's ⚙
+      Object.assign(pane.style, { right: 'auto', left: Math.max(0, innerWidth / 2 - mr.left - pane.offsetWidth / 2) + 'px', top: Math.max(0, innerHeight / 2 - mr.top - pane.offsetHeight / 2) + 'px' });
       const done = () => { mo.disconnect(); document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', esc, true);
-        modal.classList.remove('ii-cfgonly'); ov.classList.remove('ii-cfgonly'); pane.classList.remove('open'); closeModal(); };
+        modal.classList.remove('ii-cfgonly'); ov.classList.remove('ii-cfgonly'); pane.classList.remove('open'); ['left', 'top', 'right', 'bottom', 'transform'].forEach(k => pane.style.removeProperty(k)); closeModal(); };
       const out = ev => { if (!pane.contains(ev.target)) done(); };
       const esc = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); done(); } };
       const mo = new MutationObserver(() => { if (!pane.classList.contains('open')) done(); });
