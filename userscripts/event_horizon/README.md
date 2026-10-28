@@ -9,6 +9,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 ## Features
 
 - **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument, place, series or event page, and moves between them without reloading.
+- **Pinned header**: once the page's header scrolls away, a slim bar at the top keeps its cover, its title and its action row in reach; click the title to go back up.
 - **[Sections](#sections)**: a button in the page's action row jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.

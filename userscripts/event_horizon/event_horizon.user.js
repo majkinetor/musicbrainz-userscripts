@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.202515
+// @version      2026.10.28.203051
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2288,6 +2288,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec]{background:none!important;border-color:transparent}
+#eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:var(--bg);border-bottom:1px solid var(--border);box-shadow:0 4px 14px var(--shadow);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{max-width:1200px;margin:0 auto;padding:6px 16px;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:cover;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text)!important;text-decoration:none}
@@ -6998,6 +6999,34 @@ function secRail(app) {
         return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
     railSpy();
+    pinBar(app);
+}
+// once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
+// (the very buttons, moved in and back, so their menus and the search keep working)
+let pinIo = null;
+function pinBar(app) {
+    let bar = document.getElementById('eh-pin');
+    if (pinIo) { pinIo.disconnect(); pinIo = null; }
+    if (bar) { bar.classList.remove('on'); bar.querySelector('.kicker').innerHTML = ''; }
+    const acts = app.querySelector('.kicker .acts'); if (!acts) return;
+    let hd = acts; while (hd.parentElement && hd.parentElement !== app) hd = hd.parentElement;
+    if (hd === app) return;
+    if (!bar) {
+        bar = document.createElement('div'); bar.id = 'eh-pin'; bar.innerHTML = '<div class="kicker label"></div>'; document.body.appendChild(bar);
+        bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv')) scrollTo({ top: 0, behavior: 'smooth' }); });
+    }
+    const k = bar.querySelector('.kicker'), h1 = hd.querySelector('h1'), img = hd.querySelector('img.rhcv:not([hidden]),.u-av img');
+    const name = h1 ? h1.textContent.trim() : document.title;
+    k.innerHTML = (img ? `<img class="pcv" alt="" src="${esc(img.src)}">` : '') + `<span class="pnm" data-tip="Back to the top">${esc(name)}</span>`;
+    const home = document.createElement('span'); home.hidden = true; acts.before(home);
+    pinIo = new IntersectionObserver(([e]) => {
+        const pin = !e.isIntersecting && e.boundingClientRect.top < 0;
+        if (pin === bar.classList.contains('on')) return;
+        bar.classList.toggle('on', pin);
+        if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
+        LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
+    });
+    pinIo.observe(hd);
 }
 // lights the section at the top of the window
 function railSpy() {
