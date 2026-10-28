@@ -20,7 +20,7 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   if (!(await on())) await page.locator('#eh-launch').click();
   check(await until(on, v => v) === true, 'EH turns the dock on');
   check(await page.locator('#mbu-dock').isVisible(), 'the dock shows');
-  check(await page.locator('#eh-launch').isVisible(), 'EH\'s own switch stays out of it');
+  check(!(await page.locator('#eh-launch').isVisible()), 'EH switch folds in too');
   check(!(await page.locator('#mc-launch').isVisible()), 'Mission Control folds in');
   check(!(await page.locator('#as-switch').isVisible()), 'Art Station is hidden');
   await page.locator('#mbu-dock').click();
