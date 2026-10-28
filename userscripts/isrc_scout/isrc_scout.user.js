@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.250000
+// @version      2026.10.28.260000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1035,7 +1035,7 @@
               + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               // nothing counted yet: three small dots lighting in turn, no badge
@@ -1056,11 +1056,32 @@
           btn.setAttribute('aria-label', 'String Theory');
           btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
           btn.onclick = function () {
-              var open = !root.hasAttribute('data-mbu-dock-open');
+              // unrolled by hovering: the click keeps it open
+              var open = root.hasAttribute('data-mbu-dock-hover') || !root.hasAttribute('data-mbu-dock-open');
+              root.removeAttribute('data-mbu-dock-hover');
               root.toggleAttribute('data-mbu-dock-open', open);
               mbuShared('dockOpen', open || null);   // remembered for the next page
               mbRestackCorner('br');
           };
+          // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
+          var leaveT = 0;
+          var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+          btn.addEventListener('mouseenter', function () {
+              clearTimeout(leaveT);
+              if (root.hasAttribute('data-mbu-dock-open')) return;
+              root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
+              mbRestackCorner('br');
+          });
+          document.addEventListener('mouseover', function (e) {
+              if (!root.hasAttribute('data-mbu-dock-hover')) return;
+              clearTimeout(leaveT);
+              if (inDock(e.target)) return;
+              leaveT = setTimeout(function () {
+                  if (!root.hasAttribute('data-mbu-dock-hover')) return;
+                  root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');
+                  mbRestackCorner('br');
+              }, 400);
+          }, true);
           root.appendChild(btn);   // outside the body, which Event Horizon swaps
           root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
       }
@@ -2470,6 +2491,7 @@
     #ii-btn.has-missing { background: #a0225e; animation: ii-pulse 1.6s ease-in-out infinite; }
     #ii-btn.has-missing:hover { background: #7d1a4a; }
     #ii-btn .ii-status { font-size: 10px; font-weight: 600; opacity: .9; }
+    #ii-btn .ii-btn-links { border-left: 1px solid rgba(255,255,255,.4); padding-left: 6px; }
     @keyframes ii-pulse { 0%,100%{opacity:1} 50%{opacity:.72} }
 
     /* overlay + modal */
@@ -8924,7 +8946,6 @@
     };
     const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no ISRC Scout: the click loads it
     // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
-    const tipEsc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const mirror = () => {
       if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
       if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
@@ -8933,18 +8954,8 @@
       const busy = Object.keys(BG.running).length > 0;
       item.status(missing + links.length ? String(missing + links.length) : busy ? '' : '\u2713');
       item.busy(busy);
-      item.card(() => {
-        const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
-        let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
-        if (bgLinksOn()) {
-          const byCode = {};
-          links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
-          const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
-          h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
-          Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', tipEsc(p ? p.name : c), r.done + '/' + r.of + ' tracks…'); });
-        } else h += row('#8a8494', 'Links', 'not checked: turn on <b>Check links in the background</b> in the settings');
-        return mbuTipCard({ title: 'ISRC Scout', body: '<div class="mbu-tip-rows">' + h + '</div>' });
-      });
+      item.card(scoutCard);
+      updateBtnLinks();
     };
     new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
     mirror();
@@ -8964,6 +8975,32 @@
   // "Cannot access 'btnStatus' before initialization", which in String Theory also stopped every script
   // after this one, Platform Check's panel included (oblaka, majkinetor).
   function btnStatus() { return btn.querySelector('#ii-btn-status'); }
+
+  // The dock's card, also the page button's hover card: ISRCs, and with the background check, the links to add
+  function scoutCard() {
+    if (!RELEASE) return '';
+    const tipEsc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
+    const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
+    let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
+    if (bgLinksOn()) {
+      const links = bgLinksToAdd(), byCode = {};
+      links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
+      const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
+      h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
+      Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', tipEsc(p ? p.name : c), r.done + '/' + r.of + ' tracks…'); });
+    } else h += row('#8a8494', 'Links', 'not checked: turn on <b>Check links in the background</b> in the settings');
+    return mbuTipCard({ title: 'ISRC Scout', body: '<div class="mbu-tip-rows">' + h + '</div>' });
+  }
+  // The button's links segment, as the dock: 🔗 n to add, 🔗 ✓ none, 🔗 … checking; none with the check off.
+  // Written only on a change: the dock's mirror watches the button and calls this.
+  function updateBtnLinks() {
+    let el = btn.querySelector('#ii-btn-links');
+    const txt = !RELEASE || !bgLinksOn() ? '' : (n => n ? '🔗 ' + n : Object.keys(BG.running).length ? '🔗 …' : '🔗 ✓')(bgLinksToAdd().length);
+    if (!el) { if (!txt) return; el = document.createElement('span'); el.id = 'ii-btn-links'; el.className = 'ii-status ii-btn-links'; btn.appendChild(el); }
+    if (el.textContent !== txt) el.textContent = txt;
+    el.hidden = !txt;
+  }
 
   // #847: "Check links in the background" (off by default, it uses a lot of network): on a release
   // page, Find links runs on its own with MusicBrainz's ISRCs, and the dock shows the links to add.
@@ -9018,8 +9055,10 @@
     } else {
       statusEl.textContent = '⚠ ' + (total - missing) + '/' + total;
       btn.classList.add('has-missing');
-      btn.dataset.tip = missing + ' track' + (missing > 1 ? 's' : '') + ' without an ISRC';
+      btn.dataset.tip = '';
     }
+    mbuTip(btn, scoutCard, { card: true });
+    updateBtnLinks();
   }
 
   /* #749: each track's ISRCs and links as two columns of the release page's own tracklist, from

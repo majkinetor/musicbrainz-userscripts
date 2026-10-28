@@ -731,7 +731,7 @@ function mbuDock() {
             + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="\u2713"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="\u2713"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
             // nothing counted yet: three small dots lighting in turn, no badge
@@ -752,11 +752,32 @@ function mbuDock() {
         btn.setAttribute('aria-label', 'String Theory');
         btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
         btn.onclick = function () {
-            var open = !root.hasAttribute('data-mbu-dock-open');
+            // unrolled by hovering: the click keeps it open
+            var open = root.hasAttribute('data-mbu-dock-hover') || !root.hasAttribute('data-mbu-dock-open');
+            root.removeAttribute('data-mbu-dock-hover');
             root.toggleAttribute('data-mbu-dock-open', open);
             mbuShared('dockOpen', open || null);   // remembered for the next page
             mbRestackCorner('br');
         };
+        // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
+        var leaveT = 0;
+        var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+        btn.addEventListener('mouseenter', function () {
+            clearTimeout(leaveT);
+            if (root.hasAttribute('data-mbu-dock-open')) return;
+            root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
+            mbRestackCorner('br');
+        });
+        document.addEventListener('mouseover', function (e) {
+            if (!root.hasAttribute('data-mbu-dock-hover')) return;
+            clearTimeout(leaveT);
+            if (inDock(e.target)) return;
+            leaveT = setTimeout(function () {
+                if (!root.hasAttribute('data-mbu-dock-hover')) return;
+                root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');
+                mbRestackCorner('br');
+            }, 400);
+        }, true);
         root.appendChild(btn);   // outside the body, which Event Horizon swaps
         root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
     }
