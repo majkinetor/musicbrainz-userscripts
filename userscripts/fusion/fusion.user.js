@@ -2106,14 +2106,16 @@ function mbuDock() {
             // no names, only a short state (a count) as a badge on the entry's top-right corner
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
             + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-            + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
-            + '[data-mbu-docked=show]:hover::after{opacity:1}'
-            + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
-            + '[data-mbu-docked=show][data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+            // folded, an entry with something to do peeks beside the button, smaller
+            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
             // nothing counted yet: three small dots lighting in turn, no badge
-            + '[data-mbu-docked=show][data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
-            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}[data-mbu-docked=show][data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
             + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
             + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
             + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
@@ -2145,7 +2147,7 @@ function mbuDock() {
         el.removeAttribute('data-mbu-docked');   // measured as its script left it
         var shown = getComputedStyle(el).display !== 'none';
         if (shown) n++;
-        el.setAttribute('data-mbu-docked', shown && open ? 'show' : 'hide');
+        el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
     });
     btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
 }
@@ -2167,7 +2169,8 @@ function mbuDockItem(o) {
     b.dataset.mbCornerLabel = o.label;
     // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
     // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
-    var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
+    var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
+        var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && !r.hasAttribute('data-mbu-dock-open') && b.isConnected) mbRestackCorner('br'); };   // folded: it may peek now, or stop
     b.status = function (t) { b.mbuSt = t || ''; show(); };
     b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
     b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
@@ -2201,9 +2204,11 @@ function mbRestackCorner(corner) {
             if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
         }
     }
+    var peeks = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
         .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
     var pos = 14;
     els.forEach(function (el) {
@@ -2212,6 +2217,14 @@ function mbRestackCorner(corner) {
         el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
         pos += (row ? r.width : r.height) + 8;
+    });
+    // the folded dock's peeking entries: in a line beside its button, across the stack's flow
+    var side = 14 + 40 + 4;
+    peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? side : 14)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? 14 : side)) + 'px';
+        el.style[right ? 'left' : 'right'] = 'auto';
+        side += 36;
     });
 }
 
