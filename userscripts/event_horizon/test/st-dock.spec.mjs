@@ -31,7 +31,7 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(await page.locator('.mbu-dock-win #mb-pc-panel').isVisible(), 'Platform Check opens its panel in a window');
   await attachShot(testInfo, page, 'dock-pc');
   await page.keyboard.press('Escape');
-  check(await page.locator('.mbu-dock-win').count() === 0, 'Escape closes it');
+  check(!(await page.locator('.mbu-dock-win').isVisible()), 'Escape closes it');
   await page.locator('#ii-dock').click();
   check(await until(() => page.locator('#ii-modal').isVisible(), v => v) === true, 'ISRC Scout opens its editor');
   await page.keyboard.press('Escape');
