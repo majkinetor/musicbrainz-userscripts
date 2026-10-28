@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.240000
+// @version      2026.10.28.250000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -2773,8 +2773,7 @@
     .ii-cfg-lnk { font: 600 12px system-ui; color: var(--mbu-accent-text); text-decoration: none; cursor: pointer;
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
-    .ii-cfg-hist { font-size: 16px; line-height: 1; padding: 2px 4px; }
-    .ii-cfg-hist:hover { text-decoration: none; }
+    .mbu-cfg-h > .ii-cfg-hist { margin-left: 8px; }
     /* #768: the settings window, over the editor under its ⚙, built like Platform Check's */
     #ii-modal.ii-cfgonly { visibility: hidden; pointer-events: none; }
     #ii-modal.ii-cfgonly #ii-setup-pane { visibility: visible; pointer-events: auto; }
@@ -5174,9 +5173,9 @@
           icon: '<svg viewBox="0 0 128 128" aria-hidden="true"><path d="M64 64 L64 24 A40 40 0 0 1 99 84 Z" fill="#d8c8f2"/>'
             + '<g fill="none" stroke="currentColor" stroke-width="9"><circle cx="64" cy="64" r="40"/>'
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
-        }).replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span>' + `<a class="ii-cfg-lnk ii-cfg-hist" id="ii-history" target="_blank" rel="noopener"
+        }).replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span>' + `<a class="mbu-help ii-cfg-hist" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
-           data-tip="My ISRC edits on MusicBrainz&#10;Your Add ISRCs and Remove ISRC edits there" aria-label="My ISRC edits on MusicBrainz">🕓</a>`)}
+           data-tip="My ISRC edits on MusicBrainz&#10;Your Add ISRCs and Remove ISRC edits there" aria-label="My ISRC edits on MusicBrainz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></a>`)}
         <div id="ii-cfg-main">
           <div style="display:flex; gap:8px"><button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button><button class="ii-cfg-nav" id="ii-cfg-to-logins" type="button"><span>Logins</span><span class="ii-cfg-navn" id="ii-cfg-logins-n"></span><span aria-hidden="true">›</span></button></div>
 
