@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.200000
+// @version      2026.10.28.210000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5170,19 +5170,7 @@
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
         })}
         <div id="ii-cfg-main">
-          <button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button>
-
-          <div class="ii-cfg-sec">MusicBrainz</div>
-          <div class="ii-authstate" id="ii-auth-state"></div>
-          <div class="row" style="margin-top:8px; flex-wrap:nowrap">
-            <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
-            <input type="text" id="ii-oauth-code" placeholder="Paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:140px">
-            <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
-          </div>
-          <div class="ii-help">
-            Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
-            If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
-          </div>
+          <div style="display:flex; gap:8px"><button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button><button class="ii-cfg-nav" id="ii-cfg-to-logins" type="button"><span>Logins</span><span class="ii-cfg-navn" id="ii-cfg-logins-n"></span><span aria-hidden="true">›</span></button></div>
 
           <div class="ii-cfg-sec">Imports</div>
           <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Import buttons</span>
@@ -5215,6 +5203,20 @@
            data-tip="Your Add ISRCs and Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
         </div>
 
+        <div id="ii-cfg-logins" hidden>
+          <div class="ii-cfg-sec ii-cfg-sech">Logins<button class="ii-cfg-back" id="ii-cfg-back2" type="button">‹ Back</button></div>
+          <div class="ii-cfg-sec">MusicBrainz</div>
+          <div class="ii-authstate" id="ii-auth-state"></div>
+          <div class="row" style="margin-top:8px; flex-wrap:nowrap">
+            <button class="ii-tbtn primary" id="ii-authorize" style="flex-shrink:0">Authorize</button>
+            <input type="text" id="ii-oauth-code" placeholder="Paste the code here only if the tab fails to close" autocomplete="off" style="flex:1; min-width:140px">
+            <button class="ii-tbtn ghost" id="ii-signout" style="flex-shrink:0; display:none">Sign out</button>
+          </div>
+          <div class="ii-help">
+            Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
+            If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
+          </div>
+        </div>
         <div id="ii-cfg-platforms" hidden>
           <div class="ii-cfg-sec ii-cfg-sech">Platforms<button class="ii-cfg-back" id="ii-cfg-back" type="button">‹ Back</button></div>
           <div class="ii-set-help ii-set-under">Untick a platform to leave it out: its import button and per-track lookup go, and Match, Find links and All skip it. Platform Check keeps its own list.</div>
@@ -5383,7 +5385,7 @@
     });
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => {
       const pane = modal.querySelector('#ii-setup-pane');
-      if (!pane.classList.contains('open')) { modal.querySelector('#ii-cfg-main').hidden = false; modal.querySelector('#ii-cfg-platforms').hidden = true; }
+      if (!pane.classList.contains('open')) { modal.querySelector('#ii-cfg-main').hidden = false; modal.querySelector('#ii-cfg-platforms').hidden = true; modal.querySelector('#ii-cfg-logins').hidden = true; }
       togglePane('ii-setup-pane');
     });
     // #768: the settings window floats over the editor, so a click outside closes it; that click
@@ -5533,14 +5535,15 @@
     }
 
     // #768: the Platforms view of the settings window, a switch per platform
-    const cfgMain = modal.querySelector('#ii-cfg-main'), cfgPlat = modal.querySelector('#ii-cfg-platforms');
+    const cfgMain = modal.querySelector('#ii-cfg-main'), cfgPlat = modal.querySelector('#ii-cfg-platforms'), cfgLog = modal.querySelector('#ii-cfg-logins');
     const platCount = () => {
       const on = PLATFORMS.filter(([k]) => platformOn(k)).length;
       modal.querySelector('#ii-cfg-platforms-n').textContent = on === PLATFORMS.length ? 'all on' : on + ' of ' + PLATFORMS.length + ' on';
     };
-    const cfgView = plat => { cfgMain.hidden = plat; cfgPlat.hidden = !plat; };
-    modal.querySelector('#ii-cfg-to-platforms').addEventListener('click', () => cfgView(true));
-    modal.querySelector('#ii-cfg-back').addEventListener('click', () => cfgView(false));
+    const cfgView = v => { cfgMain.hidden = v !== 'main'; cfgPlat.hidden = v !== 'platforms'; cfgLog.hidden = v !== 'logins'; };
+    modal.querySelector('#ii-cfg-to-platforms').addEventListener('click', () => cfgView('platforms'));
+    modal.querySelector('#ii-cfg-to-logins').addEventListener('click', () => cfgView('logins'));
+    modal.querySelectorAll('#ii-cfg-back, #ii-cfg-back2').forEach(b => b.addEventListener('click', () => cfgView('main')));
     modal.querySelectorAll('#ii-plat-grid input[data-platform]').forEach(cb => {
       cb.checked = platformOn(cb.dataset.platform);
       cb.addEventListener('change', () => {
@@ -5865,6 +5868,7 @@
   function refreshAuthState() {
     const el = modal.querySelector('#ii-auth-state');
     const authed = Auth.isAuthorized();
+    const ln = modal.querySelector('#ii-cfg-logins-n'); if (ln) ln.textContent = authed ? '1 of 1' : '0 of 1';
     const tog = modal.querySelector('#ii-setup-toggle');
     if (tog) { tog.classList.toggle('ii-needauth', !authed); tog.dataset.tip = authed ? 'Settings and help' : 'Settings and help\n⚠ Not authorized to submit ISRCs yet'; }
     // when authorized show Sign out; when not, show the code field in its place
