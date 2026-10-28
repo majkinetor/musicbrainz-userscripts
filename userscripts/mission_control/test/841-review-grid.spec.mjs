@@ -48,10 +48,16 @@ test('#841: the review is a grid of tracks by platform; only the entered cover i
   const rv = page.locator('.mc-review');
   await rv.waitFor();
   const grid = rv.locator('.mc-rv-grid');
-  check(await grid.locator('tbody tr').count() === 2, 'a row per track');
+  check(await grid.locator('tbody tr:not(.mc-rv-det)').count() === 2, 'a row per track');
   check(await grid.locator('thead input[data-col]').count() === 3, 'a column each: ISRC, Deezer, Spotify');
   const cover = await rv.locator('.mc-rv-i').allTextContents();
   check(cover.length === 1 && /Spotify, 1400×1400/.test(cover[0]), `only the entered cover (${JSON.stringify(cover)})`);
+  // a track's caret opens its links' whole addresses; a right-click opens every track's
+  await grid.locator('tbody button[data-tw]').first().click();
+  check(await grid.locator('tr.mc-rv-det:not([hidden]) .mc-rv-url').count() === 2, 'the caret shows the track\'s two addresses');
+  await grid.locator('tbody button[data-tw]').first().click();
+  await grid.locator('tbody button[data-tw]').first().click({ button: 'right' });
+  check(await grid.locator('tr.mc-rv-det:not([hidden])').count() === 2, 'a right-click opens every track');
   await rv.screenshot({ path: 'test-results/mc-841-review-grid.png' });
   // the Spotify column off: both tracks' Spotify links leave
   const spot = grid.locator('thead th').nth(3).locator('input');

@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-28 18:45 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-28 18:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2270,7 +2270,7 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 
 **Execute** applies what is taken in, in the Execution order (steps on one line together), counting it on the button. A failed step doesn't stop the next.
 
-First it lists what it will send, under each step. ISRC Scout's changes are a grid: a row per track, in the tracklist's order, and a column for the ISRCs and one per platform. **All tracks** selects or unselects the whole grid, a track's box its row, a column's platform icon that platform on every track (dimmed when off); each cell shows the ISRC, or the link's id with the whole address on hover. Art Station lists only the cover it enters. Unselect a line to leave it out, then **Execute**, or **Cancel**. **Copy as Markdown** copies the selected changes, grouped the same way. A right-click on **Execute** skips the list, and so does the Execute that runs itself [after a consolidation](#consolidate-a-new-release). *Review the changes before Execute* in the settings turns the list off. The list fills the screen.
+First it lists what it will send, under each step. ISRC Scout's changes are a grid: a row per track, in the tracklist's order, and a column for the ISRCs and one per platform. **All tracks** selects or unselects the whole grid, a track's box its row, a column's platform icon that platform on every track (dimmed when off); each cell shows the ISRC, a link its whole address on hover. A track's caret opens a row under it with its links' whole addresses, each with its own box; a right-click on a caret, or the caret by **All tracks**, opens every track. Art Station lists only the cover it enters. Unselect a line to leave it out, then **Execute**, or **Cancel**. **Copy as Markdown** copies the selected changes, grouped the same way. A right-click on **Execute** skips the list, and so does the Execute that runs itself [after a consolidation](#consolidate-a-new-release). *Review the changes before Execute* in the settings turns the list off. The list fills the screen.
 
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
 
