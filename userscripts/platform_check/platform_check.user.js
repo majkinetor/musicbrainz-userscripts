@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.28.300200
+// @version      2026.10.28.300300
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3549,10 +3549,10 @@ if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
 var pcDockItem = null;
-// the dock's number: the platforms to link plus the Artists & labels links to add (null: not counted)
-var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null;
+// the dock's number: the platforms to link plus the Artists & labels links to add (null: not counted); after a slash, the withheld of both
+var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
 // "2/3": 2 to add, 3 withheld; "0/3" (grey, dashed) when all that's left is held back
-function pcDockStatus() { const n = pcDockFound + (pcDockArtists || 0); if (pcDockItem) pcDockItem.status(pcDockHeld ? n + '/' + pcDockHeld : n ? String(n) : '\u2713'); }
+function pcDockStatus() { const n = pcDockFound + (pcDockArtists || 0), h = pcDockHeld + pcDockArtistsHeld; if (pcDockItem) pcDockItem.status(h ? n + '/' + h : n ? String(n) : '\u2713'); }
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
     // While Event Horizon shows, the panel waits in a hidden window outside the body EH swapped out:
@@ -8419,7 +8419,7 @@ async function runScansInner() {
         const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
         pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
             + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + (held.length ? line('#a0a0a0', 'Withheld', held) : '') + line('#e06060', 'Not found', none)
-            + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add</span>`)
+            + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add${pcDockArtistsHeld ? ` · <b>${pcDockArtistsHeld}</b> withheld` : ''}</span>`)
             + '</div>' }));
     }
     pcCountLinks();   // #671
@@ -8702,14 +8702,14 @@ async function pcLinkedFresh(urls) {
     return map;
 }
 const pcLinkedCached = urls => (_pcLinked && _pcLinked.key === pcLinkedKey(urls)) ? Promise.resolve(_pcLinked.map) : pcLinkedFresh(urls);
-const pcNewCount = (rows, linked) => rows.reduce((s, r) => s + Object.values(r.cells).reduce((t, cell) => t + pcMarkCell(r, cell, linked).filter(c => c.state === 'new').length, 0), 0);
-function pcShowLinksCount(n) {
+const pcNewCount = (rows, linked, state = 'new') => rows.reduce((s, r) => s + Object.values(r.cells).reduce((t, cell) => t + pcMarkCell(r, cell, linked).filter(c => c.state === state).length, 0), 0);
+function pcShowLinksCount(n, held = 0) {
     const b = document.getElementById('mb-links-btn');
     if (!b) return;
     // the count as a badge, like an unread count, so a release with links to add stands out
     b.innerHTML = n ? `Artists &amp; labels<span class="pc-links-n">${n}</span>` : 'Artists &amp; labels';
     b.classList.toggle('pc-links-on', !!n);
-    pcDockArtists = n; pcDockStatus();
+    pcDockArtists = n; pcDockArtistsHeld = held; pcDockStatus();
 }
 async function pcCountLinks() {
     if (!GM_getValue('pc:links-count', true)) return;
@@ -8718,8 +8718,8 @@ async function pcCountLinks() {
     const urls = rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url));
     if (!urls.length) { pcShowLinksCount(0); appendLog('System', 'Artists & labels: no artist or label pages to count'); return; }
     try {
-        const n = pcNewCount(rows, await pcLinkedFresh(urls));
-        pcShowLinksCount(n);
+        const linked = await pcLinkedFresh(urls), n = pcNewCount(rows, linked);
+        pcShowLinksCount(n, pcNewCount(rows, linked, 'withheld'));
         appendLog('System', `Artists & labels: ${n} link(s) to add, of ${urls.length} page(s) found`);
     } catch (e) {
         appendLog('System', `Artists & labels: couldn't count the links to add (${e.message})`, 'warn');
@@ -8795,7 +8795,7 @@ async function pcOpenLinksTable(btn) {
         for (const p of provs) if (r.cells[p]) cells[p] = pcMarkCell(r, r.cells[p], linked).map(c => ({ ...c, on: c.state === 'new' }));
         return { ...r, cells };
     });
-    if (checked && GM_getValue('pc:links-count', true)) pcShowLinksCount(pcNewCount(rows, linked));
+    if (checked && GM_getValue('pc:links-count', true)) pcShowLinksCount(pcNewCount(rows, linked), pcNewCount(rows, linked, 'withheld'));
     const batch = () => marked.map(r => ({ type: r.type, mbid: r.mbid, name: r.name, urls: Object.values(r.cells).flat().filter(c => c.on).map(c => c.url) })).filter(r => r.urls.length);
     const MARK = { linked: '✓', new: '+', unsure: '+?', other: '⚠' };
     const cellMark = cs => {
