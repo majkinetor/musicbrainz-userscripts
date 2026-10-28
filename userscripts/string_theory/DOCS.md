@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-28 13:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-28 18:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2270,7 +2270,7 @@ Click a track to see, on the right, everything found for it: its ISRCs and where
 
 **Execute** applies what is taken in, in the Execution order (steps on one line together), counting it on the button. A failed step doesn't stop the next.
 
-First it lists what it will send, under each step. ISRC Scout's changes are grouped by track, in the tracklist's order: a track's box selects or unselects all its lines, and each link shows its platform and id (the whole address on hover). Art Station lists only the cover it enters. Unselect a line to leave it out, then **Execute**, or **Cancel**. **Copy as Markdown** copies the selected changes, grouped the same way. A right-click on **Execute** skips the list, and so does the Execute that runs itself [after a consolidation](#consolidate-a-new-release). *Review the changes before Execute* in the settings turns the list off.
+First it lists what it will send, under each step. ISRC Scout's changes are a grid: a row per track, in the tracklist's order, and a column for the ISRCs and one per platform. A track's box selects or unselects its row, a column's box that platform on every track; each cell shows the ISRC, or the link's id with the whole address on hover. Art Station lists only the cover it enters. Unselect a line to leave it out, then **Execute**, or **Cancel**. **Copy as Markdown** copies the selected changes, grouped the same way. A right-click on **Execute** skips the list, and so does the Execute that runs itself [after a consolidation](#consolidate-a-new-release). *Review the changes before Execute* in the settings turns the list off.
 
 Every edit note ends with *Via Mission Control v&lt;version&gt;* and the release.
 
