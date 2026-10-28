@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bandcamp Player Enhanced
 // @namespace    http://violentmonkey.net/
-// @version      2026.10.26
+// @version      2026.10.28.150000
 // @description  Custom sticky 2-row player. Space=play/pause, Shift+Space=scroll, Up/Down=prev/next, Shift+Up/Down=volume, Left/Right=seek 5s (Shift=30s). P=preview mode.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkJhbmRjYW1wIFBsYXllciBFbmhhbmNlZDwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iNTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkYTBjMyIgc3Ryb2tlLXdpZHRoPSI3Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCA5Niw2NCA0OCw5MCIgZmlsbD0iIzFkYTBjMyIvPgo8L3N2Zz4K
@@ -238,13 +238,13 @@
             t = document.createElement('div');
             t.id = 'mbu-tip';
             t.setAttribute('role', 'tooltip');
-            (document.body || document.documentElement).appendChild(t);
         }
         // Falcon's panel, Group Therapy's menus and others sit at the top z-index too; at an equal one
         // the later element is drawn over, so the tip moves to the end of the page when it is not there
-        // (majkinetor, with a screenshot: Falcon's panel over a tip)
-        var host = t.parentNode;
-        if (host && host.lastElementChild !== t) host.appendChild(t);
+        // (majkinetor, with a screenshot: Falcon's panel over a tip). It hangs on <html>, not <body>:
+        // Event Horizon isolates <body>, which kept a tip there under the dock's icons (#847)
+        var host = document.documentElement;
+        if (t.parentNode !== host || host.lastElementChild !== t) host.appendChild(t);
         return t;
     }
     function mbuTipFind(node) {

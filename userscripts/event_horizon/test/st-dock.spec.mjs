@@ -29,6 +29,11 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(await page.locator('#ii-dock').isVisible() && await page.locator('#mb-pc-dock').isVisible(), 'ISRC Scout and Platform Check are in it');
   await page.locator('#mb-pc-dock').click();
   check(await page.locator('.mbu-dock-win #mb-pc-panel').isVisible(), 'Platform Check opens its panel in a window');
+  const onTop = sel => page.evaluate(sel => { const w = document.querySelector(sel); w.style.pointerEvents = 'auto'; const r = w.getBoundingClientRect(), out = [];
+    for (const el of document.querySelectorAll('.mbu-dock-item,#mbu-dock')) { const b = el.getBoundingClientRect(), x = b.x + b.width / 2, y = b.y + b.height / 2;
+      if (b.width && x > r.left && x < r.right && y > r.top && y < r.bottom) { const h = document.elementFromPoint(x, y); if (!w.contains(h)) out.push(el.id || el.className); } }
+    w.style.pointerEvents = ''; return out.join(' '); }, sel);
+  check(await onTop('.mbu-dock-win') === '', 'no dock icon draws over its window');
   await attachShot(testInfo, page, 'dock-pc');
   await page.keyboard.press('Escape');
   check(!(await page.locator('.mbu-dock-win').isVisible()), 'Escape closes it');
@@ -45,6 +50,7 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(await until(() => page.locator('#ii-dock').evaluate(e => getComputedStyle(e, '::after').content), c => /\d|\u2713/.test(c)) !== null, 'ISRC Scout shows its count');
   await page.locator('#ii-dock').hover();
   check(await until(() => page.locator('#mbu-tip').innerText().catch(() => ''), t => /ISRCs/.test(t)) !== null, 'its hover card names the ISRCs');
+  check(await onTop('#mbu-tip') === '', 'no dock icon draws over the card');
   await page.mouse.move(10, 10);
   await page.evaluate(() => { localStorage.setItem('mbu.cornerFlow', '"row"'); });
   await page.locator('#mbu-dock').click(); await page.locator('#mbu-dock').click();
