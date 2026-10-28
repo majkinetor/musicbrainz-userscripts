@@ -7814,7 +7814,14 @@ function setOn(on) {
     // and fold behind String Theory's dock while EH shows (#847)
     document.documentElement.toggleAttribute('data-mbu-dock', on);
     const to = on ? ehBody : mbBody, from = document.body;
-    if (from !== to) { to.append(...from.querySelectorAll(':scope > [data-mb-corner]')); from.replaceWith(to); }
+    // MusicBrainz's body stays in the document, hidden after ours (#853): the other scripts read the page
+    // (Mission Control's tracklist, Platform Check's catalog numbers, Art Station's links) and found nothing
+    // in a detached one; ours comes first, so document.body is ours
+    if (from !== to) {
+        to.append(...from.querySelectorAll(':scope > [data-mb-corner]'));
+        if (on) { document.documentElement.insertBefore(ehBody, mbBody); mbBody.hidden = true; }
+        else { ehBody.remove(); mbBody.hidden = false; }
+    }
     for (const c of ['br', 'bl', 'tr', 'tl']) if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
     if (first) show(PAGE_ID);
     if (on) document.documentElement.setAttribute('data-eh-theme', theme);
