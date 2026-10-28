@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.370000
+// @version      2026.10.28.380000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2287,8 +2287,9 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .srch .x:hover{color:var(--accent)}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .kicker .srch{margin-left:10px}
-.kicker .srch>.ab,.kicker .ab.eh-home{background:none!important;border-color:transparent}
-.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
+.kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec]{color:var(--chip-text)!important}
+#eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{max-width:1200px;margin:0 auto;padding:6px 16px;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pnm .disamb{display:none}#eh-pin .pnm a{margin-left:6px;vertical-align:middle}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pkk{display:flex;align-items:center;gap:6px;color:var(--muted);white-space:nowrap;overflow:hidden;min-width:0;font-size:10.5px}#eh-pin .pkk svg{flex:none}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:cover;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}
+.kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text)!important;text-decoration:none}
 .ib.primary,.kicker .ib.primary svg{color:var(--accent)}
@@ -3117,10 +3118,11 @@ function rlQuiet(r) {
         const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
         const many = p.urls.length > 1;
         if (!rest.length && !many) return a;
+        const ar = a.replace('" aria-label=', `&#10;Right-click: ${many ? 'its ' + p.urls.length + ' links' : 'its other kinds'}" aria-label=`);
         const lbl = many ? `${p.urls.length} links on ${esc(p.name)}` : `${rest.length} more kinds on ${esc(p.name)}`;
         const tip = many ? `${p.urls.length} links${rest.length ? ': also ' + rest.map(kname).join(', ') : ''}` : `+${rest.length}: also ${rest.map(kname).join(', ')}`;
         const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
-        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
+        return `<span class="qk">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
@@ -6997,6 +6999,34 @@ function secRail(app) {
         return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
     railSpy();
+    pinBar(app);
+}
+// once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
+// (the very buttons, moved in and back, so their menus and the search keep working)
+let pinIo = null;
+function pinBar(app) {
+    let bar = document.getElementById('eh-pin');
+    if (pinIo) { pinIo.disconnect(); pinIo = null; }
+    if (bar) { bar.classList.remove('on'); bar.querySelector('.kicker').innerHTML = ''; }
+    const acts = app.querySelector('.kicker .acts'); if (!acts) return;
+    let hd = acts; while (hd.parentElement && hd.parentElement !== app) hd = hd.parentElement;
+    if (hd === app) return;
+    if (!bar) {
+        bar = document.createElement('div'); bar.id = 'eh-pin'; bar.innerHTML = '<div class="kicker label"></div>'; document.body.appendChild(bar);
+        bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) scrollTo({ top: 0, behavior: 'smooth' }); });
+    }
+    const k = bar.querySelector('.kicker'), h1 = hd.querySelector('h1'), img = hd.querySelector('img.cover,img.rhcv:not([hidden]),.u-av img'), kick = acts.parentElement, by = hd.querySelector('.by');
+    const name = h1 ? h1.textContent.trim() : document.title;
+    k.innerHTML = (img ? `<img class="pcv" alt="" src="${esc(img.src)}">` : '') + `<span class="pnm" data-tip="Back to the top">${h1 ? h1.innerHTML : esc(name)}</span>${by ? `<span class="pby">${by.innerHTML}</span>` : ''}<span class="pkk">${[...kick.children].filter(x => x !== acts).map(x => x.outerHTML).join('')}</span>`;
+    const home = document.createElement('span'); home.hidden = true; acts.before(home);
+    pinIo = new IntersectionObserver(([e]) => {
+        const pin = !e.isIntersecting && e.boundingClientRect.top < 0;
+        if (pin === bar.classList.contains('on')) return;
+        bar.classList.toggle('on', pin);
+        if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
+        LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
+    });
+    pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
 }
 // lights the section at the top of the window
 function railSpy() {
@@ -7477,7 +7507,8 @@ function histParse(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const one = !doc.querySelector('.edit-list') && doc.querySelector('#content > .edit-header');
     const edits = (one ? [doc.querySelector('#content')] : [...doc.querySelectorAll('.edit-list')]).map(el => {
-        const h = el.querySelector('.edit-header'), c = h.className.split(/\s+/);
+        const h = el.querySelector('.edit-header'); if (!h) { LOG.debug('History: an edit without a header, skipped'); return null; }
+        const c = h.className.split(/\s+/);
         const ed = h.querySelector('.subheader a[href*="/user/"]'), det = one ? (t => { const w = doc.createElement('div'); if (t) w.append(t); return w; })(el.querySelector('table.details')) : el.querySelector('.edit-details');
         if (det) {
             // MusicBrainz's page draws a cover's thumbnail itself: the fetched page carries only its address
@@ -7485,7 +7516,8 @@ function histParse(html) {
             det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
         }
         const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/(yes|no|abstain|approve)/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
-        const vc = one ? el.querySelector('.vote-tally td.vote') : h.querySelector('.vote-count'), a = one ? h.querySelector('h1') : h.querySelector('h2 a');
+        const vc = one ? el.querySelector('.vote-tally td.vote') : h.querySelector('.vote-count'), a = (one ? h.querySelector('h1') || doc.querySelector('#content h1') : h.querySelector('h2 a')) || h.querySelector('a[href*="/edit/"]');
+        if (!a) { LOG.debug('History: an edit without its number, skipped'); return null; }
         if (one) { const x = doc.querySelector('#sidebar .edit-expiration'); if (x) el.append(x); }
         // an open edit you may vote on carries MusicBrainz's radios, the checked one your vote; any other shows your vote as text
         const vo = el.querySelector('.voteopts') || (one && doc.querySelector('.voteopts')), my = vo && vo.querySelector('input[type=radio]:checked');
@@ -7496,7 +7528,7 @@ function histParse(html) {
             can: !!vo, my: my ? my.value : vo ? '-2' : '', myt: mvt,
             notes, votes: vc ? vc.textContent.replace(/\s+/g, ' ').replace(/^.*?:\s*/, '').trim() : '', det: det ? det.innerHTML : '',
         };
-    });
+    }).filter(Boolean);
     // still undated: an edit's number orders it in time, so it takes the date of the nearest older edit with one
     edits.forEach(e => { if (e.t) return; const o = edits.filter(x => x.t && x.id < e.id).sort((x, y) => y.id - x.id)[0]; if (o) e.t = o.t; });
     const cur = +((doc.querySelector('.pagination .current, .pagination li.current') || {}).textContent || 0);
@@ -7768,6 +7800,9 @@ function build() {
             else (async () => { for (const i of ids) if (!edOpen.has(i)) await edToggle(i); })();
             return;
         }
+        // a platform icon with more links: right-click opens its menu, the dot beside it is a small target (majkinetor)
+        const q = ehOn && ev.target.closest && ev.target.closest('.qk');
+        if (q && q.querySelector('.kn')) { ev.preventDefault(); q.querySelector('.kn').click(); return; }
         // a group's chevron does the same for its section's groups
         const g = ehOn && ev.target.closest && ev.target.closest('.gf[data-gfold]');
         if (g) {
