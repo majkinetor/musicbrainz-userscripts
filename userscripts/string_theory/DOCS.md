@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-28 20:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-28 20:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -771,7 +771,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 ### Features
 
 - **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument, place, series or event page, and moves between them without reloading.
-- **[Sections](#sections)**: a rail at the side jumps to, folds, reorders or hides each part of the page.
+- **[Sections](#sections)**: a button in the page's action row jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
 
@@ -791,7 +791,7 @@ Event Horizon shows its own page for each of these, and for search results. A li
 
 ### Sections
 
-Point at the rail beside the page to open it. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered.
+Click **Sections** (the list icon beside Search, top right) to open the list. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered.
 
 ### Tracks and platforms
 

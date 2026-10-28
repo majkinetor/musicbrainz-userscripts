@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.330000
+// @version      2026.10.28.340000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2205,9 +2205,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg{font-size:16px;color:var(--soft)}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
-#eh-rail{position:fixed;z-index:20;top:50%;right:max(10px,env(safe-area-inset-right,0px));transform:translateY(-50%);display:grid;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent}
-#eh-rail:not(.open)::before{content:"";position:absolute;inset:-24px -12px -24px -56px}
-#eh-rail.open{background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
+#eh-rail{position:absolute;z-index:30;display:none;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent;min-width:200px}
+#eh-rail.open{display:grid;background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
 #eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:30px;min-width:16px;padding:0 6px;border-radius:8px;cursor:pointer}
 #eh-rail .rr>i{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none}
 #eh-rail .rr.on>i{background:var(--accent)}
@@ -2225,7 +2224,6 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail .eye svg{width:14px;height:14px}
 #eh-rail .fa{display:none;align-items:center;gap:6px;height:28px;margin-top:4px;padding:0 10px;border:0;border-top:1px solid var(--border)!important;border-radius:0;background:none!important;color:var(--soft)!important;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0}#eh-rail.open .fa{display:flex}#eh-rail .fa:hover{color:var(--accent)!important}#eh-rail .fa svg{width:14px;height:14px}
 #eh-rail[hidden]{display:none}
-@media (max-width:700px){#eh-rail{display:none}}
 /* A dark userstyle (Stylus, kellnerd's theme) colours and inverts buttons and headings with !important; these outrank it. */
 :root[data-eh-theme] #app button:not(#as-root *),:root[data-eh-theme] #app button:not(#as-root *) *,:root[data-eh-theme] #app h2,#eh-rail button,#eh-rail button *{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
 :root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
@@ -6940,11 +6938,12 @@ function searchHtml(d) {
     return hero + sect('sr', `Results <span class="count">${s.rows.length}</span>`, '', table + pager, `<div class="folded-note">${esc(s.found)}</div>`);
 }
 /* ── section rail ──────────────────────────────────── */
-// A dot per section at the right edge, the one in view lit. Hovered, it shows their names: a name jumps
+// The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
 // there (opening it), its eye shows or hides it, and dragging a row reorders the page's sections.
 const SEC_NAME = { sr: 'Results', hadd: 'Add', hme: 'You', hrec: 'Recently opened', hnew: 'New releases', hnev: 'New events', hnews: 'News', ued: 'Edits', uvo: 'Votes', uad: 'Added entities', utg: 'Tags and ratings', dg: 'Discography', wp: 'Wikipedia', an: 'Annotation', ed: 'Editions', tl: 'Tracklist', cr: 'Credits', rg: 'Release group', art: 'Artwork', rc: 'Recordings', aa: 'Artists', al: 'Labels', ap: 'Places' };
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
+const SEC_BTN = `<button class="ab" type="button" data-ehsec aria-label="Sections" data-tip="Sections\nJump to, hide, reorder or fold the page's sections">${SVG('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</button>`;
 function secRail(app) {
     const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
     const at = x => { const i = S.secOrder.indexOf(id(x)); return i < 0 ? 100 + secs.indexOf(x) : i; };
@@ -6954,10 +6953,17 @@ function secRail(app) {
         rail = document.createElement('nav');
         rail.id = 'eh-rail';
         rail.setAttribute('aria-label', 'Sections');
-        app.after(rail);
-        let t = 0;
-        rail.addEventListener('mouseenter', () => { clearTimeout(t); rail.classList.add('open'); });
-        rail.addEventListener('mouseleave', () => { clearTimeout(t); t = setTimeout(() => rail.classList.remove('open'), 400); });
+        document.body.appendChild(rail);
+        const shut = () => rail.classList.remove('open');
+        document.addEventListener('click', ev => {
+            const b = ev.target.closest('[data-ehsec]');
+            if (b) {
+                if (rail.classList.toggle('open')) { const r = b.getBoundingClientRect(); rail.style.top = (r.bottom + scrollY + 6) + 'px'; rail.style.right = (document.documentElement.clientWidth - r.right - scrollX) + 'px'; }
+                return;
+            }
+            if (rail.classList.contains('open') && !rail.contains(ev.target)) shut();
+        }, true);
+        document.addEventListener('keydown', ev => { if (ev.key === 'Escape') shut(); });
         rail.addEventListener('click', ev => {
             // the last row folds every shown section, or opens them all when they all are folded
             const fa = ev.target.closest('[data-foldall]');
@@ -6966,7 +6972,7 @@ function secRail(app) {
             const k = row.dataset.sec;
             if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, k); const y = scrollY; render(); scrollTo(0, y); return; }
             S.secHide = S.secHide.filter(x => x !== k); S.fold = S.fold.filter(x => x !== k);
-            render();
+            rail.classList.remove('open'); render();
             const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
         });
         let drag = null;
@@ -6982,6 +6988,11 @@ function secRail(app) {
         });
     }
     rail.hidden = secs.length < 2;
+    const acts = app.querySelector('.kicker .acts');
+    if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
+        acts.querySelector('.srch,[data-srch]') ? acts.querySelector('.srch,[data-srch]').insertAdjacentHTML('beforebegin', SEC_BTN) : acts.insertAdjacentHTML('beforeend', SEC_BTN);
+    }
+    if (!acts) rail.classList.remove('open');
     rail.innerHTML = secs.map(x => { const k = id(x), off = x.hidden;
         return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
