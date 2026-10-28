@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.350000
+// @version      2026.10.28.390000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3117,10 +3117,11 @@ function rlQuiet(r) {
         const a = plA(lead(p), S.plSize + 6, 'qi').replace('<a ', `<a data-i="${i}" `), rest = KINDS.map(x => x[0]).filter(k => k !== primaryKind(p) && p.kinds.includes(k));
         const many = p.urls.length > 1;
         if (!rest.length && !many) return a;
+        const ar = a.replace('" aria-label=', `&#10;Right-click: ${many ? 'its ' + p.urls.length + ' links' : 'its other kinds'}" aria-label=`);
         const lbl = many ? `${p.urls.length} links on ${esc(p.name)}` : `${rest.length} more kinds on ${esc(p.name)}`;
         const tip = many ? `${p.urls.length} links${rest.length ? ': also ' + rest.map(kname).join(', ') : ''}` : `+${rest.length}: also ${rest.map(kname).join(', ')}`;
         const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
-        return `<span class="qk">${a}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
+        return `<span class="qk">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
