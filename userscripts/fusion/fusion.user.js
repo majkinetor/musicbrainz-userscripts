@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.150000
+// @version      2026.10.28.210000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -5037,6 +5037,19 @@ function wireDelegatedEvents() {
     });
 }
 
+// the settings window moves by its header (#847)
+function cfgDrag(el) {
+    el.addEventListener('pointerdown', e => {
+        const h = e.target.closest('.mbu-cfg-h');
+        if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
+        const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+        Object.assign(el.style, { position: 'fixed', margin: '0', transform: 'none', right: 'auto', bottom: 'auto' });
+        const mv = ev => { el.style.left = (ev.clientX - dx) + 'px'; el.style.top = (ev.clientY - dy) + 'px'; };
+        const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };
+        mv(e); addEventListener('pointermove', mv); addEventListener('pointerup', up); e.preventDefault();
+    });
+}
+
 function openSettings(anchor) {
     document.getElementById('fs-settings')?.remove();
     const s = el('div', 'fs-settings'); s.id = 'fs-settings';
@@ -5048,9 +5061,8 @@ function openSettings(anchor) {
         + '<label class="fs-opt" data-tip="Match never groups two recordings whose known lengths differ more than this\nWhatever else matches. Grouping by hand is not affected.">Match never groups if lengths differ by more than <input type="number" id="fs-opt-gross" min="5" max="600"> s</label>';
     document.body.appendChild(s);
     mbuControls(s);   // the shared − n + steppers
-    const r = anchor.getBoundingClientRect();
-    s.style.top = (r.bottom + 6) + 'px'; s.style.right = '14px';
-    if (r.bottom + 6 + s.offsetHeight > window.innerHeight - 8) { s.style.top = 'auto'; s.style.bottom = (window.innerHeight - r.top + 6) + 'px'; }   // #695: from the corner launcher, open upward
+    Object.assign(s.style, { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' });   // in the middle of the screen, moved by its header (#847)
+    cfgDrag(s);
     s.querySelector('#fs-opt-acoustid').checked = SETTINGS.acoustidEnrich !== false;
     s.querySelector('#fs-opt-automatch').checked = !!SETTINGS.autoMatchOnOpen;
     s.querySelector('#fs-opt-tol').value = Math.round(SETTINGS.lengthToleranceMs / 1000);
