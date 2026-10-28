@@ -359,13 +359,13 @@ function mbuTipEl() {
         t = document.createElement('div');
         t.id = 'mbu-tip';
         t.setAttribute('role', 'tooltip');
-        (document.body || document.documentElement).appendChild(t);
     }
     // Falcon's panel, Group Therapy's menus and others sit at the top z-index too; at an equal one
     // the later element is drawn over, so the tip moves to the end of the page when it is not there
-    // (majkinetor, with a screenshot: Falcon's panel over a tip)
-    var host = t.parentNode;
-    if (host && host.lastElementChild !== t) host.appendChild(t);
+    // (majkinetor, with a screenshot: Falcon's panel over a tip). It hangs on <html>, not <body>:
+    // Event Horizon isolates <body>, which kept a tip there under the dock's icons (#847)
+    var host = document.documentElement;
+    if (t.parentNode !== host || host.lastElementChild !== t) host.appendChild(t);
     return t;
 }
 

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.091603
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.27.203000, art_station 2026.10.26.181244, credit_hoarder 2026.10.27.203505, event_horizon 2026.10.28.231000, falcon 2026.10.26, first_contact 2026.10.26, fusion 2026.10.27.151500, group_therapy 2026.10.26.195030, isrc_scout 2026.10.26.103354, mammoth 2026.10.26, mission_control 2026.10.28, platform_check 2026.10.26.103354). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.28.101952
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.28.150000, art_station 2026.10.28.150000, credit_hoarder 2026.10.28.101949, event_horizon 2026.10.28.150000, falcon 2026.10.28.150000, first_contact 2026.10.28.150000, fusion 2026.10.28.150000, group_therapy 2026.10.28.150000, isrc_scout 2026.10.28.220000, mammoth 2026.10.28.150000, mission_control 2026.10.28.150000, platform_check 2026.10.28.200000). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -185,8 +185,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.28.091603 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.27.203000\n  · Art Station v2026.10.26.181244\n  · Credit Hoarder v2026.10.27.203505\n  · Event Horizon v2026.10.28.231000\n  · Falcon v2026.10.26\n  · First Contact v2026.10.26\n  · Fusion v2026.10.27.151500\n  · Group Therapy v2026.10.26.195030\n  · ISRC Scout v2026.10.26.103354\n  · Mammoth v2026.10.26\n  · Mission Control v2026.10.28\n  · Platform Check v2026.10.26.103354");
+  console.log('%c String Theory %c v2026.10.28.101952 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.28.150000\n  · Art Station v2026.10.28.150000\n  · Credit Hoarder v2026.10.28.101949\n  · Event Horizon v2026.10.28.150000\n  · Falcon v2026.10.28.150000\n  · First Contact v2026.10.28.150000\n  · Fusion v2026.10.28.150000\n  · Group Therapy v2026.10.28.150000\n  · ISRC Scout v2026.10.28.220000\n  · Mammoth v2026.10.28.150000\n  · Mission Control v2026.10.28.150000\n  · Platform Check v2026.10.28.200000");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -196,7 +196,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.27.203000"],["art_station","Art Station","2026.10.26.181244"],["credit_hoarder","Credit Hoarder","2026.10.27.203505"],["event_horizon","Event Horizon","2026.10.28.231000"],["falcon","Falcon","2026.10.26"],["first_contact","First Contact","2026.10.26"],["fusion","Fusion","2026.10.27.151500"],["group_therapy","Group Therapy","2026.10.26.195030"],["isrc_scout","ISRC Scout","2026.10.26.103354"],["mammoth","Mammoth","2026.10.26"],["mission_control","Mission Control","2026.10.28"],["platform_check","Platform Check","2026.10.26.103354"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.28.150000"],["art_station","Art Station","2026.10.28.150000"],["credit_hoarder","Credit Hoarder","2026.10.28.101949"],["event_horizon","Event Horizon","2026.10.28.150000"],["falcon","Falcon","2026.10.28.150000"],["first_contact","First Contact","2026.10.28.150000"],["fusion","Fusion","2026.10.28.150000"],["group_therapy","Group Therapy","2026.10.28.150000"],["isrc_scout","ISRC Scout","2026.10.28.220000"],["mammoth","Mammoth","2026.10.28.150000"],["mission_control","Mission Control","2026.10.28.150000"],["platform_check","Platform Check","2026.10.28.200000"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -229,7 +229,102 @@ var __stOff = __stReadOff();
       } catch (e) { /* storage blocked */ }
       return value;
   }
+  var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> </svg>';   // String Theory's icon.svg
+  function mbuDock() {
+      var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+      var btn = document.getElementById('mbu-dock');
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+          .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+      if (!document.getElementById('mbu-dock-css')) {
+          var css = document.createElement('style'); css.id = 'mbu-dock-css';
+          css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
+              + '.mbu-dock-item{position:fixed;z-index:2147483000;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+              + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
+              + '.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+              + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:14px;bottom:68px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:70px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:14px}'
+              + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
+              + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
+              + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+              + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+              + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
+              // no names, only a short state (a count) as a badge on the entry's top-right corner
+              // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
+              + '.mbu-dock-item,#mbu-dock{filter:none!important}'
+              // folded, an entry with something to do peeks beside the button, smaller
+              + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+              + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
+              // nothing counted yet: three small dots lighting in turn, no badge
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+              + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+              + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
+              + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
+              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
+          root.appendChild(css);
+      }
+      if (!on) {
+          els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+          if (btn) btn.remove();
+          return;
+      }
+      if (!btn) {
+          btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+          btn.setAttribute('aria-label', 'String Theory');
+          btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+          btn.onclick = function () {
+              var open = !root.hasAttribute('data-mbu-dock-open');
+              root.toggleAttribute('data-mbu-dock-open', open);
+              mbuShared('dockOpen', open || null);   // remembered for the next page
+              mbRestackCorner('br');
+          };
+          root.appendChild(btn);   // outside the body, which Event Horizon swaps
+          root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
+      }
+      var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+      if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
+      if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+      els.forEach(function (el) {
+          if (el.dataset.mbCornerDock === 'hide' || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
+          el.removeAttribute('data-mbu-docked');   // measured as its script left it
+          var shown = getComputedStyle(el).display !== 'none';
+          if (shown) n++;
+          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+      });
+      btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+  }
+  // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
+  // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
+  // paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+  // with .status(text) to show a short state (a count) beside it.
+  function mbuDockItem(o) {
+      var b = document.getElementById(o.id);
+      if (!b) {
+          b = document.createElement('button'); b.type = 'button'; b.id = o.id; b.className = 'mbu-dock-item';
+          b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = String(o.order || 60); b.dataset.mbCornerDock = 'only';
+          if (o.paths) b.dataset.mbCornerPaths = o.paths;
+          var img = document.createElement('img'); img.src = o.icon; img.alt = ''; b.appendChild(img);
+          var dots = document.createElement('span'); dots.className = 'mbu-dock-dots'; dots.innerHTML = '<i></i><i></i><i></i>'; b.appendChild(dots);   // while nothing is counted yet
+          b.onclick = o.click;
+          document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
+      }
+      b.dataset.mbCornerLabel = o.label;
+      // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+      // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
+      var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
+          var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && !r.hasAttribute('data-mbu-dock-open') && b.isConnected) mbRestackCorner('br'); };   // folded: it may peek now, or stop
+      b.status = function (t) { b.mbuSt = t || ''; show(); };
+      b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
+      b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+      if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';
+      b.status('');
+      mbRestackCorner('br');
+      return b;
+  }
   function mbRestackCorner(corner) {
+      if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
       var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -253,9 +348,11 @@ var __stOff = __stReadOff();
               if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
           }
       }
+      var peeks = [];
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
-          .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+          .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
+          .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
           .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
       var pos = 14;
       els.forEach(function (el) {
@@ -264,6 +361,14 @@ var __stOff = __stReadOff();
           el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
           pos += (row ? r.width : r.height) + 8;
+      });
+      // the folded dock's peeking entries: in a line from its button, along the stack's flow
+      var side = 14 + 40 + 4;
+      peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
+          el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : side)) + 'px';
+          el.style[right ? 'right' : 'left'] = (gapX + (row ? side : 14)) + 'px';
+          el.style[right ? 'left' : 'right'] = 'auto';
+          side += 36;
       });
   }
   function flipFlow() {
@@ -2078,7 +2183,110 @@ function mbuShared(key, value) {
 // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
 // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
 // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+//
+// The dock (#847): while the page sets data-mbu-dock on <html> (Event Horizon, while it shows),
+// the bottom-right launchers fold behind one String Theory button. A click unrolls them, each
+// with its name (data-mb-corner-label) beside it. data-mb-corner-dock="no" keeps a launcher out
+// of the dock (Event Horizon's own switch); "hide" hides it while docked (Art Station and Apollo,
+// whose pages Event Horizon replaces). data-mb-corner-paths, a regular expression, names the paths a
+// launcher belongs on: Event Horizon moves to another page without loading it, and the dock hides
+// a launcher that came along to a page its script doesn't run on.
+var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> </svg>';   // String Theory's icon.svg
+function mbuDock() {
+    var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+    var btn = document.getElementById('mbu-dock');
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+        .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+    if (!document.getElementById('mbu-dock-css')) {
+        var css = document.createElement('style'); css.id = 'mbu-dock-css';
+        css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
+            + '.mbu-dock-item{position:fixed;z-index:2147483000;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+            + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
+            + '.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+            + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:14px;bottom:68px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:70px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:14px}'
+            + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
+            + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
+            + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+            + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+            + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
+            // no names, only a short state (a count) as a badge on the entry's top-right corner
+            // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
+            + '.mbu-dock-item,#mbu-dock{filter:none!important}'
+            // folded, an entry with something to do peeks beside the button, smaller
+            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+            + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
+            // nothing counted yet: three small dots lighting in turn, no badge
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+            + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
+            + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
+            + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
+        root.appendChild(css);
+    }
+    if (!on) {
+        els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+        if (btn) btn.remove();
+        return;
+    }
+    if (!btn) {
+        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+        btn.setAttribute('aria-label', 'String Theory');
+        btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+        btn.onclick = function () {
+            var open = !root.hasAttribute('data-mbu-dock-open');
+            root.toggleAttribute('data-mbu-dock-open', open);
+            mbuShared('dockOpen', open || null);   // remembered for the next page
+            mbRestackCorner('br');
+        };
+        root.appendChild(btn);   // outside the body, which Event Horizon swaps
+        root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
+    }
+    var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+    if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
+    if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+    els.forEach(function (el) {
+        if (el.dataset.mbCornerDock === 'hide' || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
+        el.removeAttribute('data-mbu-docked');   // measured as its script left it
+        var shown = getComputedStyle(el).display !== 'none';
+        if (shown) n++;
+        el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+    });
+    btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+}
+// A script's entry that lives in the dock only (#847): for a script whose own controls sit in
+// MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
+// paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+// with .status(text) to show a short state (a count) beside it.
+function mbuDockItem(o) {
+    var b = document.getElementById(o.id);
+    if (!b) {
+        b = document.createElement('button'); b.type = 'button'; b.id = o.id; b.className = 'mbu-dock-item';
+        b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = String(o.order || 60); b.dataset.mbCornerDock = 'only';
+        if (o.paths) b.dataset.mbCornerPaths = o.paths;
+        var img = document.createElement('img'); img.src = o.icon; img.alt = ''; b.appendChild(img);
+        var dots = document.createElement('span'); dots.className = 'mbu-dock-dots'; dots.innerHTML = '<i></i><i></i><i></i>'; b.appendChild(dots);   // while nothing is counted yet
+        b.onclick = o.click;
+        document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
+    }
+    b.dataset.mbCornerLabel = o.label;
+    // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+    // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
+    var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
+        var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && !r.hasAttribute('data-mbu-dock-open') && b.isConnected) mbRestackCorner('br'); };   // folded: it may peek now, or stop
+    b.status = function (t) { b.mbuSt = t || ''; show(); };
+    b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
+    b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+    if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';
+    b.status('');
+    mbRestackCorner('br');
+    return b;
+}
 function mbRestackCorner(corner) {
+    if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
     var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -2102,9 +2310,11 @@ function mbRestackCorner(corner) {
             if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
         }
     }
+    var peeks = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
-        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
     var pos = 14;
     els.forEach(function (el) {
@@ -2113,6 +2323,14 @@ function mbRestackCorner(corner) {
         el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
         pos += (row ? r.width : r.height) + 8;
+    });
+    // the folded dock's peeking entries: in a line from its button, along the stack's flow
+    var side = 14 + 40 + 4;
+    peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : side)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? side : 14)) + 'px';
+        el.style[right ? 'left' : 'right'] = 'auto';
+        side += 36;
     });
 }
 
@@ -3218,13 +3436,13 @@ function mbuTipEl() {
         t = document.createElement('div');
         t.id = 'mbu-tip';
         t.setAttribute('role', 'tooltip');
-        (document.body || document.documentElement).appendChild(t);
     }
     // Falcon's panel, Group Therapy's menus and others sit at the top z-index too; at an equal one
     // the later element is drawn over, so the tip moves to the end of the page when it is not there
-    // (majkinetor, with a screenshot: Falcon's panel over a tip)
-    var host = t.parentNode;
-    if (host && host.lastElementChild !== t) host.appendChild(t);
+    // (majkinetor, with a screenshot: Falcon's panel over a tip). It hangs on <html>, not <body>:
+    // Event Horizon isolates <body>, which kept a tip there under the dock's icons (#847)
+    var host = document.documentElement;
+    if (t.parentNode !== host || host.lastElementChild !== t) host.appendChild(t);
     return t;
 }
 function mbuTipFind(node) {
@@ -3404,7 +3622,7 @@ function mbuTipStart() {
 }
 mbuTipStart();
 // </ST-UI>
-return { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart };
+return { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart };
 }
 
 // <ST-ARCHIVE> — generated by dev/archive/sync-archive.mjs from dev/archive/wayback.mjs — DO NOT EDIT
@@ -4598,7 +4816,7 @@ return { ArtistImage };
 
 // ===== apollo_editor (@run-at document-start) =====================================
 if (__stOff.indexOf("apollo_editor") < 0 && __stRuns("apollo_editor", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/add.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*/edit_annotation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/cdtoc/attach.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/create.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/area/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/instrument/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/genre/.*/add-alias$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/area/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/instrument/.*/aliases$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/genre/.*/aliases$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.27.203000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.27.203000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Apollo Editor*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/apollo_editor/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 /*
  * Editor model (discovered via test/ spikes):
@@ -4618,7 +4836,7 @@ var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameNam
 var { mbuGuessCase } = __st_GUESSCASE(GM_info);   // ST-GUESSCASE, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss } = __st_ARCHIVE(GM_info);   // ST-ARCHIVE, written once at the top of the bundle (#786)
 var { mbuAliasEditor } = __st_ALIASES(GM_info, MBU_EDIT_ICON, MBU_SORT_ICON, mbuProp);   // ST-ALIASES, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -11682,7 +11900,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function ensureLauncher() {
     if (document.getElementById('tc-launch')) { relabelLauncher(); return; }
     style(); const b = document.createElement('button'); b.type = 'button'; b.id = 'tc-launch';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '10';
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '10'; b.dataset.mbCornerDock = 'hide';   // Event Horizon replaces its page (#847)
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img);
     b.onclick = () => {   // GLOBAL toggle — flips Apollo for every tab/feature and persists across pages
       SETTINGS.apolloEnabled = !apolloEnabled(); saveSettings();
@@ -17308,7 +17526,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
 
 // ===== art_station (@run-at document-start) =======================================
 if (__stOff.indexOf("art_station") < 0 && __stRuns("art_station", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/add-cover-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/event-art.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*/add-event-art.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.26.181244","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.26.181244","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Art Station*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 //
 // Phase-1 PoC. Principle: "you get what you see" — the gallery is the staged
@@ -17321,7 +17539,7 @@ var { MBP_COVER_TYPES, mbpCoverTypeId, mbpReleaseLinkList, mbpReleaseJsonLinks, 
 var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('art_station', 'Art Station')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
@@ -18228,7 +18446,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     let sw = document.getElementById('as-switch');
     if (!sw) {
       sw = document.createElement('button'); sw.type = 'button'; sw.id = 'as-switch';
-      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10';
+      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10'; sw.dataset.mbCornerDock = 'hide';   // Event Horizon replaces its page (#847)
       sw.innerHTML = `<img src="${ICON_URL}" alt="">`;
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
       sw.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('as-setup')) document.getElementById('as-setup').remove(); else openSetup(); };
@@ -22818,7 +23036,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 if (__stOff.indexOf("credit_hoarder") < 0 && __stRuns("credit_hoarder", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.metal-archives\\.com(?::\\d+)?/albums/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.27.203505","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.27.203505","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.28.101949","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.28.101949","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -32441,7 +32659,108 @@ Its \u{1F517} chip adds the link.`;
       }
       return value;
     }
+    var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> </svg>';
+    function mbuDock() {
+      var root = document.documentElement, on = root.hasAttribute("data-mbu-dock");
+      var btn = document.getElementById("mbu-dock");
+      var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]')).filter(function(el) {
+        return el.id !== "mbu-dock" && el.dataset.mbCornerDock !== "no";
+      });
+      if (!document.getElementById("mbu-dock-css")) {
+        var css = document.createElement("style");
+        css.id = "mbu-dock-css";
+        css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}.mbu-dock-item{position:fixed;z-index:2147483000;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:14px;bottom:68px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:70px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:14px}#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}.mbu-dock-item,#mbu-dock{filter:none!important}[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="\u2713"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}@keyframes mbu-dock-fade{50%{opacity:.25}}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="\xB7\xB7\xB7"]::after{content:none}.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="\xB7\xB7\xB7"] .mbu-dock-dots{display:flex}.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
+        root.appendChild(css);
+      }
+      if (!on) {
+        els.forEach(function(el) {
+          el.removeAttribute("data-mbu-docked");
+        });
+        if (btn) btn.remove();
+        return;
+      }
+      if (!btn) {
+        btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "mbu-dock";
+        btn.setAttribute("aria-label", "String Theory");
+        btn.dataset.mbCorner = "br";
+        btn.dataset.mbCornerOrder = "-1";
+        btn.onclick = function() {
+          var open2 = !root.hasAttribute("data-mbu-dock-open");
+          root.toggleAttribute("data-mbu-dock-open", open2);
+          mbuShared("dockOpen", open2 || null);
+          mbRestackCorner("br");
+        };
+        root.appendChild(btn);
+        root.toggleAttribute("data-mbu-dock-open", !!mbuShared("dockOpen"));
+      }
+      var open = root.hasAttribute("data-mbu-dock-open"), n = 0;
+      if (mbuShared("cornerFlow") === "row") root.setAttribute("data-mbu-flow", "row");
+      else root.removeAttribute("data-mbu-flow");
+      if (mbuShared("cornerSide") === "left") root.setAttribute("data-mbu-side", "left");
+      else root.removeAttribute("data-mbu-side");
+      els.forEach(function(el) {
+        if (el.dataset.mbCornerDock === "hide" || el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname)) {
+          el.setAttribute("data-mbu-docked", "off");
+          return;
+        }
+        el.removeAttribute("data-mbu-docked");
+        var shown = getComputedStyle(el).display !== "none";
+        if (shown) n++;
+        el.setAttribute("data-mbu-docked", !shown ? "hide" : open ? "show" : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || "") ? "peek" : "hide");
+      });
+      btn.innerHTML = MBU_DOCK_ICON + (n ? "<b>" + n + "</b>" : "");
+    }
+    function mbuDockItem(o) {
+      var b = document.getElementById(o.id);
+      if (!b) {
+        b = document.createElement("button");
+        b.type = "button";
+        b.id = o.id;
+        b.className = "mbu-dock-item";
+        b.dataset.mbCorner = "br";
+        b.dataset.mbCornerOrder = String(o.order || 60);
+        b.dataset.mbCornerDock = "only";
+        if (o.paths) b.dataset.mbCornerPaths = o.paths;
+        var img = document.createElement("img");
+        img.src = o.icon;
+        img.alt = "";
+        b.appendChild(img);
+        var dots = document.createElement("span");
+        dots.className = "mbu-dock-dots";
+        dots.innerHTML = "<i></i><i></i><i></i>";
+        b.appendChild(dots);
+        b.onclick = o.click;
+        document.documentElement.appendChild(b);
+      }
+      b.dataset.mbCornerLabel = o.label;
+      var show = function() {
+        var t = b.mbuSt || (b.hasAttribute("data-mbu-busy") ? "\xB7\xB7\xB7" : "");
+        if (t) b.dataset.mbCornerStatus = t;
+        else delete b.dataset.mbCornerStatus;
+        var r = document.documentElement;
+        if (r.hasAttribute("data-mbu-dock") && !r.hasAttribute("data-mbu-dock-open") && b.isConnected) mbRestackCorner("br");
+      };
+      b.status = function(t) {
+        b.mbuSt = t || "";
+        show();
+      };
+      b.busy = function(on) {
+        if (on) b.dataset.mbuBusy = "";
+        else delete b.dataset.mbuBusy;
+        show();
+      };
+      b.card = function(fn) {
+        if (typeof mbuTip === "function") mbuTip(b, fn || null, { card: true });
+      };
+      if (o.scale) b.querySelector("img").style.transform = "scale(" + o.scale + ")";
+      b.status("");
+      mbRestackCorner("br");
+      return b;
+    }
     function mbRestackCorner(corner) {
+      if (corner === "br") mbuDock();
       var bottom = corner[0] === "b", right = corner[1] === "r" !== (mbuShared("cornerSide") === "left");
       var row = mbuShared("cornerFlow") === "row";
       var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -32468,8 +32787,13 @@ Its \u{1F517} chip adds the link.`;
           if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
         }
       }
+      var peeks = [];
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
-        return getComputedStyle(el).display !== "none";
+        return !el.hidden && getComputedStyle(el).display !== "none";
+      }).filter(function(el) {
+        if (el.getAttribute("data-mbu-docked") !== "peek") return true;
+        peeks.push(el);
+        return false;
       }).sort(function(a, b) {
         return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
       });
@@ -32480,6 +32804,15 @@ Its \u{1F517} chip adds the link.`;
         el.style[right ? "right" : "left"] = gapX + (row ? pos : 14) + "px";
         el.style[right ? "left" : "right"] = "auto";
         pos += (row ? r.width : r.height) + 8;
+      });
+      var side = 14 + 40 + 4;
+      peeks.sort(function(a, b) {
+        return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
+      }).forEach(function(el) {
+        el.style[bottom ? "bottom" : "top"] = gapY + (row ? 14 : side) + "px";
+        el.style[right ? "right" : "left"] = gapX + (row ? side : 14) + "px";
+        el.style[right ? "left" : "right"] = "auto";
+        side += 36;
       });
     }
     function mbuLog(o) {
@@ -33792,10 +34125,9 @@ Its \u{1F517} chip adds the link.`;
         t = document.createElement("div");
         t.id = "mbu-tip";
         t.setAttribute("role", "tooltip");
-        (document.body || document.documentElement).appendChild(t);
       }
-      var host = t.parentNode;
-      if (host && host.lastElementChild !== t) host.appendChild(t);
+      var host = document.documentElement;
+      if (t.parentNode !== host || host.lastElementChild !== t) host.appendChild(t);
       return t;
     }
     function mbuTipFind(node) {
@@ -36370,7 +36702,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/work/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/area/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/instrument/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/series/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/collection/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/event/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/user/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/account/edit$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/account/preferences$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/account/donation$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/tag/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/search.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/edit/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.231000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.231000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.150000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.150000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -36382,7 +36714,7 @@ if (__stOff.indexOf("event_horizon") < 0 && __stRuns("event_horizon", {"inc":["^
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { ArtistImage } = __st_ARTIMG(GM_info);   // ST-ARTIMG, written once at the top of the bundle (#786)
 var { mbuGuessCase } = __st_GUESSCASE(GM_info);   // ST-GUESSCASE, written once at the top of the bundle (#786)
 var { mbuAliasEditor } = __st_ALIASES(GM_info, MBU_EDIT_ICON, MBU_SORT_ICON, mbuProp);   // ST-ALIASES, written once at the top of the bundle (#786)
@@ -40537,6 +40869,8 @@ function setOn(on) {
     if (first) build();
     ehOn = on;
     // the other scripts' corner launchers sit in whichever body was showing when they started: they move along
+    // and fold behind String Theory's dock while EH shows (#847)
+    document.documentElement.toggleAttribute('data-mbu-dock', on);
     const to = on ? ehBody : mbBody, from = document.body;
     if (from !== to) { to.append(...from.querySelectorAll(':scope > [data-mb-corner]')); from.replaceWith(to); }
     for (const c of ['br', 'bl', 'tr', 'tl']) if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
@@ -40730,7 +41064,7 @@ function launcher() {
     const btn = document.createElement('button');
     btn.id = 'eh-launch'; btn.type = 'button'; btn.setAttribute('aria-label', 'Event Horizon');
     btn.innerHTML = LOGO;
-    btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '50';
+    btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '50';   // folds into the dock with the others (#847)
     btn.onclick = () => switchOn(!ehOn);
     btn.oncontextmenu = ev => {
         ev.preventDefault();
@@ -40755,7 +41089,9 @@ function start() {
     try { if (sessionStorage.getItem('mc.after')) off = true; } catch (e) {}
     // and First Contact's Update this release, which opens Mission Control here (#fc-update=<token>)
     if (/[#&]fc-update=/.test(location.hash)) off = true;
-    setOn(S.on && !off);
+    // a tick later (#847): the scripts started with it (String Theory runs them in a row, Platform Check after
+    // EH) read MusicBrainz's page first, its sidebar and tracklist, before EH swaps the body for its own
+    setTimeout(() => setOn(S.on && !off), 0);
 }
 let showing = 0;
 // the page's shape while it loads, so nothing jumps when the data lands
@@ -40788,6 +41124,7 @@ function prefetch(key) {
 }
 async function show(key) {
     const app = $('#app'), n = ++showing;
+    mbRestackCorner('br');   // the dock drops the launchers that don't belong on this page (#847)
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
@@ -40902,14 +41239,14 @@ if (PAGE_ID) {
 
 // ===== falcon (@run-at document-end) ============================================
 if (__stOff.indexOf("falcon") < 0 && __stRuns("falcon", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$","^https:\\/\\/harmony\\.pulsewidth\\.org\\.uk(?::\\d+)?/.*$","^https:\\/\\/harmony\\.mybrainz\\.dev(?::\\d+)?/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.150000","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Falcon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.150000","description":"Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click \"Send to Falcon\" on a Harmony actions page to import its suggestions directly.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/falcon/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
   'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { MBP_COVER_TYPES, mbpCoverTypeId, mbpReleaseLinkList, mbpReleaseJsonLinks, mbpReleaseLinks } = __st_MBPAGE(GM_info);   // ST-MBPAGE, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('falcon', 'Falcon')) { falconHandOver(); return; }
@@ -45351,7 +45688,7 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
     launcher.dataset.tip = `${NAME} — bulk MusicBrainz editor\nClick / Ctrl+Alt+F: open the panel\nRight-click: settings`;
-    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90';   // lowest priority: furthest from the corner
+    launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90'; launcher.dataset.mbCornerLabel = 'Falcon';   // lowest priority: furthest from the corner
     // #588: a page Falcon reloaded after a clean run wears a green icon instead
     // of the usual translucent one — majkinetor's ask was to be able to pick
     // that tab out of many. It is also the only visible trace that the reload
@@ -47243,12 +47580,12 @@ var { ImageMaximizer } = __st_IMGMAX(GM_info);   // ST-IMGMAX, written once at t
 
 // ===== first_contact (@run-at document-start) =====================================
 if (__stOff.indexOf("first_contact") < 0 && __stRuns("first_contact", {"inc":["^https:\\/\\/www\\.deezer\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?bandcamp\\.com(?::\\d+)?/album/.*$","^https:\\/\\/www\\.discogs\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.apple\\.com(?::\\d+)?/.*$","^https:\\/\\/tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/listen\\.tidal\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.qobuz\\.com(?::\\d+)?/.*/album/.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/.*$","^https:\\/\\/open\\.spotify\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.youtube\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.youtube\\.com(?::\\d+)?/playlist.*$","^https:\\/\\/volumo\\.com(?::\\d+)?/.*$","^https:\\/\\/www\\.hdtracks\\.com(?::\\d+)?/.*$","^https:\\/\\/soundcloud\\.com(?::\\d+)?/.*$","^https:\\/\\/audiomack\\.com(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?7digital\\.com(?::\\d+)?/artist/.*$","^https:\\/\\/ototoy\\.jp(?::\\d+)?/_/default/p/.*$","^https:\\/\\/mora\\.jp(?::\\d+)?/package/.*$","^https:\\/\\/www\\.melon\\.com(?::\\d+)?/album/detail\\.htm.*$","^https:\\/\\/music\\.bugs\\.co\\.kr(?::\\d+)?/album/.*$","^https:\\/\\/www\\.allmusic\\.com(?::\\d+)?/album/release/.*$","^https:\\/\\/music\\.amazon\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.uk(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.de(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.fr(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.it(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.es(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.ca(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.co\\.jp(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.au(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.br(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.com\\.mx(?::\\d+)?/.*$","^https:\\/\\/www\\.prestomusic\\.com(?::\\d+)?/classical/products/.*$","^https:\\/\\/www\\.prestomusic\\.com(?::\\d+)?/jazz/products/.*$","^https:\\/\\/streaming\\.prestomusic\\.com(?::\\d+)?/.*$","^https:\\/\\/music\\.amazon\\.in(?::\\d+)?/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.26","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.26","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"First Contact*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/first_contact/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg=="} };
   (f=>f())(function(){ try { (function(){
 (function () {
 'use strict';
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { MBA_KEY, mbaTs, mbaShort, mbaSnapshot, mbaCleanUrl, mbaSavable, mbaKeys, mbaKeysStored, mbaSetKeys, mbaSaveAnon, mbaRequest, mbaSaveWithKeys, mbaSave, mbaKeysState, mbaKeysHtml, mbaKeysWire, mbaKeysCss } = __st_ARCHIVE(GM_info);   // ST-ARCHIVE, written once at the top of the bundle (#786)
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('first_contact', 'First Contact')) return;
@@ -51745,13 +52082,13 @@ if (mbuTestHooks()) window.__fcTest = { mcRead, splitFeat, creditFromTitle, seed
 
 // ===== fusion (@run-at document-end) ============================================
 if (__stOff.indexOf("fusion") < 0 && __stRuns("fusion", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/recording/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*/recordings$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.27.151500","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.27.151500","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="}) }) : { script: {"name":"Fusion*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('fusion', 'Fusion')) return;
 
@@ -55107,7 +55444,7 @@ function ensureLauncher() {
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; btn.appendChild(img);
     btn.dataset.tip = 'Fusion — merge recordings\nRight-click: settings';   // icon-only: the tooltip carries the name
-    btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30';
+    btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '30'; btn.dataset.mbCornerLabel = 'Fusion'; btn.dataset.mbCornerPaths = '^/(release|release-group|recording)/|^/artist/[^/]+/recordings';   // its @match
     btn.onclick = () => openFusion();
     btn.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('fs-settings')) document.getElementById('fs-settings').remove(); else openSettings(btn); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(btn);
@@ -55357,14 +55694,14 @@ try {
 
 // ===== group_therapy (@run-at document-end) =====================================
 if (__stOff.indexOf("group_therapy") < 0 && __stRuns("group_therapy", {"inc":["^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*/edit-relationships$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/artist/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/label/.*$","^https?:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/place/.*$"],"exc":[],"noframes":true})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.195030","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.26.195030","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.150000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="}) }) : { script: {"name":"Group Therapy*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.28.150000","description":"MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 /* eslint-disable no-undef */
 (function () {
   'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 var { mbuGuessCase } = __st_GUESSCASE(GM_info);   // ST-GUESSCASE, written once at the top of the bundle (#786)
 var { MBM_EXACT_LIMIT, MBM_SPECIAL_PURPOSE, mbmFold, mbmFoldKeepCase, mbmSameName, mbmSameNameCase, mbmHolds, mbmIdentityQuery, mbmExactIdentity, mbmRelatedArtists, mbmContextHolders, mbmCoCreditHits, mbmRankCandidates } = __st_MATCH(GM_info);   // ST-MATCH, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -61331,7 +61668,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/oauth2/oob.*$","^https:\\/\\/www\\.beatport\\.com(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.26.103354","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.26.103354","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.28.220000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.28.220000","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -61356,7 +61693,7 @@ if (__stOff.indexOf("isrc_scout") < 0 && __stRuns("isrc_scout", {"inc":["^https:
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('isrc_scout', 'ISRC Scout')) return;
   // the shared MusicBrainz request gate (#633) — first, so nothing can call it before its consts exist
@@ -61798,6 +62135,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
      STYLES
   ═══════════════════════════════════════════════════════════════════════ */
   const style = document.createElement('style');
+  style.id = 'mbu-ii-css';   // named, so Event Horizon, which turns off the page's unnamed sheets, keeps it (#847)
   // The shared design tokens (#562). Values live in dev/tokens/design-tokens.mjs and are
   // inlined here by dev/tokens/sync-tokens.mjs — edit them THERE, never in this block.
   // <ST-TOKENS> is __st_TOKENS, at the top of the bundle (#786)
@@ -62135,6 +62473,9 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       background: none; border: none; padding: 2px 4px; }
     .ii-cfg-lnk:hover { text-decoration: underline; }
     /* #768: the settings window, over the editor under its ⚙, built like Platform Check's */
+    #ii-modal.ii-cfgonly { visibility: hidden; pointer-events: none; }
+    #ii-modal.ii-cfgonly #ii-setup-pane { visibility: visible; pointer-events: auto; }
+    #ii-overlay.ii-cfgonly { display: none !important; }
     .ii-pane.ii-cfgwin.open { position: absolute; top: 52px; right: 12px; z-index: 6; width: 470px; max-width: calc(100% - 24px);
       max-height: calc(100% - 64px); box-sizing: border-box; padding: 14px 16px 16px; border: 1px solid var(--mbu-border);
       border-radius: var(--mbu-radius-lg); box-shadow: var(--mbu-shadow-lg); background: var(--mbu-bg); }
@@ -64531,8 +64872,40 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
             + '<circle cx="64" cy="64" r="9" fill="currentColor" stroke="none"/></g></svg>',
         })}
         <div id="ii-cfg-main">
-          <button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button>
+          <div style="display:flex; gap:8px"><button class="ii-cfg-nav" id="ii-cfg-to-platforms" type="button"><span>Platforms</span><span class="ii-cfg-navn" id="ii-cfg-platforms-n"></span><span aria-hidden="true">›</span></button><button class="ii-cfg-nav" id="ii-cfg-to-logins" type="button"><span>Logins</span><span class="ii-cfg-navn" id="ii-cfg-logins-n"></span><span aria-hidden="true">›</span></button></div>
 
+          <div class="ii-cfg-sec">Imports</div>
+          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Import buttons</span>
+            <label><input type="checkbox" id="ii-show-icons">icons</label>
+            <label><input type="checkbox" id="ii-show-text">text</label></div>
+        <div class="ii-set-row"><label data-tip="Use providers from the whole release group&#10;Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup."><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group</span></label></div>
+        <div class="ii-set-row"><label data-tip="Check links in the background&#10;On a release page, look for every track on each platform and show the links to add beside the dock icon in Event Horizon. It uses a lot of network, so it&#x27;s off by default. What it finds is kept for a week."><input type="checkbox" id="ii-bg-links"><span>Check links in the background</span></label></div>
+        <div class="ii-set-row"><label data-tip="Include slow platforms&#10;Tidal takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
+        <div class="ii-set-row"><label data-tip="Ignore Platform Check link confidence&#10;Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong."><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence</span></label></div>
+          <div class="ii-set-row ii-set-inline" data-tip="Where Spotify&#x27;s ISRCs come from&#10;Spotify&#x27;s own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another."><span class="ii-set-k">Spotify ISRC source</span>
+            <select id="ii-sp-source">
+              <option value="harmony">Harmony</option>
+              <option value="molla">molla</option>
+              <option value="isrchunt">ISRC Hunt</option>
+            </select></div>
+
+          <div class="ii-cfg-sec">Submitting</div>
+          <div class="ii-set-row"><label data-tip="Repeat failed submits up to … minutes or … times&#10;When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes."><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times</span></label></div>
+
+          <div class="ii-cfg-sec">Release page</div>
+        <div class="ii-set-row"><label data-tip="ISRC column on the tracklist&#10;The release page&#x27;s tracklist gets each track&#x27;s ISRCs."><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist</span></label></div>
+        <div class="ii-set-row"><label data-tip="Links column on the tracklist&#10;The release page&#x27;s tracklist gets each recording&#x27;s links, an icon per platform."><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist</span></label></div>
+        <div class="ii-set-row"><label data-tip="Column toggles above the tracklist&#10;ISRC and Links beside MusicBrainz&#x27;s own &quot;Display credits at bottom&quot;, to show or hide each column there."><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist</span></label></div>
+        <div class="ii-set-row"><label data-tip="Show ISRCs in parts&#10;CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain."><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts</span></label></div>
+
+          <div class="ii-cfg-sec">More</div>
+          <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
+           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
+           data-tip="Your Add ISRCs and Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
+        </div>
+
+        <div id="ii-cfg-logins" hidden>
+          <div class="ii-cfg-sec ii-cfg-sech">Logins<button class="ii-cfg-back" id="ii-cfg-back2" type="button">‹ Back</button></div>
           <div class="ii-cfg-sec">MusicBrainz</div>
           <div class="ii-authstate" id="ii-auth-state"></div>
           <div class="row" style="margin-top:8px; flex-wrap:nowrap">
@@ -64544,36 +64917,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
             Click <b>Authorize</b> → approve in the MusicBrainz tab → it captures the code and closes itself.
             If the tab can't close on its own, paste the code it shows into the box above (Enter to submit).
           </div>
-
-          <div class="ii-cfg-sec">Imports</div>
-          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Import buttons</span>
-            <label><input type="checkbox" id="ii-show-icons">icons</label>
-            <label><input type="checkbox" id="ii-show-text">text</label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group<span class="ii-set-help">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence<span class="ii-set-help">Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong (#314).</span></span></label></div>
-          <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Spotify ISRC source</span>
-            <select id="ii-sp-source">
-              <option value="harmony">Harmony</option>
-              <option value="molla">molla</option>
-              <option value="isrchunt">ISRC Hunt</option>
-            </select></div>
-          <div class="ii-set-help ii-set-under">Spotify's own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another (#603).</div>
-
-          <div class="ii-cfg-sec">Submitting</div>
-          <div class="ii-set-row"><label><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times<span class="ii-set-help">When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes.</span></span></label></div>
-
-          <div class="ii-cfg-sec">Release page</div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist<span class="ii-set-help">The release page's tracklist gets each track's ISRCs.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist<span class="ii-set-help">The release page's tracklist gets each recording's links, an icon per platform.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist<span class="ii-set-help">ISRC and Links beside MusicBrainz's own "Display credits at bottom", to show or hide each column there.</span></span></label></div>
-        <div class="ii-set-row"><label><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts<span class="ii-set-help">CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain.</span></span></label></div>
-
-          <div class="ii-cfg-sec">More</div>
-          <a class="ii-cfg-lnk" id="ii-history" target="_blank" rel="noopener"
-           href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
-           data-tip="Your Add ISRCs and Remove ISRC edits on MusicBrainz">🕓 My ISRC edits on MusicBrainz</a>
         </div>
-
         <div id="ii-cfg-platforms" hidden>
           <div class="ii-cfg-sec ii-cfg-sech">Platforms<button class="ii-cfg-back" id="ii-cfg-back" type="button">‹ Back</button></div>
           <div class="ii-set-help ii-set-under">Untick a platform to leave it out: its import button and per-track lookup go, and Match, Find links and All skip it. Platform Check keeps its own list.</div>
@@ -64742,7 +65086,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     });
     modal.querySelector('#ii-setup-toggle').addEventListener('click', () => {
       const pane = modal.querySelector('#ii-setup-pane');
-      if (!pane.classList.contains('open')) { modal.querySelector('#ii-cfg-main').hidden = false; modal.querySelector('#ii-cfg-platforms').hidden = true; }
+      if (!pane.classList.contains('open')) { modal.querySelector('#ii-cfg-main').hidden = false; modal.querySelector('#ii-cfg-platforms').hidden = true; modal.querySelector('#ii-cfg-logins').hidden = true; }
       togglePane('ii-setup-pane');
     });
     // #768: the settings window floats over the editor, so a click outside closes it; that click
@@ -64755,6 +65099,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       modal.addEventListener('click', eat, { capture: true, once: true });
       setTimeout(() => modal.removeEventListener('click', eat, { capture: true }), 400);
     }, true);
+    cfgDrag(modal.querySelector('#ii-setup-pane'));
     modal.querySelector('#ii-bulk-toggle').addEventListener('click', () => togglePane('ii-bulk-pane'));
     modal.querySelector('#ii-maximize-toggle').addEventListener('click', toggleMaximize);
     modal.querySelector('#ii-links-btn').addEventListener('click', () => TrackLinks.resolve());        // #219: resolve candidates
@@ -64858,6 +65203,14 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       });
     }
 
+    // #847: the background link check
+    const cbBg = modal.querySelector('#ii-bg-links'), cbSlow = modal.querySelector('#ii-bg-slow');
+    if (cbBg && cbSlow) {
+      cbBg.checked = bgLinksOn(); cbSlow.checked = bgSlowOn(); cbSlow.disabled = !cbBg.checked;
+      cbBg.addEventListener('change', () => { store.set('bg_links', cbBg.checked); cbSlow.disabled = !cbBg.checked; Log.info('Background link check: ' + (cbBg.checked ? 'on' : 'off')); });
+      cbSlow.addEventListener('change', () => store.set('bg_links_slow', cbSlow.checked));
+    }
+
     // #749: ISRCs and links on the release page's tracklist
     // (a setting each since vzell's request on #749)
     [['isrc', '#ii-track-isrc', 'ISRC'], ['links', '#ii-track-links', 'Links']].forEach(([k, sel, name]) => {
@@ -64883,14 +65236,15 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     }
 
     // #768: the Platforms view of the settings window, a switch per platform
-    const cfgMain = modal.querySelector('#ii-cfg-main'), cfgPlat = modal.querySelector('#ii-cfg-platforms');
+    const cfgMain = modal.querySelector('#ii-cfg-main'), cfgPlat = modal.querySelector('#ii-cfg-platforms'), cfgLog = modal.querySelector('#ii-cfg-logins');
     const platCount = () => {
       const on = PLATFORMS.filter(([k]) => platformOn(k)).length;
       modal.querySelector('#ii-cfg-platforms-n').textContent = on === PLATFORMS.length ? 'all on' : on + ' of ' + PLATFORMS.length + ' on';
     };
-    const cfgView = plat => { cfgMain.hidden = plat; cfgPlat.hidden = !plat; };
-    modal.querySelector('#ii-cfg-to-platforms').addEventListener('click', () => cfgView(true));
-    modal.querySelector('#ii-cfg-back').addEventListener('click', () => cfgView(false));
+    const cfgView = v => { cfgMain.hidden = v !== 'main'; cfgPlat.hidden = v !== 'platforms'; cfgLog.hidden = v !== 'logins'; };
+    modal.querySelector('#ii-cfg-to-platforms').addEventListener('click', () => cfgView('platforms'));
+    modal.querySelector('#ii-cfg-to-logins').addEventListener('click', () => cfgView('logins'));
+    modal.querySelectorAll('#ii-cfg-back, #ii-cfg-back2').forEach(b => b.addEventListener('click', () => cfgView('main')));
     modal.querySelectorAll('#ii-plat-grid input[data-platform]').forEach(cb => {
       cb.checked = platformOn(cb.dataset.platform);
       cb.addEventListener('change', () => {
@@ -65025,6 +65379,18 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       b.addEventListener('click', () => b.closest('.ii-pane').classList.remove('open')));
   }
 
+  // the settings window moves by its header (#847)
+  function cfgDrag(el) {
+    el.addEventListener('pointerdown', e => {
+      const h = e.target.closest('.mbu-cfg-h');
+      if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
+      const p = (el.offsetParent || document.body).getBoundingClientRect(), r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+      el.style.transform = 'none'; el.style.right = 'auto'; el.style.bottom = 'auto';
+      const mv = ev => { el.style.left = (ev.clientX - dx - p.left) + 'px'; el.style.top = (ev.clientY - dy - p.top) + 'px'; };
+      const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };
+      mv(e); addEventListener('pointermove', mv); addEventListener('pointerup', up); e.preventDefault();
+    });
+  }
   function togglePane(id) {
     modal.querySelectorAll('.ii-pane').forEach(p => {
       if (p.id === id) p.classList.toggle('open');
@@ -65161,6 +65527,8 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   }
   function openModal() {
     buildModal();
+    // into the body that shows: Event Horizon swaps the page's body for its own (#847)
+    if (overlay.parentNode !== document.body) document.body.append(overlay, modal);
     overlay.classList.add('open');
     modal.classList.add('open');
     pinModalToViewport();
@@ -65201,6 +65569,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   function refreshAuthState() {
     const el = modal.querySelector('#ii-auth-state');
     const authed = Auth.isAuthorized();
+    const ln = modal.querySelector('#ii-cfg-logins-n'); if (ln) ln.textContent = authed ? '1 of 1' : '0 of 1';
     const tog = modal.querySelector('#ii-setup-toggle');
     if (tog) { tog.classList.toggle('ii-needauth', !authed); tog.dataset.tip = authed ? 'Settings and help' : 'Settings and help\n⚠ Not authorized to submit ISRCs yet'; }
     // when authorized show Sign out; when not, show the code field in its place
@@ -66320,10 +66689,13 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     // gaps as resolveProvider, but the results come back as data, never into the table.
     // isrcOf(t): an ISRC found for the track but not on MusicBrainz yet (tried first).
     // → { <idx>: [{ code, name, url, linkTypeID }] }
-    async function findHeadless(isrcOf, onProvider) {
+    // opts (#847, the background check): skip(p) leaves a provider out, onHit(idx, link) and
+    // onStep(p, done, of) report as they come, onDone(p) when a provider is through
+    async function findHeadless(isrcOf, onProvider, opts) {
       const out = {};
+      opts = opts || {};
       await Promise.all(PROV.map(async p => {
-        if (!codeOn(p.code)) return;   // #768: switched off
+        if (!codeOn(p.code) || (opts.skip && opts.skip(p))) return;   // #768: switched off
         if (p.album && !(RELEASE && RELEASE[p.urlKey])) return;
         const jobs = [];
         RELEASE.tracks.forEach((t, idx) => {
@@ -66332,8 +66704,9 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
           if (!p.album && !isrcs.length && !(p.code === 'yt' && RELEASE.ytmUrl)) return;
           jobs.push({ idx, isrcs, t });
         });
-        if (!jobs.length) return;
+        if (!jobs.length) { if (opts.onDone) opts.onDone(p); return; }
         if (onProvider) onProvider(p.name);
+        if (opts.onStep) opts.onStep(p, 0, jobs.length);
         let next = 0, hits = 0;
         const worker = async () => {
           while (next < jobs.length) {
@@ -66343,12 +66716,14 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
               try { url = await p.resolve(isrc, j.t, j.idx); } catch (e) { /* rate-limited / not found */ }
               if (url) { url = normalizeProviderUrl(p.code, url); break; }
             }
-            if (url) { (out[j.idx] = out[j.idx] || []).push({ code: p.code, name: p.name, url, linkTypeID: p.linkTypeID }); hits++; }
+            if (url) { const l = { code: p.code, name: p.name, url, linkTypeID: p.linkTypeID }; (out[j.idx] = out[j.idx] || []).push(l); hits++; if (opts.onHit) opts.onHit(j.idx, l); }
+            if (opts.onStep) opts.onStep(p, next, jobs.length);
             if (p.gap && next < jobs.length) await sleep(p.gap);
           }
         };
         await Promise.all(Array.from({ length: Math.min(p.conc || 1, jobs.length) }, worker));
         Log.info('Find links (headless) ' + p.name + ': ' + hits + ' of ' + jobs.length + ' track(s)');
+        if (opts.onDone) opts.onDone(p);
       }));
       return out;
     }
@@ -66382,7 +66757,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       return out.concat(otherLinked(t)).map(o => Object.assign(o, { ended: !!(t.endedUrls && t.endedUrls.has(o.url)) }));
     }
 
-    return { findHeadless, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
+    return { findHeadless, PROV, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -68221,6 +68596,57 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   // Only the release *overview* page (`/release/<mbid>`) — not its subpages
   // (/edit, /edit-relationships, /aliases, /tags, …) which also match `release/*`.
   const IS_OVERVIEW = /^\/release\/[a-f0-9-]{36}\/?$/i.test(location.pathname);   // case-insensitive: MB serves mixed-case MBID URLs as-is
+  // In Event Horizon, which replaces this page, the badge's state and the editor are in String Theory's dock (#847)
+  whenDomReady(() => {
+    if (!IS_OVERVIEW) return;
+    const item = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
+      scale: 1.3, paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { if (location.pathname.replace(/\/$/, '').toLowerCase() === HOME) openModal(); else location.reload(); } });
+    item.oncontextmenu = e => {   // #695: right-click opens the settings
+      e.preventDefault();
+      if (location.pathname.replace(/\/$/, '').toLowerCase() !== HOME) return;
+      if (document.getElementById('ii-modal')?.classList.contains('open')) { document.getElementById('ii-setup-toggle')?.click(); return; }
+      // the settings alone: the window opens hidden, only its settings pane shows; closing the pane closes the window
+      openModal();
+      const modal = document.getElementById('ii-modal'), ov = document.getElementById('ii-overlay'), pane = document.getElementById('ii-setup-pane');
+      modal.classList.add('ii-cfgonly'); ov.classList.add('ii-cfgonly');
+      if (!pane.classList.contains('open')) document.getElementById('ii-setup-toggle').click();
+      const mr = modal.getBoundingClientRect();   // in the middle of the screen, not under the window's ⚙
+      Object.assign(pane.style, { right: 'auto', left: Math.max(0, innerWidth / 2 - mr.left - pane.offsetWidth / 2) + 'px', top: Math.max(0, innerHeight / 2 - mr.top - pane.offsetHeight / 2) + 'px' });
+      const done = () => { mo.disconnect(); document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', esc, true);
+        modal.classList.remove('ii-cfgonly'); ov.classList.remove('ii-cfgonly'); pane.classList.remove('open'); ['left', 'top', 'right', 'bottom', 'transform'].forEach(k => pane.style.removeProperty(k)); closeModal(); };
+      const out = ev => { if (!pane.contains(ev.target)) done(); };
+      const esc = ev => { if (ev.key === 'Escape') { ev.stopPropagation(); done(); } };
+      const mo = new MutationObserver(() => { if (!pane.classList.contains('open')) done(); });
+      mo.observe(pane, { attributes: true, attributeFilter: ['class'] });
+      document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', esc, true);
+    };
+    const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no ISRC Scout: the click loads it
+    // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
+    const tipEsc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const mirror = () => {
+      if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
+      if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
+      const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
+      const links = bgLinksOn() ? bgLinksToAdd() : [];
+      const busy = Object.keys(BG.running).length > 0;
+      item.status(missing + links.length ? String(missing + links.length) : busy ? '' : '\u2713');
+      item.busy(busy);
+      item.card(() => {
+        const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
+        let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
+        if (bgLinksOn()) {
+          const byCode = {};
+          links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
+          const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
+          h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
+          Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', tipEsc(p ? p.name : c), r.done + '/' + r.of + ' tracks…'); });
+        } else h += row('#8a8494', 'Links', 'not checked: turn on <b>Check links in the background</b> in the settings');
+        return mbuTipCard({ title: 'ISRC Scout', body: '<div class="mbu-tip-rows">' + h + '</div>' });
+      });
+    };
+    new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
+    mirror();
+  });
   whenDomReady(() => {
     if (!IS_OVERVIEW) return;
     if (!injectButton()) {
@@ -68236,6 +68662,47 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   // "Cannot access 'btnStatus' before initialization", which in String Theory also stopped every script
   // after this one, Platform Check's panel included (oblaka, majkinetor).
   function btnStatus() { return btn.querySelector('#ii-btn-status'); }
+
+  // #847: "Check links in the background" (off by default, it uses a lot of network): on a release
+  // page, Find links runs on its own with MusicBrainz's ISRCs, and the dock shows the links to add.
+  // What it found, and which platforms it went through, is kept per release, so a reload or the
+  // editor starts from there. "Include slow platforms" off leaves Tidal (about 1 s a track) out.
+  var BG = { started: false, running: {}, prov: c => { try { return TrackLinks.PROV.find(p => p.code === c); } catch (e) { return null; } } };
+  var BG_SLOW = ['td'];
+  var BG_DAYS = 7;
+  function bgLinksOn() { return store.get('bg_links', false) === true; }
+  function bgSlowOn() { return store.get('bg_links_slow', true) !== false; }
+  function bgCache() {
+    const all = store.get('bg_links_cache', {}) || {};
+    const c = all[mbid];
+    return c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+  }
+  function bgSave(c) {
+    const all = store.get('bg_links_cache', {}) || {};
+    all[mbid] = c;
+    const keys = Object.keys(all).sort((a, b) => all[b].at - all[a].at);
+    keys.slice(50).forEach(k => delete all[k]);   // the 50 latest releases
+    store.set('bg_links_cache', all);
+  }
+  // the cached links MusicBrainz doesn't have yet (one added since drops out)
+  function bgLinksToAdd() {
+    return bgCache().links.filter(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); return t && !(t.recUrls || []).includes(l.url); });
+  }
+  async function bgLinksRun(onChange) {
+    BG.started = true;
+    const c = bgCache();
+    try {
+      await TrackLinks.findHeadless(() => null, null, {
+        skip: p => c.done.includes(p.code) || (!bgSlowOn() && BG_SLOW.includes(p.code)),
+        onStep: (p, done, of) => { BG.running[p.code] = { done, of }; onChange(); },
+        onHit: (idx, l) => { const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
+        onDone: p => { delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
+      });
+      Log.info('Background link check: ' + bgLinksToAdd().length + ' link(s) to add');
+    } catch (x) { Log.warn('Background link check failed: ' + errText(x)); }
+    BG.running = {};
+    onChange();
+  }
   function updateBtnStatus() {
     try { showTrackData(); } catch (e) { Log.warn('tracklist ISRCs and links: ' + errText(e)); }
     const statusEl = btnStatus();
@@ -68561,7 +69028,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
 
 // ===== mammoth (@run-at document-idle) ===========================================
 if (__stOff.indexOf("mammoth") < 0 && __stRuns("mammoth", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.26","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.26","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="}) }) : { script: {"name":"Mammoth*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mammoth/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg=="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 //
 // Mammoth puts a compact saved-notes panel to the RIGHT of MusicBrainz's native
@@ -68585,7 +69052,7 @@ if (__stOff.indexOf("mammoth") < 0 && __stRuns("mammoth", {"inc":["^https:\\/\\/
 (function () {
   'use strict';
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
   if (!mbuClaim('mammoth', 'Mammoth')) return;
   try { console.info('[Mammoth] ' + mbuStartupInfo('Mammoth')); } catch (e) { /* no console */ }   // Mammoth keeps no session log
@@ -70205,7 +70672,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
 
 // ===== mission_control (@run-at document-end) ===================================
 if (__stOff.indexOf("mission_control") < 0 && __stRuns("mission_control", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.28","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.28","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Mission Control*","namespace":"https://musicbrainz.org/","version":"2026.10.28.150000","description":"One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/mission_control/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
@@ -70213,7 +70680,7 @@ var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, m
 var { mbuGuessCase } = __st_GUESSCASE(GM_info);   // ST-GUESSCASE, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('mission_control', 'Mission Control')) return;
 
@@ -70780,9 +71247,6 @@ function reviewIco(id, x) {
     if (id === 'as' || (id === 'pc' && !x.kind)) return stIcon(x.icon || x.key, 16);
     return '';
 }
-// a link as its platform's name and the id at the end of its address, the whole address on hover
-function reviewUrlName(u) { const k = urlIcon(u); return k === 'globe' ? shortUrl(u).split('/')[0] : ccName(k); }
-function reviewUrlId(u) { try { const p = new URL(u).pathname.split('/').filter(Boolean); return p.slice(-1)[0] || ''; } catch (e) { return ''; } }
 // one selected finding as a line: what it is, and where it goes
 function reviewLine(id, x) {
     const k = x.kind;
@@ -70795,40 +71259,12 @@ function reviewLine(id, x) {
     if (k === 'lengths') return 'Lengths of ' + ((x.lengths || []).length || 'the') + ' tracks without one';
     return (x.name || x.key) + ' link on ' + (x.entity ? x.entity.name : 'the release') + (x.url ? ': ' + x.url : '');
 }
-// ISRC Scout's line under its track: the ISRC, or the link's platform and id
-function reviewIsItem(x) {
-    if (x.kind !== 'link') {
-        const t = 'ISRC ' + (x.isrc || '?') + ((x.existing || []).length ? ' (beside ' + x.existing.join(', ') + ')' : '');
-        return { keys: [x.key], text: t, md: '`' + (x.isrc || '?') + '` ISRC' + ((x.existing || []).length ? ' (beside ' + x.existing.join(', ') + ')' : ''), html: '<span class="mc-rv-isrc">ISRC</span> <code>' + esc(x.isrc || '?') + '</code>' + ((x.existing || []).length ? ' <span class="mc-rv-dim">beside ' + esc(x.existing.join(', ')) + '</span>' : ''), sort: '' };
-    }
-    const name = reviewUrlName(x.url), id = reviewUrlId(x.url);
-    return { keys: [x.key], ico: reviewIco('is', x), text: name + ' ' + x.url, md: '[' + name + (id ? ' ' + id : '') + '](' + x.url + ')', sort: name.toLowerCase() + ' ' + x.url,
-        html: '<span class="mc-rv-pf">' + esc(name) + '</span> <a href="' + esc(x.url) + '" target="_blank" rel="noopener" class="mc-rv-id" data-tip="' + esc(x.url) + '">' + esc(id || shortUrl(x.url)) + '</a>' };
-}
 function reviewWindow() {
     const groups = [];
     PROVIDERS.forEach(p => {
         if (providerOff(p.id) || !found[p.id] || !(found[p.id].capabilities || []).includes('apply')) return;
         const set = picked[p.id], xs = set && set.size ? ((results[p.id] || {}).findings || []).filter(x => set.has(x.key)) : [];
         let items = xs.map(x => ({ keys: [x.key], text: reviewLine(p.id, x), ico: reviewIco(p.id, x) }));
-        // ISRC Scout: grouped by track, in the tracklist's order, the ISRC first and the links by platform
-        if (p.id === 'is') {
-            const by = new Map(), order = rel ? rel.tracks.map(t => t.rec) : [];
-            xs.forEach(x => (by.get(x.track) || by.set(x.track, []).get(x.track)).push(reviewIsItem(x)));
-            const tracks = [...by.keys()].sort((a, b) => (order.indexOf(a) + 1 || 1e6) - (order.indexOf(b) + 1 || 1e6));
-            items = [];
-            tracks.forEach(gid => {
-                const t = rel && rel.tracks.find(t => t.rec === gid);
-                const its = by.get(gid).sort((a, b) => a.sort.localeCompare(b.sort));
-                items.push({ head: true, pos: t ? (rel.media > 1 ? t.medium + '.' : '') + t.pos : '?', title: t ? t.title : 'a recording', len: t ? t.len : '', n: its.length });
-                items.push(...its);
-            });
-        }
-        // Art Station: only the best cover is entered, the other sources were searched; unselecting it leaves them all out
-        if (p.id === 'as') {
-            const b = xs.find(x => x.role === 'best');
-            if (b) items = [{ keys: xs.map(x => x.key), text: reviewLine('as', b), ico: reviewIco('as', b) }];
-        }
         // Fusion: the tracks of one group are one merge
         if (p.id === 'fusion') {
             const by = new Map();
@@ -70843,48 +71279,19 @@ function reviewWindow() {
         if (p.id === 'pc') pfChanges().forEach(c => items.push({ text: 'Track ' + c.position + ': ' + [c.title != null && '“' + (c.was.title || '') + '” → “' + c.title + '”', c.ms && 'length ' + (c.was.ms ? reviewLen(c.was.ms) : 'none') + ' → ' + reviewLen(c.ms)].filter(Boolean).join(', ') }));
         if (items.length) groups.push({ p, items });
     });
-    const n = groups.reduce((k, g) => k + g.items.filter(it => !it.head).length, 0);   // a line each: one Fusion merge is one
+    const n = groups.reduce((k, g) => k + g.items.length, 0);   // a line each: one Fusion merge is one
     const ov = el('div', 'mbu-ov');
     const panel = el('div', 'mbu-ov-panel mc-review');
-    panel.style.width = 'min(680px, 94vw)';
-    let gi = 0;
-    const row = (g, it, grp) => '<label class="mc-rv-i' + (grp != null ? ' mc-rv-in' : '') + '"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + (grp != null ? ' data-in="' + grp + '"' : '') + '>'
-        + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + (it.html || esc(it.text)) + '</span></label>';
-    const body = groups.map(g => {
-        let grp = null;
-        return '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
-            + g.items.map(it => {
-                if (!it.head) return row(g, it, grp);
-                grp = gi++;
-                return '<label class="mc-rv-t"><input type="checkbox" checked data-grp="' + grp + '" data-tip="Select or unselect this track\'s ' + it.n + ' change' + (it.n === 1 ? '' : 's') + '">'
-                    + '<span class="pos">' + esc(it.pos) + '</span><span class="tt">' + esc(it.title) + '</span>' + (it.len ? '<span class="len">' + esc(it.len) + '</span>' : '') + '<span class="n">' + it.n + '</span></label>';
-            }).join('');
-    }).join('');
-    panel.innerHTML = mbuHtml('<div class="mbu-ov-body"><h2 class="mc-sec">Execute ' + n + ' change' + (n === 1 ? '' : 's') + '?</h2>' + body
-        + '<div class="mc-rv-f"><button type="button" class="mc-btn" data-rv="md" data-tip="Copy the selected changes as Markdown\nGrouped by track, ready to paste into an issue or a note">Copy as Markdown</button><span class="mc-rv-sp"></span><button type="button" class="mc-btn" data-rv="cancel">Cancel</button><button type="button" class="mc-btn mc-exec" data-rv="go">Execute</button></div></div>');
+    panel.style.width = 'min(640px, 94vw)';
+    panel.innerHTML = mbuHtml('<div class="mbu-ov-body"><h2 class="mc-sec">Execute ' + n + ' change' + (n === 1 ? '' : 's') + '?</h2>'
+        + groups.map(g => '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
+            + g.items.map(it => '<label class="mc-rv-i"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + '>' + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + esc(it.text) + '</span></label>').join('')).join('')
+        + '<div class="mc-rv-f"><button type="button" class="mc-btn" data-rv="cancel">Cancel</button><button type="button" class="mc-btn mc-exec" data-rv="go">Execute</button></div></div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
     const close = () => ov.remove();
     const off = mbuDismissOn(panel, close);
-    Log.cat('Execute').info('review: ' + n + ' change(s) · ' + gi + ' track group(s)');
-    // a track's box selects or unselects its lines; it shows a mix as "some"
-    const syncGrp = g => {
-        const ins = [...panel.querySelectorAll('input[data-in="' + g + '"]')], on = ins.filter(i => i.checked).length, h = panel.querySelector('input[data-grp="' + g + '"]');
-        if (h) { h.checked = on === ins.length; h.indeterminate = on > 0 && on < ins.length; }
-    };
-    panel.addEventListener('change', e => {
-        const i = e.target;
-        if (i.dataset.grp != null) panel.querySelectorAll('input[data-in="' + i.dataset.grp + '"]').forEach(c => { c.checked = i.checked; });
-        else if (i.dataset.in != null) syncGrp(i.dataset.in);
-        const left = [...panel.querySelectorAll('input[data-key]')].filter(c => c.checked).length;
-        panel.querySelector('.mc-sec').textContent = 'Execute ' + left + ' change' + (left === 1 ? '' : 's') + '?';
-    });
-    panel.querySelector('[data-rv="md"]').onclick = () => {
-        const md = reviewMarkdown(groups, panel);
-        if (mbuTestHooks()) window.__mcReviewMarkdown = md;
-        Log.cat('Execute').info('review: copied as Markdown, ' + md.split('\n').length + ' line(s)');
-        navigator.clipboard.writeText(md).then(() => mbuToast('Copied as Markdown', { kind: 'ok' }), x => mbuToast('Copy failed: ' + x.message, { kind: 'error' }));
-    };
+    Log.cat('Execute').info('review: ' + n + ' change(s)');
     panel.querySelector('[data-rv="cancel"]').onclick = () => { off(); close(); Log.cat('Execute').info('review: cancelled'); };
     panel.querySelector('[data-rv="go"]').onclick = () => {
         const dropped = [...panel.querySelectorAll('input[data-key]:not(:checked)')];
@@ -70893,24 +71300,6 @@ function reviewWindow() {
         off(); close();
         if (changeCount()) execute(false);
     };
-}
-// the review's selected lines as Markdown: a heading per script, a bullet per track with its changes under it
-function reviewMarkdown(groups, panel) {
-    const on = new Set([...panel.querySelectorAll('input[data-key]:checked')].map(i => i.dataset.p + ' ' + i.dataset.key));
-    const kept = (g, it) => !it.keys || on.has(g.p.id + ' ' + JSON.stringify(it.keys));
-    const out = ['## ' + (rel && rel.title ? rel.title + (rel.artist ? ' by ' + rel.artist : '') : 'Release'), '', RELEASE ? location.origin + '/release/' + RELEASE : ''];
-    groups.forEach(g => {
-        const lines = [];
-        let head = null;
-        g.items.forEach(it => {
-            if (it.head) { head = it; return; }
-            if (!kept(g, it)) return;
-            if (head) { lines.push('- **' + head.pos + '** ' + head.title + (head.len ? ' (' + head.len + ')' : '')); head = null; }
-            lines.push((g.p.id === 'is' ? '  - ' : '- ') + (it.md || it.text));
-        });
-        if (lines.length) out.push('', '### ' + g.p.name + ' (' + g.p.provider + ')', '', ...lines);
-    });
-    return out.join('\n') + '\n';
 }
 // #741: one provider applied again (its card's Retry), as Execute applies it
 async function retryOne(id) {
@@ -70939,8 +71328,20 @@ function discover() {
 
 // Read once from the rendered page, no request: the header and the tracklist
 // are already there.
+// The page MC started on (#847): Event Horizon swaps the body for its own and moves to other pages
+// without loading them, so the release is read from MusicBrainz's body, and a release reached inside
+// Event Horizon (no MC, Platform Check or the others ran for it) is loaded first.
+const MC_HOME = location.pathname;
+let mcBody = null;
+function mcPage() {
+    if (document.querySelector('.releaseheader')) return (mcBody = document.body, document);
+    return mcBody || document;
+}
+mcPage();   // at the start, before Event Horizon can swap the body
+function mcElsewhere() { if (location.pathname === MC_HOME) return false; location.reload(); return true; }
 function readRelease() {
-    const h = document.querySelector('.releaseheader');
+    const D = mcPage();
+    const h = D.querySelector('.releaseheader');
     // the h1's own link: other scripts append to the h1 (ISRC Scout's "ISRC ✓ 12/12")
     const h1 = h && h.querySelector('h1');
     const tl = h1 && (h1.querySelector('a[href*="/release/"] bdi') || h1.querySelector('a[href*="/release/"]'));
@@ -70950,12 +71351,12 @@ function readRelease() {
     const va = h && (h.querySelector('.subheader .small a[href*="/release-group/"]') || Array.from(h.querySelectorAll('.subheader a')).find(x => /version/i.test(x.textContent || '')));   // #722 by its address
     const vn = va && (va.textContent.match(/(\d+)/) || [])[1];
     const versions = va ? { href: va.href, text: vn ? vn + (vn === '1' ? ' version' : ' versions') : 'all versions' } : null;
-    const cover = document.querySelector('.cover-art img');
-    const fmt = document.querySelector('#sidebar dd.format');
+    const cover = D.querySelector('.cover-art img');
+    const fmt = D.querySelector('#sidebar dd.format');
     const format = fmt ? fmt.textContent.trim() : '';
     const tracks = [];
     let medium = 0;
-    document.querySelectorAll('#content table.medium').forEach(tbl => {
+    D.querySelectorAll('#content table.medium').forEach(tbl => {
         medium++;
         tbl.querySelectorAll('tbody tr').forEach(tr => {
             const rec = tr.querySelector('a[href*="/recording/"]');
@@ -70970,11 +71371,11 @@ function readRelease() {
     });
     Log.cat('Release').info('release: "' + title + '" by ' + (artist || '?') + ' · ' + location.origin + '/release/' + RELEASE + ' · ' + tracks.length + ' tracks on ' + medium + ' medium(s) · format ' + (format || '?'));
     // #782: the release's events, from the JSON its sidebar embeds after the heading (none: no heading)
-    const evh = document.querySelector('#sidebar h2.release-events');
+    const evh = D.querySelector('#sidebar h2.release-events');
     let events = 0;
     if (evh) { try { events = (JSON.parse((evh.nextElementSibling || {}).textContent || '{}').events || []).length; } catch (e) { events = 1; } }
     // #785: the release's language (ISO 639-3) from its sidebar link's address (a search for lang:"eng"), for guess case
-    const la = document.querySelector('#sidebar dd.language a[href*="lang"]');
+    const la = D.querySelector('#sidebar dd.language a[href*="lang"]');
     let language = null;
     try { language = la ? (decodeURIComponent(la.getAttribute('href')).match(/lang:"?([a-z]{3})\b/) || [])[1] || null : null; } catch (e) { language = null; }
     return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format, versions, events, language };
@@ -71214,7 +71615,7 @@ function mcStyle() {
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
         + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}'
         // #841: the review before Execute
-        + '.mc-review .mc-rv-g{display:flex;align-items:center;gap:6px;font-weight:600;margin:12px 0 4px}.mc-review .mc-rv-g img{width:18px;height:18px}.mc-review .mc-rv-g span{font-weight:400;color:var(--mbu-text-weak)}.mc-review .mc-rv-i{display:flex;gap:8px;align-items:flex-start;padding:2px 0 2px 24px;font-size:13px;overflow-wrap:anywhere}.mc-review .mc-rv-ico{display:inline-flex;flex:none;margin-top:1px}.mc-review .mc-rv-ico svg{display:block}.mc-review .mc-rv-f{display:flex;align-items:center;gap:8px;margin-top:14px}.mc-review .mc-rv-sp{flex:1}.mc-review .mc-rv-t{display:flex;gap:8px;align-items:baseline;padding:6px 0 2px 24px;font-size:13px;font-weight:600;border-top:1px solid var(--mbu-divider);margin-top:4px;cursor:pointer}.mc-review .mc-rv-t .pos{color:var(--mbu-text-weak);min-width:1.6em}.mc-review .mc-rv-t .tt{flex:1;min-width:0}.mc-review .mc-rv-t .len,.mc-review .mc-rv-t .n{font-weight:400;font-size:12px;color:var(--mbu-text-weak);font-variant-numeric:tabular-nums}.mc-review .mc-rv-t .n{min-width:18px;text-align:center;border-radius:9px;background:var(--mbu-bg-sunken)}.mc-review .mc-rv-in{padding-left:48px;font-size:12.5px}.mc-review .mc-rv-pf{display:inline-block;min-width:96px}.mc-review .mc-rv-id{font-family:var(--mbu-mono,monospace);font-size:12px;color:var(--mbu-text-weak)}.mc-review .mc-rv-id:hover{color:var(--mbu-accent-text)}.mc-review .mc-rv-isrc{display:inline-block;min-width:96px}.mc-review .mc-rv-i code{font-size:12px}.mc-review .mc-rv-dim{color:var(--mbu-text-weak)}.mc-review .mc-rv-f button{height:30px;padding:0 16px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius);font:inherit;font-size:13px;cursor:pointer}.mc-review .mc-rv-f button:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}.mc-review .mc-rv-f [data-rv=go]{font-weight:600;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}.mc-review .mc-rv-f [data-rv=go]:hover{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}'
+        + '.mc-review .mc-rv-g{display:flex;align-items:center;gap:6px;font-weight:600;margin:12px 0 4px}.mc-review .mc-rv-g img{width:18px;height:18px}.mc-review .mc-rv-g span{font-weight:400;color:var(--mbu-text-weak)}.mc-review .mc-rv-i{display:flex;gap:8px;align-items:flex-start;padding:2px 0 2px 24px;font-size:13px;overflow-wrap:anywhere}.mc-review .mc-rv-ico{display:inline-flex;flex:none;margin-top:1px}.mc-review .mc-rv-ico svg{display:block}.mc-review .mc-rv-f{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.mc-review .mc-rv-f button{height:30px;padding:0 16px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius);font:inherit;font-size:13px;cursor:pointer}.mc-review .mc-rv-f button:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}.mc-review .mc-rv-f [data-rv=go]{font-weight:600;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}.mc-review .mc-rv-f [data-rv=go]:hover{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}'
         + '#mc-root .mc-act .mc-exec.mc-cd{background:linear-gradient(90deg,color-mix(in srgb,var(--mbu-accent) 35%,var(--mbu-accent-soft)) var(--mc-cd,0%),var(--mbu-accent-soft) 0);border-color:var(--mbu-accent)}'
         // a phone: MusicBrainz's page is wider than the screen, so the browser widens the layout viewport
         // to it and MC (fixed, inset 0) with it, cut off at the sides. Pinning the page's body brings the
@@ -73463,8 +73864,8 @@ function ccLauncher() {
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control — the consolidation';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';
-    b.onclick = () => { b.remove(); mbRestackCorner('br'); ccOpen(); };
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match
+    b.onclick = () => { if (mcElsewhere()) return; b.remove(); mbRestackCorner('br'); ccOpen(); };
     document.body.appendChild(b);
     mbRestackCorner('br');
 }
@@ -73897,8 +74298,8 @@ function launcher() {
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control\nRight-click: settings';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';   // highest priority: closest to the corner
-    b.onclick = () => open();
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match   // highest priority: closest to the corner
+    b.onclick = () => { if (!mcElsewhere()) open(); };
     b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(b);
     mbRestackCorner('br');
@@ -73920,14 +74321,14 @@ else { launcher(); if (FC_UPDATE) fcUpdate(FC_UPDATE); else afterSave(); }
 
 // ===== platform_check (@run-at document-end) ====================================
 if (__stOff.indexOf("platform_check") < 0 && __stRuns("platform_check", {"inc":["^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release/.*$","^https:\\/\\/(?:[^/]*\\.)?musicbrainz\\.org(?::\\d+)?/release-group/.*$"],"exc":[],"noframes":false})) (function(__stGM){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.26.103354","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.26.103354","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.28.200000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.28.200000","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (function () {
 'use strict';
 var { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify } = __st_NET(GM_info);   // ST-NET, written once at the top of the bundle (#786)
 var { ST_ICONS, stIcon, stColor } = __st_ICONS(GM_info);   // ST-ICONS, written once at the top of the bundle (#786)
 var { MBU_TOKENS } = __st_TOKENS(GM_info);   // ST-TOKENS, written once at the top of the bundle (#786)
-var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
+var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuHelpHtml, mbuHelpEl, MBU_CFG_ICON, _mbuTT, mbuHtml, mbuStartupInfo, mbuClaimVer, mbuClaimCmp, mbuClaim, _mbuToastT, mbuToast, mbuCfgHeader, mbuControls, mbuTestHooks, mbuShared, MBU_DOCK_ICON, mbuDock, mbuDockItem, mbRestackCorner, mbuLog, mbuDismissOn, mbuFitToolbar, mbuThemeOf, mbuCls, mbuAttr, mbuProp, mbuProbe, mbuTheme, mbuThemeStart, _mbuNs, mbuTipV, mbuTipCssText, mbuTipRoots, mbuTipEsc, mbuTipLabel, mbuTipIsKey, mbuTipInline, mbuTipCap, mbuTipMod, mbuTipKbd, mbuTipKey, mbuTipText, mbuTipCard, mbuTipS, mbuTip, mbuTipOn, mbuTipShowFor, mbuTipHtml, mbuTipCss, mbuTipEl, mbuTipFind, mbuTipRender, mbuTipPlace, mbuTipShow, mbuTipHide, mbuTipStart } = __st_UI(GM_info);   // ST-UI, written once at the top of the bundle (#786)
 
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
 if (!mbuClaim('platform_check', 'Platform Check')) return;
@@ -75109,6 +75510,8 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-pc-panel .pc-compact-strip.pc-has-icons { display: flex; }
   .pc-compact-ico { display: inline-flex; align-items: center; justify-content: center; width: calc(var(--pc-icon-size, 22px) * 0.8); height: calc(var(--pc-icon-size, 22px) * 0.8); cursor: pointer; border-radius: 50%; box-sizing: border-box; filter: grayscale(1); opacity: .38; transition: opacity .12s, filter .12s; }
   .pc-compact-ico svg, .pc-compact-ico img { display: block; width: 100%; height: 100%; }
+  /* pure red goes as dark as the panel when greyed: lift it so it still shows (YouTube Music) */
+  .pc-compact-ico[data-p=ytmusic] { filter: grayscale(1) brightness(2.6); }
   .pc-compact-ico:hover { filter: none; opacity: 1; }
   /* a folded MISMATCH (found but wrong barcode/format) keeps an amber ring so the
      "found but a different release" signal survives the collapse. */
@@ -75327,6 +75730,7 @@ if (mbuTestHooks()) window.__pcLog = PC_LOG;   // the specs read the log through
 // The shared components' stylesheet (the log window, the settings header, the toast),
 // plus the settings modal's narrow-screen rules.
 const pcSharedStyle = document.createElement('style');
+pcSharedStyle.id = 'mbu-pc-css';   // named, so Event Horizon, which turns off the page's unnamed sheets, keeps it (#847)
 pcSharedStyle.textContent = `${MBU_TOKENS}${MBU_UI_CSS}
   /* MOBILE / NARROW VIEWPORTS: the setup modal drops its fixed 420px width to fit a phone. */
   @media (max-width: 640px) {
@@ -75447,6 +75851,37 @@ mbuControls(providerModal);   // the shared drop-downs and − n + steppers
 const coverArt = sidebar.querySelector('.cover-art');
 if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
+// In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
+var pcDockItem = null;
+// the dock's number: the platforms to link plus the Artists & labels links to add (null: not counted)
+var pcDockFound = 0, pcDockArtists = null;
+function pcDockStatus() { const n = pcDockFound + (pcDockArtists || 0); if (pcDockItem) pcDockItem.status(n ? String(n) : '\u2713'); }
+if (!PC_SEED) {
+    const home = container.parentNode, next = container.nextSibling;
+    // While Event Horizon shows, the panel waits in a hidden window outside the body EH swapped out:
+    // the scans find their rows by id in the document, so in the detached body they'd fill nothing
+    const win = document.createElement('div'); win.className = 'mbu-dock-win'; win.hidden = true;
+    let open = false;
+    const park = () => {
+        const docked = document.documentElement.hasAttribute('data-mbu-dock');
+        if (docked && container.parentNode !== win) { win.appendChild(container); document.documentElement.appendChild(win); }
+        else if (!docked && container.parentNode === win) { home.insertBefore(container, next && next.parentNode === home ? next : null); win.remove(); open = false; win.hidden = true; }
+    };
+    new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock'] });
+    park();
+    const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no Platform Check: the click loads it
+    const close = () => { open = false; win.hidden = true; };
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') close(); });
+    document.addEventListener('pointerdown', ev => { if (open && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock')) close(); }, true);
+    pcDockItem = mbuDockItem({ id: 'mb-pc-dock', label: 'Platform Check', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=', order: 61,
+        paths: '^/release/[0-9a-fA-F-]{36}/?$',
+        click: () => {
+            if (location.pathname.replace(/\/$/, '').toLowerCase() !== HOME) { location.reload(); return; }
+            if (open) { close(); return; }
+            park(); open = true; win.hidden = false;
+        } });
+    pcDockItem.oncontextmenu = e => { e.preventDefault(); if (providerModal.parentNode !== document.body) document.body.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); };   // into the body that shows (Event Horizon swaps it)   // #695: right-click opens the settings
+}
 // Belt-and-suspenders: pin the panel to the sidebar's natural width *now* — measured
 // synchronously, before the async scans fill in long meta lines AND before the cover
 // art <img> finishes loading — so a content-sized sidebar can't later be stretched
@@ -75557,6 +75992,19 @@ let _pcActive = null, _pcVVSync = null;
 // collapsed the modals to a corner on desktop, where pin no-ops straight through
 // unpin on the first open). So snapshot cssText once and restore it verbatim.
 function pcSnapshotBase(el) { if (el && el._pcBaseCss == null) el._pcBaseCss = el.style.cssText; }
+// the settings window moves by its header (#847)
+function cfgDrag(el) {
+  el.addEventListener('pointerdown', e => {
+    const h = e.target.closest('.mbu-cfg-h');
+    if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
+    const p = (el.offsetParent || document.body).getBoundingClientRect(), r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    el.style.transform = 'none'; el.style.right = 'auto'; el.style.bottom = 'auto';
+    const mv = ev => { el.style.left = (ev.clientX - dx - p.left) + 'px'; el.style.top = (ev.clientY - dy - p.top) + 'px'; };
+    const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); };
+    mv(e); addEventListener('pointermove', mv); addEventListener('pointerup', up); e.preventDefault();
+  });
+}
+cfgDrag(document.getElementById('mb-provider-modal-card'));
 function pcPinModal(overlay, card, maxW, fill) {
     pcSnapshotBase(overlay); pcSnapshotBase(card);
     const vv = window.visualViewport;
@@ -76431,6 +76879,7 @@ function refreshCompactStrip() {
         const mismatch = isMismatch;
         const ico = document.createElement('span');
         ico.className = 'pc-compact-ico' + (mismatch ? ' pc-compact-mismatch' : '');
+        ico.dataset.p = p;
         // #641: a withheld match (✓, folded into the strip as a mismatch) takes the same
         // middle click as its full row's icon: add it anyway, in the foreground
         const canForce = !!(a && /^https?:\/\//.test(a.getAttribute('href') || '') && document.getElementById(`ico-${p}`)?.textContent.trim() === '✓' && !row.classList.contains('pc-inmb'));
@@ -80016,12 +80465,14 @@ async function runScans() {
     const n = PC_SCAN.n;
     PC_SCAN.busy = true;
     setScanStatus('busy');
+    if (pcDockItem) pcDockItem.busy(true);
     let ok = false;
     try { ok = await runScansInner() !== false; }
     catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
     if (pcStale(n)) return;
     PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
+    if (pcDockItem) pcDockItem.busy(false);
 }
 async function runScansInner() {
     // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
@@ -80269,6 +80720,23 @@ async function runScansInner() {
     if (providerEnabled('sevendigital')) tasks.push(scanSevendigital({ ...ctx, existingUrl: existing.sevendigital }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
+    // the dock entry's state (#847): the platforms to link, and a card with on MusicBrainz · to link · not found
+    if (pcDockItem) {
+        const on = [], found = [], none = [];
+        for (const p of ALL_PROVIDERS) {
+            if (!providerEnabled(p)) continue;
+            // a folded row (in the strip) has no match: not found, or found only with another format or barcode
+            const row = document.getElementById(`row-${p}`);
+            (existing[p] ? on : row && !row.classList.contains('pc-compacted') ? found : none).push(p);
+        }
+        pcDockFound = found.length;
+        pcDockStatus();
+        const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
+        pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
+            + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + line('#e06060', 'Not found', none)
+            + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add</span>`)
+            + '</div>' }));
+    }
     pcCountLinks();   // #671
 }
 
@@ -80556,6 +81024,7 @@ function pcShowLinksCount(n) {
     // the count as a badge, like an unread count, so a release with links to add stands out
     b.innerHTML = n ? `Artists &amp; labels<span class="pc-links-n">${n}</span>` : 'Artists &amp; labels';
     b.classList.toggle('pc-links-on', !!n);
+    pcDockArtists = n; pcDockStatus();
 }
 async function pcCountLinks() {
     if (!GM_getValue('pc:links-count', true)) return;

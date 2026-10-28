@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28
+// @version      2026.10.28.150000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -580,9 +580,6 @@ function reviewIco(id, x) {
     if (id === 'as' || (id === 'pc' && !x.kind)) return stIcon(x.icon || x.key, 16);
     return '';
 }
-// a link as its platform's name and the id at the end of its address, the whole address on hover
-function reviewUrlName(u) { const k = urlIcon(u); return k === 'globe' ? shortUrl(u).split('/')[0] : ccName(k); }
-function reviewUrlId(u) { try { const p = new URL(u).pathname.split('/').filter(Boolean); return p.slice(-1)[0] || ''; } catch (e) { return ''; } }
 // one selected finding as a line: what it is, and where it goes
 function reviewLine(id, x) {
     const k = x.kind;
@@ -595,40 +592,12 @@ function reviewLine(id, x) {
     if (k === 'lengths') return 'Lengths of ' + ((x.lengths || []).length || 'the') + ' tracks without one';
     return (x.name || x.key) + ' link on ' + (x.entity ? x.entity.name : 'the release') + (x.url ? ': ' + x.url : '');
 }
-// ISRC Scout's line under its track: the ISRC, or the link's platform and id
-function reviewIsItem(x) {
-    if (x.kind !== 'link') {
-        const t = 'ISRC ' + (x.isrc || '?') + ((x.existing || []).length ? ' (beside ' + x.existing.join(', ') + ')' : '');
-        return { keys: [x.key], text: t, md: '`' + (x.isrc || '?') + '` ISRC' + ((x.existing || []).length ? ' (beside ' + x.existing.join(', ') + ')' : ''), html: '<span class="mc-rv-isrc">ISRC</span> <code>' + esc(x.isrc || '?') + '</code>' + ((x.existing || []).length ? ' <span class="mc-rv-dim">beside ' + esc(x.existing.join(', ')) + '</span>' : ''), sort: '' };
-    }
-    const name = reviewUrlName(x.url), id = reviewUrlId(x.url);
-    return { keys: [x.key], ico: reviewIco('is', x), text: name + ' ' + x.url, md: '[' + name + (id ? ' ' + id : '') + '](' + x.url + ')', sort: name.toLowerCase() + ' ' + x.url,
-        html: '<span class="mc-rv-pf">' + esc(name) + '</span> <a href="' + esc(x.url) + '" target="_blank" rel="noopener" class="mc-rv-id" data-tip="' + esc(x.url) + '">' + esc(id || shortUrl(x.url)) + '</a>' };
-}
 function reviewWindow() {
     const groups = [];
     PROVIDERS.forEach(p => {
         if (providerOff(p.id) || !found[p.id] || !(found[p.id].capabilities || []).includes('apply')) return;
         const set = picked[p.id], xs = set && set.size ? ((results[p.id] || {}).findings || []).filter(x => set.has(x.key)) : [];
         let items = xs.map(x => ({ keys: [x.key], text: reviewLine(p.id, x), ico: reviewIco(p.id, x) }));
-        // ISRC Scout: grouped by track, in the tracklist's order, the ISRC first and the links by platform
-        if (p.id === 'is') {
-            const by = new Map(), order = rel ? rel.tracks.map(t => t.rec) : [];
-            xs.forEach(x => (by.get(x.track) || by.set(x.track, []).get(x.track)).push(reviewIsItem(x)));
-            const tracks = [...by.keys()].sort((a, b) => (order.indexOf(a) + 1 || 1e6) - (order.indexOf(b) + 1 || 1e6));
-            items = [];
-            tracks.forEach(gid => {
-                const t = rel && rel.tracks.find(t => t.rec === gid);
-                const its = by.get(gid).sort((a, b) => a.sort.localeCompare(b.sort));
-                items.push({ head: true, pos: t ? (rel.media > 1 ? t.medium + '.' : '') + t.pos : '?', title: t ? t.title : 'a recording', len: t ? t.len : '', n: its.length });
-                items.push(...its);
-            });
-        }
-        // Art Station: only the best cover is entered, the other sources were searched; unselecting it leaves them all out
-        if (p.id === 'as') {
-            const b = xs.find(x => x.role === 'best');
-            if (b) items = [{ keys: xs.map(x => x.key), text: reviewLine('as', b), ico: reviewIco('as', b) }];
-        }
         // Fusion: the tracks of one group are one merge
         if (p.id === 'fusion') {
             const by = new Map();
@@ -643,48 +612,19 @@ function reviewWindow() {
         if (p.id === 'pc') pfChanges().forEach(c => items.push({ text: 'Track ' + c.position + ': ' + [c.title != null && '“' + (c.was.title || '') + '” → “' + c.title + '”', c.ms && 'length ' + (c.was.ms ? reviewLen(c.was.ms) : 'none') + ' → ' + reviewLen(c.ms)].filter(Boolean).join(', ') }));
         if (items.length) groups.push({ p, items });
     });
-    const n = groups.reduce((k, g) => k + g.items.filter(it => !it.head).length, 0);   // a line each: one Fusion merge is one
+    const n = groups.reduce((k, g) => k + g.items.length, 0);   // a line each: one Fusion merge is one
     const ov = el('div', 'mbu-ov');
     const panel = el('div', 'mbu-ov-panel mc-review');
-    panel.style.width = 'min(680px, 94vw)';
-    let gi = 0;
-    const row = (g, it, grp) => '<label class="mc-rv-i' + (grp != null ? ' mc-rv-in' : '') + '"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + (grp != null ? ' data-in="' + grp + '"' : '') + '>'
-        + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + (it.html || esc(it.text)) + '</span></label>';
-    const body = groups.map(g => {
-        let grp = null;
-        return '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
-            + g.items.map(it => {
-                if (!it.head) return row(g, it, grp);
-                grp = gi++;
-                return '<label class="mc-rv-t"><input type="checkbox" checked data-grp="' + grp + '" data-tip="Select or unselect this track\'s ' + it.n + ' change' + (it.n === 1 ? '' : 's') + '">'
-                    + '<span class="pos">' + esc(it.pos) + '</span><span class="tt">' + esc(it.title) + '</span>' + (it.len ? '<span class="len">' + esc(it.len) + '</span>' : '') + '<span class="n">' + it.n + '</span></label>';
-            }).join('');
-    }).join('');
-    panel.innerHTML = mbuHtml('<div class="mbu-ov-body"><h2 class="mc-sec">Execute ' + n + ' change' + (n === 1 ? '' : 's') + '?</h2>' + body
-        + '<div class="mc-rv-f"><button type="button" class="mc-btn" data-rv="md" data-tip="Copy the selected changes as Markdown\nGrouped by track, ready to paste into an issue or a note">Copy as Markdown</button><span class="mc-rv-sp"></span><button type="button" class="mc-btn" data-rv="cancel">Cancel</button><button type="button" class="mc-btn mc-exec" data-rv="go">Execute</button></div></div>');
+    panel.style.width = 'min(640px, 94vw)';
+    panel.innerHTML = mbuHtml('<div class="mbu-ov-body"><h2 class="mc-sec">Execute ' + n + ' change' + (n === 1 ? '' : 's') + '?</h2>'
+        + groups.map(g => '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
+            + g.items.map(it => '<label class="mc-rv-i"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + '>' + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + esc(it.text) + '</span></label>').join('')).join('')
+        + '<div class="mc-rv-f"><button type="button" class="mc-btn" data-rv="cancel">Cancel</button><button type="button" class="mc-btn mc-exec" data-rv="go">Execute</button></div></div>');
     ov.appendChild(panel);
     document.body.appendChild(ov);
     const close = () => ov.remove();
     const off = mbuDismissOn(panel, close);
-    Log.cat('Execute').info('review: ' + n + ' change(s) · ' + gi + ' track group(s)');
-    // a track's box selects or unselects its lines; it shows a mix as "some"
-    const syncGrp = g => {
-        const ins = [...panel.querySelectorAll('input[data-in="' + g + '"]')], on = ins.filter(i => i.checked).length, h = panel.querySelector('input[data-grp="' + g + '"]');
-        if (h) { h.checked = on === ins.length; h.indeterminate = on > 0 && on < ins.length; }
-    };
-    panel.addEventListener('change', e => {
-        const i = e.target;
-        if (i.dataset.grp != null) panel.querySelectorAll('input[data-in="' + i.dataset.grp + '"]').forEach(c => { c.checked = i.checked; });
-        else if (i.dataset.in != null) syncGrp(i.dataset.in);
-        const left = [...panel.querySelectorAll('input[data-key]')].filter(c => c.checked).length;
-        panel.querySelector('.mc-sec').textContent = 'Execute ' + left + ' change' + (left === 1 ? '' : 's') + '?';
-    });
-    panel.querySelector('[data-rv="md"]').onclick = () => {
-        const md = reviewMarkdown(groups, panel);
-        if (mbuTestHooks()) window.__mcReviewMarkdown = md;
-        Log.cat('Execute').info('review: copied as Markdown, ' + md.split('\n').length + ' line(s)');
-        navigator.clipboard.writeText(md).then(() => mbuToast('Copied as Markdown', { kind: 'ok' }), x => mbuToast('Copy failed: ' + x.message, { kind: 'error' }));
-    };
+    Log.cat('Execute').info('review: ' + n + ' change(s)');
     panel.querySelector('[data-rv="cancel"]').onclick = () => { off(); close(); Log.cat('Execute').info('review: cancelled'); };
     panel.querySelector('[data-rv="go"]').onclick = () => {
         const dropped = [...panel.querySelectorAll('input[data-key]:not(:checked)')];
@@ -693,24 +633,6 @@ function reviewWindow() {
         off(); close();
         if (changeCount()) execute(false);
     };
-}
-// the review's selected lines as Markdown: a heading per script, a bullet per track with its changes under it
-function reviewMarkdown(groups, panel) {
-    const on = new Set([...panel.querySelectorAll('input[data-key]:checked')].map(i => i.dataset.p + ' ' + i.dataset.key));
-    const kept = (g, it) => !it.keys || on.has(g.p.id + ' ' + JSON.stringify(it.keys));
-    const out = ['## ' + (rel && rel.title ? rel.title + (rel.artist ? ' by ' + rel.artist : '') : 'Release'), '', RELEASE ? location.origin + '/release/' + RELEASE : ''];
-    groups.forEach(g => {
-        const lines = [];
-        let head = null;
-        g.items.forEach(it => {
-            if (it.head) { head = it; return; }
-            if (!kept(g, it)) return;
-            if (head) { lines.push('- **' + head.pos + '** ' + head.title + (head.len ? ' (' + head.len + ')' : '')); head = null; }
-            lines.push((g.p.id === 'is' ? '  - ' : '- ') + (it.md || it.text));
-        });
-        if (lines.length) out.push('', '### ' + g.p.name + ' (' + g.p.provider + ')', '', ...lines);
-    });
-    return out.join('\n') + '\n';
 }
 // #741: one provider applied again (its card's Retry), as Execute applies it
 async function retryOne(id) {
@@ -739,8 +661,20 @@ function discover() {
 
 // Read once from the rendered page, no request: the header and the tracklist
 // are already there.
+// The page MC started on (#847): Event Horizon swaps the body for its own and moves to other pages
+// without loading them, so the release is read from MusicBrainz's body, and a release reached inside
+// Event Horizon (no MC, Platform Check or the others ran for it) is loaded first.
+const MC_HOME = location.pathname;
+let mcBody = null;
+function mcPage() {
+    if (document.querySelector('.releaseheader')) return (mcBody = document.body, document);
+    return mcBody || document;
+}
+mcPage();   // at the start, before Event Horizon can swap the body
+function mcElsewhere() { if (location.pathname === MC_HOME) return false; location.reload(); return true; }
 function readRelease() {
-    const h = document.querySelector('.releaseheader');
+    const D = mcPage();
+    const h = D.querySelector('.releaseheader');
     // the h1's own link: other scripts append to the h1 (ISRC Scout's "ISRC ✓ 12/12")
     const h1 = h && h.querySelector('h1');
     const tl = h1 && (h1.querySelector('a[href*="/release/"] bdi') || h1.querySelector('a[href*="/release/"]'));
@@ -750,12 +684,12 @@ function readRelease() {
     const va = h && (h.querySelector('.subheader .small a[href*="/release-group/"]') || Array.from(h.querySelectorAll('.subheader a')).find(x => /version/i.test(x.textContent || '')));   // #722 by its address
     const vn = va && (va.textContent.match(/(\d+)/) || [])[1];
     const versions = va ? { href: va.href, text: vn ? vn + (vn === '1' ? ' version' : ' versions') : 'all versions' } : null;
-    const cover = document.querySelector('.cover-art img');
-    const fmt = document.querySelector('#sidebar dd.format');
+    const cover = D.querySelector('.cover-art img');
+    const fmt = D.querySelector('#sidebar dd.format');
     const format = fmt ? fmt.textContent.trim() : '';
     const tracks = [];
     let medium = 0;
-    document.querySelectorAll('#content table.medium').forEach(tbl => {
+    D.querySelectorAll('#content table.medium').forEach(tbl => {
         medium++;
         tbl.querySelectorAll('tbody tr').forEach(tr => {
             const rec = tr.querySelector('a[href*="/recording/"]');
@@ -770,11 +704,11 @@ function readRelease() {
     });
     Log.cat('Release').info('release: "' + title + '" by ' + (artist || '?') + ' · ' + location.origin + '/release/' + RELEASE + ' · ' + tracks.length + ' tracks on ' + medium + ' medium(s) · format ' + (format || '?'));
     // #782: the release's events, from the JSON its sidebar embeds after the heading (none: no heading)
-    const evh = document.querySelector('#sidebar h2.release-events');
+    const evh = D.querySelector('#sidebar h2.release-events');
     let events = 0;
     if (evh) { try { events = (JSON.parse((evh.nextElementSibling || {}).textContent || '{}').events || []).length; } catch (e) { events = 1; } }
     // #785: the release's language (ISO 639-3) from its sidebar link's address (a search for lang:"eng"), for guess case
-    const la = document.querySelector('#sidebar dd.language a[href*="lang"]');
+    const la = D.querySelector('#sidebar dd.language a[href*="lang"]');
     let language = null;
     try { language = la ? (decodeURIComponent(la.getAttribute('href')).match(/lang:"?([a-z]{3})\b/) || [])[1] || null : null; } catch (e) { language = null; }
     return { title, artist, cover: cover ? cover.src : '', tracks, media: medium, format, versions, events, language };
@@ -1014,7 +948,7 @@ function mcStyle() {
         + '@media (prefers-reduced-motion:reduce){.mc-fxo .car{transition:none}}'
         + '.mc-cfg label{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}.mc-cfg label span{min-width:150px}.mc-cfg label.mc-cfg-sub{padding-left:26px;align-items:flex-start}.mc-cfg label.mc-cfg-sub input{margin-top:2px}.mc-cfg label.mc-cfg-dim{color:var(--mbu-text-weak)}.mc-cfg .mc-cfg-hint{display:block;font-size:11.5px;color:var(--mbu-text-weak);margin-top:2px}'
         // #841: the review before Execute
-        + '.mc-review .mc-rv-g{display:flex;align-items:center;gap:6px;font-weight:600;margin:12px 0 4px}.mc-review .mc-rv-g img{width:18px;height:18px}.mc-review .mc-rv-g span{font-weight:400;color:var(--mbu-text-weak)}.mc-review .mc-rv-i{display:flex;gap:8px;align-items:flex-start;padding:2px 0 2px 24px;font-size:13px;overflow-wrap:anywhere}.mc-review .mc-rv-ico{display:inline-flex;flex:none;margin-top:1px}.mc-review .mc-rv-ico svg{display:block}.mc-review .mc-rv-f{display:flex;align-items:center;gap:8px;margin-top:14px}.mc-review .mc-rv-sp{flex:1}.mc-review .mc-rv-t{display:flex;gap:8px;align-items:baseline;padding:6px 0 2px 24px;font-size:13px;font-weight:600;border-top:1px solid var(--mbu-divider);margin-top:4px;cursor:pointer}.mc-review .mc-rv-t .pos{color:var(--mbu-text-weak);min-width:1.6em}.mc-review .mc-rv-t .tt{flex:1;min-width:0}.mc-review .mc-rv-t .len,.mc-review .mc-rv-t .n{font-weight:400;font-size:12px;color:var(--mbu-text-weak);font-variant-numeric:tabular-nums}.mc-review .mc-rv-t .n{min-width:18px;text-align:center;border-radius:9px;background:var(--mbu-bg-sunken)}.mc-review .mc-rv-in{padding-left:48px;font-size:12.5px}.mc-review .mc-rv-pf{display:inline-block;min-width:96px}.mc-review .mc-rv-id{font-family:var(--mbu-mono,monospace);font-size:12px;color:var(--mbu-text-weak)}.mc-review .mc-rv-id:hover{color:var(--mbu-accent-text)}.mc-review .mc-rv-isrc{display:inline-block;min-width:96px}.mc-review .mc-rv-i code{font-size:12px}.mc-review .mc-rv-dim{color:var(--mbu-text-weak)}.mc-review .mc-rv-f button{height:30px;padding:0 16px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius);font:inherit;font-size:13px;cursor:pointer}.mc-review .mc-rv-f button:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}.mc-review .mc-rv-f [data-rv=go]{font-weight:600;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}.mc-review .mc-rv-f [data-rv=go]:hover{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}'
+        + '.mc-review .mc-rv-g{display:flex;align-items:center;gap:6px;font-weight:600;margin:12px 0 4px}.mc-review .mc-rv-g img{width:18px;height:18px}.mc-review .mc-rv-g span{font-weight:400;color:var(--mbu-text-weak)}.mc-review .mc-rv-i{display:flex;gap:8px;align-items:flex-start;padding:2px 0 2px 24px;font-size:13px;overflow-wrap:anywhere}.mc-review .mc-rv-ico{display:inline-flex;flex:none;margin-top:1px}.mc-review .mc-rv-ico svg{display:block}.mc-review .mc-rv-f{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.mc-review .mc-rv-f button{height:30px;padding:0 16px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);border-radius:var(--mbu-radius);font:inherit;font-size:13px;cursor:pointer}.mc-review .mc-rv-f button:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-border-strong)}.mc-review .mc-rv-f [data-rv=go]{font-weight:600;background:var(--mbu-accent-soft);border-color:var(--mbu-border-strong);color:var(--mbu-accent-text)}.mc-review .mc-rv-f [data-rv=go]:hover{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-accent-fg)}'
         + '#mc-root .mc-act .mc-exec.mc-cd{background:linear-gradient(90deg,color-mix(in srgb,var(--mbu-accent) 35%,var(--mbu-accent-soft)) var(--mc-cd,0%),var(--mbu-accent-soft) 0);border-color:var(--mbu-accent)}'
         // a phone: MusicBrainz's page is wider than the screen, so the browser widens the layout viewport
         // to it and MC (fixed, inset 0) with it, cut off at the sides. Pinning the page's body brings the
@@ -4556,8 +4490,8 @@ function ccLauncher() {
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control — the consolidation';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';
-    b.onclick = () => { b.remove(); mbRestackCorner('br'); ccOpen(); };
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match
+    b.onclick = () => { if (mcElsewhere()) return; b.remove(); mbRestackCorner('br'); ccOpen(); };
     document.body.appendChild(b);
     mbRestackCorner('br');
 }
@@ -4990,8 +4924,8 @@ function launcher() {
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
     const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control\nRight-click: settings';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5';   // highest priority: closest to the corner
-    b.onclick = () => open();
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match   // highest priority: closest to the corner
+    b.onclick = () => { if (!mcElsewhere()) open(); };
     b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
     document.body.appendChild(b);
     mbRestackCorner('br');
@@ -5319,7 +5253,110 @@ function mbuShared(key, value) {
 // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
 // right and down away. Each edge is offset by the gap between it and the visual viewport (what is
 // on screen), kept up as that scrolls and resizes; on a desktop the gap is 0.
+//
+// The dock (#847): while the page sets data-mbu-dock on <html> (Event Horizon, while it shows),
+// the bottom-right launchers fold behind one String Theory button. A click unrolls them, each
+// with its name (data-mb-corner-label) beside it. data-mb-corner-dock="no" keeps a launcher out
+// of the dock (Event Horizon's own switch); "hide" hides it while docked (Art Station and Apollo,
+// whose pages Event Horizon replaces). data-mb-corner-paths, a regular expression, names the paths a
+// launcher belongs on: Event Horizon moves to another page without loading it, and the dock hides
+// a launcher that came along to a page its script doesn't run on.
+var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> </svg>';   // String Theory's icon.svg
+function mbuDock() {
+    var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+    var btn = document.getElementById('mbu-dock');
+    var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
+        .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
+    if (!document.getElementById('mbu-dock-css')) {
+        var css = document.createElement('style'); css.id = 'mbu-dock-css';
+        css.textContent = '[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
+            + '.mbu-dock-item{position:fixed;z-index:2147483000;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
+            + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
+            + '.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+            + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:14px;bottom:68px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:70px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:14px}'
+            + '#mbu-dock{position:fixed;z-index:2147483001;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
+            + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
+            + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
+            + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
+            + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
+            // no names, only a short state (a count) as a badge on the entry's top-right corner
+            // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
+            + '.mbu-dock-item,#mbu-dock{filter:none!important}'
+            // folded, an entry with something to do peeks beside the button, smaller
+            + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+            + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
+            // nothing counted yet: three small dots lighting in turn, no badge
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+            + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
+            + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
+            + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
+        root.appendChild(css);
+    }
+    if (!on) {
+        els.forEach(function (el) { el.removeAttribute('data-mbu-docked'); });
+        if (btn) btn.remove();
+        return;
+    }
+    if (!btn) {
+        btn = document.createElement('button'); btn.type = 'button'; btn.id = 'mbu-dock';
+        btn.setAttribute('aria-label', 'String Theory');
+        btn.dataset.mbCorner = 'br'; btn.dataset.mbCornerOrder = '-1';   // nearest the corner
+        btn.onclick = function () {
+            var open = !root.hasAttribute('data-mbu-dock-open');
+            root.toggleAttribute('data-mbu-dock-open', open);
+            mbuShared('dockOpen', open || null);   // remembered for the next page
+            mbRestackCorner('br');
+        };
+        root.appendChild(btn);   // outside the body, which Event Horizon swaps
+        root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
+    }
+    var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+    if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
+    if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+    els.forEach(function (el) {
+        if (el.dataset.mbCornerDock === 'hide' || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
+        el.removeAttribute('data-mbu-docked');   // measured as its script left it
+        var shown = getComputedStyle(el).display !== 'none';
+        if (shown) n++;
+        el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+    });
+    btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+}
+// A script's entry that lives in the dock only (#847): for a script whose own controls sit in
+// MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
+// paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+// with .status(text) to show a short state (a count) beside it.
+function mbuDockItem(o) {
+    var b = document.getElementById(o.id);
+    if (!b) {
+        b = document.createElement('button'); b.type = 'button'; b.id = o.id; b.className = 'mbu-dock-item';
+        b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = String(o.order || 60); b.dataset.mbCornerDock = 'only';
+        if (o.paths) b.dataset.mbCornerPaths = o.paths;
+        var img = document.createElement('img'); img.src = o.icon; img.alt = ''; b.appendChild(img);
+        var dots = document.createElement('span'); dots.className = 'mbu-dock-dots'; dots.innerHTML = '<i></i><i></i><i></i>'; b.appendChild(dots);   // while nothing is counted yet
+        b.onclick = o.click;
+        document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
+    }
+    b.dataset.mbCornerLabel = o.label;
+    // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+    // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
+    var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
+        var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && !r.hasAttribute('data-mbu-dock-open') && b.isConnected) mbRestackCorner('br'); };   // folded: it may peek now, or stop
+    b.status = function (t) { b.mbuSt = t || ''; show(); };
+    b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
+    b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+    if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';
+    b.status('');
+    mbRestackCorner('br');
+    return b;
+}
 function mbRestackCorner(corner) {
+    if (corner === 'br') mbuDock();
     var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
     var row = mbuShared('cornerFlow') === 'row';
     var vv = window.visualViewport, gapX = 0, gapY = 0;
@@ -5343,9 +5380,11 @@ function mbRestackCorner(corner) {
             if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
         }
     }
+    var peeks = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
-        .filter(function (el) { return getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
+        .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
     var pos = 14;
     els.forEach(function (el) {
@@ -5354,6 +5393,14 @@ function mbRestackCorner(corner) {
         el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
         pos += (row ? r.width : r.height) + 8;
+    });
+    // the folded dock's peeking entries: in a line from its button, along the stack's flow
+    var side = 14 + 40 + 4;
+    peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : side)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? side : 14)) + 'px';
+        el.style[right ? 'left' : 'right'] = 'auto';
+        side += 36;
     });
 }
 
@@ -6459,13 +6506,13 @@ function mbuTipEl() {
         t = document.createElement('div');
         t.id = 'mbu-tip';
         t.setAttribute('role', 'tooltip');
-        (document.body || document.documentElement).appendChild(t);
     }
     // Falcon's panel, Group Therapy's menus and others sit at the top z-index too; at an equal one
     // the later element is drawn over, so the tip moves to the end of the page when it is not there
-    // (majkinetor, with a screenshot: Falcon's panel over a tip)
-    var host = t.parentNode;
-    if (host && host.lastElementChild !== t) host.appendChild(t);
+    // (majkinetor, with a screenshot: Falcon's panel over a tip). It hangs on <html>, not <body>:
+    // Event Horizon isolates <body>, which kept a tip there under the dock's icons (#847)
+    var host = document.documentElement;
+    if (t.parentNode !== host || host.lastElementChild !== t) host.appendChild(t);
     return t;
 }
 function mbuTipFind(node) {

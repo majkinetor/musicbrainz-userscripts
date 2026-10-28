@@ -158,7 +158,8 @@ const ON_KEY = 'string_theory.on';
 // one and restacks the corners at once, with the same mbRestackCorner and mbuShared the members carry.
 const SHARED = (UI_JS.match(/function mbuShared\(key, value\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!SHARED) throw new Error('mbuShared not found in dev/ui/ui-components.mjs');
-const RESTACK = (UI_JS.match(/function mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
+// with the dock (#847), which mbRestackCorner calls: the icon, mbuDock and mbuDockItem come along
+const RESTACK = (UI_JS.match(/var MBU_DOCK_ICON[\s\S]*?\nfunction mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!RESTACK) throw new Error('mbRestackCorner not found in dev/ui/ui-components.mjs');
 const toggles = `var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
 function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
