@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.28.300100
+// @version      2026.10.28.300200
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1708,6 +1708,7 @@ function mbuDock() {
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0/"]::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0/3": nothing to do, only held back
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
             // nothing counted yet: three small dots lighting in turn, no badge
@@ -3549,8 +3550,9 @@ else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
 var pcDockItem = null;
 // the dock's number: the platforms to link plus the Artists & labels links to add (null: not counted)
-var pcDockFound = 0, pcDockArtists = null;
-function pcDockStatus() { const n = pcDockFound + (pcDockArtists || 0); if (pcDockItem) pcDockItem.status(n ? String(n) : '\u2713'); }
+var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null;
+// "2/3": 2 to add, 3 withheld; "0/3" (grey, dashed) when all that's left is held back
+function pcDockStatus() { const n = pcDockFound + (pcDockArtists || 0); if (pcDockItem) pcDockItem.status(pcDockHeld ? n + '/' + pcDockHeld : n ? String(n) : '\u2713'); }
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
     // While Event Horizon shows, the panel waits in a hidden window outside the body EH swapped out:
@@ -8412,7 +8414,7 @@ async function runScansInner() {
             const row = document.getElementById(`row-${p}`), cl = row ? row.classList : null;
             (existing[p] ? on : !cl ? none : cl.contains('pc-st-match') && !cl.contains('pc-blocked') ? found : cl.contains('pc-blocked') || cl.contains('pc-st-mismatch') ? held : none).push(p);
         }
-        pcDockFound = found.length;
+        pcDockFound = found.length; pcDockHeld = held.length;
         pcDockStatus();
         const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
         pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
