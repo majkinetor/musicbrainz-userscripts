@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.28.300500
+// @version      2026.10.28.300600
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -5881,7 +5881,7 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
         return;
     }
 
-    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null, catnos = null;
+    let tracks = null, year = null, lbl = null, fmt = null, masterUrl = null, foundBarcode = null, credits = null, catnos = null, rejected = false;
     if (releaseId) {
         const detailUrl = `https://api.discogs.com/releases/${releaseId}`;
         appendLog(label, `API detail: ${detailUrl}`);
@@ -5922,10 +5922,28 @@ async function scanDiscogs({ artist, album, mbTracks, existingUrl, mbid, isVario
                 catnos = (data.labels || []).filter(l => l.name && l.catno && !/^\[?none\]?$/i.test(l.catno.trim())).map(l => ({ label: l.name.replace(/\s*\(\d+\)$/, ''), catno: l.catno.trim() }));
                 if (catnos.length) appendLog(label, `API detail: catalog number ${catnos.map(c => `${c.catno} (${c.label})`).join(', ')}`);
                 appendLog(label, `API detail parsed: tracks=${tracks} year=${year || '?'} label=${lbl || '?'} format=${fmt || '?'} barcode=${foundBarcode || '-'} master=${masterUrl || '-'}`, 'ok');
+                // #855: a search hit is checked against the release itself before it's used. A web-search
+                // result is just the first Discogs link the engine returned (Bobby McFerrin's 9-track Disky
+                // CD for Mocky's 12-track Saskamodie), and an API search hit was scored on its title only.
+                if (source !== 'MB rels' && source !== 'barcode') {
+                    const dArtist = (data.artists || []).map(a => (a.name || '').replace(/\s*\(\d+\)$/, '')).filter(Boolean).join(' & ');
+                    const sc = scoreCandidate({ tracks, title: data.title || null, artist: dArtist || null }, mbTracks, album, artist, isVariousArtists);
+                    appendLog(label, `Verify ${source} hit: score=${sc} tracks=${tracks}/${mbTracks} artist="${dArtist}" title="${data.title || ''}"`);
+                    if (sc < 50) {
+                        appendLog(label, `${source} hit ${releaseUrl} is not this release (score=${sc} below 50) — no match`, 'warn');
+                        rejected = true;
+                    }
+                }
             } catch (e) { appendLog(label, `API detail parse error: ${e.message}`, 'error'); }
         } else { appendLog(label, `API detail failed`, 'error'); }
     }
 
+    if (rejected) {
+        cacheSet(mbid, 'discogs', { url: null, tracks: null, year: null, label: null, source: 'search' });
+        updateRow('discogs', { url: null, mbTracks, remoteTracks: null,
+            masterState: discogsMasterState(null, existingDiscogsMaster) });
+        return;
+    }
     cacheSet(mbid, 'discogs', { url: releaseUrl, tracks, year, label: lbl, format: fmt, masterUrl, source, barcode: foundBarcode, catnos, credits });
     updateRow('discogs', {
         url: releaseUrl, mbTracks, remoteTracks: tracks, year, label: lbl, format: fmt, source, barcode: foundBarcode,
