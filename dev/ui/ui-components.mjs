@@ -839,11 +839,11 @@ function mbRestackCorner(corner) {
         el.style[right ? 'left' : 'right'] = 'auto';
         pos += (row ? r.width : r.height) + 8;
     });
-    // the folded dock's peeking entries: in a line beside its button, across the stack's flow
+    // the folded dock's peeking entries: in a line from its button, along the stack's flow
     var side = 14 + 40 + 4;
     peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
-        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? side : 14)) + 'px';
-        el.style[right ? 'right' : 'left'] = (gapX + (row ? 14 : side)) + 'px';
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : side)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? side : 14)) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
         side += 36;
     });
