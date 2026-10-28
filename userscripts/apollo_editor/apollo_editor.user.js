@@ -4848,9 +4848,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               + '[data-mbu-docked=show][data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               // nothing counted yet: three small dots lighting in turn, no badge
-              + '[data-mbu-docked=show][data-mbu-busy][data-mb-corner-status="···"]::after{content:"";min-width:0;width:20px;height:6px;padding:0;top:0;right:-8px;border:0;border-radius:0;background:radial-gradient(circle,rgba(224,90,165,1) 2px,transparent 2.5px) 0 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 50% 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 100% 50%/6px 6px no-repeat;animation:mbu-dock-dots 1.2s steps(1) infinite}'
-              + '@keyframes mbu-dock-dots{0%{background:radial-gradient(circle,rgba(224,90,165,1) 2px,transparent 2.5px) 0 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 50% 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 100% 50%/6px 6px no-repeat}33%{background:radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 0 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,1) 2px,transparent 2.5px) 50% 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 100% 50%/6px 6px no-repeat}66%{background:radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 0 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,0.3) 2px,transparent 2.5px) 50% 50%/6px 6px no-repeat,radial-gradient(circle,rgba(224,90,165,1) 2px,transparent 2.5px) 100% 50%/6px 6px no-repeat}}'
-              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after{animation:none!important}}';
+              + '[data-mbu-docked=show][data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+              + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}[data-mbu-docked=show][data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+              + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
+              + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
+              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
           root.appendChild(css);
       }
       if (!on) {
@@ -4894,6 +4896,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = String(o.order || 60); b.dataset.mbCornerDock = 'only';
           if (o.paths) b.dataset.mbCornerPaths = o.paths;
           var img = document.createElement('img'); img.src = o.icon; img.alt = ''; b.appendChild(img);
+          var dots = document.createElement('span'); dots.className = 'mbu-dock-dots'; dots.innerHTML = '<i></i><i></i><i></i>'; b.appendChild(dots);   // while nothing is counted yet
           b.onclick = o.click;
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
