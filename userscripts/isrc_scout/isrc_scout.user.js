@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.310000
+// @version      2026.10.28.320000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5231,7 +5231,7 @@
             <label><input type="checkbox" id="ii-show-icons">icons</label>
             <label><input type="checkbox" id="ii-show-text">text</label></div>
         <div class="ii-set-row"><label data-tip="Use providers from the whole release group&#10;Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup."><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group</span></label></div>
-          <div class="ii-set-row ii-set-inline" data-tip="When Find links runs by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the dock in Event Horizon and the button show the ISRCs and links to add. It uses a lot of network. What it finds is kept for a week."><span class="ii-set-k">Find links</span>
+          <div class="ii-set-row ii-set-inline" data-tip="When Match runs by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the button and the dock in Event Horizon count the new ISRCs and links it found (ISRCs/links). It uses a lot of network. What it finds is kept for a week."><span class="ii-set-k">Match</span>
             <select id="ii-links-auto">
               <option value="off">off</option>
               <option value="start">on start</option>
@@ -5561,7 +5561,7 @@
     const selAuto = modal.querySelector('#ii-links-auto'), cbSlow = modal.querySelector('#ii-bg-slow');
     if (selAuto && cbSlow) {
       selAuto.value = linksAuto(); cbSlow.checked = bgSlowOn(); cbSlow.disabled = selAuto.value !== 'background';
-      selAuto.addEventListener('change', () => { store.set('links_auto', selAuto.value); cbSlow.disabled = selAuto.value !== 'background'; Log.info('Find links runs: ' + selAuto.value); });
+      selAuto.addEventListener('change', () => { store.set('links_auto', selAuto.value); cbSlow.disabled = selAuto.value !== 'background'; Log.info('Match runs: ' + selAuto.value); });
       cbSlow.addEventListener('change', () => store.set('bg_links_slow', cbSlow.checked));
     }
 
@@ -5894,13 +5894,13 @@
       autoFindLinks();
     }
   }
-  // Find links set to run "on start": once a page, when the window first opens with the release
+  // Match set to run "on start": once a page, when the window first opens with the release
   var _autoLinksDone = false;
   function autoFindLinks() {
     if (_autoLinksDone || linksAuto() !== 'start' || !RELEASE) return;
     _autoLinksDone = true;
-    Log.info('Find links: on start');
-    try { TrackLinks.resolve(); } catch (e) { Log.warn('Find links on start: ' + errText(e)); }
+    Log.info('Match: on start');
+    findEverything().catch(e => Log.warn('Match on start: ' + errText(e)));
   }
   function closeModal() {
     // #587 — a removal batch is still POSTing; closing hides the only progress
@@ -8991,9 +8991,10 @@
       if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
       if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
       const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
-      const links = bgLinksOn() ? bgLinksToAdd() : [];
       const busy = Object.keys(BG.running).length > 0;
-      item.status(missing + links.length ? String(missing + links.length) : busy ? '' : '\u2713');
+      // with Match in the background: the new ISRCs/links it found; else the tracks without an ISRC
+      if (bgLinksOn()) { const i = bgIsrcsNew().length, l = bgLinksToAdd().length; item.status(i + l ? i + '/' + l : busy ? '' : '\u2713'); }
+      else item.status(missing ? String(missing) : '\u2713');
       item.busy(busy);
       item.card(scoutCard);
       updateBtnLinks();
@@ -9025,19 +9026,21 @@
     const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
     let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
     if (bgLinksOn()) {
+      const isrcs = bgIsrcsNew();
+      h += row(isrcs.length ? '#e0a640' : '#4cbf7a', 'Matched', '<b>' + isrcs.length + '</b> new ISRC' + (isrcs.length === 1 ? '' : 's'));
       const links = bgLinksToAdd(), byCode = {};
       links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
       const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
       h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
-      Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', tipEsc(p ? p.name : c), r.done + '/' + r.of + ' tracks…'); });
-    } else h += row('#8a8494', 'Links', 'not checked: set <b>Find links</b> to <b>in the background</b> in the settings');
+      Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', c === 'isrc' ? 'ISRCs' : tipEsc(p ? p.name : c), c === 'isrc' ? 'matching…' : r.done + '/' + r.of + ' tracks…'); });
+    } else h += row('#8a8494', 'Links', 'not checked: set <b>Match</b> to <b>in the background</b> in the settings');
     return mbuTipCard({ title: 'ISRC Scout', body: '<div class="mbu-tip-rows">' + h + '</div>' });
   }
   // The button's links segment, as the dock: 🔗 n to add, 🔗 ✓ none, 🔗 … checking; none with the check off.
   // Written only on a change: the dock's mirror watches the button and calls this.
   function updateBtnLinks() {
     let el = btn.querySelector('#ii-btn-links');
-    const txt = !RELEASE || !bgLinksOn() ? '' : (n => n ? '🔗 ' + n : Object.keys(BG.running).length ? '🔗 …' : '🔗 ✓')(bgLinksToAdd().length);
+    const txt = !RELEASE || !bgLinksOn() ? '' : Object.keys(BG.running).length ? '⚡ …' : '⚡ ' + bgIsrcsNew().length + '/' + bgLinksToAdd().length;
     if (!el) { if (!txt) return; el = document.createElement('span'); el.id = 'ii-btn-links'; el.className = 'ii-status ii-btn-links'; btn.appendChild(el); }
     if (el.textContent !== txt) el.textContent = txt;
     el.hidden = !txt;
@@ -9061,7 +9064,9 @@
   function bgCache() {
     const all = store.get('bg_links_cache', {}) || {};
     const c = all[mbid];
-    return c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+    const ok = c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+    ok.isrcs = ok.isrcs || {};
+    return ok;
   }
   function bgSave(c) {
     const all = store.get('bg_links_cache', {}) || {};
@@ -9076,6 +9081,11 @@
     c.links.push({ rec, code, url }); bgSave(c);
     updateBtnLinks();
   }
+  // the matched ISRCs MusicBrainz doesn't have yet, for tracks without one
+  function bgIsrcsNew() {
+    const m = bgCache().isrcs;
+    return RELEASE.tracks.filter(t => m[t.recId] && !t.existing.length).map(t => ({ rec: t.recId, isrc: m[t.recId] }));
+  }
   // the cached links MusicBrainz doesn't have yet (one added since drops out)
   function bgLinksToAdd() {
     return bgCache().links.filter(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); return t && !(t.recUrls || []).includes(l.url); });
@@ -9083,14 +9093,36 @@
   async function bgLinksRun(onChange) {
     BG.started = true;
     const c = bgCache();
+    // Match's first half: ISRCs from the fastest source this release links, sure matches only
+    if (!c.isrcsDone && RELEASE.tracks.some(t => !t.existing.length)) {
+      BG.running.isrc = { done: 0, of: RELEASE.tracks.length }; onChange();
+      for (const src of isrcSourcesFastest(true)) {
+        let n = 0;
+        try {
+          await src.fetcher(src.id, () => {}, x => {
+            const isrc = normalizeIsrc(x.isrc);
+            if (!isValidIsrc(isrc)) return;
+            const m = trackForSource(x);
+            if (m.idx < 0 || m.loose || (m.byPos && fillCheck(RELEASE.tracks[m.idx], x).suspicious)) return;
+            const t = RELEASE.tracks[m.idx];
+            if (t.existing.includes(isrc) || c.isrcs[t.recId]) return;
+            c.isrcs[t.recId] = isrc; n++;
+          }, 0);
+        } catch (x) { Log.warn('Background Match: ' + src.source + ' failed: ' + errText(x)); continue; }
+        Log.info('Background Match: ' + src.source + ' gave ' + n + ' ISRC(s)');
+        if (n) break;
+      }
+      c.isrcsDone = true; bgSave(c);
+      delete BG.running.isrc; onChange();
+    }
     try {
-      await TrackLinks.findHeadless(() => null, null, {
+      await TrackLinks.findHeadless(t => c.isrcs[t.recId] || null, null, {
         skip: p => c.done.includes(p.code) || (!bgSlowOn() && BG_SLOW.includes(p.code)),
         onStep: (p, done, of) => { BG.running[p.code] = { done, of }; onChange(); },
         onHit: (idx, l) => { const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
         onDone: p => { delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
       });
-      Log.info('Background link check: ' + bgLinksToAdd().length + ' link(s) to add');
+      Log.info('Background Match: ' + bgIsrcsNew().length + ' new ISRC(s), ' + bgLinksToAdd().length + ' link(s) to add');
     } catch (x) { Log.warn('Background link check failed: ' + errText(x)); }
     BG.running = {};
     onChange();
