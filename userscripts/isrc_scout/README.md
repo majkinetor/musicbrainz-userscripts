@@ -152,8 +152,8 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 | Column toggles above the tracklist         | on                         | **ISRC** · **Links** above the tracklist                                       |
 | Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
 | Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
-| Check links in the background              | off                        | run **Find links** on its own; the dock in Event Horizon shows the links to add, kept for a week |
-| Include slow platforms                     | on                         | with the background check, Tidal too (about 1 s a track)                       |
+| Find links                                 | off                        | runs **Find links** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher and the dock in Event Horizon count the ISRCs and links to add (kept for a week) |
+| Include slow platforms                     | on                         | in the background, Tidal too (about 1 s a track)                               |
 | Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
 | Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
 | Spotify ISRC source                        | Harmony                    | or molla, or ISRC Hunt                                                         |

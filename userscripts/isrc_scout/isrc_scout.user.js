@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.300200
+// @version      2026.10.28.310000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5231,8 +5231,13 @@
             <label><input type="checkbox" id="ii-show-icons">icons</label>
             <label><input type="checkbox" id="ii-show-text">text</label></div>
         <div class="ii-set-row"><label data-tip="Use providers from the whole release group&#10;Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup."><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group</span></label></div>
-        <div class="ii-set-row"><label data-tip="Check links in the background&#10;On a release page, look for every track on each platform and show the links to add beside the dock icon in Event Horizon. It uses a lot of network, so it&#x27;s off by default. What it finds is kept for a week."><input type="checkbox" id="ii-bg-links"><span>Check links in the background</span></label></div>
-        <div class="ii-set-row"><label data-tip="Include slow platforms&#10;Tidal takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
+          <div class="ii-set-row ii-set-inline" data-tip="When Find links runs by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the dock in Event Horizon and the button show the ISRCs and links to add. It uses a lot of network. What it finds is kept for a week."><span class="ii-set-k">Find links</span>
+            <select id="ii-links-auto">
+              <option value="off">off</option>
+              <option value="start">on start</option>
+              <option value="background">in the background</option>
+            </select></div>
+        <div class="ii-set-row"><label data-tip="Include slow platforms&#10;In the background, Tidal too: it takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
         <div class="ii-set-row"><label data-tip="Ignore Platform Check link confidence&#10;Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong."><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence</span></label></div>
           <div class="ii-set-row ii-set-inline" data-tip="Where Spotify&#x27;s ISRCs come from&#10;Spotify&#x27;s own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another."><span class="ii-set-k">Spotify ISRC source</span>
             <select id="ii-sp-source">
@@ -5553,10 +5558,10 @@
     }
 
     // #847: the background link check
-    const cbBg = modal.querySelector('#ii-bg-links'), cbSlow = modal.querySelector('#ii-bg-slow');
-    if (cbBg && cbSlow) {
-      cbBg.checked = bgLinksOn(); cbSlow.checked = bgSlowOn(); cbSlow.disabled = !cbBg.checked;
-      cbBg.addEventListener('change', () => { store.set('bg_links', cbBg.checked); cbSlow.disabled = !cbBg.checked; Log.info('Background link check: ' + (cbBg.checked ? 'on' : 'off')); });
+    const selAuto = modal.querySelector('#ii-links-auto'), cbSlow = modal.querySelector('#ii-bg-slow');
+    if (selAuto && cbSlow) {
+      selAuto.value = linksAuto(); cbSlow.checked = bgSlowOn(); cbSlow.disabled = selAuto.value !== 'background';
+      selAuto.addEventListener('change', () => { store.set('links_auto', selAuto.value); cbSlow.disabled = selAuto.value !== 'background'; Log.info('Find links runs: ' + selAuto.value); });
       cbSlow.addEventListener('change', () => store.set('bg_links_slow', cbSlow.checked));
     }
 
@@ -5880,12 +5885,22 @@
       tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--mbu-text-weak)">Loading release…</td></tr>';
       fetchRelease()
         .then(renderTracks)   // existing track links ride along on the release fetch (recording-level-rels)
+        .then(autoFindLinks)
         .catch(err => {
           tbody.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--mbu-error)">Failed to load release: ' + esc(err.message) + '</td></tr>';
         });
     } else {
       renderTracks();
+      autoFindLinks();
     }
+  }
+  // Find links set to run "on start": once a page, when the window first opens with the release
+  var _autoLinksDone = false;
+  function autoFindLinks() {
+    if (_autoLinksDone || linksAuto() !== 'start' || !RELEASE) return;
+    _autoLinksDone = true;
+    Log.info('Find links: on start');
+    try { TrackLinks.resolve(); } catch (e) { Log.warn('Find links on start: ' + errText(e)); }
   }
   function closeModal() {
     // #587 — a removal batch is still POSTing; closing hides the only progress
@@ -9015,7 +9030,7 @@
       const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
       h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
       Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', tipEsc(p ? p.name : c), r.done + '/' + r.of + ' tracks…'); });
-    } else h += row('#8a8494', 'Links', 'not checked: turn on <b>Check links in the background</b> in the settings');
+    } else h += row('#8a8494', 'Links', 'not checked: set <b>Find links</b> to <b>in the background</b> in the settings');
     return mbuTipCard({ title: 'ISRC Scout', body: '<div class="mbu-tip-rows">' + h + '</div>' });
   }
   // The button's links segment, as the dock: 🔗 n to add, 🔗 ✓ none, 🔗 … checking; none with the check off.
@@ -9035,7 +9050,13 @@
   var BG = { started: false, running: {}, prov: c => { try { return TrackLinks.PROV.find(p => p.code === c); } catch (e) { return null; } } };
   var BG_SLOW = ['td'];
   var BG_DAYS = 7;
-  function bgLinksOn() { return store.get('bg_links', false) === true; }
+  // when Find links runs by itself: 'off', 'start' (opening the window) or 'background' (the release
+  // page); the old "Check links in the background" checkbox (bg_links) carries over as 'background'
+  function linksAuto() {
+    const v = store.get('links_auto', null);
+    return ['off', 'start', 'background'].includes(v) ? v : store.get('bg_links', false) === true ? 'background' : 'off';
+  }
+  function bgLinksOn() { return linksAuto() === 'background'; }
   function bgSlowOn() { return store.get('bg_links_slow', true) !== false; }
   function bgCache() {
     const all = store.get('bg_links_cache', {}) || {};
