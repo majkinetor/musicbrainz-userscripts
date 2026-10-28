@@ -934,14 +934,14 @@
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
               + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
               + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
-              + '#mbu-dock b{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border:2px solid var(--mbu-bg,#fff);border-radius:11px;background:#e05aa5;color:#fff;font:700 13px/18px system-ui,sans-serif;text-align:center}'
+              + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
               // no names, only a short state (a count) as a badge on the entry's top-right corner
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
               + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border:2px solid var(--mbu-bg,#fff);border-radius:11px;background:#e05aa5;color:#fff;font:700 13px/18px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + '[data-mbu-docked=show]:hover::after{opacity:1}'
-              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{background:#3fae6c}'
-              + '[data-mbu-docked=show][data-mbu-busy]::after{background:#ece6f2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{background:#e3f5ea;border-color:#3fae6c;color:#2e8f55}'
+              + '[data-mbu-docked=show][data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after{animation:none!important}}';
           root.appendChild(css);
