@@ -70,3 +70,4 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Right-click | corner icon | open the settings |
 | Right-click | a track     | fold its disc     |
 | Right-click | a section   | fold the section  |
+| Right-click | a platform icon with more links | open its links |
