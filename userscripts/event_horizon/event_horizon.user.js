@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.390000
+// @version      2026.10.28.400000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2300,7 +2300,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .kmk{all:unset;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
-.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
+.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-w{position:relative;display:inline-flex}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
 .gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
@@ -3453,15 +3453,24 @@ const tgInBox = () => document.querySelector('[data-tgin]:not(button)');
 function tgInHtml() {
     const d = tgIn;
     const chips = !d.t ? `<span class="chip tag">Loading…</span>` : d.t.tags.map((t, i) => `<span class="chip tag tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}${t.c > 0 ? `<span class="tgi-n">${t.c}</span>` : ''}${t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
-    return chips + (d.t ? `<input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off">` : '') + `<button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
+    return chips + `<span class="tgi-w"><input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off"><span class="tg-ac" hidden></span></span><button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
 }
-function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; b.innerHTML = tgInHtml(); if (focus) { const i = b.querySelector('.tgi-in'); if (i) i.focus(); } }
+// a redraw keeps what's typed in the box
+function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; const o = b.querySelector('.tgi-in'), v = o ? o.value : ''; b.innerHTML = tgInHtml(); const i = b.querySelector('.tgi-in'); if (i) { i.value = v; if (focus) i.focus(); if (v) tgInAc(); } }
+// the suggestions under the box, as on the Tags page: the genres and this entity's tags that hold what's typed
+function tgInAc() {
+    const b = tgInBox(), i = b && b.querySelector('.tgi-in'), ac = b && b.querySelector('.tg-ac'); if (!i || !ac || !tgIn) return;
+    const xs = tgIn.t ? tgSugg({ t: tgIn.t }, i.value.split(',').pop()) : []; tgIn.acs = xs; tgIn.aci = 0;
+    ac.hidden = !xs.length; ac.innerHTML = xs.map((x, k) => `<button type="button" class="${k ? '' : 'on'}" data-tgin="pick:${k}">${esc(x)}${tgIn.t.gen.includes(x) ? '<small>genre</small>' : ''}</button>`).join('');
+}
+// what's typed: the comma-separated names, the last one replaced by the picked suggestion
+function tgInTake(i, pick) { const ps = i.value.split(','); if (pick && ps[ps.length - 1].trim()) ps[ps.length - 1] = pick; i.value = ''; tgInAc(); return ps.map(x => x.trim().toLowerCase()).filter(Boolean); }
 async function tgInOpen() {
-    const d = tgIn = { path: tgPath(), t: null }, p = document.querySelector('button[data-tgin="open"]'); if (p) p.style.opacity = .4; // the tags stay as they are until all of them load
+    const d = tgIn = { path: tgPath(), t: null }, p = null; tgInDraw(true); // the box opens at once, focused; the tags fill in when they load
     try {
         const r = await mbnFetch(MB + d.path + '/tags'); if (!r.ok) throw new Error('HTTP ' + r.status);
-        d.t = tagsParse(await r.text(), true); if (tgIn === d) tgInDraw(true);
-    } catch (e) { LOG.err('Loading the tags failed: ' + e.message); toast('Loading the tags failed: ' + e.message); if (tgIn === d) { tgIn = null; if (p) p.style.opacity = ""; } }
+        d.t = tagsParse(await r.text(), true); if (tgIn === d) { const a = document.activeElement; tgInDraw(!a || a === document.body || a.matches('.tgi-in')); if (d.pend) { const ns = d.pend; d.pend = null; tgInSend(ns, 1); } }
+    } catch (e) { LOG.err('Loading the tags failed: ' + e.message); toast('Loading the tags failed: ' + e.message); if (tgIn === d) tgInClose(); }
 }
 async function tgInSend(names, v) {
     const d = tgIn; if (!d || !d.t || !names.length) return;
@@ -3481,12 +3490,16 @@ function tgInWire() {
         if (a === 'open') tgInOpen();
         else if (a === 'close') tgInClose();
         else if (a === 'v' && tgIn && tgIn.t) { const t = tgIn.t.tags[+i]; if (t) tgInSend([t.n], +v); }
+        else if (a === 'pick' && tgIn && tgIn.acs) tgInSend(tgInTake(tgInBox().querySelector('.tgi-in'), tgIn.acs[+i]), 1);
     });
     document.addEventListener('keydown', ev => {
         if (!ehOn || !tgIn || !ev.target.matches('.tgi-in')) return;
         if (ev.key === 'Escape') { ev.preventDefault(); tgInClose(); }
-        else if (ev.key === 'Enter') { ev.preventDefault(); const ns = ev.target.value.toLowerCase().split(',').map(x => x.trim()).filter(Boolean); ev.target.value = ''; tgInSend(ns, 1); }
+        else if ((ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && (tgIn.acs || []).length) { ev.preventDefault(); const L = tgIn.acs.length; tgIn.aci = ((tgIn.aci || 0) + (ev.key === 'ArrowDown' ? 1 : -1) + L) % L; tgInBox().querySelectorAll('.tg-ac button').forEach((b, k) => b.classList.toggle('on', k === tgIn.aci)); }
+        // Enter takes the selected suggestion, else what's typed; typed before the tags load, it's sent once they have
+        else if (ev.key === 'Enter') { ev.preventDefault(); const ns = tgInTake(ev.target, (tgIn.acs || [])[tgIn.aci || 0]); if (!ns.length) return; if (tgIn.t) tgInSend(ns, 1); else tgIn.pend = [...(tgIn.pend || []), ...ns]; }
     });
+    document.addEventListener('input', ev => { if (ehOn && tgIn && ev.target.matches('.tgi-in')) tgInAc(); });
 }
 // a few aliases inline; a +N button shows the rest
 // the first four aliases, the rest in a popover behind +N
