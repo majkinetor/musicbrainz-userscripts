@@ -114,6 +114,7 @@ const CSS = [
     // Apollo's settings <h4> is the reference; the others were the same idea
     // spelled seven ways (an <h4>, an <h3>, two plain divs, and one inline-styled
     // block with an orange <h2> and no icon at all).
+    '.mbu-cfg-drag .mbu-cfg-h{cursor:move;user-select:none}',   // mbuCfgDrag
     '.mbu-cfg-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 0 9px;',
     'border-bottom:1px solid var(--mbu-border-soft);font:600 15px/1.3 var(--mbu-font);color:var(--mbu-text)}',
     '.mbu-cfg-ic{flex:0 0 auto;display:inline-flex;align-items:center;width:22px;height:22px}',
@@ -599,6 +600,32 @@ function mbuToast(msg, opts) {
 // logId are carried through IN ADDITION to the shared class so a script's
 // existing click handler keeps working — adopting the component must not mean
 // rewiring every listener at the same time.
+// A settings window moves by its .mbu-cfg-h header (#847). Wherever the window
+// sits (fixed, absolute in a script's modal, or static in an overlay's flex), the
+// first drag pins it where it is, then follows the pointer, kept on screen.
+//   mbuCfgDrag(panel)
+function mbuCfgDrag(el) {
+    el.classList.add('mbu-cfg-drag');
+    el.addEventListener('pointerdown', function (e) {
+        var h = e.target.closest('.mbu-cfg-h');
+        if (e.button || !h || !el.contains(h) || e.target.closest('button,a,input,select,label')) return;
+        var b = el.getBoundingClientRect();
+        if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+        el.style.transform = 'none'; el.style.right = 'auto'; el.style.bottom = 'auto';
+        var cs = getComputedStyle(el), a = el.getBoundingClientRect();
+        var l0 = (parseFloat(cs.left) || 0) + b.left - a.left, t0 = (parseFloat(cs.top) || 0) + b.top - a.top;
+        el.style.left = l0 + 'px'; el.style.top = t0 + 'px';
+        var x0 = e.clientX, y0 = e.clientY;
+        var mv = function (ev) {
+            var dx = Math.max(-b.left, Math.min(window.innerWidth - 80 - b.left, ev.clientX - x0));
+            var dy = Math.max(-b.top, Math.min(window.innerHeight - 40 - b.top, ev.clientY - y0));
+            el.style.left = (l0 + dx) + 'px'; el.style.top = (t0 + dy) + 'px';
+        };
+        var up = function () { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); e.preventDefault();
+    });
+}
+
 function mbuCfgHeader(o) {
     o = o || {};
     var esc = function (s) {
