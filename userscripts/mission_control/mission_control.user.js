@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.340000
+// @version      2026.10.28.350000
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -659,7 +659,7 @@ function reviewWindow() {
         const cols = [...new Set(g.items.filter(it => !it.head).map(it => it.col))].sort((a, b) => (a === 'ISRC' ? -1 : b === 'ISRC' ? 1 : a.localeCompare(b)));
         const c0 = ci; ci += cols.length;
         const ico = c => { const it = g.items.find(it => it.col === c); return c === 'ISRC' ? '<span class="mc-rv-ch">ISRC</span>' : it.ico || esc(c); };
-        let h = '<div class="mc-rv-gw"><table class="mc-rv-grid"><thead><tr><th></th>' + cols.map((c, k) => '<th><label class="mc-rv-col" data-tip="' + esc(c) + '\nClick: select or unselect every ' + esc(c) + (c === 'ISRC' ? '' : ' link') + '"><input type="checkbox" checked data-col="' + (c0 + k) + '">' + ico(c) + '</label></th>').join('') + '</tr></thead><tbody>';
+        let h = '<div class="mc-rv-gw"><table class="mc-rv-grid"><thead><tr><th class="mc-rv-tr"><label data-tip="Select or unselect every track"><input type="checkbox" checked data-all>All tracks</label></th>' + cols.map((c, k) => '<th><label class="mc-rv-col" data-tip="' + esc(c) + '\nClick: select or unselect every ' + esc(c) + (c === 'ISRC' ? '' : ' link') + '"><input type="checkbox" checked data-col="' + (c0 + k) + '">' + ico(c) + '</label></th>').join('') + '</tr></thead><tbody>';
         let row = null;
         const flush = () => { if (row) h += '<tr><th class="mc-rv-tr"><label><input type="checkbox" checked data-grp="' + row.grp + '" data-tip="Select or unselect this track\'s ' + row.it.n + ' change' + (row.it.n === 1 ? '' : 's') + '"><span class="pos">' + esc(row.it.pos) + '</span><span class="tt">' + esc(row.it.title) + '</span>' + (row.it.len ? '<span class="len">' + esc(row.it.len) + '</span>' : '') + '</label></th>'
             + cols.map((c, k) => '<td>' + row.cells.filter(it => it.col === c).map(it => '<label' + (it.col === 'ISRC' ? ' class="isrc"' : '') + ' data-tip="' + esc(it.tip) + '"><input type="checkbox" checked data-p="is" data-key="' + esc(JSON.stringify(it.keys)) + '" data-in="' + row.grp + '" data-c="' + (c0 + k) + '">' + (it.col === 'ISRC' ? '<code>' + esc(it.tip.split('\n')[0].slice(5)) + '</code>' : '') + '</label>').join('') + '</td>').join('') + '</tr>'; };
@@ -689,10 +689,12 @@ function reviewWindow() {
     panel.addEventListener('change', e => {
         const i = e.target;
         if (i.dataset.grp != null) panel.querySelectorAll('input[data-in="' + i.dataset.grp + '"]').forEach(c => { c.checked = i.checked; });
+        if (i.dataset.all != null) i.closest('table').querySelectorAll('tbody input').forEach(c => { c.checked = i.checked; c.indeterminate = false; });
         if (i.dataset.col != null) panel.querySelectorAll('input[data-c="' + i.dataset.col + '"]').forEach(c => { c.checked = i.checked; });
         // a track's or a platform's box shows a mix as "some"
         panel.querySelectorAll('input[data-grp]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-in="' + h.dataset.grp + '"]')]));
         panel.querySelectorAll('input[data-col]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-c="' + h.dataset.col + '"]')]));
+        panel.querySelectorAll('input[data-all]').forEach(h => sync(h, [...h.closest('table').querySelectorAll('tbody input[data-key]')]));
         const left = [...panel.querySelectorAll('input[data-key]')].filter(c => c.checked).length;
         panel.querySelector('.mc-sec').textContent = 'Execute ' + left + ' change' + (left === 1 ? '' : 's') + '?';
     });
