@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.094500
+// @version      2026.10.28.130000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -571,7 +571,11 @@ function mbuDock() {
             + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
             + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
             + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-            + '[data-mbu-docked=show]:hover::after{opacity:1}';
+            + '[data-mbu-docked=show]:hover::after{opacity:1}'
+            + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#4cbf7a}'
+            + '[data-mbu-docked=show][data-mbu-busy]::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:#e46bb6;border-right-color:#e46bb6;animation:mbu-dock-spin .9s linear infinite;pointer-events:none}'
+            + '@keyframes mbu-dock-spin{to{transform:rotate(360deg)}}'
+            + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::before{animation:none!important}}';
         root.appendChild(css);
     }
     if (!on) {
@@ -620,6 +624,9 @@ function mbuDockItem(o) {
     }
     b.dataset.mbCornerLabel = o.label;
     b.status = function (t) { if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
+    // .card(fn): a hover card, fn() → its HTML (mbuTipCard); .busy(on): a ring turns round the icon while it works
+    b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+    b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; };
     b.status('');
     mbRestackCorner('br');
     return b;

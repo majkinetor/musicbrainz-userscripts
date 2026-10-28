@@ -42,7 +42,10 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   await attachShot(testInfo, page, 'dock-open');
   // no names beside the entries, only a state where one has it: ISRC Scout's count
   check(await page.locator('#mb-pc-dock').evaluate(e => getComputedStyle(e, '::after').content) === 'none', 'Platform Check shows no name');
-  check(await until(() => page.locator('#ii-dock').evaluate(e => getComputedStyle(e, '::after').content), c => /d/.test(c)) !== null, 'ISRC Scout shows its count');
+  check(await until(() => page.locator('#ii-dock').evaluate(e => getComputedStyle(e, '::after').content), c => /\d|\u2713/.test(c)) !== null, 'ISRC Scout shows its count');
+  await page.locator('#ii-dock').hover();
+  check(await until(() => page.locator('#mbu-tip').innerText().catch(() => ''), t => /ISRCs/.test(t)) !== null, 'its hover card names the ISRCs');
+  await page.mouse.move(10, 10);
   await page.evaluate(() => { localStorage.setItem('mbu.cornerFlow', '"row"'); });
   await page.locator('#mbu-dock').click(); await page.locator('#mbu-dock').click();
   await attachShot(testInfo, page, 'dock-row');

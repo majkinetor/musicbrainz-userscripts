@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.28.093000
+// @version      2026.10.28.130000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1034,7 +1034,11 @@
               + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
               + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
               + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-              + '[data-mbu-docked=show]:hover::after{opacity:1}';
+              + '[data-mbu-docked=show]:hover::after{opacity:1}'
+              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#4cbf7a}'
+              + '[data-mbu-docked=show][data-mbu-busy]::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:#e46bb6;border-right-color:#e46bb6;animation:mbu-dock-spin .9s linear infinite;pointer-events:none}'
+              + '@keyframes mbu-dock-spin{to{transform:rotate(360deg)}}'
+              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::before{animation:none!important}}';
           root.appendChild(css);
       }
       if (!on) {
@@ -1083,6 +1087,9 @@
       }
       b.dataset.mbCornerLabel = o.label;
       b.status = function (t) { if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
+      // .card(fn): a hover card, fn() → its HTML (mbuTipCard); .busy(on): a ring turns round the icon while it works
+      b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+      b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; };
       b.status('');
       mbRestackCorner('br');
       return b;
@@ -5159,6 +5166,8 @@
             <label><input type="checkbox" id="ii-show-icons">icons</label>
             <label><input type="checkbox" id="ii-show-text">text</label></div>
         <div class="ii-set-row"><label><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group<span class="ii-set-help">Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-bg-links"><span>Check links in the background<span class="ii-set-help">On a release page, look for every track on each platform and show the links to add beside the dock icon in Event Horizon. It uses a lot of network, so it's off by default. What it finds is kept for a week.</span></span></label></div>
+        <div class="ii-set-row"><label><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms<span class="ii-set-help">Tidal takes about a second a track. Off: it waits until you run Find links.</span></span></label></div>
         <div class="ii-set-row"><label><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence<span class="ii-set-help">Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong (#314).</span></span></label></div>
           <div class="ii-set-row ii-set-inline"><span class="ii-set-k">Spotify ISRC source</span>
             <select id="ii-sp-source">
@@ -5465,6 +5474,14 @@
         store.set('rg_providers', cbRg.checked);
         Log.info('Release-group providers: ' + (cbRg.checked ? 'on' : 'off') + (cbRg.checked ? ' — reopen / reload to rescan' : ''));
       });
+    }
+
+    // #847: the background link check
+    const cbBg = modal.querySelector('#ii-bg-links'), cbSlow = modal.querySelector('#ii-bg-slow');
+    if (cbBg && cbSlow) {
+      cbBg.checked = bgLinksOn(); cbSlow.checked = bgSlowOn(); cbSlow.disabled = !cbBg.checked;
+      cbBg.addEventListener('change', () => { store.set('bg_links', cbBg.checked); cbSlow.disabled = !cbBg.checked; Log.info('Background link check: ' + (cbBg.checked ? 'on' : 'off')); });
+      cbSlow.addEventListener('change', () => store.set('bg_links_slow', cbSlow.checked));
     }
 
     // #749: ISRCs and links on the release page's tracklist
@@ -6931,10 +6948,13 @@
     // gaps as resolveProvider, but the results come back as data, never into the table.
     // isrcOf(t): an ISRC found for the track but not on MusicBrainz yet (tried first).
     // → { <idx>: [{ code, name, url, linkTypeID }] }
-    async function findHeadless(isrcOf, onProvider) {
+    // opts (#847, the background check): skip(p) leaves a provider out, onHit(idx, link) and
+    // onStep(p, done, of) report as they come, onDone(p) when a provider is through
+    async function findHeadless(isrcOf, onProvider, opts) {
       const out = {};
+      opts = opts || {};
       await Promise.all(PROV.map(async p => {
-        if (!codeOn(p.code)) return;   // #768: switched off
+        if (!codeOn(p.code) || (opts.skip && opts.skip(p))) return;   // #768: switched off
         if (p.album && !(RELEASE && RELEASE[p.urlKey])) return;
         const jobs = [];
         RELEASE.tracks.forEach((t, idx) => {
@@ -6943,8 +6963,9 @@
           if (!p.album && !isrcs.length && !(p.code === 'yt' && RELEASE.ytmUrl)) return;
           jobs.push({ idx, isrcs, t });
         });
-        if (!jobs.length) return;
+        if (!jobs.length) { if (opts.onDone) opts.onDone(p); return; }
         if (onProvider) onProvider(p.name);
+        if (opts.onStep) opts.onStep(p, 0, jobs.length);
         let next = 0, hits = 0;
         const worker = async () => {
           while (next < jobs.length) {
@@ -6954,12 +6975,14 @@
               try { url = await p.resolve(isrc, j.t, j.idx); } catch (e) { /* rate-limited / not found */ }
               if (url) { url = normalizeProviderUrl(p.code, url); break; }
             }
-            if (url) { (out[j.idx] = out[j.idx] || []).push({ code: p.code, name: p.name, url, linkTypeID: p.linkTypeID }); hits++; }
+            if (url) { const l = { code: p.code, name: p.name, url, linkTypeID: p.linkTypeID }; (out[j.idx] = out[j.idx] || []).push(l); hits++; if (opts.onHit) opts.onHit(j.idx, l); }
+            if (opts.onStep) opts.onStep(p, next, jobs.length);
             if (p.gap && next < jobs.length) await sleep(p.gap);
           }
         };
         await Promise.all(Array.from({ length: Math.min(p.conc || 1, jobs.length) }, worker));
         Log.info('Find links (headless) ' + p.name + ': ' + hits + ' of ' + jobs.length + ' track(s)');
+        if (opts.onDone) opts.onDone(p);
       }));
       return out;
     }
@@ -6993,7 +7016,7 @@
       return out.concat(otherLinked(t)).map(o => Object.assign(o, { ended: !!(t.endedUrls && t.endedUrls.has(o.url)) }));
     }
 
-    return { findHeadless, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
+    return { findHeadless, PROV, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -8838,7 +8861,29 @@
     const item = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
       paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { if (location.pathname.replace(/\/$/, '').toLowerCase() === HOME) openModal(); else location.reload(); } });
     const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no ISRC Scout: the click loads it
-    const mirror = () => { const s = btnStatus(); item.status(s ? s.textContent : ''); };
+    // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
+    const tipEsc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const mirror = () => {
+      if (!RELEASE) { const s = btnStatus(); item.status(s ? s.textContent : ''); return; }
+      if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
+      const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
+      const links = bgLinksOn() ? bgLinksToAdd() : [];
+      const busy = Object.keys(BG.running).length > 0;
+      item.status(missing + links.length ? String(missing + links.length) : busy ? '' : '\u2713');
+      item.busy(busy);
+      item.card(() => {
+        const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
+        let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
+        if (bgLinksOn()) {
+          const byCode = {};
+          links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
+          const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
+          h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
+          Object.entries(BG.running).forEach(([c, r]) => { const p = BG.prov(c); h += row('#e46bb6', tipEsc(p ? p.name : c), r.done + '/' + r.of + ' tracks…'); });
+        } else h += row('#8a8494', 'Links', 'not checked: turn on <b>Check links in the background</b> in the settings');
+        return mbuTipCard({ title: 'ISRC Scout', body: '<div class="mbu-tip-rows">' + h + '</div>' });
+      });
+    };
     new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
     mirror();
   });
@@ -8857,6 +8902,47 @@
   // "Cannot access 'btnStatus' before initialization", which in String Theory also stopped every script
   // after this one, Platform Check's panel included (oblaka, majkinetor).
   function btnStatus() { return btn.querySelector('#ii-btn-status'); }
+
+  // #847: "Check links in the background" (off by default, it uses a lot of network): on a release
+  // page, Find links runs on its own with MusicBrainz's ISRCs, and the dock shows the links to add.
+  // What it found, and which platforms it went through, is kept per release, so a reload or the
+  // editor starts from there. "Include slow platforms" off leaves Tidal (about 1 s a track) out.
+  var BG = { started: false, running: {}, prov: c => { try { return TrackLinks.PROV.find(p => p.code === c); } catch (e) { return null; } } };
+  var BG_SLOW = ['td'];
+  var BG_DAYS = 7;
+  function bgLinksOn() { return store.get('bg_links', false) === true; }
+  function bgSlowOn() { return store.get('bg_links_slow', true) !== false; }
+  function bgCache() {
+    const all = store.get('bg_links_cache', {}) || {};
+    const c = all[mbid];
+    return c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+  }
+  function bgSave(c) {
+    const all = store.get('bg_links_cache', {}) || {};
+    all[mbid] = c;
+    const keys = Object.keys(all).sort((a, b) => all[b].at - all[a].at);
+    keys.slice(50).forEach(k => delete all[k]);   // the 50 latest releases
+    store.set('bg_links_cache', all);
+  }
+  // the cached links MusicBrainz doesn't have yet (one added since drops out)
+  function bgLinksToAdd() {
+    return bgCache().links.filter(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); return t && !(t.recUrls || []).includes(l.url); });
+  }
+  async function bgLinksRun(onChange) {
+    BG.started = true;
+    const c = bgCache();
+    try {
+      await TrackLinks.findHeadless(() => null, null, {
+        skip: p => c.done.includes(p.code) || (!bgSlowOn() && BG_SLOW.includes(p.code)),
+        onStep: (p, done, of) => { BG.running[p.code] = { done, of }; onChange(); },
+        onHit: (idx, l) => { const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
+        onDone: p => { delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
+      });
+      Log.info('Background link check: ' + bgLinksToAdd().length + ' link(s) to add');
+    } catch (x) { Log.warn('Background link check failed: ' + errText(x)); }
+    BG.running = {};
+    onChange();
+  }
   function updateBtnStatus() {
     try { showTrackData(); } catch (e) { Log.warn('tracklist ISRCs and links: ' + errText(e)); }
     const statusEl = btnStatus();

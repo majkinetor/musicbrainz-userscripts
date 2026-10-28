@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.093000
+// @version      2026.10.28.130000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -941,7 +941,11 @@
               + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
               + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
               + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-              + '[data-mbu-docked=show]:hover::after{opacity:1}';
+              + '[data-mbu-docked=show]:hover::after{opacity:1}'
+              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#4cbf7a}'
+              + '[data-mbu-docked=show][data-mbu-busy]::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:#e46bb6;border-right-color:#e46bb6;animation:mbu-dock-spin .9s linear infinite;pointer-events:none}'
+              + '@keyframes mbu-dock-spin{to{transform:rotate(360deg)}}'
+              + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::before{animation:none!important}}';
           root.appendChild(css);
       }
       if (!on) {
@@ -990,6 +994,9 @@
       }
       b.dataset.mbCornerLabel = o.label;
       b.status = function (t) { if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
+      // .card(fn): a hover card, fn() → its HTML (mbuTipCard); .busy(on): a ring turns round the icon while it works
+      b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+      b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; };
       b.status('');
       mbRestackCorner('br');
       return b;

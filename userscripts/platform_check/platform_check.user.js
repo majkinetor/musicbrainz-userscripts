@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.28.121500
+// @version      2026.10.28.130000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1680,7 +1680,11 @@ function mbuDock() {
             + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#e46bb6;font:700 14px/1 system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}'
             + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
             + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
-            + '[data-mbu-docked=show]:hover::after{opacity:1}';
+            + '[data-mbu-docked=show]:hover::after{opacity:1}'
+            + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#4cbf7a}'
+            + '[data-mbu-docked=show][data-mbu-busy]::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:3px solid transparent;border-top-color:#e46bb6;border-right-color:#e46bb6;animation:mbu-dock-spin .9s linear infinite;pointer-events:none}'
+            + '@keyframes mbu-dock-spin{to{transform:rotate(360deg)}}'
+            + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::before{animation:none!important}}';
         root.appendChild(css);
     }
     if (!on) {
@@ -1729,6 +1733,9 @@ function mbuDockItem(o) {
     }
     b.dataset.mbCornerLabel = o.label;
     b.status = function (t) { if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus; };
+    // .card(fn): a hover card, fn() → its HTML (mbuTipCard); .busy(on): a ring turns round the icon while it works
+    b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
+    b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; };
     b.status('');
     mbRestackCorner('br');
     return b;
@@ -8066,12 +8073,14 @@ async function runScans() {
     const n = PC_SCAN.n;
     PC_SCAN.busy = true;
     setScanStatus('busy');
+    if (pcDockItem) pcDockItem.busy(true);
     let ok = false;
     try { ok = await runScansInner() !== false; }
     catch (e) { appendLog('System', `Scan failed: ${e && e.message}`, 'error'); }
     if (pcStale(n)) return;
     PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
+    if (pcDockItem) pcDockItem.busy(false);
 }
 async function runScansInner() {
     // Source precedence: DOM (instant, no network) > /ws/2 API (~10s when MB is
@@ -8319,16 +8328,19 @@ async function runScansInner() {
     if (providerEnabled('sevendigital')) tasks.push(scanSevendigital({ ...ctx, existingUrl: existing.sevendigital }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
-    // the dock entry's state (#847): on MusicBrainz · newly found · not found
+    // the dock entry's state (#847): the platforms to link, and a card with on MusicBrainz · to link · not found
     if (pcDockItem) {
-        let on = 0, found = 0, none = 0;
+        const on = [], found = [], none = [];
         for (const p of ALL_PROVIDERS) {
             if (!providerEnabled(p)) continue;
             // a folded row (in the strip) has no match: not found, or found only with another format or barcode
             const row = document.getElementById(`row-${p}`);
-            if (existing[p]) on++; else if (row && !row.classList.contains('pc-compacted')) found++; else none++;
+            (existing[p] ? on : row && !row.classList.contains('pc-compacted') ? found : none).push(p);
         }
-        pcDockItem.status(`${on} · +${found} · ${none}`);
+        pcDockItem.status(found.length ? '+' + found.length : '\u2713');
+        const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
+        pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
+            + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + line('#e06060', 'Not found', none) + '</div>' }));
     }
     pcCountLinks();   // #671
 }
