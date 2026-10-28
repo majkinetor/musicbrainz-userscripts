@@ -5880,16 +5880,14 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
               + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
               + '#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}'
-              + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:#ba478f;font:600 10px/16px system-ui,sans-serif}'
-              // no names, only a short state (a count) beside an entry that has one; over the icon in a row.
+              + '#mbu-dock b{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border:2px solid var(--mbu-bg,#fff);border-radius:11px;background:#e05aa5;color:#fff;font:700 13px/18px system-ui,sans-serif;text-align:center}'
+              // no names, only a short state (a count) as a badge on the entry's top-right corner
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
               + '.mbu-dock-item,#mbu-dock{filter:none!important}'
-              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;right:calc(100% + 4px);top:50%;transform:translateY(-50%);white-space:nowrap;background:none;color:#d9479f;font:600 15px/1 system-ui,sans-serif;letter-spacing:.01em;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
-              + ':root[data-mbu-side=left] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:calc(100% + 4px)}'
-              + ':root[data-mbu-flow=row] [data-mbu-docked=show][data-mb-corner-status]::after{right:auto;left:50%;top:auto;bottom:calc(100% + 2px);transform:translateX(-50%)}'
+              + '[data-mbu-docked=show][data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border:2px solid var(--mbu-bg,#fff);border-radius:11px;background:#e05aa5;color:#fff;font:700 13px/18px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + '[data-mbu-docked=show]:hover::after{opacity:1}'
-              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{color:#3fae6c}'
-              + '[data-mbu-docked=show][data-mbu-busy]::after{color:#cfc8d8;letter-spacing:2px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+              + '[data-mbu-docked=show][data-mb-corner-status^="✓"]::after{background:#3fae6c}'
+              + '[data-mbu-docked=show][data-mbu-busy]::after{background:#ece6f2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after{animation:none!important}}';
           root.appendChild(css);
