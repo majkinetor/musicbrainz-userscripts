@@ -55,7 +55,8 @@ test('#841: the review is a grid of tracks by platform; only the entered cover i
   await rv.screenshot({ path: 'test-results/mc-841-review-grid.png' });
   // the Spotify column off: both tracks' Spotify links leave
   const spot = grid.locator('thead th').nth(3).locator('input');
-  await spot.uncheck();
+  await grid.locator('thead th').nth(3).locator('label').click();
+  check(!(await spot.isChecked()), 'the platform icon toggles its column');
   check(await grid.locator('tbody input[data-key]:checked').count() === 2, 'a platform\'s box unselects its column');
   check(await page.evaluate(() => document.querySelector('.mc-review tbody input[data-grp]').indeterminate), 'a track with some left shows "some"');
   await rv.locator('[data-rv="md"]').click();
