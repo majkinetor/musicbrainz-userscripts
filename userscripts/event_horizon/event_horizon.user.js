@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.185200
+// @version      2026.10.29.190200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2931,6 +2931,7 @@ function phrase(x) {
     return role[0].toUpperCase() + role.slice(1);
 }
 const creditsOf = rels => rels.filter(x => x['target-type'] === 'artist').map(x => ({ role: phrase(x), name: x['target-credit'] || x.artist.name, id: x.artist.id, dis: x.artist.disambiguation || '' }));
+const labelCreditsOf = rels => rels.filter(x => x['target-type'] === 'label').map(x => ({ role: ({ copyright: 'Copyrighted (©) by', 'phonographic copyright': 'Phonographic copyright (℗) by', distributed: 'Distributed by' })[x.type] || phrase(x), name: x['target-credit'] || x.label.name, id: x.label.id, kind: 'label', dis: x.label.disambiguation || '' }));
 function release(r, rg, images) {
     const ac = r['artist-credit'] || [], mainIds = ac.map(a => a.artist.id);
     return {
@@ -2939,7 +2940,7 @@ function release(r, rg, images) {
         script: r['text-representation'] && nameOf('script', r['text-representation'].script),
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
         title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
-        credits: creditsOf(r.relations || []), front: (r['cover-art-archive'] || {}).front, images,
+        credits: [...creditsOf(r.relations || []), ...labelCreditsOf(r.relations || [])], front: (r['cover-art-archive'] || {}).front, images,
         genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
         events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
         labels: (r['label-info'] || []).map(l => ({ name: l.label && l.label.name, id: l.label && l.label.id, catno: l['catalog-number'] })),
@@ -2997,7 +2998,7 @@ function edTip(e, cur) {
 }
 mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
-    const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation';
+    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
     const covers = caa(id).then(x => { step('covers'); return x; });
     const r = await wsk(`release/${id}?inc=${inc}`);
@@ -3222,7 +3223,7 @@ function hero(r) {
         </div>
     </section>`;
 }
-function rlQuiet(r) {
+function rlQuiet(r, scope = '') {
     if (!r.links.length) return '—';
     const ps = KINDS.flatMap(([k]) => sortP(r.links.filter(p => primaryKind(p) === k)));
     const kname = k => KINDS.find(x => x[0] === k)[1], kindOf = p => KINDS.map(x => x[0]).filter(k => p.kinds.includes(k)).map(kname).join(' · ');
@@ -3240,14 +3241,14 @@ function rlQuiet(r) {
         const lbl = many ? `${p.urls.length} links on ${esc(p.name)}` : `${rest.length} more kinds on ${esc(p.name)}`;
         const tip = many ? `${p.urls.length} links${rest.length ? ': also ' + rest.map(kname).join(', ') : ''}` : `+${rest.length}: also ${rest.map(kname).join(', ')}`;
         const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
-        return `<span class="qk" style="--qk-size:${S.plSize + 6}px">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
+        return `<span class="qk" style="--qk-size:${S.plSize + 6}px">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${scope}${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${scope}${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
     // A–Z (majkinetor), the bare hostnames after the named sites
     const az = ([a], [b]) => (a.key === 'globe') - (b.key === 'globe') || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
     const rows = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k).sort(az); return g.length ? `<div class="mk"><div class="h label">${name}</div><div class="mg">${g.map(([p, i]) => `<a class="row" data-i="${i}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.name)}${p.kinds.length > 1 ? ': ' + kindOf(p) : ''}">${icon(p, 22)}<span>${esc(p.name)}</span></a>`).join('')}</div></div>` : ''; }).join('');
-    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
+    return `<div class="rl-one quiet${S.plHover ? ' pl-hov' : ''}" style="--rl-size:${S.plSize + 6}px"><span class="icons">${icons}</span><span class="popwrap" hidden><button class="chip pn" type="button" data-pop="rlmore${scope}" aria-expanded="false"></button><div class="pop r more-sites" id="pop-rlmore${scope}" hidden><input class="mflt" type="search" placeholder="Filter sites" aria-label="Filter sites" hidden>${rows}</div></span></div>`;
 }
 
 /* ── editions ──────────────────────────────────────── */
@@ -3379,8 +3380,8 @@ function trackLinks(t, ctx) {
 }
 // a credited name; the disambiguation below it, in brackets or only in the tooltip (S.dis)
 const crName = c => {
-    if (!c.dis) return artistA(c);
-    const n = c.id ? `<a href="${MB}/artist/${c.id}" class="hasd" data-tip="${esc(c.name + ' (' + c.dis + ')')}">` : `<span class="hasd" data-tip="${esc(c.dis)}">`;
+    if (!c.dis) return entA(c.kind || 'artist', c.id, c.name);
+    const n = c.id ? `<a href="${MB}/${c.kind || 'artist'}/${c.id}" class="hasd" data-tip="${esc(c.name + ' (' + c.dis + ')')}">` : `<span class="hasd" data-tip="${esc(c.dis)}">`;
     return n + esc(c.name) + `<span class="dis">${esc(S.dis === 'brackets' ? '(' + c.dis + ')' : c.dis)}</span>` + (c.id ? '</a>' : '</span>');
 };
 // each person once, their roles beside them
@@ -3527,17 +3528,17 @@ const RG_PHRASE = { 'single from': ['single from', 'associated singles/EPs'], co
 const rgAttrs = x => [...(x.attributes || []).map(a => (x['attribute-values'] || {})[a] ? `${a}: ${x['attribute-values'][a]}` : a), x['ordering-key'] != null && x['target-type'] === 'series' ? `order: ${x['ordering-key']}` : ''].filter(Boolean).map(a => `<span class="rga">(${esc(a)})</span>`).join(' ');
 function rgCard(r, own) {
     const groups = new Map(), add = (k, h) => { const l = groups.get(k) || []; l.push(h); groups.set(k, l); };
-    const rels = own ? r.rg.rels.filter(x => x['target-type'] !== 'url') : r.rg.rels;
+    const rels = r.rg.rels.filter(x => x['target-type'] !== 'url');
+    const links = own ? [] : urlsOf(r.rg.rels);
     for (const x of rels) {
         if (x['target-type'] === 'release_group') {
             const p = RG_PHRASE[x.type] || [x.type, x.type], g = x['release_group'];
             add(p[x.direction === 'backward' ? 1 : 0], `${entA('release-group', g.id, g.title)}${g.disambiguation ? ` <span class="rga">(${esc(g.disambiguation)})</span>` : ''} ${rgAttrs(x)}`);
         } else if (x['target-type'] === 'series') add('part of', `${entA('series', x.series.id, x.series.name)} ${rgAttrs(x)}`);
-        else if (x['target-type'] === 'url') add(x.type, `<a href="${esc(x.url.resource)}" target="_blank" rel="noopener">${esc(x.url.resource.replace(/^https?:\/\/(www\.)?/, ''))}</a>`);
     }
-    if (!groups.size) return '';
-    const n = rels.length;
-    const body = `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>`;
+    if (!groups.size && !links.length) return '';
+    const n = rels.length + (own ? 0 : r.rg.rels.filter(x => x['target-type'] === 'url').length);
+    const body = (links.length ? rlQuiet({ links }, 'rg-') : '') + (groups.size ? `<dl class="rgc">${[...groups].map(([k, l]) => `<dt>${esc(k)}</dt><dd>${l.map(h => `<div>${h}</div>`).join('')}</dd>`).join('')}</dl>` : '');
     if (own) return sect('rg', `Relationships <span class="count">${n}</span>`, '', body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
     return sect('rg', 'Release group', `<a class="rgt" href="${MB}/release-group/${r.rgId}">${esc(r.rg.title)}</a><span class="aside">${n} relationship${n === 1 ? '' : 's'}</span>`, body, `<div class="folded-note">${n} relationship${n === 1 ? '' : 's'}</div>`);
 }
@@ -7204,7 +7205,9 @@ function railSpy() {
 }
 // the release links stay on one row; what doesn't fit goes behind +N
 function fitQuiet() {
-    const box = $('.rl-one'); if (!box) return;
+    for (const box of document.querySelectorAll('#app .rl-one')) fitQuietBox(box);
+}
+function fitQuietBox(box) {
     const more = box.querySelector(':scope>.popwrap'), ic = [...box.querySelectorAll('a.qi')], gs = [...box.querySelectorAll('.kg')];
     const hide = (x, h) => { (x.closest('.qk') || x).hidden = h; x.hidden = h; };
     ic.forEach(x => hide(x, false)); gs.forEach(g => { g.hidden = false; }); more.hidden = true;

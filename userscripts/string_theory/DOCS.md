@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 18:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -802,6 +802,8 @@ Click **Sections** (the list icon beside Search, top right) to open the list. Cl
 
 Open a track to see its recording and work credits. The platforms it is on (Spotify, Apple Music, Tidal, …) show as icons; point at one for its URL. A site without an icon of its own shows two letters of its domain.
 
+**Release credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
+
 Which platforms show, in which order, and how big, are in the settings' **Platforms** tab.
 
 ### Releases and discography
@@ -818,26 +820,26 @@ Every table's filter (the discography, the releases, an instrument's releases, a
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                   | Default                                                    |                                                                            |
-| ------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Release → Info            | released, labels, barcode, length, links                   | the facts shown beside the cover                                           |
-| Release → Under the cover | Other covers, Rating, Genres                               | what shows under the cover                                                 |
-| Platforms → Show          | off                                                        | **Names** beside the icons; **Gray icons** until pointed at                |
-| Platforms → Icon size     | 22px                                                       | the size of a platform icon                                                |
-| Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music  | click to show or hide, drag to reorder; the rest go behind +N              |
+| Setting                   | Default                                                             |                                                                            |
+| ------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Release → Info            | released, labels, barcode, length, links                            | the facts shown beside the cover                                           |
+| Release → Under the cover | Other covers, Rating, Genres                                        | what shows under the cover                                                 |
+| Platforms → Show          | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
+| Platforms → Icon size     | 22px                                                                | the size of a platform icon                                                |
+| Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
 | Artist → Images from      | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
-| General → Page width      | Medium                                                     | how wide the page grows on a big screen                                    |
+| General → Page width      | Medium                                                              | how wide the page grows on a big screen                                    |
 
 ### Shortcuts
 
-| Key         | Where       |                   |
-| ----------- | ----------- | ----------------- |
-| Esc         | filter      | clear it          |
-| Esc         | a menu      | close it          |
-| Right-click | corner icon | open the settings |
-| Right-click | a track     | fold its disc     |
-| Right-click | a section   | fold the section  |
-| Right-click | a platform icon with more links | open its links |
+| Key         | Where                           |                   |
+| ----------- | ------------------------------- | ----------------- |
+| Esc         | filter                          | clear it          |
+| Esc         | a menu                          | close it          |
+| Right-click | corner icon                     | open the settings |
+| Right-click | a track                         | fold its disc     |
+| Right-click | a section                       | fold the section  |
+| Right-click | a platform icon with more links | open its links    |
 
 ---
 
