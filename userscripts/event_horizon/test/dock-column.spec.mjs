@@ -19,10 +19,12 @@ test('the dock stands in a column beside the page', { tag: ['@sandbox', '@cosmet
     const icons = [...document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]')].map(e => e.getBoundingClientRect()).filter(r => r.width);
     // EH scrolls the body, whose scrollbar is inside the window: the edge is where it starts
     const vw = Math.min(document.documentElement.clientWidth, document.body.getBoundingClientRect().left + document.body.clientWidth);
-    return { right, left: Math.min(...icons.map(r => r.left)), vw, maxRight: Math.max(...icons.map(r => r.right)), n: icons.length };
+    return { right, left: Math.min(...icons.map(r => r.left)), vw, inner: innerWidth, maxRight: Math.max(...icons.map(r => r.right)), n: icons.length };
   }), v => v.n > 1 && v.right > 0);
   console.log(JSON.stringify(m));
   check(m.right <= m.left, `the page's content (to ${m.right}px) ends before the launchers (from ${m.left}px)`);
   check(m.vw - m.maxRight <= 8, `the launchers sit near the edge (${m.vw - m.maxRight}px)`);
+  // in the middle of the column: as much room on their left as to the window's edge, the scrollbar's gutter included
+  check(Math.abs((m.left - m.right) - (m.inner - m.maxRight)) <= 2, `the launchers sit in the column's middle (${m.left - m.right}px on their left, ${m.inner - m.maxRight}px on their right)`);
   await attachShot(testInfo, page, 'dock-column');
 });

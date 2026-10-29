@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.233000
+// @version      2026.10.29.233100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2201,9 +2201,10 @@ a{color:var(--link);text-decoration:none}a:hover{color:var(--link-hover);text-de
 button{font:inherit;color:inherit}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
 .wrap{max-width:var(--eh-w,1600px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-/* the dock's launchers stand in a column at the screen's edge: a page that reaches it keeps clear of them */
-:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) .wrap{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
-:root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] .wrap{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
+/* the dock's launchers stand in a column at the screen's edge: a page that reaches it keeps clear of them, with as much room
+   on their left as on their right, the scrollbar's gutter (100vw - 100%) included; 100%, not 100vw, is what the page is centred in */
+:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) .wrap{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px + 100vw - 100%))}
+:root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] .wrap{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 h1,h2{text-wrap:balance}
 h2,.fold h2{margin:0;font-size:24px;color:var(--text)!important}
@@ -7470,8 +7471,8 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1600px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
-:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) #page{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
-:root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] #page{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
+:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) #page{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px + 100vw - 100%))}
+:root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] #page{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
 :root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}
 :root[data-eh-rel] #page :is(p,td,th,label,span,input,select,textarea,button){font-family:Manrope,system-ui,sans-serif}
