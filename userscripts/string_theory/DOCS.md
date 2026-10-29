@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 21:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 21:56 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -819,7 +819,7 @@ Which platforms show, in which order, and how big, are in the settings' **Platfo
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
-An artist's, country's or other entity's **Releases** tab uses Event Horizon's header and cards. MusicBrainz's release lists, filters and pagination stay available; the back arrow returns to the overview.
+An artist's, country's or other entity's **Releases** tab offers cover cards in a grid or horizontal row, and a sortable table. The funnel filters the releases on the current page; MusicBrainz's filters and pagination stay available. The view is remembered. The back arrow returns to the overview.
 
 A recording shows its length, ISRCs and credits, its works beside them with their writers, and the releases it appears on. A work shows its writers, ISWCs and other codes, related works, and its recordings in a table by first release.
 
@@ -1965,7 +1965,7 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 | Column toggles above the tracklist         | on                         | **ISRC** · **Links** above the tracklist                                       |
 | Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
 | Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
-| Match                                      | off                        | runs **Match** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher and the dock in Event Horizon show the new ISRCs and links it found as *ISRCs/links* (kept for a week) |
+| Match                                      | off                        | runs **Match** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher shows the new ISRCs (⚡) and links (link icon) it found, ✓ when there are none, and the dock in Event Horizon their total (kept for a week) |
 | Include slow platforms                     | on                         | in the background, Tidal too (about 1 s a track)                               |
 | Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
 | Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
