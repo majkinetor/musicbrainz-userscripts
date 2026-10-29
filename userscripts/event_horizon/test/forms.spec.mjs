@@ -45,3 +45,18 @@ test('the release group page leads to its forms', { tag: ['@sandbox'] }, async (
   await page.locator('.hero .picw').hover();
   check(await until(() => page.locator('.hero .cvact').evaluate(e => getComputedStyle(e).opacity), o => o === '1') === '1', 'hovering the cover shows Set cover art');
 });
+
+// an artist's Releases stands in the action row before History, not in More, with the release's record-and-sleeve mark
+test('an artist\'s Releases sits in the action row', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+  const AR = 'a74b1b7f-71a5-4011-9441-d0b5e4122711';
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('event_horizon');
+  const row = page.locator('.hero .kicker .acts');
+  check(await until(() => row.locator(`> a.ab[href$="/artist/${AR}/releases"]`).count(), n => n === 1) === 1, 'Releases is in the row');
+  check(await row.locator(`.eh-more a[href$="/releases"]`).count() === 0, 'and not in More');
+  const order = await row.locator('> a.ab').evaluateAll(as => as.map(a => a.getAttribute('href').split('/').pop()));
+  check(order.indexOf('releases') === order.indexOf('edits') - 1, `Releases comes just before History (${order.join(', ')})`);
+  check(await row.locator(`> a.ab[href$="/releases"] svg rect`).count() === 1, 'its icon is the sleeve');
+  await attachShot(testInfo, row, 'artist-row');
+});
