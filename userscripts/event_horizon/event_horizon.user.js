@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.130001
+// @version      2026.10.30.140001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2961,7 +2961,7 @@ function release(r, rg, images) {
         genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
         events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
         labels: (r['label-info'] || []).map(l => ({ name: l.label && l.label.name, id: l.label && l.label.id, catno: l['catalog-number'] })),
-        links: urlsOf(r.relations || []),
+        links: urlsOf(r.relations || []), urlCredits: (r.relations || []).filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource })),
         media: (r.media || []).map(m => ({
             format: m.format, position: m.position, title: m.title,
             tracks: (m.tracks || []).map(t => {
@@ -3556,10 +3556,14 @@ function creditsCard(r) {
     const trackLinesR = [...byR].sort((a, b) => a[0].localeCompare(b[0])).map(([role, es]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="ents">${es.map(e => `<span class="ent"><span class="who">${crName(e)}</span>${trk(e)}</span>`).join('<span class="sep">, </span>')}</span></div>`).join('');
     const relLinesR = byRole(r.credits).map(([role, cs]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${andList(cs.map(crName))}</span></div>`).join('');
     const relLines = S.byName ? relLinesN : relLinesR, trackLines = S.byName ? trackLinesN : trackLinesR;
-    const n = r.credits.length + m.size;
+    const urls = r.urlCredits || [];
+    const urlRoles = new Map();
+    for (const u of urls) { const role = phrase(u); const list = urlRoles.get(role) || []; if (!list.includes(u.url)) list.push(u.url); urlRoles.set(role, list); }
+    const urlLines = [...urlRoles].map(([role, list]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${list.map(url => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a>`).join('<br>')}</span></div>`).join('');
+    const n = r.credits.length + m.size + urls.length;
     if (!n) return '';
     const body = `<div class="card dm-${S.dis}"><div class="cols">
-        ${relLines ? `<div class="grp"><div class="label">On the release</div>${relLines}</div>` : ''}
+        ${relLines || urlLines ? `<div class="grp"><div class="label">On the release</div>${relLines}${urlLines}</div>` : ''}
         ${S.crTracks ? `<div class="grp"><div class="label">On the tracks · numbers say which, none means all</div>${trackLines || '<div class="folded-note">None yet</div>'}</div>` : ''}
     </div></div>`;
     return sect('cr', 'Release credits', `<button class="chip" type="button" data-crtracks aria-pressed="${S.crTracks}">${S.crTracks ? '✓ ' : ''}Track credits</button><span class="crdis">${byNameB('ib')}${disMenu('ib')}</span><span class="aside">${n} credits</span>`, body, `<div class="folded-note">${n} credits</div>`);
