@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.220000
+// @version      2026.10.29.223000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2949,7 +2949,7 @@ const labelCreditsOf = rels => rels.filter(x => x['target-type'] === 'label').ma
 function release(r, rg, images) {
     const ac = r['artist-credit'] || [], mainIds = ac.map(a => a.artist.id);
     return {
-        id: r.id, annotation: r.annotation || '', asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
+        id: r.id, annotation: r.annotation || '', aliases: [...new Set((r.aliases || []).map(aliasName))], asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
         langName: r['text-representation'] && nameOf('language', r['text-representation'].language),
         script: r['text-representation'] && nameOf('script', r['text-representation'].script),
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
@@ -3012,7 +3012,7 @@ function edTip(e, cur) {
 }
 mbuTipOn('[data-ed]', el => { const x = ED_TIP.get(el.getAttribute('data-ed')); return x && edTip(x.e, x.cur); }, { wide: true });
 async function load(id, step = () => {}) {
-    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation';
+    const inc = 'artist-credits+labels+label-rels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation+aliases';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
     const covers = caa(id).then(x => { step('covers'); return x; });
     const r = await wsk(`release/${id}?inc=${inc}`);
@@ -3163,8 +3163,12 @@ function facts(r) {
         lang: ['Language', r.langName && `<div><span>${esc(r.langName)}</span>${r.script ? ` <span class="sub">${esc(r.script)}</span>` : ''}</div>`],
         quality: ['Data quality', esc(r.quality || 'normal')],
         links: ['', r.links.length && rlQuiet(r)],
+        aliases: [`Alias${r.aliases.length === 1 ? '' : 'es'}`, aliasList(r.aliases)],
     };
-    return `<div class="facts">${FACTS.filter(([k]) => S.facts.includes(k) && F[k][1]).map(([k]) => `<div${k === 'links' || k === 'mbid' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
+    // the aliases aren't a setting, as on every other page: always shown, before the links, so they can be added
+    const ks = FACTS.map(([k]) => k).filter(k => S.facts.includes(k) && F[k][1]), li = ks.indexOf('links');
+    if (F.aliases[1]) ks.splice(li < 0 ? ks.length : li, 0, 'aliases');
+    return `<div class="facts">${ks.map(k => `<div${k === 'links' || k === 'mbid' || k === 'aliases' ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
 function heroFacts(app) {
     const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;

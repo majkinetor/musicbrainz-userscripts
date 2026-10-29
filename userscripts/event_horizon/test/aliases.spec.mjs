@@ -39,3 +39,17 @@ test('the alias pencil opens the alias editor in a popup', { tag: ['@sandbox', '
   await page.keyboard.press('Escape');
   check(await until(() => page.locator('#eh-aliases').count(), n => n === 0) === 0, 'Escape closes it');
 });
+
+// a release lists its aliases too, with the pencil to add one, whatever facts the settings show
+test('a release shows its aliases with the pencil', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  await page.goto('https://test.musicbrainz.org/release/54b7bca2-7ed6-4484-bdd3-fe35a3f33dda', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await settled(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('section.hero .facts button.eh-edit[data-aliases]').count(), n => n === 1) === 1, 'the hero has the alias pencil');
+  check(/^alias/i.test(await page.locator('section.hero .facts > div:has(button[data-aliases]) > .label').innerText()), 'under an Aliases label');
+  await attachShot(testInfo, page, 'release-aliases');
+  await page.locator('section.hero button.eh-edit[data-aliases]').click();
+  check(await until(() => page.locator('#eh-aliases #tc-alias').count(), n => n === 1) === 1, 'the popup holds the alias editor');
+  check(/\/release\/[0-9a-f-]{36}\/aliases$/.test(await page.locator('#eh-aliases .eh-al-tab').getAttribute('href')), 'for the release');
+});
