@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.190200
+// @version      2026.10.29.195000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2308,7 +2308,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec]{color:var(--chip-text)!important}
-#eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{max-width:1200px;margin:0 auto;padding:6px 16px;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pnm .disamb{display:none}#eh-pin .pnm a{margin-left:6px;vertical-align:middle}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pkk{display:flex;align-items:center;gap:6px;color:var(--muted);white-space:nowrap;overflow:hidden;min-width:0;font-size:10.5px}#eh-pin .pkk svg{flex:none}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:cover;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}
+.kicker.pin-home{min-height:30px}.kicker.pin-home .acts,#eh-pin .acts{flex:none}.kicker.pin-home .ab .abt,#eh-pin .ab .abt{display:none}.kicker.pin-home .ab,#eh-pin .ab{padding:0 8px}
+#eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:cover;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
 .ib:hover,.ib[aria-expanded="true"]{background:var(--hover);border-color:var(--border);color:var(--text)!important;text-decoration:none}
@@ -3201,7 +3202,7 @@ async function rateSet(t, ref, i) {
 // a table's rating cell: five small stars, lit as many as the rating, all dim with none (as MB's tables show it)
 const starsTd = (rt = {}) => { const v = rt.value, n = rt['votes-count'] || 0, k = v == null ? 0 : Math.round(v), tip = v == null ? 'Not rated' : rt['votes-count'] == null ? `Rated ${v} of 5` : `${v} from ${n} vote${n === 1 ? '' : 's'}`; return `<span class="stars sm" data-tip="${esc(tip)}" aria-label="${esc(tip)}">${'★'.repeat(k)}<span class="off">${'★'.repeat(5 - k)}</span></span>`; };
 const thumbOf = i =>(i.thumbnails && (i.thumbnails['250'] || i.thumbnails.small)) || i.image;
-// the release group's link after the release's title: its layers and how many editions it has, muted
+// the release group's link after the artist: its layers and how many editions it has, muted
 const rgLink = r => `<a class="rg-l" href="${MB}/release-group/${r.rgId}" data-tip="Release group${data && data.edCount ? ' · ' + data.edCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${data && data.edCount ? `<span>${data.edCount}</span>` : ''}</a>`;
 // no front cover (none on the CAA, or it failed to load): the format's mark, a word, and a way to add one
 const relNoCover = (r, fk) => `<div class="nocover rnc">${fmtSvg(fk, 96, 1.4)}<small>No cover art</small><a class="rnc-add" href="${MB}/release/${r.id}/add-cover-art">+ Add cover art</a></div>`;
@@ -3217,8 +3218,8 @@ function hero(r) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
-            <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}${rgLink(r)}</h1>
-            <div class="by">by ${acHtml(r.ac)}</div>
+            <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}</h1>
+            <div class="by">by ${acHtml(r.ac)}${rgLink(r)}</div>
             ${facts(r)}
         </div>
     </section>`;
@@ -7165,10 +7166,11 @@ function secRail(app) {
 }
 // once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
 // (the very buttons, moved in and back, so their menus and the search keep working)
-let pinIo = null;
+let pinIo = null, pinRo = null;
 function pinBar(app) {
     let bar = document.getElementById('eh-pin');
     if (pinIo) { pinIo.disconnect(); pinIo = null; }
+    if (pinRo) { pinRo.disconnect(); pinRo = null; }
     // a redraw leaves a shown bar shown, so it doesn't slide out and back in (the filter redraws on every letter)
     const wasOn = !!bar && bar.classList.contains('on');
     if (bar) bar.querySelector('.kicker').innerHTML = '';
@@ -7180,8 +7182,14 @@ function pinBar(app) {
         bar.addEventListener('click', ev => { if (ev.target.closest('.pnm,.pcv') && !ev.target.closest('a')) scrollTo({ top: 0, behavior: 'smooth' }); });
     }
     const k = bar.querySelector('.kicker'), h1 = hd.querySelector('h1'), img = hd.querySelector('img.cover,img.rhcv:not([hidden]),.u-av img'), kick = acts.parentElement, by = hd.querySelector('.by');
-    const name = h1 ? h1.textContent.trim() : document.title;
-    k.innerHTML = (img ? `<img class="pcv" alt="" src="${esc(img.src)}">` : '') + `<span class="pnm" data-tip="Back to the top">${h1 ? h1.innerHTML : esc(name)}</span>${by ? `<span class="pby">${by.innerHTML}</span>` : ''}<span class="pkk">${[...kick.children].filter(x => x !== acts).map(x => x.outerHTML).join('')}</span>`;
+    const title = h1 && h1.cloneNode(true), artist = by && by.cloneNode(true), rg = hd.querySelector('.rg-l');
+    for (const el of [title, artist]) if (el) el.querySelectorAll('.rg-l').forEach(a => a.remove());
+    kick.classList.add('pin-home');
+    k.innerHTML = `<span class="pident">${img ? `<img class="pcv" alt="" src="${esc(img.src)}">` : ''}<span class="pnm" data-tip="Back to the top">${title ? title.innerHTML : esc(document.title)}</span>${artist ? `<span class="pby">${artist.innerHTML}</span>` : ''}${rg ? rg.outerHTML : ''}</span>`;
+    // The page width is configurable; follow its real edges instead of centring a separate fixed-width bar.
+    const align = () => { const left = hd.getBoundingClientRect().left, right = kick.getBoundingClientRect().right; k.style.marginLeft = left + 'px'; k.style.width = Math.max(0, right - left) + 'px'; };
+    align();
+    if (window.ResizeObserver) { pinRo = new window.ResizeObserver(align); pinRo.observe(hd); pinRo.observe(kick); }
     const home = document.createElement('span'); home.hidden = true; acts.before(home);
     // a shown bar takes the new action row at once: left to the observer, the row leaves the header a frame later and the page jumps
     if (wasOn) k.appendChild(acts);
@@ -7385,7 +7393,7 @@ function subHead(r, id, tab, name, none) {
     const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
-        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}</div>` : none) + '</div>';
+        + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</div>` : none) + '</div>';
 }
 // a release without a front cover drops the header's image, and keeps it dropped when the header redraws, so the title holds still
 const cvGone = new Set();

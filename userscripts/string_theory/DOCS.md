@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 19:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -773,7 +773,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 ### Features
 
 - **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument, place, series or event page, and moves between them without reloading.
-- **Pinned header**: once the page's header scrolls away, a slim bar at the top keeps its cover, title, artist and action row in reach; click the title to go back up.
+- **[Pinned header](#pinned-header)** keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: a button in the page's action row jumps to, folds, reorders or hides each part of the page.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
@@ -793,6 +793,10 @@ Event Horizon shows its own page for each of these, and for search results. A li
 - **A page seen before** shows at once from what Event Horizon kept of it, then is checked with MusicBrainz in the background, and redrawn if anything changed. Back and Forward return to where you were on the page.
 - While a page loads, the other scripts' background requests to MusicBrainz wait, so the page you asked for comes first.
 - If a page can't load, **Retry**, or **Show MusicBrainz's page**.
+
+### Pinned header
+
+Once the page's header scrolls away, a single bar keeps its cover, title and artist in reach. On a release, the release-group icon and edition count follow the artist. The action icons keep their horizontal position when the bar appears. Click the title to go back up.
 
 ### Sections
 
