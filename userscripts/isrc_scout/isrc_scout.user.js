@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.29.223000
+// @version      2026.10.29.230500
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -7144,7 +7144,7 @@
       return out.concat(otherLinked(t)).map(o => Object.assign(o, { ended: !!(t.endedUrls && t.endedUrls.has(o.url)) }));
     }
 
-    return { findHeadless, seedCached, PROV, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
+    return { findHeadless, seedCached, providersFor, PROV, submitRels, noteFor, linkedHtml, addHtml, pageLinks, resolve, addAll, clearResolved, missingCount, refresh: updateAddBtn, removeOne, removeTrack, removeProvider, endOne, endTrack, endProvider, linkRows };
   })();
 
   /* ── render the track table ── */
@@ -9026,6 +9026,8 @@
       if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
       const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
       const busy = Object.keys(BG.running).length > 0;
+      // Findings can arrive after the editor opened. Keep its addable links in step with the dock.
+      if (modal && modal.classList.contains('open')) TrackLinks.seedCached();
       // with Match in the background: the new ISRCs and links it found, together (the card splits them); else the tracks without an ISRC
       if (bgLinksOn()) { const n = bgIsrcsNew().length + bgLinksToAdd().length; item.status(n ? String(n) : busy ? '' : '\u2713'); }
       else item.status(missing ? String(missing) : '\u2713');
@@ -9145,9 +9147,13 @@
   // the cached links MusicBrainz doesn't have yet: one drops out once its track has a link on that platform,
   // not only this one, as Find links skips it (Tidal has two ids for a track: 4 "to add" that the window didn't show)
   function bgLinksToAdd() {
+    const seen = new Set();
     return bgCache().links.filter(l => {
       const t = RELEASE.tracks.find(x => x.recId === l.rec), urls = t ? t.recUrls || [] : [], p = BG.prov(l.code);
-      return t && !urls.includes(l.url) && !(p && urls.some(u => p.test(u)));
+      const key = l.rec + ':' + l.code;
+      if (!t || !p || !TrackLinks.providersFor(t).includes(p) || urls.includes(l.url) || urls.some(u => p.test(u)) || seen.has(key)) return false;
+      seen.add(key);   // the editor has one addable slot per recording and provider
+      return true;
     });
   }
   async function bgLinksRun(onChange) {
