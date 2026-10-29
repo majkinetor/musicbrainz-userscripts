@@ -26,6 +26,18 @@ While Event Horizon shows, `<html>` carries `data-mbu-dock`, and the other scrip
 
 A dock entry whose script didn't start on the loaded page isn't there at all. Platform Check now starts everywhere it may be needed and builds its panel in a hidden host (`#mb-pc-eh-host`) until the dock opens it.
 
+## Kept answers
+
+A page loader's requests go through `kept` ([#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)): `wsk` for ws/2, `mbTabK` for a MusicBrainz table, and the Wikipedia extract and cover art. Each answer is kept in IndexedDB (`eh-kept`, the 800 last used), and a page seen before draws from it without asking. Once all of a page's parts are in, `kpCheck` asks again, one at a time, for each kept answer it drew from that is over a minute old or older than the tab's last return to view. If one changed, the page redraws whole (`show(key, { quiet: true })`), unless a box in it is being typed in.
+
+- **MusicBrainz's JSON comes with its keys in a different order every time.** `kpCanon` sorts them before an answer is kept or compared; without it every answer looks changed.
+- **A write voids what is kept**: a rating, a tag vote or an alias edit calls `kpWrote`, which sets `eh.kept.drop` in localStorage, and every entry older than it is a miss, in every tab.
+- **Not kept**: edits, paging, and anything a write reads back. They go through `ws`, uncached.
+
+## Leading the gate
+
+While a page loads, its tab leads the shared request gate (`mbnLead`, [#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)): every other background ws/2 request, in any script or tab, waits until the lead ends, so the page the reader asked for isn't queued behind Platform Check's or ISRC Scout's scans. The page's own requests pass `{ lead }` to `mbnFetch` and renew it; it ends once all the page's parts are in, or when the page fails. A lead not renewed lapses after 8 seconds (the gate caps one at 10), so a tab closed mid-load holds no one for long. A hidden tab doesn't lead, and `kpCheck`'s requests don't carry the lead.
+
 ## Declarations setOn can reach
 
 `setOn` runs while the script starts, before the rest of the file has run, so whatever it calls must exist by then. A `let`, `const` or arrow function declared below the call is in its temporal dead zone and throws. Declare such things with `var` and a `function` declaration (as `ehRel` and `ehRelMark` are).

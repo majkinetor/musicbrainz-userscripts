@@ -13,7 +13,9 @@
 //     `hot` stretches it while the throttling goes on (Retry-After is a floor, since
 //     MusicBrainz sends "Retry-After: 0");
 //   - an interactive request (a click, a picker search) is not queued behind background
-//     work: it starts as soon as the hold allows, and still counts against the budget.
+//     work: it starts as soon as the hold allows, and still counts against the budget;
+//   - a page drawing what its reader asked for (Event Horizon) takes the lead (#847): while it
+//     holds it, every other background request, in any script or tab, waits to book its slot.
 //
 // Pacing is by request STARTS, not completions (#575): a slow search must not stall the
 // ones behind it. Only /ws/2 is gated; /ws/js and the website's forms are not rate-limited
@@ -38,6 +40,8 @@ export const MBN_KEY = 'mbu:mb-gate';
 export const MBN_LOCK = 'mbu-mb-gate';
 /** The longest one throttle holds everyone. */
 export const MBN_MAX_HOLD = 60000;
+/** The longest one lead lasts without being renewed: a page that stops asking frees the queue. */
+export const MBN_MAX_LEAD = 10000;
 
 /** True for a request the gate paces: MusicBrainz's /ws/2, relative or absolute. */
 export function mbnGated(url) {
@@ -55,7 +59,7 @@ export async function mbnState(fn) {
         else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
         const out = fn(s);
         Object.assign(g, s);
-        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
         return out;
     };
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -75,6 +79,7 @@ export async function mbnState(fn) {
 /**
  * Wait for this request's start slot.
  *   o.background  queue behind the budget (default); false = interactive, start as soon as no hold
+ *   o.lead        the lead's token (mbnLead): this request is the leader's, and doesn't wait for it
  *   o.cancelled   () => true stops the wait (a superseded search, a Stop): resolves { ok: false }
  *   o.log         (level, message) for waits worth mentioning (over a second)
  *   o.label       what the request is, for the log
@@ -83,6 +88,16 @@ export async function mbnState(fn) {
 export async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
+    // someone else's lead: a background request books its slot only once it ends or lapses
+    for (let told = false; background;) {
+        let s = null;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+        const left = s && s.lead && s.lead !== o.lead ? Math.min((s.leadUntil || 0) - Date.now(), MBN_MAX_LEAD) : 0;
+        if (left <= 0) break;
+        if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+        if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
+        await new Promise(r => setTimeout(r, Math.min(left, 250)));
+    }
     const booked = await mbnState(s => {
         const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
         let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
@@ -101,6 +116,17 @@ export async function mbnSlot(o) {
         await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
     }
     return { ok: true, waited: Date.now() - t0 };
+}
+
+/**
+ * Take the lead (#847), or renew it, for `ms` (at most MBN_MAX_LEAD); `ms` 0 ends it, if it's
+ * still this token's. While it holds, background requests not passing o.lead = token wait.
+ */
+export async function mbnLead(token, ms) {
+    return mbnState(s => {
+        if (ms > 0) { s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD); }
+        else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; }
+    });
 }
 
 /**
@@ -260,6 +286,6 @@ export function mbnReverify(url, init, o) {
 
 /** What sync-gate.mjs inlines, in order. */
 export const MBN_INLINE = {
-    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD },
-    fns: [mbnGated, mbnState, mbnSlot, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
+    consts: { MBN_GAP, MBN_BURST, MBN_KEY, MBN_LOCK, MBN_MAX_HOLD, MBN_MAX_LEAD },
+    fns: [mbnGated, mbnState, mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnHot, mbnRawHeader, mbnWebsite, mbnIsCheck, mbnReverify],
 };

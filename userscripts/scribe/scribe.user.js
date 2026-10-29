@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Scribe
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.28.150000
+// @version      2026.10.29.154618
 // @description  Edit MusicBrainz in your real editor (VS Code, Vim, Notepad…) via the bundled `scribe` localhost helper. Two ways, chosen by trigger: Ctrl+Alt+E edits the FOCUSED text field; on a release Edit page, the corner button (or Ctrl+Alt+R) edits the WHOLE release as one Markdown document and applies your saves back. Cross-browser via GM_xmlhttpRequest.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48cGF0aCBkPSJNNDYgMjQgTDI2IDI0IEwyNiAxMDQgTDQ2IDEwNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04MiAyNCBMMTAyIDI0IEwxMDIgMTA0IEw4MiAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJmNmY1NCIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNNjQgNDAgTDUxIDY2IEw2NCA5NCBMNzcgNjYgWiIgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMmY2ZjU0IiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iNjQiIHkxPSI3NCIgeDI9IjY0IiB5Mj0iOTIiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==
@@ -28,6 +28,7 @@
   const MBN_KEY = "mbu:mb-gate";
   const MBN_LOCK = "mbu-mb-gate";
   const MBN_MAX_HOLD = 60000;
+  const MBN_MAX_LEAD = 10000;
   function mbnGated(url) {
       const s = String(url || '');
       return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
@@ -41,7 +42,7 @@
           else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
           const out = fn(s);
           Object.assign(g, s);
-          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+          try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
           return out;
       };
       // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -60,6 +61,16 @@
   async function mbnSlot(o) {
       o = o || {};
       const t0 = Date.now(), background = o.background !== false;
+      // someone else's lead: a background request books its slot only once it ends or lapses
+      for (let told = false; background;) {
+          let s = null;
+          try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+          const left = s && s.lead && s.lead !== o.lead ? Math.min((s.leadUntil || 0) - Date.now(), MBN_MAX_LEAD) : 0;
+          if (left <= 0) break;
+          if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+          if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
+          await new Promise(r => setTimeout(r, Math.min(left, 250)));
+      }
       const booked = await mbnState(s => {
           const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
           let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
@@ -78,6 +89,12 @@
           await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
       }
       return { ok: true, waited: Date.now() - t0 };
+  }
+  async function mbnLead(token, ms) {
+      return mbnState(s => {
+          if (ms > 0) { s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD); }
+          else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; }
+      });
   }
   async function mbnAnswer(status, header, o) {
       o = o || {};

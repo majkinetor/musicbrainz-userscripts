@@ -13,7 +13,7 @@ const GATE = Object.entries(MBN_INLINE.consts).map(([k, v]) => `const ${k} = ${J
   + `\nwindow.__starts = []; window.__answers = [];
      window.fetch = async (url) => { window.__starts.push(Date.now()); const st = window.__answers.shift() || 200;
        return new Response('{}', { status: st, headers: st === 503 ? { 'Retry-After': '2' } : {} }); };
-     Object.assign(window, { mbnSlot, mbnAnswer, mbnFetch, mbnState, mbnHot });`;
+     Object.assign(window, { mbnSlot, mbnLead, mbnAnswer, mbnFetch, mbnState, mbnHot });`;
 
 async function tab(context) {
   const p = await context.newPage();
@@ -96,6 +96,30 @@ test('an interactive request goes ahead of queued background work; a cancelled w
   });
   check(r.inter < 400 && r.inter < Math.max(...r.bg), `interactive started at ${r.inter} ms, ahead of the queued ones (${r.bg.join(', ')} ms)`);
   check(r.cancelled.ok === false && r.cancelMs < 800, `a cancelled wait returns at once (${r.cancelMs} ms, ok=${r.cancelled.ok})`);
+});
+
+// #847: a page being drawn (Event Horizon) holds other tabs' background requests until it ends or lapses
+test('a lead holds other background requests, not the leader nor interactive ones', { tag: ['@unit'] }, async ({ context }) => {
+  const a = await tab(context), b = await tab(context);
+  await a.evaluate(() => { localStorage.clear(); return mbnLead('page', 5000); });
+  const r = await b.evaluate(async () => {
+    const t0 = Date.now(), at = p => p.then(() => Date.now() - t0);
+    const other = at(mbnSlot({ label: 'other' })), mine = await at(mbnSlot({ lead: 'page' })), inter = await at(mbnSlot({ background: false }));
+    await new Promise(z => setTimeout(z, 600));
+    await mbnLead('someone', 0);   // not the holder's token: the lead stays
+    await new Promise(z => setTimeout(z, 300));
+    const still = JSON.parse(localStorage.getItem('mbu:mb-gate')).lead;
+    await mbnLead('page', 0);
+    return { other: await other, mine, inter, still };
+  });
+  check(r.mine < 300 && r.inter < 300, `the leader's request (${r.mine} ms) and an interactive one (${r.inter} ms) start at once`);
+  check(r.still === 'page', 'only the holder ends its lead');
+  check(r.other >= 850 && r.other < 2000, `another background request waits for the lead to end (${r.other} ms)`);
+  const lapse = await a.evaluate(async () => {
+    await mbnLead('gone', 600);
+    const t0 = Date.now(); await mbnSlot({}); return Date.now() - t0;
+  });
+  check(lapse >= 450 && lapse < 1500, `a lead never ended lapses on its own (${lapse} ms)`);
 });
 
 test('a lock held and never released stalls a request 3 s, not for good', { tag: ['@unit'] }, async ({ context }) => {

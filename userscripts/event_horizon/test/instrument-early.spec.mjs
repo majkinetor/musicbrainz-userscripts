@@ -6,6 +6,8 @@ test('an instrument page shows its lists while the instrument itself is still lo
   // the instrument's ws/2 answer is held back 5 s, as when the shared MusicBrainz gate holds it
   await page.route('**/ws/2/instrument/**', async r => { await new Promise(res => setTimeout(res, 5000)); await r.fallback(); });
   await page.goto('https://test.musicbrainz.org/instrument/fa174c32-b348-4939-89b2-bde85af4ee02'); // cuíca
+  // nothing kept from an earlier visit (#847), or the page would draw at once
+  await page.evaluate(() => new Promise(ok => { const q = indexedDB.deleteDatabase('eh-kept'); q.onsuccess = q.onerror = q.onblocked = () => ok(); }));
   await inject('event_horizon');
   check(await until(() => page.locator('#app h1').count(), n => n > 0, 4000) > 0, 'the page shows before the instrument arrives');
   check(/cu[ií]ca/i.test(await page.locator('#app h1').innerText()), 'named from MusicBrainz\'s subpage');

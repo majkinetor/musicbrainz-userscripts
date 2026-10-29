@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.120501
+// @version      2026.10.29.154618
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -54,6 +54,7 @@ const MBN_BURST = 3;
 const MBN_KEY = "mbu:mb-gate";
 const MBN_LOCK = "mbu-mb-gate";
 const MBN_MAX_HOLD = 60000;
+const MBN_MAX_LEAD = 10000;
 function mbnGated(url) {
     const s = String(url || '');
     return /^\/ws\/2\//.test(s) || /^https?:\/\/([a-z0-9-]+\.)*musicbrainz\.org\/ws\/2\//i.test(s);
@@ -67,7 +68,7 @@ async function mbnState(fn) {
         else if (!s || typeof s !== 'object') s = { tat: 0, cool: 0, hot: 0 };   // none yet (or cleared): a fresh schedule
         const out = fn(s);
         Object.assign(g, s);
-        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0 })); } catch (e) {}
+        try { localStorage.setItem(MBN_KEY, JSON.stringify({ tat: s.tat || 0, cool: s.cool || 0, hot: s.hot || 0, lead: s.lead || '', leadUntil: s.leadUntil || 0 })); } catch (e) {}
         return out;
     };
     // The lock is held only for rw()'s synchronous moment, so a wait of seconds means it is
@@ -86,6 +87,16 @@ async function mbnState(fn) {
 async function mbnSlot(o) {
     o = o || {};
     const t0 = Date.now(), background = o.background !== false;
+    // someone else's lead: a background request books its slot only once it ends or lapses
+    for (let told = false; background;) {
+        let s = null;
+        try { s = JSON.parse(localStorage.getItem(MBN_KEY) || 'null'); } catch (e) { s = globalThis.__mbnGate; }
+        const left = s && s.lead && s.lead !== o.lead ? Math.min((s.leadUntil || 0) - Date.now(), MBN_MAX_LEAD) : 0;
+        if (left <= 0) break;
+        if (o.cancelled && o.cancelled()) return { ok: false, waited: Date.now() - t0 };
+        if (!told && o.log) { told = true; o.log('info', 'MusicBrainz gate: ' + (o.label || 'request') + ' waits for a page being drawn'); }
+        await new Promise(r => setTimeout(r, Math.min(left, 250)));
+    }
     const booked = await mbnState(s => {
         const now = Date.now(), cool = s.cool || 0, tat = s.tat || 0;
         let at = background ? Math.max(now, tat - (MBN_BURST - 1) * MBN_GAP) : now;
@@ -104,6 +115,12 @@ async function mbnSlot(o) {
         await new Promise(r => setTimeout(r, Math.min(left, 250)));   // in slices, so a cancel lands promptly
     }
     return { ok: true, waited: Date.now() - t0 };
+}
+async function mbnLead(token, ms) {
+    return mbnState(s => {
+        if (ms > 0) { s.lead = token; s.leadUntil = Date.now() + Math.min(ms, MBN_MAX_LEAD); }
+        else if (s.lead === token) { s.lead = ''; s.leadUntil = 0; }
+    });
 }
 async function mbnAnswer(status, header, o) {
     o = o || {};
@@ -2726,15 +2743,81 @@ const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 /* ── data ──────────────────────────────────────────── */
 // every fetch leaves a debug line: what, how it answered, how long it took
 const fetchLog = (what, t0, r, e) => LOG.debug(`Fetch ${what}: ${e ? 'failed, ' + (e.message || e) : r ? r.status : 'cancelled'} in ${Math.round(performance.now() - t0)} ms`);
-async function ws(path) {
-    const t0 = performance.now();
+// the page being drawn in this tab leads the shared gate (#847): other scripts' and tabs' background requests wait
+// for it; a tab the reader isn't looking at doesn't lead, and a lead not renewed lapses on its own
+let ehLead = '';
+function leadOn() {
+    ehLead = document.visibilityState === 'visible' ? 'eh' + Math.random().toString(36).slice(2) : '';
+    if (ehLead) mbnLead(ehLead, 8000).catch(() => {});
+    return ehLead;
+}
+function leadOff(t) { if (!t) return; if (ehLead === t) ehLead = ''; mbnLead(t, 0).catch(() => {}); }
+// bg: a kept answer asked again, which doesn't lead
+async function wsText(path, bg) {
+    const t0 = performance.now(), lead = bg ? '' : ehLead;
+    if (lead) mbnLead(lead, 8000).catch(() => {});
     let r;
-    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e); throw e; }
+    try { r = await mbnFetch(MB + '/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', { headers: { Accept: 'application/json' } }, lead ? { lead } : undefined); } catch (e) { fetchLog('ws/2 ' + path, t0, null, e); throw e; }
     fetchLog('ws/2 ' + path, t0, r);
     if (!r) throw new Error('cancelled');
     if (r.status === 404) throw new Error('MusicBrainz has no such ' + path.split('/')[0].replace('-', ' ') + '.');
     if (!r.ok) throw new Error('MusicBrainz answered ' + r.status + '.');
-    return r.json();
+    return r.text();
+}
+const ws = path => wsText(path).then(JSON.parse);
+// a page loader's request: drawn from its kept answer when there is one (kept)
+const wsk = path => kept('ws:' + path, bg => wsText(path, bg)).then(JSON.parse);
+
+// Kept answers (#847): every answer the page loaders get (API, Wikipedia extract, MusicBrainz's tabs, covers) is kept, in
+// memory for the tab and in IndexedDB across tabs, so the next visit draws at once. Once a page is all in, each kept answer
+// it drew from is asked again in the background, and a changed one redraws the page (show). Not asked again: one checked
+// under a minute ago, since this page loaded and since the tab last came to the front (MusicBrainz may have changed meanwhile).
+// Whatever EH writes to MusicBrainz (a vote, a rating, a tag, an alias) makes everything kept before it a miss, in every tab
+const KP_TTL = 60000, KP_MAX = 800, KP_MEM = new Map(), KP_FLY = new Map();
+let kpSeen = Date.now(), kpUsed = null, kpDb = null, kpPuts = 0;
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kpSeen = Date.now(); });
+const kpDrop = () => { try { return +localStorage.getItem('eh.kept.drop') || 0; } catch (e) { return 0; } };
+function kpWrote() { KP_MEM.clear(); try { localStorage.setItem('eh.kept.drop', String(Date.now())); } catch (e) { /* storage blocked: this tab's memory is dropped all the same */ } }
+const kpStore = mode => (kpDb || (kpDb = new Promise((ok, no) => {
+    const q = indexedDB.open('eh-kept', 1);
+    q.onupgradeneeded = () => q.result.createObjectStore('a', { keyPath: 'k' }).createIndex('at', 'at');
+    q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error);
+}))).then(db => db.transaction('a', mode).objectStore('a'));
+const kpMem = e => { KP_MEM.delete(e.k); KP_MEM.set(e.k, e); if (KP_MEM.size > 200) KP_MEM.delete(KP_MEM.keys().next().value); };
+async function kpGet(k) {
+    let e = KP_MEM.get(k);
+    if (!e) try { e = await kpStore('readonly').then(s => new Promise(ok => { const q = s.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); if (e) kpMem(e); } catch (x) { e = null; }
+    return e && e.at > kpDrop() ? e : null;
+}
+function kpPut(k, t) {
+    const e = { k, at: Date.now(), t };
+    kpMem(e);
+    // past the cap, the longest unchecked go
+    kpStore('readwrite').then(s => {
+        s.put(e);
+        if (++kpPuts % 50 !== 1) return;
+        const c = s.count();
+        c.onsuccess = () => { let left = c.result - KP_MAX; if (left > 0) s.index('at').openCursor().onsuccess = ev => { const cur = ev.target.result; if (cur && left-- > 0) { cur.delete(); cur.continue(); } }; };
+    }).catch(e => LOG.debug('Kept answers: not stored, ' + (e && e.message || e)));
+}
+// MusicBrainz orders an object's keys anew on every answer: kept with them sorted, the same data reads the same
+const kpCanon = t => JSON.stringify(JSON.parse(t), (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.fromEntries(Object.keys(v).sort().map(x => [x, v[x]])) : v);
+// `get` fetches the answer as JSON text; one already on its way is shared
+async function kept(k, get) {
+    const e = await kpGet(k), g = bg => get(bg).then(kpCanon);
+    if (e) { if (kpUsed && e.at < Math.max(kpSeen, Date.now() - KP_TTL)) kpUsed.set(k, { get: () => g(true), t: e.t }); return e.t; }
+    if (!KP_FLY.has(k)) KP_FLY.set(k, g().then(t => { kpPut(k, t); return t; }).finally(() => KP_FLY.delete(k)));
+    return KP_FLY.get(k);
+}
+// the kept answers a page drew from, asked again one at a time while it still shows: true when one changed
+async function kpCheck(used, live) {
+    let changed = 0;
+    for (const [k, u] of used) {
+        if (!live()) return false;
+        try { const t = await u.get(); kpPut(k, t); if (t !== u.t) { changed++; LOG.debug('Kept answer changed: ' + k); } } catch (e) { LOG.debug('Kept answer not checked: ' + k + ', ' + (e && e.message || e)); }
+    }
+    LOG.debug('Kept answers checked: ' + used.size + ', ' + changed + ' changed');
+    return changed > 0 && live();
 }
 // a release subpage's header release (title, credits, formats), kept for the next visit: `cb` gets the kept copy at once,
 // then MusicBrainz's when it differs; a copy under a minute old is not asked again. The 50 last-seen releases are kept
@@ -2756,10 +2839,11 @@ function relHd(id, cb) {
 }
 // ISO codes by their English names (eng → English, Latn → Latin); an unknown code stays as it is
 const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en'], { type, fallback: 'code' }).of(code); } catch (e) { return code; } };
-async function caa(id) {
+// a release's covers, kept; none (404) is kept too, a failure isn't
+const caa = id => kept('caa:' + id, async () => {
     const t0 = performance.now();
-    try { const r = await fetch('https://coverartarchive.org/release/' + id); fetchLog('CAA release ' + id, t0, r); return r.ok ? (await r.json()).images || [] : []; } catch (e) { fetchLog('CAA release ' + id, t0, null, e); return []; }
-}
+    try { const r = await fetch('https://coverartarchive.org/release/' + id); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
+}).then(t => JSON.parse(t).images || [], () => []);
 // platforms by host; the rest fall back to their name as a monogram
 const HOSTS = [
     ['spotify', 'Spotify', /spotify\.com/], ['apple', 'Apple Music', /music\.apple\.com|itunes\.apple/], ['deezer', 'Deezer', /deezer\.com/],
@@ -2885,12 +2969,12 @@ async function load(id, step = () => {}) {
     const inc = 'artist-credits+labels+recordings+isrcs+url-rels+recording-level-rels+artist-rels+work-rels+work-level-rels+media+genres+release-groups+annotation';
     // the editions and the Cover Art Archive's image list come after: the page shows without them and fills them in
     const covers = caa(id).then(x => { step('covers'); return x; });
-    const r = await ws(`release/${id}?inc=${inc}`);
+    const r = await wsk(`release/${id}?inc=${inc}`);
     step('release');
     // the page shows off the release's own release group; the group's rating and relationships fill in after
     const rgId = r['release-group'].id;
-    const rgP = ws(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`).catch(() => null);
-    const eds = ws(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, noSec(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`));
+    const rgP = wsk(`release-group/${rgId}?inc=ratings+release-group-rels+series-rels+url-rels`).catch(() => null);
+    const eds = wsk(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('editions'); return x; }, noSec(`release?release-group=${rgId}&inc=media+labels+artist-credits+url-rels&limit=100`));
     return { rel: release(r, r['release-group'], []), rgP, editions: [], edCount: 0, eds, covers };
 }
 
@@ -3075,7 +3159,7 @@ async function rateSet(t, ref, i) {
     try {
         let id = ref;
         if (!/^\d+$/.test(ref)) { const r = await mbnFetch(`${MB}/ws/js/entity/${ref}`, { headers: { Accept: 'application/json' } }); id = r && r.ok && (await r.json()).id; if (!id) throw new Error('no row id'); }
-        const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${t}&entity_id=${id}&rating=${v * 20}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
+        kpWrote(); const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${t}&entity_id=${id}&rating=${v * 20}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
         if (!r || !r.ok || /\/login/.test(r.url)) throw new Error('HTTP ' + (r && r.status) + ' ' + (r && r.url));
         m[key] = RATED[key] = v; localStorage.setItem(MYR_KEY, JSON.stringify(m));
         toast(v ? `Rated ${v} of 5` : 'Your rating is cleared');
@@ -3437,12 +3521,12 @@ function group(g) {
 // the Wikipedia extract MusicBrainz's own page fetches after load: { content (HTML), url }, or none
 // a section's fetch failing leaves its section out; the log says which and why
 const noSec = what => e => { LOG.warn(what + ' failed: ' + (e && e.message || e)); return null; };
-const wikiOf = (type, id, t0 = performance.now()) => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => { fetchLog(`${type}/${id}/wikipedia-extract`, t0, r); return r.json(); }).then(x => { if (!x.wikipediaExtract) LOG.debug(type + ' ' + id + ': no Wikipedia extract'); return x.wikipediaExtract || null; }, noSec('wikipedia-extract ' + type + '/' + id));
+const wikiOf = (type, id, t0 = performance.now()) => kept(`wp:${type}/${id}`, () => mbnFetch(`${MB}/${type}/${id}/wikipedia-extract`, { headers: { Accept: 'application/json' } }).then(r => { fetchLog(`${type}/${id}/wikipedia-extract`, t0, r); if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'cancelled'); return r.text(); })).then(JSON.parse).then(x => { if (!x.wikipediaExtract) LOG.debug(type + ' ' + id + ': no Wikipedia extract'); return x.wikipediaExtract || null; }, noSec('wikipedia-extract ' + type + '/' + id));
 async function loadRg(id, step = () => {}) {
     // the releases and the Wikipedia extract don't need the group: asked for at once
-    const eds = ws(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
+    const eds = wsk(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?release-group=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
     const wiki = wikiOf('release-group', id);
-    const gP = ws(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`).then(g => { step('group'); return group(g); });
+    const gP = wsk(`release-group/${id}?inc=artist-credits+ratings+genres+tags+aliases+annotation+release-group-rels+series-rels+url-rels`).then(g => { step('group'); return group(g); });
     return { kind: 'rg', g: null, gP, editions: [], edCount: 0, eds, wiki, covers: Promise.resolve([]) };
 }
 // the folksonomy tags (not the genres) sit behind a chip that opens them
@@ -3486,7 +3570,7 @@ async function tgInOpen() {
 async function tgInSend(names, v) {
     const d = tgIn; if (!d || !d.t || !names.length) return;
     try {
-        const r = await mbnFetch(`${MB}${d.path}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
+        kpWrote(); const r = await mbnFetch(`${MB}${d.path}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         tagsUpdate(d, (await r.json()).updates); d.dirty = true;
     } catch (e) { LOG.err('Tagging failed: ' + e.message); toast('Tagging failed: ' + e.message); }
@@ -5224,7 +5308,7 @@ function openAliases() {
     panel.querySelector('.eh-al-tab').href = MB + '/' + ent + '/' + gid + '/aliases';
     const guess = n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent });
     mbuAliasEditor.open({
-        ent, gid, origin: MB, fetch: (u, i) => mbnFetch(u, i), guess, log: LOG, toast: msg => toast(msg),
+        ent, gid, origin: MB, fetch: (u, i) => { if (i && /post/i.test(i.method || '')) kpWrote(); return mbnFetch(u, i); }, guess, log: LOG, toast: msg => toast(msg),
         onSubmit: (ok, bad) => { entered += ok; if (ok && !bad) close(true); },
         onCount: n => { panel.querySelector('.eh-al-n').textContent = '(' + n + ')'; },
         mount: box => { body.textContent = ''; body.append(box); box.querySelector('.tc-al-n')?.focus(); },
@@ -5264,22 +5348,22 @@ function artist(a) {
 async function loadArtist(id, step = () => {}) {
     // an artist credited only on tracks (a Various Artists compilation) has no release groups of its own:
     // then, as MB's own page does, show the groups of the releases it appears on
-    const vaDisc = () => ws(`release?track_artist=${id}&inc=release-groups+artist-credits&limit=100`).then(x => {
+    const vaDisc = () => wsk(`release?track_artist=${id}&inc=release-groups+artist-credits&limit=100`).then(x => {
         const m = new Map();
         for (const r of x.releases || []) if (r['release-group'] && !m.has(r['release-group'].id)) m.set(r['release-group'].id, { ...r['release-group'], 'artist-credit': r['release-group']['artist-credit'] || r['artist-credit'] || [] });
         LOG.debug(`artist ${id}: no own release groups, ${m.size} for various artists`);
         return { 'release-groups': [...m.values()], 'release-group-count': m.size, va: true };
     }, noSec(`release?track_artist=${id}`));
     // ratings and links ride along for the table's columns
-    const disc = ws(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); if (x && !x.va) x.q = `release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`; return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
+    const disc = wsk(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`).then(x => x && !(x['release-groups'] || []).length ? vaDisc() : x).then(x => { step('discography'); if (x && !x.va) x.q = `release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`; return x; }, noSec(`release-group?artist=${id}&inc=artist-credits+ratings+url-rels&limit=100`));
     // how many releases each group has, as MB's table shows: a browse can't tell, the search can (its "count");
     // asked beside the browse and filled in when it comes, so it holds nothing up (majkinetor)
     // the search answers 100 a page, so an artist with more groups takes a few pages (at most 5), or the rest show no count
-    const rcPage = o => ws(`release-group?query=arid:${id}&limit=100&offset=${o}`);
+    const rcPage = o => wsk(`release-group?query=arid:${id}&limit=100&offset=${o}`);
     const rcount = rcPage(0).then(x => Promise.all([x, ...Array.from({ length: Math.max(0, Math.min(4, Math.ceil(((x.count || 0) - 100) / 100))) }, (_, i) => rcPage(100 * (i + 1)).catch(() => null))]))
         .then(xs => new Map(xs.flatMap(x => (x && x['release-groups']) || []).map(g => [g.id, g.count])), noSec(`release-group?query=arid:${id}`));
     const wiki = wikiOf('artist', id);
-    const gP = ws(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
+    const gP = wsk(`artist/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(a => { step('artist'); return artist(a); });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('image'); return x; });
     return { kind: 'artist', g: null, gP, disc, rcount, img, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
@@ -5294,9 +5378,9 @@ function label(l) {
     };
 }
 async function loadLabel(id, step = () => {}) {
-    const eds = ws(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
+    const eds = wsk(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?label=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
     const wiki = wikiOf('label', id);
-    const gP = ws(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); return label(l); });
+    const gP = wsk(`label/${id}?inc=aliases+genres+tags+ratings+url-rels+annotation`).then(l => { step('label'); return label(l); });
     const img = gP.then(g => artistImage(id, g.rels)).then(x => { step('logo'); return x; });
     return { kind: 'label', g: null, gP, img, wiki, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
@@ -5369,10 +5453,10 @@ function recording(x) {
     };
 }
 async function loadRecording(id, step = () => {}) {
-    const eds = ws(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
-    const gP = ws(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(x => { step('recording'); return recording(x); });
+    const eds = wsk(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`).then(x => { step('releases'); return x; }, noSec(`release?recording=${id}&inc=media+labels+artist-credits+url-rels&limit=100`));
+    const gP = wsk(`recording/${id}?inc=artist-credits+isrcs+aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(x => { step('recording'); return recording(x); });
     // the works' own writers: one request per work, the first five
-    const wk = gP.then(g => Promise.all(g.works.slice(0, 5).map(w => ws(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {})))).then(() => { step('works'); return true; });
+    const wk = gP.then(g => Promise.all(g.works.slice(0, 5).map(w => wsk(`work/${w.id}?inc=artist-rels`).then(y => { w.cr = creditsOf(y.relations || []); }, () => {})))).then(() => { step('works'); return true; });
     return { kind: 'recording', g: null, gP, wk, editions: [], edCount: 0, eds, covers: Promise.resolve([]) };
 }
 function work(w) {
@@ -5384,9 +5468,9 @@ function work(w) {
     });
 }
 async function loadWork(id, step = () => {}) {
-    const recs = ws(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`).then(x => { step('recordings'); return x; }, noSec(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`));
+    const recs = wsk(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`).then(x => { step('recordings'); return x; }, noSec(`recording?work=${id}&inc=artist-credits+isrcs&limit=100`));
     const wiki = wikiOf('work', id);
-    const gP = ws(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
+    const gP = wsk(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
     return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 const pgActs = (type, id) => (type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS).map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
@@ -5498,10 +5582,10 @@ async function areaImages(id, rels, props = AREA_PROPS) {
     return all;
 }
 async function loadArea(id, step = () => {}) {
-    const one = k => ws(`${k}?area=${id}&limit=100`).then(x => x, noSec(`${k}?area=${id}&limit=100`));
+    const one = k => wsk(`${k}?area=${id}&limit=100`).then(x => x, noSec(`${k}?area=${id}&limit=100`));
     const lists = Promise.all([one('artist'), one('label'), one('place')]).then(x => { step('artists, labels, places'); return x; });
     const wiki = wikiOf('area', id);
-    const gP = ws(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels+work-rels+instrument-rels+series-rels+event-rels`).then(a => { step('area'); return area(a); });
+    const gP = wsk(`area/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+url-rels+work-rels+instrument-rels+series-rels+event-rels`).then(a => { step('area'); return area(a); });
     const img = gP.then(g => areaImages(id, g.rels)).catch(() => []);
     return { kind: 'area', g: null, gP, lists, wiki, img, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
@@ -5588,6 +5672,8 @@ async function mbTab(type, id, sub, page = 1) {
     // a series and a collection keep their ratings, as MB's release-group lists show them (majkinetor): each as its own stars
     return { ...tblParse(t, type === 'series' || type === 'collection'), more, name, src, page, col, total: col && col.total };
 }
+// a page loader's tab: drawn from its kept answer when there is one (kept)
+const mbTabK = (...a) => kept('tab:' + a.join('/'), () => mbTab(...a).then(JSON.stringify)).then(JSON.parse);
 // a MusicBrainz table as headings and rows, without the merge checkboxes, the cover-art icons and (unless rated) the ratings
 function tblParse(t, rated) {
     const ths = [...t.querySelectorAll('thead th')], keep = ths.map(th => !th.querySelector('input') && (rated || !th.classList.contains('rating')) && !th.classList.contains('checkbox-cell'));
@@ -5609,10 +5695,10 @@ function tblParse(t, rated) {
 // the page shows as soon as either the instrument or its lists are in: lists first give a page
 // named from MusicBrainz's subpage, and its facts fill in when the instrument arrives (d.gP)
 async function loadInstrument(id, step = () => {}) {
-    const one = k => mbTab('instrument', id, k).then(x => x, noSec('tab ' + ['instrument', id, k].join('/')));
+    const one = k => mbTabK('instrument', id, k).then(x => x, noSec('tab ' + ['instrument', id, k].join('/')));
     const lists = Promise.all([one('artists'), one('releases'), one('recordings')]).then(x => { step('artists, releases, recordings'); return x; });
     const wiki = wikiOf('instrument', id);
-    const aP = ws(`instrument/${id}?inc=aliases+genres+tags+annotation+area-rels+genre-rels+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
+    const aP = wsk(`instrument/${id}?inc=aliases+genres+tags+annotation+area-rels+genre-rels+instrument-rels+url-rels`).then(a => { step('instrument'); return a; });
     const first = await Promise.race([aP, lists.then(x => ({ lists: x }))]);
     const early = first.lists ? (first.lists.find(Boolean) || {}).name : null;
     const mk = a => ({ kind: 'instrument', g: instrument(a), lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) });
@@ -5718,11 +5804,11 @@ function place(a) {
 }
 const placeImages = g => commonsImg(g.img, 600) ? Promise.resolve([{ src: commonsImg(g.img, 600), from: 'Wikimedia Commons', key: 'wikipedia', url: g.img }]) : areaImages(g.id, g.rels, PLACE_PROPS).catch(() => []);
 async function loadPlace(id, step = () => {}) {
-    const events = ws(`event?place=${id}&limit=100`).then(x => x, noSec(`event?place=${id}&limit=100`));
-    const perf = mbTab('place', id, 'performances').then(x => x, noSec('tab ' + ['place', id, 'performances'].join('/')));
+    const events = wsk(`event?place=${id}&limit=100`).then(x => x, noSec(`event?place=${id}&limit=100`));
+    const perf = mbTabK('place', id, 'performances').then(x => x, noSec('tab ' + ['place', id, 'performances'].join('/')));
     const lists = Promise.all([events, perf]).then(x => { step('events, recordings'); return x; });
     const wiki = wikiOf('place', id);
-    const gP = ws(`place/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+artist-rels+label-rels+place-rels+series-rels+work-rels+instrument-rels+url-rels`).then(a => { step('place'); return place(a); });
+    const gP = wsk(`place/${id}?inc=aliases+genres+tags+ratings+annotation+area-rels+artist-rels+label-rels+place-rels+series-rels+work-rels+instrument-rels+url-rels`).then(a => { step('place'); return place(a); });
     const img = gP.then(placeImages).catch(() => []);
     return { kind: 'place', g: null, gP, lists, wiki, img, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
@@ -5772,7 +5858,7 @@ function event(a) {
 const EV_INC = 'aliases+genres+tags+ratings+annotation+area-rels+artist-rels+event-rels+label-rels+place-rels+recording-rels+release-rels+series-rels+work-rels+url-rels';
 async function loadEvent(id, step = () => {}) {
     const wiki = wikiOf('event', id);
-    const gP = ws(`event/${id}?inc=${EV_INC}`).then(a => { step('event'); return event(a); });
+    const gP = wsk(`event/${id}?inc=${EV_INC}`).then(a => { step('event'); return event(a); });
     return { kind: 'event', g: null, gP, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function evHero(d) {
@@ -5826,9 +5912,9 @@ function series(a) {
     };
 }
 async function loadSeries(id, step = () => {}) {
-    const lists = mbTab('series', id, '').then(x => [x], noSec('tab series/' + id)).then(x => { step('parts'); return x; });
+    const lists = mbTabK('series', id, '').then(x => [x], noSec('tab series/' + id)).then(x => { step('parts'); return x; });
     const wiki = wikiOf('series', id);
-    const gP = ws(`series/${id}?inc=aliases+genres+tags+annotation+area-rels+artist-rels+label-rels+place-rels+series-rels+url-rels`).then(a => { step('series'); return series(a); });
+    const gP = wsk(`series/${id}?inc=aliases+genres+tags+annotation+area-rels+artist-rels+label-rels+place-rels+series-rels+url-rels`).then(a => { step('series'); return series(a); });
     return { kind: 'series', g: null, gP, lists, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
 function serHero(d) {
@@ -5874,7 +5960,7 @@ function colMeta(d, id) {
         side, owner: tx(own), by: sh ? sh.innerHTML.trim() : '', desc: ds ? ds.innerHTML.trim() : '', ent: m ? m[1] : '' };
 }
 async function loadCollection(id, step = () => {}) {
-    const lists = mbTab('collection', id, '').then(x => { step('items'); return [x]; }, noSec('tab collection/' + id));
+    const lists = mbTabK('collection', id, '').then(x => { step('items'); return [x]; }, noSec('tab collection/' + id));
     const gP = lists.then(x => { if (!x || !x[0].col) throw new Error('MusicBrainz shows no such collection'); step('collection'); return x[0].col; });
     return { kind: 'collection', g: null, gP, lists, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
@@ -6097,7 +6183,7 @@ async function tagsVote(d, i, v) {
     const was = { c: t.c, v: t.v };
     t.c += v - t.v; t.v = v; tagsDraw();
     try {
-        const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(t.n)}`, { headers: { Accept: 'application/json' } });
+        kpWrote(); const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/${TG_VOTE[v]}?tags=${encodeURIComponent(t.n)}`, { headers: { Accept: 'application/json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         tagsUpdate(d, (await r.json()).updates);
     } catch (e) { Object.assign(t, was); LOG.err('Voting on the tag ' + t.n + ' failed: ' + e.message); toast('The vote failed: ' + e.message); }
@@ -6114,7 +6200,7 @@ function tagsUpdate(d, ups) {
 async function tagsAdd(d, s) {
     const names = s.trim().toLowerCase().split(/\s*,\s*/).filter(Boolean); if (!names.length) return;
     try {
-        const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/upvote?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
+        kpWrote(); const r = await mbnFetch(`${MB}/${d.ent.replace(':', '/')}/tags/upvote?tags=${encodeURIComponent(names.join(','))}`, { headers: { Accept: 'application/json' } });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         tagsUpdate(d, (await r.json()).updates); toast(names.length === 1 ? 'Tagged' : `Added ${names.length} tags`);
     } catch (e) { LOG.err('Adding tags failed: ' + e.message); toast('Adding the tags failed: ' + e.message); }
@@ -6303,7 +6389,7 @@ const rtStars = (r, x) => x && x.ei ? `<span class="stars sm rt mine" role="grou
     : `<span class="stars sm" data-tip="Rated ${r} of 5" aria-label="Rated ${r} of 5">${'★'.repeat(r)}<span class="off">${'★'.repeat(5 - r)}</span></span>`;
 async function ratesRate(d, gi, ii, k) {
     const x = d.t.groups[gi].items[ii], was = x.r; x.r = k; render();
-    try { const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${x.et}&entity_id=${x.ei}&rating=${k * 20}`); if (!r.ok) throw new Error('HTTP ' + r.status); toast(k ? `Rated ${k} of 5` : 'Rating removed'); }
+    try { kpWrote(); const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${x.et}&entity_id=${x.ei}&rating=${k * 20}`); if (!r.ok) throw new Error('HTTP ' + r.status); toast(k ? `Rated ${k} of 5` : 'Rating removed'); }
     catch (e) { x.r = was; LOG.err('Rating ' + x.n + ' failed: ' + e.message); toast('The rating failed: ' + e.message); if (data === d) render(); }
 }
 function ratesHtml(d) {
@@ -7105,7 +7191,7 @@ function onClick(ev) {
     if (!ehOn) return;
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
-    if (navId) { ev.preventDefault(); history.pushState(null, '', nav.href); show(navId); return; }
+    if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
     const b = ev.target.closest('button,[data-pop],[data-fx]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
@@ -7791,7 +7877,7 @@ function build() {
         const fm = ev.target; if (!ehOn || ev.defaultPrevented || !fm.action || new URL(fm.action).pathname !== '/search') return;
         const u = new URL(fm.action); u.search = new URLSearchParams(new FormData(fm)).toString();
         const k = navTo(u.href); if (!k) return;
-        ev.preventDefault(); fm.classList.remove('open'); history.pushState(null, '', u.href); show(k);
+        ev.preventDefault(); fm.classList.remove('open'); ehPush(u.href); show(k);
     });
     // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
     document.addEventListener('change', ev => {
@@ -7900,7 +7986,8 @@ function build() {
     addEventListener('resize', () => { if (ehOn) fitQuiet(); });
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
-    addEventListener('popstate', () => { const k = navTo(location.href); if (!ehOn || !k) location.reload(); else show(k); });
+    try { history.scrollRestoration = 'manual'; } catch (e) {}   // show() puts the page back where it was left, once it's in
+    addEventListener('popstate', () => { const k = navTo(location.href); if (!ehOn || !k) location.reload(); else show(k, { y: history.state && history.state.ehY }); });
 }
 // what you switch to stays: the next page opens the same way (majkinetor)
 const switchOn = on => { S.on = on; save(); setOn(on); };
@@ -8153,11 +8240,13 @@ function skeleton() {
 // each kind's list sections, filled in by its loader's lists
 const LIST_IDS = { area: ['aa', 'al', 'ap'], instrument: ['ia', 'ir', 'ic'], place: ['pe', 'pr'], series: ['sp'], collection: ['cp'] };
 const LOADERS = { release: load, 'release-group': loadRg, artist: loadArtist, label: loadLabel, recording: loadRecording, work: loadWork, area: loadArea, instrument: loadInstrument, place: loadPlace, series: loadSeries, event: loadEvent, collection: loadCollection };
+// to another page inside EH: the one left keeps its scroll on its history entry, for Back (show's o.y)
+function ehPush(href) { try { history.replaceState(Object.assign({}, history.state, { ehY: scrollY }), ''); } catch (e) {} history.pushState(null, '', href); }
 // this tab's own page is asked for at once, while MusicBrainz's page still loads: show() picks it up
 let early = null;
 function prefetch(key) {
     if (!LOADERS[key.split('/')[0]]) return;
-    const done = new Set(), e = { key, done, on: null };
+    const done = new Set(), e = { key, done, on: null, used: kpUsed = new Map(), lead: leadOn() };
     e.p = LOADERS[key.split('/')[0]](key.split('/')[1], k => { done.add(k); if (e.on) e.on(k); });
     e.p.catch(() => {});
     early = e;
@@ -8166,7 +8255,9 @@ function prefetch(key) {
 // MusicBrainz's page, kept hidden in the document, stays the one the tab loaded
 var ehRel = null;   // var, and a declaration below: setOn can run before this line
 function ehRelMark() { if (ehOn && ehRel) document.documentElement.setAttribute('data-mbu-release', ehRel); else document.documentElement.removeAttribute('data-mbu-release'); }
-async function show(key) {
+// o.y: where to scroll once the page is all in (Back, Forward, a redraw); o.quiet: a redraw of the page showing, with
+// what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
+async function show(key, o = {}) {
     const app = $('#app'), n = ++showing;
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     ehRel = kind === 'release' && id || null; ehRelMark();
@@ -8201,8 +8292,8 @@ async function show(key) {
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
     document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
-    app.innerHTML = skeleton().replace('<b>release</b> · <b>editions</b> · <b>covers</b>', parts.map(x => `<b>${x}</b>`).join(' · '));
-    scrollTo(0, 0);
+    if (!o.quiet) app.innerHTML = skeleton().replace('<b>release</b> · <b>editions</b> · <b>covers</b>', parts.map(x => `<b>${x}</b>`).join(' · '));
+    if (!o.quiet) scrollTo(0, 0);
     const st = app.querySelector('.sk-st span:last-child');
     // each part is bold while it loads and ticked when done
     const done = new Set();
@@ -8213,6 +8304,7 @@ async function show(key) {
         const pre = early && early.key === key ? early : null;
     early = null;
     if (pre) { pre.done.forEach(step); pre.on = step; }
+    const used = pre ? pre.used : (kpUsed = new Map()), lead = pre ? pre.lead : o.quiet ? '' : leadOn();
     const d = await (pre ? pre.p : LOADERS[kind](id, step));
         d.id = id;
         if (!d.g && !d.rel && d.gP) {
@@ -8226,6 +8318,11 @@ async function show(key) {
         said('releases', d.eds, x => cnt(x, 'release')); said('discography', d.disc, x => cnt(x, 'release-group')); said('recordings', d.recs, x => cnt(x, 'recording'));
         said('wikipedia', d.wiki, () => 'loaded'); said('lists', d.lists, x => x.map(y => y == null ? 'none' : Object.keys(y).filter(k => Array.isArray(y[k])).map(k => k + ' ' + y[k].length).join(' ')).join(' · '));
         said('images', d.img, x => (x || []).length); said('covers', d.covers, x => (x || []).length);
+        // every part the page waits for; once all are in, the kept answers it drew from are asked again
+        const all = Promise.allSettled([d.gP, d.eds, d.wiki, d.disc, d.recs, d.lists, d.covers, d.img, d.rgP, d.rcount, d.wk].filter(Boolean));
+        // a redraw comes whole, so the page doesn't shrink and grow under the reader
+        all.then(() => leadOff(lead));
+        if (o.quiet) await all;
         const wait = d.wait = new Set(['ed']), let_ = (k, p) => p && p.then(() => {}, () => {}).then(() => { wait.delete(k); if (n === showing && data === d) render(); });
         if (d.wiki) wait.add('wp');
         if (d.disc) wait.add('dg');
@@ -8245,10 +8342,22 @@ async function show(key) {
         if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; if (x.some(i => i.front)) d.rel.front = true; render(); } });
+        all.then(async () => {
+            if (n !== showing) return;
+            // Back and Forward come back where the page was left, unless the reader has scrolled meanwhile; a redraw stays put
+            if (o.quiet) scrollTo(0, o.y); else if (o.y > 0 && scrollY < 2) scrollTo(0, o.y);
+            if (o.quiet || !used.size || !(await kpCheck(used, () => n === showing && data === d))) return;
+            // a box being typed in keeps its page: the change shows on the next visit
+            const a = document.activeElement;
+            if (a && app.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) { LOG.debug('Changed answers not drawn: a box is being typed in'); return; }
+            LOG.info('Redrawing ' + kind.replace('-', ' ') + ' ' + id + ': MusicBrainz has changed it since it was kept');
+            show(key, { quiet: true, y: scrollY });
+        });
     }
     catch (e) {
         LOG.err('Loading ' + id + ' failed: ' + e.message);
-        if (n !== showing) return;
+        if (n === showing) leadOff(ehLead);   // the page failed: it no longer holds anyone back
+        if (n !== showing || o.quiet) return;
         const box = app.querySelector('.sk-st');
         box.className = 'sk-st err';
         box.innerHTML = `<span>${esc(e.message)}</span><button type="button" class="sk-b" data-retry>Retry</button>${key === PAGE_ID ? '<button type="button" class="sk-b" data-mbpage>Show MusicBrainz\'s page</button>' : ''}`;

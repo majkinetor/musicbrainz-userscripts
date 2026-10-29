@@ -10,6 +10,8 @@ for (const [kind, id, sec] of [
   test(`a ${kind} page shows a section while the ${kind} is still loading, then fills in`, { tag: '@sandbox' }, async ({ page, inject }) => {
     await page.route(new RegExp(`/ws/2/${kind}/${id}`), async r => { await new Promise(res => setTimeout(res, 6000)); await r.fallback(); });
     await page.goto(`https://test.musicbrainz.org/${kind}/${id}`);
+    // nothing kept from an earlier visit (#847), or the page would draw at once
+    await page.evaluate(() => new Promise(ok => { const q = indexedDB.deleteDatabase('eh-kept'); q.onsuccess = q.onerror = q.onblocked = () => ok(); }));
     await inject('event_horizon');
     check(await until(() => page.locator(`#app #s-${sec}`).count(), n => n > 0, 5000) > 0, 'a section shows before the entity arrives');
     check(await page.locator('#app .sk-page .sk-st').count() > 0, 'the hero shows its loader meanwhile');
