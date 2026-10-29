@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.235500
+// @version      2026.10.29.234600
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3288,7 +3288,7 @@ function rlQuiet(r, scope = '') {
 /* ── editions ──────────────────────────────────────── */
 function edTile(e, curId, titled = false) {
     const k = fmtKind(e.formats[0]);
-    const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
+    const st = e.status && e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
@@ -3370,16 +3370,19 @@ function edHtml(r, eds, count) {
     const all = paged ? [...eds] : [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
-    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || e.status === 'Official') && fltPass('ed', e));
+    const shown = all.filter(e => (!S.ed.kinds.size || S.ed.kinds.has(fmtKind(e.formats[0]))) && (!S.ed.official || r.native || e.status === 'Official') && fltPass('ed', e));
     const covers = all.filter(e => e.thumb).length, unofficial = all.filter(e => e.status !== 'Official').length;
     const views = '<span class="ed-div"></span>' + viewBs(['grid', 'row', 'format', 'table'], view, 'edview', 'Editions view');
     // folded: a format opens the section filtered to it
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
+    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
+    const tools = fltBtn('ed', all) + views;
+    filters = filters.replace(fltBtn('ed', all), '').replace(views.replace('<span class="ed-div"></span>', ''), '');
+    if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
     let body;
-    if (view === 'table') body = edTable(shown, r.id, paged, paged);
+    if (view === 'table') body = edTable(shown, r.id, paged || r.native, paged);
     else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
@@ -3388,7 +3391,7 @@ function edHtml(r, eds, count) {
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
     const more = paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
-    return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, '', filters + body + more, folded);
+    return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, tools, filters + body + more, folded);
 }
 
 /* ── tracklist ─────────────────────────────────────── */
@@ -7645,7 +7648,7 @@ function releaseRows(table) {
 function releasesDress(c) {
     // Scope the shared stylesheet with the browser's parser, including media rules.
     const sheet = new CSSStyleSheet(); sheet.replaceSync(CSS);
-    const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views ' + r.selectorText.split(',').join(', :root[data-eh-releases] .eh-release-views ') + '{' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
+    const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views :is(' + r.selectorText + '){' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
     document.getElementById('eh-rel-css').textContent += scope(sheet.cssRules);
     const table = [...c.querySelectorAll('table.tbl')].find(t => t.querySelector('a[href*="/release/"]'));
     if (!table) return;
@@ -7656,7 +7659,7 @@ function releasesDress(c) {
     const host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
     data = {kind:'native-releases', editions};
     releasePageDraw = () => {
-        host.innerHTML = edHtml({page:location.pathname}, editions, editions.length);
+        host.innerHTML = edHtml({page:location.pathname, native:true}, editions, editions.length);
         host.querySelectorAll('img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (tile) { im.outerHTML = '<span class="nc">'+LAYERS(36)+'</span>'; tile.querySelector('.fb')?.remove(); } }; });
     };
     host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
