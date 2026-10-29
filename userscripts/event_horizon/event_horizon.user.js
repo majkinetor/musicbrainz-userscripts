@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.101500
+// @version      2026.10.29.103448
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2162,6 +2162,8 @@ const CSS = `
   --warn-bg:#3d1c1c;--warn:#f19a9a;--toast-bg:#efe9f3;--toast-text:#17131b;color-scheme:dark;
   /* the shared settings dialog takes Event Horizon's pink, not its own deep violet, which sinks into a dark page */
   --mbu-accent:#d062a8;--mbu-accent-hover:#e07cbb;--mbu-accent-deep:#e891c8;--mbu-accent-text:#e891c8;--mbu-accent-deep-text:#f6c0e1;--mbu-accent-soft:color-mix(in srgb,#d062a8 22%,transparent);--mbu-border-strong:#7d5a72}
+/* a scrollbar that comes and goes (a section hidden from the contents) would shift the whole page sideways; keep its gutter */
+html{scrollbar-gutter:stable}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}
 /* the page's background, picked in General: aura blurs the page's own picture behind its head (glow where it has none); its own layer, or a hover's partial repaint re-blurs it in tiles and leaves seams */
 body{position:relative;isolation:isolate;overflow-x:clip}
