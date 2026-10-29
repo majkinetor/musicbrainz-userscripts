@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.224500
+// @version      2026.10.29.231500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7399,13 +7399,13 @@ const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return his
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
-const FORMS = { details: 'Details', 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
+const FORMS = { releases: 'Releases', details: 'Details', 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
 // an editor's subscriptions and subscribers, and your own profile and preferences (/account/…) → "form/user/<name, or - for yours>/<form>"
 const formKey = href => {
     const u = new URL(href, location.href);
     const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences|donation)\/?$/));
     if (us) return us[2] ? `form/user/${us[1]}/${us[2]}` : `form/user/-/${us[1]}`;
-    const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(details|edit_annotation|set-cover-art)/?$', 'i'));
+    const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(releases|details|edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] !== 'set-cover-art' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
 };
 const keyOf = href => navTo(href) || artKey(href) || histKey(href) || relKey(href) || formKey(href);
@@ -7488,11 +7488,20 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page fieldset.editnote{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:24px 0 12px}:root[data-eh-rel] #page fieldset.editnote{padding-left:16px!important;padding-right:16px!important}:root[data-eh-rel] #page fieldset.editnote legend{float:left;width:100%;margin:0 0 10px;padding:0;font-size:17px}:root[data-eh-rel] #page fieldset.editnote legend+*{clear:left}:root[data-eh-rel] #page fieldset.editnote .row,:root[data-eh-rel] #page form>.row.no-label,:root[data-eh-rel] #page form>div>.row.no-label{margin-left:0!important;padding-left:0!important}:root[data-eh-rel] #page fieldset.editnote .row>label{display:none}:root[data-eh-rel] #page fieldset.editnote p{margin-left:0;padding-left:0}
 :root[data-eh-rel] #page fieldset.editnote textarea,:root[data-eh-rel] #page textarea[name$=".text"]{width:100%!important;box-sizing:border-box}
 :root[data-eh-rel] .eh-mbhd{display:none!important}
-:root[data-eh-details] #sidebar{display:none!important}
-:root[data-eh-details] #content{float:none!important;width:auto!important;margin:0!important;padding:0!important}
-:root[data-eh-details],:root[data-eh-details] :is(body,#page){min-width:0!important}
-:root[data-eh-details] #eh-relhd .kicker{flex-wrap:wrap}
-:root[data-eh-details] #eh-relhd .acts{flex-wrap:wrap}
+:root:is([data-eh-details],[data-eh-releases]) #sidebar{display:none!important}
+:root:is([data-eh-details],[data-eh-releases]) #content{float:none!important;width:auto!important;margin:0!important;padding:0!important}
+:root:is([data-eh-details],[data-eh-releases]),:root:is([data-eh-details],[data-eh-releases]) :is(body,#page){min-width:0!important}
+:root:is([data-eh-details],[data-eh-releases]) #eh-relhd .kicker{flex-wrap:wrap}
+:root:is([data-eh-details],[data-eh-releases]) #eh-relhd .acts{flex-wrap:wrap}
+:root[data-eh-releases] .eh-releases{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:24px 0;overflow-x:auto}
+:root[data-eh-releases] #page .eh-releases h2{margin:0 0 16px;font-size:18px}
+:root[data-eh-releases] #page .eh-releases table.tbl{border:0;border-radius:0;font-size:13px}
+:root[data-eh-releases] #page .eh-releases table.tbl th{white-space:nowrap}
+:root[data-eh-releases] #page .eh-releases form{margin:0}
+:root[data-eh-releases] #page .pagination{margin:12px 0}
+:root[data-eh-releases] #eh-relhd h1 a{color:var(--text)!important}
+:root[data-eh-releases] #page .pagination :is(a,span){background:var(--bg);color:var(--text);border-color:var(--border)}
+@media(max-width:600px){:root[data-eh-releases] .eh-releases{padding:12px}:root[data-eh-releases] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-releases] #eh-relhd .acts{margin-left:0}}
 :root[data-eh-details] .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
 :root[data-eh-details] #page .eh-details h2{margin:0 0 18px;font-size:18px}
 :root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse;table-layout:fixed}
@@ -7583,12 +7592,12 @@ function mbHead() {
 // release group or an event, and its title and credits off MusicBrainz's header
 function formHeader(key) {
     const [, type, id, form] = key.split('/');
-    if (type === 'release' && form !== 'details') return relHeader(id, form, FORMS[form]);
+    if (type === 'release' && !['details', 'releases'].includes(form)) return relHeader(id, form, FORMS[form]);
     if (type === 'user') return userFormHeader(id, form);
     const { t, by } = mbHead(), hd = hdSect();
     // the entity header the tags page wears: its picture, else its kind's mark, and the kind beside the form's name
     const img = type === 'event' ? `https://eventartarchive.org/event/${id}/front-250` : visitImg({ key: type + '/' + id });
-    const acts = form === 'details' ? actionRow((type === 'release' ? ACTS : type === 'release-group' ? RG_ACTS : AR_ACTS), type, id, form) : '';
+    const acts = ['details', 'releases'].includes(form) ? actionRow((type === 'release' ? ACTS : type === 'release-group' ? RG_ACTS : AR_ACTS), type, id, form) : '';
     hd.innerHTML = entHead({ type, id, img, acts, kick: FORMS[form] + ' · ' + (HM_KIND[type] || [type])[0], title: t ? t.textContent : document.title });
     if (by) hd.querySelector('.rhtx').insertAdjacentHTML('beforeend', `<div class="by">by ${by}</div>`);
     entHeadWire(hd);
@@ -7604,6 +7613,20 @@ function detailsDress(c) {
     const heading = card.previousElementSibling;
     if (heading && heading.matches('h2')) card.append(heading);
     card.append(table);
+}
+// Keep the native release lists and their forms intact: paging, filters and selection
+// still belong to MusicBrainz. Each list gets its own horizontally scrolling card.
+function releasesDress(c) {
+    for (const table of c.querySelectorAll('table.tbl')) {
+        if (table.closest('.eh-releases')) continue;
+        const block = table.closest('form') || table;
+        if (block.parentElement !== c) continue;
+        const card = document.createElement('section'); card.className = 'eh-releases';
+        block.before(card);
+        const heading = card.previousElementSibling;
+        if (heading && heading.matches('h2')) card.append(heading);
+        card.append(block);
+    }
 }
 // an editor's page kept as MusicBrainz's: the editor's avatar, name and tabs over it; MusicBrainz's own title and tabs hide
 function userFormHeader(id, form) {
@@ -7707,6 +7730,7 @@ function relSet(on) {
         const rel = PAGE_ID.startsWith('relate/'), c = document.getElementById('content') || document.getElementById('page');
         if (c) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
         if (c && PAGE_ID.endsWith('/details')) detailsDress(c);
+        if (c && PAGE_ID.endsWith('/releases')) releasesDress(c);
         LOG.info(rel ? 'Dressing the relationship editor of ' + PAGE_ID.split('/')[1] : 'Dressing the form ' + PAGE_ID.slice(5));
         if (rel) relCards();
         else coverDims();
@@ -7714,6 +7738,7 @@ function relSet(on) {
     const theme = on && mbuTheme();
     ehOn = on;
     de.toggleAttribute('data-eh-details', on && PAGE_ID.endsWith('/details'));
+    de.toggleAttribute('data-eh-releases', on && PAGE_ID.endsWith('/releases'));
     if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.setAttribute('data-eh-bg', S.bg || 'flat'); ehWidth(); }
     else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); de.removeAttribute('data-eh-bg'); }
     for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }

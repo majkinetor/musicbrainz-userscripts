@@ -55,6 +55,8 @@ Which platforms show, in which order, and how big, are in the settings' **Platfo
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
+An artist's, country's or other entity's **Releases** tab uses Event Horizon's header and cards. MusicBrainz's release lists, filters and pagination stay available; the back arrow returns to the overview.
+
 A recording shows its length, ISRCs and credits, its works beside them with their writers, and the releases it appears on. A work shows its writers, ISWCs and other codes, related works, and its recordings in a table by first release.
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
