@@ -1,15 +1,12 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.29.154618
+// @version      2026.10.29.235901
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md
-// @match        https://*.musicbrainz.org/release/*
-// @match        https://*.musicbrainz.org/release-group/*
-// @match        https://*.musicbrainz.org/recording/*
-// @match        https://*.musicbrainz.org/artist/*/recordings
+// @match        https://*.musicbrainz.org/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -42,8 +39,7 @@ function detectScope() {
     m = p.match(/^\/artist\/([0-9a-fA-F-]{36})\/recordings\/?$/); if (m) return { type: 'artist-recordings', mbid: m[1].toLowerCase() };
     return null;
 }
-const SCOPE = detectScope();
-if (!SCOPE) return;
+let SCOPE = detectScope();
 
 // ── tiny DOM helpers ─────────────────────────────────────────────────────
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
@@ -5349,16 +5345,38 @@ async function maybeAutoMatchOnOpen() {
     Log.info('Match on open: starting');
     await onAutoMatch();
 }
+let scopeLoad = null;
+const scopeBoards = new Map();
 async function openFusion() {
+    if (scopeLoad) await scopeLoad;
+    const next = detectScope();
+    if (!next) return;
+    if (!SCOPE || next.type !== SCOPE.type || next.mbid !== SCOPE.mbid) {
+        closeFusion();
+        cancelBackground();
+        if (SCOPE) scopeBoards.set(SCOPE.type + ':' + SCOPE.mbid, { ...STATE });
+        const saved = scopeBoards.get(next.type + ':' + next.mbid);
+        for (const key of Object.keys(STATE)) {
+            const val = STATE[key];
+            STATE[key] = saved ? saved[key] : val instanceof Map ? new Map() : val instanceof Set ? new Set() : Array.isArray(val) ? [] : typeof val === 'string' ? '' : null;
+        }
+        SCOPE = next;
+        resumeBackground('page changed');
+    }
     if (FUSION_OPEN) return;
     FUSION_OPEN = true;
     fsStyle();
     buildShell();
     renderAll();
-    if (STATE.recordings.size === 0) { await seedFromScope(); maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message)); }
+    if (STATE.recordings.size === 0) {
+        scopeLoad = seedFromScope();
+        try { await scopeLoad; } finally { scopeLoad = null; }
+        if (detectScope()?.mbid === next.mbid) maybeAutoMatchOnOpen().catch(e => Log.error('Match on open failed: ' + e.message));
+    }
 }
 
 function ensureLauncher() {
+    if (!detectScope()) { document.getElementById('fs-launch')?.remove(); return; }
     if (document.getElementById('fs-launch')) return;
     fsStyle();
     const btn = el('button', 'fs-launch'); btn.id = 'fs-launch'; btn.type = 'button';
@@ -5371,12 +5389,13 @@ function ensureLauncher() {
     mbRestackCorner('br');
 }
 function boot() {
-    Log.info('Fusion v' + VERSION + ' — startup on ' + SCOPE.type + ' ' + SCOPE.mbid);
+    Log.info('Fusion v' + VERSION + ' — startup on ' + location.pathname);
     ensureLauncher();
     // reopen the log window if it was left open (same as apollo_editor #283)
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open
 }
 boot();
+new MutationObserver(() => { closeFusion(); ensureLauncher(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
 
 /* ── Mission Control adapter (#680) ──────────────────────────────────────────
    Mission Control asks over document events with JSON-string details (see
@@ -5394,14 +5413,21 @@ boot();
    window. Apply merges the ticked tracks' groups through mergeGroup, one at a
    time (MB's merge queue is one per session). Only Open puts a group on Fusion's
    board. */
-if (SCOPE.type === 'release') {
+{
+    // The provider follows the visible release independently of the window's saved board.
+    let SCOPE = detectScope();
     const mcSend = (type, detail) => document.dispatchEvent(new CustomEvent(type, { detail: JSON.stringify(detail) }));
-    const mcHello = () => mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open', 'embed'] });
+    const mcHello = () => SCOPE?.type === 'release' && mcSend('mc:provider', { id: 'fusion', name: 'Fusion', version: VERSION, release: SCOPE.mbid, capabilities: ['probe', 'apply', 'check', 'open', 'embed'] });
     let mcGroups = new Map();   // recording gid of this release's track -> { g, byGid }
     let mcOwn = [];             // this release's recordings, from the last probe
     let mcByGid = new Map();    // the release group's recordings, from the last probe
     const rgOfPage = () => { const a = document.querySelector('.releaseheader a[href*="/release-group/"]'); return a ? (a.getAttribute('href').match(/[0-9a-f-]{36}/) || [])[0] : null; };
-    const parse = (e, what) => { try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
+    const parse = (e, what) => { if (SCOPE?.type !== 'release') return null; try { return JSON.parse(e.detail) || {}; } catch (x) { Log.warn('Mission Control ' + what + ' with unreadable detail: ' + x.message); return null; } };
+    new MutationObserver(() => {
+        SCOPE = detectScope();
+        mcGroups.clear(); mcOwn = []; mcByGid.clear(); mcCards.clear();
+        mcHello();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
     // the recordings the window knows are the ones its card, merge and AcoustID refresh read (STATE.recordings)
     const membersOf = hit => hit.g.memberGids.map(x => STATE.recordings.get(x) || hit.byGid.get(x)).filter(Boolean);
     const mcKnow = hit => hit.g.memberGids.forEach(gid => { if (!STATE.recordings.has(gid) && hit.byGid.has(gid)) STATE.recordings.set(gid, hit.byGid.get(gid)); });
@@ -5431,15 +5457,18 @@ if (SCOPE.type === 'release') {
     document.addEventListener('mc:probe', async e => {
         const d = parse(e, 'probe'); if (!d) return;
         if ((d.release && d.release !== SCOPE.mbid) || (d.only && !d.only.includes('fusion'))) return;
+        const scope = SCOPE;
         const progress = note => mcSend('mc:progress', { id: 'fusion', run: d.run, state: 'busy', note });
-        const done = (findings, note) => mcSend('mc:findings', { id: 'fusion', run: d.run, release: SCOPE.mbid, findings, note });
+        const done = (findings, note) => SCOPE === scope && mcSend('mc:findings', { id: 'fusion', run: d.run, release: scope.mbid, findings, note });
         try {
             progress('loading the release');
-            const own = await fetchReleaseRecordings(SCOPE.mbid);
+            const own = await fetchReleaseRecordings(scope.mbid);
+            if (SCOPE !== scope) return;
             const rg = rgOfPage();
             if (!rg) { Log.warn('Mission Control probe: no release group link on the page'); done([], 'no release group'); return; }
             progress('loading the release group');
             const { recordings } = await fetchRGRecordings(rg, (p, n, got) => progress('release group page ' + p + (n ? '/' + n : '') + ' · ' + got + ' recordings'));
+            if (SCOPE !== scope) return;
             Log.info('Mission Control probe: ' + recordings.length + ' recording(s) in the release group, matching at "' + SETTINGS.matchCutoff + '"');
             progress('matching ' + recordings.length + ' recordings');
             const byGid = new Map(recordings.map(r => [r.gid, r]));
@@ -5448,6 +5477,7 @@ if (SCOPE.type === 'release') {
             // proposed (#529), and its recordings stay ungrouped
             const grouped = groups.flatMap(g => g.memberGids).map(x => byGid.get(x)).filter(Boolean);
             if (grouped.length) { progress('checking ' + grouped.length + ' grouped recordings for pending edits'); await enrichPendingEdits(grouped, 2); }
+            if (SCOPE !== scope) return;
             mcGroups = new Map();
             let dropped = 0;
             for (const g of groups) {
@@ -5588,7 +5618,7 @@ if (SCOPE.type === 'release') {
 
 try {
     W.__fusion = {
-        VERSION, SCOPE, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
+        VERSION, get SCOPE() { return SCOPE; }, STATE, SETTINGS_DEFAULTS, MATCH_CUTOFFS,
         get SETTINGS() { return SETTINGS; },
         recordingSetting, placeConflict, settingWarning, memberDis,
         normName, tokenMatch, titleSimilar, titleAlike, titleDistinctWords, isrcConflict, artistSimilar, lengthClose, fuzzyRatio, levenshtein, acName, acPrimaryGid, acGids, dur, parseMbidFromInput, parseAddInput,
