@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.110002
+// @version      2026.10.30.120001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2639,7 +2639,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .cols{columns:2 340px;column-gap:40px}
 .card .grp{break-inside:avoid;padding-bottom:18px}
 .card .grp>.label{margin-bottom:10px}
-.card .grp:has(>.cline){display:grid;grid-template-columns:7.5em minmax(0,1fr);column-gap:12px;align-content:start;font-size:14px}
+.card .grp:has(>.cline){display:grid;grid-template-columns:fit-content(16em) minmax(0,1fr);column-gap:12px;align-content:start;font-size:14px}
 .card .grp:has(>.cline>.who:first-child){grid-template-columns:fit-content(16em) minmax(9em,1fr)}
 .card .grp:has(>.cline)>.label{grid-column:1/-1}
 .cline{break-inside:avoid;display:grid;grid-column:1/-1;grid-template-columns:subgrid;align-items:baseline;gap:12px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
