@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.004000
+// @version      2026.10.30.110000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7492,7 +7492,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #tracklist>tbody table th{font-size:14px!important;text-align:right!important;background:none!important;text-transform:none!important;letter-spacing:normal!important;color:var(--text)!important;font-weight:700!important}:root[data-eh-rel] #page :is(th.link-phrase,th.link-phrase *){background-color:transparent!important;box-shadow:none!important}:root[data-eh-rel] #tracklist>tbody table :is(th,td){font-size:14px!important;padding:1px 3px!important;line-height:1.3!important;border:0!important}:root[data-eh-rel] #tracklist>thead th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
 :root[data-eh-rel] #tracklist .subh th,:root[data-eh-rel] #tracklist tr.subh>*{background:var(--hover)!important;color:var(--text);border-color:var(--border)}
 :root[data-eh-rel] #tracklist>tbody>tr>td{background:var(--surface)!important;border-color:var(--line)}
-:root[data-eh-rel] #tracklist>tbody>tr.even>td{background:var(--hover)!important}
+:root[data-eh-rel] #tracklist>tbody>tr.even>td{background:transparent!important}
 :root[data-eh-rel] :is(#tracklist,#page .ars) table :is(td,th){background:transparent!important}
 :root[data-eh-rel] #page .ars,:root[data-eh-rel] #content>.releaseheader{background:none!important;padding:0!important;margin:0!important;min-height:0!important}
 :root[data-eh-rel] #relationship-editor-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
@@ -7578,7 +7578,9 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox){display:block;border-bottom:0}
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 6px!important;overflow:visible!important}
-:root[data-eh-rel] #tracklist>tbody>tr.track>td{background:var(--bg)!important;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+:root[data-eh-rel] #page #tracklist{font-size:13px}:root[data-eh-rel] #tracklist>tbody table :is(th,td){font-size:13px!important}
+:root[data-eh-rel] #page #tracklist>tbody>tr.track,:root[data-eh-rel] #page #tracklist>tbody>tr.track:hover,:root[data-eh-rel] #page #tracklist>tbody>tr.track>td,:root[data-eh-rel] #page #tracklist>tbody>tr.track:hover>td{background:transparent!important}
+:root[data-eh-rel] #tracklist>tbody>tr.track>td{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;cursor:pointer;white-space:nowrap}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
 :root[data-eh-rel] #tracklist>tbody>tr.track>td:first-child::before{content:"";display:inline-block;vertical-align:middle;margin:-3px 8px 0 2px;width:5px;height:5px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg)}
