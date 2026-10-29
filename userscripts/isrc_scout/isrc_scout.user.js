@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.29.220000
+// @version      2026.10.29.223000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -9107,7 +9107,8 @@
     BG.started = false; BG.running = {};
     fetchRelease().catch(e => Log.warn('Release load failed: ' + errText(e)));
   }
-  new MutationObserver(isFollow).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] });
+  // once the page has its root: at document-start it can have none yet ("parameter 1 is not of type 'Node'"), which stopped the script
+  whenDomReady(() => new MutationObserver(isFollow).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] }));
   // when Find links runs by itself: 'off', 'start' (opening the window) or 'background' (the release
   // page); the old "Check links in the background" checkbox (bg_links) carries over as 'background'
   function linksAuto() {
@@ -9141,9 +9142,13 @@
     const m = bgCache().isrcs;
     return RELEASE.tracks.filter(t => m[t.recId] && !t.existing.length).map(t => ({ rec: t.recId, isrc: m[t.recId] }));
   }
-  // the cached links MusicBrainz doesn't have yet (one added since drops out)
+  // the cached links MusicBrainz doesn't have yet: one drops out once its track has a link on that platform,
+  // not only this one, as Find links skips it (Tidal has two ids for a track: 4 "to add" that the window didn't show)
   function bgLinksToAdd() {
-    return bgCache().links.filter(l => { const t = RELEASE.tracks.find(x => x.recId === l.rec); return t && !(t.recUrls || []).includes(l.url); });
+    return bgCache().links.filter(l => {
+      const t = RELEASE.tracks.find(x => x.recId === l.rec), urls = t ? t.recUrls || [] : [], p = BG.prov(l.code);
+      return t && !urls.includes(l.url) && !(p && urls.some(u => p.test(u)));
+    });
   }
   async function bgLinksRun(onChange) {
     BG.started = true;
