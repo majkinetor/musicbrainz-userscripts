@@ -14,6 +14,12 @@ While Event Horizon shows a release, `<html>` carries `data-mbu-release="<mbid>"
 
 Platform Check follows it ([its DEVELOP.md](../platform_check/DEVELOP.md#following-event-horizon)): it watches the attribute and scans each release named there, reading it from the API. A script that wants to follow does the same: a `MutationObserver` on `document.documentElement` with `attributeFilter: ['data-mbu-release']`, plus one read at start, since the attribute may already be there.
 
+## The page shown
+
+While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path and query; off, it is removed. `ehPageMark` sets it, beside `ehRelMark`.
+
+String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check at all, though Platform Check follows `data-mbu-release`. String Theory starts it there.
+
 ## MusicBrainz's page stays in the document
 
 While Event Horizon shows, MusicBrainz's body is hidden after Event Horizon's, not detached ([#853](https://github.com/majkinetor/musicbrainz-userscripts/issues/853)), so the scripts that read the page (Mission Control's tracklist, Platform Check's catalog numbers, Art Station's links) still find it.
