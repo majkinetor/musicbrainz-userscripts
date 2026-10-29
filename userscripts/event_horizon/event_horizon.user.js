@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.092022
+// @version      2026.10.29.093500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7780,9 +7780,10 @@ function build() {
         FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
         const y = scrollY; render(); scrollTo(0, y);
     });
-    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); fltSug(sc, i); } };
+    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const y = scrollY, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, b.offsetHeight) + 'px'; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
     document.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
-    document.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => fltSug(t.dataset.fq, t)); });
+    // while typing, the page keeps its tallest height so a shrinking list doesn't scroll it; leaving the box lets it go
+    document.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) document.body.style.minHeight = ''; }); });
     document.addEventListener('keydown', ev => {
         const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
         if (!pop || pop.hidden) return;
