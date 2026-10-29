@@ -161,7 +161,7 @@ A new shared setting gets a row here.
 
 ## Bot identity
 
-Assistant commits, comments and releases use the **`claude-ai-milic`** account ([Standard 7](dev/agents/STANDARDS.general.md#standard-7) says how).
+Assistant commits, comments and releases use the **`claude-ai-milic`** account ([Standard 7](dev/agents/STANDARDS.general.md#standard-7) says how). Its commit identity: `-c user.name=claude-ai-milic -c user.email=287434337+claude-ai-milic@users.noreply.github.com`.
 
 One-time setup, by the maintainer:
 

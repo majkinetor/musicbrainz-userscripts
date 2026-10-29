@@ -41,6 +41,8 @@ Rules for the title itself (so the verbatim copy reads well):
 
 If the title doesn't read well in the changelog, **fix the title first** (then update the changelog from the new title) — don't paraphrase in the changelog. The single source of truth is the issue tracker.
 
+An issue's **body** opens with one plain paragraph, no list: what we have now and what we want instead. The how (approach, pieces, edge cases, follow-ups) goes under a `## Details` heading after it.
+
 An issue filed **after its work is done** (retroactively, to give the change a changelog line) lists the commits that did it in its body, each linked to the commit ([Standard 9](#standard-9)), so the issue leads straight to the code.
 
 <a id="standard-2"></a>
