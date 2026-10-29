@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.150001
+// @version      2026.10.30.150002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7471,6 +7471,19 @@ function evArtHead(el, d) {
         + (d.err ? `<h1>${esc(d.err)}</h1>` : `<h1>${name ? `<a href="${MB}/event/${d.id}">${esc(name)}</a>` : '&nbsp;'}${g && g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>`) + '</div>';
     cvWire(el);
 }
+let asHome = null;
+function artStationPlace(on) {
+    const as = (mbBody && mbBody.querySelector('#as-root')) || (ehBody && ehBody.querySelector('#as-root'));
+    if (!as) return;
+    if (!on) { if (asHome && asHome.isConnected) asHome.after(as); return; }
+    const slot = ehBody && ehBody.querySelector('#as-slot');
+    if (!slot || slot.contains(as)) return;
+    if (mbBody.contains(as)) {
+        if (!asHome) asHome = document.createComment('Art Station native position');
+        as.before(asHome);
+    }
+    slot.append(as);
+}
 function artPage(app, d) {
     const r = d.rel;
     if (!app.querySelector('#as-slot')) app.innerHTML = '<section class="arthd"></section><div id="as-slot"></div>';
@@ -7478,7 +7491,7 @@ function artPage(app, d) {
     const early = mt ? `<h1><a href="${MB}/release/${d.id}">${esc(mt.textContent)}</a></h1>${ma.length ? `<div class="by">by ${ma.map(a => `<a href="${esc(a.href)}">${esc(a.textContent)}</a>`).join(', ')}</div>` : ''}` : '';
     if (d.ev) { evArtHead(app.querySelector('.arthd'), d); } else app.querySelector('.arthd').innerHTML = subHead(r, d.id, 'cover-art', 'Cover art', d.err ? `<h1>${esc(d.err)}</h1>` : early || '<h1>&nbsp;</h1>'); cvWire(app.querySelector('.arthd'));
     const slot = app.querySelector('#as-slot'), as = mbBody && mbBody.querySelector('#as-root');
-    if (as) slot.append(as);
+    if (as) artStationPlace(ehOn);
     else if (!slot.firstChild) slot.innerHTML = '<p class="msg as-none" hidden>Art Station shows this ' + (d.ev ? 'event\'s event' : 'release\'s cover') + ' art here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/art_station">install it</a>, or <button class="lnk" type="button" data-mbpage>show MusicBrainz\'s page</button>.</p>';
     const mb = slot.querySelector('[data-mbpage]'); if (mb) mb.onclick = () => switchOn(false);
 }
@@ -8239,6 +8252,7 @@ function setOn(on) {
         else { ehBody.remove(); mbBody.hidden = false; }
     }
     for (const c of ['br', 'bl', 'tr', 'tl']) if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
+    artStationPlace(on);
     if (first) show(PAGE_ID);
     if (on) document.documentElement.setAttribute('data-eh-theme', theme);
     else document.documentElement.removeAttribute('data-eh-theme');
