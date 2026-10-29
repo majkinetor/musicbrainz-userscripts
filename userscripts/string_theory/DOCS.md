@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 22:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 22:51 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -819,7 +819,7 @@ Which platforms show, in which order, and how big, are in the settings' **Platfo
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
-Click **Releases** in the header (the record and sleeve) on an artist, country/area, label, recording, instrument or place. These tabs use the same release cards, format buttons, filter and view controls as other release lists: grid, horizontal row, by format, or sortable table. The funnel filters the releases on the current page; MusicBrainz's filters and pagination stay available. The view is remembered. The back arrow returns to the overview.
+Click **Releases** in the header (the disc in its case) on an artist, country/area, label, recording, instrument or place. These tabs use the same release cards, format buttons, filter and view controls as other release lists: grid, horizontal row, by format, or sortable table. The funnel filters the releases on the current page; MusicBrainz's filters and pagination stay available. The view is remembered. The back arrow returns to the overview.
 
 A recording shows its length, ISRCs and credits, its works beside them with their writers, and the releases it appears on. A work shows its writers, ISWCs and other codes, related works, and its recordings in a table by first release.
 
