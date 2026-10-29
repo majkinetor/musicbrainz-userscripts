@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 10:17 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 10:22 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -210,6 +210,8 @@ Then the release group's recordings are matched by title, artist and length, and
 |   🔴    | Very low   | all three differ, lengths over 10 s apart     |
 
 **Cutoff** in the toolbar sets the lowest confidence that's linked. *Credited as* doesn't affect matching.
+
+**Only a shared artist links.** A recording is linked only when it shares an artist with the track: the same artist, or one name inside the other (*Glenn Miller* and *Glenn Miller and His Orchestra*). A same-titled song by someone else stays unset, whatever the cutoff, and the status line counts it as *different artist, left for you*. In the picker it's marked 🔴.
 
 #### Language and script
 

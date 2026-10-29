@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.29.092022
+// @version      2026.10.29.101853
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -11120,6 +11120,43 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const x = a && a.artistGids, y = b && b.artistGids;
     return !!(x && y && x.length > 0 && x.length === y.length && x.every((g, i) => g === y[i]));
   }
+  /* #857 — an unrelated artist used to be ONE difference, like a stray letter in the
+     title, so a same-titled recording within the length tolerance scored "near" and
+     auto-linked. Seen: Jedi & Emily B's new "Butterfly" got 倖田來未's 2005 recording
+     from the title-only duplicate search (#440). A candidate now has to share at
+     least one artist with the track: the same entity, or one credited name inside
+     the other as whole words ("X" ↔ "X and His Orchestra", often separate artists
+     in MB). Each credited artist counts on its own, plus the whole credit text. */
+  const recWords = s => fold(s).replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  function acNameList(ac) {   // a Knockout credit (track, suggestion entity)
+    const names = u(ac && ac.names) || [];
+    const out = [];
+    names.forEach(n => { out.push(u(n.name)); if (n.artist) out.push(u(u(n.artist).name)); });
+    out.push(acText(ac));
+    return out.map(recWords).filter(Boolean);
+  }
+  function wsAcNameList(ac) {   // a WS2 credit
+    const out = [];
+    (ac || []).forEach(a => { out.push(a.name); if (a.artist) out.push(a.artist.name); });
+    out.push((ac || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join(''));
+    return out.map(recWords).filter(Boolean);
+  }
+  function recArtistNames(d) {
+    if (!d) return [];
+    if (d.artistNames) return d.artistNames;
+    if (d.ac && d.ac.length) return wsAcNameList(d.ac);
+    if (d.entity) { try { return acNameList(u(u(d.entity).artistCredit)); } catch (e) {} }
+    return d.artist ? [recWords(d.artist)].filter(Boolean) : [];
+  }
+  const recWordsIn = (a, b) => (' ' + b + ' ').includes(' ' + a + ' ');
+  function recSharesArtist(d, ctx) {
+    if (!d || !ctx) return true;
+    const tg = ctx.artistGids || [], cg = d.artistGids || [];
+    if (tg.length && cg.length && tg.some(g => cg.includes(g))) return true;
+    const tn = recArtistNames(ctx), cn = recArtistNames(d);
+    if (!tn.length || !cn.length) return true;   // nothing to compare: not evidence of a different artist
+    return tn.some(a => cn.some(b => recWordsIn(a, b) || recWordsIn(b, a)));
+  }
   // EXACT means the displayed strings are identical — only Unicode-normalisation
   // (NFC) is folded, never case/accents/spacing. A casing-only (or accent-only)
   // difference is NOT exact: it's a real visible difference that native offers to
@@ -12392,6 +12429,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const maxLevel = CUTOFF[SETTINGS.recCutoff || 'near'];
     let linked = 0, considered = 0, ambiguous = 0;   // #540
     let vidBlocked = 0;   // #585 — video candidates refused on audio-only mediums
+    let diffArtist = 0;   // #857 — tracks left unset because the only match is by another artist
     let stopped = false;   // #577
     let noWork = '';   // #582: set to the reason when the pass has nothing to match
     const _takenGids = new Set();   // #541: recordings this run has already linked
@@ -12462,7 +12500,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const r = todo[i]; considered++;
         setStatus('auto-matching ' + (i + 1) + '/' + todo.length + '…');
         const ko = koTrack(r.mi, r.ti);
-        const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen, artistGids: acArtistGids(u(ko.artistCredit)) };
+        const ctx = { title: r.title, artist: r.trackArtist, length: r.trackLen, artistGids: acArtistGids(u(ko.artistCredit)), artistNames: acNameList(u(ko.artistCredit)) };
         // best candidate from the local RG pool (normalised-title match; fuzzy scan if a Title tolerance is set).
         // lower confidence level wins; within the same level, an EXACT (no-tolerance) match is preferred. #119
         // #540: every candidate is kept, with the level it scored, so a tie can be
@@ -12476,9 +12514,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
            DVD, where they are all videos. */
         const videoBlocked = videoBlockedHere(r.mi, r.ti);
         let vidSkipped = 0;
+        const otherArtist = [];   // #857 — candidates refused for sharing no artist with the track
         const note = (d, lvl) => {
           if (!d) return;
           if (videoBlocked && d.video) { vidSkipped++; return; }
+          if (!recSharesArtist(d, ctx)) { if (!otherArtist.some(o => o.gid === d.gid)) { d._level = lvl; otherArtist.push(d); } return; }
           d._level = lvl; seen.push(d); if (lvl < bestLevel) { bestLevel = lvl; best = d; }
         };
         const consider = d => note(d, recComboLevel(d, ctx));   // lower combined level (exact < tolerance < near < …) wins
@@ -12566,7 +12606,16 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (pick.reused) Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' reuses "' + best.name + '" [' + (best.gid || '').slice(0, 8) + '], already linked to an earlier track — correct only if this release really repeats it');
           try { ko.setRecordingValue(recEntityFrom(best)); linked++; if (best.gid) _takenGids.add(best.gid); renderRecBody(); } catch (e) { Log.cat('Recording').warn('auto-match set failed', e.message); }
         }
-        else Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
+        else {
+          Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' NO LINK — best=' + (best ? '"' + best.name + '" level=' + bestLevel + ' > cutoff ' + maxLevel : 'none'));   // #440 diag
+          const refused = otherArtist.filter(d => d._level <= maxLevel);   // #857: would have linked before
+          if (refused.length) {
+            diffArtist++;
+            Log.cat('Recording').warn('track ' + (r.number || (r.ti + 1)) + ' "' + r.title + '" by "' + (r.trackArtist || '') + '" left unset — ' + refused.length + ' matching recording(s) by another artist refused: '
+              + refused.map(d => '"' + d.name + '" by "' + (d.artist || '?') + '" [' + (d.gid || '').slice(0, 8) + '] level=' + d._level).join(', '));
+          }
+        }
+        if (otherArtist.length) Log.cat('Recording').debug('track ' + (r.number || (r.ti + 1)) + ' shared-artist check: ' + otherArtist.length + ' candidate(s) share no artist with "' + (r.trackArtist || '') + '" (names: ' + JSON.stringify(ctx.artistNames) + ')');
         if (vidSkipped) {   // #585
           vidBlocked += vidSkipped;
           Log.cat('Recording').info('track ' + (r.number || (r.ti + 1)) + ': skipped ' + vidSkipped + ' video recording(s) — this medium’s format cannot hold video and the track is not a data track (MusicBrainz would list it under "Videos in non-video mediums")');
@@ -12583,11 +12632,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       _recLastStatus = noWork ? noWork   // #582 — say why nothing happened, not "linked 0 of 0"
         : (stopped ? 'stopped · ' : '') + 'linked ' + linked + ' of ' + considered + ' unset track' + (considered === 1 ? '' : 's')
         + (ambiguous ? ' · ' + ambiguous + ' ambiguous, left for you' : '')
+        + (diffArtist ? ' · ' + diffArtist + ' different artist, left for you' : '')   // #857
         + (vidBlocked ? ' · ' + vidBlocked + ' video skipped' : '');   // #585
       if (e) e.textContent = _recLastStatus;
       // #575: named for its pass. Plain "auto-match:" read as the whole match
       // finishing, while the tracklist's artist pass was still going.
-      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : ''));   // #585
+      if (!noWork) Log.cat('Recording').info('auto-match:' + (stopped ? ' STOPPED —' : ''), 'linked', linked, 'of', considered, 'unset tracks' + (ambiguous ? ', ' + ambiguous + ' left unset as ambiguous' : '') + (diffArtist ? ', ' + diffArtist + ' left unset: only matched by another artist' : '') + (vidBlocked ? ', ' + vidBlocked + ' video candidate(s) refused on an audio-only medium' : '') + (stopped ? ' — the rest are untouched' : ''));   // #585
       if (!_matching) _matchStop = false;   // #575: leave it set while the tracklist pass is still winding down
     }
   }
@@ -12974,6 +13024,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // confidence of a picker result vs the track that opened the picker (same scheme as the table dot)
   function resultConfClass(data, ctx) {
     if (!ctx) return '';
+    if (!recSharesArtist(data, ctx)) return ' tc-conf-vlow';   // #857: not one artist in common
     const lvl = recConfLevel(data, ctx);
     if (lvl === 0 && recExactMatch(data, ctx)) return ' tc-conf-exact';   // ideal: blue left border
     return ' tc-conf-' + ['tolerance', 'near', 'low', 'vlow'][lvl];
@@ -13051,7 +13102,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const pop = document.createElement('div'); pop.className = 'tc-recpop'; _recPop = pop; _recPopAnchor = anchor; document.body.appendChild(pop);
     const ko = koTrack(entry.mi, entry.ti);
     const data = {};
-    const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length), artistGids: acArtistGids(u(ko.artistCredit)) };   // for result confidence colouring
+    const ctx = { title: u(ko.name), artist: acText(u(ko.artistCredit)), length: u(ko.length), artistGids: acArtistGids(u(ko.artistCredit)), artistNames: acNameList(u(ko.artistCredit)) };   // for result confidence colouring
     // the currently-linked recording (or "new recording" if that's flagged)
     const curRec = u(ko.recording);
     const isNew = typeof ko.hasNewRecording === 'function' && !!u(ko.hasNewRecording);
@@ -15949,7 +16000,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     } catch (e) { Log.cat('Disc IDs').info(`could not sign the edit note — ${e.message}`); }
   }
 
-  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, get rgAuto() { return _rgAuto; }, autoSelectReleaseGroup, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
+  W.__apolloEditor = { lsDetectScript, lsByScript, lsCandidates, lsDetectLanguage, LS_LANDE, lsClean, detectLangScript, matchCardHtml, readTracklist, buildModel, commitTrack, resetTrack, revertTrack, trackChanged, removeTrack, moveTrack, addTracks, searchArtist, fetchEntity, createArtist, openPanel, showMirror, hideMirror, revertAll, revertSlot, pickArtist, addSlot, removeSlot, splitSlot, matchSlot, snapshotOriginals, readRecordings, showRecMirror, hideRecMirror, recordingsVisible, recConfidence, applyView, applyNav, applyReleaseInfo, releaseInfoVisible, ensureApolloEditNote, checkAllLinks, checkUrl, linkRows, alExtractUrls, alAddUrls, installMultiLinkPaste, alApplyHint, AL_HINT, discogsReleaseUrlFromPage, loadDiscogsMap, resolveByDiscogsUrl, discogsFeatUrlFor, tagDiscogsAddable, tagDiscogsForAll, addOrCreateDiscogsLink, reTagAfterDiscogsLink, artistDiscogsUrls, platformOf, platformUrlForms, resolvePlatformUrls, resolveByPlatformUrl, fcHandoff, fcPlatformUrl, tagPlatformAddable, tagPlatformForAll, addOrCreatePlatformLink, matchReleaseArtist, matchReleaseLabels, searchLabel, createLabel, riPickLabel, riEditionArtists, riPick, get riArt() { return _riArt; }, get rgAuto() { return _rgAuto; }, autoSelectReleaseGroup, dhRun, acLinksDiff, fetchRgPositionIndex, fetchDuplicatePositionIndex, recSimilar, recComboLevel, recPickBest, recSharesArtist, pickSibArtist, loadSiblingMap, autoMatchRecordings, setDataBoundary, videoBlockedHere, NON_VIDEO_FORMAT_IDS, trackRecIsVideo, newRecordingFor, logMarkdown, openLengthParser, lpParse, lpValid, lpExtractFromHtml, lpNoteSource, openTrackPatternParser, tpCompile, resolveByExactAlias, wsJson, stopMatching, lenShadeAlpha, lenShade, dupLenShade, mergeMediums, splitMedium, pickTool, runAction, slotContextGids, releaseArtistGids, positionArtists, posNameMatch, tallyPosArtists, artistPosRgIndex, artistPosDupIndex, rgReleases, duplicateReleases, enteredTracklist, buildDupDetail, get apolloOn() { return apolloOn(); }, get model() { return MODEL; }, get settings() { return SETTINGS; } };
   Object.assign(W.__apolloEditor, {   // #591 #808 disc IDs from a rip log
     parseRipLog, parseEacLog, parseWhipperLog, parseDbPowerampLog, parseCyanripLog,
     calcMbToc, mbDiscId, tocParam, readLogText, discIdFromLog,

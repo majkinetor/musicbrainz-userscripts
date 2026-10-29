@@ -190,6 +190,8 @@ Then the release group's recordings are matched by title, artist and length, and
 
 **Cutoff** in the toolbar sets the lowest confidence that's linked. *Credited as* doesn't affect matching.
 
+**Only a shared artist links.** A recording is linked only when it shares an artist with the track: the same artist, or one name inside the other (*Glenn Miller* and *Glenn Miller and His Orchestra*). A same-titled song by someone else stays unset, whatever the cutoff, and the status line counts it as *different artist, left for you*. In the picker it's marked 🔴.
+
 ### Language and script
 
 When the release has no **Language** or **Script**, Apollo fills them in from the release and track titles, and marks the field **auto**. Bracketed parts such as *(Live)* or *[Remastered]* and anything after *feat.* are left out.
