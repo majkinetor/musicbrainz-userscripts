@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.113100
+// @version      2026.10.29.114502
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2303,7 +2303,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .kmk{all:unset;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
-.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-w{position:relative;display:inline-flex}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
+.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-w{position:relative;display:inline-flex}.tgi-spin{position:absolute;right:12px;top:50%;width:12px;height:12px;margin-top:-6px;border:2px solid var(--muted, currentColor);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite;pointer-events:none}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
 .gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
@@ -3035,7 +3035,7 @@ function heroFacts(app) {
     const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector(':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
     const st = u.querySelector('.meta'), tg = u.querySelector('.gtags');
     if (st) add('Rating', st);
-    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.t && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
+    if (tg && ME) { tg.dataset.tgin = ''; if (tgIn && tgIn.path === tgPath()) tg.innerHTML = tgInHtml(); else tg.insertAdjacentHTML('beforeend', `<button type="button" class="eh-edit" data-tgin="open" aria-label="Edit the tags" data-tip="Edit the tags">${MBU_EDIT_ICON}</button>`); tgInWire(); }
     if (tg) add('Tags', tg, true);
     u.remove();
 }
@@ -3447,7 +3447,7 @@ async function loadRg(id, step = () => {}) {
 }
 // the folksonomy tags (not the genres) sit behind a chip that opens them
 let tagsOpen = false;
-const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
+const tagsMore = ts => !ts.length ? '' : `${tagsOpen ? ts.map(t => `<a class="chip tag" href="${MB}/tag/${encodeURIComponent(t)}">${esc(t)}</a>`).join('') : ''}<button class="chip tag" type="button" data-tagsmore aria-expanded="${tagsOpen}" data-tgn="${esc(ts.join('\n'))}">${tagsOpen ? 'Fewer' : `+${ts.length} tag${ts.length === 1 ? '' : 's'}`}</button>`;
 // the header's tags edited in place: the pencil loads the entity's tags page (all tags, your votes), then
 // your tags get × (withdraw), the others ▲ (upvote), and an input adds; ✓ or Esc closes and redraws the page
 let tgIn = null, tgInWired = false;
@@ -3455,8 +3455,9 @@ const tgPath = () => location.pathname.replace(/\/$/, '');
 const tgInBox = () => document.querySelector('[data-tgin]:not(button)');
 function tgInHtml() {
     const d = tgIn;
-    const chips = !d.t ? `<span class="chip tag">Loading…</span>` : d.t.tags.map((t, i) => `<span class="chip tag tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}${t.c > 0 ? `<span class="tgi-n">${t.c}</span>` : ''}${t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
-    return chips + `<span class="tgi-w"><input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off"><span class="tg-ac" hidden></span></span><button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
+    // until the tags page loads, the names the header already showed stand in (genres filled, tags outlined), without counts or votes
+    const chips = (d.t ? d.t.tags : d.pre || []).map((t, i) => `<span class="chip${t.g ? '' : ' tag'} tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}${t.c > 0 ? `<span class="tgi-n">${t.c}</span>` : ''}${!d.t ? '' : t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
+    return chips + `<span class="tgi-w"><input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off">${d.t ? '' : '<span class="tgi-spin" aria-label="Loading the tags"></span>'}<span class="tg-ac" hidden></span></span><button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
 }
 // a redraw keeps what's typed in the box
 function tgInDraw(focus) { const b = tgInBox(); if (!b || !tgIn) return; const o = b.querySelector('.tgi-in'), v = o ? o.value : ''; b.innerHTML = tgInHtml(); const i = b.querySelector('.tgi-in'); if (i) { i.value = v; if (focus) i.focus(); if (v) tgInAc(); } }
@@ -3469,10 +3470,16 @@ function tgInAc() {
 // what's typed: the comma-separated names, the last one replaced by the picked suggestion
 function tgInTake(i, pick) { const ps = i.value.split(','); if (pick && ps[ps.length - 1].trim()) ps[ps.length - 1] = pick; i.value = ''; tgInAc(); return ps.map(x => x.trim().toLowerCase()).filter(Boolean); }
 async function tgInOpen() {
-    const d = tgIn = { path: tgPath(), t: null }, p = null; tgInDraw(true); // the box opens at once, focused; the tags fill in when they load
+    // the box opens at once, focused, on the header's own chips (the collapsed tags too); counts and votes fill in when the page loads
+    const b = tgInBox(), mo = b && b.querySelector('[data-tgn]');
+    const pre = b ? [...[...b.querySelectorAll('a.chip:not(.tag)')].map(a => ({ n: a.textContent.trim(), g: true })), ...(mo ? mo.dataset.tgn.split('\n').filter(Boolean).map(n => ({ n, g: false })) : [])] : [];
+    const d = tgIn = { path: tgPath(), t: null, pre }; tgInDraw(true);
     try {
         const r = await mbnFetch(MB + d.path + '/tags'); if (!r.ok) throw new Error('HTTP ' + r.status);
-        d.t = tagsParse(await r.text(), true); if (tgIn === d) { const a = document.activeElement; tgInDraw(!a || a === document.body || a.matches('.tgi-in')); if (d.pend) { const ns = d.pend; d.pend = null; tgInSend(ns, 1); } }
+        d.t = tagsParse(await r.text(), true);
+        // in the order they were already showing, so nothing jumps; the rest (your downvotes, past the header's) after
+        const ix = new Map(pre.map((t, k) => [t.n, k])); d.t.tags.sort((x, y) => (ix.get(x.n) ?? 1e9) - (ix.get(y.n) ?? 1e9));
+        if (tgIn === d) { const a = document.activeElement; tgInDraw(!a || a === document.body || a.matches('.tgi-in')); if (d.pend) { const ns = d.pend; d.pend = null; tgInSend(ns, 1); } }
     } catch (e) { LOG.err('Loading the tags failed: ' + e.message); toast('Loading the tags failed: ' + e.message); if (tgIn === d) tgInClose(); }
 }
 async function tgInSend(names, v) {
