@@ -32,7 +32,7 @@ Event Horizon shows its own page for each of these, and for search results. A li
 
 ## Pinned header
 
-Once the page's header scrolls away, a single bar keeps its cover, title and artist in reach. On a release, the release-group icon and edition count follow the artist. The action icons keep their horizontal position when the bar appears. Click the title to go back up.
+Once the page's header scrolls away, a single bar keeps its cover, title and artist in reach. On a release, the release-group icon and edition count follow the artist, then the format, type and status. The action icons keep their horizontal position when the bar appears. Click the title to go back up.
 
 ## Sections
 
