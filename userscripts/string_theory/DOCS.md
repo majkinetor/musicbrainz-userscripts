@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 12:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 12:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -484,7 +484,7 @@ A cover and event art editor for MusicBrainz: one gallery to view, sort, reorder
 
 Thumbnail size, a grid or a detailed view, grouping by [type](https://musicbrainz.org/doc/Cover_Art/Types), and sorting by position, type, dimensions or date. Drag one cover, or a whole selection, to reorder; select with right-click or right-drag.
 
-Art Station's corner icon switches to MusicBrainz's own page and back; right-click it for the settings (⚙).
+Art Station's corner icon switches to MusicBrainz's own page and back; right-click it for the settings (⚙). In Event Horizon, the settings open from Art Station's entry in the corner dock.
 
 | Grouped by type                    | Detailed view                      |
 | ---------------------------------- | ---------------------------------- |
