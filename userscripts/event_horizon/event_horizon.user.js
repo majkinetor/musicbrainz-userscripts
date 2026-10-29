@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.120002
+// @version      2026.10.30.130001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2871,7 +2871,7 @@ async function keptCover(rel, img) {
     if (KP_COV.has(k)) return { u: KP_COV.get(k), had: true };
     let e = null;
     try { e = await kpStore('readonly').then(st => new Promise(ok => { const q = st.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); } catch (x) {}
-    if (e && e.b) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
+    if (e && e.b && (img.id !== 'header' || (e.at > kpDrop() && Date.now() - e.at < 86400000))) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
     const t0 = performance.now(), r = await fetch(((img.thumbnails || {})['500'] || `https://coverartarchive.org/release/${rel}/front-500`).replace(/^http:/, 'https:'));
     fetchLog('CAA front ' + rel, t0, r);
     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -6215,10 +6215,10 @@ function tgTools(d) {
 }
 function entHead({ type, id, img, kick, title, disamb, acts }) {
     const mk = (HM_KIND[type] || ['', CI_TAG])[1];
-    return `${img ? `<img class="rhcv" alt="" src="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
+    return `${img ? `<img class="rhcv" alt="" ${/^https:\/\/coverartarchive.org\//.test(img) ? 'data-cover' : 'src'}="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
         + `<h1>${title ? `<a href="${MB}/${type}/${id}">${esc(title)}</a>` : '&nbsp;'}${disamb ? `<span class="disamb">(${esc(disamb)})</span>` : ''}</h1></div>`;
 }
-const entHeadWire = el => { const c = el.querySelector('.rhcv'); if (c) c.onerror = () => { c.hidden = true; const i = el.querySelector('.rhic'); if (i) i.hidden = false; }; };
+const entHeadWire = el => cvWire(el);
 function tagsHtml(d) {
     const t = d.t, abs = h => h.startsWith('/') ? MB + h : h;
     const back = d.ent ? `<a class="u-tab" href="${MB}/${d.ent.replace(':', '/')}">Back to the ${esc(d.ent.split(':')[0].replace('-', ' '))}</a>` : '';
@@ -7439,12 +7439,24 @@ function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const acts = backA(id) + actionRow(ACTS, 'release', id, tab) + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
-    return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
+    return `<img class="rhcv" alt="" data-cover="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
         + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</div>` : none) + '</div>';
 }
 // a release without a front cover drops the header's image, and keeps it dropped when the header redraws, so the title holds still
 const cvGone = new Set();
-const cvWire = el => { const c = el.querySelector('.rhcv'); if (!c) return; if (cvGone.has(c.getAttribute('src'))) { c.hidden = true; return; } c.onerror = () => { cvGone.add(c.getAttribute('src')); c.hidden = true; LOG.debug('Header: no front cover'); }; };
+const cvPending = new Map();
+const cvWire = el => {
+    const c = el.querySelector('.rhcv'); if (!c) return;
+    const src = c.dataset.cover || c.getAttribute('src');
+    const fail = () => { cvGone.add(src); c.hidden = true; const i = el.querySelector('.rhic'); if (i) i.hidden = false; LOG.debug('Header: no front cover'); };
+    if (cvGone.has(src)) { fail(); return; }
+    c.onerror = fail;
+    if (c.dataset.cover) {
+        const id = src.split('/')[4];
+        if (!cvPending.has(src)) cvPending.set(src, keptCover(id, { id: 'header', thumbnails: { 500: src } }));
+        cvPending.get(src).then(x => { c.src = x.u; }, fail);
+    }
+};
 // an event-art page's header: the event's front, its type and date, its name back to it
 function evArtHead(el, d) {
     const g = d.g, mh = !g && mbBody && mbBody.querySelector('.eventheader h1 a');
