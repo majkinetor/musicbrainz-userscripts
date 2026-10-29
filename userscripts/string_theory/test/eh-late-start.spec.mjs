@@ -21,9 +21,11 @@ test('Platform Check starts on a release EH shows in a tab loaded elsewhere', { 
   await page.evaluate(() => { window.__noReload = 1; });
   await page.locator('#app a[href*="/release-group/"]').first().click();
   check(await until(() => page.evaluate(() => location.pathname), p => p.startsWith('/release-group/')) !== null, 'on a release group');
+  check(await until(() => page.locator('#falcon-launcher').count(), n => n > 0) > 0, 'Falcon on the release group');
   await page.locator('#app a[href*="/release/"]:not([href*="/add"])').first().click();
   check(await until(() => page.evaluate(() => location.pathname), p => /^\/release\/[0-9a-f-]{36}$/.test(p)) !== null, 'on a release');
   check(await until(() => page.locator('#mb-pc-dock').isVisible(), v => v) === true, 'Platform Check is in the dock');
+  check(await until(() => page.locator('#ii-dock').isVisible(), v => v) === true, 'ISRC Scout is in the dock');
   await page.locator('#mb-pc-dock').click();
   check(await until(() => page.locator('.mbu-dock-win #mb-pc-panel').isVisible(), v => v) === true, 'its panel opens');
   check(await until(() => page.locator('#mb-pc-panel [id^="ico-"]').evaluateAll(es => es.filter(e => e.textContent.trim() !== '⚪').length), n => n > 0, 40000) > 0, 'it scanned the release');

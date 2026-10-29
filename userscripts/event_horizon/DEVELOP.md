@@ -18,7 +18,7 @@ Platform Check follows it ([its DEVELOP.md](../platform_check/DEVELOP.md#followi
 
 While Event Horizon shows, `<html>` carries `data-mbu-page` with the page's path and query; off, it is removed. `ehPageMark` sets it, beside `ehRelMark`.
 
-String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check at all, though Platform Check follows `data-mbu-release`. String Theory starts it there.
+String Theory reads it ([its DEVELOP.md](../string_theory/DEVELOP.md#runtime)): a tab loaded on a page a script isn't for never starts that script, so a release reached inside Event Horizon from the home page had no Platform Check or ISRC Scout at all, though both read the release from the API. String Theory starts them there. Falcon, which runs on every page, watches it to put its icon on a release, release group or series.
 
 ## MusicBrainz's page stays in the document
 

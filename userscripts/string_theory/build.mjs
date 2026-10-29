@@ -125,7 +125,7 @@ function scriptShadow(meta) {
 // left out are listed once in the console (debug), so a missing script can be told from a broken one.
 // Members that follow the page Event Horizon shows, reading nothing off MusicBrainz's page (Platform Check's
 // data-mbu-release), so they can start on a page reached inside Event Horizon (#847), see __stLater
-const FOLLOWS_EH = ['platform_check'].filter(n => MEMBERS.includes(n));
+const FOLLOWS_EH = ['platform_check', 'isrc_scout'].filter(n => MEMBERS.includes(n));
 
 const GATE_NOW = '(f=>f())';
 const GATE_DOM = "(f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))";
