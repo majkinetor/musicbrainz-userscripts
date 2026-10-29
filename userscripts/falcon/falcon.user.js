@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.154618
+// @version      2026.10.29.180000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -6932,7 +6932,8 @@
     running = true;
     if (_autoStartTimer) { clearInterval(_autoStartTimer); _autoStartTimer = null; }   // #829: started by hand or by it, the countdown is over
     _runStartedAt = Date.now();
-    if (_closedClean) { _closedClean = false; removeLauncher(); ensureLauncher(); }   // back to the usual icon
+    if (_closedClean) { _closedClean = false; removeLauncher(); }   // back to the usual icon
+    ensureLauncher();   // a run started on a page without the icon gets it, the way back to the panel
     // one log per run — majkinetor: "I DON'T WANT LOGS FROM OTHER RUNS"
     newSession(`${queue.filter(i => i.status === 'queued').length} queued, ${cfg.workers} worker(s), ${location.href}`);
     // #508 follow-up (majkinetor, live: "BTW, list options in the log, I had
@@ -6976,14 +6977,27 @@
   // is making there (it drives release workers inside iframes, where @noframes
   // keeps this script out), so a second corner icon beside Apollo's is only
   // clutter. The panel is still one Ctrl+Alt+F away.
-  function onReleaseEditorPage() {
-    return /^\/release\/(add|[0-9a-f-]{36}\/edit)\/?$/i.test(location.pathname);
+  function onReleaseEditorPage(path = location.pathname) {
+    return /^\/release\/(add|[0-9a-f-]{36}\/edit)\/?$/i.test(path);
+  }
+  // majkinetor, 2026-10-29: the icon only where Falcon can queue something from the page — the
+  // overview of a release, a release group or a series (its "Add from …" menu), never an edit
+  // page. Elsewhere only while a run goes or just ended clean in this tab, the way back to it.
+  // The specs open the panel from the icon on any page, so under the test hooks only #675 holds.
+  const LAUNCHER_PATHS = '^/(release|release-group|series)/[0-9a-fA-F-]{36}/?$';
+  function launcherPage(path) { return new RegExp(LAUNCHER_PATHS).test(path); }
+  function launcherWanted() {
+    if (onReleaseEditorPage()) return false;
+    if (mbuTestHooks()) return true;
+    return launcherPage(location.pathname) || running || _closedClean || reloadedAfterImportHere();
   }
   function ensureLauncher() {
-    if (cfg.hideLauncher || onReleaseEditorPage()) { removeLauncher(); return; }
+    if (cfg.hideLauncher || !launcherWanted()) { removeLauncher(); return; }
     if (launcher) return;
     launcher = document.createElement('button');
     launcher.type = 'button'; launcher.id = 'falcon-launcher';
+    // Event Horizon moves between pages without loading them: the dock hides the icon on the others
+    if (!mbuTestHooks() && !running && !_closedClean) launcher.dataset.mbCornerPaths = LAUNCHER_PATHS;
     launcher.dataset.tip = `${NAME} — bulk MusicBrainz editor\nClick / Ctrl+Alt+F: open the panel\nRight-click: settings`;
     launcher.dataset.mbCorner = 'br'; launcher.dataset.mbCornerOrder = '90'; launcher.dataset.mbCornerLabel = 'Falcon';   // lowest priority: furthest from the corner
     // #588: a page Falcon reloaded after a clean run wears a green icon instead

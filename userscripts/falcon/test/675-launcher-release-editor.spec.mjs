@@ -24,3 +24,18 @@ test('#675: the launcher is gated off the release editor, on everywhere else', {
   check(on(`/release-group/${MBID}`) === false, 'a release-group page keeps the launcher');
   check(on('/') === false, 'the home page keeps the launcher');
 });
+
+// majkinetor, 2026-10-29: outside the test hooks the icon shows only where Falcon can queue
+// something, the overview of a release, a release group or a series; never on an edit page
+test('the launcher shows on a release, release group or series overview only', { tag: '@unit' }, async () => {
+  const src = await functionSource('falcon', ['LAUNCHER_PATHS', 'launcherPage']);
+  const at = pathname => new Function(`${src}\nreturn launcherPage(${JSON.stringify(pathname)});`)();
+  check(at(`/release/${MBID}`) === true, 'a release page');
+  check(at(`/release-group/${MBID}`) === true, 'a release-group page');
+  check(at(`/series/${MBID}/`) === true, 'a series page');
+  check(at(`/release-group/${MBID}/edit`) === false, 'not a release-group edit page');
+  check(at(`/release/${MBID}/edit-relationships`) === false, 'not the relationship editor');
+  check(at('/edit/123') === false, 'not an edit');
+  check(at(`/artist/${MBID}`) === false, 'not an artist page');
+  check(at('/') === false, 'not the home page');
+});

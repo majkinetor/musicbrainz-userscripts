@@ -25,7 +25,7 @@ Untouched rows, and aliases and links the entity already has, are skipped. A lin
 
 ## Filling the queue
 
-Open Falcon with **Ctrl+Alt+F** or its corner icon (right-click: **Options**). The release editor has no icon, but the key works.
+Open Falcon with **Ctrl+Alt+F** on any page, or with its corner icon (right-click: **Options**). The icon shows on release, release group and series pages, and on other pages while a run goes.
 
 ### From Harmony
 
