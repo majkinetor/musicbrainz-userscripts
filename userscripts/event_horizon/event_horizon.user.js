@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.184512
+// @version      2026.10.29.185200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2628,9 +2628,14 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card .cols{columns:2 340px;column-gap:40px}
 .card .grp{break-inside:avoid;padding-bottom:18px}
 .card .grp>.label{margin-bottom:10px}
-.cline{break-inside:avoid;display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:12px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.card .grp:has(>.cline){display:grid;grid-template-columns:7.5em minmax(0,1fr);column-gap:12px;align-content:start;font-size:14px}
+.card .grp:has(>.cline>.who:first-child){grid-template-columns:fit-content(16em) minmax(9em,1fr)}
+.card .grp:has(>.cline)>.label{grid-column:1/-1}
+.cline{break-inside:avoid;display:grid;grid-column:1/-1;grid-template-columns:subgrid;align-items:baseline;gap:12px;padding:5px 0;border-top:1px solid var(--line);font-size:14px}
+.cline>span{min-width:0;overflow-wrap:anywhere}
 .cline:first-of-type{border-top:0}
 .cline .role{color:var(--muted)}
+.cline>.role:first-child{text-align:right}
 .cline .who{font-weight:600}
 .dm-below .cline .ents{display:flex;flex-direction:column;gap:4px}
 .dm-below .cline .sep{display:none}
@@ -2668,8 +2673,8 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .ed-groups .g{grid-template-columns:1fr}
   .facts{gap:16px 24px}
   .card{padding:16px}
-  .cline{grid-template-columns:1fr}
 }
+@media (max-width:600px){.card .grp:has(>.cline){grid-template-columns:fit-content(9em) minmax(0,1fr);column-gap:10px}}
 .sk{display:block;background:linear-gradient(90deg,var(--chip) 0%,var(--chip) 35%,var(--hover) 50%,var(--chip) 65%,var(--chip) 100%);background-size:300% 100%;animation:sk 1.8s linear infinite;border-radius:8px}
 @keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
 .sk-page .info{flex:1 1 0;min-width:0}
