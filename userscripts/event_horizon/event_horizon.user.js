@@ -601,8 +601,8 @@ function mbuDock() {
         css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
             + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
             + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
-            + '.mbu-dock-win{position:fixed;z-index:2147483002;right:70px;bottom:14px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
-            + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:14px;bottom:68px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:70px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:14px}'
+            + '.mbu-dock-win{position:fixed;z-index:2147483002;right:62px;bottom:6px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+            + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:6px;bottom:60px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:62px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:6px}'
             + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
             + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
             + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
@@ -734,25 +734,26 @@ function mbRestackCorner(corner) {
             if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
         }
     }
+    var edge = document.documentElement.hasAttribute('data-mbu-dock') ? 6 : 14;   // docked (Event Horizon), nearer the edge: the page keeps a column clear for them
     var peeks = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
         // offsetParent is always null for position:fixed, so it can't tell visibility here
         .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
         .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
         .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
-    var pos = 14;
+    var pos = edge;
     els.forEach(function (el) {
         var r = el.getBoundingClientRect();
-        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : pos)) + 'px';
-        el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : 14)) + 'px';
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : pos)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge)) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
         pos += (row ? r.width : r.height) + 8;
     });
     // the folded dock's peeking entries: in a line from its button, along the stack's flow
-    var side = 14 + 40 + 4;
+    var side = edge + 40 + 4;
     peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
-        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? 14 : side)) + 'px';
-        el.style[right ? 'right' : 'left'] = (gapX + (row ? side : 14)) + 'px';
+        el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : side)) + 'px';
+        el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge)) + 'px';
         el.style[right ? 'left' : 'right'] = 'auto';
         side += 36;
     });
@@ -2196,7 +2197,10 @@ img{max-width:100%}
 a{color:var(--link);text-decoration:none}a:hover{color:var(--link-hover);text-decoration:underline}
 button{font:inherit;color:inherit}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
-.wrap{max-width:var(--eh-w,1280px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:var(--eh-w,1600px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+/* the dock's launchers stand in a column at the screen's edge: a page that reaches it keeps clear of them */
+:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) .wrap{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
+:root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] .wrap{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
 .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 h1,h2{text-wrap:balance}
 h2,.fold h2{margin:0;font-size:24px;color:var(--text)!important}
@@ -2723,7 +2727,7 @@ const S = {
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1280, bg: 'flat',
+    byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1600, bg: 'flat',
     on: true, menuTitles: false,
     thumbs: true,
     extras: ['rating', 'tags'],
@@ -2739,6 +2743,8 @@ const S = {
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
 VIEW.push('menuTitles');
+// the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
+const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
@@ -6658,7 +6664,7 @@ function editMenu(app) {
 function render(keepPop) {
     const app = $('#app');
     bgApply();
-    document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
+    ehWidth();
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); document.getElementById('eh-rail')?.remove(); return; }
@@ -7450,7 +7456,9 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
-:root[data-eh-rel] #page{max-width:var(--eh-w,1280px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
+:root[data-eh-rel] #page{max-width:var(--eh-w,1600px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
+:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) #page{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
+:root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] #page{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100vw) - 100vw) / 2 + 60px))}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
 :root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}
 :root[data-eh-rel] #page :is(p,td,th,label,span,input,select,textarea,button){font-family:Manrope,system-ui,sans-serif}
@@ -7695,7 +7703,7 @@ function relSet(on) {
     const theme = on && mbuTheme();
     ehOn = on;
     de.toggleAttribute('data-eh-details', on && PAGE_ID.endsWith('/details'));
-    if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.setAttribute('data-eh-bg', S.bg || 'flat'); de.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); }
+    if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.setAttribute('data-eh-bg', S.bg || 'flat'); ehWidth(); }
     else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); de.removeAttribute('data-eh-bg'); }
     for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }
     const hd = document.getElementById('eh-relhd'); if (hd) hd.hidden = !on;   // its sheet is off with it
@@ -8384,7 +8392,7 @@ async function show(key, o = {}) {
     }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
     // the skeleton takes the page's width, so the page doesn't move when the release arrives
-    document.documentElement.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none');
+    ehWidth();
     if (!o.quiet) app.innerHTML = skeleton().replace('<b>release</b> · <b>editions</b> · <b>covers</b>', parts.map(x => `<b>${x}</b>`).join(' · '));
     if (!o.quiet) scrollTo(0, 0);
     const st = app.querySelector('.sk-st span:last-child');
