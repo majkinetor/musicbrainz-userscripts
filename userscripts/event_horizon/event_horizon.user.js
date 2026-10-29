@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.201400
+// @version      2026.10.29.203800
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3077,6 +3077,7 @@ const ACTS = [
     ['cover-art', 'Art', 'Cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
     ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
     ['edits', 'History', 'Edit history', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
+    ['details', 'Details', 'Details', '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>'],
 ];
 
 /* ── formatting ────────────────────────────────────── */
@@ -3553,6 +3554,7 @@ const RG_ACTS = [
     ['/release/add?release-group=', 'Add', 'Add a release to this group', '<path d="M12 5v14M5 12h14"/>'],
     ['tags', 'Tags', 'Tags', CI_TAG],
     ['edits', 'History', 'Edit history', ACTS[3][3]],
+    ACTS[4],
 ];
 function group(g) {
     const genres = (g.genres || []).sort((a, b) => b.count - a.count), gn = new Set(genres.map(x => x.name));
@@ -5380,6 +5382,7 @@ const AR_ACTS = [
     ['edit', 'Edit', 'Edit artist', ACTS[0][3]],
     ['tags', 'Tags', 'Tags', CI_TAG],
     ['edits', 'History', 'Edit history', ACTS[3][3]],
+    ACTS[4],
 ];
 function artist(a) {
     const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {};
@@ -7367,14 +7370,14 @@ const histName = id => { const s = histSrc(id), pa = s.split('?')[0]; return his
 const histRid = id => histOne(id) ? (data && data.kind === 'hist' && data.id === id && data.rid) || '' : (histSrc(id).match(new RegExp('^/release/(' + MBID.source + ')/', 'i')) || [])[1];
 // a release group's Set cover art, or an entity's Edit annotation → "form/<type>/<mbid>/<form>". Dressed as the
 // relationship editor is: MusicBrainz's form stays, so what other scripts mount on it (Apollo's annotation editor) keeps working
-const FORMS = { 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
+const FORMS = { details: 'Details', 'set-cover-art': 'Set cover art', edit_annotation: 'Annotation', edit: 'Edit profile', preferences: 'Preferences', donation: 'Donation check', subscriptions: 'Subscriptions', subscribers: 'Subscribers' };
 // an editor's subscriptions and subscribers, and your own profile and preferences (/account/…) → "form/user/<name, or - for yours>/<form>"
 const formKey = href => {
     const u = new URL(href, location.href);
     const us = u.origin === location.origin && (u.pathname.match(/^\/user\/([^/]+)\/(subscriptions|subscribers)(?:\/[a-z_-]+)?\/?$/) || u.pathname.match(/^\/account\/(edit|preferences|donation)\/?$/));
     if (us) return us[2] ? `form/user/${us[1]}/${us[2]}` : `form/user/-/${us[1]}`;
-    const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(edit_annotation|set-cover-art)/?$', 'i'));
-    return m && (m[3] === 'edit_annotation' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
+    const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(details|edit_annotation|set-cover-art)/?$', 'i'));
+    return m && (m[3] !== 'set-cover-art' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
 };
 const keyOf = href => navTo(href) || artKey(href) || histKey(href) || relKey(href) || formKey(href);
 const PAGE_ID = keyOf(location.href);
@@ -7454,6 +7457,19 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page fieldset.editnote{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin:24px 0 12px}:root[data-eh-rel] #page fieldset.editnote{padding-left:16px!important;padding-right:16px!important}:root[data-eh-rel] #page fieldset.editnote legend{float:left;width:100%;margin:0 0 10px;padding:0;font-size:17px}:root[data-eh-rel] #page fieldset.editnote legend+*{clear:left}:root[data-eh-rel] #page fieldset.editnote .row,:root[data-eh-rel] #page form>.row.no-label,:root[data-eh-rel] #page form>div>.row.no-label{margin-left:0!important;padding-left:0!important}:root[data-eh-rel] #page fieldset.editnote .row>label{display:none}:root[data-eh-rel] #page fieldset.editnote p{margin-left:0;padding-left:0}
 :root[data-eh-rel] #page fieldset.editnote textarea,:root[data-eh-rel] #page textarea[name$=".text"]{width:100%!important;box-sizing:border-box}
 :root[data-eh-rel] .eh-mbhd{display:none!important}
+:root[data-eh-details] #sidebar{display:none!important}
+:root[data-eh-details] #content{float:none!important;width:auto!important;margin:0!important;padding:0!important}
+:root[data-eh-details],:root[data-eh-details] :is(body,#page){min-width:0!important}
+:root[data-eh-details] #eh-relhd .kicker{flex-wrap:wrap}
+:root[data-eh-details] #eh-relhd .acts{flex-wrap:wrap}
+:root[data-eh-details] .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
+:root[data-eh-details] #page .eh-details h2{margin:0 0 18px;font-size:18px}
+:root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse;table-layout:fixed}
+:root[data-eh-details] #page .eh-details table.details :is(th,td){padding:14px 0;vertical-align:top;border-bottom:1px solid var(--line);background:transparent!important;overflow-wrap:anywhere}
+:root[data-eh-details] #page .eh-details table.details th{width:150px;padding-right:24px;color:var(--muted);font-size:12px;font-weight:700;text-align:right}
+:root[data-eh-details] #page .eh-details table.details tr:last-child>*{border-bottom:0}
+:root[data-eh-details] #page .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
+@media(max-width:600px){:root[data-eh-details] .eh-details{padding:16px}:root[data-eh-details] #page .eh-details table.details th{width:100px;padding-right:12px}:root[data-eh-details] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-details] #eh-relhd .acts{margin-left:0}}
 #eh-relhd>.u-av{flex:none;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--chip);color:var(--chip-text);font-size:40px;font-weight:800}#eh-relhd>.u-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #eh-relhd .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}#eh-relhd .u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}#eh-relhd .u-tab:hover{border-color:var(--accent)}#eh-relhd .u-tab.on{background:var(--accent);border-color:var(--accent);color:#fff!important}
 :root[data-eh-rel] #page table.tbl{border-collapse:separate;border-spacing:0;width:100%;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
@@ -7536,15 +7552,27 @@ function mbHead() {
 // release group or an event, and its title and credits off MusicBrainz's header
 function formHeader(key) {
     const [, type, id, form] = key.split('/');
-    if (type === 'release') return relHeader(id, form, FORMS[form]);
+    if (type === 'release' && form !== 'details') return relHeader(id, form, FORMS[form]);
     if (type === 'user') return userFormHeader(id, form);
     const { t, by } = mbHead(), hd = hdSect();
     // the entity header the tags page wears: its picture, else its kind's mark, and the kind beside the form's name
     const img = type === 'event' ? `https://eventartarchive.org/event/${id}/front-250` : visitImg({ key: type + '/' + id });
-    hd.innerHTML = entHead({ type, id, img, kick: FORMS[form] + ' · ' + (HM_KIND[type] || [type])[0], title: t ? t.textContent : document.title });
+    const acts = form === 'details' ? (type === 'release' ? ACTS : type === 'release-group' ? RG_ACTS : AR_ACTS).map(([p, n, tip, ic]) => `<a class="ab${p === form ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === form ? ' aria-current="page"' : ''} data-tip="${esc(tip.replace('artist', type))}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') : '';
+    hd.innerHTML = entHead({ type, id, img, acts, kick: FORMS[form] + ' · ' + (HM_KIND[type] || [type])[0], title: t ? t.textContent : document.title });
     if (by) hd.querySelector('.rhtx').insertAdjacentHTML('beforeend', `<div class="by">by ${by}</div>`);
     entHeadWire(hd);
     return hd;
+}
+// Details already arrived with the page. Keep its translated fields and exact API links;
+// dressing them needs no entity lookup, unlike the release editor's header.
+function detailsDress(c) {
+    const table = c.querySelector(':scope > table.details');
+    if (!table) return;
+    const card = document.createElement('section'); card.className = 'eh-details';
+    table.before(card);
+    const heading = card.previousElementSibling;
+    if (heading && heading.matches('h2')) card.append(heading);
+    card.append(table);
 }
 // an editor's page kept as MusicBrainz's: the editor's avatar, name and tabs over it; MusicBrainz's own title and tabs hide
 function userFormHeader(id, form) {
@@ -7647,12 +7675,14 @@ function relSet(on) {
         (document.head || de).insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-rel-css">${REL_CSS()}</style>`);
         const rel = PAGE_ID.startsWith('relate/'), c = document.getElementById('content') || document.getElementById('page');
         if (c) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
+        if (c && PAGE_ID.endsWith('/details')) detailsDress(c);
         LOG.info(rel ? 'Dressing the relationship editor of ' + PAGE_ID.split('/')[1] : 'Dressing the form ' + PAGE_ID.slice(5));
         if (rel) relCards();
         else coverDims();
     }
     const theme = on && mbuTheme();
     ehOn = on;
+    de.toggleAttribute('data-eh-details', on && PAGE_ID.endsWith('/details'));
     if (on) { de.setAttribute('data-eh-rel', ''); de.setAttribute('data-eh-theme', theme); de.setAttribute('data-eh-bg', S.bg || 'flat'); de.style.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); }
     else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); de.removeAttribute('data-eh-bg'); }
     for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }

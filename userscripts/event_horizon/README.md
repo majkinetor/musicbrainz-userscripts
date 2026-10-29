@@ -11,6 +11,7 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 - **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument, place, series or event page, and moves between them without reloading.
 - **[Pinned header](#pinned-header)** keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: a button in the page's action row jumps to, folds, reorders or hides each part of the page.
+- **[Details](#details)** shows an entity's identifiers, update date and data links.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
 
@@ -37,6 +38,10 @@ Once the page's header scrolls away, a single bar keeps its cover, title and art
 ## Sections
 
 Click **Sections** (the list icon beside Search, top right) to open the list. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered.
+
+## Details
+
+Open **Details** (the info icon in the header) for all of an entity's detail fields, including its MBID, last update and data links. The page uses Event Horizon's header and a card for MusicBrainz's details. The back arrow returns to the overview.
 
 ## Tracks and platforms
 
