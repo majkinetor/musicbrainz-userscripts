@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.181032
+// @version      2026.10.29.183016
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2384,11 +2384,11 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rl-one .kg{display:flex;flex-direction:column;gap:4px;flex:none;padding-left:28px}
 .rl-one .kg:first-child{padding-left:0}
 .rl-one .kg .label{font-size:11px}
-.rl-one .qk{position:relative;display:inline-flex}
-.rl-one .qk>.popwrap{position:absolute;right:-4px;bottom:-4px}
-.rl-one button.kn{display:grid;place-items:center;width:16px;height:16px;padding:0;border:0;background:none;font-size:0;cursor:pointer}
-.rl-one button.kn::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 2px var(--surface)}
-.rl-one button.kn:hover::before,.rl-one button.kn[aria-expanded="true"]::before{background:var(--text)}
+.qk{position:relative;display:inline-flex}
+.qk>.popwrap{position:absolute;right:-4px;bottom:-4px}
+.qk button.kn{display:grid;place-items:center;width:16px;height:16px;padding:0;border:0;background:none;font-size:0;cursor:pointer}
+.qk button.kn::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 2px var(--surface)}
+.qk button.kn:hover::before,.qk button.kn[aria-expanded="true"]::before{background:var(--text)}
 .pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
 .rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
@@ -3354,7 +3354,15 @@ function edHtml(r, eds, count) {
 /* ── tracklist ─────────────────────────────────────── */
 function trackLinks(t, ctx) {
     const ps = sortP(t.links), slotKeys = ctx.slots;
-    const slots = slotKeys.map(k => { const p = ps.find(x => x.key === k); return p ? `<a class="slot" style="--pl-size:${S.plSize}px" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}">${icon(p, S.plSize)}</a>` : '<span class="slot off" style="--pl-size:${S.plSize}px"></span>'; });
+    const slots = slotKeys.map((k, i) => {
+        const p = ps.find(x => x.key === k);
+        if (!p) return '<span class="slot off" style="--pl-size:${S.plSize}px"></span>';
+        const a = plA(p, S.plSize, 'slot').replace('<a ', `<a style="--pl-size:${S.plSize}px" `);
+        if (p.urls.length < 2) return a;
+        const id = `tk-${t.key}-${i}`, label = `${p.urls.length} links on ${p.name}`;
+        const rows = p.urls.map(u => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}${u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`).join('');
+        return `<span class="qk">${a.replace('" aria-label=', '&#10;Right-click: its ' + p.urls.length + ' links" aria-label=')}<span class="popwrap"><button class="kn" type="button" data-pop="${esc(id)}" aria-expanded="false" aria-label="${esc(label)}" data-tip="${esc(label)}">+${p.urls.length}</button><div class="pop r" id="pop-${esc(id)}" hidden><div class="h label">${esc(p.name)}</div>${rows}</div></span></span>`;
+    });
     const rest = ps.filter(p => !slotKeys.includes(p.key));
     const more = rest.length
         ? `<span class="popwrap"><button class="more" style="--pl-size:${S.plSize}px" type="button" data-pop="tk-${t.key}" aria-expanded="false" aria-label="${rest.length} more sites">+${rest.length}</button><div class="pop r" id="pop-tk-${t.key}" hidden><div class="h label">Also on</div>${popRows(rest)}</div></span>`
