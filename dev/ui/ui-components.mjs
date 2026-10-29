@@ -97,7 +97,8 @@ const CSS = [
     // Toast — one reused element, bottom-centre, fading. Duration and severity
     // are the contract; `at` moves it next to a click (Mammoth needs that for
     // its field-memory pin, and it was the only script doing it).
-    '#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-pop);',
+    // Above every modal (--mbu-z-tip): at --mbu-z-pop a toast fired from an open dialog was hidden behind it.
+    '#mbu-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:var(--mbu-z-tip);',
     'background:var(--mbu-accent-deep);color:var(--mbu-text-on-accent);padding:10px 16px;border-radius:9px;',
     'font:13px/1.35 var(--mbu-font);box-shadow:var(--mbu-shadow-lg);opacity:0;transition:opacity .2s;',
     'pointer-events:none;max-width:80vw;text-align:center;white-space:pre-wrap}',
