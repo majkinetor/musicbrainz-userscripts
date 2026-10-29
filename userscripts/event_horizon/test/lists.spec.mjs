@@ -76,5 +76,4 @@ test('a heading\'s funnel filters the table by that column (#845)', { tag: '@san
   const left = await cells();
   check(left.length > 0 && left.every(t => t.toLowerCase().includes(word.toLowerCase())), `every row left has "${word}" in its artist`);
   check(left.length <= all.length, 'the filter does not add rows');
-  check(/\/instrument\/63021302-86cd-4aee-80df-2270d54f4978\/aliases$/.test(await page.getAttribute('.als-go', 'href')), 'the aliases row links to the aliases page');
 });

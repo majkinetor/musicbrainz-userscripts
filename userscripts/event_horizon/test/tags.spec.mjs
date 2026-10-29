@@ -85,7 +85,7 @@ test('the header\'s pencil edits the tags in place: add, withdraw, done', { tag:
   await page.click('button.eh-edit[data-tgin="open"]');
   const i = page.locator('.tgi-in');
   await i.waitFor();
-  check(await page.locator('.tgi').count() >= 5, 'every tag shows');
+  check(await until(() => page.locator('.tgi').count(), n => n >= 5) >= 5, 'every tag shows');   // the editor opens at once; the tags come after
   await i.fill('eh inline test');
   await i.press('Enter');
   const mine = page.locator('.tgi.mine', { hasText: 'eh inline test' });
