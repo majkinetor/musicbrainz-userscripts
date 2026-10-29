@@ -15,9 +15,9 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 
 <a id="standard-10"></a>
 
-### 10. Install links follow a branch; only releases pin a commit
+### 10. Install links follow a branch; on GitHub only releases pin a commit
 
-Every userscript install link shared in chat or on GitHub follows the branch the work is on: `main` once it's there, the feature branch before. Pinned links (a commit SHA) are only for releases, and the release script writes those ([DEVELOP → Releasing](DEVELOP.md#releasing)); never post one anywhere else.
+Every userscript install link shared in chat or on GitHub follows the branch the work is on: `main` once it's there, the feature branch before. On GitHub, pinned links (a commit SHA) are only for releases, and the release script writes those ([DEVELOP → Releasing](DEVELOP.md#releasing)). In chat, the branch link gets a pinned one under it ([AGENTS → Userscripts](AGENTS.md#userscripts)).
 
 ```markdown
 [Install @<version> (latest, auto-updates)](https://github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/main/userscripts/<dir>/<file>.user.js)
