@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.200100
+// @version      2026.10.29.201400
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2288,11 +2288,10 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .facts-col{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:10px;padding-top:2px}
 .kicker{display:flex;align-items:center;gap:10px;min-width:0;font-size:18px}
 .kicker>span:not(.acts){white-space:nowrap}
-.kicker.ico .ab .abt{display:none}
-.kicker.ico .ab{padding:0 8px}
+.kicker .ab .abt{display:var(--eh-menu-titles,none)}
 .kicker svg{color:var(--accent)}
 .kicker .acts{margin-left:auto;display:flex;gap:2px;align-items:center}
-.kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 7px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
+.kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 .kicker .abx{position:relative;display:inline-flex}.kicker .abm{display:none;position:absolute;top:100%;left:0;z-index:30;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow)}.kicker .abx:is(:hover,:focus-within)>.abm{display:flex}.kicker .abm .ab{white-space:nowrap}
 .art .cvact{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;background:rgba(0,0,0,.66);color:#fff!important;font-size:13px;font-weight:600;text-decoration:none!important;opacity:0;transition:opacity .15s;white-space:nowrap}.art .picw:hover>.cvact,.art .cvact:focus-visible{opacity:1}.art .cvact:hover{background:var(--accent)}
@@ -2308,7 +2307,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec]{color:var(--chip-text)!important}
-.kicker.pin-home{min-height:30px}.kicker.pin-home>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis}.kicker.pin-home .acts,#eh-pin .acts{flex:none}.kicker.pin-home .ab .abt,#eh-pin .ab .abt{display:none}.kicker.pin-home .ab,#eh-pin .ab{padding:0 8px}
+.kicker.pin-home{min-height:30px}.kicker.pin-home>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis}.kicker.pin-home .acts,#eh-pin .acts{flex:none}
 #eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:cover;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}
 #eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
@@ -2724,7 +2723,7 @@ const S = {
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
     byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1280, bg: 'flat',
-    on: true,
+    on: true, menuTitles: false,
     thumbs: true,
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
@@ -2738,9 +2737,12 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
+VIEW.push('menuTitles');
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
-const save = () => { try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
+const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
+menuTitlesApply();
+const save = () => { menuTitlesApply(); try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
 const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -6715,13 +6717,6 @@ function render(keepPop) {
         const lks = [...tl.querySelectorAll('.tr .lk')], w = Math.max(0, ...lks.map(e => e.offsetWidth));
         if (w) for (const e of lks) e.style.minWidth = w + 'px';
     }
-    // The action buttons stay on the kicker's row: when their names don't fit, only the icons show.
-    const kick = app.querySelector('.kicker');
-    if (kick) {
-        const fit = () => { kick.classList.remove('ico'); if (kick.scrollWidth > kick.clientWidth + 1) kick.classList.add('ico'); };
-        fit();
-        if (window.ResizeObserver) new window.ResizeObserver(fit).observe(kick.parentElement || kick);
-    }
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     secRail(app);
     fitQuiet();
@@ -8161,7 +8156,8 @@ function cfgBody() {
             + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them')),
         artist: row('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
 Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next"),
-        general: row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
+        general: row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
+            + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band'], ['hex', 'Hexagons']].map(([k, l]) => chip('bg', k, (S.bg || 'flat') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
     };
     return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
@@ -8225,7 +8221,7 @@ function openCfg() {
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'menuTitles') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
