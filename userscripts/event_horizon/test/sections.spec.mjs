@@ -29,3 +29,26 @@ test('the header pins to the top once it scrolls away, carrying the action row',
   await page.evaluate(() => scrollTo(0, 0));
   check(await until(() => page.locator('#app .kicker .acts [data-ehsec]').count(), n => n > 0, 5000) === 1, 'back at the top, the actions return to the header');
 });
+
+test('dragging a section shows a line where it will land', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d');
+  await inject('event_horizon');
+  const btn = page.locator('#app .kicker .acts [data-ehsec]');
+  check(await until(() => btn.count(), n => n > 0, 20000) === 1, 'the page drew');
+  await btn.click();
+  const line = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('#eh-rail [data-sec]')];
+    const fire = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, clientY: y, dataTransfer: new DataTransfer() }));
+    const r = rows[1].getBoundingClientRect();
+    fire(rows[0], 'dragstart', 0);
+    fire(rows[1], 'dragover', r.top + 2);
+    const before = rows[1].classList.contains('db') && getComputedStyle(rows[1], '::before').content !== 'none';
+    fire(rows[1], 'dragover', r.bottom - 2);
+    const after = rows[1].classList.contains('da') && !rows[1].classList.contains('db');
+    fire(rows[0], 'dragend', 0);
+    return { before, after, cleared: !document.querySelector('#eh-rail .db,#eh-rail .da') };
+  });
+  check(line.before, 'over the top half, the line is above the row');
+  check(line.after, 'over the bottom half, below it');
+  check(line.cleared, 'letting go clears it');
+});
