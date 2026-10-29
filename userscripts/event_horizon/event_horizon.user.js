@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.232500
+// @version      2026.10.29.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3001,7 +3001,7 @@ function edTip(e, cur) {
     const byDate = [];
     for (const v of e.events) { const l = byDate.find(x => x.date === v.date); l ? l.iso.push(v.iso) : byDate.push({ date: v.date, iso: [v.iso] }); }
     const f = (label, v) => v ? `<div><div class="lbl">${label}</div><div class="v">${v}</div></div>` : '';
-    const st = e.status !== 'Official' ? (e.status || 'No status') : '';
+    const st = e.status && e.status !== 'Official' ? (e.status || 'No status') : '';
     return `<div class="ehtip"><div class="hd"><b>${esc(e.title)}</b>${cur ? '<span class="here">you are here</span>' : ''}<span class="fmt">${esc(fmtSummary(e.formats))}${tracks}</span></div>${e.disambig ? `<div class="dis">${esc(e.disambig)}</div>` : ''}<div class="fs">`
         + f(`Released${e.events.length > 1 ? ` <span class="count">${e.events.length}</span>` : ''}`, byDate.map(l => `<div>${l.date ? fdate(l.date) : 'no date'} <span class="sub">${(i => esc(i.length > 6 ? i.slice(0, 5).join(', ') + ` +${i.length - 5} more` : i.join(', ')))(l.iso.filter(Boolean))}</span></div>`).join('') || (e.date && fdate(e.date)))
         + f(`Label${e.li.length > 1 ? 's' : ''}`, e.li.map(l => `<div class="lab">${l.name ? `<span class="ln">${esc(l.name)}</span>` : ''}${l.catno ? `<span class="mono">${esc(l.catno)}</span>` : ''}</div>`).join(''))
@@ -3094,10 +3094,11 @@ const ACTS = [
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const link = ([p, n, tip, ic]) => { const inMore = ['releases', 'details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
     const less = actions.filter(a => ['details', 'tags'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
-    return actions.filter(a => !less.includes(a)).map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}<span class="abt">More</span></summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
+    if (less.length && ['artist', 'area', 'instrument', 'label', 'recording', 'place'].includes(type)) less.unshift(['releases', 'Releases', 'Releases', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>']);
+    return actions.filter(a => !less.includes(a)).map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
 }
 document.addEventListener('click', e => { document.querySelectorAll('.eh-more[open]').forEach(m => { if (!m.contains(e.target) || e.target.closest('a')) m.open = false; }); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.eh-more[open]').forEach(m => { m.open = false; m.querySelector('summary').focus(); }); });
@@ -3285,14 +3286,14 @@ function rlQuiet(r, scope = '') {
 }
 
 /* ── editions ──────────────────────────────────────── */
-function edTile(e, curId) {
+function edTile(e, curId, titled = false) {
     const k = fmtKind(e.formats[0]);
     const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
         <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
-        <span class="t1">${esc(fmtSummary(e.formats))}</span>
+        ${titled ? `<span class="dt">${esc(e.title)}</span>` : ''}<span class="t1">${esc(fmtSummary(e.formats))}</span>
         <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
     </a>`;
 }
@@ -3379,12 +3380,12 @@ function edHtml(r, eds, count) {
     const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
-    else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
-            return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id)).join('')}</div></div>`;
+            return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id, !r.id)).join('')}</div></div>`;
         }).join('')}</div>`;
-    else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
     const more = paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
     return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, '', filters + body + more, folded);
@@ -6672,7 +6673,9 @@ function editMenu(app) {
     e.removeAttribute("data-tip"); e.removeAttribute("title");    // the menu opening under it says enough; a tip would cover it
     w.insertAdjacentHTML('beforeend', `<span class="abm">${it.map(([p, n, ic]) => `<a class="ab" href="${base}/${p}">${SVG(ic)}<span>${n}</span></a>`).join('')}</span>`);
 }
+var releasePageDraw;
 function render(keepPop) {
+    if (releasePageDraw) { releasePageDraw(); save(); return; }
     const app = $('#app');
     bgApply();
     ehWidth();
@@ -7625,60 +7628,41 @@ function detailsDress(c) {
 }
 // Keep the native release lists and their forms intact: paging, filters and selection
 // still belong to MusicBrainz. Each list gets its own horizontally scrolling card.
+// Adapt the loaded rows to the edition model; no extra MusicBrainz lookup.
+function releaseRows(table) {
+    return [...table.querySelectorAll('tbody > tr')].flatMap(tr => {
+        const link = tr.querySelector('a[href*="/release/"]'); if (!link) return [];
+        const cells = [...tr.cells], at = cells.findIndex(td => td.contains(link));
+        const text = i => cells[at + i]?.textContent.trim() || '';
+        const events = [...tr.querySelectorAll('.release-event')].map(ev => ({date: ev.querySelector('.release-date')?.textContent.trim() || '', area: ev.querySelector('abbr')?.getAttribute('title') || '', iso: ev.querySelector('.release-country')?.textContent.trim() || ''}));
+        const li = [...(cells[at + 5]?.querySelectorAll('a[href*="/label/"]') || [])].map((l,i) => ({id:l.getAttribute('href').split('/').pop(), name:l.textContent.trim(), catno:cells[at + 6]?.querySelectorAll('.catalog-number')[i]?.textContent.trim() || ''}));
+        if (!li.length && text(6)) li.push({name:'',catno:text(6)});
+        const id = link.getAttribute('href').split('/').pop();
+        const ac = [...(cells[at+1]?.querySelectorAll('a[href*="/artist/"]') || [])].map((l,i,ls)=>({name:l.textContent.trim(),artist:{id:l.getAttribute('href').split('/').pop(),name:l.textContent.trim()},joinphrase:i < ls.length-1 ? ', ' : ''}));
+        return [{id, title:link.textContent.trim(), disambig:cells[at].querySelector('.comment')?.textContent.trim() || '', formats:[text(2)], counts:text(3).split('+').map(n=>+n.trim() || 0), events, date:events[0]?.date || '', where:events.map(e=>e.iso).filter(Boolean), li, labels:li.map(l=>l.name).filter(Boolean), barcode:text(7), ac, links:[], thumb:'https://coverartarchive.org/release/'+id+'/front-250', status:''}];
+    });
+}
 function releasesDress(c) {
-    const css = CSS.split('\n').filter(l => /^\.(disco|ed-row|ed-views|ed-t|dg-sort|fbox|fbar|tq-|secthead|sec[ .{]|fold[ .{]|count[ .{])/.test(l)).join('\n')
-        .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => ':root[data-eh-releases] .eh-releases ' + x.trim()).join(',') + '{');
-    document.getElementById('eh-rel-css').textContent += '\n' + css;
-    for (const [i, table] of [...c.querySelectorAll('table.tbl')].entries()) {
-        if (table.closest('.eh-releases')) continue;
-        const block = table.closest('form') || table;
-        if (block.parentElement !== c) continue;
-        const card = document.createElement('section'); card.className = 'eh-releases';
-        block.before(card);
-        const heading = card.previousElementSibling;
-        if (heading && heading.matches('h2')) card.append(heading);
-        card.append(block);
-        if (!table.querySelector('a[href*="/release/"]')) continue;
-        const sid = 'native-releases-' + i, head = [...table.querySelectorAll('thead th')].map(th => th.innerHTML);
-        const rows = [...table.querySelectorAll('tbody > tr')].map(tr => [...tr.cells].map(td => {
-            const copy = td.cloneNode(true); copy.querySelectorAll('script,input,button').forEach(n => n.remove());
-            copy.querySelectorAll('a[href]').forEach(a => { const href = a.getAttribute('href'); for (const at of [...a.attributes]) a.removeAttribute(at.name); a.setAttribute('href', href); });
-            return copy.innerHTML;
-        }));
-        if (!head.length || !rows.length) continue;
-        const x = {head, rows}, host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
-        const outerTitle = c.querySelector(':scope > h2'); if (outerTitle) outerTitle.classList.add('eh-release-title');
-        if (block.matches('form')) block.classList.add('eh-release-form');
-        const draw = () => {
-            const old = S.tabView; S.tabView = S.releaseListView || 'grid';
-            host.innerHTML = tabSect(sid, 'Releases', x, location.href, 'release'); S.tabView = old;
-            host.querySelectorAll('.disco > a').forEach(a => {
-                const row = rows.find(r => r.some(cell => cell.includes(a.getAttribute('href').replace(MB, ''))));
-                const date = a.querySelector('.dy');
-                if (date && row) { const cell = row.find(v => /\d{4}-\d{2}|release-event/.test(v)); date.textContent = cell ? (cell.replace(/<[^>]*>/g, '').match(/\d{4}/) || [''])[0] : ''; }
-            });
-            host.querySelectorAll('[data-dgcover]').forEach(im => { im.onerror = () => { im.replaceWith(Object.assign(document.createElement('span'), {className:'dn', innerHTML:LAYERS(36, 1)})); }; });
-            const title = card.querySelector(':scope > h2'); if (title) title.classList.add('eh-release-title');
-        };
-        host.addEventListener('click', e => {
-            const b = e.target.closest('button,[data-fold]'); if (!b) return;
-            if (b.dataset.tabview) { S.releaseListView = b.dataset.tabview; save(); }
-            else if (b.dataset.tqopen) { if (sid in TQ) delete TQ[sid]; else TQ[sid] = ''; }
-            else if (b.dataset.tsort != null) { const n = +b.dataset.tsort, prev = TSORT[sid]; TSORT[sid] = !prev || prev[0] !== n ? [n,1] : prev[1] === 1 ? [n,-1] : []; }
-            else if (b.dataset.tqcol) { TQ[sid] = b.dataset.tqcol.split('\t')[1] + ':'; }
-            else if (b.dataset.fold) { S.fold = S.fold.includes(sid) ? S.fold.filter(k => k !== sid) : [...S.fold, sid]; save(); }
-            else return;
-            e.preventDefault(); draw();
-            if (b.dataset.tqopen || b.dataset.tqcol) host.querySelector('input')?.focus();
-        });
-        host.addEventListener('input', e => {
-            if (!e.target.matches('[data-tq]')) return;
-            const pos = e.target.selectionStart; TQ[sid] = e.target.value; draw();
-            const input = host.querySelector('input'); input.focus(); input.setSelectionRange(pos,pos);
-        });
-        host.addEventListener('keydown', e => { if (e.key === 'Escape' && e.target.matches('[data-tq]')) { TQ[sid] = ''; draw(); host.querySelector('input')?.focus(); } });
-        draw();
-    }
+    // Scope the shared stylesheet with the browser's parser, including media rules.
+    const sheet = new CSSStyleSheet(); sheet.replaceSync(CSS);
+    const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views ' + r.selectorText.split(',').join(', :root[data-eh-releases] .eh-release-views ') + '{' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
+    document.getElementById('eh-rel-css').textContent += scope(sheet.cssRules);
+    const table = [...c.querySelectorAll('table.tbl')].find(t => t.querySelector('a[href*="/release/"]'));
+    if (!table) return;
+    const editions = releaseRows(table), block = table.closest('form') || table;
+    const card = document.createElement('section'); card.className = 'eh-releases'; block.before(card); card.append(block);
+    const title = c.querySelector(':scope > h2'); if (title) title.classList.add('eh-release-title');
+    if (block.matches('form')) block.classList.add('eh-release-form');
+    const host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
+    data = {kind:'native-releases', editions};
+    releasePageDraw = () => {
+        host.innerHTML = edHtml({page:location.pathname}, editions, editions.length);
+        host.querySelectorAll('img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (tile) { im.outerHTML = '<span class="nc">'+LAYERS(36)+'</span>'; tile.querySelector('.fb')?.remove(); } }; });
+    };
+    host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
+    listFilters(host);
+    host.addEventListener('contextmenu', ev => { const b = ev.target.closest('[data-fold],[data-gfold]'); if (!ehOn || !b) return; ev.preventDefault(); b.click(); });
+    releasePageDraw();
 }
 // an editor's page kept as MusicBrainz's: the editor's avatar, name and tabs over it; MusicBrainz's own title and tabs hide
 function userFormHeader(id, form) {
@@ -8054,6 +8038,34 @@ const HIDE = 'body{visibility:hidden!important}';
 // MusicBrainz's own stylesheets go off while the viewer shows, and back on with its page
 // MusicBrainz's own sheets only: the other scripts' styles carry an id (fs-style, mc-style…) and stay on for their launchers
 const mbSheets = on => { for (const n of document.querySelectorAll('link[rel~="stylesheet"],style:not([id])')) if (!/^(eh-|mbu)/.test(n.id)) n.disabled = !on; };
+function listFilters(root) {
+    // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
+    root.addEventListener('change', ev => {
+        if (ev.target.matches && ev.target.matches('[data-lmauto]')) { S.lmAuto = ev.target.checked; save(); for (const c of document.querySelectorAll('[data-lmauto]')) c.checked = S.lmAuto; lmWatch($('#app')); return; }
+        const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
+        if (!sc || !t.value) return;
+        // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
+        const o = t.list && [...t.list.options].find(x => x.value === t.value), v = o ? o.dataset.fv : t.dataset.fset ? t.value : '';
+        if (!v) return;
+        const i = v.indexOf('\t');
+        FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
+        const y = scrollY; render(); scrollTo(0, y);
+    });
+    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const top = t.getBoundingClientRect().top, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, document.documentElement.scrollHeight) + 'px'; render(); const i = $(`[data-fq="${sc}"]`); if (i) { const pin = () => scrollBy(0, i.getBoundingClientRect().top - top); pin(); requestAnimationFrame(pin); i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
+    root.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
+    // while typing, the page keeps its tallest height so a shrinking list doesn't scroll it; leaving the box lets it go
+    root.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) document.body.style.minHeight = ''; }); });
+    root.addEventListener('keydown', ev => {
+        const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
+        if (!pop || pop.hidden) return;
+        const rows = [...pop.querySelectorAll('.fs-row')], at = rows.findIndex(r => r.classList.contains('on'));
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
+        else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
+    });
+    root.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
+    root.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
+    root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
+}
 function build() {
     const head = document.head || document.documentElement;
     head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}</style>`);
@@ -8067,32 +8079,7 @@ function build() {
         const k = navTo(u.href); if (!k) return;
         ev.preventDefault(); fm.classList.remove('open'); ehPush(u.href); show(k);
     });
-    // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
-    document.addEventListener('change', ev => {
-        if (ev.target.matches && ev.target.matches('[data-lmauto]')) { S.lmAuto = ev.target.checked; save(); for (const c of document.querySelectorAll('[data-lmauto]')) c.checked = S.lmAuto; lmWatch($('#app')); return; }
-        const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
-        if (!sc || !t.value) return;
-        // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
-        const o = t.list && [...t.list.options].find(x => x.value === t.value), v = o ? o.dataset.fv : t.dataset.fset ? t.value : '';
-        if (!v) return;
-        const i = v.indexOf('\t');
-        FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
-        const y = scrollY; render(); scrollTo(0, y);
-    });
-    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const top = t.getBoundingClientRect().top, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, document.documentElement.scrollHeight) + 'px'; render(); const i = $(`[data-fq="${sc}"]`); if (i) { const pin = () => scrollBy(0, i.getBoundingClientRect().top - top); pin(); requestAnimationFrame(pin); i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
-    document.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
-    // while typing, the page keeps its tallest height so a shrinking list doesn't scroll it; leaving the box lets it go
-    document.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) document.body.style.minHeight = ''; }); });
-    document.addEventListener('keydown', ev => {
-        const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
-        if (!pop || pop.hidden) return;
-        const rows = [...pop.querySelectorAll('.fs-row')], at = rows.findIndex(r => r.classList.contains('on'));
-        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
-        else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
-    });
-    document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
-    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
-    document.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
+    listFilters(document);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // a click anywhere on a release table row opens that release's page (its links and buttons keep their own); Ctrl/middle: a new tab

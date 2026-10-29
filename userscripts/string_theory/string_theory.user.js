@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.215704
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.29.170001, art_station 2026.10.29.184124, credit_hoarder 2026.10.29.215044, event_horizon 2026.10.29.232500, falcon 2026.10.29.203000, first_contact 2026.10.29.092022, fusion 2026.10.29.154618, group_therapy 2026.10.29.154618, isrc_scout 2026.10.29.220000, mammoth 2026.10.29.092022, mission_control 2026.10.29.210000, platform_check 2026.10.29.154618). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.29.220414
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.29.170001, art_station 2026.10.29.184124, credit_hoarder 2026.10.29.220406, event_horizon 2026.10.29.235500, falcon 2026.10.29.203000, first_contact 2026.10.29.092022, fusion 2026.10.29.154618, group_therapy 2026.10.29.154618, isrc_scout 2026.10.29.220000, mammoth 2026.10.29.092022, mission_control 2026.10.29.210000, platform_check 2026.10.29.154618). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -185,8 +185,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.29.215704 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.29.170001\n  · Art Station v2026.10.29.184124\n  · Credit Hoarder v2026.10.29.215044\n  · Event Horizon v2026.10.29.232500\n  · Falcon v2026.10.29.203000\n  · First Contact v2026.10.29.092022\n  · Fusion v2026.10.29.154618\n  · Group Therapy v2026.10.29.154618\n  · ISRC Scout v2026.10.29.220000\n  · Mammoth v2026.10.29.092022\n  · Mission Control v2026.10.29.210000\n  · Platform Check v2026.10.29.154618");
+  console.log('%c String Theory %c v2026.10.29.220414 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.29.170001\n  · Art Station v2026.10.29.184124\n  · Credit Hoarder v2026.10.29.220406\n  · Event Horizon v2026.10.29.235500\n  · Falcon v2026.10.29.203000\n  · First Contact v2026.10.29.092022\n  · Fusion v2026.10.29.154618\n  · Group Therapy v2026.10.29.154618\n  · ISRC Scout v2026.10.29.220000\n  · Mammoth v2026.10.29.092022\n  · Mission Control v2026.10.29.210000\n  · Platform Check v2026.10.29.154618");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -196,7 +196,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.29.170001"],["art_station","Art Station","2026.10.29.184124"],["credit_hoarder","Credit Hoarder","2026.10.29.215044"],["event_horizon","Event Horizon","2026.10.29.232500"],["falcon","Falcon","2026.10.29.203000"],["first_contact","First Contact","2026.10.29.092022"],["fusion","Fusion","2026.10.29.154618"],["group_therapy","Group Therapy","2026.10.29.154618"],["isrc_scout","ISRC Scout","2026.10.29.220000"],["mammoth","Mammoth","2026.10.29.092022"],["mission_control","Mission Control","2026.10.29.210000"],["platform_check","Platform Check","2026.10.29.154618"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.29.170001"],["art_station","Art Station","2026.10.29.184124"],["credit_hoarder","Credit Hoarder","2026.10.29.220406"],["event_horizon","Event Horizon","2026.10.29.235500"],["falcon","Falcon","2026.10.29.203000"],["first_contact","First Contact","2026.10.29.092022"],["fusion","Fusion","2026.10.29.154618"],["group_therapy","Group Therapy","2026.10.29.154618"],["isrc_scout","ISRC Scout","2026.10.29.220000"],["mammoth","Mammoth","2026.10.29.092022"],["mission_control","Mission Control","2026.10.29.210000"],["platform_check","Platform Check","2026.10.29.154618"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -23218,7 +23218,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 if (__stOff.indexOf("credit_hoarder") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.29.215044","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.29.215044","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.29.220406","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.29.220406","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -36958,7 +36958,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.29.232500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.29.232500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.29.235500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.29.235500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -37937,7 +37937,7 @@ function edTip(e, cur) {
     const byDate = [];
     for (const v of e.events) { const l = byDate.find(x => x.date === v.date); l ? l.iso.push(v.iso) : byDate.push({ date: v.date, iso: [v.iso] }); }
     const f = (label, v) => v ? `<div><div class="lbl">${label}</div><div class="v">${v}</div></div>` : '';
-    const st = e.status !== 'Official' ? (e.status || 'No status') : '';
+    const st = e.status && e.status !== 'Official' ? (e.status || 'No status') : '';
     return `<div class="ehtip"><div class="hd"><b>${esc(e.title)}</b>${cur ? '<span class="here">you are here</span>' : ''}<span class="fmt">${esc(fmtSummary(e.formats))}${tracks}</span></div>${e.disambig ? `<div class="dis">${esc(e.disambig)}</div>` : ''}<div class="fs">`
         + f(`Released${e.events.length > 1 ? ` <span class="count">${e.events.length}</span>` : ''}`, byDate.map(l => `<div>${l.date ? fdate(l.date) : 'no date'} <span class="sub">${(i => esc(i.length > 6 ? i.slice(0, 5).join(', ') + ` +${i.length - 5} more` : i.join(', ')))(l.iso.filter(Boolean))}</span></div>`).join('') || (e.date && fdate(e.date)))
         + f(`Label${e.li.length > 1 ? 's' : ''}`, e.li.map(l => `<div class="lab">${l.name ? `<span class="ln">${esc(l.name)}</span>` : ''}${l.catno ? `<span class="mono">${esc(l.catno)}</span>` : ''}</div>`).join(''))
@@ -38030,10 +38030,11 @@ const ACTS = [
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const link = ([p, n, tip, ic]) => { const inMore = ['releases', 'details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
     const less = actions.filter(a => ['details', 'tags'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
-    return actions.filter(a => !less.includes(a)).map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}<span class="abt">More</span></summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
+    if (less.length && ['artist', 'area', 'instrument', 'label', 'recording', 'place'].includes(type)) less.unshift(['releases', 'Releases', 'Releases', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>']);
+    return actions.filter(a => !less.includes(a)).map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
 }
 document.addEventListener('click', e => { document.querySelectorAll('.eh-more[open]').forEach(m => { if (!m.contains(e.target) || e.target.closest('a')) m.open = false; }); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.eh-more[open]').forEach(m => { m.open = false; m.querySelector('summary').focus(); }); });
@@ -38221,14 +38222,14 @@ function rlQuiet(r, scope = '') {
 }
 
 /* ── editions ──────────────────────────────────────── */
-function edTile(e, curId) {
+function edTile(e, curId, titled = false) {
     const k = fmtKind(e.formats[0]);
     const st = e.status !== 'Official' ? `<span class="st">${esc((e.status || 'No status').replace('Pseudo-Release', 'Pseudo'))}</span>` : '';
     const where = e.where.length > 2 ? e.where.slice(0, 2).join(' ') + ` +${e.where.length - 2}` : e.where.join(' ');
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
         <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
-        <span class="t1">${esc(fmtSummary(e.formats))}</span>
+        ${titled ? `<span class="dt">${esc(e.title)}</span>` : ''}<span class="t1">${esc(fmtSummary(e.formats))}</span>
         <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
     </a>`;
 }
@@ -38315,12 +38316,12 @@ function edHtml(r, eds, count) {
     const filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     let body;
     if (view === 'table') body = edTable(shown, r.id, paged, paged);
-    else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else if (view === 'row') body = `<div class="ed-row">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     else if (view === 'format') body = `<div class="ed-groups">${kindList.filter(([k]) => shown.some(e => fmtKind(e.formats[0]) === k)).map(([k]) => {
             const es = shown.filter(e => fmtKind(e.formats[0]) === k);
-            return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id)).join('')}</div></div>`;
+            return `<div class="g"><div class="gl">${fmtSvg(k, 20)}${KIND_NAME[k]} <span class="count">${es.length}</span></div><div class="covers">${es.map(e => edTile(e, r.id, !r.id)).join('')}</div></div>`;
         }).join('')}</div>`;
-    else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id)).join('')}</div>`;
+    else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
     const more = paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
     return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, '', filters + body + more, folded);
@@ -39979,7 +39980,9 @@ function editMenu(app) {
     e.removeAttribute("data-tip"); e.removeAttribute("title");    // the menu opening under it says enough; a tip would cover it
     w.insertAdjacentHTML('beforeend', `<span class="abm">${it.map(([p, n, ic]) => `<a class="ab" href="${base}/${p}">${SVG(ic)}<span>${n}</span></a>`).join('')}</span>`);
 }
+var releasePageDraw;
 function render(keepPop) {
+    if (releasePageDraw) { releasePageDraw(); save(); return; }
     const app = $('#app');
     bgApply();
     ehWidth();
@@ -40932,60 +40935,41 @@ function detailsDress(c) {
 }
 // Keep the native release lists and their forms intact: paging, filters and selection
 // still belong to MusicBrainz. Each list gets its own horizontally scrolling card.
+// Adapt the loaded rows to the edition model; no extra MusicBrainz lookup.
+function releaseRows(table) {
+    return [...table.querySelectorAll('tbody > tr')].flatMap(tr => {
+        const link = tr.querySelector('a[href*="/release/"]'); if (!link) return [];
+        const cells = [...tr.cells], at = cells.findIndex(td => td.contains(link));
+        const text = i => cells[at + i]?.textContent.trim() || '';
+        const events = [...tr.querySelectorAll('.release-event')].map(ev => ({date: ev.querySelector('.release-date')?.textContent.trim() || '', area: ev.querySelector('abbr')?.getAttribute('title') || '', iso: ev.querySelector('.release-country')?.textContent.trim() || ''}));
+        const li = [...(cells[at + 5]?.querySelectorAll('a[href*="/label/"]') || [])].map((l,i) => ({id:l.getAttribute('href').split('/').pop(), name:l.textContent.trim(), catno:cells[at + 6]?.querySelectorAll('.catalog-number')[i]?.textContent.trim() || ''}));
+        if (!li.length && text(6)) li.push({name:'',catno:text(6)});
+        const id = link.getAttribute('href').split('/').pop();
+        const ac = [...(cells[at+1]?.querySelectorAll('a[href*="/artist/"]') || [])].map((l,i,ls)=>({name:l.textContent.trim(),artist:{id:l.getAttribute('href').split('/').pop(),name:l.textContent.trim()},joinphrase:i < ls.length-1 ? ', ' : ''}));
+        return [{id, title:link.textContent.trim(), disambig:cells[at].querySelector('.comment')?.textContent.trim() || '', formats:[text(2)], counts:text(3).split('+').map(n=>+n.trim() || 0), events, date:events[0]?.date || '', where:events.map(e=>e.iso).filter(Boolean), li, labels:li.map(l=>l.name).filter(Boolean), barcode:text(7), ac, links:[], thumb:'https://coverartarchive.org/release/'+id+'/front-250', status:''}];
+    });
+}
 function releasesDress(c) {
-    const css = CSS.split('\n').filter(l => /^\.(disco|ed-row|ed-views|ed-t|dg-sort|fbox|fbar|tq-|secthead|sec[ .{]|fold[ .{]|count[ .{])/.test(l)).join('\n')
-        .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => ':root[data-eh-releases] .eh-releases ' + x.trim()).join(',') + '{');
-    document.getElementById('eh-rel-css').textContent += '\n' + css;
-    for (const [i, table] of [...c.querySelectorAll('table.tbl')].entries()) {
-        if (table.closest('.eh-releases')) continue;
-        const block = table.closest('form') || table;
-        if (block.parentElement !== c) continue;
-        const card = document.createElement('section'); card.className = 'eh-releases';
-        block.before(card);
-        const heading = card.previousElementSibling;
-        if (heading && heading.matches('h2')) card.append(heading);
-        card.append(block);
-        if (!table.querySelector('a[href*="/release/"]')) continue;
-        const sid = 'native-releases-' + i, head = [...table.querySelectorAll('thead th')].map(th => th.innerHTML);
-        const rows = [...table.querySelectorAll('tbody > tr')].map(tr => [...tr.cells].map(td => {
-            const copy = td.cloneNode(true); copy.querySelectorAll('script,input,button').forEach(n => n.remove());
-            copy.querySelectorAll('a[href]').forEach(a => { const href = a.getAttribute('href'); for (const at of [...a.attributes]) a.removeAttribute(at.name); a.setAttribute('href', href); });
-            return copy.innerHTML;
-        }));
-        if (!head.length || !rows.length) continue;
-        const x = {head, rows}, host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
-        const outerTitle = c.querySelector(':scope > h2'); if (outerTitle) outerTitle.classList.add('eh-release-title');
-        if (block.matches('form')) block.classList.add('eh-release-form');
-        const draw = () => {
-            const old = S.tabView; S.tabView = S.releaseListView || 'grid';
-            host.innerHTML = tabSect(sid, 'Releases', x, location.href, 'release'); S.tabView = old;
-            host.querySelectorAll('.disco > a').forEach(a => {
-                const row = rows.find(r => r.some(cell => cell.includes(a.getAttribute('href').replace(MB, ''))));
-                const date = a.querySelector('.dy');
-                if (date && row) { const cell = row.find(v => /\d{4}-\d{2}|release-event/.test(v)); date.textContent = cell ? (cell.replace(/<[^>]*>/g, '').match(/\d{4}/) || [''])[0] : ''; }
-            });
-            host.querySelectorAll('[data-dgcover]').forEach(im => { im.onerror = () => { im.replaceWith(Object.assign(document.createElement('span'), {className:'dn', innerHTML:LAYERS(36, 1)})); }; });
-            const title = card.querySelector(':scope > h2'); if (title) title.classList.add('eh-release-title');
-        };
-        host.addEventListener('click', e => {
-            const b = e.target.closest('button,[data-fold]'); if (!b) return;
-            if (b.dataset.tabview) { S.releaseListView = b.dataset.tabview; save(); }
-            else if (b.dataset.tqopen) { if (sid in TQ) delete TQ[sid]; else TQ[sid] = ''; }
-            else if (b.dataset.tsort != null) { const n = +b.dataset.tsort, prev = TSORT[sid]; TSORT[sid] = !prev || prev[0] !== n ? [n,1] : prev[1] === 1 ? [n,-1] : []; }
-            else if (b.dataset.tqcol) { TQ[sid] = b.dataset.tqcol.split('\t')[1] + ':'; }
-            else if (b.dataset.fold) { S.fold = S.fold.includes(sid) ? S.fold.filter(k => k !== sid) : [...S.fold, sid]; save(); }
-            else return;
-            e.preventDefault(); draw();
-            if (b.dataset.tqopen || b.dataset.tqcol) host.querySelector('input')?.focus();
-        });
-        host.addEventListener('input', e => {
-            if (!e.target.matches('[data-tq]')) return;
-            const pos = e.target.selectionStart; TQ[sid] = e.target.value; draw();
-            const input = host.querySelector('input'); input.focus(); input.setSelectionRange(pos,pos);
-        });
-        host.addEventListener('keydown', e => { if (e.key === 'Escape' && e.target.matches('[data-tq]')) { TQ[sid] = ''; draw(); host.querySelector('input')?.focus(); } });
-        draw();
-    }
+    // Scope the shared stylesheet with the browser's parser, including media rules.
+    const sheet = new CSSStyleSheet(); sheet.replaceSync(CSS);
+    const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views ' + r.selectorText.split(',').join(', :root[data-eh-releases] .eh-release-views ') + '{' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
+    document.getElementById('eh-rel-css').textContent += scope(sheet.cssRules);
+    const table = [...c.querySelectorAll('table.tbl')].find(t => t.querySelector('a[href*="/release/"]'));
+    if (!table) return;
+    const editions = releaseRows(table), block = table.closest('form') || table;
+    const card = document.createElement('section'); card.className = 'eh-releases'; block.before(card); card.append(block);
+    const title = c.querySelector(':scope > h2'); if (title) title.classList.add('eh-release-title');
+    if (block.matches('form')) block.classList.add('eh-release-form');
+    const host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
+    data = {kind:'native-releases', editions};
+    releasePageDraw = () => {
+        host.innerHTML = edHtml({page:location.pathname}, editions, editions.length);
+        host.querySelectorAll('img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (tile) { im.outerHTML = '<span class="nc">'+LAYERS(36)+'</span>'; tile.querySelector('.fb')?.remove(); } }; });
+    };
+    host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
+    listFilters(host);
+    host.addEventListener('contextmenu', ev => { const b = ev.target.closest('[data-fold],[data-gfold]'); if (!ehOn || !b) return; ev.preventDefault(); b.click(); });
+    releasePageDraw();
 }
 // an editor's page kept as MusicBrainz's: the editor's avatar, name and tabs over it; MusicBrainz's own title and tabs hide
 function userFormHeader(id, form) {
@@ -41361,6 +41345,34 @@ const HIDE = 'body{visibility:hidden!important}';
 // MusicBrainz's own stylesheets go off while the viewer shows, and back on with its page
 // MusicBrainz's own sheets only: the other scripts' styles carry an id (fs-style, mc-style…) and stay on for their launchers
 const mbSheets = on => { for (const n of document.querySelectorAll('link[rel~="stylesheet"],style:not([id])')) if (!/^(eh-|mbu)/.test(n.id)) n.disabled = !on; };
+function listFilters(root) {
+    // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
+    root.addEventListener('change', ev => {
+        if (ev.target.matches && ev.target.matches('[data-lmauto]')) { S.lmAuto = ev.target.checked; save(); for (const c of document.querySelectorAll('[data-lmauto]')) c.checked = S.lmAuto; lmWatch($('#app')); return; }
+        const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
+        if (!sc || !t.value) return;
+        // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
+        const o = t.list && [...t.list.options].find(x => x.value === t.value), v = o ? o.dataset.fv : t.dataset.fset ? t.value : '';
+        if (!v) return;
+        const i = v.indexOf('\t');
+        FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
+        const y = scrollY; render(); scrollTo(0, y);
+    });
+    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const top = t.getBoundingClientRect().top, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, document.documentElement.scrollHeight) + 'px'; render(); const i = $(`[data-fq="${sc}"]`); if (i) { const pin = () => scrollBy(0, i.getBoundingClientRect().top - top); pin(); requestAnimationFrame(pin); i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
+    root.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
+    // while typing, the page keeps its tallest height so a shrinking list doesn't scroll it; leaving the box lets it go
+    root.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) document.body.style.minHeight = ''; }); });
+    root.addEventListener('keydown', ev => {
+        const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
+        if (!pop || pop.hidden) return;
+        const rows = [...pop.querySelectorAll('.fs-row')], at = rows.findIndex(r => r.classList.contains('on'));
+        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
+        else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
+    });
+    root.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
+    root.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
+    root.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
+}
 function build() {
     const head = document.head || document.documentElement;
     head.insertAdjacentHTML('beforeend', `<link id="eh-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"><style id="eh-css">${CSS}</style>`);
@@ -41374,32 +41386,7 @@ function build() {
         const k = navTo(u.href); if (!k) return;
         ev.preventDefault(); fm.classList.remove('open'); ehPush(u.href); show(k);
     });
-    // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
-    document.addEventListener('change', ev => {
-        if (ev.target.matches && ev.target.matches('[data-lmauto]')) { S.lmAuto = ev.target.checked; save(); for (const c of document.querySelectorAll('[data-lmauto]')) c.checked = S.lmAuto; lmWatch($('#app')); return; }
-        const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);
-        if (!sc || !t.value) return;
-        // "+ Filter" is a box whose list narrows as it is typed in; a picked line sets its field
-        const o = t.list && [...t.list.options].find(x => x.value === t.value), v = o ? o.dataset.fv : t.dataset.fset ? t.value : '';
-        if (!v) return;
-        const i = v.indexOf('\t');
-        FLT[sc].f[v.slice(0, i)] = v.slice(i + 1);
-        const y = scrollY; render(); scrollTo(0, y);
-    });
-    const fq = (t, v) => { const sc = t.dataset.fq, p = v === undefined ? t.selectionStart : 0; FLT[sc].q = v === undefined ? t.value : v; const top = t.getBoundingClientRect().top, b = document.body; b.style.minHeight = Math.max(parseFloat(b.style.minHeight) || 0, document.documentElement.scrollHeight) + 'px'; render(); const i = $(`[data-fq="${sc}"]`); if (i) { const pin = () => scrollBy(0, i.getBoundingClientRect().top - top); pin(); requestAnimationFrame(pin); i.focus({ preventScroll: true }); i.setSelectionRange(p, p); fltSug(sc, i); } };
-    document.addEventListener('mousedown', ev => { const r = ev.target.closest && ev.target.closest('.fs-row'); if (!r) return; ev.preventDefault(); fltTake(r.closest('.fbox').querySelector('input').dataset.fq, r); });
-    // while typing, the page keeps its tallest height so a shrinking list doesn't scroll it; leaving the box lets it go
-    document.addEventListener('focusout', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) setTimeout(() => { fltSug(t.dataset.fq, t); if (!(document.activeElement && document.activeElement.dataset && document.activeElement.dataset.fq)) document.body.style.minHeight = ''; }); });
-    document.addEventListener('keydown', ev => {
-        const t = ev.target, sc = t.dataset && t.dataset.fq, pop = sc && t.parentNode.querySelector('.fpop');
-        if (!pop || pop.hidden) return;
-        const rows = [...pop.querySelectorAll('.fs-row')], at = rows.findIndex(r => r.classList.contains('on'));
-        if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); const j = (at + (ev.key === 'ArrowDown' ? 1 : rows.length - 1)) % rows.length; rows.forEach((r, k) => r.classList.toggle('on', k === j)); rows[j].scrollIntoView({ block: 'nearest' }); }
-        else if (ev.key === 'Enter' && at >= 0) { ev.preventDefault(); fltTake(sc, rows[at]); }
-    });
-    document.addEventListener('input', ev => { const t = ev.target; if (t.dataset && t.dataset.tq) { const k = t.dataset.tq, p = t.selectionStart, y = scrollY; TQ[k] = t.value; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(p, p); } } else if (t.dataset && t.dataset.fq) fq(t); else if (t.dataset && t.dataset.fadd && t.list && [...t.list.options].some(x => x.value === t.value)) t.dispatchEvent(new Event('change', { bubbles: true })); });
-    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ev.target.dataset && ev.target.dataset.fq && ev.target.value) { ev.stopPropagation(); fq(ev.target, ''); } }, true);
-    document.addEventListener('focusin', ev => { const t = ev.target; if (t.dataset && t.dataset.fq) fltSug(t.dataset.fq, t); });
+    listFilters(document);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
     // a click anywhere on a release table row opens that release's page (its links and buttons keep their own); Ctrl/middle: a new tab
