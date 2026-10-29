@@ -3,7 +3,7 @@ import { test, check, until, settled, attachShot } from '../../../dev/test/harne
 // Art Station beside EH throws on this page on main too: not this spec's to fix
 test.use({ gm: { name: 'Event Horizon' }, pageErrors: ["reading 'querySelectorAll'"] });
 
-const REL = '0a0d6d1b-8a4b-4ab4-9de3-9f4a5c5b8a6e';
+const REL = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
 
 // #847: while EH shows, the other scripts' corner launchers fold behind String Theory's dock
 test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
@@ -63,4 +63,65 @@ test('the corner launchers fold behind the dock while EH shows', { tag: ['@sandb
   check(await until(() => page.locator('#mc-launch').isVisible(), v => !v) === false, 'Mission Control is gone from the artist');
   await page.locator('#eh-launch').click();
   check(await until(on, v => !v) === false, 'EH off turns the dock off');
+});
+
+// #847: a release opened on its History has no sidebar on MusicBrainz's page; at its Overview inside EH, Platform
+// Check is in the dock all the same, and a click opens its panel for this release, never reloading the page
+test('Platform Check opens from the dock after History → Overview', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+  const REL2 = '54b7bca2-7ed6-4484-bdd3-fe35a3f33dda';
+  await page.goto(`https://test.musicbrainz.org/release/${REL2}/edits`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await page.evaluate(() => localStorage.setItem('mbu.dockOpen', 'true'));
+  await inject('platform_check');
+  await inject('event_horizon');
+  const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
+  if (!(await on())) await page.locator('#eh-launch').click();
+  check(await until(on, v => v) === true, 'EH shows');
+  await page.evaluate(() => { window.__noReload = 1; });
+  check(!(await page.locator('#mb-pc-dock').isVisible()), 'no Platform Check on the History');
+  await page.locator(`#app a[href$="/release/${REL2}"]`).first().click();
+  check(await until(() => page.evaluate(() => location.pathname), p => p === `/release/${REL2}`) !== null, 'on the overview');
+  check(await until(() => page.locator('#mb-pc-dock').isVisible(), v => v) === true, 'Platform Check is in the dock');
+  await page.locator('#mb-pc-dock').click();
+  check(await until(() => page.locator('.mbu-dock-win #mb-pc-panel').isVisible(), v => v) === true, 'its panel opens');
+  check(await until(() => page.locator('#mb-pc-panel [id^="ico-"]').evaluateAll(es => es.filter(e => e.textContent.trim() !== '⚪').length), n => n > 0) > 0, 'it scanned the release');
+  check(await page.evaluate(() => window.__noReload) === 1, 'the page did not reload');
+  await attachShot(testInfo, page, 'pc-after-history');
+});
+
+// #847: Platform Check started on a release page follows the release EH shows next, without a reload
+test('Platform Check follows another release shown inside EH', { tag: ['@sandbox'] }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/release/${REL}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await settled(page);
+  await inject('platform_check');
+  await inject('event_horizon');
+  const on = () => page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock'));
+  if (!(await on())) await page.locator('#eh-launch').click();
+  check(await until(on, v => v) === true, 'EH shows');
+  await page.evaluate(() => { window.__noReload = 1; });
+  await page.locator('#app a[href*="/artist/"]').first().click();
+  check(await until(() => page.evaluate(() => location.pathname), p => p.startsWith('/artist/')) !== null, 'on the artist');
+  check(await page.evaluate(() => document.documentElement.hasAttribute('data-mbu-release')) === false, 'no release named on the artist');
+  // the artist lists release groups: one that isn't this release's (MusicBrainz's page, hidden, links that one)
+  const rg = await until(() => page.evaluate(() => {
+    const id = a => (a.getAttribute('href').match(/\/release-group\/([0-9a-f-]{36})$/) || [])[1];
+    const own = new Set([...document.querySelectorAll('#page a[href*="/release-group/"]')].map(id));
+    return [...document.querySelectorAll('#app a[href*="/release-group/"]')].map(id).find(r => r && !own.has(r)) || null;
+  }), v => v);
+  check(!!rg, 'another release group on the artist');
+  if (!rg) return;
+  await page.locator(`#app a[href$="/release-group/${rg}"]`).first().click();
+  check(await until(() => page.evaluate(() => location.pathname), p => p.startsWith('/release-group/')) !== null, 'on a release group');
+  const other = await until(() => page.locator('#app a[href*="/release/"]').evaluateAll((as, rel) => as.map(a => (a.getAttribute('href').match(/\/release\/([0-9a-f-]{36})$/) || [])[1]).find(id => id && id !== rel) || null, REL), v => v);
+  check(!!other, 'another release on the artist');
+  if (!other) return;
+  await page.locator(`#app a[href$="/release/${other}"]`).first().click();
+  check(await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-release')), v => v === other) === other, 'EH names the release it shows');
+  check(await until(() => page.locator('#mb-pc-dock').isVisible(), v => v) === true, 'Platform Check is in the dock');
+  await page.locator('#mb-pc-dock').click();
+  check(await until(() => page.locator('.mbu-dock-win #mb-pc-panel').isVisible(), v => v) === true, 'its panel opens');
+  check(await until(() => page.locator('#mb-pc-panel [id^="ico-"]').evaluateAll(es => es.filter(e => e.textContent.trim() !== '⚪').length), n => n > 0) > 0, 'it scanned the release');
+  check(await page.evaluate(() => window.__noReload) === 1, 'the page did not reload');
+  check(await until(() => page.locator(`#mb-pc-panel a[href$="/release/${other}"]`).count(), n => n > 0) > 0, 'its panel is for the release shown');
+  await attachShot(testInfo, page, 'pc-follows');
 });

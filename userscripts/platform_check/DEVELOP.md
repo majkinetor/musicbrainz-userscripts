@@ -252,6 +252,15 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 
 MusicBrainz is asked once which of the found links it already has, and on whom, one request per 100 links: when the scans finish, for the count on **Artists & labels**, and the table reuses that answer. With *Count the links to add* off, it is asked only when the table opens. A match cached before the feature existed is read again once, on the next scan of the release.
 
+## Following Event Horizon
+
+Event Horizon shows pages without loading them, and names the release it shows in `<html data-mbu-release>` ([its DEVELOP.md](../event_horizon/DEVELOP.md#the-release-shown)). Platform Check follows that release ([#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)):
+
+- **On a release page with a sidebar**, it starts as always. When Event Horizon names another release, `pcFollow` cancels the running scan, clears the release's state and scans the named one.
+- **Anywhere else** (a release's History, an artist), the script's body is an `async` function that waits for the attribute (`PC_HOSTED`). It then builds its panel in a hidden `#mb-pc-eh-host`, and String Theory's dock opens it.
+- **A followed release is read from the API** (`PC_FOLLOW`): MusicBrainz's page, kept hidden in the document, is still the loaded one's. `parseMbFromDom`, the page's label list (`pcPageLabels`) and the `h1` behind the log's title are skipped; `parseMbData` returns the labels as `pageLabels`.
+- **A dock click never reloads the page.** It only opens the panel.
+
 ## Keep background tabs awake
 
 Firefox throttles timers in a background tab to one step per second, and to as much as fifteen once the tab has spent its execution budget; MusicBrainz's submit is a chain of them. A tab that is playing audio is exempt, so the setting plays an inaudible tone: 30 Hz at gain 0.0008. Without *Allow Audio* the log's `keep-awake audio` line reads `state=suspended — BLOCKED by the autoplay policy`; with it, `state=running`.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.29.092022
+// @version      2026.10.29.112100
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -49,7 +49,7 @@
 // @connect      tivomusicapi-staging-elb.digitalsmiths.net
 // @connect      *
 // ==/UserScript==
-(function () {
+(async function () {
 'use strict';
 
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -303,7 +303,15 @@ if (/^\/release-group\/[0-9a-f-]{36}\/?(?:[?#]|$)/.test(window.location.pathname
 // built as on a release page but kept out of sight; MC shows what it finds. Nothing is added from here.
 const PC_SEED = /^\/release\/add\/?$/.test(window.location.pathname) && /[#&]mc=[a-z0-9]+/i.test(window.location.hash);
 let PC_SEED_DATA = null;
-if (!PC_SEED && !/^\/release\/[0-9a-f-]{36}/.test(window.location.pathname)) return;
+// #847: Event Horizon reaches a release without loading its page (from its History, an artist, another release),
+// and names the one it shows in <html data-mbu-release>. Where MusicBrainz's page has no release sidebar, PC waits
+// for that and builds its panel out of sight (the dock shows it); on any page it then follows the release EH
+// shows, reading it from the API: MusicBrainz's page, kept hidden in the document, is still the loaded one's.
+const pcEhRelease = () => document.documentElement.getAttribute('data-mbu-release') || null;
+const PC_HOSTED = !PC_SEED && !(/^\/release\/[0-9a-f-]{36}/.test(window.location.pathname) && document.querySelector('#sidebar'));
+let PC_FOLLOW = PC_HOSTED;   // the release isn't the page's: nothing is read off the page
+if (PC_HOSTED && !pcEhRelease()) await new Promise(res => new MutationObserver((m, o) => { if (pcEhRelease()) { o.disconnect(); res(); } })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] }));
 
 // Safe setTimeout wrapper.  Firefox throws NS_ERROR_NOT_INITIALIZED from
 // setTimeout when the script context is being torn down — the Promise
@@ -1277,8 +1285,9 @@ function showInjectBanner(text, reports = [], opts = {}) {
 // The dashboard is for a /release/<mbid> page ONLY. Standalone the @match scopes it; in the String
 // Theory bundle this script runs on every MB page (Mammoth matches /*), so guard the entity type before
 // building any UI — `\/release\/` won't match `/release-group/`, so the RG overview no longer mounts it. (#343)
-if (!PC_SEED && !/^\/release\/[0-9a-f-]{36}/i.test(window.location.pathname)) return;
-const sidebar = PC_SEED ? (() => { const d = document.createElement('div'); d.id = 'mb-pc-seed-host'; d.hidden = true; (document.body || document.documentElement).appendChild(d); return d; })() : document.querySelector('#sidebar');
+if (!PC_SEED && !PC_HOSTED && !/^\/release\/[0-9a-f-]{36}/i.test(window.location.pathname)) return;
+const sidebar = PC_SEED ? (() => { const d = document.createElement('div'); d.id = 'mb-pc-seed-host'; d.hidden = true; (document.body || document.documentElement).appendChild(d); return d; })()
+    : PC_HOSTED ? (() => { const d = document.createElement('div'); d.id = 'mb-pc-eh-host'; d.hidden = true; document.documentElement.appendChild(d); return d; })() : document.querySelector('#sidebar');
 if (!sidebar) return;
 
 const container = document.createElement('div');
@@ -3566,14 +3575,12 @@ if (!PC_SEED) {
     };
     new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock'] });
     park();
-    const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no Platform Check: the click loads it
     const close = () => { open = false; win.hidden = true; };
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') close(); });
     document.addEventListener('pointerdown', ev => { if (open && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop')) close(); }, true);
     pcDockItem = mbuDockItem({ id: 'mb-pc-dock', label: 'Platform Check', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=', order: 61,
         paths: '^/release/[0-9a-fA-F-]{36}/?$',
         click: () => {
-            if (location.pathname.replace(/\/$/, '').toLowerCase() !== HOME) { location.reload(); return; }
             if (open) { close(); return; }
             park(); open = true; win.hidden = false;
         } });
@@ -7761,7 +7768,7 @@ async function scanSevendigital({ artist, album, mbTracks, existingUrl, mbid, is
 }
 
 // ─── Main entry ────────────────────────────────────────────────────────────
-const mbid = PC_SEED ? 'seed-' + (window.location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1] : window.location.pathname.split('/')[2];
+let mbid = PC_SEED ? 'seed-' + (window.location.hash.match(/[#&]mc=([a-z0-9]+)/i) || [])[1] : PC_HOSTED ? pcEhRelease() : window.location.pathname.split('/')[2];   // pcFollow changes it
 if (!mbid || mbid.length < 10) {
     appendLog('System', `No valid MBID parsed from URL`, 'error');
     return;
@@ -8146,7 +8153,9 @@ function parseMbData(data) {
         .join(', ') || null;
     const releaseCatnos = (data['label-info'] || []).map(li => ({ label: li.label?.name || '', catno: String(li['catalog-number'] || '').trim() }))
         .filter(c => c.catno && !/^\[?none\]?$/i.test(c.catno));
-    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, releaseCatnos, barcode };
+    // the labels as the release page lists them (pcPageLabels), for a release followed in Event Horizon (#847)
+    const pageLabels = (data['label-info'] || []).map(li => ({ mbid: li.label?.id || null, name: li.label?.name || '', catno: String(li['catalog-number'] || '').trim() }));
+    return { artist, album, mbTracks, releaseGroupMbid, isVariousArtists, existing, format, year, releaseLabel, releaseCatnos, barcode, pageLabels };
 }
 
 // (#422, per maintainer review) the ↻ button ITSELF is the progress indicator — it spins
@@ -8183,7 +8192,7 @@ async function runScansInner() {
     // for our purposes — both give artist/album/tracks/rg/url-rels — and we're
     // already running on the page so it's free.
     if (!PC_SEED) appendLog('MusicBrainz', `Release ${MB_ORIGIN}/release/${mbid}`);
-    let mbData = PC_SEED ? PC_SEED_DATA : parseMbFromDom();
+    let mbData = PC_SEED ? PC_SEED_DATA : PC_FOLLOW ? null : parseMbFromDom();
     let dataSource = PC_SEED ? 'seed' : 'dom';
 
     if (PC_SEED) {
@@ -9350,8 +9359,9 @@ function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit'
     const url = `${MB_ORIGIN}/release/${mbid_}/edit`;
     // #811: an add is what this page's log is kept for (a background add reloads the page), named after the release
     PC_LOG.keep();
-    const h1 = document.querySelector('h1 bdi') || document.querySelector('h1');
-    if (h1 && h1.textContent.trim()) PC_LOG.name(h1.textContent.trim());
+    const h1 = PC_FOLLOW ? null : document.querySelector('h1 bdi') || document.querySelector('h1');
+    const name = h1 ? h1.textContent.trim() : PC_FOLLOW ? mbDataGet(mbid_)?.album || '' : '';
+    if (name) PC_LOG.name(name);
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
             appendLog('System', `Background add needs GM_openInTab — opening in a normal tab instead`, 'warn');
@@ -9725,6 +9735,7 @@ function pcMcBarcodeFindings() {
 }
 // #727: the release's labels as its page lists them, each with its catalog number
 function pcPageLabels() {
+    if (PC_FOLLOW) return (mbDataGet(mbid)?.pageLabels || []).slice();
     return [...document.querySelectorAll('#sidebar h2.labels + ul.links > li')].map(li => {
         const a = li.querySelector('a[href*="/label/"]');
         return { mbid: (a?.getAttribute('href').match(/\/label\/([0-9a-f-]{36})/i) || [])[1] || null, name: a ? a.textContent.trim() : '',
@@ -10022,6 +10033,19 @@ pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
 if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcScan, pcMcReleaseLinkTypes, cacheGet, cacheSet, mbDataGet, mbFormat: () => MB_FORMAT, pcMcBarcodeFindings, pcMcLabelFindings, pcResolveLabel, pcPageLabels, pcMcCatnoFindings, pcFoundCatnos, pcNoteFoundCatnos, pcCatnosBeatport, pcPickedCatnos, pcQueuePickedCatnos, updateRow, scanDone: () => PC_SCAN.last, pcLabelNorm, setCons: c => { _pcMcCons = c; }, pcNoteFoundBarcode, pcSetPastedBarcode, setOwnBarcode: b => { MB_OWN_BARCODE = b; }, setMbBarcode: b => { MB_BARCODE = b; }, clearFound: () => PC_FOUND_BC.clear() };
 
-if (!PC_SEED) pcScan();
+// #847: Event Horizon shows another release without loading its page: the panel follows it
+function pcFollow(r) {
+    appendLog('System', `Event Horizon shows release ${r} — following it (read from the API)`);
+    if (PC_SCAN.busy) pcCancelScan();
+    mbid = r; PC_FOLLOW = true;
+    MB_BARCODE = null; MB_OWN_BARCODE = null; PC_FOUND_BC.clear(); _pcMcCons = null; _pcLinked = null;
+    pcDockFound = 0; pcDockHeld = 0; pcDockArtists = null; pcDockArtistsHeld = 0; pcDockStatus();
+    pcShowLinksCount(null);
+    resetRows();
+    pcScan();
+}
+if (!PC_SEED) new MutationObserver(() => { const r = pcEhRelease(); if (r && r !== mbid) pcFollow(r); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] });
+if (!PC_SEED) { const r = pcEhRelease(); if (r && r !== mbid) pcFollow(r); else pcScan(); }
 
 })();

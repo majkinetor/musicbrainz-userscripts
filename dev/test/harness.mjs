@@ -159,7 +159,7 @@ export const test = base.extend({
       let code = await readFile(file, 'utf8');
       if (transform) code = transform(code);   // e.g. a default flipped for the test
       if (atStart) await target.addInitScript({ content: code });
-      else await target.evaluate(code);
+      else await target.evaluate(code + '\n;void 0;');   // not the script's own promise: a manager never waits for it (Platform Check waits for Event Horizon)
       if (waitFor && !atStart) await target.waitForFunction(g => !!window[g], waitFor, { timeout: 20000 });
       return { file, version: (code.match(/@version\s+(\S+)/) || [])[1] || '' };
     });
