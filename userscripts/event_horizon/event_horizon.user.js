@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.233100
+// @version      2026.10.29.232500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2725,7 +2725,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -7496,6 +7496,12 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root:is([data-eh-details],[data-eh-releases]),:root:is([data-eh-details],[data-eh-releases]) :is(body,#page){min-width:0!important}
 :root:is([data-eh-details],[data-eh-releases]) #eh-relhd .kicker{flex-wrap:wrap}
 :root:is([data-eh-details],[data-eh-releases]) #eh-relhd .acts{flex-wrap:wrap}
+:root[data-eh-releases] .eh-release-views+table,:root[data-eh-releases] .eh-release-title{display:none!important}
+:root[data-eh-releases] .eh-release-form :is(button[type=submit],input[type=submit]){display:none!important}
+:root:not([data-eh-releases]) .eh-release-views{display:none}
+:root[data-eh-releases] .eh-release-views .secthead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+:root[data-eh-releases] .eh-release-views .secthead h2{margin:0!important}
+:root[data-eh-releases] .eh-release-views .secthead .tools{margin-left:auto;display:flex;gap:8px}
 :root[data-eh-releases] .eh-releases{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:24px 0;overflow-x:auto}
 :root[data-eh-releases] #page .eh-releases h2{margin:0 0 16px;font-size:18px}
 :root[data-eh-releases] #page .eh-releases table.tbl{border:0;border-radius:0;font-size:13px}
@@ -7620,7 +7626,10 @@ function detailsDress(c) {
 // Keep the native release lists and their forms intact: paging, filters and selection
 // still belong to MusicBrainz. Each list gets its own horizontally scrolling card.
 function releasesDress(c) {
-    for (const table of c.querySelectorAll('table.tbl')) {
+    const css = CSS.split('\n').filter(l => /^\.(disco|ed-row|ed-views|ed-t|dg-sort|fbox|fbar|tq-|secthead|sec[ .{]|fold[ .{]|count[ .{])/.test(l)).join('\n')
+        .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => ':root[data-eh-releases] .eh-releases ' + x.trim()).join(',') + '{');
+    document.getElementById('eh-rel-css').textContent += '\n' + css;
+    for (const [i, table] of [...c.querySelectorAll('table.tbl')].entries()) {
         if (table.closest('.eh-releases')) continue;
         const block = table.closest('form') || table;
         if (block.parentElement !== c) continue;
@@ -7629,6 +7638,46 @@ function releasesDress(c) {
         const heading = card.previousElementSibling;
         if (heading && heading.matches('h2')) card.append(heading);
         card.append(block);
+        if (!table.querySelector('a[href*="/release/"]')) continue;
+        const sid = 'native-releases-' + i, head = [...table.querySelectorAll('thead th')].map(th => th.innerHTML);
+        const rows = [...table.querySelectorAll('tbody > tr')].map(tr => [...tr.cells].map(td => {
+            const copy = td.cloneNode(true); copy.querySelectorAll('script,input,button').forEach(n => n.remove());
+            copy.querySelectorAll('a[href]').forEach(a => { const href = a.getAttribute('href'); for (const at of [...a.attributes]) a.removeAttribute(at.name); a.setAttribute('href', href); });
+            return copy.innerHTML;
+        }));
+        if (!head.length || !rows.length) continue;
+        const x = {head, rows}, host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
+        const outerTitle = c.querySelector(':scope > h2'); if (outerTitle) outerTitle.classList.add('eh-release-title');
+        if (block.matches('form')) block.classList.add('eh-release-form');
+        const draw = () => {
+            const old = S.tabView; S.tabView = S.releaseListView || 'grid';
+            host.innerHTML = tabSect(sid, 'Releases', x, location.href, 'release'); S.tabView = old;
+            host.querySelectorAll('.disco > a').forEach(a => {
+                const row = rows.find(r => r.some(cell => cell.includes(a.getAttribute('href').replace(MB, ''))));
+                const date = a.querySelector('.dy');
+                if (date && row) { const cell = row.find(v => /\d{4}-\d{2}|release-event/.test(v)); date.textContent = cell ? (cell.replace(/<[^>]*>/g, '').match(/\d{4}/) || [''])[0] : ''; }
+            });
+            host.querySelectorAll('[data-dgcover]').forEach(im => { im.onerror = () => { im.replaceWith(Object.assign(document.createElement('span'), {className:'dn', innerHTML:LAYERS(36, 1)})); }; });
+            const title = card.querySelector(':scope > h2'); if (title) title.classList.add('eh-release-title');
+        };
+        host.addEventListener('click', e => {
+            const b = e.target.closest('button,[data-fold]'); if (!b) return;
+            if (b.dataset.tabview) { S.releaseListView = b.dataset.tabview; save(); }
+            else if (b.dataset.tqopen) { if (sid in TQ) delete TQ[sid]; else TQ[sid] = ''; }
+            else if (b.dataset.tsort != null) { const n = +b.dataset.tsort, prev = TSORT[sid]; TSORT[sid] = !prev || prev[0] !== n ? [n,1] : prev[1] === 1 ? [n,-1] : []; }
+            else if (b.dataset.tqcol) { TQ[sid] = b.dataset.tqcol.split('\t')[1] + ':'; }
+            else if (b.dataset.fold) { S.fold = S.fold.includes(sid) ? S.fold.filter(k => k !== sid) : [...S.fold, sid]; save(); }
+            else return;
+            e.preventDefault(); draw();
+            if (b.dataset.tqopen || b.dataset.tqcol) host.querySelector('input')?.focus();
+        });
+        host.addEventListener('input', e => {
+            if (!e.target.matches('[data-tq]')) return;
+            const pos = e.target.selectionStart; TQ[sid] = e.target.value; draw();
+            const input = host.querySelector('input'); input.focus(); input.setSelectionRange(pos,pos);
+        });
+        host.addEventListener('keydown', e => { if (e.key === 'Escape' && e.target.matches('[data-tq]')) { TQ[sid] = ''; draw(); host.querySelector('input')?.focus(); } });
+        draw();
     }
 }
 // an editor's page kept as MusicBrainz's: the editor's avatar, name and tabs over it; MusicBrainz's own title and tabs hide
