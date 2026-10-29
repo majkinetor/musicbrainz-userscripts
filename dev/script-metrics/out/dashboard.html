@@ -111,6 +111,13 @@
   .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 12px 0 0; }
   .legend .item { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); }
   .legend .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  button.item {
+    font: inherit; font-size: 12.5px; background: none; border: 0; padding: 2px 4px; margin: -2px -4px;
+    border-radius: 6px; cursor: pointer;
+  }
+  button.item:hover { background: var(--plane); color: var(--ink); }
+  button.item.off { color: var(--muted); text-decoration: line-through; }
+  button.item.off .sw { background: transparent !important; box-shadow: inset 0 0 0 1.5px var(--muted); }
 
   .plot { width: 100%; overflow-x: auto; }
   svg { display: block; }
@@ -181,7 +188,8 @@
 
   <section class="card">
     <h2>Edits over time</h2>
-    <p class="hint">Attributed edits per month, stacked by script.</p>
+    <p class="hint">Attributed edits per month, stacked by script. Click a script in the legend to
+      leave it out of every number on the page; click it again to bring it back.</p>
     <div class="plot" id="plotMonthly"></div>
     <div class="legend" id="legendMonthly"></div>
     <details class="tv"><summary>Table view</summary><div class="scroll" id="tableMonthly"></div></details>
@@ -281,7 +289,24 @@ const state = {
   // Most of the long tail is someone who ran a script once; they are real edits
   // but they are not adoption, and they bury the people who actually use it.
   minEdits: DATA.min_edits_default,
+  // Scripts left out of every number on the page, toggled from the legend.
+  excluded: new Set(),
 };
+
+/* Exclusions are remembered per viewer, by script name: indices are not stable
+   across rebuilds, names are. Storage can be missing or throw (private window). */
+const EXCLUDED_KEY = 'script-metrics:excluded';
+function loadExcluded() {
+  try {
+    const names = JSON.parse(localStorage.getItem(EXCLUDED_KEY) || '[]');
+    DATA.scripts.forEach((s, si) => { if (names.includes(s.name)) state.excluded.add(si); });
+  } catch { /* nothing remembered */ }
+}
+function saveExcluded() {
+  try {
+    localStorage.setItem(EXCLUDED_KEY, JSON.stringify([...state.excluded].map((si) => DATA.scripts[si].name)));
+  } catch { /* not remembered, still applied */ }
+}
 
 // Folded buckets are real edits but not identifiable people: they must never
 // reach a distinct-editor count or the leaderboard.
@@ -292,6 +317,9 @@ function monthOk(mi) {
   return m >= state.from && m <= state.to;
 }
 function scriptOk(si) {
+  return ownerOk(si) && !state.excluded.has(si);
+}
+function ownerOk(si) {
   const owner = DATA.scripts[si].owner;
   if (state.owners === 'mine') return owner === 'majkinetor';
   if (state.owners === 'external') return owner !== 'majkinetor';
@@ -426,10 +454,25 @@ function renderTiles(view) {
 function renderMonthly(view) {
   const host = $('plotMonthly');
   host.innerHTML = '';
-  if (!view.months.length) { host.innerHTML = '<p class="empty">No edits in this window.</p>'; $('legendMonthly').innerHTML = ''; $('tableMonthly').innerHTML = ''; return; }
 
-  const seriesIdx = [...new Set(DATA.cubes.main.map(([si]) => si))]
-    .filter((si) => scriptOk(si) && [...view.perScript.keys()].includes(si))
+  /* The legend lists excluded scripts too (struck through), so they can be
+     brought back. Drawn before the empty check: excluding everything must not
+     take away the way back. Excluded ones keep their all-window rank. */
+  const windowEdits = new Map();
+  for (const [si, mi, , , count] of DATA.cubes.main) {
+    if (!ownerOk(si) || !monthOk(mi)) continue;
+    windowEdits.set(si, (windowEdits.get(si) || 0) + count);
+  }
+  const legendIdx = [...windowEdits.keys()].sort((a, b) => windowEdits.get(b) - windowEdits.get(a));
+  $('legendMonthly').innerHTML = legendIdx.map((si) => {
+    const off = state.excluded.has(si);
+    return `<button type="button" class="item${off ? ' off' : ''}" data-si="${si}" aria-pressed="${!off}">` +
+           `<span class="sw" style="background:${colourOf.get(si)}"></span>${esc(DATA.scripts[si].name)}</button>`;
+  }).join('');
+
+  if (!view.months.length) { host.innerHTML = '<p class="empty">No edits in this window.</p>'; $('tableMonthly').innerHTML = ''; return; }
+
+  const seriesIdx = legendIdx.filter((si) => view.perScript.has(si))
     .sort((a, b) => (view.perScript.get(b)?.edits || 0) - (view.perScript.get(a)?.edits || 0));
 
   // Fill the card rather than huddling at the left: derive the bar width from
@@ -489,9 +532,6 @@ function renderMonthly(view) {
     const totalLabel = el('text', { class: 'val', x: x + barW / 2, y: y(bucket.total) - 6, 'text-anchor': 'middle' }, svg);
     totalLabel.textContent = fmt(bucket.total);
   });
-
-  $('legendMonthly').innerHTML = seriesIdx.map((si) =>
-    `<span class="item"><span class="sw" style="background:${colourOf.get(si)}"></span>${esc(DATA.scripts[si].name)}</span>`).join('');
 
   const head = ['Month', ...seriesIdx.map((si) => DATA.scripts[si].name), 'Total'];
   const body = view.months.map((mi) => {
@@ -722,6 +762,14 @@ function bindFilters() {
 
   from.addEventListener('change', () => { state.from = from.value || first; renderAll(); });
   to.addEventListener('change', () => { state.to = to.value || last; renderAll(); });
+  $('legendMonthly').addEventListener('click', (event) => {
+    const item = event.target.closest('button.item');
+    if (!item) return;
+    const si = Number(item.dataset.si);
+    if (state.excluded.has(si)) state.excluded.delete(si); else state.excluded.add(si);
+    saveExcluded();
+    renderAll();
+  });
   $('owners').addEventListener('change', (e) => { state.owners = e.target.value; renderAll(); });
   // 'input', not 'change': typing a threshold should update as you go. A blank
   // or negative box means no filter rather than NaN, which would drop everyone.
@@ -734,6 +782,7 @@ function bindFilters() {
     state.from = DATA.default_cutoff.slice(0, 7); state.to = last;
     state.owners = 'mine';
     state.minEdits = DATA.min_edits_default;
+    state.excluded.clear(); saveExcluded();
     from.value = state.from; to.value = state.to;
     $('owners').value = 'mine';
     minEdits.value = state.minEdits;
@@ -757,6 +806,7 @@ $('footer').innerHTML =
     ? `, ${fmt(DATA.quality.notes_without_edit_row)} notes had no matching edit row (deleted edits).`
     : '.');
 
+loadExcluded();
 bindFilters();
 renderAll();
 </script>

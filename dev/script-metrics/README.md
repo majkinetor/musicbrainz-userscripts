@@ -59,6 +59,7 @@ kept for a run on a local machine.
 | **From / To** | the month window; everything else is derived within it |
 | **Scripts** | mine only / all / comparison scripts only |
 | **Min edits/editor** | editors with fewer edits than this **in the current window** are left out of the editor counts and the leaderboard |
+| **Legend** (Edits over time) | click a script to leave it out of every number on the page, click again to bring it back; remembered in the browser, cleared by **Reset** |
 
 **Min edits/editor** defaults to `100` (`min_edits_default` in
 `config/sources.json`). The long tail below it is overwhelmingly someone who ran
