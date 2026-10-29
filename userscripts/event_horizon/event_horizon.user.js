@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.223000
+// @version      2026.10.29.224500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7191,11 +7191,12 @@ function secRail(app) {
 }
 // once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
 // (the very buttons, moved in and back, so their menus and the search keep working)
-let pinIo = null, pinRo = null;
+let pinIo = null, pinRo = null, pinAlign = null;
 function pinBar(app) {
     let bar = document.getElementById('eh-pin');
     if (pinIo) { pinIo.disconnect(); pinIo = null; }
     if (pinRo) { pinRo.disconnect(); pinRo = null; }
+    if (pinAlign) { removeEventListener('resize', pinAlign); pinAlign = null; }
     // a redraw leaves a shown bar shown, so it doesn't slide out and back in (the filter redraws on every letter)
     const wasOn = !!bar && bar.classList.contains('on');
     if (bar) bar.querySelector('.kicker').innerHTML = '';
@@ -7216,6 +7217,8 @@ function pinBar(app) {
     // The page width is configurable; follow its real edges instead of centring a separate fixed-width bar.
     const align = () => { const left = hd.getBoundingClientRect().left, right = kick.getBoundingClientRect().right; k.style.marginLeft = left + 'px'; k.style.width = Math.max(0, right - left) + 'px'; };
     align();
+    // A centred, capped header moves on viewport resize even when its own size stays the same.
+    pinAlign = align; addEventListener('resize', pinAlign);
     if (window.ResizeObserver) { pinRo = new window.ResizeObserver(align); pinRo.observe(hd); pinRo.observe(kick); }
     const home = document.createElement('span'); home.hidden = true; acts.before(home);
     // a shown bar takes the new action row at once: left to the observer, the row leaves the header a frame later and the page jumps
