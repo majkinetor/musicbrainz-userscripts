@@ -9,8 +9,9 @@ MusicBrainz, past the point of no return: release, release group, artist, label,
 ## Features
 
 - **[The viewer](#the-viewer)** takes over a release, release group, artist, label, recording, work, area, instrument, place, series or event page, and moves between them without reloading.
-- **Pinned header**: once the page's header scrolls away, a slim bar at the top keeps its cover, title, artist and action row in reach; click the title to go back up.
+- **[Pinned header](#pinned-header)** keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: a button in the page's action row jumps to, folds, reorders or hides each part of the page.
+- **[Details](#details)** shows an entity's identifiers, update date and data links.
 - **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links, by icon.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
 
@@ -25,14 +26,22 @@ Event Horizon shows its own page for each of these, and for search results. A li
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
-- **Annotation** and, for a release group, **Cover art** open from Edit's menu (point at Edit); a release group's cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
+- **Annotation** opens from **More**; a release group's **Cover art** opens from Edit's menu (point at Edit), and its cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
 - **A page seen before** shows at once from what Event Horizon kept of it, then is checked with MusicBrainz in the background, and redrawn if anything changed. Back and Forward return to where you were on the page.
 - While a page loads, the other scripts' background requests to MusicBrainz wait, so the page you asked for comes first.
 - If a page can't load, **Retry**, or **Show MusicBrainz's page**.
 
+## Pinned header
+
+Once the page's header scrolls away, a single bar keeps its cover, title and artist in reach. On a release, the release-group icon and edition count follow the artist, then the format, type and status. The action icons keep their horizontal position when the bar appears. Click the title to go back up.
+
 ## Sections
 
 Click **Sections** (the list icon beside Search, top right) to open the list. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered.
+
+## Details
+
+Open **More** (the three dots in the header) → **Details** for all of an entity's detail fields, including its MBID, last update and data links. More also holds **Annotation** and **Tags** where available. The page uses Event Horizon's header and a card for MusicBrainz's details. The back arrow returns to the overview.
 
 ## Tracks and platforms
 
@@ -65,6 +74,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
 | Artist → Images from      | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
 | General → Page width      | Medium                                                              | how wide the page grows on a big screen                                    |
+| General → Menu titles     | off                                                                 | text beside menu icons in page headers and pinned bars                     |
 
 ## Shortcuts
 
