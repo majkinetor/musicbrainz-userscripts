@@ -71,7 +71,11 @@ parts.forEach(p => { p.body = shared.bodies.get(p.n); });
 // Own build-stamp version (date + HHMMSS), like Credit Hoarder — always increases on rebuild, so a
 // re-bundle after any constituent change ships as a newer version. (The newest constituent is logged.)
 const _n = new Date(), _p = x => String(x).padStart(2, '0');
-const version = `${_n.getFullYear()}.${_n.getMonth() + 1}.${_n.getDate()}.${_p(_n.getHours())}${_p(_n.getMinutes())}${_p(_n.getSeconds())}`;
+let version = `${_n.getFullYear()}.${_n.getMonth() + 1}.${_n.getDate()}.${_p(_n.getHours())}${_p(_n.getMinutes())}${_p(_n.getSeconds())}`;
+// never below the version already built: a clock behind the last build's (CI in UTC, the hook in local
+// time) would stamp an older version, and a manager then never takes the update
+const prevVer = (() => { try { return (/^\/\/ @version\s+(\S+)/m.exec(readFileSync(OUT, 'utf8')) || [])[1] || '0'; } catch { return '0'; } })();
+if (cmpVer(version, prevVer) <= 0) { const pv = prevVer.split('.'); pv[pv.length - 1] = String(Number(pv.at(-1)) + 1); version = pv.join('.'); }
 const newestMember = parts.map(p => verOf(p.meta)).sort(cmpVer).at(-1);
 
 // ── merged metadata ──────────────────────────────────────────────────────────

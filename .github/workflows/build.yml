@@ -14,6 +14,8 @@ concurrency: { group: build-main, cancel-in-progress: false }
 jobs:
   build:
     runs-on: ubuntu-latest
+    # build stamps (String Theory's @version) in the maintainer's time, as the pre-commit hook makes them
+    env: { TZ: Europe/Paris }
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
