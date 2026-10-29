@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.114502
+// @version      2026.10.29.115419
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2303,7 +2303,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
 .kmk{all:unset;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
-.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-w{position:relative;display:inline-flex}.tgi-spin{position:absolute;right:12px;top:50%;width:12px;height:12px;margin-top:-6px;border:2px solid var(--muted, currentColor);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite;pointer-events:none}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
+.tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button>svg{display:block}.tgi.mine button{padding:4px;margin:-4px -6px -4px -2px;border-radius:50%}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-w{position:relative;display:inline-flex}.tgi-spin{position:absolute;right:12px;top:50%;width:12px;height:12px;margin-top:-6px;border:2px solid var(--muted, currentColor);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite;pointer-events:none}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
 .gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
 .stars{position:relative;color:var(--accent);font-size:18px;letter-spacing:2px;cursor:default}
@@ -3456,7 +3456,7 @@ const tgInBox = () => document.querySelector('[data-tgin]:not(button)');
 function tgInHtml() {
     const d = tgIn;
     // until the tags page loads, the names the header already showed stand in (genres filled, tags outlined), without counts or votes
-    const chips = (d.t ? d.t.tags : d.pre || []).map((t, i) => `<span class="chip${t.g ? '' : ' tag'} tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}${t.c > 0 ? `<span class="tgi-n">${t.c}</span>` : ''}${!d.t ? '' : t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag">×</button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
+    const chips = (d.t ? d.t.tags : d.pre || []).map((t, i) => `<span class="chip${t.g ? '' : ' tag'} tgi${t.v > 0 ? ' mine' : ''}">${esc(t.n)}${t.c > 0 ? `<span class="tgi-n">${t.c}</span>` : ''}${!d.t ? '' : t.v > 0 ? `<button type="button" data-tgin="v:${i}:0" aria-label="Withdraw your tag ${esc(t.n)}" data-tip="Withdraw your tag"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>` : `<button type="button" data-tgin="v:${i}:1" aria-label="Upvote ${esc(t.n)}" data-tip="Upvote">▲</button>`}</span>`).join('');
     return chips + `<span class="tgi-w"><input class="tgi-in" placeholder="add tag…" aria-label="Add tags" autocomplete="off">${d.t ? '' : '<span class="tgi-spin" aria-label="Loading the tags"></span>'}<span class="tg-ac" hidden></span></span><button type="button" class="eh-edit" data-tgin="close" aria-label="Done" data-tip="Done&#10;Esc">✓</button>`;
 }
 // a redraw keeps what's typed in the box
