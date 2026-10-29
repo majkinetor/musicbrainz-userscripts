@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.234600
+// @version      2026.10.29.234700
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2524,6 +2524,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tile .st{position:absolute;right:6px;top:6px;font:700 10px Manrope,system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--warn-bg);color:var(--warn)}
 .tile .nc{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600}
 .tile .t1{font-weight:700;font-size:14px;line-height:1.25}
+.tile .dt{font-weight:600;line-height:1.3}
 .tile .cap{font-size:13px;color:var(--muted);line-height:1.35}
 .tile .cap i{display:block;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
@@ -3293,8 +3294,8 @@ function edTile(e, curId, titled = false) {
     ED_TIP.set(e.id, { e, cur: e.id === curId });
     return `<a class="tile${e.id === curId ? ' cur' : ''}" href="${esc(relUrl(e.id))}" data-ed="${e.id}">
         <span class="c">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : `<span class="nc">${fmtSvg(k, 40, 1.8)}no cover</span>`}${e.thumb ? `<span class="fb">${fmtSvg(k, 15, 2.6)}</span>` : ''}${st}</span>
-        ${titled ? `<span class="dt">${esc(e.title)}</span>` : ''}<span class="t1">${esc(fmtSummary(e.formats))}</span>
-        <span class="cap">${esc([where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
+        ${titled ? `<span class="dt">${esc(e.title)}</span>` : `<span class="t1">${esc(fmtSummary(e.formats))}</span>`}
+        <span class="cap">${esc([titled && fmtSummary(e.formats), where, (e.date || '').slice(0, 4)].filter(Boolean).join(' · ') || '—')}${e.id === curId ? ' · you are here' : ''}${e.disambig ? `<i>${esc(e.disambig)}</i>` : ''}</span>
     </a>`;
 }
 // a table row's tracklist, fetched when it is first opened: release id → media | 'loading' | 'error'
@@ -3366,7 +3367,7 @@ function edHtml(r, eds, count) {
     const view = r.id ? S.edView : S.rgView;
     // a label's or group's releases past the first 100 load with "Load more" (lmFoot); they come in MusicBrainz's
     // order, so the list keeps it (sorting would reshuffle what is already on screen)
-    const paged = !r.id && count > eds.length;
+    const paged = !r.id && (count > eds.length || r.native);
     const all = paged ? [...eds] : [...eds].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
     const kinds = {}; for (const e of all) { const k = fmtKind(e.formats[0]); kinds[k] = (kinds[k] || 0) + 1; }
     const kindList = Object.entries(kinds).sort((a, b) => b[1] - a[1]);
@@ -3390,8 +3391,8 @@ function edHtml(r, eds, count) {
         }).join('')}</div>`;
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
-    const more = paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
-    return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}</span>`, tools, filters + body + more, folded);
+    const more = r.native ? (r.more ? lmFoot('ed', all.length, 0) : '') : paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
+    return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}${r.more ? '+' : ''}</span>`, tools, filters + body + more, folded);
 }
 
 /* ── tracklist ─────────────────────────────────────── */
@@ -6768,6 +6769,7 @@ const lmFoot = (k, n, total) => `<div class="folded-note lm" data-lm="${k}"><spa
 let lmIO = null;
 function lmWatch(app) {
     if (lmIO) { lmIO.disconnect(); lmIO = null; }
+    app = app || document;
     if (!S.lmAuto || !window.IntersectionObserver) return;
     const feet = [...app.querySelectorAll('[data-lm]')].filter(f => !LM_ERR.has(f.dataset.lm));
     if (!feet.length) return;
@@ -6781,7 +6783,7 @@ async function lmMore(k) {
     const b = document.querySelector(`[data-lmgo="${k}"]`);
     if (b) { b.disabled = true; b.textContent = 'Loading…'; }
     LOG.debug('Load more: ' + k);
-    try { await (k === 'ed' ? edMore(d) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
+    try { await (k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
     catch (e) { LOG.debug('Load more failed: ' + k, e); LM_ERR.add(k); }
     finally { LM_BUSY.delete(k); }
     if (data === d) { const y = scrollY; render(); scrollTo(0, y); }
@@ -7505,18 +7507,14 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-releases] .eh-release-views+table,:root[data-eh-releases] .eh-release-title{display:none!important}
 :root[data-eh-releases] .eh-release-form :is(button[type=submit],input[type=submit]){display:none!important}
 :root:not([data-eh-releases]) .eh-release-views{display:none}
-:root[data-eh-releases] .eh-release-views .secthead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-:root[data-eh-releases] .eh-release-views .secthead h2{margin:0!important}
-:root[data-eh-releases] .eh-release-views .secthead .tools{margin-left:auto;display:flex;gap:8px}
-:root[data-eh-releases] .eh-releases{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:24px 0;overflow-x:auto}
-:root[data-eh-releases] #page .eh-releases h2{margin:0 0 16px;font-size:18px}
-:root[data-eh-releases] #page .eh-releases table.tbl{border:0;border-radius:0;font-size:13px}
-:root[data-eh-releases] #page .eh-releases table.tbl th{white-space:nowrap}
+:root[data-eh-releases] .eh-releases{margin:32px 0 24px;min-width:0}
 :root[data-eh-releases] #page .eh-releases form{margin:0}
-:root[data-eh-releases] #page .pagination{margin:12px 0}
+:root[data-eh-releases] #content :is(nav:has(>ul.pagination),ul.pagination){display:none!important}
+:root[data-eh-releases] #page .eh-release-views .secthead h2{font:800 24px Manrope,system-ui,sans-serif;margin:0!important}
+:root[data-eh-releases] #page .eh-release-views .secthead h2 .count{font-size:14px}
 :root[data-eh-releases] #eh-relhd h1 a{color:var(--text)!important}
-:root[data-eh-releases] #page .pagination :is(a,span){background:var(--bg);color:var(--text);border-color:var(--border)}
-@media(max-width:600px){:root[data-eh-releases] .eh-releases{padding:12px}:root[data-eh-releases] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-releases] #eh-relhd .acts{margin-left:0}}
+:root[data-eh-releases] #page .eh-release-views a.tile{color:var(--text)}
+@media(max-width:600px){:root[data-eh-releases] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-releases] #eh-relhd .acts{margin-left:0}}
 :root[data-eh-details] .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
 :root[data-eh-details] #page .eh-details h2{margin:0 0 18px;font-size:18px}
 :root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse;table-layout:fixed}
@@ -7630,11 +7628,12 @@ function detailsDress(c) {
     card.append(table);
 }
 // Keep the native release lists and their forms intact: paging, filters and selection
-// still belong to MusicBrainz. Each list gets its own horizontally scrolling card.
+// still belong to MusicBrainz, its list drawn as Event Horizon's releases.
 // Adapt the loaded rows to the edition model; no extra MusicBrainz lookup.
+// A row's first release link can be its cover-art icon (/release/<id>/cover-art): the title's ends in the MBID
 function releaseRows(table) {
     return [...table.querySelectorAll('tbody > tr')].flatMap(tr => {
-        const link = tr.querySelector('a[href*="/release/"]'); if (!link) return [];
+        const link = [...tr.querySelectorAll('a[href*="/release/"]')].find(a => /\/release\/[0-9a-f-]{36}$/.test(a.getAttribute('href')) && !a.querySelector('img')); if (!link) return [];
         const cells = [...tr.cells], at = cells.findIndex(td => td.contains(link));
         const text = i => cells[at + i]?.textContent.trim() || '';
         const events = [...tr.querySelectorAll('.release-event')].map(ev => ({date: ev.querySelector('.release-date')?.textContent.trim() || '', area: ev.querySelector('abbr')?.getAttribute('title') || '', iso: ev.querySelector('.release-country')?.textContent.trim() || ''}));
@@ -7645,10 +7644,25 @@ function releaseRows(table) {
         return [{id, title:link.textContent.trim(), disambig:cells[at].querySelector('.comment')?.textContent.trim() || '', formats:[text(2)], counts:text(3).split('+').map(n=>+n.trim() || 0), events, date:events[0]?.date || '', where:events.map(e=>e.iso).filter(Boolean), li, labels:li.map(l=>l.name).filter(Boolean), barcode:text(7), ac, links:[], thumb:'https://coverartarchive.org/release/'+id+'/front-250', status:''}];
     });
 }
+// MusicBrainz's page links go on past this page
+const pageMore = (c, page) => [...c.querySelectorAll('ul.pagination a[href]')].some(a => +(/[?&]page=(\d+)/.exec(a.getAttribute('href')) || [])[1] > page);
+// the releases page's next page, read as MusicBrainz's own Next would open it
+async function nativeMore(d) {
+    if (!d.more) return;
+    const u = new URL(location.href); u.searchParams.set('page', d.page + 1);
+    const t0 = performance.now(), r = await mbnFetch(u.href);
+    fetchLog('releases page ' + (d.page + 1), t0, r);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const c = new DOMParser().parseFromString(await r.text(), 'text/html').querySelector('#content');
+    const table = c && [...c.querySelectorAll('table.tbl')].find(t => t.querySelector('a[href*="/release/"]'));
+    if (data !== d) return;
+    const seen = new Set(d.editions.map(e => e.id)), add = table ? releaseRows(table).filter(e => !seen.has(e.id)) : [];
+    d.editions = d.editions.concat(add); d.page++; d.more = !!add.length && pageMore(c, d.page);
+}
 function releasesDress(c) {
     // Scope the shared stylesheet with the browser's parser, including media rules.
     const sheet = new CSSStyleSheet(); sheet.replaceSync(CSS);
-    const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views :is(' + r.selectorText + '){' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
+    const scope = rules => [...rules].map(r => r.type === CSSRule.STYLE_RULE ? ':root[data-eh-releases] .eh-release-views :is(' + r.selectorText.replace(/#app\b/g, '.eh-release-views') + '){' + r.style.cssText + '}' : r.type === CSSRule.MEDIA_RULE ? '@media ' + r.conditionText + '{' + scope(r.cssRules) + '}' : '').join(String.fromCharCode(10));
     document.getElementById('eh-rel-css').textContent += scope(sheet.cssRules);
     const table = [...c.querySelectorAll('table.tbl')].find(t => t.querySelector('a[href*="/release/"]'));
     if (!table) return;
@@ -7657,10 +7671,14 @@ function releasesDress(c) {
     const title = c.querySelector(':scope > h2'); if (title) title.classList.add('eh-release-title');
     if (block.matches('form')) block.classList.add('eh-release-form');
     const host = document.createElement('div'); host.className = 'eh-release-views'; table.before(host);
-    data = {kind:'native-releases', editions};
+    const page = +new URLSearchParams(location.search).get('page') || 1;
+    data = {kind:'native-releases', editions, page, more:pageMore(c, page)};
     releasePageDraw = () => {
-        host.innerHTML = edHtml({page:location.pathname, native:true}, editions, editions.length);
-        host.querySelectorAll('img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (tile) { im.outerHTML = '<span class="nc">'+LAYERS(36)+'</span>'; tile.querySelector('.fb')?.remove(); } }; });
+        const d = data;
+        host.innerHTML = edHtml({page:location.pathname, native:true, more:d.more}, d.editions, d.editions.length);
+        // a release without a front cover shows its format, as a tile without one does
+        host.querySelectorAll('.tile img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'), e = d.editions.find(x => x.id === tile.dataset.ed); im.outerHTML = '<span class="nc">' + fmtSvg(fmtKind(e && e.formats[0]), 40, 1.8) + 'no cover</span>'; tile.querySelector('.fb')?.remove(); }; });
+        lmWatch(host);
     };
     host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
     listFilters(host);
@@ -7816,7 +7834,7 @@ function histParse(html) {
             det.querySelectorAll('span.artwork-image').forEach(x => { if (!x.querySelector('img') && x.dataset.smallThumbnail) x.innerHTML = `<img src="${x.dataset.smallThumbnail}" alt="${esc(x.dataset.title || '')}" loading="lazy">`; });
             det.querySelectorAll('script,input,noscript').forEach(x => x.remove());
         }
-        const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/(yes|no|abstain|approve)/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
+        const notes = [...el.querySelectorAll('.edit-notes div.edit-note[id^="note-"]')].map(n => { const hh = n.querySelector('h3'), o = hh && hh.querySelector('a[href*="/user/"]'), dt = hh && hh.querySelector('.date'), vt = hh && (hh.className.match(/\b(yes|no|abstain|approve)\b/) || [])[1], tx = n.querySelector('.edit-note-text'); return { vote: vt || '', own: !!(hh && hh.classList.contains('owner')), by: o ? o.textContent.trim() : '', date: dt ? dt.textContent.trim() : '', bot: !!(tx && tx.classList.contains('modbot')), html: tx ? tx.innerHTML : '', text: tx ? (c => { c.querySelectorAll('br').forEach(b => b.replaceWith(' ')); return c.textContent.replace(/\s+/g, ' ').trim(); })(tx.cloneNode(true)) : '' }; });
         const vc = one ? el.querySelector('.vote-tally td.vote') : h.querySelector('.vote-count'), a = (one ? h.querySelector('h1') || doc.querySelector('#content h1') : h.querySelector('h2 a')) || h.querySelector('a[href*="/edit/"]');
         if (!a) { LOG.debug('History: an edit without its number, skipped'); return null; }
         if (one) { const x = doc.querySelector('#sidebar .edit-expiration'); if (x) el.append(x); }
