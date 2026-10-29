@@ -32,6 +32,7 @@ A page loader's requests go through `kept` ([#847](https://github.com/majkinetor
 
 - **MusicBrainz's JSON comes with its keys in a different order every time.** `kpCanon` sorts them before an answer is kept or compared; without it every answer looks changed.
 - **A write voids what is kept**: a rating, a tag vote or an alias edit calls `kpWrote`, which sets `eh.kept.drop` in localStorage, and every entry older than it is a miss, in every tab.
+- **The release's front cover is kept as an image** (`keptCover`, the 60 newest), keyed by the image's id. CAA's address redirects twice (to archive.org, then to a mirror) and neither redirect carries a cache header, so the browser repeats both on every draw, about a second, even with the image itself in its cache. Keeping the answer listing the images isn't enough.
 - **Not kept**: edits, paging, and anything a write reads back. They go through `ws`, uncached.
 
 ## Leading the gate

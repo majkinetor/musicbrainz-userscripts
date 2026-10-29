@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.154618
+// @version      2026.10.29.181032
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2840,6 +2840,32 @@ function relHd(id, cb) {
 // ISO codes by their English names (eng → English, Latn → Latin); an unknown code stays as it is
 const nameOf = (type, code) => { try { return code && new Intl.DisplayNames(['en'], { type, fallback: 'code' }).of(code); } catch (e) { return code; } };
 // a release's covers, kept; none (404) is kept too, a failure isn't
+// the release's front cover is kept as an image (#847): CAA's address redirects twice, to archive.org and on to a mirror, and
+// neither redirect carries a cache header, so every draw waits on both (about a second) even with the image cached. Kept by
+// the image's id, so a new front is a new entry; the KP_COVERS newest stay. had: it was kept before this call
+const KP_COVERS = 60, KP_COV = new Map();
+async function keptCover(rel, img) {
+    const k = 'cov:' + rel + '/' + img.id;
+    if (KP_COV.has(k)) return { u: KP_COV.get(k), had: true };
+    let e = null;
+    try { e = await kpStore('readonly').then(st => new Promise(ok => { const q = st.get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(null); })); } catch (x) {}
+    if (e && e.b) { const u = URL.createObjectURL(e.b); KP_COV.set(k, u); return { u, had: true }; }
+    const t0 = performance.now(), r = await fetch(((img.thumbnails || {})['500'] || `https://coverartarchive.org/release/${rel}/front-500`).replace(/^http:/, 'https:'));
+    fetchLog('CAA front ' + rel, t0, r);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const b = await r.blob(), u = URL.createObjectURL(b);
+    KP_COV.set(k, u);
+    kpStore('readwrite').then(st => {
+        st.put({ k, at: Date.now(), b });
+        const old = [];
+        st.openCursor(IDBKeyRange.bound('cov:', 'cov:￿')).onsuccess = ev => {
+            const c = ev.target.result;
+            if (c) { old.push([c.value.at, c.key]); c.continue(); return; }
+            old.sort((x, y) => x[0] - y[0]).slice(0, Math.max(0, old.length - KP_COVERS)).forEach(([, key]) => st.delete(key));
+        };
+    }).catch(() => {});
+    return { u, had: false };
+}
 const caa = id => kept('caa:' + id, async () => {
     const t0 = performance.now();
     try { const r = await fetch('https://coverartarchive.org/release/' + id); fetchLog('CAA release ' + id, t0, r); if (r.status === 404) return '{}'; if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); } catch (e) { fetchLog('CAA release ' + id, t0, null, e); throw e; }
@@ -3179,7 +3205,7 @@ function hero(r) {
     const thumbs = rest.length ? rest.slice(0, 3).map(i => `<img src="${esc(thumbOf(i))}" data-full="${esc(i.image)}" alt="${esc(i.types.join(', ') || 'Image')}">`).join('') + (rest.length > 3 ? `<button type="button" data-goart aria-label="All ${rest.length + 1} images">+${rest.length - 3}</button>` : '') : '';
     return `<section class="hero">
         <div class="art">
-            ${r.front && !r.frontFailed ? `<img class="cover" data-relcover="${r.id}" src="${r.frontFull && front ? esc(front.image) : `https://coverartarchive.org/release/${r.id}/front-500`}"${front ? ` data-full="${esc(front.image)}"` : ''} alt="Front cover">` : relNoCover(r, fk)}
+            ${r.front && !r.frontFailed ? `<img class="cover" data-relcover="${r.id}" src="${r.frontFull && front ? esc(front.image) : r.frontSrc || `https://coverartarchive.org/release/${r.id}/front-500`}"${front ? ` data-full="${esc(front.image)}"` : ''} alt="Front cover">` : relNoCover(r, fk)}
             ${thumbs ? `<div class="thumbs"${S.thumbs ? '' : ' hidden'}>${thumbs}</div>` : ''}
             ${under(r)}
         </div>
@@ -8342,6 +8368,8 @@ async function show(key, o = {}) {
         if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; if (x.some(i => i.front)) d.rel.front = true; render(); } });
+        // a cover kept before draws from the kept image; a new one is only kept, as the page already shows it
+        if (kind === 'release') d.covers.then(x => { const f = x.find(i => i.front); return f && keptCover(id, f); }).then(c => { if (c && c.had && n === showing && data === d && !d.rel.frontFull) { d.rel.frontSrc = c.u; render(); } }, e => LOG.debug('release cover not kept: ' + (e && e.message || e)));
         all.then(async () => {
             if (n !== showing) return;
             // Back and Forward come back where the page was left, unless the reader has scrolled meanwhile; a redraw stays put
