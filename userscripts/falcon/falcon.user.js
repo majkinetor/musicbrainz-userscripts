@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.092022
+// @version      2026.10.29.111628
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -2296,14 +2296,12 @@
     if (cur && LS && LS.getItem('falcon:session:midrun') === '1') Log.resume(cur);
   } catch (e) {}
   const writeLogNow = () => Log.flush();
-  // Forensics for the panel vanishing mid-run: record every unload synchronously,
-  // with where the tab went, so the next load can say so. #512 follow-up: an unload
-  // after a finished run is expected, so only a mid-run one is an error.
-  function noteUnload(ev) {
+  // every unload notes, synchronously, whether a run was still going, so the next load
+  // carries its log on. #858 (majkinetor): no log line for it any more, the "THIS TAB IS
+  // BEING UNLOADED" lines only read as errors in users' reports.
+  function noteUnload() {
     try {
-      const busy = typeof queue !== 'undefined' && queue.some(i => i.status === 'active' || i.status === 'queued');
-      Log.add(busy ? 'error' : 'info', `*** THIS TAB IS BEING UNLOADED (${busy ? 'MID-RUN' : 'after the run finished'}) *** from ${location.href} via ${(ev && ev.type) || '?'} — the panel and its workers are being destroyed by the page going away, NOT by Falcon closing them.${busy ? ' Report this line.' : ''}`);
-      // `running`, not `busy`: a seeded-but-never-Started item sits in 'queued'
+      // `running`, not a queued item: a seeded-but-never-Started item sits in 'queued'
       // forever, but nothing was in progress, so it must not reattach
       try { if (LS) LS.setItem('falcon:session:midrun', running ? '1' : '0'); } catch (e) {}
       Log.flush();
@@ -2713,6 +2711,26 @@
     if (name) _nameCache.set(key, name);
     dbg('[names]', `${key} — fetched: ${name ? `"${name}"` : 'null (MB lookup failed or returned no name)'}`);
     return name;
+  }
+  // #858: what an item brings, for the worker's first log line
+  function itemChanges(item) {
+    const out = [];
+    (item.urls || []).forEach(u => out.push(`link ${u.url}${u.linkTypeId ? ` (${linkTypeName(u.linkTypeId)})` : ''}`));
+    if ((item.rename || '').trim()) out.push(`name "${item.rename}"`);
+    if ((item.disambiguation || '').trim()) out.push(`disambiguation "${item.disambiguation}"`);
+    if (item.barcode) out.push(`barcode ${item.barcode}`);
+    if ((item.labels || []).length) out.push(`${item.labels.length} label(s)/catalog number(s)`);
+    if (item.event) out.push('release event');
+    if ((item.tracks || []).length) out.push(`${item.tracks.length} track(s)`);
+    const isrcs = (item.isrcs || []).filter(Boolean);
+    if (isrcs.length) out.push(`ISRC ${isrcs.join(', ')}`);
+    if (item.video) out.push('video');
+    if (item.length) out.push(`length ${item.length} ms`);
+    const aliases = (item.aliases || []).filter(a => a && String(a.name || '').trim());
+    if (aliases.length) out.push(`${aliases.length} alias(es)`);
+    const covers = (item.cover || []).filter(c => c.url || (c.candidates || []).length);
+    if (covers.length) out.push(`${covers.length} cover(s)`);
+    return out.join(' · ') || 'nothing';
   }
   function entityLabel(item) { return item.name || `${item.entityType}/${item.mbid.slice(0, 8)}`; }
   // #509 follow-up (majkinetor, live: several items stayed nameless
@@ -6224,7 +6242,9 @@
         renderQueue();
         continue;
       }
-      log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page (${item.urls.length} link(s))`);
+      // #858 (majkinetor: "w1 doesn't show in logs what is being added"): the seeded fields
+      // never get a line of their own, so name everything the item brings here
+      log('info', `${tag} ${item.entityType} ${item.mbid} — loading edit page: ${itemChanges(item)}`);
       // ⚠ A GENUINELY FRESH IFRAME PER ITEM. Never re-navigate one that has
       // already been used.
       //

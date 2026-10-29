@@ -102,8 +102,9 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
     const raw = localStorage.getItem('falcon:session:' + id);
     return raw ? JSON.parse(raw).map(x => x[3]).join('\n') : '';
   }, s3id);
-  ck(/THIS TAB IS BEING UNLOADED/.test(marked), 'unloading records that the PAGE went away — not that Falcon closed itself');
-  ck(/musicbrainz\.org/.test(marked), 'and records where it was when that happened');
+  // #858: the worker's first line names what the item adds, and an unload logs nothing
+  ck(/loading edit page: link https:\/\/myspace\.com\/session-log-3/.test(marked), 'the worker\'s first line names the link it adds: ' + JSON.stringify(marked.slice(-300)));
+  ck(!/THIS TAB IS BEING UNLOADED/.test(marked), 'an unload adds no line to the log');
 
   // reload: the killed session's log must still be there when you go looking
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -121,7 +122,6 @@ test("#467: session log", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   // at boot the launcher's first click toggled it shut. The log still survives and
   // is one click away, which is the part that matters.
   ck(/5441c29d/.test(restored.text), 'with the killed run\'s own lines restored');
-  ck(/THIS TAB IS BEING UNLOADED/.test(restored.text), 'and the explanation of what happened to it');
   ck(!/d31f76d2/.test(restored.text), 'still without dragging in older runs');
 
   ck(errs.length === 0, 'no page errors: ' + JSON.stringify(errs.slice(0, 3)));

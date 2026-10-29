@@ -91,7 +91,7 @@ A link MusicBrainz can't classify on its own (a Bandcamp track: purchase or stre
 
 ### The log
 
-The **Log** tab filters by level or worker (`w1`, `w2`, …) and searches; **⧉ Copy** gives Markdown for an issue, and **debug** records each worker's every step.
+The **Log** tab filters by level or worker (`w1`, `w2`, …) and searches; a worker's first line on an item names everything it adds (links with their types, ISRCs, barcode, …). **⧉ Copy** gives Markdown for an issue, and **debug** records each worker's every step.
 
 The last 10 runs' logs are kept in this browser, so a run whose tab crashed can still be read: pick it beside the filter. **Clear history** deletes Falcon's. A long run keeps its start and end.
 
