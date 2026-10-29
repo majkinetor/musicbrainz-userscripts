@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.234800
+// @version      2026.10.30.003000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3095,11 +3095,13 @@ const ACTS = [
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
-    const link = ([p, n, tip, ic]) => { const inMore = ['releases', 'details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
     const less = actions.filter(a => ['details', 'tags'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
-    if (less.length && ['artist', 'area', 'instrument', 'label', 'recording', 'place'].includes(type)) less.unshift(['releases', 'Releases', 'Releases', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>']);
-    return actions.filter(a => !less.includes(a)).map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
+    const main = actions.filter(a => !less.includes(a));
+    // the Releases tab sits in the row itself, before History
+    if (['artist', 'area', 'instrument', 'label', 'recording', 'place'].includes(type)) { const h = main.findIndex(a => a[0] === 'edits'); main.splice(h < 0 ? main.length : h, 0, ['releases', 'Releases', 'Releases', MK_RELEASE]); }
+    return main.map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
 }
 document.addEventListener('click', e => { document.querySelectorAll('.eh-more[open]').forEach(m => { if (!m.contains(e.target) || e.target.closest('a')) m.open = false; }); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.eh-more[open]').forEach(m => { m.open = false; m.querySelector('summary').focus(); }); });
@@ -3483,6 +3485,8 @@ function workFacts(w) {
 }
 // a track's markers after its title: its recording (lit when it has relationships of its own), its works, its credits
 const MK_REC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
+// a record sliding out of its sleeve: a recording put out as a product, apart from the recording's bare disc
+const MK_RELEASE = '<rect x="3" y="4" width="13" height="16" rx="1.5"/><path d="M16 5.3a7 7 0 0 1 0 13.4"/><path d="M16 10.2a2 2 0 0 1 0 3.6"/>';
 const MK_WORK = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
 const MK_CR = '<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>';
 const mkSvg = d => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
@@ -6821,7 +6825,7 @@ async function wsMore(d, sid) {
 // MusicBrainz's front page as a launch pad: search, adding things, your own pages and the pages you last opened.
 // Nothing here asks MusicBrainz for anything: it is all links, and the visits this script keeps itself.
 let ME = '';
-const MK_RELEASE = '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>', MK_RG = '<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>';
+const MK_RG ='<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>';
 const HM_ADD = [
     ['release/add', 'Release', MK_RELEASE],
     ['artist/create', 'Artist', MK_CR],
