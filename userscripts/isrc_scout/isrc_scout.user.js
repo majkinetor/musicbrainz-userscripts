@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.29.203000
+// @version      2026.10.29.210000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -442,7 +442,7 @@
   // MBIDs are canonically lowercase, but MB serves an upper-/mixed-case URL as-is
   // (no redirect), so match case-insensitively and normalise — otherwise a link like
   // /release/Eb13342a-… left `mbid` undefined and the whole button never injected.
-  const mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/i)?.[1]?.toLowerCase();
+  let mbid = location.pathname.match(/\/release\/([a-f0-9-]{36})/i)?.[1]?.toLowerCase();
   if (!mbid) return;
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -8999,10 +8999,10 @@
   whenDomReady(() => {
     if (!IS_OVERVIEW) return;
     const item = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
-      scale: 1.3, paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { if (location.pathname.replace(/\/$/, '').toLowerCase() === HOME) openModal(); else location.reload(); } });
+      scale: 1.3, paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { isFollow(); openModal(); } });
     item.oncontextmenu = e => {   // #695: right-click opens the settings
       e.preventDefault();
-      if (location.pathname.replace(/\/$/, '').toLowerCase() !== HOME) return;
+      isFollow();
       if (document.getElementById('ii-modal')?.classList.contains('open')) { document.getElementById('ii-setup-toggle')?.click(); return; }
       // the settings alone: the window opens hidden, only its settings pane shows; closing the pane closes the window
       openModal();
@@ -9019,7 +9019,6 @@
       mo.observe(pane, { attributes: true, attributeFilter: ['class'] });
       document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', esc, true);
     };
-    const HOME = location.pathname.replace(/\/$/, '').toLowerCase();   // a release reached inside Event Horizon runs no ISRC Scout: the click loads it
     // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
     const mirror = () => {
       if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
@@ -9087,6 +9086,21 @@
   var BG = { started: false, running: {}, prov: c => { try { return TrackLinks.PROV.find(p => p.code === c); } catch (e) { return null; } } };
   var BG_SLOW = ['td'];
   var BG_DAYS = 7;
+
+  // #847: Event Horizon shows another release without loading its page: ISRC Scout follows it, as Platform
+  // Check does, reading it from the API. While the window is open or a removal is being sent it stays on its
+  // release; it catches up when the window closes or the dock opens it.
+  function isShown() { const r = document.documentElement.getAttribute('data-mbu-release'); return r && /^[0-9a-f-]{36}$/i.test(r) ? r.toLowerCase() : null; }
+  function isFollow() {
+    const r = isShown();
+    if (!r || r === mbid || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
+    Log.info('Event Horizon shows release ' + r + ': following it');
+    try { abortSxWork('Event Horizon moved to another release'); } catch (e) { /* nothing running */ }
+    mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
+    BG.started = false; BG.running = {};
+    fetchRelease().catch(e => Log.warn('Release load failed: ' + errText(e)));
+  }
+  new MutationObserver(isFollow).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-release'] });
   // when Find links runs by itself: 'off', 'start' (opening the window) or 'background' (the release
   // page); the old "Check links in the background" checkbox (bg_links) carries over as 'background'
   function linksAuto() {
