@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.29.154618
+// @version      2026.10.30
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3183,6 +3183,8 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-found-cat { border: 1px dashed currentColor; color: var(--mbu-accent-text); padding: 1px 5px; }
   #mb-picked-cat { font-family: var(--mbu-font-mono); }
   :is(#pc-bc-pop, #pc-cat-pop) { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
+  /* EH's dock window sits above modal panels; its pickers must clear it. */
+  :root[data-mbu-dock] :is(#pc-bc-pop, #pc-cat-pop) { z-index: calc(var(--mbu-z-modal-panel) + 2); }
   :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
   :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
   :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt:hover { background: var(--mbu-bg-hover); }
@@ -9050,7 +9052,8 @@ function pcOpenFoundBarcodes(btn) {
         ${pcGtinValid(c.code) ? '' : '<span class="pc-bc-fmt pc-bc-other">⚠ wrong check digit</span>'}
         <span class="pc-bc-fmt pc-bc-mb">checking MusicBrainz…</span>
       </div>`).join('') + `<div class="pc-bc-hint">Right-click to add it on its own, in the background · Ctrl+click to copy · Ctrl+V a barcode from anywhere else</div>`);
-    document.body.appendChild(pop);
+    // EH mounts the dock outside its isolated body; keep the picker in the same stacking context.
+    (document.documentElement.hasAttribute('data-mbu-dock') ? document.documentElement : document.body).appendChild(pop);
     const r = btn.getBoundingClientRect();
     pop.style.top = `${r.bottom + 4}px`;
     // clientWidth leaves out the page's scrollbar, which innerWidth counts
@@ -9209,7 +9212,8 @@ function pcOpenFoundCatnos(btn) {
           : c.barcodes.every(b => !b) ? '<span class="pc-bc-fmt pc-bc-other">⚠ from platforms that give no barcode</span>'
           : '<span class="pc-bc-fmt pc-bc-other">⚠ from another barcode than this release\'s</span>'}
       </div>`).join('') + `<div class="pc-bc-hint">Right-click to copy</div>`);
-    document.body.appendChild(pop);
+    // EH mounts the dock outside its isolated body; keep the picker in the same stacking context.
+    (document.documentElement.hasAttribute('data-mbu-dock') ? document.documentElement : document.body).appendChild(pop);
     const r = btn.getBoundingClientRect();
     pop.style.top = `${r.bottom + 4}px`;
     pop.style.left = `${Math.max(8, Math.min(r.left, document.documentElement.clientWidth - pop.offsetWidth - 8))}px`;
