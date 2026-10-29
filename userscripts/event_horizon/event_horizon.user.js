@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.110001
+// @version      2026.10.30.110002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7576,6 +7576,12 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] .release-relationship-editor>h2.eh-fold+.ars,:root[data-eh-rel] .release-relationship-editor>h2:first-child.eh-fold~:is(#batch-tools,#medium-toolbox,#tracklist){display:none!important}
 :root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox,#tracklist,.ars){margin:0!important;box-sizing:border-box;width:100%;background:var(--surface)!important;border:1px solid var(--border);border-top:0;padding:8px 16px!important}
 :root[data-eh-rel] .release-relationship-editor>:is(#batch-tools,#medium-toolbox){display:block;border-bottom:0}
+:root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox){display:grid;grid-template-columns:minmax(0,1fr) auto}
+:root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox)>*{grid-column:1/-1;min-width:0}
+:root[data-eh-rel] .release-relationship-editor:has(>#medium-toolbox)>h2:first-child{grid-row:1;padding-right:50%}
+:root[data-eh-rel] .release-relationship-editor>#medium-toolbox{grid-column:2;grid-row:1;align-self:center;justify-self:end;z-index:1;width:auto;margin:8px 16px 0 12px!important;padding:0!important;border:0;background:none!important;font-size:12px;white-space:nowrap}
+:root[data-eh-rel] #page #medium-toolbox button{font-size:inherit}
+@media(max-width:650px){:root[data-eh-rel] .release-relationship-editor>#medium-toolbox{white-space:normal;max-width:45vw;text-align:right}}
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 2px!important;overflow:visible!important}
 :root[data-eh-rel] #page #tracklist>thead th{padding:4px 8px!important;font-size:11px;line-height:1.25;letter-spacing:.03em}
