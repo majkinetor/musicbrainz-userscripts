@@ -20,3 +20,21 @@ for (const add of [false, true]) for (const asFirst of [true, false]) test(`the 
   await attachShot(testInfo, page, 'cover-art');
   if (process.env.EH_SHOT) await page.screenshot({ path: process.env.EH_SHOT.replace('.png', asFirst ? '-as.png' : '-eh.png') });
 });
+
+// Event Horizon hides Art Station's corner switch: its settings open from Art Station's entry in the dock
+test('Art Station\'s settings open from the dock', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/cover-art`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await idle(page);
+  await inject('event_horizon');
+  await inject('art_station');
+  check(await until(() => page.locator('#app #as-slot #as-root').count(), n => n === 1) === 1, 'the gallery sits in the slot');
+  check(await page.locator('#as-switch').isHidden(), 'the corner switch is hidden');
+  // the dock remembers being unrolled, and a click on it toggles that
+  if (!await page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock-open'))) await page.locator('#mbu-dock').click();
+  if (!await page.evaluate(() => document.documentElement.hasAttribute('data-mbu-dock-open'))) await page.locator('#mbu-dock').click();
+  await page.locator('#as-dock').click();
+  check(await until(() => page.locator('#as-setup').count(), n => n === 1) === 1, 'the settings open');
+  await attachShot(testInfo, page, 'settings');
+  await page.locator('#as-dock').click();
+  check(await until(() => page.locator('#as-setup').count(), n => n === 0) === 0, 'a second click closes them');
+});
