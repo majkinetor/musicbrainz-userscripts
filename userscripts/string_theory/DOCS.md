@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 20:44 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 20:50 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -805,7 +805,7 @@ Click **Sections** (the list icon beside Search, top right) to open the list. Cl
 
 ### Details
 
-Open **Details** (the info icon in the header) for all of an entity's detail fields, including its MBID, last update and data links. The page uses Event Horizon's header and a card for MusicBrainz's details. The back arrow returns to the overview.
+Open **More** (the three dots in the header) → **Details** for all of an entity's detail fields, including its MBID, last update and data links. More also holds **Tags** where available. The page uses Event Horizon's header and a card for MusicBrainz's details. The back arrow returns to the overview.
 
 ### Tracks and platforms
 

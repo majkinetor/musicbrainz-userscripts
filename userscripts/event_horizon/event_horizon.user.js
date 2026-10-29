@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.203800
+// @version      2026.10.29.205500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2294,6 +2294,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .ab{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--chip-text)}
 .kicker .ab:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
 .kicker .abx{position:relative;display:inline-flex}.kicker .abm{display:none;position:absolute;top:100%;left:0;z-index:30;flex-direction:column;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px var(--shadow)}.kicker .abx:is(:hover,:focus-within)>.abm{display:flex}.kicker .abm .ab{white-space:nowrap}
+.kicker .eh-more{margin:0}.kicker .eh-more>summary{list-style:none;cursor:pointer}.kicker .eh-more>summary::-webkit-details-marker{display:none}.kicker .eh-more:not([open])>.abm{display:none}.kicker .eh-more[open]>.abm{display:flex}.kicker .eh-more>.abm{left:auto;right:0}.kicker .eh-more .abm .ab{justify-content:flex-start}
 .art .cvact{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:8px;background:rgba(0,0,0,.66);color:#fff!important;font-size:13px;font-weight:600;text-decoration:none!important;opacity:0;transition:opacity .15s;white-space:nowrap}.art .picw:hover>.cvact,.art .cvact:focus-visible{opacity:1}.art .cvact:hover{background:var(--accent)}
 .kicker .srch{display:inline-flex;align-items:center;margin:0}
 .kicker .acts:has(>.srch.open)>:not(.srch),.kicker .srch.open>.ab,.kicker .srch:not(.open) .sf{display:none}
@@ -3079,6 +3080,15 @@ const ACTS = [
     ['edits', 'History', 'Edit history', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
     ['details', 'Details', 'Details', '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>'],
 ];
+// The same action row on overviews, subpages and pinned headers. Less-used
+// actions keep their labels in More even when header menu titles are off.
+function actionRow(actions, type, id, active = '') {
+    const link = ([p, n, tip, ic]) => `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''} data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}">${SVG(ic)}<span class="${['details', 'tags'].includes(p) ? '' : 'abt'}">${n}</span></a>`;
+    const less = actions.filter(a => ['details', 'tags'].includes(a[0]));
+    return actions.filter(a => !less.includes(a)).map(link).join('') + (less.length ? `<details class="abx eh-more"><summary class="ab${less.some(a => a[0] === active) ? ' on' : ''}" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}<span class="abt">More</span></summary><span class="abm">${less.map(link).join('')}</span></details>` : '');
+}
+document.addEventListener('click', e => { document.querySelectorAll('.eh-more[open]').forEach(m => { if (!m.contains(e.target) || e.target.closest('a')) m.open = false; }); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.eh-more[open]').forEach(m => { m.open = false; m.querySelector('summary').focus(); }); });
 
 /* ── formatting ────────────────────────────────────── */
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -3221,7 +3231,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${ACTS.map(([p, n, t, d]) => `<a class="ab" href="${MB}/release/${r.id}${p ? '/' + p : ''}" data-tip="${t}">${SVG(d)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${actionRow(ACTS, 'release', r.id)}${SRCH()}</span></div>
             <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}</h1>
             <div class="by">by ${acHtml(r.ac)}${rgLink(r)}</div>
             ${facts(r)}
@@ -3677,7 +3687,7 @@ function rgHero(d) {
             ${under(g, tags)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${RG_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}${p[0] === '/' ? p + g.id : `/release-group/${g.id}/${p}`}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${actionRow(RG_ACTS, 'release-group', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             <div class="by">by ${acHtml(g.ac)}</div>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
@@ -5452,7 +5462,7 @@ function lbHero(d) {
     return `<section class="hero">
         <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
-            <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${LB_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/label/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -5478,7 +5488,7 @@ function arHero(d) {
     return `<section class="hero">
         <div class="art">${pic}${under(g, tags)}</div>
         <div class="facts-col">
-            <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${AR_ACTS.map(([p, n, t, ic]) => `<a class="ab" href="${MB}/artist/${g.id}/${p}" data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('')}${SRCH()}</span></div>
+            <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
@@ -5523,7 +5533,7 @@ async function loadWork(id, step = () => {}) {
     const gP = wsk(`work/${id}?inc=aliases+genres+tags+ratings+annotation+artist-rels+work-rels+url-rels`).then(w => { step('work'); return work(w); });
     return { kind: 'work', g: null, gP, recs, wiki, editions: [], edCount: 0, eds: Promise.resolve(null), covers: Promise.resolve([]) };
 }
-const pgActs = (type, id) => (type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS).map(([p, n, t, ic]) => `<a class="ab" href="${MB}/${type}/${id}/${p}" data-tip="${t.replace('artist', type)}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+const pgActs = (type, id) => actionRow((type === 'collection' ? COL_ACTS.filter(a => a[0] !== 'own_collection/edit' || (data && data.g && data.g.owner === ME)) : type === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), type, id) + SRCH();
 const bigMk = d => mkSvg(d).replace('width="15" height="15"', 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".7"');
 const factsHtml = F => `<div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>`;
 function pgHero(g, type, icon, kind, F, by, pic) {
@@ -7391,7 +7401,7 @@ const PAGE_ID = keyOf(location.href);
 const backA = id => `<a class="ab ov" href="${MB}/release/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>`;
 function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const acts = backA(id) + ACTS.map(([p, n, t, ic]) => `<a class="ab${p === tab ? ' on' : ''}" href="${MB}/release/${id}/${p}"${p === tab ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') + SRCH();
+    const acts = backA(id) + actionRow(ACTS, 'release', id, tab) + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" src="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
         + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</div>` : none) + '</div>';
@@ -7465,7 +7475,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-details] .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
 :root[data-eh-details] #page .eh-details h2{margin:0 0 18px;font-size:18px}
 :root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse;table-layout:fixed}
-:root[data-eh-details] #page .eh-details table.details :is(th,td){padding:14px 0;vertical-align:top;border-bottom:1px solid var(--line);background:transparent!important;overflow-wrap:anywhere}
+:root[data-eh-details] #page .eh-details table.details :is(th,td){padding:6px 0;vertical-align:baseline;line-height:1.5;border-bottom:1px solid var(--line);background:transparent!important;overflow-wrap:anywhere}
 :root[data-eh-details] #page .eh-details table.details th{width:150px;padding-right:24px;color:var(--muted);font-size:12px;font-weight:700;text-align:right}
 :root[data-eh-details] #page .eh-details table.details tr:last-child>*{border-bottom:0}
 :root[data-eh-details] #page .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
@@ -7557,7 +7567,7 @@ function formHeader(key) {
     const { t, by } = mbHead(), hd = hdSect();
     // the entity header the tags page wears: its picture, else its kind's mark, and the kind beside the form's name
     const img = type === 'event' ? `https://eventartarchive.org/event/${id}/front-250` : visitImg({ key: type + '/' + id });
-    const acts = form === 'details' ? (type === 'release' ? ACTS : type === 'release-group' ? RG_ACTS : AR_ACTS).map(([p, n, tip, ic]) => `<a class="ab${p === form ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === form ? ' aria-current="page"' : ''} data-tip="${esc(tip.replace('artist', type))}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('') : '';
+    const acts = form === 'details' ? actionRow((type === 'release' ? ACTS : type === 'release-group' ? RG_ACTS : AR_ACTS), type, id, form) : '';
     hd.innerHTML = entHead({ type, id, img, acts, kick: FORMS[form] + ' · ' + (HM_KIND[type] || [type])[0], title: t ? t.textContent : document.title });
     if (by) hd.querySelector('.rhtx').insertAdjacentHTML('beforeend', `<div class="by">by ${by}</div>`);
     entHeadWire(hd);
@@ -7884,7 +7894,7 @@ function histGroup(key, title, es, av, nm) {
     return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
-    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + ACTS.map(([p, nm, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}/release/${rid}/${p}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t}">${SVG(ic)}<span class="abt">${nm}</span></a>`).join('') : '') + SRCH();
+    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(ACTS, 'release', rid, 'edits') : '') + SRCH();
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
@@ -7910,8 +7920,7 @@ function histPage(app, d) {
     const foot = d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
     const en = histEntOf(d.id);
     // the entity's own action row, as on its page, History lit
-    const enActs = en && (en[0] === 'release-group' ? RG_ACTS : en[0] === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS)
-        .map(([p, n, t, ic]) => `<a class="ab${p === 'edits' ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + en[1] : `/${en[0]}/${en[1]}/${p}`}"${p === 'edits' ? ' aria-current="page"' : ''} data-tip="${t.replace('artist', en[0].replace('-', ' '))}">${SVG(ic)}<span class="abt">${n}</span></a>`).join('');
+    const enActs = en && actionRow((en[0] === 'release-group' ? RG_ACTS : en[0] === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS), en[0], en[1], 'edits');
     const enHd = en && entHead({ type: en[0], id: en[1], acts: enActs,img: en[0] === 'event' ? `https://eventartarchive.org/event/${en[1]}/front-250` : visitImg({ key: en.join('/') }), kick: histName(d.id) + ' · ' + (HM_KIND[en[0]] || [en[0]])[0], title: d.ent && d.ent.title }).replace(/<\/div>$/, (d.ent && d.ent.by ? `<div class="by">by ${d.ent.by}</div>` : '') + '</div>');
     app.innerHTML = `<section class="arthd">${en ? enHd : r || rid ? subHead(r, r ? r.id : rid, 'edits', esc(histName(d.id)), '<h1>&nbsp;</h1>') : `<div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div><h1>${esc(histName(d.id))}</h1></div>`}</section><section class="hist">${d.edits.length && !histOne(d.id) ? bar : ''}${body}${histOne(d.id) && d.edits.length ? '' : foot}</section>`;
     cvWire(app);
