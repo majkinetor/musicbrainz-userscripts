@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.120001
+// @version      2026.10.30.120002
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2247,6 +2247,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail .nm{align-items:center;line-height:1;border:0;background:none;padding:0 4px;height:100%;font:inherit;font-size:13px;font-weight:600;color:var(--text)!important;background:none!important;cursor:pointer;margin-right:auto;text-transform:none;letter-spacing:0}
 #eh-rail .rr.on .nm{color:var(--accent)!important}
 #eh-rail .rr.off .nm{color:var(--muted)!important;text-decoration:line-through}
+#eh-rail .rr.top{display:none}#eh-rail.open .rr.top{display:flex;padding-left:22px}
 #eh-rail .eye{border:0;background:none;padding:2px;color:var(--muted);cursor:pointer}
 #eh-rail .eye:hover{color:var(--accent)}
 #eh-rail .eye svg{width:14px;height:14px}
@@ -7162,6 +7163,7 @@ function secRail(app) {
         }, true);
         document.addEventListener('keydown', ev => { if (ev.key === 'Escape') shut(); });
         rail.addEventListener('click', ev => {
+            if (ev.target.closest('[data-top]')) { rail.classList.remove('open'); scrollTo({ top: 0, behavior: 'smooth' }); return; }
             // the last row folds every shown section, or opens them all when they all are folded
             const fa = ev.target.closest('[data-foldall]');
             if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => x.id.slice(2)); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -7198,7 +7200,7 @@ function secRail(app) {
         acts.querySelector('.srch,[data-srch]') ? acts.querySelector('.srch,[data-srch]').insertAdjacentHTML('beforebegin', SEC_BTN) : acts.insertAdjacentHTML('beforeend', SEC_BTN);
     }
     if (!acts) rail.classList.remove('open');
-    rail.innerHTML = secs.map(x => { const k = id(x), off = x.hidden;
+    rail.innerHTML = '<div class="rr top" data-top><button class="nm" type="button">Top</button></div>' + secs.map(x => { const k = id(x), off = x.hidden;
         return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
     railSpy();

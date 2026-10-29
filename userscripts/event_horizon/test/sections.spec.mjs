@@ -25,8 +25,11 @@ test('the header pins to the top once it scrolls away, carrying the action row',
   check((await page.locator('#eh-pin .pnm').textContent()).trim().length > 0, 'and the title');
   await page.locator('#eh-pin [data-ehsec]').click();
   check(await page.locator('#eh-rail').isVisible(), 'its Sections button works');
-  await page.keyboard.press('Escape');
-  await page.evaluate(() => scrollTo(0, 0));
+  check(await page.locator('#eh-rail > :first-child button').textContent() === 'Top', 'Top is the first menu item');
+  await page.screenshot({ path: 'dev/_eh-toc-top.png' });
+  await page.locator('#eh-rail [data-top] button').click();
+  check(!(await page.locator('#eh-rail').isVisible()), 'Top closes the menu');
+  check(await until(() => page.evaluate(() => scrollY), y => y === 0, 5000) === 0, 'Top scrolls back to the page header');
   check(await until(() => page.locator('#app .kicker .acts [data-ehsec]').count(), n => n > 0, 5000) === 1, 'back at the top, the actions return to the header');
 });
 
