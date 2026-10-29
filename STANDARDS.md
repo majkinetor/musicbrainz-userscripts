@@ -15,16 +15,16 @@ This repo's numbered conventions. The ones that hold on any project are in [`dev
 
 <a id="standard-10"></a>
 
-### 10. Install links follow a branch; on GitHub only releases pin a commit
+### 10. Install links: one that follows the branch, one pinned
 
-Every userscript install link shared in chat or on GitHub follows the branch the work is on: `main` once it's there, the feature branch before. On GitHub, pinned links (a commit SHA) are only for releases, and the release script writes those ([DEVELOP → Releasing](DEVELOP.md#releasing)). In chat, the branch link gets a pinned one under it ([AGENTS → Userscripts](AGENTS.md#userscripts)).
+Every userscript change shared in chat or on GitHub gets two links: one that follows the branch the work is on (`main` once it's there, the feature branch before), and under it the same file pinned to the pushed commit. A String Theory member is linked through String Theory only.
 
 ```markdown
 [Install @<version> (latest, auto-updates)](https://github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/main/userscripts/<dir>/<file>.user.js)
-[Install @<version> (branch <name>, auto-updates)](https://github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/<name>/userscripts/<dir>/<file>.user.js)
+[Install @<version> (pinned <sha8>)](https://github.com/majkinetor/musicbrainz-userscripts/raw/<full sha>/userscripts/<dir>/<file>.user.js)
 ```
 
-- **Latest** once the work is on `main`; a **branch** link while it's on a feature branch, never both.
+- **Latest** once the work is on `main`; a **branch** link (`refs/heads/<name>`, labelled *branch <name>*) while it's on a feature branch, never both.
 - Clickable `[label](url)` links, never bare URLs, and never with the URL wrapped in backticks, which GitHub shows as plain text.
 - **Make the links with [`dev/install-links`](dev/install-links/README.md), never by hand.** `node dev/install-links/install-links.mjs <script> [...]` prints them for the branch checked out (main when HEAD is on `origin/main`), with a bundled script's linked through String Theory only. Each link is checked before it's printed (HTTP 200, the label's `@version` equal to the file's). Paste its output unchanged, or write the body to a file with a `<!-- install-links -->` line and let `--into <file>` fill that line in.
 - **Check the posted comment**: `node dev/install-links/install-links.mjs --check <comment-url>`. If it fails, edit the comment until the check passes; until then the handoff isn't done.

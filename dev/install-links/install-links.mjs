@@ -17,9 +17,8 @@ const RAW = `https://raw.githubusercontent.com/${REPO}/`;
 // Links follow a branch: main once the work is there, else the feature branch it is on. They go
 // through github.com/<repo>/raw/refs/heads/…, which redirects to raw.githubusercontent.com: a cloud
 // session's proxy wrapped the raw.githubusercontent.com form of a session branch's link in backticks.
-// Pinned links (a commit SHA) are only for releases, which dev/publish.mjs writes; --check
-// still accepts them, through github.com (raw.githubusercontent.com with a full SHA gets
-// wrapped in backticks when a cloud session posts it).
+// Pinned links (a commit SHA) go through github.com too (raw.githubusercontent.com with a full
+// SHA gets wrapped in backticks when a cloud session posts it).
 const PIN = `https://github.com/${REPO}/raw/`;
 const HOSTS = /raw\.githubusercontent\.com|github\.com\/[^\s/]+\/[^\s/]+\/raw\//;
 const MARKER = '<!-- install-links -->';
@@ -33,7 +32,7 @@ const die = m => { console.error(`✗ ${m}`); process.exit(1); };
 // A link that renders: [label](url), not inside a code span, the target with no backtick or space.
 const LINK = /\[([^\]\n]+)\]\((https:\/\/(?:raw\.githubusercontent\.com|github\.com)\/[^\s()`<>]+)\)/g;
 const esc = s => s.replace(/[.]/g, '\\.');
-// branch: raw.githubusercontent.com/<repo>/refs/heads/<branch>/…; pinned (releases): github.com/<repo>/raw/<40-char SHA>/…
+// branch: raw.githubusercontent.com/<repo>/refs/heads/<branch>/…; pinned: github.com/<repo>/raw/<40-char SHA>/…
 const URL_SHAPE = new RegExp(`^(?:${esc(PIN)}([0-9a-f]{40})|(?:${esc(RAW)}|${esc(PIN)})refs/heads/([\\w.-]+(?:/[\\w.-]+)*?))/userscripts/[\\w/.-]+\\.user\\.js$`);
 
 function fetchRaw(url) {
@@ -55,7 +54,7 @@ function check(text) {
       links++;
       if ((line.slice(0, m.index).match(/`/g) || []).length % 2) errors.push(`${at}: link is inside a code span: ${m[0]}`);
       const shape = url.match(URL_SHAPE);
-      if (!shape) { errors.push(`${at}: not ${RAW}refs/heads/<branch>/… (or ${PIN}<40-char SHA>/…, a release's pinned link), …/userscripts/…user.js: ${url}`); continue; }
+      if (!shape) { errors.push(`${at}: not ${RAW}refs/heads/<branch>/… (or ${PIN}<40-char SHA>/…, a pinned link), …/userscripts/…user.js: ${url}`); continue; }
       const pinned = !!shape[1];
       const { status, body } = fetchRaw(url);
       if (status !== 200) { errors.push(`${at}: HTTP ${status}: ${url}`); continue; }
@@ -133,10 +132,13 @@ const asked = [...new Set(args.map(scriptFile))];
 const files = full ? asked.filter(f => f !== ST) : asked.filter(f => !members.includes(folder(f)));
 if (asked.some(f => members.includes(folder(f))) && !files.includes(ST)) files.push(ST);
 
+// Each link that follows the branch gets the same file pinned to the branch's head under it
+// (maintainer, 2026-10-29): he installs the pinned one and updates by hand.
 const lines = [];
 for (const f of files) {
-  const name = header(sha, f, 'name');
-  lines.push(`[Install ${name} @${header(sha, f, 'version')} (${branch === 'main' ? 'latest' : 'branch ' + branch}, auto-updates)](${PIN}refs/heads/${branch}/${f})`);
+  const name = header(sha, f, 'name'), version = header(sha, f, 'version');
+  lines.push(`[Install ${name} @${version} (${branch === 'main' ? 'latest' : 'branch ' + branch}, auto-updates)](${PIN}refs/heads/${branch}/${f})`);
+  lines.push(`[Install ${name} @${version} (pinned ${sha.slice(0, 8)})](${PIN}${sha}/${f})`);
 }
 const block = lines.join('\n');
 report(check(block));

@@ -16,7 +16,7 @@ It needs Node, `git`, `curl`, and `gh` for `--check` on a comment URL. It runs t
 
 - **`<script>`** is a folder under `userscripts/` (`apollo_editor`, `as_picker`) or a path to a `.user.js`. For a built script it links the file in `dist/`.
 - **`--branch`** is the branch to link. By default it's `main` when HEAD is on `origin/main` (run `git fetch` first, so `origin/main` is current), else the branch checked out, which must be pushed up to HEAD.
-- **Which links:** one per script that follows the branch, its label's `@version` read from the branch's head: *latest* on `main`, *branch <name>* otherwise. A String Theory [member](../../userscripts/string_theory/members.txt) gets no link of its own: it is linked through **String Theory's** only, once however many members changed. **`--full`** adds each member's own link before String Theory's. Pinned (commit) links are only for releases, which [`dev/publish.mjs`](../publish.mjs) writes.
+- **Which links:** two per script, their labels' `@version` read from the branch's head: one that follows the branch (*latest* on `main`, *branch <name>* otherwise), and under it the same file pinned to the branch's head commit. A String Theory [member](../../userscripts/string_theory/members.txt) gets no links of its own: it is linked through **String Theory's** only, once however many members changed. **`--full`** adds each member's own links before String Theory's.
 - **Output:** the links go to stdout, one per line, ready to paste unchanged. With `--into <file>`, they replace the line `<!-- install-links -->` in that file, or are appended when the file has none. Write the comment body with that line where the links belong, and post the file.
 
 Every link is checked before it's printed. When a check fails, nothing is printed and the exit code is 1.
@@ -32,7 +32,7 @@ It reads a GitHub comment (`…/issues/<n>#issuecomment-<id>`, through `gh`) or 
 | Check | Fails on |
 | --- | --- |
 | Every install URL is a clickable `[label](url)` | a URL in backticks, a bare URL, a link inside a code span |
-| A URL is `github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/<branch>/userscripts/…user.js` (or `raw.githubusercontent.com/…/refs/heads/<branch>/…`), or a release's pinned `github.com/…/raw/<40-char SHA>/…` | a bare `main`, a short SHA, a wrong repo slug |
+| A URL is `github.com/majkinetor/musicbrainz-userscripts/raw/refs/heads/<branch>/userscripts/…user.js` (or `raw.githubusercontent.com/…/refs/heads/<branch>/…`), or a pinned `github.com/…/raw/<40-char SHA>/…` | a bare `main`, a short SHA, a wrong repo slug |
 | The URL answers HTTP 200 | a 404 (unpushed commit, wrong path) |
 | The label's `@version` equals the file's | a mismatch on a pinned link (a warning on a branch link) |
 | The text has at least one install link | none found |
