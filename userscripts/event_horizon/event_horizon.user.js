@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.29.183518
+// @version      2026.10.29.184512
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2387,7 +2387,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .qk{position:relative;display:inline-flex}
 .qk>.popwrap{position:absolute;right:-4px;bottom:-4px}
 .qk button.kn{display:grid;place-items:center;width:16px;height:16px;padding:0;border:0;background:none;font-size:0;cursor:pointer}
-.qk button.kn::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 2px var(--surface)}
+.qk button.kn::before{content:"";width:calc(var(--qk-size,28px) / 3.5);height:calc(var(--qk-size,28px) / 3.5);border-radius:50%;background:var(--muted);box-shadow:0 0 0 calc(var(--qk-size,28px) / 14) var(--surface)}
 .qk button.kn:hover::before,.qk button.kn[aria-expanded="true"]::before{background:var(--text)}
 .pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
@@ -3235,7 +3235,7 @@ function rlQuiet(r) {
         const lbl = many ? `${p.urls.length} links on ${esc(p.name)}` : `${rest.length} more kinds on ${esc(p.name)}`;
         const tip = many ? `${p.urls.length} links${rest.length ? ': also ' + rest.map(kname).join(', ') : ''}` : `+${rest.length}: also ${rest.map(kname).join(', ')}`;
         const body = many ? lead(p).urls.map(u => uRow(p, u)).join('') : `${kRow(p, primaryKind(p))}<div class="h label also">Also</div>${rest.map(k => kRow(p, k)).join('')}`;
-        return `<span class="qk">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
+        return `<span class="qk" style="--qk-size:${S.plSize + 6}px">${ar}<span class="popwrap"><button class="kn" type="button" data-pop="kn-${i}" aria-expanded="false" aria-label="${lbl}" data-tip="${esc(tip)}">+${many ? p.urls.length : rest.length}</button><div class="pop" id="pop-kn-${i}" hidden><div class="h label">${esc(p.name)}</div>${body}</div></span></span>`;
     };
     const icons = KINDS.map(([k, name]) => { const g = ps.map((p, i) => [p, i]).filter(([p]) => primaryKind(p) === k); return g.length ? `<span class="kg"><span class="label">${name}</span><span class="ki">${g.map(([p, i]) => qi(p, i)).join('')}</span></span>` : ''; }).join('');
     // the sites behind +N: a grid under their kind's heading, so the kind isn't repeated on every row;
@@ -3356,7 +3356,7 @@ function trackPlatform(p, id, a) {
     if (p.urls.length < 2) return a;
     const label = `${p.urls.length} links on ${p.name}`;
     const rows = p.urls.map(u => `<a class="row" href="${esc(u.url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}${u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}<br><small>${esc(u.url.replace(/^https?:\/\/(www\.)?/, ''))}</small></span></a>`).join('');
-    return `<span class="qk">${a.replace('" aria-label=', '&#10;Right-click: its ' + p.urls.length + ' links" aria-label=')}<span class="popwrap"><button class="kn" type="button" data-pop="${esc(id)}" aria-expanded="false" aria-label="${esc(label)}" data-tip="${esc(label)}">+${p.urls.length}</button><div class="pop r" id="pop-${esc(id)}" hidden><div class="h label">${esc(p.name)}</div>${rows}</div></span></span>`;
+    return `<span class="qk" style="--qk-size:${S.plSize}px">${a.replace('" aria-label=', '&#10;Right-click: its ' + p.urls.length + ' links" aria-label=')}<span class="popwrap"><button class="kn" type="button" data-pop="${esc(id)}" aria-expanded="false" aria-label="${esc(label)}" data-tip="${esc(label)}">+${p.urls.length}</button><div class="pop r" id="pop-${esc(id)}" hidden><div class="h label">${esc(p.name)}</div>${rows}</div></span></span>`;
 }
 function trackLinks(t, ctx) {
     const ps = sortP(t.links), slotKeys = ctx.slots;
