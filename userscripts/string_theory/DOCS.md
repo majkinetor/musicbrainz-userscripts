@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-29 20:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-29 20:56 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -790,7 +790,7 @@ Event Horizon shows its own page for each of these, and for search results. A li
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
-- **Annotation** and, for a release group, **Cover art** open from Edit's menu (point at Edit); a release group's cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
+- **Annotation** opens from **More**; a release group's **Cover art** opens from Edit's menu (point at Edit), and its cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
 - **A page seen before** shows at once from what Event Horizon kept of it, then is checked with MusicBrainz in the background, and redrawn if anything changed. Back and Forward return to where you were on the page.
 - While a page loads, the other scripts' background requests to MusicBrainz wait, so the page you asked for comes first.
 - If a page can't load, **Retry**, or **Show MusicBrainz's page**.
@@ -805,7 +805,7 @@ Click **Sections** (the list icon beside Search, top right) to open the list. Cl
 
 ### Details
 
-Open **More** (the three dots in the header) → **Details** for all of an entity's detail fields, including its MBID, last update and data links. More also holds **Tags** where available. The page uses Event Horizon's header and a card for MusicBrainz's details. The back arrow returns to the overview.
+Open **More** (the three dots in the header) → **Details** for all of an entity's detail fields, including its MBID, last update and data links. More also holds **Annotation** and **Tags** where available. The page uses Event Horizon's header and a card for MusicBrainz's details. The back arrow returns to the overview.
 
 ### Tracks and platforms
 
