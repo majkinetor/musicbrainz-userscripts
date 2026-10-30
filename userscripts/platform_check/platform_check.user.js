@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.30.7
+// @version      2026.10.30.134830
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1734,7 +1734,7 @@ function mbuDock() {
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0/"]::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0/3": nothing to do, only held back
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
             // nothing counted yet: three small dots lighting in turn, no badge
@@ -3578,10 +3578,13 @@ if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
 var pcDockItem = null;
-// the dock's number: the platforms to link plus the Artists & labels links to add (null: not counted); after a slash, the withheld of both
+// the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
 var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
-// "2/3": 2 to add, 3 withheld; "0/3" (grey, dashed) when all that's left is held back
-function pcDockStatus() { const n = pcDockFound + (pcDockArtists || 0), h = pcDockHeld + pcDockArtistsHeld; if (pcDockItem) pcDockItem.status(h ? n + '/' + h : n ? String(n) : '\u2713'); }
+// "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
+function pcDockStatus() {
+    const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
+    if (pcDockItem) pcDockItem.status(pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '✓');
+}
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
     // While Event Horizon shows, the panel waits in a hidden window outside the body EH swapped out:
@@ -9961,6 +9964,7 @@ document.addEventListener('mc:probe', async e => {
 // no barcode to add, no master, nothing linked. A link's barcode, track count and format go with it,
 // for MC's barcode lanes.
 async function pcMcSeedProbe(d) {
+    const logStart = PC_LOG.entries().length;
     const s = d.seed || {};
     const tracks = Number(s.tracks) || 0;
     PC_SEED_DATA = {
@@ -9979,7 +9983,7 @@ async function pcMcSeedProbe(d) {
     const tally = findings.reduce((t, f) => (t[f.state] = (t[f.state] || 0) + 1, t), {});
     appendLog('System', `Mission Control seed probe ${d.run || ''} answered: ${JSON.stringify(tally)}`, 'ok');
     findings.filter(f => f.url).forEach(f => appendLog('System', `  ${f.key}: ${f.url} · barcode ${f.barcode || '—'} · ${f.tracks ?? '?'} track(s) · ${f.format || '?'} · ${f.state}${f.why ? ' (' + f.why + ')' : ''} · type ${f.links.map(l => l.linkTypeId || 'MusicBrainz picks').join('+')}`));
-    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, seed: true, findings, barcode: PC_SEED_DATA.barcode });
+    pcMcSend('mc:findings', { id: 'pc', run: d.run, release: mbid, seed: true, findings, barcode: PC_SEED_DATA.barcode, diagnostics: PC_LOG.entries().slice(logStart) });
 }
 // A release link for Falcon with the type PC's own + would pick (pcTypeForce): where MusicBrainz
 // offers several and picks none (Bandcamp, Apple Music, Qobuz, ...), Falcon has no type to give
