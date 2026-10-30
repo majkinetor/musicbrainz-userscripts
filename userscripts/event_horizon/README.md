@@ -76,7 +76,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Platforms → Show          | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
 | Platforms → Icon size     | 22px                                                                | the size of a platform icon                                                |
 | Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
-| Artist → Images from      | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
+| Artist → Artist images      | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
 | General → Page width      | Wide                                                                | how wide the page grows on a big screen                                    |
 | General → Menu titles     | off                                                                 | text beside menu icons in page headers and pinned bars                     |
 

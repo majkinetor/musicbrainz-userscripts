@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.213501
+// @version      2026.10.30.214501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8370,7 +8370,7 @@ function hdBody() {
         + imgBody();   // the artists' pictures, as the artist page's gear sets them
 }
 function imgBody() {
-    return cfgRow('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
+    return cfgRow('Artist images', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
 Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next");
 }
 function cfgBody() {
