@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.171501
+// @version      2026.10.30.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2262,6 +2262,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 :root[data-eh-theme] .tl button.disc .cv,:root[data-eh-theme] button.ib{background:transparent!important;color:var(--soft)!important;border-color:var(--border)!important}
 :root[data-eh-theme] button.ib:hover{color:var(--text)!important}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+#app>section.sec>.secthead{position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:10px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);transition:top .18s}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
@@ -7257,6 +7258,8 @@ function pinBar(app) {
         if (pin === bar.classList.contains('on') && !first) return;
         first = false;
         bar.classList.toggle('on', pin);
+        // the section headers stick just under the bar (majkinetor)
+        document.documentElement.style.setProperty('--eh-pin-h', pin ? bar.offsetHeight + 'px' : '0px');
         if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
     });
