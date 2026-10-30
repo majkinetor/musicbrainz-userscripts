@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.140000
+// @version      2026.10.30.150000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4002,7 +4002,9 @@
     // rejected the target ("must select … target entity") and threw loading its relationships ("e is null").
     // typeID + languages carry the optional #363 params. MB creates the work for real on submit. (#363)
     const w = {
-      entityType: 'work', id: wmNewSeq--, gid: '',
+      // #869 the id from MB's own counter, as MB's new works and the text parser get (the fallback only
+      // when the editor isn't there): its link then reads #new-work--27, not #new-work--1000000
+      entityType: 'work', id: (RE() && RE().getRelationshipStateId) ? RE().getRelationshipStateId() : wmNewSeq--, gid: '',
       name: title || '[untitled]', comment: '', typeID: wmNewType,
       languages: wmLangRels(), iswcs: [], attributes: [],
       artists: [], other_artists: [], authors: [], editsPending: false, last_updated: null,
