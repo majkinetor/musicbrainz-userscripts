@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.123756
+// @version      2026.10.30.133800
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2187,11 +2187,12 @@ const CSS = `
 /* a scrollbar that comes and goes (a section hidden from the contents) would shift the whole page sideways; keep its gutter */
 html{scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}
-/* the page's background, picked in General: aura blurs the page's own picture behind its head (glow where it has none); its own layer, or a hover's partial repaint re-blurs it in tiles and leaves seams */
+/* Aura is blurred into a canvas once: a live CSS filter leaves rectangular seams on partial repaints. */
 body{position:relative;isolation:isolate;overflow-x:clip}
 body::before{content:none;position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none}
-:root[data-eh-bg=aura][data-eh-aura] body::before{content:"";height:620px;background:var(--eh-aura) center 30%/cover no-repeat;filter:blur(70px) saturate(1.5);opacity:.4;transform:scale(1.15) translateZ(0);will-change:transform;backface-visibility:hidden;-webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
-:root[data-eh-bg=aura][data-eh-theme=dark][data-eh-aura] body::before{opacity:.28}
+#eh-aura{display:none;position:absolute;left:-210px;top:-210px;width:calc(100% + 420px);max-width:none;height:1040px;z-index:-1;pointer-events:none;opacity:.4;transform:scale(1.15);-webkit-mask-image:linear-gradient(#000 41%,transparent 80%);mask-image:linear-gradient(#000 41%,transparent 80%)}
+:root[data-eh-bg=aura][data-eh-aura] #eh-aura{display:block}
+:root[data-eh-bg=aura][data-eh-theme=dark] #eh-aura{opacity:.28}
 :root:is([data-eh-bg=glow],[data-eh-bg=aura]:not([data-eh-aura])) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)}
 :root[data-eh-bg=band] body::before{content:"";height:400px;background:linear-gradient(100deg,color-mix(in srgb,var(--accent) 11%,var(--bg)),color-mix(in srgb,var(--accent2) 11%,var(--bg)));border-bottom:1px solid color-mix(in srgb,var(--accent) 14%,var(--bg))}
 :root[data-eh-bg=hex] body{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='48' viewBox='0 0 28 48'%3E%3Cpath d='M14 0l14 8v16L14 32 0 24V8zM14 32v16' fill='none' stroke='%23ba478f' stroke-opacity='.1'/%3E%3C/svg%3E") var(--bg)}
@@ -6696,9 +6697,26 @@ function bgApply() {
     de.setAttribute('data-eh-bg', S.bg || 'flat');
     requestAnimationFrame(() => {
         const im = S.bg === 'aura' && document.querySelector('#app img.cover, #app .picw img');
-        const src = im && (im.currentSrc || im.src);
-        if (src) { de.style.setProperty('--eh-aura', `url("${src.replace(/"/g, '%22')}")`); de.setAttribute('data-eh-aura', ''); }
-        else de.removeAttribute('data-eh-aura');
+        if (!im || !im.complete || !im.naturalWidth) {
+            de.removeAttribute('data-eh-aura');
+            if (im && !im.complete) im.addEventListener('load', bgApply, { once: true });
+            return;
+        }
+        const src = im.currentSrc || im.src, width = document.body.clientWidth;
+        let cv = document.getElementById('eh-aura');
+        if (!cv) { cv = document.createElement('canvas'); cv.id = 'eh-aura'; cv.setAttribute('aria-hidden', 'true'); document.body.prepend(cv); }
+        if (cv.dataset.src !== src || cv.dataset.width !== String(width)) {
+            // Quarter-size is plenty for a 70px blur. Padding keeps its edges outside the visible area.
+            // Draw the existing image directly: no extra request, CORS readback or image export needed.
+            const w = width / 4, h = 155, pad = 52.5;
+            cv.width = Math.ceil(w + 2 * pad); cv.height = h + 2 * pad;
+            const ctx = cv.getContext('2d'), scale = Math.max(w / im.naturalWidth, h / im.naturalHeight);
+            const iw = im.naturalWidth * scale, ih = im.naturalHeight * scale;
+            ctx.filter = 'blur(17.5px) saturate(1.5)';
+            ctx.drawImage(im, pad + (w - iw) / 2, pad + (h - ih) * .3, iw, ih);
+            cv.dataset.src = src; cv.dataset.width = String(width);
+        }
+        de.setAttribute('data-eh-aura', '');
     });
 }
 let data = null;
@@ -8351,7 +8369,7 @@ function build() {
     document.addEventListener('click', ev => { if (!ev.target.closest || !ev.target.closest('.dwrap')) dmClose(); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') dmClose(); });
     document.addEventListener('keydown', ev => { if (ev.key !== 'Escape' || document.getElementById('eh-cfg')) return; if (ehOn) { const p = $('.pop:not([hidden])'); if (p) p.hidden = true; const fm = $('.srch.open'); if (fm) fm.classList.remove('open'); } });
-    addEventListener('resize', () => { if (ehOn) fitQuiet(); });
+    addEventListener('resize', () => { if (ehOn) { fitQuiet(); bgApply(); } });
     addEventListener('scroll', railSpy, { passive: true });
     // MusicBrainz's page is for the release this tab loaded; any other is fetched anew
     try { history.scrollRestoration = 'manual'; } catch (e) {}   // show() puts the page back where it was left, once it's in
