@@ -39,6 +39,18 @@ The rest applies whoever you post as:
 - End every GitHub post with the model + effort footer, per the maintainer's current convention.
 - **Sweep stale agent branches** (`claude/*`, the cloud sessions' prefix) at the end of a task, whoever made them — a session can't know which it made once its context is cleared. Delete one whose work is verified on `main` or on the branch it was merged into (`git cherry`, and by content when it landed under another SHA); report, don't delete, one whose work is nowhere else. Note each deleted branch's last commit. **In the cloud, never try to delete a branch**, not even when the maintainer allows it: the proxy refuses every delete (HTTP 403) and no tool there can do it. Don't offer to, and don't ask for permission. List the stale branches with their last commits in your report, and a local session deletes them.
 
+## Parallel local sessions
+
+Local sessions on the maintainer's PC. A cloud session has no worktrees and follows [GitHub work](#github-work) instead.
+
+- **One working directory per session.** Work that isn't a small fix ([Standard 13](STANDARDS.general.md#standard-13) says which) happens on its own branch in its own git worktree, `.claude/worktrees/<name>`; a remote session started with `spawn: worktree` already has one. A branch alone doesn't separate sessions: they would still share the files, the index and `HEAD`.
+- **A worktree starts with tracked files only.** The repo's `AGENTS.md` says what to set up in it (dependencies, config). Secrets stay outside the repo, as the bot token does ([Standard 7](STANDARDS.general.md#standard-7)). A browser profile is never shared, since Chromium locks it: keep one inside the worktree (gitignored), take dev-server ports from the worktree rather than hard-coding them, and close the browser when you finish, or it holds the folder on Windows.
+- **Commit and push your branch as you go**, without asking: it is the backup, and it is easy to undo. Never touch `main` from a worktree.
+- **When the maintainer says "merge"**, on that session's branch: fetch, rebase onto `origin/main` (settle mechanical conflicts yourself, rebuild generated files rather than picking a side, stop and ask on a judgment call), run the checks, then push `HEAD:main` through the bot, never forced. If the push is rejected because `main` moved, fetch and rebase again. No pull request unless he asks for one.
+- **Then clean up**, in the same turn: remove the worktree, delete the branch locally and on the remote, and report one line (the commit on `main`, worktree gone). Never `--force` a removal, and never remove a worktree with uncommitted changes or commits that aren't on `main`: report it.
+- **No bare `git stash`**: the stash is shared by every worktree. Set work aside with a WIP commit.
+- **Leftovers** are found by `C:\ai\_hub\dev\worktree-sweep.ps1` (report only, unless run with `-Apply`).
+
 ## Docs and changelog
 
 - Every non-trivial feature gets user docs in the same change. Read [Standard 12](STANDARDS.general.md#standard-12) before writing any user doc.
