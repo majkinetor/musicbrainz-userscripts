@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.004000
+// @version      2026.10.31.005000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2264,7 +2264,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 :root[data-eh-theme] .tl button.disc .cv,:root[data-eh-theme] button.ib{background:transparent!important;color:var(--soft)!important;border-color:var(--border)!important}
 :root[data-eh-theme] button.ib:hover{color:var(--text)!important}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
-#app>section.sec>.secthead{position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:10px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);transition:top .18s}
+#app>section.sec>.secthead{position:sticky;top:calc(var(--eh-pin-h,0px) + 8px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:10px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);transition:top .18s}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
@@ -2491,7 +2491,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
 .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
-.ed-tw{overflow-x:auto}@media (min-width:900px){.ed-tw{overflow-x:clip}#app>section.sec .ed-t thead th{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-sh,56px) - 6px);z-index:19;background:var(--bg)}}.ed-t col.sc{background:color-mix(in srgb,var(--accent) 6%,transparent)}#app .ed-t th[aria-sort=ascending],#app .ed-t th[aria-sort=descending]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--accent)}
+.ed-tw{overflow-x:auto}@media (min-width:900px){.ed-tw{overflow-x:clip}#app>section.sec .ed-t thead th{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-sh,56px) + 2px);z-index:19;background:var(--bg)}}.ed-t col.sc{background:color-mix(in srgb,var(--accent) 6%,transparent)}#app .ed-t th[aria-sort=ascending],#app .ed-t th[aria-sort=descending]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--accent)}
 .ed-t{width:100%;border-collapse:collapse;font-size:14px}
 .ed-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
 .dg-sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}.dg-sort i{font-style:normal;margin-left:5px;opacity:0}.dg-sort:hover{color:var(--text)}.dg-sort:hover i{opacity:.5}.dg-sort.on{color:var(--accent)}.dg-sort.on i{opacity:1}
