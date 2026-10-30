@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.174001
+// @version      2026.10.30.175001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2626,6 +2626,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .detail .pls{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .detail .pls>a,.detail .pls>.qk>a{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-size:13px;font-weight:600}
 .detail .pls.nm>a,.detail .pls.nm>.qk>a{height:30px;padding:0 8px 0 0}.detail .pls.nm>a:hover,.detail .pls.nm>.qk>a:hover{color:var(--accent)}
+.detail .pls.nm>.qk>.popwrap{right:auto;left:calc(var(--qk-size,28px) - 10px);bottom:-4px}
 .detail .pls .sep{width:1px;height:18px;background:var(--border);margin:0 6px}
 .pl-hov .detail .pls>a,.pl-hov .detail .pls>.qk>a{filter:grayscale(1);opacity:.55}
 .pl-hov .detail .pls>a:hover,.pl-hov .detail .pls>a:focus-visible,.pl-hov .detail .pls>.qk>a:hover,.pl-hov .detail .pls>.qk>a:focus-visible{filter:none;opacity:1}
