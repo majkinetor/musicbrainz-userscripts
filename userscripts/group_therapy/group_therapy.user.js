@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.120000
+// @version      2026.10.30.130000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -2621,6 +2621,11 @@
   // DOM-text parsing, no nested-state traversal.
   const REL_TEMPLATE = { _lineage: [], _original: null, _status: 1, attributes: null, begin_date: null, editsPending: false, end_date: null, ended: false, entity0_credit: '', entity1_credit: '', id: null, linkOrder: 0, linkTypeID: null };
   const RE = () => (W.MB && W.MB.relationshipEditor) || null;
+  // the activity log (Log in the settings header). Made on first use: mbuLog's own state is declared below.
+  let _gtLog = null;
+  const LOG = () => _gtLog || (_gtLog = mbuLog({ name: 'Group Therapy', version: VERSION, key: 'gt.logwin' }));
+  // a short "type id/gid 'name'" for log lines
+  const entLabel = e => !e ? '(none)' : `${e.entityType || '?'} ${e.id}${e.gid ? '/' + e.gid : ' (new)'} "${val(e.name) || ''}"`;
   const val = v => (typeof v === 'function' ? v() : v);
 
   // walk a DOM node's React fiber to the rel object (or entity) it renders
@@ -2690,6 +2695,7 @@
     const swapped = sourceEntity.entityType > targetEntity.entityType;
     const e0 = swapped ? targetEntity : sourceEntity;
     const e1 = swapped ? sourceEntity : targetEntity;
+    LOG().debug(`rel: ${entLabel(sourceEntity)} → ${entLabel(targetEntity)}, link type ${linkTypeID}${credit ? ', credited as "' + credit + '"' : ''}`);
     re.dispatch({
       type: 'update-relationship-state',
       sourceEntity,
@@ -3081,7 +3087,7 @@
     }
   }
 
-  function toast(msg) { return mbuToast(msg); }   // #563: the shared toast
+  function toast(msg) { try { LOG().info(String(msg)); } catch (e) {} return mbuToast(msg); }   // #563: the shared toast; every toast is logged too
   // #777: the same duplicate-works warning Credit Hoarder shows for "create needed"
   function txpWorksWarning() {
     const ov = document.createElement('div');
@@ -3286,8 +3292,9 @@
     // #563: the shared config title bar. Built as markup rather than assembled by
     // hand, so this header cannot drift from the other six again.
     const hd = el('div');
-    hd.innerHTML = mbuCfgHeader({ script: 'group_therapy', name: 'Group Therapy', version: VERSION,
+    hd.innerHTML = mbuCfgHeader({ script: 'group_therapy', name: 'Group Therapy', version: VERSION, log: true, logClass: 'gt-logbtn',
         icon: '<img src="https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/main/userscripts/group_therapy/icon.svg" alt="">' });
+    const lb = hd.querySelector('.gt-logbtn'); if (lb) lb.onclick = () => { closePopover(); LOG().open(); };
     // a broken icon URL should leave a tidy header, not a broken-image glyph
     const hdIc = hd.querySelector('.mbu-cfg-ic img');
     if (hdIc) hdIc.onerror = () => hdIc.remove();
@@ -3991,7 +3998,8 @@
     };
     // #869 register it in MB's linked entities like txpCreateWork does: MB resolves a new work's link (pasted
     // into another rel's target field) through them, and without it took the work for an artist
-    try { if (W.MB && W.MB.mergeLinkedEntities) W.MB.mergeLinkedEntities({ work: { [w.id]: w } }); } catch (e) { console.debug('[Group Therapy] mergeLinkedEntities failed', e); }
+    try { if (W.MB && W.MB.mergeLinkedEntities) W.MB.mergeLinkedEntities({ work: { [w.id]: w } }); } catch (e) { LOG().warn('new work: mergeLinkedEntities failed: ' + e); }
+    LOG().cat('Works').debug(`new work ${entLabel(w)}, in MB.linkedEntities: ${!!(W.MB && W.MB.linkedEntities && W.MB.linkedEntities.work && W.MB.linkedEntities.work[w.id])}`);
     if (key) wmNewWorks.set(key, w);
     return w;
   }
@@ -4097,7 +4105,7 @@
   // /ws/2 is paced by the shared MusicBrainz request gate (#633, the ST-NET block at the top), one budget for every script and tab
   // on the origin. (It used to be spaced 380ms apart here alone, and a long tracklist still burst past
   // the limit and dropped its tail to 503s, which surfaced as false "no match".)
-  const gtGateLog = (lv, m) => console[lv === 'warn' ? 'warn' : 'debug']('[Group Therapy] ' + m);
+  const gtGateLog = (lv, m) => { try { LOG().cat('MB')[lv === 'warn' ? 'warn' : 'debug'](m); } catch (e) {} console[lv === 'warn' ? 'warn' : 'debug']('[Group Therapy] ' + m); };
   let wmAbort = null, wmRunning = false;   // #372 cancel aborts in-flight matching fetches; wmRunning drives the "matching…" row state
   let wmPrefetchP = null;                  // #363 the in-flight prefetch (fired, not awaited up front) — wmMatchOne folds it in per row
   let _wmPrefetchCache = null;             // #363 { gid, at, data } — cached 1h so re-opening the matcher doesn't re-fetch the release
@@ -4582,10 +4590,10 @@
         // existing work: fetch its internal id (the editor needs it). New work: dispatch the synthetic
         // entity as-is — MB creates it on submit, exactly like a natively-added new work.
         const workEnt = row.chosen._gtNew ? row.chosen : await wmJson('/ws/js/entity/' + row.chosen.gid);
-        if (!workEnt || workEnt.id == null) { fail++; continue; }
+        if (!workEnt || workEnt.id == null) { fail++; LOG().cat('Works').warn(`no entity for "${row.title}" (${row.chosen.gid})`); continue; }
         dispatchRelationship(re, row.rec, workEnt, ltId, '', extras.attrs, extras.dates);
         row.linked = true; row.chosen = null; ok++; okRecs.add(row.rec);
-      } catch (e) { fail++; }
+      } catch (e) { fail++; LOG().cat('Works').error(`linking "${row.title}" failed: ${e && e.message || e}`); }
     }
     const nRec = okRecs.size;
     if (ok) markUsed(`Matched ${nRec} recording${nRec > 1 ? 's' : ''} to works`);
@@ -9028,9 +9036,33 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
     if (x && !x.dataset.gtHint) { x.dataset.gtHint = '1'; if (!x.title) x.dataset.tip = 'Group Therapy\nRight-click: remove a whole group: this role, this target, or both'; }
   }
 
+  // #869 a link pasted into a relationship dialog's target field: what was pasted, whether it names a work
+  // this page holds (a new one included), and what the dialog made of it a moment later
+  function gtPasteProbe(e) {
+    const inp = e.target;
+    if (!inp || inp.tagName !== 'INPUT' || !inp.closest('[role="dialog"], .dialog, .relationship-dialog')) return;
+    const text = ((e.clipboardData && e.clipboardData.getData('text')) || '').trim();
+    if (!/^https?:\/\/|^\/[a-z-]+\//i.test(text)) return;
+    const L = LOG().cat('Paste');
+    const m = text.match(/\/(artist|work|recording|release|release-group|label|place|area|event|series|instrument|genre)\/([^/?#\s]*)/i);
+    const works = (W.MB && W.MB.linkedEntities && W.MB.linkedEntities.work) || {};
+    const known = m && m[1] === 'work' ? Object.values(works).find(w => (m[2] && w.gid === m[2]) || String(w.id) === m[2]) : null;
+    L.info(`pasted ${text} → ${m ? m[1] + ' "' + m[2] + '"' : 'no entity path'}${known ? ', page has ' + entLabel(known) : ''}`);
+    const dlg = inp.closest('[role="dialog"], .dialog, .relationship-dialog');
+    setTimeout(() => {
+      try {
+        const sels = [...dlg.querySelectorAll('select')].map(s => (s.getAttribute('aria-label') || s.name || s.className || 'select') + '=' + ((s.selectedOptions[0] && s.selectedOptions[0].textContent.trim()) || s.value));
+        const ins = [...dlg.querySelectorAll('input[type="text"], input:not([type])')].map(i => '"' + i.value + '"');
+        L.debug(`dialog after paste: ${sels.join(', ') || 'no selects'}; fields ${ins.join(', ')}`);
+      } catch (x) { L.warn('reading the dialog failed: ' + x); }
+    }, 800);
+  }
+
   // ── boot ────────────────────────────────────────────────────────────────
   function boot() {
     injectStyle();
+    LOG().info(`Group Therapy ${VERSION} on ${location.pathname}`);
+    document.addEventListener('paste', gtPasteProbe, true);
     document.body.addEventListener('contextmenu', onContextMenu, true);
     document.body.addEventListener('mouseover', onOver);
     document.body.addEventListener('mouseout', onOut);
