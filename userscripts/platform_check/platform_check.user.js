@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.30.5
+// @version      2026.10.30.6
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -8799,7 +8799,7 @@ async function pcOpenLinksTable(btn) {
       #pc-links-ov th { font-weight: 600; color: var(--mbu-text-dim); }
       #pc-links-ov td.pc-lk-name { text-align: left; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
       #pc-links-ov td.pc-lk-name a { color: var(--mbu-accent-text); }
-      #pc-links-ov .pc-lk-type { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
+      #pc-links-ov .pc-lk-type { width: 15px; height: 15px; vertical-align: -2px; margin-right: 7px; color: var(--mbu-text-weak); }
       #pc-links-ov td.pc-lk-cell { cursor: pointer; font-weight: 700; min-width: 22px; user-select: none; }
       #pc-links-ov td.pc-lk-cell:hover { background: var(--mbu-bg-hover); }
       #pc-links-ov .pc-lk-linked { color: var(--mbu-ok); }
@@ -8882,7 +8882,7 @@ async function pcOpenLinksTable(btn) {
         const tr = body.insertRow();
         const name = tr.insertCell();
         name.className = 'pc-lk-name';
-        name.appendChild(Object.assign(document.createElement('img'), { className: 'pc-lk-type', src: `${MB_ORIGIN}/static/images/entity/${r.type}.svg`, alt: r.type === 'artist' ? 'Artist' : 'Label' }));
+        name.insertAdjacentHTML('beforeend', `<svg class="pc-lk-type" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="${r.type === 'artist' ? 'Artist' : 'Label'}">${r.type === 'artist' ? '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>' : '<path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>'}</svg>`);
         name.appendChild(Object.assign(document.createElement('a'), { href: `${MB_ORIGIN}/${r.type}/${r.mbid}`, target: '_blank', rel: 'noopener', textContent: r.name || r.mbid }));
         for (const p of provs) {
             const td = tr.insertCell();
