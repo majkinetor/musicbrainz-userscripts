@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.221501
+// @version      2026.10.30.110516
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -25,6 +25,7 @@
 // @match        https://*.musicbrainz.org/tag/*
 // @match        https://*.musicbrainz.org/search*
 // @match        https://*.musicbrainz.org/edit/*
+// @match        https://*.musicbrainz.org/cdtoc/*
 // @run-at       document-start
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -2355,6 +2356,10 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hdt a:has(>img),.hdt a:has(>span>img){font-size:0}
 .hnadd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:10px 0 4px}.hnadd textarea{width:100%;box-sizing:border-box;min-height:70px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;resize:vertical}.hnadd textarea:focus{outline:none;border-color:var(--accent)}.hnadd button{min-height:30px;padding:4px 14px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}.hnadd button[disabled]{opacity:.5}
 .hmy{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--border);color:var(--muted)}
+.dsc-med{padding:10px 0;border-bottom:1px solid var(--line)}.dsc-med:last-child{border-bottom:0}.dsc-med.off{opacity:.55}.dsc-h{display:flex;gap:8px;align-items:center;margin-bottom:4px}.dsc-h .sub,.dsc-rel .sub{color:var(--muted);font-weight:400}
+.dsc-row,.dsc-rel{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:4px 0 4px 26px}.dsc-rel{padding-left:0}.dsc-id{font-family:ui-monospace,Consolas,monospace;font-size:13px}.dsc-n{color:var(--muted);font-size:13px;min-width:60px}.dsc-a{margin-left:auto;display:flex;gap:12px}.dsc-none{color:var(--muted);font-size:13px;padding:2px 0 2px 26px}
+.dsc-t{font-family:ui-monospace,Consolas,monospace;word-break:break-all}.dsc-tbl{width:auto!important;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}.dsc-tbl th,.dsc-tbl td{padding:3px 14px 3px 0;text-align:right}.dsc-tbl th{color:var(--muted);font-weight:600}.dsc-tbl .sx{color:var(--muted)}.dsc-full{margin-top:10px;display:flex;gap:10px;align-items:baseline}.dsc-full code{font-size:12px;word-break:break-all;color:var(--soft)}
+#dsc-slot{margin-top:24px}#dsc-slot #apollo-discid-box{margin:0}#dsc-slot:empty{display:none}
 .hst{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff}.hst.ok{background:#2e8b57}.hst.op{background:#c08a00}.hst.no{background:#c0392b}.hst.cx{background:#888}
 .hgb{display:none;border-top:1px solid var(--line)}.hgrp.open .hgb{display:block}
 .hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
@@ -3096,19 +3101,26 @@ const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" st
 const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
 const LENS = '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>';
 const SRCH = () => `<form class="srch" action="${MB}/search" method="get"><span class="sf">${SVG(LENS)}<input name="query" placeholder="Search" required><select name="type">${SRCH_T.map(t => `<option value="${t}">${t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ')}</option>`).join('')}</select><input type="hidden" name="method" value="indexed"><button class="x" type="button" data-srch aria-label="Close search">${SVG('<path d="M6 6l12 12M18 6 6 18"/>')}</button></span><button class="ab" type="button" data-srch data-tip="Search MusicBrainz" aria-label="Search MusicBrainz">${SVG(LENS)}</button></form><a class="ab eh-home" href="${MB}/" data-tip="Event Horizon's home page" aria-label="Home">${LOGO}</a>`;
+const DISC_IC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M16.5 7.5a6 6 0 0 1 1.5 3"/>';
 const ACTS = [
     ['edit', 'Edit', 'Edit release', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
     ['cover-art', 'Art', 'Cover art', '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'],
     ['edit-relationships', 'Relate', 'Edit relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>'],
     ['edits', 'History', 'Edit history', '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'],
     ['details', 'Details', 'Details', '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>'],
+    ['discids', 'Disc IDs', 'Disc IDs', DISC_IC],
 ];
+// MusicBrainz takes disc IDs on CD formats only (medium_format.has_discids); matched by name, as Apollo does
+const DISC_FMT = /(^|\b)(cd|cd-r|8cm cd|8cm cd\+g|enhanced cd|hdcd|copy control cd|data cd|dts cd|playstation|dualdisc \(cd side\)|shm-cd|hqcd|cd\+g|blu-spec cd|svcd|vcd|cdv)($|\b)/i;
+const discOk = f => !f || DISC_FMT.test(f);
+// a release's actions: Disc IDs only when one of its media can have them
+const relActs = r => r && r.media && r.media.length && !r.media.some(m => discOk(m.format)) ? ACTS.filter(a => a[0] !== 'discids') : ACTS;
 // The same action row on overviews, subpages and pinned headers. Less-used
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
-    const less = actions.filter(a => ['details', 'tags'].includes(a[0]));
+    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const less = actions.filter(a => ['details', 'tags', 'discids'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
     const main = actions.filter(a => !less.includes(a));
     // the Releases tab sits in the row itself, before History
@@ -3263,7 +3275,7 @@ function hero(r) {
             ${under(r)}
         </div>
         <div class="facts-col">
-            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${actionRow(ACTS, 'release', r.id)}${SRCH()}</span></div>
+            <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${actionRow(relActs(r), 'release', r.id)}${SRCH()}</span></div>
             <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}</h1>
             <div class="by">by ${acHtml(r.ac)}${rgLink(r)}</div>
             ${facts(r)}
@@ -6713,6 +6725,7 @@ function render(keepPop) {
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
     if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); srchWire(app); secRail(app); save(); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); pinBar(app); return; }
+    if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { document.title = titleOf(data); histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
     if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
@@ -7446,7 +7459,16 @@ const formKey = href => {
     const m = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/(releases|details|edit_annotation|set-cover-art)/?$', 'i'));
     return m && (m[3] !== 'set-cover-art' || m[1].toLowerCase() === 'release-group') ? ['form', m[1], m[2], m[3]].join('/').toLowerCase() : null;
 };
-const keyOf = href => navTo(href) || artKey(href) || histKey(href) || relKey(href) || formKey(href);
+// a release's Disc IDs → "discs/<mbid>"; one disc ID → "toc/<id>". Only as the page the tab loaded, as the art page is:
+// Apollo's rip-log drop runs on the disc IDs page alone, and MusicBrainz's Remove and Move links are read off it
+const discKey = href => {
+    const u = new URL(href, location.href); if (u.origin !== location.origin) return null;
+    const m = u.pathname.match(new RegExp('^/release/(' + MBID.source + ')/discids/?$', 'i'));
+    if (m) return 'discs/' + m[1].toLowerCase();
+    const t = u.pathname.match(/^\/cdtoc\/([A-Za-z0-9._-]{28})\/?$/);
+    return t ? 'toc/' + t[1] : null;
+};
+const keyOf = href => navTo(href) || artKey(href) || discKey(href) || histKey(href) || relKey(href) || formKey(href);
 const PAGE_ID = keyOf(location.href);
 
 /* ── cover-art page ────────────────────────────────── */
@@ -7458,7 +7480,7 @@ const PAGE_ID = keyOf(location.href);
 const backA = id => `<a class="ab ov" href="${MB}/release/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>`;
 function subHead(r, id, tab, name, none) {
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
-    const acts = backA(id) + actionRow(ACTS, 'release', id, tab) + SRCH();
+    const acts = backA(id) + actionRow(relActs(r), 'release', id, tab) + SRCH();
     const kick = r ? `${fmtSvg(fk, 26)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${name}</span>`;
     return `<img class="rhcv" alt="" data-cover="https://coverartarchive.org/release/${id}/front-250"><div class="rhtx"><div class="kicker label">${kick}<span class="acts">${acts}</span></div>`
         + (r ? `<h1><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? `<span class="disamb">(${esc(r.disambiguation)})</span>` : ''}</h1><div class="by">by ${acHtml(r['artist-credit'] || [])}${r['release-group'] ? `<a class="rg-l" href="${MB}/release-group/${r['release-group'].id}" data-tip="Release group${r.rgCount ? ' · ' + r.rgCount + ' editions' : ''}" aria-label="Release group">${LAYERS(20)}${r.rgCount ? `<span>${r.rgCount}</span>` : ''}</a>` : ''}</div>` : none) + '</div>';
@@ -7521,6 +7543,78 @@ async function artLoad(n, id) {
     catch (e) { LOG.err('Loading ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
 }
 
+/* ── disc IDs ──────────────────────────────────────── */
+
+// a CD's length from its sectors (75 a second)
+const secLen = n => { const t = Math.round(n / 75), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = String(t % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
+// MusicBrainz's Remove and Move links, by disc ID, off the page the tab loaded (ws/2 has no medium row ids)
+function discActs() {
+    const o = {};
+    if (!mbBody) return o;
+    mbBody.querySelectorAll('#content tr').forEach(tr => {
+        const id = (tr.querySelector('a[href*="/cdtoc/"]') || {}).textContent, as = [...tr.querySelectorAll('a[href*="/cdtoc/remove"], a[href*="/cdtoc/move"]')];
+        if (!id || !as.length) return;
+        // a disc ID on two releases (the cdtoc page) has a row each, told apart by the release it links to
+        const rel = (tr.querySelector('a[href*="/release/"]') || {}).href, k = id.trim() + (rel ? '|' + (rel.match(MBID) || [''])[0] : '');
+        o[k] = as.map(a => `<a class="lnk" href="${esc(a.href)}">${esc(a.textContent.trim())}</a>`).join('');
+    });
+    return o;
+}
+// Apollo's "Disc IDs from a rip log", moved from MusicBrainz's page into #dsc-slot, and back when EH goes off
+var dscHome = null;   // var: setOn can reach discApollo before this line
+function discApollo(on) {
+    const box = document.getElementById('apollo-discid-box'); if (!box) return;
+    if (!on) { if (dscHome && dscHome.isConnected) dscHome.after(box); return; }
+    const slot = ehBody && ehBody.querySelector('#dsc-slot');
+    if (!slot || slot.contains(box)) return;
+    if (!dscHome) { dscHome = document.createComment('Apollo disc ID box'); box.before(dscHome); }
+    slot.append(box);
+}
+function discRows(ds, acts, rid) {
+    return ds.map(x => `<div class="dsc-row"><a class="dsc-id" href="${MB}/cdtoc/${esc(x.id)}">${esc(x.id)}</a><span class="dsc-n">${x.offsets ? x.offsets.length + ' tracks' : ''}</span><span class="dsc-n">${x.sectors ? secLen(x.sectors) : ''}</span><span class="dsc-a">${acts[x.id + (rid ? '|' + rid : '')] || acts[x.id] || ''}</span></div>`).join('');
+}
+function discPage(app, d) {
+    if (!app.querySelector('#dsc-body')) app.innerHTML = '<section class="arthd"></section><div id="dsc-slot"></div><div id="dsc-body"></div>';
+    const hd = app.querySelector('.arthd'), body = app.querySelector('#dsc-body'), acts = discActs();
+    if (d.kind === 'discs') {
+        hd.innerHTML = subHead(d.rel, d.id, 'discids', 'Disc IDs', d.err ? `<h1>${esc(d.err)}</h1>` : '<h1>&nbsp;</h1>'); cvWire(hd);
+        const ms = d.media;
+        body.innerHTML = !ms ? (d.err ? '' : '<p class="msg">Loading the disc IDs…</p>') : sect('dsc', `Disc IDs <span class="count">${ms.reduce((a, m) => a + (m.discs || []).length, 0)}</span>`, `<a class="lnk aside" href="${MB}/doc/How_to_Add_Disc_IDs">How to add disc IDs</a>`, ms.map(m => {
+            const ok = discOk(m.format), ds = m.discs || [], name = `${esc(m.format || 'Medium')} ${m.position}${m.title ? ` <span class="sub">${esc(m.title)}</span>` : ''}`;
+            return `<div class="dsc-med${ok ? '' : ' off'}"><div class="dsc-h">${fmtSvg(fmtKind(m.format), 18)}<b>${name}</b><span class="dsc-n">${m['track-count']} track${m['track-count'] === 1 ? '' : 's'}</span></div>${!ok ? `<div class="dsc-none">${esc(m.format)} can't have disc IDs</div>` : ds.length ? discRows(ds, acts) : '<div class="dsc-none">No disc ID yet</div>'}</div>`;
+        }).join(''), `<div class="folded-note">${ms.length} media</div>`);
+        if (!document.getElementById('apollo-discid-box') && ms && ms.some(m => discOk(m.format)) && !app.querySelector('#dsc-slot').firstChild) app.querySelector('#dsc-slot').innerHTML = '<p class="msg dsc-ap">Apollo Editor works out a disc ID from a rip log dropped here: <a href="https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/apollo_editor">install it</a>.</p>';
+        discApollo(ehOn);
+        return;
+    }
+    // one disc ID: its TOC, track by track, and the releases it is on
+    const t = d.toc, kick = `<div class="kicker label">${mkSvg(DISC_IC)}<span>Disc ID</span><span class="acts">${SRCH()}</span></div>`;
+    hd.innerHTML = `<div class="rhtx">${kick}<h1 class="dsc-t">${esc(d.id)}</h1>${t ? `<div class="by">${t.offsets.length} tracks · ${secLen(t.sectors)}</div>` : d.err ? `<div class="by">${esc(d.err)}</div>` : ''}</div>`;
+    if (!t) { body.innerHTML = d.err ? '' : '<p class="msg">Loading the disc ID…</p>'; return; }
+    const off = t.offsets, ends = off.slice(1).concat(t.sectors);
+    const toc = [1, off.length, t.sectors, ...off].join(' ');
+    const rels = (t.releases || []).map(r => {
+        const ms = (r.media || []).map((m, i) => (m.discs || []).some(x => x.id === d.id) ? (m.position || i + 1) : 0).filter(Boolean);
+        return `<div class="dsc-rel"><span class="dsc-n">${ms.map(x => x + '/' + r.media.length).join(', ')}</span><a href="${MB}/release/${r.id}">${esc(r.title)}</a>${r.disambiguation ? ` <span class="sub">(${esc(r.disambiguation)})</span>` : ''}<span class="sub">${acHtml(r['artist-credit'] || [])}</span><span class="sub">${esc([fmtSummary((r.media || []).map(m => m.format)), r.country, r.date].filter(Boolean).join(' · '))}</span><span class="dsc-a">${acts[d.id + '|' + r.id] || ''}</span></div>`;
+    }).join('');
+    body.innerHTML = sect('dsc-rels', `Attached to releases <span class="count">${(t.releases || []).length}</span>`, '', rels || '<p class="msg">On no release</p>', '')
+        + sect('dsc-toc', 'Tracks', `<button class="lnk aside" type="button" data-copy="${toc}" data-tip="Copy the full TOC">Copy TOC</button>`, `<table class="dsc-tbl"><thead><tr><th>#</th><th>Start</th><th>Length</th><th>End</th><th class="sx">Start sector</th><th class="sx">Sectors</th></tr></thead><tbody>${off.map((o, i) => `<tr><td>${i + 1}</td><td>${secLen(o)}</td><td>${secLen(ends[i] - o)}</td><td>${secLen(ends[i])}</td><td class="sx">${o}</td><td class="sx">${ends[i] - o}</td></tr>`).join('')}</tbody></table><div class="dsc-full"><span class="label">Full TOC</span><code>${toc}</code></div>`, '');
+    const c = body.querySelector('[data-copy]'); if (c) c.onclick = () => { navigator.clipboard.writeText(c.dataset.copy).then(() => { c.textContent = 'Copied'; setTimeout(() => { c.textContent = 'Copy TOC'; }, 1200); }); };
+}
+async function discLoad(n, id) {
+    if (data.kind === 'toc') {
+        try { const t = await ws(`discid/${encodeURIComponent(id)}?inc=artist-credits`); if (n === showing) { data.toc = t; LOG.info(`Disc ID ${id}: ${(t.releases || []).length} release(s)`); render(); } }
+        catch (e) { LOG.err('Loading disc ID ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
+        return;
+    }
+    // Apollo builds its box after its own ws/2 read: it moves in when it shows
+    const t0 = Date.now(), wait = () => { if (n !== showing) return; if (document.getElementById('apollo-discid-box')) { const m = $('#dsc-slot .dsc-ap'); if (m) m.remove(); discApollo(ehOn); return; } if (Date.now() - t0 < 20000) setTimeout(wait, 150); };
+    wait();
+    relHd(id, r => { if (n === showing) { data.rel = r; render(); } }).catch(e => LOG.warn('Disc IDs header: ' + e.message));
+    try { const r = await ws(`release/${id}?inc=media+discids`); if (n === showing) { data.media = r.media || []; LOG.info(`Disc IDs: ${data.media.length} media, ${data.media.reduce((a, m) => a + (m.discs || []).length, 0)} disc ID(s)`); render(); } }
+    catch (e) { LOG.err('Loading the disc IDs of ' + id + ' failed: ' + e.message); if (n === showing) { data.err = e.message; render(); } }
+}
+
 /* ── relationship editor ───────────────────────────── */
 
 // Event Horizon's palette, taken from its own sheet so the two never drift, and the editor themed with it
@@ -7570,12 +7664,11 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 @media(max-width:600px){:root[data-eh-releases] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-releases] #eh-relhd .acts{margin-left:0}}
 :root[data-eh-details] .eh-details{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:24px}
 :root[data-eh-details] #page .eh-details h2{margin:0 0 18px;font-size:18px}
-:root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse;table-layout:fixed}
-:root[data-eh-details] #page .eh-details table.details :is(th,td){padding:6px 0;vertical-align:baseline;line-height:1.5;border-bottom:1px solid var(--line);background:transparent!important;overflow-wrap:anywhere}
-:root[data-eh-details] #page .eh-details table.details th{width:150px;padding-right:24px;color:var(--muted);font-size:12px;font-weight:700;text-align:right}
-:root[data-eh-details] #page .eh-details table.details tr:last-child>*{border-bottom:0}
+:root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse}
+:root[data-eh-details] #page .eh-details table.details :is(th,td){padding:2px 0;vertical-align:baseline;line-height:1.45;border:0;background:transparent!important;overflow-wrap:anywhere}
+:root[data-eh-details] #page .eh-details table.details th{width:1%;white-space:nowrap;padding-right:12px;color:var(--text);font-weight:700;text-align:right}
 :root[data-eh-details] #page .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
-@media(max-width:600px){:root[data-eh-details] .eh-details{padding:16px}:root[data-eh-details] #page .eh-details table.details th{width:100px;padding-right:12px}:root[data-eh-details] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-details] #eh-relhd .acts{margin-left:0}}
+@media(max-width:600px){:root[data-eh-details] .eh-details{padding:16px}:root[data-eh-details] #page .eh-details table.details th{white-space:normal;width:90px}:root[data-eh-details] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-details] #eh-relhd .acts{margin-left:0}}
 #eh-relhd>.u-av{flex:none;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--chip);color:var(--chip-text);font-size:40px;font-weight:800}#eh-relhd>.u-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #eh-relhd .u-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}#eh-relhd .u-tab{display:inline-flex;align-items:center;min-height:30px;padding:4px 12px;border-radius:9px;border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important;font-weight:600;font-size:13px}#eh-relhd .u-tab:hover{border-color:var(--accent)}#eh-relhd .u-tab.on{background:var(--accent);border-color:var(--accent);color:#fff!important}
 :root[data-eh-rel] #page table.tbl{border-collapse:separate;border-spacing:0;width:100%;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
@@ -8058,7 +8151,7 @@ function histGroup(key, title, es, av, nm) {
     return `<div class="hgrp${d.open.has(key) ? ' open' : ''}" data-hg="${esc(key)}"><div class="hgh">${av ? `<span class="hav" style="background:hsl(${histHue(nm || '')} 45% 45%)">${esc((nm || '?')[0].toUpperCase())}</span>` : ''}<span class="t">${title}</span><span class="m">${es.length} edit${es.length > 1 ? 's' : ''}${d.grp === 'burst' ? ' · ' + when : ''}</span><span class="sp"></span>${Object.entries(ents).map(([k, c]) => `<span class="htc">${c > 1 ? c + ' ' : ''}${esc(k)}</span>`).join('')}${histPills(es)}<span class="cv">▸</span></div><div class="hgb">${d.open.has(key) ? histRuns(es) : ''}</div></div>`;
 }
 function histPage(app, d) {
-    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(ACTS, 'release', rid, 'edits') : '') + SRCH();
+    const r = d.rel, rid = histRid(d.id), src = histSrc(d.id), acts = (rid ? backA(rid) + actionRow(relActs(r), 'release', rid, 'edits') : '') + SRCH();
     const fk = r && fmtKind(r.media && r.media[0] && r.media[0].format);
     const kick = r ? `${fmtSvg(fk, 18)}<span>${esc([fmtSummary((r.media || []).map(m => m.format)), r['release-group'] && r['release-group']['primary-type'], r.status].filter(Boolean).join(' · '))}</span>` : `<span>${rid ? esc(histName(d.id)) : 'MusicBrainz edits'}</span>`;
     const es = d.st ? d.edits.filter(e => e.st === d.st) : d.edits;
@@ -8269,7 +8362,7 @@ function setOn(on) {
         else { ehBody.remove(); mbBody.hidden = false; }
     }
     for (const c of ['br', 'bl', 'tr', 'tl']) if (document.querySelector('[data-mb-corner="' + c + '"]')) mbRestackCorner(c);
-    artStationPlace(on);
+    artStationPlace(on); discApollo(on);
     if (first) show(PAGE_ID);
     if (on) document.documentElement.setAttribute('data-eh-theme', theme);
     else document.documentElement.removeAttribute('data-eh-theme');
@@ -8568,6 +8661,7 @@ async function show(key, o = {}) {
     mbRestackCorner('br');   // the dock drops the launchers that don't belong on this page (#847)
     const parts = kind === 'recording' ? ['recording', 'releases', 'works'] : kind === 'work' ? ['work', 'recordings'] : kind === 'area' ? ['area', 'artists, labels, places'] : kind === 'instrument' ? ['instrument', 'artists, releases, recordings'] : kind === 'place' ? ['place', 'events, recordings'] : kind === 'series' ? ['series', 'parts'] : kind === 'collection' ? ['collection', 'items'] : kind === 'event' ? ['event'] : isLb ? ['label', 'releases', 'logo'] : isAr ? ['artist', 'discography', 'image'] : isRg ? ['group', 'releases'] : ['release', 'editions', 'covers'];
     if (key === 'home') { data = { kind: 'home' }; scrollTo(0, 0); render(); return; }
+    if (kind === 'discs' || kind === 'toc') { data = { kind, id }; scrollTo(0, 0); render(); discLoad(n, id); return; }
     if (kind === 'art' || kind === 'eart') { data = { kind: 'art', id, ev: kind === 'eart' }; render(); artLoad(n, id); return; }
     if (kind === 'hist') { data = { kind: 'hist', id, edits: [], page: 0, more: true, grp: S.hgrp || 'burst', st: '', open: new Set() }; scrollTo(0, 0); render(); histLoad(n); return; }
     if (kind === 'gtag') {
