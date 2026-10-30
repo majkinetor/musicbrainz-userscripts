@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.30.130547
+// @version      2026.10.30.131824
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -606,6 +606,8 @@ function reviewIsItem(x) {
         html: '<span class="mc-rv-pf">' + esc(name) + '</span> <a href="' + esc(x.url) + '" target="_blank" rel="noopener" class="mc-rv-id" data-tip="' + esc(x.url) + '">' + esc(id || shortUrl(x.url)) + '</a>' };
 }
 function reviewWindow() {
+    const trackChanges = pfChanges();
+    const trackChange = t => trackChanges.find(c => c.medium === (t.medium || 1) && c.position === pfPos(rel.tracks.indexOf(t)));
     const groups = [];
     PROVIDERS.forEach(p => {
         if (providerOff(p.id) || !found[p.id] || !(found[p.id].capabilities || []).includes('apply')) return;
@@ -621,7 +623,8 @@ function reviewWindow() {
             tracks.forEach(gid => {
                 const t = rel && rel.tracks.find(t => t.rec === gid);
                 const its = by.get(gid).sort((a, b) => a.sort.localeCompare(b.sort));
-                items.push({ head: true, pos: t ? (rel.media > 1 ? t.medium + '.' : '') + t.pos : '?', title: t ? t.title : 'a recording', len: t ? t.len : '', n: its.length });
+                const change = t && trackChange(t);
+                items.push({ head: true, pos: t ? (rel.media > 1 ? t.medium + '.' : '') + t.pos : '?', title: t ? t.title : 'a recording', len: t ? t.len : '', change, n: its.length });
                 items.push(...its);
             });
         }
@@ -647,14 +650,14 @@ function reviewWindow() {
                 const x = xs[i];
                 if (!x.entity || x.entity.type !== 'artist' || !x.url) return true;
                 const key = x.entity.mbid || x.entity.name;
-                if (!artists.has(key)) artists.set(key, { name: x.entity.name, items: [] });
+                if (!artists.has(key)) artists.set(key, { name: x.entity.name, mbid: x.entity.mbid, items: [] });
                 const name = ccName(x.icon || urlIcon(x.url));
                 artists.get(key).items.push(Object.assign({}, it, { artistLink: true, text: name + ': ' + x.url,
                     html: esc(name) + '<a class="mc-rv-url" href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.url) + '</a>' }));
                 return false;
             });
-            artists.forEach(a => items.push({ artistHead: a.name }, ...a.items));
-            pfChanges().forEach(c => items.push({ text: 'Track ' + c.position + ': ' + [c.title != null && '“' + (c.was.title || '') + '” → “' + c.title + '”', c.ms && 'length ' + (c.was.ms ? reviewLen(c.was.ms) : 'none') + ' → ' + reviewLen(c.ms)].filter(Boolean).join(', ') }));
+            artists.forEach(a => items.push({ artistHead: a.name, artistMbid: a.mbid }, ...a.items));
+            trackChanges.forEach(c => items.push({ trackChange: c, text: 'Track ' + c.position + ': ' + [c.title != null && '“' + (c.was.title || '') + '” → “' + c.title + '”', c.ms && 'length ' + (c.was.ms ? reviewLen(c.was.ms) : 'none') + ' → ' + reviewLen(c.ms)].filter(Boolean).join(', ') }));
         }
         if (items.length) groups.push({ p, items });
     });
@@ -667,6 +670,7 @@ function reviewWindow() {
     let gi = 0;
     const row = (g, it, grp) => '<label class="mc-rv-i' + (grp != null || it.artistLink ? ' mc-rv-in' : '') + '"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + (grp != null ? ' data-in="' + grp + '"' : '') + '>'
         + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + (it.html || esc(it.text)) + '</span></label>';
+    const changedValue = (was, next) => next != null ? '<del class="mc-rv-dim">' + esc(was) + '</del> → ' + esc(next) : esc(was);
     // ISRC Scout as a grid: a row per track, a column per platform (the ISRCs first), a box per change
     let ci = 0, ii = 0;
     const grid = g => {
@@ -675,7 +679,7 @@ function reviewWindow() {
         const ico = c => { const it = g.items.find(it => it.col === c); return c === 'ISRC' ? '<span class="mc-rv-ch">ISRC</span>' : it.ico || esc(c); };
         let h = '<div class="mc-rv-gw"><table class="mc-rv-grid"><thead><tr><th class="mc-rv-tr"><button type="button" class="mc-rv-tw" data-tw="all" aria-expanded="false" data-tip="Show or hide the whole addresses of every track">▸</button><label data-tip="Select or unselect every track"><input type="checkbox" checked data-all>All tracks</label></th>' + cols.map((c, k) => '<th><label class="mc-rv-col" data-tip="' + esc(c) + '\nClick: select or unselect every ' + esc(c) + (c === 'ISRC' ? '' : ' link') + '"><input type="checkbox" checked data-col="' + (c0 + k) + '">' + ico(c) + '</label></th>').join('') + '</tr></thead><tbody>';
         let row = null;
-        const flush = () => { if (row) h += '<tr><th class="mc-rv-tr">' + (row.cells.some(it => it.col !== 'ISRC') ? '<button type="button" class="mc-rv-tw" data-tw="' + row.grp + '" aria-expanded="false" data-tip="Click: show or hide the whole addresses of this track\nRight-click: of every track">▸</button>' : '<span class="mc-rv-tw"></span>') + '<label><input type="checkbox" checked data-grp="' + row.grp + '" data-tip="Select or unselect this track\'s ' + row.it.n + ' change' + (row.it.n === 1 ? '' : 's') + '"><span class="pos">' + esc(row.it.pos) + '</span><span class="tt">' + esc(row.it.title) + '</span>' + (row.it.len ? '<span class="len">' + esc(row.it.len) + '</span>' : '') + '</label></th>'
+        const flush = () => { if (row) h += '<tr><th class="mc-rv-tr">' + (row.cells.some(it => it.col !== 'ISRC') ? '<button type="button" class="mc-rv-tw" data-tw="' + row.grp + '" aria-expanded="false" data-tip="Click: show or hide the whole addresses of this track\nRight-click: of every track">▸</button>' : '<span class="mc-rv-tw"></span>') + '<label><input type="checkbox" checked data-grp="' + row.grp + '" data-tip="Select or unselect this track\'s ' + row.it.n + ' change' + (row.it.n === 1 ? '' : 's') + '"><span class="pos">' + esc(row.it.pos) + '</span><span class="tt">' + changedValue(row.it.title, row.it.change && row.it.change.title) + '</span>' + (row.it.len ? '<span class="len">' + changedValue(row.it.len, row.it.change && row.it.change.ms ? reviewLen(row.it.change.ms) : null) + '</span>' : '') + '</label></th>'
             + cols.map((c, k) => '<td>' + row.cells.filter(it => it.col === c).map(it => '<label' + (it.col === 'ISRC' ? ' class="isrc"' : '') + ' data-tip="' + esc(it.tip) + '"><input type="checkbox" checked data-p="is" data-key="' + esc(JSON.stringify(it.keys)) + '" data-in="' + row.grp + '" data-c="' + (c0 + k) + '" data-id="' + (it.id = ii++) + '">' + (it.col === 'ISRC' ? '<code>' + esc(it.tip.split('\n')[0].slice(5)) + '</code>' : '') + '</label>').join('') + '</td>').join('') + '</tr>'
             + '<tr class="mc-rv-det" data-det="' + row.grp + '" hidden><td colspan="' + (cols.length + 1) + '">' + cols.filter(c => c !== 'ISRC').map(c => row.cells.filter(it => it.col === c).map(it => { const u = it.tip.split('\n')[1] || ''; return '<label><input type="checkbox" checked data-m="' + it.id + '">' + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<a class="mc-rv-url" href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(u) + '</a></label>'; }).join('')).join('') + '</td></tr>'; };
         g.items.forEach(it => { if (it.head) { flush(); row = { it, grp: gi++, cells: [] }; } else row.cells.push(it); });
@@ -687,7 +691,14 @@ function reviewWindow() {
         if (g.p.id === 'is') return '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>' + grid(g);
         return '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
             + g.items.map(it => {
-                if (it.artistHead) return '<div class="mc-rv-t">' + esc(it.artistHead) + '</div>';
+                if (it.trackChange && groups.some(g => g.p.id === 'is' && g.items.some(h => h.head && h.change === it.trackChange))) return '';
+                if (it.artistHead) {
+                    const first = g.items.find(x => x.artistHead) === it;
+                    grp = gi++;
+                    return (first ? '<label class="mc-rv-t"><input type="checkbox" checked data-artists>All artists</label>' : '')
+                        + '<div class="mc-rv-t"><input type="checkbox" checked data-grp="' + grp + '" data-artist-group aria-label="' + esc('Select all links for ' + it.artistHead) + '">' + (it.artistMbid ? '<a href="/artist/' + esc(it.artistMbid) + '" target="_blank" rel="noopener">' + esc(it.artistHead) + '</a>' : esc(it.artistHead)) + '</div>';
+                }
+                if (!it.artistLink) grp = null;
                 if (!it.head) return row(g, it, grp);
                 grp = gi++;
                 return '<label class="mc-rv-t"><input type="checkbox" checked data-grp="' + grp + '" data-tip="Select or unselect this track\'s ' + it.n + ' change' + (it.n === 1 ? '' : 's') + '">'
@@ -705,6 +716,7 @@ function reviewWindow() {
     panel.addEventListener('change', e => {
         const i = e.target;
         if (i.dataset.grp != null) panel.querySelectorAll('input[data-in="' + i.dataset.grp + '"]').forEach(c => { c.checked = i.checked; });
+        if (i.dataset.artists != null) panel.querySelectorAll('.mc-rv-in input[data-p="pc"]').forEach(c => { c.checked = i.checked; });
         if (i.dataset.m != null) { const c = panel.querySelector('input[data-id="' + i.dataset.m + '"]'); c.checked = i.checked; }
         if (i.dataset.all != null) i.closest('table').querySelectorAll('tbody input').forEach(c => { c.checked = i.checked; c.indeterminate = false; });
         if (i.dataset.col != null) panel.querySelectorAll('input[data-c="' + i.dataset.col + '"]').forEach(c => { c.checked = i.checked; });
@@ -712,8 +724,10 @@ function reviewWindow() {
         panel.querySelectorAll('input[data-grp]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-in="' + h.dataset.grp + '"]')]));
         panel.querySelectorAll('input[data-col]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-c="' + h.dataset.col + '"]')]));
         panel.querySelectorAll('input[data-all]').forEach(h => sync(h, [...h.closest('table').querySelectorAll('tbody input[data-key]')]));
+        panel.querySelectorAll('input[data-artists]').forEach(h => sync(h, [...panel.querySelectorAll('.mc-rv-in input[data-p="pc"]')]));
         panel.querySelectorAll('input[data-m]').forEach(m => { m.checked = panel.querySelector('input[data-id="' + m.dataset.m + '"]').checked; });
-        const left = [...panel.querySelectorAll('input[data-key]')].filter(c => c.checked).length;
+        const left = [...panel.querySelectorAll('input[data-key]')].filter(c => c.checked).length
+            + groups.reduce((n, g) => n + g.items.filter(it => !it.keys && !it.head && !it.artistHead).length, 0);
         panel.querySelector('.mc-sec').textContent = 'Execute ' + left + ' change' + (left === 1 ? '' : 's') + '?';
     });
     // a track's caret opens a row under it with its links' whole addresses; the corner's opens every track
