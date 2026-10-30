@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.213000
+// @version      2026.10.30.214000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6924,15 +6924,15 @@ function render(keepPop) {
         : data.kind === 'label' ? wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount)
         : data.kind === 'artist' ? wikipedia(data.wikiX) + discography(data)
         : wikipedia(data.wikiX) + editions({ id: null, rgId: r.id }, data.editions, data.edCount))
-        : data.kind === 'recording' ? recHero(data) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount) + annotation(r)
-        : data.kind === 'place' ? placeHero(data) + wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`)) + annotation(r)
-        : data.kind === 'event' ? evHero(data) + wikipedia(data.wikiX) + setlist(data) + annotation(r)
+        : data.kind === 'recording' ? recHero(data) + annotation(r) + recCredits(r) + editions({ id: null, page: `/recording/${r.id}`, type: 'recording' }, data.editions, data.edCount)
+        : data.kind === 'place' ? placeHero(data) + annotation(r) + wikipedia(data.wikiX) + w('pe', 'Events', placeEvents(data)) + w('pr', 'Recordings', tabSect('pr', 'Recordings', data.listsX && data.listsX[1], `${MB}/place/${r.id}/performances`))
+        : data.kind === 'event' ? evHero(data) + annotation(r) + wikipedia(data.wikiX) + setlist(data)
         : data.kind === 'collection' ? colHero(data) + w('cp', 'Items', colItems(data))
-        : data.kind === 'series' ? serHero(data) + wikipedia(data.wikiX) + w('sp', serPartsName(data), serParts(data)) + annotation(r)
-        : data.kind === 'instrument' ? insHero(data) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2)) + annotation(r)
-        : data.kind === 'area' ? areaHero(data) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2)) + annotation(r)
-        : data.kind === 'work' ? wkHero(data) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data)) + annotation(r)
-        : data.kind === 'label' ? lbHero(data) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) + annotation(r) : data.kind === 'artist' ? arHero(data) + wikipedia(data.wikiX) + discography(data) + annotation(r) : data.kind === 'rg' ? rgHero(data) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true) + annotation(r)
+        : data.kind === 'series' ? serHero(data) + annotation(r) + wikipedia(data.wikiX) + w('sp', serPartsName(data), serParts(data))
+        : data.kind === 'instrument' ? insHero(data) + annotation(r) + wikipedia(data.wikiX) + w('ia', 'Artists', insList(data, 0)) + w('ir', 'Releases', insList(data, 1)) + w('ic', 'Recordings', insList(data, 2))
+        : data.kind === 'area' ? areaHero(data) + annotation(r) + wikipedia(data.wikiX) + w('aa', 'Artists', areaList(data, 0)) + w('al', 'Labels', areaList(data, 1)) + w('ap', 'Places', areaList(data, 2))
+        : data.kind === 'work' ? wkHero(data) + annotation(r) + wikipedia(data.wikiX) + wkCredits(r) + w('rc', 'Recordings', recsHtml(data))
+        : data.kind === 'label' ? lbHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, page: `/label/${r.id}`, type: 'label' }, data.editions, data.edCount) : data.kind === 'artist' ? arHero(data) + annotation(r) + wikipedia(data.wikiX) + discography(data) : data.kind === 'rg' ? rgHero(data) + annotation(r) + wikipedia(data.wikiX) + editions({ id: null, rgId: r.id, type: r.type }, data.editions, data.edCount) + rgCard(r, true)
         : hero(r) + annotation(r) + editions(r, data.editions, data.edCount) + tracklist(r) + creditsCard(r) + rgCard(r) + artwork(r);    // a group without its own cover shows its first release's, else the format's mark
     // a redraw keeps the images already loaded, so the covers don't blink
     for (const im of app.querySelectorAll('img')) { const k = imgKeyOf(im), o = oldImgs.get(k); if (o) { im.replaceWith(o); oldImgs.delete(k); } else imgKey.set(im, k); }
