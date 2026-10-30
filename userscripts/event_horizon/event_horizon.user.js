@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.135900
+// @version      2026.10.30.144948
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3394,6 +3394,12 @@ const pend = (id, title) => `<section class="sec pend" id="s-${id}" aria-busy="t
 const lost = (id, title) => `<section class="sec" id="s-${id}"><div class="secthead"><span class="fold">${CHEV}<h2>${title}</h2></span></div><div class="folded-note">MusicBrainz didn't send the ${title.toLowerCase()}. <button class="lnk" type="button" onclick="location.reload()">Reload</button></div></section>`;
 function edHtml(r, eds, count) {
     if (eds.length < (r.id ? 2 : 1)) return '';
+    // The current edition already has a hero cover: reuse it instead of asking for another thumbnail.
+    if (r.id && r.front && !r.frontFailed) {
+        const front = (r.images || []).find(i => i.front);
+        const thumb = r.frontFull && front ? front.image : r.frontSrc || `https://coverartarchive.org/release/${r.id}/front-500`;
+        eds = eds.map(e => e.id === r.id ? { ...e, thumb } : e);
+    }
     const view = r.id ? S.edView : S.rgView;
     // a label's or group's releases past the first 100 load with "Load more" (lmFoot); they come in MusicBrainz's
     // order, so the list keeps it (sorting would reshuffle what is already on screen)
@@ -6796,6 +6802,11 @@ function render(keepPop) {
     // an artwork image that won't load even at full size: a quiet tile with the picture mark, not a broken image
     for (const im of app.querySelectorAll('img[data-artimg]')) im.addEventListener('error', () => { LOG.debug('artwork image failed to load', im.src); im.outerHTML = `<span class="art-miss"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>`; });
     const rc = app.querySelector('[data-relcover]');
+    // A hero fallback must also reach its edition card without waiting for a redraw.
+    if (rc) rc.onload = () => {
+        if (!rc.isConnected) return;
+        for (const im of app.querySelectorAll(`[data-ed="${r.id}"] img`)) if (im.src !== rc.src) im.src = rc.src;
+    };
     // a fresh upload has no thumbnail yet: the full image stands in, and later redraws start from it, not from a failed front-500
     // a cover a redraw already replaced says nothing: its load was cut short, not refused
     if (rc) rc.onerror = () => { if (!rc.isConnected) return; if (rc.dataset.full && rc.src !== rc.dataset.full) { r.frontFull = true; rc.src = rc.dataset.full; return; } LOG.debug('release cover failed to load', r.id); r.frontFailed = true; rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
