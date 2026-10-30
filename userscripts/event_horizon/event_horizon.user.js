@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.002500
+// @version      2026.10.31.003000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5881,6 +5881,9 @@ function insHero(d) {
 const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
 const tabArt = (cv, id) => cv === 'artist' ? ((TGX_ART[id] || ARTIMG.cached(id) || {}).src || '') : `${ART_URL[cv]}${id}/front-250`;
 const TSORT = {}, TABX = {}, TQ = {};
+const tsKey = sid => 'eh-tsort:' + location.pathname + ':' + sid;
+const tsGet = sid => { if (!(sid in TSORT)) { try { const v = JSON.parse(sessionStorage.getItem(tsKey(sid)) || 'null'); if (v) TSORT[sid] = v; } catch {} } return TSORT[sid]; };
+const tsSet = (sid, v) => { TSORT[sid] = v; try { v.length ? sessionStorage.setItem(tsKey(sid), JSON.stringify(v)) : sessionStorage.removeItem(tsKey(sid)); } catch {} };
 // a cover that doesn't load is its kind's mark
 const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; im.outerHTML = `<span class="dn"${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
@@ -5906,7 +5909,7 @@ function tabSect(sid, name, x, href, cv) {
     const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"></a></td>` : '<td class="tc"></td>'; };
     // a click on a heading sorts the rows by that column, a second turns them round, a third brings back MusicBrainz's order;
     // a table with group rows inside keeps MusicBrainz's order
-    const srt = !x.rows.some(r => !Array.isArray(r) && r), [si, sd] = srt && TSORT[sid] || [];
+    const srt = !x.rows.some(r => !Array.isArray(r) && r), [si, sd] = srt && tsGet(sid) || [];
     const hb = i => { const h = x.head[i], st = si === i ? sd : 0; const fb = h && tqKey(h) ? `<button type="button" class="tq-col" data-tqcol="${sid}\t${tqKey(h)}" aria-label="Filter by ${esc(txt(h).toLowerCase())}" data-tip="Filter by ${esc(txt(h).toLowerCase())}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button>` : ''; return srt && h ? `<th aria-sort="${st > 0 ? 'ascending' : st < 0 ? 'descending' : 'none'}"><button type="button" class="dg-sort${st ? ' on' : ''}" data-tsort="${i}" data-tip="${st < 0 ? 'Back to MusicBrainz\'s order' : 'Sort by ' + txt(h).toLowerCase()}">${h}<i>${st > 0 ? '↑' : st < 0 ? '↓' : '↕'}</i></button>${fb}</th>` : `<th>${h}${fb}</th>`; };
     const v = r => { const t = txt(r[si]); return t === '—' ? '' : t; };
     const rows = si == null ? x.rows : [...x.rows].sort((a, z) => (!v(a) - !v(z)) || sd * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }));
@@ -7581,7 +7584,7 @@ function onClick(ev) {
     if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.aliases) { openAliases(); return; }
-    if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = TSORT[sid] || []; TSORT[sid] = t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []; const y = scrollY; render(); scrollTo(0, y); return; }
+    if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); scrollTo(0, y); return; }
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
