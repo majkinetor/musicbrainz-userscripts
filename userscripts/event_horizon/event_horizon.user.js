@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.110516
+// @version      2026.10.30.120132
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2359,7 +2359,12 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .dsc-med{padding:10px 0;border-bottom:1px solid var(--line)}.dsc-med:last-child{border-bottom:0}.dsc-med.off{opacity:.55}.dsc-h{display:flex;gap:8px;align-items:center;margin-bottom:4px}.dsc-h .sub,.dsc-rel .sub{color:var(--muted);font-weight:400}
 .dsc-row,.dsc-rel{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:4px 0 4px 26px}.dsc-rel{padding-left:0}.dsc-id{font-family:ui-monospace,Consolas,monospace;font-size:13px}.dsc-n{color:var(--muted);font-size:13px;min-width:60px}.dsc-a{margin-left:auto;display:flex;gap:12px}.dsc-none{color:var(--muted);font-size:13px;padding:2px 0 2px 26px}
 .dsc-t{font-family:ui-monospace,Consolas,monospace;word-break:break-all}.dsc-tbl{width:auto!important;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}.dsc-tbl th,.dsc-tbl td{padding:3px 14px 3px 0;text-align:right}.dsc-tbl th{color:var(--muted);font-weight:600}.dsc-tbl .sx{color:var(--muted)}.dsc-full{margin-top:10px;display:flex;gap:10px;align-items:baseline}.dsc-full code{font-size:12px;word-break:break-all;color:var(--soft)}
-#dsc-slot{margin-top:24px}#dsc-slot #apollo-discid-box{margin:0}#dsc-slot:empty{display:none}
+#dsc-slot{margin-top:24px}#dsc-slot #apollo-discid-box{margin:0;color:var(--text)}#dsc-slot:empty{display:none}
+#dsc-slot #apollo-discid-box h2{margin:0 0 10px}#dsc-slot #apollo-discid-box .fd-zones{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 10px}
+#dsc-slot #apollo-discid-box .fd-zone{flex:1 1 240px;min-height:84px;box-sizing:border-box;border:2px dashed color-mix(in srgb,var(--accent) 40%,var(--border));border-radius:14px;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;gap:4px;cursor:pointer;background:var(--surface);color:var(--text);transition:background .12s,border-color .12s}
+#dsc-slot #apollo-discid-box .fd-zone:hover,#dsc-slot #apollo-discid-box .fd-zone.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+#dsc-slot #apollo-discid-box .fd-zone.busy{cursor:progress;opacity:.7}#dsc-slot #apollo-discid-box .fd-zone.bad{border-color:#c0392b}#dsc-slot #apollo-discid-box .fd-zone.off{cursor:not-allowed;opacity:.55;border-style:solid}
+#dsc-slot #apollo-discid-box .fd-t{font-weight:700}#dsc-slot #apollo-discid-box .fd-s,#dsc-slot #apollo-discid-box .fd-foot{font-size:13px;color:var(--muted)}#dsc-slot #apollo-discid-box .fd-err{color:#c0392b}#dsc-slot #apollo-discid-box code{font-size:12px;background:var(--chip);padding:0 4px;border-radius:4px}
 .hst{font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;color:#fff}.hst.ok{background:#2e8b57}.hst.op{background:#c08a00}.hst.no{background:#c0392b}.hst.cx{background:#888}
 .hgb{display:none;border-top:1px solid var(--line)}.hgrp.open .hgb{display:block}
 .hrun>summary,.hed>summary{list-style:none;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 12px 7px 46px;cursor:pointer;font-size:14px}.hrun>summary::-webkit-details-marker,.hed>summary::-webkit-details-marker{display:none}
