@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.235000
+// @version      2026.10.30.235500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2980,6 +2980,7 @@ function release(r, rg, images) {
         id: r.id, annotation: r.annotation || '', aliases: [...new Set((r.aliases || []).map(aliasName))], asin: r.asin, quality: r.quality, packaging: r.packaging, barcode: r.barcode, status: r.status, disambig: r.disambiguation,
         langName: r['text-representation'] && nameOf('language', r['text-representation'].language),
         script: r['text-representation'] && nameOf('script', r['text-representation'].script),
+        tr: r['text-representation'] || {},
         lang: r['text-representation'] && [nameOf('language', r['text-representation'].language), nameOf('script', r['text-representation'].script)].filter(Boolean).join(' / '),
         title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
         credits: [...creditsOf(r.relations || []), ...labelCreditsOf(r.relations || [])], front: (r['cover-art-archive'] || {}).front, images,
@@ -3212,7 +3213,7 @@ function facts(r) {
         length: ['Length', `<span>${total(tracks)} <span class="sub">${total(tracks) ? '· ' : ''}${tracks.length} track${tracks.length === 1 ? '' : 's'}</span></span>`],
         asin: ['ASIN', r.asin && `<span>${copyB(r.asin)}</span>`],
         packaging: ['Packaging', r.packaging && esc(r.packaging)],
-        lang: ['Language', r.langName && `<div><span>${esc(r.langName)}</span>${r.script ? ` <span class="sub">${esc(r.script)}</span>` : ''}</div>`],
+        lang: ['Language', r.langName && (q => `<div><span>${q('lang', (r.tr || {}).language, r.langName)}</span>${r.script ? ` <span class="sub">${q('script', (r.tr || {}).script, r.script)}</span>` : ''}</div>`)((k, c, n) => c ? `<a href="${MB}/search?query=${k}%3A${encodeURIComponent(c)}&type=release&method=advanced">${esc(n)}</a>` : esc(n))],
         quality: ['Data quality', esc(r.quality || 'normal')],
         links: ['', r.links.length && rlQuiet(r)],
         aliases: [`Alias${r.aliases.length === 1 ? '' : 'es'}`, aliasList(r.aliases)],
