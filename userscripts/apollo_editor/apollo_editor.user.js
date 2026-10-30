@@ -5999,7 +5999,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       var flushRows = function () {
           if (!rowRun.length) return;
           var keyed = rowRun.filter(function (r) { return r.key; }).length;
-          if (rowRun.length >= 2 || keyed) blocks.push({ t: 'rows', rows: rowRun });
+          if (rowRun.length >= 2 || keyed || rowRun[0].dot) blocks.push({ t: 'rows', rows: rowRun });
           else blocks.push({ t: 'p', s: rowRun[0].line });
           rowRun = [];
       };
