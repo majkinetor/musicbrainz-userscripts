@@ -30,3 +30,26 @@ test('an artist\'s relationships show as cards and tables', { tag: ['@sandbox', 
   check(await until(() => page.locator('#app .rq:not([hidden])').count(), n => n > 0 && n < 40) < 40, 'the filter narrows to a phrase');
   check(await page.locator('#s-rarecording').isHidden(), 'a section with nothing left hides');
 });
+
+test('Recordings routes cover the artist, area and instrument', { tag: '@unit' }, async () => {
+  const src = await functionSource('event_horizon', ['MBID', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
+  const location = { href: 'https://test.musicbrainz.org/', origin: 'https://test.musicbrainz.org' };
+  const route = new Function('location', src + '; return navTo;')(location);
+  for (const type of ['artist', 'area', 'instrument']) expect(route(`/${type}/${MJ}/recordings`)).toBe(`erecs/${type}:${MJ}`);
+  expect(route(`/label/${MJ}/recordings`)).not.toBe(`erecs/label:${MJ}`);
+});
+
+// an artist's Recordings page: MusicBrainz's table, 100 a page, the next page by Load more
+test('an artist\'s recordings show as a table that loads more', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/artist/${MJ}/recordings`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await settled(page);
+  await inject('event_horizon');
+  const rows = () => page.locator('#app #s-rarecording tbody tr').count();
+  check(await until(rows, n => n >= 100) === 100, 'the first page is in');
+  check(await page.locator('#app .arthd h1 a').innerText() === 'Michael Jackson', 'the header names the artist');
+  check(await page.locator('#app #s-rarecording th', { hasText: 'Relationship' }).count() === 0, 'no Relationship column on an artist\'s own');
+  await attachShot(testInfo, page, 'recordings');
+  await page.locator('#app [data-lmgo="recs"]').click();
+  check(await until(rows, n => n > 100) > 100, 'Load more brings the next page');
+});

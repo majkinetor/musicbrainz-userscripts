@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.193500
+// @version      2026.10.30.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3127,9 +3127,10 @@ const relActs = r => r && r.media && r.media.length && !r.media.some(m => discOk
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
+    if (RECS_TYPES.includes(type) && !actions.some(a => a[0] === 'recordings')) actions = [...actions, ['recordings', 'Recordings', 'Recordings', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>']];
     if (RELS_TYPES.includes(type) && !actions.some(a => a[0] === 'relationships')) actions = [...actions, ['relationships', 'Relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>']];
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
-    const less = actions.filter(a => ['details', 'tags', 'discids'].includes(a[0]));
+    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'recordings', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const less = actions.filter(a => ['details', 'tags', 'recordings', 'discids'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
     const main = actions.filter(a => !less.includes(a));
     // the Releases tab sits in the row itself, before History
@@ -6264,6 +6265,8 @@ function tgTools(d) {
 }
 // an entity's Relationships page → "erels/<type>:<mbid>": MusicBrainz's own page read (its phrases, dates and credits as it
 // words them), drawn as cards, one per kind of entity, and its Appearances as tables, one per kind
+// MusicBrainz's Recordings tab: an artist's own, an area's and an instrument's by relationship
+const RECS_TYPES = ['artist', 'area', 'instrument'];
 const RELS_TYPES = ['artist', 'label', 'area', 'instrument', 'place', 'series', 'event', 'release-group', 'recording', 'work'];
 const RELS_KINDS = { artist: 'Artists', label: 'Labels', area: 'Areas', instrument: 'Instruments', place: 'Places', series: 'Series', event: 'Events', work: 'Works', recording: 'Recordings', release: 'Releases', 'release-group': 'Release groups', url: 'Links', genre: 'Genres' };
 // a page's markup reduced to text and links to MusicBrainz's pages (an instrument in a phrase, an artist credit)
@@ -6312,14 +6315,15 @@ function relsParse(html) {
         }
         apps.cols = cols;
     }
-    return { name: hn ? tx(hn) : tx(h1), dis: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', cards, apps, cols: tb ? apps.cols : [] };
+    const last = Math.max(1, ...[...c.querySelectorAll('ul.pagination a')].map(a => +(new URL(a.getAttribute('href'), location.origin).searchParams.get('page')) || 1));
+    return { name: hn ? tx(hn) : tx(h1), dis: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', cards, apps, cols: tb ? apps.cols : [], last };
 }
 async function relsLoad(n, key) {
     const d = data, ent = key.slice(key.indexOf('/') + 1), [ty, eid] = ent.split(':');
     try {
         let html;
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
-        else { const r = await mbnFetch(`${MB}/${ty}/${eid}/relationships`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        else { const r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode || 'relationships'}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const t = relsParse(html);
         LOG.debug(`Relationships of ${ty} ${eid}: ${t.cards.reduce((s, c) => s + c.rows.reduce((x, r) => x + r.items.length, 0), 0)} on cards, ${t.apps.length} appearances`);
         if (n === showing && data === d) { d.t = t; d.err = ''; render(); }
@@ -6338,25 +6342,36 @@ function relsCard(c, i) {
     const body = `<div class="card"><dl class="rgc rls">${c.rows.map((r, ri) => `<dt class="rqg">${r.ph}</dt><dd class="rqg">${c.kind === 'url' ? url(r, ri) : r.items.map(ent).join('')}</dd>`).join('')}</dl></div>`;
     return sect('rl' + (c.kind || i), `${name} <span class="count">${fmtN(n)}</span>`, '', body, `<div class="folded-note">${fmtN(n)} relationship${n === 1 ? '' : 's'}</div>`);
 }
-function relsApps(t) {
+function relsApps(t, d = {}) {
     const by = new Map(); for (const a of t.apps) { const l = by.get(a.kind) || []; l.push(a); by.set(a.kind, l); }
     return [...by].map(([k, xs]) => {
         // MusicBrainz's columns, less those empty in every row of this kind
         const keep = t.cols.map((_, i) => i).filter(i => i === xs[0].ti || xs.some(x => (x.cells[i] || '').replace(/<[^>]+>/g, '').trim()));
-        const row = x => `<tr class="rq"><td class="rls-ph">${esc(x.ph)}</td>${keep.map(i => i === x.ti ? `<td>${mkSvg((HM_KIND[k] || ['', MK_REC])[1])}<a href="${MB}${esc(x.href)}">${esc(x.name)}</a>${x.video ? ' <span class="rga">(video)</span>' : ''}</td>` : `<td>${x.cells[i] || ''}</td>`).join('')}</tr>`;
+        const phs = xs.some(x => x.ph);
+        const row = x => `<tr class="rq">${phs ? `<td class="rls-ph">${esc(x.ph)}</td>` : ''}${keep.map(i => i === x.ti ? `<td>${mkSvg((HM_KIND[k] || ['', MK_REC])[1])}<a href="${MB}${esc(x.href)}">${esc(x.name)}</a>${x.video ? ' <span class="rga">(video)</span>' : ''}</td>` : `<td>${x.cells[i] || ''}</td>`).join('')}</tr>`;
         const name = RELS_KINDS[k] || 'Appearances';
-        return sect('ra' + k, `Appearances · ${name} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="ed-tw"><table class="ed-t rls-t"><thead><tr><th>Relationship</th>${keep.map(i => `<th>${esc(t.cols[i])}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>`, `<div class="folded-note">${fmtN(xs.length)} appearance${xs.length === 1 ? '' : 's'}</div>`);
+        const foot = d.mode && d.page < t.last ? lmFoot('recs', xs.length, '') : '';
+        return sect('ra' + k, `${d.mode ? 'Recordings' : 'Appearances · ' + name} <span class="count">${fmtN(xs.length)}${foot ? '+' : ''}</span>`, '', `<div class="ed-tw"><table class="ed-t rls-t"><thead><tr>${phs ? '<th>Relationship</th>' : ''}${keep.map(i => `<th>${esc(t.cols[i])}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>${foot}`, `<div class="folded-note">${fmtN(xs.length)} appearance${xs.length === 1 ? '' : 's'}</div>`);
     }).join('');
+}
+// the next page of an entity's recordings
+async function recsMore(d) {
+    if (!d.t || d.page >= d.t.last) return;
+    const [ty, eid] = d.ent.split(':'), r = await mbnFetch(`${MB}/${ty}/${eid}/recordings?page=${d.page + 1}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const t = relsParse(await r.text()); if (data !== d) return;
+    d.t.apps.push(...t.apps); d.page++;
+    LOG.debug(`Recordings of ${ty} ${eid}: page ${d.page} of ${d.t.last}, ${d.t.apps.length} in`);
 }
 function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
-    const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, 'relationships');
-    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Relationships · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
-    if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the relationships…'}</p>`;
+    const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
+    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode ? 'Recordings · ' : 'Relationships · ') + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
+    if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : (d.mode ? 'Loading the recordings…' : 'Loading the relationships…')}</p>`;
     const n = relsN(t);
-    if (!n) return head + '<p class="hm-none">No relationships.</p>';
-    const bar = `<div class="tg-bar rls-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="rls-q" value="${esc(d.q || '')}" placeholder="Filter ${fmtN(n)} relationships" aria-label="Filter relationships" autocomplete="off"></span><span class="fn aside"></span></div>`;
-    return head + bar + t.cards.map(relsCard).join('') + relsApps(t);
+    if (!n) return head + `<p class="hm-none">${d.mode ? 'No recordings.' : 'No relationships.'}</p>`;
+    const bar = `<div class="tg-bar rls-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="rls-q" value="${esc(d.q || '')}" placeholder="Filter ${fmtN(n)} ${d.mode || 'relationships'}" aria-label="Filter ${d.mode || 'relationships'}" autocomplete="off"></span><span class="fn aside"></span></div>`;
+    return head + bar + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
 }
 // the filter hides what doesn't hold it, in place: a phrase with nothing left goes, a section with nothing left folds away
 function relsFilter(app) {
@@ -6870,7 +6885,7 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove(); return; }
-    if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); relsWire(app); secRail(app); pinBar(app); save(); return; }
+    if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); relsWire(app); secRail(app); pinBar(app); lmWatch(app); save(); return; }
     if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
@@ -6980,7 +6995,7 @@ async function lmMore(k) {
     if (b2) { b2.disabled = true; b2.textContent = 'Loading…'; }
     if (b) { b.disabled = true; b.textContent = 'Loading…'; }
     LOG.debug('Load more: ' + k);
-    try { await (k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
+    try { await (k === 'recs' ? recsMore(d) : k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
     catch (e) { LOG.debug('Load more failed: ' + k, e); LM_ERR.add(k); }
     finally { LM_BUSY.delete(k); }
     if (data === d) { const y = scrollY; render(); scrollTo(0, y); }
@@ -7567,6 +7582,9 @@ function navTo(href) {
     // an entity's relationships → "erels/<type>:<mbid>"
     const er = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + RELS_TYPES.join('|') + ')/(' + MBID.source + ')/relationships/?$', 'i'));
     if (er) return 'erels/' + er[1].toLowerCase() + ':' + er[2].toLowerCase();
+    // an entity's recordings → "erecs/<type>:<mbid>"
+    const ec = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + RECS_TYPES.join('|') + ')/(' + MBID.source + ')/recordings/?$', 'i'));
+    if (ec) return 'erecs/' + ec[1].toLowerCase() + ':' + ec[2].toLowerCase();
     // an editor's profile → "user/<name as in the path>"
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
@@ -7575,7 +7593,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · Relationships · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + (d.mode ? ' · Recordings' : ' · Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -8858,6 +8876,7 @@ async function show(key, o = {}) {
         scrollTo(0, 0); render(); tagsLoad(n, key); if (data.dn) tagsLoad(n, key, true); return;
     }
     if (kind === 'erels') { data = { kind: 'rels', key, ent: id, q: '' }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
+    if (kind === 'erecs') { data = { kind: 'rels', mode: 'recordings', key, ent: id, q: '', page: 1 }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
