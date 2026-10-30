@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.000000
+// @version      2026.10.31.001000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5879,10 +5879,10 @@ function insHero(d) {
 // a table per subpage, as MusicBrainz shows its first page; with cv ("release-group", "release" or "event"), each row
 // leads with the front of the first such entity it links to, from the Cover Art Archive or the Event Art Archive
 const ART_URL = { 'release-group': 'https://coverartarchive.org/release-group/', release: 'https://coverartarchive.org/release/', event: 'https://eventartarchive.org/event/' };
-const tabArt = (cv, id) => cv === 'artist' ? ((ARTIMG.cached(id) || {}).src || '') : `${ART_URL[cv]}${id}/front-250`;
+const tabArt = (cv, id) => cv === 'artist' ? ((TGX_ART[id] || ARTIMG.cached(id) || {}).src || '') : `${ART_URL[cv]}${id}/front-250`;
 const TSORT = {}, TABX = {}, TQ = {};
 // a cover that doesn't load is its kind's mark
-const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { im.outerHTML = `<span class="dn">${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } };    // TQ: a table's filter text, absent while its box is shut
+const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; im.outerHTML = `<span class="dn"${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
 const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
 // the box's text, split into column terms (key:value, the value in quotes when it has spaces) and the rest, searched in the whole row
@@ -5903,7 +5903,7 @@ function tabSect(sid, name, x, href, cv) {
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), cols = x.head.map((_, i) => i).filter(i => rs.some(r => txt(r[i])));
     const n = rs.length, cnt = x.total ? x.total.toLocaleString('en') : x.more ? `${n}+` : n, span = cols.length + (cv ? 1 : 0);
     const cvRe = cv && new RegExp('href="[^"]*/' + cv + '/(' + MBID.source + ')"', 'i');
-    const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}"></a></td>` : '<td class="tc"></td>'; };
+    const cvTd = r => { if (!cv) return ''; const m = r.join(' ').match(cvRe); return m ? `<td class="tc"><a href="${MB}/${cv}/${m[1]}" class="tt"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"></a></td>` : '<td class="tc"></td>'; };
     // a click on a heading sorts the rows by that column, a second turns them round, a third brings back MusicBrainz's order;
     // a table with group rows inside keeps MusicBrainz's order
     const srt = !x.rows.some(r => !Array.isArray(r) && r), [si, sd] = srt && TSORT[sid] || [];
@@ -5916,7 +5916,7 @@ function tabSect(sid, name, x, href, cv) {
     const shown = q ? rows.filter(r => !Array.isArray(r) || (tqp.terms.every(([c, v]) => fltFold(txt(r[c])).includes(v)) && fltFold(r.map(txt).join(' ')).includes(tqp.rest))) : rows;
     const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
     const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
-    const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}"><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
+    const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
     const open = sid in TQ, tools = (open ? `<span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" data-tq="${sid}" value="${esc(TQ[sid])}" placeholder="Filter, or column:value" aria-label="Filter" autocomplete="off"></span>` : '')
         + `<span class="ed-views"><button type="button" data-tqopen="${sid}" aria-pressed="${open}" aria-label="Filter" data-tip="${open ? 'Hide the filter, clearing it' : 'Filter the rows'}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button></span>`
         + (cv ? viewBs(['grid', 'row', 'table'], view, 'tabview', 'View') : '');
