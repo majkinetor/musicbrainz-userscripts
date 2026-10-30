@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.150000
+// @version      2026.10.30.160000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -4306,6 +4306,7 @@
       + '.gt-wm-qrow{display:flex;align-items:stretch;gap:6px;margin:4px 0 6px}'
       + '.gt-wm-q{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:4px 6px}.gt-wm-results{max-height:300px;overflow:auto}'
       + '.gt-wm-newplus{flex:none;width:40px;font-size:17px;line-height:1;color:var(--mbu-ok);background:var(--mbu-ok-bg);border:1px solid var(--mbu-border);border-radius:5px;cursor:pointer}.gt-wm-newplus:hover{background:var(--mbu-ok-bg)}'
+      + '.gt-wm-staged{margin:6px 0 2px;padding-bottom:6px;border-bottom:1px solid var(--mbu-border-soft)}'
       + '.gt-wm-res{padding:4px 6px;border-radius:5px;cursor:pointer}.gt-wm-res:hover{background:var(--mbu-info-bg)}.gt-wm-rt{font-size:13px}'
       + '.gt-wm-rw{color:var(--mbu-text-dim);font-size:12px;margin-left:4px}.gt-wm-sub{color:var(--mbu-text-dim);font-size:11px;margin:-2px 0 5px 2px}'
       + '.gt-wm-open{margin-left:6px;color:var(--mbu-info);text-decoration:none;font-size:12px}.gt-wm-open:hover{text-decoration:underline}'
@@ -4559,6 +4560,24 @@
     const newBtn = el('button', 'gt-wm-newplus', '＋'); newBtn.type = 'button'; newBtn.dataset.tip = 'Create a new work “' + trunc(row.title, 40) + '”';
     newBtn.onclick = () => { const w = wmMakeNewWork(row.title); row.chosen = w; row.best = w; row.level = (!row.level || row.level === 'none') ? 'near' : row.level; row.writers = []; draw && draw(); updatePlan && updatePlan(); closePopover(); };
     qrow.appendChild(newBtn); popEl.appendChild(qrow);
+    // #874 the new works already staged this session (other titles too), so a part II or an edit can join the
+    // new work of another track: both recordings then link to the one work MB creates on submit
+    const staged = [...wmNewWorks.values()].filter(w => w !== row.chosen);
+    if (staged.length) {
+      const sw = el('div', 'gt-wm-staged');
+      sw.appendChild(el('div', 'gt-wm-sub', 'New works staged this session'));
+      staged.forEach(w => {
+        const r = el('div', 'gt-wm-res'); r.dataset.tip = 'Link this recording to the same new work';
+        r.appendChild(el('span', 'gt-wm-newtag', '＋ ' + (w.name || '')));
+        r.onclick = () => {
+          row.chosen = w; row.best = w; row.level = (!row.level || row.level === 'none') ? 'near' : row.level; row.writers = [];
+          LOG().cat('Works').debug(`"${row.title}" set to the staged new work ${entLabel(w)}`);
+          draw && draw(); updatePlan && updatePlan(); closePopover();
+        };
+        sw.appendChild(r);
+      });
+      popEl.appendChild(sw);
+    }
     const list = el('div', 'gt-wm-results'); popEl.appendChild(list);
     const showCands = () => { list.textContent = ''; (row.cands || []).forEach(c => list.appendChild(wmResRow(c, row, draw, updatePlan))); if (!(row.cands || []).length) list.appendChild(el('div', 'gt-pop-note', 'No candidates yet — search or paste a work.')); };
     showCands();

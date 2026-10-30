@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-30 17:21 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-30 17:26 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1678,7 +1678,7 @@ Right-clicking a dated relationship (a *recorded at* with a date) offers **Set d
 | 🟡   | exact title and clearly the most recorded, but others share the title |
 | 🔴   | ambiguous; check it                                                   |
 
-**⚡ Match** selects the rows at or above the **Cutoff**. ✎ on a row searches, takes a pasted work MBID or URL, or creates a work. **＋ New work for unresolved** creates one for every unmatched recording. **Apply** stages the performance relationships.
+**⚡ Match** selects the rows at or above the **Cutoff**. ✎ on a row searches, takes a pasted work MBID or URL, creates a work, or picks a new work already set for another track, so a part II or an edit shares it. **＋ New work for unresolved** creates one for every unmatched recording. **Apply** stages the performance relationships.
 
 **Medleys**: a title of several works [split by " / "](https://musicbrainz.org/doc/Style/Titles#Extra_title_information_(ETI)), like `Land of Hope and Dreams / People Get Ready`, gets a row per work, and **Apply** links the recording to all of them. `AC/DC`, without spaces, stays whole. **Split on /** (on) turns this off.
 
