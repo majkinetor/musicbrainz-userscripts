@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.210000
+// @version      2026.10.30.213000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5638,12 +5638,14 @@ function recHero(d) {
         ['', g.links.length && rlQuiet(g), 'wide'],
     ], g.ac.length ? 'by ' + acHtml(g.ac) : '');
 }
+const WK_ATTRS = 4;
 function wkHero(d) {
     const g = d.g, writers = byPerson(g.cr.filter(c => /writer|composer|lyricist|librettist/i.test(c.role))).map(e => crName(e.c));
     return pgHero(g, 'work', MK_WORK, g.type || 'Work', [
         [g.langs.length > 1 ? 'Languages' : 'Language', g.langs.length && esc(g.langs.join(', '))],
         [g.iswcs.length > 1 ? 'ISWCs' : 'ISWC', g.iswcs.length && codes(g.iswcs), g.iswcs.length > 2 ? 'wide' : ''],
-        ...g.attrs.map(([k, v]) => [esc(k), /^key$/i.test(k) ? esc(v) : mono(v)]),
+        // a few attributes (society IDs mostly), the rest behind the last one's +n menu
+        ...g.attrs.slice(0, WK_ATTRS).map(([k, v], i, xs) => [esc(k), (/^key$/i.test(k) ? esc(v) : mono(v)) + (i === xs.length - 1 && g.attrs.length > WK_ATTRS ? ` <span class="popwrap"><button class="more" type="button" data-pop="wka" aria-expanded="false" aria-label="${g.attrs.length - WK_ATTRS} more attributes">+${g.attrs.length - WK_ATTRS}</button><div class="pop" id="pop-wka" hidden><div class="h label">Attributes</div>${g.attrs.slice(WK_ATTRS).map(([k, v]) => `<div class="row"><span>${esc(k)}<br><small>${/^key$/i.test(k) ? esc(v) : mono(v)}</small></span></div>`).join('')}</div></span>` : '')]),
         [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
         ['', g.links.length && rlQuiet(g), 'wide'],
