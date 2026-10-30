@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.234000
+// @version      2026.10.30.235000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2984,7 +2984,7 @@ function release(r, rg, images) {
         title: r.title, ac, type: rg['primary-type'], rgId: rg.id, rating: rg.rating || {}, rg: { title: rg.title, rels: rg.relations || [] },
         credits: [...creditsOf(r.relations || []), ...labelCreditsOf(r.relations || [])], front: (r['cover-art-archive'] || {}).front, images,
         genres: (r.genres || []).sort((a, b) => b.count - a.count).slice(0, 5).map(g => g.name),
-        events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
+        events: (r['release-events'] || []).map(v => ({ date: v.date, area: v.area && v.area.name.replace(/^\[(.*)\]$/, '$1'), aid: v.area && v.area.id, iso: v.area && (v.area['iso-3166-1-codes'] || [])[0] || '' })),
         labels: (r['label-info'] || []).map(l => ({ name: l.label && l.label.name, id: l.label && l.label.id, catno: l['catalog-number'] })),
         links: urlsOf(r.relations || []), urlCredits: (r.relations || []).filter(x => x['target-type'] === 'url').map(x => ({ type: x.type, url: x.url.resource })),
         media: (r.media || []).map(m => ({
@@ -3201,7 +3201,9 @@ function facts(r) {
     // past two rows, the first stays and the rest fold behind "+N more"
     // a date's countries past three go behind +N, in a popover like the links'
     let an = 0;
-    const areas = a => a.length > 4 ? `${esc(a.slice(0, 3).join(', '))} <span class="popwrap"><button class="chip pn" type="button" data-pop="ra-${++an}" aria-expanded="false" data-tip="${a.length - 3} more countries">+${a.length - 3}</button><div class="pop ra-pop" id="pop-ra-${an}" hidden><div class="h label">${a.length} countries</div>${esc(a.join(', '))}</div></span>` : esc(a.join(', '));
+    const aIds = {}; for (const v of r.events) if (v.area && v.aid) aIds[v.area] = v.aid;
+    const aA = n => aIds[n] ? `<a href="${MB}/area/${esc(aIds[n])}">${esc(n)}</a>` : esc(n);
+    const areas = a => a.length > 4 ? `${a.slice(0, 3).map(aA).join(', ')} <span class="popwrap"><button class="chip pn" type="button" data-pop="ra-${++an}" aria-expanded="false" data-tip="${a.length - 3} more countries">+${a.length - 3}</button><div class="pop ra-pop" id="pop-ra-${an}" hidden><div class="h label">${a.length} countries</div>${a.map(aA).join(', ')}</div></span>` : a.map(aA).join(', ');
     const fold = rows => rows.length > 2 ? `${rows[0]}<details class="more"><summary>+${rows.length - 1} more</summary>${rows.slice(1).join('')}</details>` : rows.join('');
     const F = {
         released: [`Released${r.events.length > 1 ? ` <span class="count">${r.events.length}</span>` : ''}`, fold(byDate.map(l => `<div><span>${fdate(l.date)}</span> <span class="sub">${areas(l.ev.map(v => v.area).filter(Boolean))}</span></div>`))],
