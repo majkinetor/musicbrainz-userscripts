@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.193001
+// @version      2026.10.30.201501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2736,7 +2736,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2745,6 +2745,7 @@ const S = {
     byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1600, bg: 'flat',
     on: true, menuTitles: false,
     thumbs: true,
+    noAliases: false, // the release header's aliases, shown unless turned off
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
     secOrder: [], secHide: [], // the rail's section order, and the sections it hides
@@ -3179,10 +3180,9 @@ function facts(r) {
         links: ['', r.links.length && rlQuiet(r)],
         aliases: [`Alias${r.aliases.length === 1 ? '' : 'es'}`, aliasList(r.aliases)],
     };
-    // the aliases aren't a setting, as on every other page: always shown, before the links, so they can be added;
-    // none (only the pencil) take one cell, not a row
+    // the aliases go before the links, so they can be added; none (only the pencil) take one cell, not a row
     const ks = FACTS.map(([k]) => k).filter(k => S.facts.includes(k) && F[k][1]), li = ks.indexOf('links');
-    if (F.aliases[1]) ks.splice(li < 0 ? ks.length : li, 0, 'aliases');
+    if (F.aliases[1] && !S.noAliases) ks.splice(li < 0 ? ks.length : li, 0, 'aliases');
     return `<div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="hd" aria-label="Header settings" data-tip="Header settings\nWhich facts the header shows, and the other covers">${MBU_CFG_ICON}</button>${ks.map(k => `<div${k === 'links' || k === 'aliases' && r.aliases.length ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
 function heroFacts(app) {
@@ -8304,6 +8304,7 @@ const CI = {
     links: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
     thumbs: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
     rating: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
+    aliases: '<path d="M4 7h10M4 12h7M4 17h10"/><path d="M17 10l3 3-3 3"/>',
     tags: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
 };
 const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-panel{pointer-events:auto}.eh-cfg{width:min(460px,94vw);font:12px var(--mbu-font)}.eh-cfg .mbu-ov-body{padding:6px 10px 6px}.eh-cfg .mbu-cfg-h{margin-bottom:2px;padding-bottom:5px;gap:6px;font-size:13px}.eh-cfg .mbu-cfg-ic{width:18px;height:18px}.eh-cfg .mbu-cfg-log{padding:0 6px;font-size:11px}'
@@ -8312,6 +8313,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .pane{height:230px;overflow-y:auto;padding-top:2px}'
     + '.eh-plpop .plh{margin:6px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--mbu-border-soft);font:700 11px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-accent-text)}'
+    + '.eh-cfg .ckr{display:block;border-bottom:0}.eh-cfg .ck{white-space:nowrap}.eh-cfg .ck{display:inline-flex;align-items:center;gap:8px;padding:6px 2px;border:0;background:none;color:var(--mbu-text);font:inherit;cursor:pointer}.eh-cfg .ck svg{flex:none;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.eh-cfg .ck[aria-checked=true] svg{color:var(--mbu-accent-text)}'
     + '.eh-plpop{position:absolute;z-index:2147482000;width:min(560px,94vw);max-height:70vh;overflow-y:auto;padding:4px 10px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}'
     + '.eh-cfg .cr{display:grid;grid-template-columns:108px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
     + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
@@ -8358,8 +8360,10 @@ function plBody() {
             + row('Visible', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
 }
 function hdBody() {
-    return cfgRow('Info', FACTS.map(([k, n]) => cfgChip('fact', k, S.facts.includes(k), n)).join('') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => cfgChip('extra', k, S.extras.includes(k), n)).join(''))
-        + cfgRow('Cover', cfgChip('thumbs', 'thumbs', S.thumbs, 'Other covers'));
+    // in the header's order: the facts, then rating, aliases, genres, and the links last
+    const fc = ([k, n]) => cfgChip('fact', k, S.facts.includes(k), n), ex = k => cfgChip('extra', k, S.extras.includes(k), k === 'tags' ? 'Genres' : 'Rating');
+    return cfgRow('Info', FACTS.filter(x => x[0] !== 'links').map(fc).join('') + ex('rating') + cfgChip('noAliases', 'aliases', !S.noAliases, 'Aliases') + ex('tags') + fc(FACTS.find(x => x[0] === 'links')))
+        + `<div class="cr ckr"><button type="button" class="ck" data-g="thumbs" data-k="thumbs" role="checkbox" aria-checked="${S.thumbs}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.thumbs ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show other covers</button></div>`;
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
@@ -8447,6 +8451,7 @@ function cfgWire(panel, b, body) {
             if (g === 'all') { cfgAll = !cfgAll; b.innerHTML = body(); return; }
             else if (g === 'fact') S.facts = toggle(S.facts, k);
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
+            else if (g === 'noAliases') S.noAliases = !S.noAliases;
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
             else if (g === 'plNames' || g === 'plHover' || g === 'menuTitles') S[g] = !S[g];
