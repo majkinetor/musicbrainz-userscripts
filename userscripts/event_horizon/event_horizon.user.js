@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.203001
+// @version      2026.10.30.204501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5506,7 +5506,8 @@ function lbHero(d) {
         <div class="facts-col">
             <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
-            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+            <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="img" aria-label="Picture settings" data-tip="Picture settings
+Where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
     </section>`;
 }
@@ -5533,7 +5534,8 @@ function arHero(d) {
             <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
-            <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+            <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="img" aria-label="Picture settings" data-tip="Picture settings
+Where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
     </section>`;
 }
@@ -7333,7 +7335,7 @@ function onClick(ev) {
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.aliases) { openAliases(); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = TSORT[sid] || []; TSORT[sid] = t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []; const y = scrollY; render(); scrollTo(0, y); return; }
-    if (d.plcfg) { openPlCfg(b, d.plcfg === 'hd'); return; }
+    if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -8365,19 +8367,21 @@ function hdBody() {
     return cfgRow('Info', FACTS.filter(x => x[0] !== 'links').map(fc).join('') + ex('rating') + cfgChip('noAliases', 'aliases', !S.noAliases, 'Aliases') + ex('tags') + fc(FACTS.find(x => x[0] === 'links')))
         + `<div class="cr ckr"><button type="button" class="ck" data-g="thumbs" data-k="thumbs" role="checkbox" aria-checked="${S.thumbs}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.thumbs ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show other covers</button></div>`;
 }
+function imgBody() {
+    return cfgRow('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
+Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next");
+}
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
-    const tabs = [['artist', 'Artist'], ['general', 'General']];
+    const tabs = [['general', 'General']];
     const panes = {
-        artist: row('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
-Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next"),
         general: row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
             + row('Page width', [[960, 'Narrow'], [1280, 'Medium'], [1600, 'Wide'], [0, 'Full']].map(([n, l]) => chip('width', n, S.width === n, l)).join(''), 'How wide the page grows on a big screen')
             + row('Background', [['flat', 'Flat'], ['aura', 'Cover aura'], ['glow', 'Glow'], ['band', 'Header band'], ['hex', 'Hexagons']].map(([k, l]) => chip('bg', k, (S.bg || 'flat') === k, l)).join(''), 'Cover aura blurs the page\'s cover or picture behind its head; pages without one get the glow'),
     };
-    return `<div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" class="tab" role="tab" data-tab="${k}" aria-selected="${cfgTab === k}">${n}</button>`).join('')}</div><div class="pane">${panes[cfgTab]}</div>`;
+    return `<div class="pane">${panes.general}</div>`;
 }
-let cfgTab = 'artist';
+let cfgTab = 'general';
 function openCfg() {
     if (document.getElementById('eh-cfg')) return;
     const ov = document.createElement('div'); ov.className = 'mbu-ov'; ov.id = 'eh-cfg';
@@ -8391,15 +8395,16 @@ function openCfg() {
 }
 // the tracklist's platform popover, or the header's, under its gear
 function openPlCfg(btn, hd) {
-    const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); if (old.dataset.hd === String(!!hd)) return; }
+    const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); if (old.dataset.hd === hd) return; }
     const pop = document.createElement('div'); pop.id = 'eh-plcfg'; pop.className = 'eh-cfg eh-plpop mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Platform icons');
-    pop.dataset.hd = String(!!hd); if (hd) pop.setAttribute('aria-label', 'Header settings');
-    pop.innerHTML = `<h3 class="plh">${hd ? 'Header' : 'Platforms'}</h3><div class="eh-cfg-b">${(hd ? hdBody : plBody)()}</div>`;
+    const [title, body] = hd === 'hd' ? ['Header', hdBody] : hd === 'img' ? ['Picture', imgBody] : ['Platforms', plBody];
+    pop.dataset.hd = hd; pop.setAttribute('aria-label', title + ' settings');
+    pop.innerHTML = `<h3 class="plh">${title}</h3><div class="eh-cfg-b">${body()}</div>`;
     document.documentElement.append(pop);
     const r = btn.getBoundingClientRect(), w = pop.offsetWidth;
     pop.style.left = (scrollX + Math.max(8, Math.min(r.right - w, innerWidth - w - 8))) + 'px'; pop.style.top = (scrollY + r.bottom + 6) + 'px';
     mbuDismissOn(pop, () => pop.remove(), { ignore: '[data-plcfg]' });
-    cfgWire(pop, pop.querySelector('.eh-cfg-b'), hd ? hdBody : plBody);
+    cfgWire(pop, pop.querySelector('.eh-cfg-b'), body);
 }
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {

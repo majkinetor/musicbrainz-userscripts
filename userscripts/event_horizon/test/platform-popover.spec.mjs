@@ -29,7 +29,17 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
   await pop.screenshot({ path: 'test-results/eh-hdpop.png' });
   await page.keyboard.press('Escape');
   await page.evaluate(() => document.getElementById('eh-launch').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true })));
-  await until(() => page.locator('#eh-cfg [data-tab]').count(), n => n > 0);
+  await until(() => page.locator('#eh-cfg .pane').count(), n => n > 0);
+  check(await page.locator('#eh-cfg [data-g=imgP]').count() === 0, 'Settings has no Images from');
   check(await page.locator('#eh-cfg [data-tab=release]').count() === 0, 'Settings has no Release tab');
   check(await page.locator('#eh-cfg [data-tab=platforms]').count() === 0, 'Settings has no Platforms tab');
+});
+
+test('the artist header gear opens the picture settings', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
+  await inject('event_horizon');
+  await until(() => page.locator('[data-plcfg=img]').count(), n => n === 1);
+  await page.locator('[data-plcfg=img]').click();
+  check(await until(() => page.locator('#eh-plcfg [data-g=imgP]').count(), n => n > 0) > 0, 'it lists the picture sources');
+  await page.locator('#eh-plcfg').screenshot({ path: 'test-results/eh-imgpop.png' });
 });
