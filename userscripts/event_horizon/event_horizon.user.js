@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.007000
+// @version      2026.10.31.008000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2631,7 +2631,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .dmenu.open{display:block;z-index:5}
 .crdis{display:inline-flex;align-items:center;gap:2px}
 .crdis .dmenu{top:100%;right:0;margin-top:4px}
-.hlm{display:inline-flex}.hlm>.sk-b:first-child{border-top-right-radius:0;border-bottom-right-radius:0}.hlm .hlmc{padding:3px 6px;margin-left:-1px;border-top-left-radius:0;border-bottom-left-radius:0}.hlm .dmenu{top:100%;left:0;right:auto;min-width:120px;margin-top:4px}
+.lmw{display:inline-flex;align-items:center}.lmw .lmc{padding:2px 4px}.lmw .dmenu{top:100%;left:0;right:auto;min-width:120px;margin-top:4px}.hlm>.sk-b:first-child{border-top-right-radius:0;border-bottom-right-radius:0}.hlm .lmc{padding:3px 6px;margin-left:-1px;border-top-left-radius:0;border-bottom-left-radius:0}
 .dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
 .dmenu button svg{flex:none}
@@ -3186,9 +3186,9 @@ function sect(id, title, tools, body, folded) {
     // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
     const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
     // a paged list's Auto sits in the header too, where it stays put while pages load below (majkinetor)
-    // with it, how many are in and "Load 2,000" (as History's), the same on every paged list
+    // with it, how many are in and Load more with its menu of batches, the same on every paged list
     const lm = /data-lm="([^"]+)" data-lmn="([0-9]+)"/.exec(body);
-    if (lm) tools = `<span class="ed-ld aside" data-tip="Sorting and filters cover only what is loaded so far">${lm[2]} loaded so far<button class="lnk" type="button" data-lmgo="${lm[1]}+">${LM_BUSY.has(lm[1]) ? 'Loading…' : 'Load 2,000'}</button></span>` + tools;
+    if (lm) tools = `<span class="ed-ld aside" data-tip="Sorting and filters cover only what is loaded so far">${lm[2]} loaded so far<span class="dwrap lmw"><button class="lnk" type="button" data-lmgo="${lm[1]}">${LM_BUSY.has(lm[1]) ? 'Loading…' : 'Load more'}</button>${lmMenu('lnk', b => `data-lmgo="${lm[1]}+${b}"`)}</span></span>` + tools;
     if (body.includes('data-lm="')) tools = `<label class="lm-auto aside" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label>` + tools;
     return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
@@ -7050,7 +7050,10 @@ function render(keepPop) {
 // a paged list's foot (#845): how many are in, "Load more", and Auto, which loads the next page as the foot nears the view;
 // one setting for every list. k names the list: 'ed' the releases, 'tab:<section>' a MusicBrainz table, 'ws:<section>' a ws/2 list
 const LM_ERR = new Set(), LM_BUSY = new Set(), WSX = {};
-const lmFoot = (k, n, total) => `<div class="folded-note lm" data-lm="${k}" data-lmn="${n}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label></div>`;
+// Load more's caret: a menu of fixed batches, so a list of 100,000 never loads whole by accident; at(b) gives an item's attribute
+const LM_BATCHES = [500, 1000, 2000], LM_CARET = '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+const lmMenu = (cls, at) => `<button type="button" class="${cls} lmc" data-lmmenu aria-haspopup="menu" aria-label="Load a batch" data-tip="Load a batch">${LM_CARET}</button><div class="dmenu" role="menu">${LM_BATCHES.map(b => `<button type="button" role="menuitem" ${at(b)}>Load ${b.toLocaleString('en')}</button>`).join('')}</div>`;
+const lmFoot = (k, n, total) => `<div class="folded-note lm" data-lm="${k}" data-lmn="${n}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><span class="dwrap lmw"><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button>${lmMenu('lnk', b => `data-lmgo="${k}+${b}"`)}</span><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label></div>`;
 let lmIO = null;
 function lmWatch(app) {
     if (lmIO) { lmIO.disconnect(); lmIO = null; }
@@ -7063,12 +7066,12 @@ function lmWatch(app) {
 }
 async function lmMore(k) {
     const d = data;
-    // "Load 2,000": 20 pages of 100 per click, so a list of 100,000 never loads whole by accident; stops when the list's foot is gone (all in)
-    if (k.endsWith('+')) { const b = k.slice(0, -1); LOG.info('Load 2,000: ' + b); for (let i = 0; i < 20 && d === data && document.querySelector(`[data-lm="${b}"]`); i++) { await lmMore(b); if (LM_ERR.has(b)) break; } return; }
+    // a batch off the caret's menu ("k+500"): that many in pages of 100; stops when the list's foot is gone (all in)
+    const bm = /^(.+)\+(\d+)$/.exec(k);
+    if (bm) { const b = bm[1], np = Math.ceil(+bm[2] / 100); LOG.info(`Load ${bm[2]}: ${b}`); for (let i = 0; i < np && d === data && document.querySelector(`[data-lm="${b}"]`); i++) { await lmMore(b); if (LM_ERR.has(b)) break; } return; }
     if (!d || LM_BUSY.has(k)) return;
     LM_BUSY.add(k); LM_ERR.delete(k);
-    const b = document.querySelector(`[data-lmgo="${k}"]`), b2 = document.querySelector(`[data-lmgo="${k}+"]`);
-    if (b2) { b2.disabled = true; b2.textContent = 'Loading…'; }
+    const b = document.querySelector(`[data-lmgo="${k}"]`);
     if (b) { b.disabled = true; b.textContent = 'Loading…'; }
     LOG.debug('Load more: ' + k);
     try { await (k === 'recs' ? recsMore(d) : k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
@@ -7600,6 +7603,7 @@ function onClick(ev) {
     if (d.ffun) { const [sc, k] = d.ffun.split('\t'), f = FLT[sc], cur = f.q.trim(); f.open = true; f.q = (cur ? cur + ' ' : '') + k + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-fq="${sc}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
     if (d.tqcol) { const [k, c] = d.tqcol.split('\t'), cur = (TQ[k] || '').trim(); TQ[k] = (cur ? cur + ' ' : '') + c + ':'; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } return; }
     if (d.tqopen) { const k = d.tqopen; if (k in TQ) delete TQ[k]; else TQ[k] = ''; const y = scrollY; render(); scrollTo(0, y); const i = $(`[data-tq="${k}"]`); if (i) i.focus(); return; }
+    if ('lmmenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.aliases) { openAliases(); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -8331,7 +8335,6 @@ function histBursts(es) {
     }
     return out;
 }
-const H_BATCHES = [500, 1000, 2000], CARET = '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
 async function histLoad(n, all) {
     const d = data; if (d.busy || !d.more) return;
     d.busy = true; render();
@@ -8455,7 +8458,7 @@ function histPage(app, d) {
     }
     const cnt = k => d.edits.filter(e => e.st === k).length;
     // how much is loaded, and the buttons for more, sit at the bar's right end
-    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <span class="dwrap hlm"><button type="button" class="sk-b" data-hmore>Load more</button><button type="button" class="sk-b hlmc" data-hlmenu aria-haspopup="menu" aria-label="Load a batch" data-tip="Load a batch of edits">${CARET}</button><div class="dmenu" role="menu">${H_BATCHES.map(b => `<button type="button" role="menuitem" data-hmore="${b}">Load ${b.toLocaleString('en')}</button>`).join('')}</div></span>` : `All ${d.edits.length} edits`}</span>`;
+    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <span class="dwrap lmw hlm"><button type="button" class="sk-b" data-hmore>Load more</button>${lmMenu('sk-b', b => `data-hmore="${b}"`)}</span>` : `All ${d.edits.length} edits`}</span>`;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}${hload}</div>` + `<div class="hql">${[...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
     const en = histEntOf(d.id);
@@ -8469,7 +8472,7 @@ function histPage(app, d) {
         const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');
         if (g) { d.grp = S.hgrp = g.dataset.hgrp; d.open.clear(); save(); render(); }
         else if (s) { d.st = d.st === s.dataset.hst ? '' : s.dataset.hst; render(); }
-        else if (t.closest('[data-hlmenu]')) { const m = t.closest('[data-hlmenu]').nextElementSibling; m.classList.toggle('open'); }
+        else if (t.closest('[data-lmmenu]')) { const m = t.closest('[data-lmmenu]').nextElementSibling; m.classList.toggle('open'); }
         else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing, +t.closest('[data-hmore]').dataset.hmore || 0); }
         else if (h && !t.closest('a')) { const k = h.parentNode.dataset.hg; d.open.has(k) ? d.open.delete(k) : d.open.add(k);
             // the render redraws every group: the other groups keep the edits and runs open in them
