@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.170001
+// @version      2026.10.30.171501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2378,6 +2378,7 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .lab .cat{font-size:13px;font-weight:500;margin:0}
 button.tx{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);padding:4px 2px;border-bottom:2px solid transparent}
 button.tx:hover{color:var(--text)}
+button.tx.plcfg{font-size:17px;line-height:1;margin-left:4px}
 button.tx[aria-pressed=true]{color:var(--text);border-bottom-color:var(--accent)}
 button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .more>summary{cursor:pointer;color:var(--muted);font-size:14px}
@@ -3531,7 +3532,7 @@ function tracklist(r) {
     const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
     // open: arrows apart (expand); all open: arrows together (collapse)
     const rowsB = `<button class="ib" type="button" data-rows="${allOpen ? 0 : 1}" aria-label="${allOpen ? 'Close all tracks' : 'Open all tracks'}" data-tip="${allOpen ? 'Close all tracks' : 'Open all tracks\nShows every track\'s credits'}">${SVG(allOpen ? '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>' : '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>')}</button>`;
-    const plB = `<button class="ib" type="button" data-plcfg="1" aria-label="Platform icons" data-tip="Platform icons\nWhich platforms the tracklist shows, their order and size">${SVG('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>')}</button>`;
+    const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Platform icons" data-tip="Platform icons\nWhich platforms the tracklist shows, their order and size">${MBU_CFG_ICON}</button>`;
     const tools = `${rowsB}<span class="ed-div"></span><span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}

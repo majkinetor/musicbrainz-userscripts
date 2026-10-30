@@ -17,6 +17,7 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
   check(await pop.locator('[data-g=plSize]').count() === 3, 'it holds the icon sizes');
   await pop.locator('[data-g=plSize][data-k="22"]').click();
   check(await until(() => pop.locator('[data-g=plSize][data-k="22"][aria-pressed=true]').count(), n => n === 1) === 1, 'a size click applies and the popover stays');
+  await gear.locator('xpath=..').screenshot({ path: 'test-results/eh-gear.png' });
   await pop.screenshot({ path: 'test-results/eh-plpop.png' });
   await page.keyboard.press('Escape');
   check(await until(() => pop.count(), n => n === 0) === 0, 'Escape closes it');
