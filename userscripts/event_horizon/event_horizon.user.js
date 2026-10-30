@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.220000
+// @version      2026.10.30.224000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2282,7 +2282,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
 .rgc .rga{color:var(--muted)}
 .rls dd>.rq{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.rls dd>.rq>svg{flex:none;align-self:center;color:var(--muted)}.rls dd .uchips{display:flex;flex-wrap:wrap;gap:6px}
-.wka .wkr{display:grid;grid-template-columns:auto auto;gap:14px;justify-content:start;font-size:14px;line-height:1.5}.wka .wkr>span{color:var(--muted);min-width:64px}.wka .wkr .mono,.wka .wkr code{font-size:14px}.pop.wka{width:max-content;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.pop.wka .wkr{padding:2px 12px}
+.wka .wkr{display:grid;grid-template-columns:auto auto;gap:14px;justify-content:start;font-size:14px;line-height:1.5}.wka .wkr>span{color:var(--muted);min-width:64px}.wka .wkr .mono,.wka .wkr code{font-size:14px}.pop.wka{width:max-content;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.pop.wka .wkr{padding:2px 12px}.pop.wka .wkx{padding:2px 12px;font-size:13px;line-height:1.4;max-width:420px}
 .rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls .qk>.popwrap{right:auto;left:14px;bottom:-4px}.rls .qk>.uchip>span{margin-left:5px}.sec:has(.rls .pop:not([hidden])){position:relative;z-index:21}.rls .pop{z-index:40;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.rls .pop .row{align-items:center}.rls .pop .row>:first-child{flex:none}.rls .pop .row>span{min-width:0}.rls .pop .row small{display:block;font-size:10.5px;line-height:1.35;word-break:break-all;color:var(--muted)}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
 .secthead .rgt{font-weight:600}
 
@@ -3129,10 +3129,13 @@ const relActs = r => r && r.media && r.media.length && !r.media.some(m => discOk
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
     if (WORKS_TYPES.includes(type) && !actions.some(a => a[0] === 'works')) actions = [...actions, ['works', 'Works', 'Works', MK_WORK]];
+    if (EVENTS_TYPES.includes(type) && !actions.some(a => a[0] === 'events')) actions = [...actions, ['events', 'Events', 'Events', MK_EVENT]];
+    if (ARTISTS_TYPES.includes(type) && !actions.some(a => a[0] === 'artists')) actions = [...actions, ['artists', 'Artists', 'Artists', MK_CR]];
+    if (LABELS_TYPES.includes(type) && !actions.some(a => a[0] === 'labels')) actions = [...actions, ['labels', 'Labels', 'Labels', CI_TAG]];
     if (RECS_TYPES.includes(type) && !actions.some(a => a[0] === 'recordings')) actions = [...actions, ['recordings', 'Recordings', 'Recordings', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>']];
     if (RELS_TYPES.includes(type) && !actions.some(a => a[0] === 'relationships')) actions = [...actions, ['relationships', 'Relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>']];
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'recordings', 'works', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
-    const less = actions.filter(a => ['details', 'tags', 'recordings', 'works', 'discids'].includes(a[0]));
+    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'recordings', 'works', 'events', 'artists', 'labels', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const less = actions.filter(a => ['details', 'tags', 'recordings', 'works', 'events', 'artists', 'labels', 'discids'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
     const main = actions.filter(a => !less.includes(a));
     // the Releases tab sits in the row itself, before History
@@ -6276,12 +6279,26 @@ function tgTools(d) {
 const RECS_TYPES = ['artist', 'area', 'instrument'];
 // and with a Works tab: an artist's own, an area's by relationship
 const WORKS_TYPES = ['artist', 'area'];
+// and with an Events tab
+const EVENTS_TYPES = ['artist', 'area', 'place'];
+// and with Artists and Labels tabs (an instrument's Artists is on its own page)
+const ARTISTS_TYPES = ['area'];
+const LABELS_TYPES = ['area'];
 const RELS_TYPES = ['artist', 'label', 'area', 'instrument', 'place', 'series', 'event', 'release-group', 'recording', 'work'];
 const RELS_KINDS = { artist: 'Artists', label: 'Labels', area: 'Areas', instrument: 'Instruments', place: 'Places', series: 'Series', event: 'Events', work: 'Works', recording: 'Recordings', release: 'Releases', 'release-group': 'Release groups', url: 'Links', genre: 'Genres' };
 // a page's markup reduced to text and links to MusicBrainz's pages (an instrument in a phrase, an artist credit)
+let relsJ = 0;
 function relsSafe(n) {
     if (n.nodeType === 3) return esc(n.textContent);
-    if (n.nodeType !== 1 || /^(script|style)$/i.test(n.tagName)) return '';
+    if (n.nodeType === 1 && n.tagName === 'SCRIPT' && n.type === 'application/json') {
+        let j; try { j = JSON.parse(n.textContent); } catch { return ''; }
+        const xs = (j.relations || []).filter(r => r.entity && r.entity.gid).map(r => `<a href="${MB}/${esc(r.entity.entityType || 'artist')}/${esc(r.entity.gid)}">${esc(r.credit || r.entity.name)}</a>${r.entity.comment ? ` <span class="rga">(${esc(r.entity.comment)})</span>` : ''}${(r.roles || []).length ? ` <span class="rga">(${esc(r.roles.join(', '))})</span>` : ''}`);
+        // the first few, the rest behind the standard +n menu
+        if (xs.length <= 4) return xs.join('<br>');
+        const id = 'rlj' + (++relsJ);
+        return xs.slice(0, 3).join('<br>') + `<br><span class="popwrap"><button class="more" type="button" data-pop="${id}" aria-expanded="false" aria-label="${xs.length - 3} more">+${xs.length - 3}</button><div class="pop wka" id="pop-${id}" hidden><div class="h label">Artists</div>${xs.slice(3).map(x => `<div class="wkx">${x}</div>`).join('')}</div></span>`;
+    }
+    if (n.nodeType !== 1 || /^(script|style)$/i.test(n.tagName) || n.classList.contains('artist-roles-container')) return '';
     if (/^(ul|ol)$/i.test(n.tagName)) return [...n.children].map(relsSafe).filter(x => x.trim()).join('<br>');
     const inner = [...n.childNodes].map(relsSafe).join(''), h = n.tagName === 'A' && n.getAttribute('href');
     return h && h.startsWith('/') && !h.startsWith('//') ? `<a href="${MB}${esc(h)}">${inner}</a>` : inner;
@@ -6319,8 +6336,8 @@ function relsParse(html) {
         for (const tr of tb.querySelectorAll('tbody > tr')) {
             if (tr.classList.contains('subh')) { ph = tx(tr); continue; }
             // the title's cell is the one with MusicBrainz's entity marker (recordinglink, worklink, …)
-            const tds = [...tr.children], mk = tds.findIndex(td => td.querySelector('span[class$="link"]')), ti = mk >= 0 ? mk : tds.findIndex(td => td.querySelector('a[href^="/"]'));
-            const a = tds[ti] && tds[ti].querySelector('a[href^="/"]'); if (!a) continue;
+            const tds = [...tr.children], mk = tds.findIndex(td => td.querySelector('span[class$="link"]:not(.artist-roles-container *)')), ti = mk >= 0 ? mk : tds.findIndex(td => td.querySelector('a[href^="/"]'));
+            const a = tds[ti] && [...tds[ti].querySelectorAll('a[href^="/"]')].find(x => tx(x)); if (!a) continue;    // past an art icon's empty link
             apps.push({ ph, kind: relsKind(a.getAttribute('href')), href: a.getAttribute('href'), name: tx(a), ti, cells: tds.map(td => relsSafe(td).trim()), video: !!tds[ti].querySelector('.video') });
         }
         apps.cols = cols; apps.skip = skip;
@@ -6376,7 +6393,7 @@ async function recsMore(d) {
 function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
     const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
-    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode === 'works' ? 'Works · ' : d.mode ? 'Recordings · ' : 'Relationships · ') + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
+    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
     if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
     const n = relsN(t);
     if (!n) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
@@ -7599,6 +7616,14 @@ function navTo(href) {
     // an entity's works → "ewrks/<type>:<mbid>"
     const ew = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + WORKS_TYPES.join('|') + ')/(' + MBID.source + ')/works/?$', 'i'));
     if (ew) return 'ewrks/' + ew[1].toLowerCase() + ':' + ew[2].toLowerCase();
+    // an entity's events → "eevts/<type>:<mbid>"
+    const ev = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + EVENTS_TYPES.join('|') + ')/(' + MBID.source + ')/events/?$', 'i'));
+    if (ev) return 'eevts/' + ev[1].toLowerCase() + ':' + ev[2].toLowerCase();
+    // an area's artists and labels → "earts/<type>:<mbid>", "elabs/<type>:<mbid>"
+    const ea = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + ARTISTS_TYPES.join('|') + ')/(' + MBID.source + ')/artists/?$', 'i'));
+    if (ea) return 'earts/' + ea[1].toLowerCase() + ':' + ea[2].toLowerCase();
+    const el = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + LABELS_TYPES.join('|') + ')/(' + MBID.source + ')/labels/?$', 'i'));
+    if (el) return 'elabs/' + el[1].toLowerCase() + ':' + el[2].toLowerCase();
     // an editor's profile → "user/<name as in the path>"
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
@@ -7607,7 +7632,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + (d.mode === 'works' ? ' · Works' : d.mode ? ' · Recordings' : ' · Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -8890,7 +8915,7 @@ async function show(key, o = {}) {
         scrollTo(0, 0); render(); tagsLoad(n, key); if (data.dn) tagsLoad(n, key, true); return;
     }
     if (kind === 'erels') { data = { kind: 'rels', key, ent: id, q: '' }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
-    if (kind === 'erecs' || kind === 'ewrks') { data = { kind: 'rels', mode: kind === 'erecs' ? 'recordings' : 'works', key, ent: id, q: '', page: 1 }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
+    if (['erecs', 'ewrks', 'eevts', 'earts', 'elabs'].includes(kind)) { data = { kind: 'rels', mode: { erecs: 'recordings', ewrks: 'works', eevts: 'events', earts: 'artists', elabs: 'labels' }[kind], key, ent: id, q: '', page: 1 }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }

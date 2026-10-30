@@ -5,7 +5,7 @@ test.use({ gm: { name: 'Event Horizon' } });
 const MJ = 'f27ec8db-af05-4f36-916e-3d57f91ecf5e';
 
 test('Relationships routes cover the entities that have the tab', { tag: '@unit' }, async () => {
-  const src = await functionSource('event_horizon', ['MBID', 'RELS_TYPES', 'PAGE', 'navTo']);
+  const src = await functionSource('event_horizon', ['MBID', 'ARTISTS_TYPES', 'LABELS_TYPES', 'EVENTS_TYPES', 'WORKS_TYPES', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
   const location = { href: 'https://test.musicbrainz.org/', origin: 'https://test.musicbrainz.org' };
   const route = new Function('location', src + '; return navTo;')(location);
   for (const type of ['artist', 'label', 'area', 'instrument', 'place', 'series', 'event', 'release-group', 'recording', 'work']) {
@@ -32,7 +32,7 @@ test('an artist\'s relationships show as cards and tables', { tag: ['@sandbox', 
 });
 
 test('Recordings routes cover the artist, area and instrument', { tag: '@unit' }, async () => {
-  const src = await functionSource('event_horizon', ['MBID', 'WORKS_TYPES', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
+  const src = await functionSource('event_horizon', ['MBID', 'ARTISTS_TYPES', 'LABELS_TYPES', 'EVENTS_TYPES', 'WORKS_TYPES', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
   const location = { href: 'https://test.musicbrainz.org/', origin: 'https://test.musicbrainz.org' };
   const route = new Function('location', src + '; return navTo;')(location);
   for (const type of ['artist', 'area', 'instrument']) expect(route(`/${type}/${MJ}/recordings`)).toBe(`erecs/${type}:${MJ}`);
@@ -55,7 +55,7 @@ test('an artist\'s recordings show as a table that loads more', { tag: ['@sandbo
 });
 
 test('Works routes cover the artist and area', { tag: '@unit' }, async () => {
-  const src = await functionSource('event_horizon', ['MBID', 'WORKS_TYPES', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
+  const src = await functionSource('event_horizon', ['MBID', 'ARTISTS_TYPES', 'LABELS_TYPES', 'EVENTS_TYPES', 'WORKS_TYPES', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
   const location = { href: 'https://test.musicbrainz.org/', origin: 'https://test.musicbrainz.org' };
   const route = new Function('location', src + '; return navTo;')(location);
   for (const type of ['artist', 'area']) expect(route(`/${type}/${MJ}/works`)).toBe(`ewrks/${type}:${MJ}`);
@@ -74,4 +74,22 @@ test('an artist\'s works show as a table that loads more', { tag: ['@sandbox', '
   await attachShot(testInfo, page, 'works');
   await page.locator('#app [data-lmgo^="tab:ra"]:not([data-lmgo$="+"])').click();
   check(await until(rows, n => n > 100) > 100, 'Load more brings the next page');
+});
+
+test('Events routes cover the artist and area', { tag: '@unit' }, async () => {
+  const src = await functionSource('event_horizon', ['MBID', 'ARTISTS_TYPES', 'LABELS_TYPES', 'EVENTS_TYPES', 'WORKS_TYPES', 'RECS_TYPES', 'RELS_TYPES', 'PAGE', 'navTo']);
+  const location = { href: 'https://test.musicbrainz.org/', origin: 'https://test.musicbrainz.org' };
+  const route = new Function('location', src + '; return navTo;')(location);
+  for (const type of ['artist', 'area']) expect(route(`/${type}/${MJ}/events`)).toBe(`eevts/${type}:${MJ}`);
+});
+
+// an artist's Events page: MusicBrainz's table as EH's standard one
+test('an artist\'s events show as a table', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  await page.goto(`https://test.musicbrainz.org/artist/${MJ}/events`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await settled(page);
+  await inject('event_horizon');
+  check(await until(() => page.locator('#app #s-raevent tbody tr').count(), n => n > 5) > 5, 'the events are in a table');
+  check((await page.locator('#app .arthd .kicker').innerText()).toLowerCase().includes('events'), 'the kicker says Events');
+  await attachShot(testInfo, page, 'events');
 });
