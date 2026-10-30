@@ -51,7 +51,7 @@ Open a track to see its recording and work credits. The platforms it is on (Spot
 
 Which platforms show, in which order, and how big, are set with the gear beside the tracklist's **Show** toggles. Click a platform to show or hide it, drag it to reorder.
 
-Which facts the header shows, and what sits under the cover, are set with the gear at the right end of the header's divider line.
+Which facts the header shows (rating and genres among them), and whether other covers show, are set with the gear at the right end of the header's divider line.
 
 ## Releases and discography
 
