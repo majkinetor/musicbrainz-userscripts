@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.001000
+// @version      2026.10.31.002000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6401,7 +6401,7 @@ function relsApps(t, d = {}) {
         // MusicBrainz's columns, less those empty in every row of this kind
         const keep = t.cols.map((_, i) => i).filter(i => !(t.apps.skip || []).includes(i)).filter(i => i === xs[0].ti || xs.some(x => (x.cells[i] || '').replace(/<[^>]+>/g, '').trim()));
         const phs = xs.some(x => x.ph);
-        const cell = (x, i) => i === x.ti ? `${mkSvg((HM_KIND[k] || ['', MK_REC])[1])}<a href="${MB}${esc(x.href)}">${esc(x.name)}</a>${x.video ? ' <span class="rga">(video)</span>' : ''}` : x.cells[i] || '';
+        const cell = (x, i) => i === x.ti ? `${mkSvg((HM_KIND[k] || ['', MK_REC])[1]).replace("<svg ", "<svg style=\"margin-right:6px;vertical-align:-2px\" ")}<a href="${MB}${esc(x.href)}">${esc(x.name)}</a>${x.video ? ' <span class="rga">(video)</span>' : ''}` : x.cells[i] || '';
         const name = RELS_KINDS[k] || 'Appearances';
         const tx = { head: [...(phs ? ['Relationship'] : []), ...keep.map(i => esc(t.cols[i]))], rows: xs.map(x => [...(phs ? [esc(x.ph)] : []), ...keep.map(i => cell(x, i))]), more: !!d.mode && d.page < t.last, recs: true };
         return tabSect('ra' + k, d.mode ? name : 'Appearances · ' + name, tx, '', ART_URL[k] || k === 'artist' ? k : undefined);
