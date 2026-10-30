@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.211501
+// @version      2026.10.30.212501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8366,7 +8366,7 @@ function hdBody() {
     // in the header's order: the facts, then rating, aliases, genres, and the links last
     const fc = ([k, n]) => cfgChip('fact', k, S.facts.includes(k), n), ex = k => cfgChip('extra', k, S.extras.includes(k), k === 'tags' ? 'Tags' : 'Rating');
     return cfgRow('Info', FACTS.filter(x => x[0] !== 'links').map(fc).join('') + ex('rating') + cfgChip('noAliases', 'aliases', !S.noAliases, 'Aliases') + ex('tags') + fc(FACTS.find(x => x[0] === 'links')))
-        + `<div class="cr ckr"><button type="button" class="ck" data-g="thumbs" data-k="thumbs" role="checkbox" aria-checked="${S.thumbs}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.thumbs ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show other covers</button></div>`
+        + `<h3 class="plh">Cover image</h3><div class="cr ckr"><button type="button" class="ck" data-g="thumbs" data-k="thumbs" role="checkbox" aria-checked="${S.thumbs}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.thumbs ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show other covers</button></div>`
         + imgBody();   // the artists' pictures, as the artist page's gear sets them
 }
 function imgBody() {
