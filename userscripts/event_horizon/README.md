@@ -51,6 +51,8 @@ Open a track to see its recording and work credits. The platforms it is on (Spot
 
 Which platforms show, in which order, and how big, are set with the gear beside the tracklist's **Show** toggles. Click a platform to show or hide it, drag it to reorder.
 
+Which facts the header shows, and what sits under the cover, are set with the gear at the right end of the header's divider line.
+
 ## Releases and discography
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.

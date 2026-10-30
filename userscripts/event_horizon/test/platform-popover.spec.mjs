@@ -23,8 +23,8 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
   check(await until(() => pop.count(), n => n === 0) === 0, 'Escape closes it');
   await page.locator('[data-plcfg=hd]').click();
   check(await until(() => pop.locator('[data-g=fact]').count(), n => n > 0) > 0, 'the header gear opens the facts');
-  await pop.locator('[data-g=fact][data-k=mbid]').click();
-  check(await until(() => page.locator('.facts .wide').count(), n => n > 0) > 0, 'a fact click shows it in the header');
+  await pop.locator('[data-g=fact][data-k=asin]').click();
+  check(await until(() => pop.locator('[data-k=asin][aria-pressed=true]').count(), n => n === 1) === 1, 'a fact click applies');
   await page.locator('.facts-col').screenshot({ path: 'test-results/eh-hd.png' });
   await pop.screenshot({ path: 'test-results/eh-hdpop.png' });
   await page.keyboard.press('Escape');
