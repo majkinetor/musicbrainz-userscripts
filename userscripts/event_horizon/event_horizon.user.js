@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.183000
+// @version      2026.10.30.184500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2282,7 +2282,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
 .rgc .rga{color:var(--muted)}
 .rls dd>.rq{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.rls dd>.rq>svg{flex:none;align-self:center;color:var(--muted)}.rls dd .uchips{display:flex;flex-wrap:wrap;gap:6px}
-.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
+.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls .uchip{display:inline-flex;align-items:center;gap:6px}.rls .uchip>a:first-child{display:inline-flex;align-items:center;gap:6px}.rls-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.7;margin:0 1px}.rls-dot:hover{opacity:1;background:var(--accent,currentColor)}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
 .secthead .rgt{font-weight:600}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
@@ -6281,10 +6281,12 @@ function relsParse(html) {
     const cards = [...c.querySelectorAll('table.details')].map(t => {
         const rows = [...t.querySelectorAll(':scope > tbody > tr')].map(tr => {
             const th = tr.querySelector('th'), td = tr.querySelector('td'); if (!th || !td) return null;
-            const items = [], seg = () => ({ a: null, dis: '', rest: [] }); let cur = seg();
-            const end = () => { if (cur.a) items.push({ href: cur.a.getAttribute('href') || '', name: tx(cur.a), dis: cur.dis, extra: cur.rest.map(relsSafe).join('').replace(/\[\s*<a [^>]*>info<\/a>\s*\]/, '').trim() }); cur = seg(); };
+            const items = [], seg = () => ({ a: null, url: '', dis: '', rest: [] }); let cur = seg();
+            const end = () => { if (cur.url && !cur.a) cur.a = doc.createElement('a'); if (cur.a) items.push({ href: cur.url || cur.a.getAttribute('href') || '', name: cur.url || tx(cur.a), dis: cur.dis, extra: cur.rest.map(relsSafe).join('').replace(/\[\s*<a [^>]*>info<\/a>\s*\]/, '').trim() }); cur = seg(); };
             for (const n of td.childNodes) {
                 if (n.nodeName === 'BR') { end(); continue; }
+                if (!cur.a && !cur.url && n.nodeName !== 'A' && /^(https?:)?\/\/\S+$/.test(tx(n))) { cur.url = tx(n); continue; }
+                if (cur.url && !cur.a && n.nodeName === 'A' && tx(n) === 'info') { cur.a = n; continue; }
                 if (!cur.a && n.nodeName === 'A') { cur.a = n; continue; }
                 if (!cur.a && n.nodeType === 1 && n.querySelector && n.querySelector('a') && !n.classList.contains('comment')) { cur.a = n.querySelector('a'); continue; }
                 if (cur.a && n.nodeType === 1 && n.classList.contains('comment') && !cur.dis) { cur.dis = tx(n).replace(/^\(|\)$/g, ''); continue; }
@@ -6331,7 +6333,7 @@ const relsN = t => t.cards.reduce((s, c) => s + c.rows.reduce((x, r) => x + r.it
 function relsCard(c, i) {
     const n = c.rows.reduce((x, r) => x + r.items.length, 0), name = RELS_KINDS[c.kind] || 'Relationships';
     const ent = it => `<div class="rq">${c.kind === 'url' ? '' : mkSvg((HM_KIND[c.kind] || ['', ''])[1])}<a href="${esc(c.kind === 'url' ? it.href.replace(/^\/\//, 'https://') : MB + it.href)}"${c.kind === 'url' ? ' target="_blank" rel="noopener"' : ''}>${esc(it.name)}</a>${it.dis ? ` <span class="rga">(${esc(it.dis)})</span>` : ''}${it.extra ? ` <span class="rga">${it.extra}</span>` : ''}</div>`;
-    const url = (r) => `<span class="uchips">${platforms(r.items.map(it => ({ type: r.ph, url: it.href.replace(/^\/\//, 'https://') }))).map(p => p.urls.map(u => `<a class="uchip rq" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}">${icon(p, 16)}<span>${esc(p.name)}</span></a>`).join('')).join('')}</span>`;
+    const url = (r) => `<span class="uchips">${platforms(r.items.map(it => ({ type: r.ph, url: it.href.replace(/^\/\//, 'https://') }))).map(p => `<span class="uchip rq"><a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(p.urls[0].url)}">${icon(p, 16)}<span>${esc(p.name)}</span></a>${p.urls.slice(1).map((u, i) => `<a class="rls-dot" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}" aria-label="${esc(p.name)} link ${i + 2}"></a>`).join('')}</span>`).join('')}</span>`;
     const body = `<div class="card"><dl class="rgc rls">${c.rows.map(r => `<dt class="rqg">${r.ph}</dt><dd class="rqg">${c.kind === 'url' ? url(r) : r.items.map(ent).join('')}</dd>`).join('')}</dl></div>`;
     return sect('rl' + (c.kind || i), `${name} <span class="count">${fmtN(n)}</span>`, '', body, `<div class="folded-note">${fmtN(n)} relationship${n === 1 ? '' : 's'}</div>`);
 }
