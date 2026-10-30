@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.145758
+// @version      2026.10.30.145834
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3171,6 +3171,9 @@ function sect(id, title, tools, body, folded) {
     // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
     const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
     // a paged list's Auto sits in the header too, where it stays put while pages load below (majkinetor)
+    // with it, how many are in and "Load 2,000" (as History's), the same on every paged list
+    const lm = /data-lm="([^"]+)" data-lmn="(d+)"/.exec(body);
+    if (lm) tools = `<span class="ed-ld aside" data-tip="Sorting and filters cover only what is loaded so far">${lm[2]} loaded so far<button class="lnk" type="button" data-lmgo="${lm[1]}+">${LM_BUSY.has(lm[1]) ? 'Loading…' : 'Load 2,000'}</button></span>` + tools;
     if (body.includes('data-lm="')) tools = `<label class="lm-auto aside" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label>` + tools;
     return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
@@ -3414,10 +3417,7 @@ function edHtml(r, eds, count) {
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    // a paged list says how many are in, on the right, and takes 2,000 more at a click (as History's "Load 2,000")
-    const left = r.native ? r.more : paged && count > all.length;
-    const loaded = (paged || r.native) && left ? `<span class="ed-ld" data-tip="Sorting and filters cover only the releases loaded so far">${all.length} loaded so far<button class="lnk" type="button" data-lmgo="ed+">${LM_BUSY.has('ed') ? 'Loading…' : 'Load 2,000'}</button></span>` : '';
-    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}${loaded}</div>` + fltBar('ed', all);
+    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
     const tools = fltBtn('ed', all) + views;
     filters = filters.replace(fltBtn('ed', all), '').replace(views.replace('<span class="ed-div"></span>', ''), '');
     if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
@@ -6840,7 +6840,7 @@ function render(keepPop) {
 // a paged list's foot (#845): how many are in, "Load more", and Auto, which loads the next page as the foot nears the view;
 // one setting for every list. k names the list: 'ed' the releases, 'tab:<section>' a MusicBrainz table, 'ws:<section>' a ws/2 list
 const LM_ERR = new Set(), LM_BUSY = new Set(), WSX = {};
-const lmFoot = (k, n, total) => `<div class="folded-note lm" data-lm="${k}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label></div>`;
+const lmFoot = (k, n, total) => `<div class="folded-note lm" data-lm="${k}" data-lmn="${n}"><span>${total ? `${n} of ${total}` : `The first ${n}`}${LM_ERR.has(k) ? '. MusicBrainz didn\'t answer' : ''}</span><button class="lnk" type="button" data-lmgo="${k}">${LM_ERR.has(k) ? 'Try again' : 'Load more'}</button><label class="lm-auto" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label></div>`;
 let lmIO = null;
 function lmWatch(app) {
     if (lmIO) { lmIO.disconnect(); lmIO = null; }
@@ -6853,11 +6853,11 @@ function lmWatch(app) {
 }
 async function lmMore(k) {
     const d = data;
-    // "Load 2,000": a fixed batch of pages per click, so a label of 100,000 releases never loads whole by accident
-    if (k === 'ed+') { const cap = d.editions.length + 2000; LOG.info('Releases: loading 2,000 more'); for (let n = -1; d === data && d.editions.length < cap && d.editions.length > n && (d.kind === 'native-releases' ? d.more : d.edCount > d.editions.length);) { n = d.editions.length; await lmMore('ed'); if (LM_ERR.has('ed')) break; } return; }
+    // "Load 2,000": 20 pages of 100 per click, so a list of 100,000 never loads whole by accident; stops when the list's foot is gone (all in)
+    if (k.endsWith('+')) { const b = k.slice(0, -1); LOG.info('Load 2,000: ' + b); for (let i = 0; i < 20 && d === data && document.querySelector(`[data-lm="${b}"]`); i++) { await lmMore(b); if (LM_ERR.has(b)) break; } return; }
     if (!d || LM_BUSY.has(k)) return;
     LM_BUSY.add(k); LM_ERR.delete(k);
-    const b = document.querySelector(`[data-lmgo="${k}"]`), b2 = k === 'ed' && document.querySelector('[data-lmgo="ed+"]');
+    const b = document.querySelector(`[data-lmgo="${k}"]`), b2 = document.querySelector(`[data-lmgo="${k}+"]`);
     if (b2) { b2.disabled = true; b2.textContent = 'Loading…'; }
     if (b) { b.disabled = true; b.textContent = 'Loading…'; }
     LOG.debug('Load more: ' + k);
