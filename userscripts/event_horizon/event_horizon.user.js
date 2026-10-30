@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.205501
+// @version      2026.10.30.210501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6760,7 +6760,8 @@ function render(keepPop) {
     for (const im of app.querySelectorAll('img[data-artimg]')) im.addEventListener('error', () => { LOG.debug('artwork image failed to load', im.src); im.outerHTML = `<span class="art-miss"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>`; });
     const rc = app.querySelector('[data-relcover]');
     // a fresh upload has no thumbnail yet: the full image stands in, and later redraws start from it, not from a failed front-500
-    if (rc) rc.onerror = () => { if (rc.dataset.full && rc.src !== rc.dataset.full) { r.frontFull = true; rc.src = rc.dataset.full; return; } LOG.debug('release cover failed to load', r.id); r.frontFailed = true; rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
+    // a cover a redraw already replaced says nothing: its load was cut short, not refused
+    if (rc) rc.onerror = () => { if (!rc.isConnected) return; if (rc.dataset.full && rc.src !== rc.dataset.full) { r.frontFull = true; rc.src = rc.dataset.full; return; } LOG.debug('release cover failed to load', r.id); r.frontFailed = true; rc.outerHTML = relNoCover(r, fmtKind(r.media[0] && r.media[0].format)); };
     // a Commons picture that won't load: the instrument's mark
     const ii = app.querySelector('[data-insimg]');
     if (ii) ii.onerror = () => { ii.closest('.picw').outerHTML = `<div class="nocover">${bigMk(MK_INS)}</div>`; };
@@ -8363,7 +8364,7 @@ function plBody() {
 }
 function hdBody() {
     // in the header's order: the facts, then rating, aliases, genres, and the links last
-    const fc = ([k, n]) => cfgChip('fact', k, S.facts.includes(k), n), ex = k => cfgChip('extra', k, S.extras.includes(k), k === 'tags' ? 'Genres' : 'Rating');
+    const fc = ([k, n]) => cfgChip('fact', k, S.facts.includes(k), n), ex = k => cfgChip('extra', k, S.extras.includes(k), k === 'tags' ? 'Tags' : 'Rating');
     return cfgRow('Info', FACTS.filter(x => x[0] !== 'links').map(fc).join('') + ex('rating') + cfgChip('noAliases', 'aliases', !S.noAliases, 'Aliases') + ex('tags') + fc(FACTS.find(x => x[0] === 'links')))
         + `<div class="cr ckr"><button type="button" class="ck" data-g="thumbs" data-k="thumbs" role="checkbox" aria-checked="${S.thumbs}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.thumbs ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show other covers</button></div>`;
 }
