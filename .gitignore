@@ -24,7 +24,7 @@ dev/.github-credentials.json
 # Shared Playwright profile (logged-in MB session + IDB cache) reused by every
 # userscript test. Populate once with `node dev/test/login.mjs` (production and
 # sandbox). Never commit — it holds session cookies.
-/.pw-profile/
+/.pw-profile*/
 userscripts/credit_hoarder/_rp.mjs
 
 # Working screenshots taken while iterating on an issue. Throwaway by
