@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-30 12:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-30 12:12 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1967,7 +1967,7 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 | Column toggles above the tracklist         | on                         | **ISRC** · **Links** above the tracklist                                       |
 | Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
 | Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
-| Match                                      | off                        | runs **Match** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher shows the new ISRCs (⚡) and links (link icon) it found, ✓ when there are none, and the dock in Event Horizon their total (kept for a week) |
+| Auto match                                 | off (in the background)    | runs **Match** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher shows the new ISRCs (⚡) and links (link icon) it found, ✓ when there are none, and the dock in Event Horizon their total (kept for a week) |
 | Include slow platforms                     | on                         | in the background, Tidal too (about 1 s a track)                               |
 | Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
 | Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
