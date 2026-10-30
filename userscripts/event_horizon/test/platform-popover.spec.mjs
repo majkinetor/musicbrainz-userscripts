@@ -30,5 +30,6 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
   await page.keyboard.press('Escape');
   await page.evaluate(() => document.getElementById('eh-launch').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true })));
   await until(() => page.locator('#eh-cfg [data-tab]').count(), n => n > 0);
+  check(await page.locator('#eh-cfg [data-tab=release]').count() === 0, 'Settings has no Release tab');
   check(await page.locator('#eh-cfg [data-tab=platforms]').count() === 0, 'Settings has no Platforms tab');
 });
