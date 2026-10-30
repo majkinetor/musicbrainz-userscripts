@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.008000
+// @version      2026.10.31.009000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2324,7 +2324,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec]{color:var(--chip-text)!important}
 .kicker.pin-home{min-height:30px}.kicker.pin-home>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis}.kicker.pin-home .acts,#eh-pin .acts{flex:none}
-#eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:contain;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}
+#eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:contain;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}@media (max-width:700px){#eh-pin .pkk,#eh-pin .pby{display:none}#eh-pin .abm .abt{display:inline}}
 #eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
 .ib{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:none;color:var(--soft)!important;cursor:pointer;display:grid;place-items:center;position:relative}
@@ -7527,6 +7527,7 @@ function pinBar(app) {
     const home = document.createElement('span'); home.hidden = true; acts.before(home);
     // a shown bar takes the new action row at once: left to the observer, the row leaves the header a frame later and the page jumps
     if (wasOn) k.appendChild(acts);
+    if (wasOn) pinFold(acts, true);
     let first = true;
     pinIo = new IntersectionObserver(([e]) => {
         const pin = !e.isIntersecting && e.boundingClientRect.top < 0;
@@ -7536,10 +7537,25 @@ function pinBar(app) {
         // the section headers stick just under the bar (majkinetor)
         document.documentElement.style.setProperty('--eh-pin-h', pin ? bar.offsetHeight + 'px' : '0px');
         if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
+        pinFold(acts, pin);
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
     });
     pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
 }
+// on a phone the pinned bar has no room for the action row, so its links go into More (and back once the bar hides)
+const PIN_NARROW = matchMedia('(max-width:700px)');
+function pinFold(acts, pin) {
+    const fold = pin && PIN_NARROW.matches, moved = [...acts.querySelectorAll('a.ab[data-pinfold]')];
+    if (!fold) { for (const a of moved) { a.removeAttribute('data-pinfold'); acts.querySelector('[data-pinhome="' + a.dataset.pinidx + '"]')?.replaceWith(a); } acts.querySelector('.eh-more[data-pinmade]')?.remove(); return; }
+    if (moved.length) return;
+    const links = [...acts.querySelectorAll(':scope>a.ab:has(>span)')]; if (!links.length) return;
+    let more = acts.querySelector(':scope>.eh-more');
+    if (!more) { more = document.createElement('details'); more.className = 'abx eh-more'; more.dataset.pinmade = ''; more.innerHTML = `<summary class="ab" aria-label="More">${SVG('<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>')}</summary><span class="abm"></span>`; links[links.length - 1].after(more); }
+    const menu = more.querySelector('.abm');
+    links.forEach((a, i) => { const ph = document.createElement('span'); ph.hidden = true; ph.dataset.pinhome = i; a.before(ph); a.dataset.pinidx = i; a.dataset.pinfold = ''; });
+    menu.prepend(...links);
+}
+PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, bar.classList.contains('on')); });
 // lights the section at the top of the window
 function railSpy() {
     const rail = document.getElementById('eh-rail'); if (!rail || !ehOn) return;
