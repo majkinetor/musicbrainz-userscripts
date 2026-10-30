@@ -718,7 +718,7 @@ function mbRestackCorner(corner) {
     var row = mbuShared('cornerFlow') === 'row';
     var vv = window.visualViewport, gapX = 0, gapY = 0;
     if (vv) {
-        gapX = Math.max(0, right ? window.innerWidth - vv.offsetLeft - vv.width : vv.offsetLeft);
+        gapX = Math.max(0, right ? document.documentElement.clientWidth - vv.offsetLeft - vv.width : vv.offsetLeft);   // clientWidth, not innerWidth: a fixed element already sits inside the scrollbar
         gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
         var root = document.documentElement;
         if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
@@ -2203,7 +2203,7 @@ button{font:inherit;color:inherit}
 .wrap{max-width:var(--eh-w,1600px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 /* the dock's launchers stand in a column at the screen's edge: a page that reaches it keeps clear of them, with as much room
    on their left as on their right, the scrollbar's gutter (100vw - 100%) included; 100%, not 100vw, is what the page is centred in */
-:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) .wrap{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px + 100vw - 100%))}
+:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) .wrap{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 :root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] .wrap{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 h1,h2{text-wrap:balance}
@@ -7522,7 +7522,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1600px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
-:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) #page{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px + 100vw - 100%))}
+:root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) #page{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 :root[data-mbu-dock]:not([data-mbu-flow=row])[data-mbu-side=left] #page{padding-left:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
 :root[data-eh-rel] #page a{color:var(--link)}:root[data-eh-rel] #page a:hover{color:var(--link-hover)}
 :root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}

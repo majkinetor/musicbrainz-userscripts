@@ -588,7 +588,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         var row = mbuShared('cornerFlow') === 'row';
         var vv = window.visualViewport, gapX = 0, gapY = 0;
         if (vv) {
-            gapX = Math.max(0, right ? window.innerWidth - vv.offsetLeft - vv.width : vv.offsetLeft);
+            gapX = Math.max(0, right ? document.documentElement.clientWidth - vv.offsetLeft - vv.width : vv.offsetLeft);   // clientWidth, not innerWidth: a fixed element already sits inside the scrollbar
             gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
             var root = document.documentElement;
             if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy
