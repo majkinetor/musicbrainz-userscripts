@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.150727
+// @version      2026.10.30.180000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5032,10 +5032,10 @@ const mbuAliasEditor = (() => {
     function aliasOpts(sel) { return sel ? [...sel.options].map(o => ({ v: o.value, t: o.textContent.trim() })) : []; }
 
     // the /aliases page carries each alias's id (ws/2 doesn't); its locale and type cells are the names
-    // MusicBrainz shows, mapped back to codes through the add form's own selects
-    async function aliasLoad(ent, gid, locales, types) {
-      const r = await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/aliases', { credentials: 'include' });
-      const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+    // MusicBrainz shows, mapped back to codes through the add form's own selects; on the aliases page
+    // itself the caller passes that page, which saves fetching it again
+    async function aliasLoad(ent, gid, locales, types, page) {
+      const doc = page || new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/aliases', { credentials: 'include' })).text(), 'text/html');
       const rows = [];
       for (const tr of doc.querySelectorAll('table.tbl tbody tr')) {
         const a = tr.querySelector('a[href*="/alias/"][href$="/edit"]'); if (!a) continue;
@@ -5327,7 +5327,7 @@ const mbuAliasEditor = (() => {
         sync();
       };
       try {
-        for (const r of await aliasLoad(ent, gid, locales, types)) { r.orig = key(r); addRow(r); }
+        for (const r of await aliasLoad(ent, gid, locales, types, o.doc)) { r.orig = key(r); addRow(r); }
       } catch (e) { Log.warn('could not load the aliases', e.message); msg.textContent = 'Could not load the existing aliases'; }
       // a seed in the URL fills the first row; MusicBrainz's own form arrives with the entity's name typed in, which isn't one
       if (o.seed) addRow(filled(o.seed, form.querySelector('input[name="edit-alias.sort_name"]')?.value || ''));

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.29.170001
+// @version      2026.10.30.180000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -16070,7 +16070,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (!form) return;
     const seeded = !list && new URLSearchParams(location.search).has('edit-alias.name') ? form.querySelector('input[name="edit-alias.name"]').value.trim() : '';
     await mbuAliasEditor.open({
-      ent, gid, origin: ORIGIN, form, fetch: mbWebFetch, seed: seeded,
+      ent, gid, origin: ORIGIN, form, fetch: mbWebFetch, seed: seeded, doc: list ? document : null,
       guess: n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent }),
       log: Log.cat('Alias'), toast,
       mount: box => {
@@ -16102,10 +16102,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       function aliasOpts(sel) { return sel ? [...sel.options].map(o => ({ v: o.value, t: o.textContent.trim() })) : []; }
 
       // the /aliases page carries each alias's id (ws/2 doesn't); its locale and type cells are the names
-      // MusicBrainz shows, mapped back to codes through the add form's own selects
-      async function aliasLoad(ent, gid, locales, types) {
-        const r = await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/aliases', { credentials: 'include' });
-        const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+      // MusicBrainz shows, mapped back to codes through the add form's own selects; on the aliases page
+      // itself the caller passes that page, which saves fetching it again
+      async function aliasLoad(ent, gid, locales, types, page) {
+        const doc = page || new DOMParser().parseFromString(await (await fetchMb(ORIGIN + '/' + ent + '/' + gid + '/aliases', { credentials: 'include' })).text(), 'text/html');
         const rows = [];
         for (const tr of doc.querySelectorAll('table.tbl tbody tr')) {
           const a = tr.querySelector('a[href*="/alias/"][href$="/edit"]'); if (!a) continue;
@@ -16397,7 +16397,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           sync();
         };
         try {
-          for (const r of await aliasLoad(ent, gid, locales, types)) { r.orig = key(r); addRow(r); }
+          for (const r of await aliasLoad(ent, gid, locales, types, o.doc)) { r.orig = key(r); addRow(r); }
         } catch (e) { Log.warn('could not load the aliases', e.message); msg.textContent = 'Could not load the existing aliases'; }
         // a seed in the URL fills the first row; MusicBrainz's own form arrives with the entity's name typed in, which isn't one
         if (o.seed) addRow(filled(o.seed, form.querySelector('input[name="edit-alias.sort_name"]')?.value || ''));
