@@ -9,7 +9,7 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
   await page.goto('https://test.musicbrainz.org/release/' + id);
   await inject('event_horizon');
   await until(() => page.locator('.tr[data-row]').count(), n => n >= 2);
-  const gear = page.locator('[data-plcfg]');
+  const gear = page.locator('[data-plcfg="1"]');
   check(await gear.count() === 1, 'the tracklist has one platform gear');
   await gear.click();
   const pop = page.locator('#eh-plcfg');
@@ -21,6 +21,13 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
   await pop.screenshot({ path: 'test-results/eh-plpop.png' });
   await page.keyboard.press('Escape');
   check(await until(() => pop.count(), n => n === 0) === 0, 'Escape closes it');
+  await page.locator('[data-plcfg=hd]').click();
+  check(await until(() => pop.locator('[data-g=fact]').count(), n => n > 0) > 0, 'the header gear opens the facts');
+  await pop.locator('[data-g=fact][data-k=mbid]').click();
+  check(await until(() => page.locator('.facts .wide').count(), n => n > 0) > 0, 'a fact click shows it in the header');
+  await page.locator('.facts-col').screenshot({ path: 'test-results/eh-hd.png' });
+  await pop.screenshot({ path: 'test-results/eh-hdpop.png' });
+  await page.keyboard.press('Escape');
   await page.evaluate(() => document.getElementById('eh-launch').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true })));
   await until(() => page.locator('#eh-cfg [data-tab]').count(), n => n > 0);
   check(await page.locator('#eh-cfg [data-tab=platforms]').count() === 0, 'Settings has no Platforms tab');

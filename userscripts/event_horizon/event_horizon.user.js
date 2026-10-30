@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.181001
+// @version      2026.10.30.190001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2367,7 +2367,9 @@ h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;lette
 .hshr{padding:0 12px 8px 36px;font-size:13px}.hshr .hnote{margin-top:4px}.hnh{font-size:12px;color:var(--muted);margin-bottom:3px}.hnh a{font-weight:600}.hvt{display:inline-block;padding:0 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.6;background:var(--surface);color:var(--soft)}.hvt.yes,.hvt.approve{color:#2e9e5b;background:color-mix(in srgb,#2e9e5b 16%,transparent)}.hvt.no{color:#d64545;background:color-mix(in srgb,#d64545 16%,transparent)}.hnt{white-space:normal;overflow-wrap:anywhere}
 .hld{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px;margin-left:6px}.hld .sk-b{padding:3px 10px;font-size:12px}.hmore{display:flex;gap:10px;align-items:center;justify-content:center;padding:14px;color:var(--muted);font-size:13px}
 .arthd{margin:0 0 -16px;display:flex;gap:20px;align-items:center}.arthd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}.arthd>.rhcv[hidden]{display:none}.arthd>.rhtx{flex:1;min-width:0}.arthd .kicker.label{font-size:10.5px}.arthd h1{margin:14px 0 10px}.arthd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}.arthd .ab.on svg{stroke:#fff}.arthd h1 a{color:inherit;text-decoration:none}.arthd h1 a:hover{text-decoration:underline}
-.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
+.facts{position:relative;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px 24px;align-items:start;border-top:1px solid var(--border);padding-top:18px;margin-top:6px}
+.facts>button.hdcfg{position:absolute;top:4px;right:0;margin:0;opacity:.35;transition:opacity .15s}
+.facts-col:hover .facts>button.hdcfg,.facts>button.hdcfg:focus-visible{opacity:1}
 .facts>div{min-width:0}
 .facts .v{margin-top:4px;font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:6px}
 .facts .sub{font-size:13px;font-weight:500;color:var(--muted)}
@@ -3182,7 +3184,7 @@ function facts(r) {
     // none (only the pencil) take one cell, not a row
     const ks = FACTS.map(([k]) => k).filter(k => S.facts.includes(k) && F[k][1]), li = ks.indexOf('links');
     if (F.aliases[1]) ks.splice(li < 0 ? ks.length : li, 0, 'aliases');
-    return `<div class="facts">${ks.map(k => `<div${k === 'links' || k === 'mbid' || k === 'aliases' && r.aliases.length ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
+    return `<div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="hd" aria-label="Header settings" data-tip="Header settings\nWhich facts the header shows, and what sits under the cover">${MBU_CFG_ICON}</button>${ks.map(k => `<div${k === 'links' || k === 'mbid' || k === 'aliases' && r.aliases.length ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
 function heroFacts(app) {
     const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
@@ -7332,7 +7334,7 @@ function onClick(ev) {
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.aliases) { openAliases(); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = TSORT[sid] || []; TSORT[sid] = t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []; const y = scrollY; render(); scrollTo(0, y); return; }
-    if (d.plcfg) { openPlCfg(b); return; }
+    if (d.plcfg) { openPlCfg(b, d.plcfg === 'hd'); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
@@ -8356,12 +8358,15 @@ function plBody() {
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
             + row('Visible', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
 }
+function hdBody() {
+    return cfgRow('Info', FACTS.map(([k, n]) => cfgChip('fact', k, S.facts.includes(k), n)).join(''))
+        + cfgRow('Under the cover', cfgChip('thumbs', 'thumbs', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => cfgChip('extra', k, S.extras.includes(k), n)).join(''));
+}
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
     const tabs = [['release', 'Release'], ['artist', 'Artist'], ['general', 'General']];
     const panes = {
-        release: row('Info', FACTS.map(([k, n]) => chip('fact', k, S.facts.includes(k), n)).join(''))
-            + row('Under the cover', chip('thumbs', 'thumbs', S.thumbs, 'Other covers') + [['rating', 'Rating'], ['tags', 'Genres']].map(([k, n]) => chip('extra', k, S.extras.includes(k), n)).join('')),
+        release: hdBody(),
         artist: row('Images from', imgOrder().map(k => { const off = S.imgOff.includes(k), i = imgOrder().filter(x => !S.imgOff.includes(x)).indexOf(k); return `<button type="button" class="chip p" data-g="imgP" data-k="${k}" aria-pressed="${!off}" data-tip="${off ? 'Not used' : i ? 'Tried ' + (i + 1) + (i === 1 ? 'nd' : i === 2 ? 'rd' : 'th') : 'Shown first'}
 Click to ${off ? 'use' : 'turn off'}, drag to reorder">${stIcon(k, 16)}${esc((IMG_PROV.find(x => x[0] === k) || [k, k])[1])}${off ? '' : `<span class="ord">${i + 1}</span>`}</button>`; }).join(''), "Where an artist's picture or a label's logo comes from; clicking the picture shows the next"),
         general: row('Menu titles', chip('menuTitles', 'menuTitles', S.menuTitles, 'Show', 'Show text beside header menu icons\nOn: icons and titles\nOff: icons only'))
@@ -8382,16 +8387,17 @@ function openCfg() {
     panel.querySelector('.mbu-cfg-log').onclick = () => { ov.remove(); LOG.open(); };
     cfgWire(panel, b, cfgBody);
 }
-// the tracklist's platform popover, under its gear
-function openPlCfg(btn) {
-    const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); return; }
+// the tracklist's platform popover, or the header's, under its gear
+function openPlCfg(btn, hd) {
+    const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); if (old.dataset.hd === String(!!hd)) return; }
     const pop = document.createElement('div'); pop.id = 'eh-plcfg'; pop.className = 'eh-cfg eh-plpop mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Platform icons');
-    pop.innerHTML = `<h3 class="plh">Platforms</h3><div class="eh-cfg-b">${plBody()}</div>`;
+    pop.dataset.hd = String(!!hd); if (hd) pop.setAttribute('aria-label', 'Header settings');
+    pop.innerHTML = `<h3 class="plh">${hd ? 'Header' : 'Platforms'}</h3><div class="eh-cfg-b">${(hd ? hdBody : plBody)()}</div>`;
     document.documentElement.append(pop);
     const r = btn.getBoundingClientRect(), w = pop.offsetWidth;
     pop.style.left = (scrollX + Math.max(8, Math.min(r.right - w, innerWidth - w - 8))) + 'px'; pop.style.top = (scrollY + r.bottom + 6) + 'px';
     mbuDismissOn(pop, () => pop.remove(), { ignore: '[data-plcfg]' });
-    cfgWire(pop, pop.querySelector('.eh-cfg-b'), plBody);
+    cfgWire(pop, pop.querySelector('.eh-cfg-b'), hd ? hdBody : plBody);
 }
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
