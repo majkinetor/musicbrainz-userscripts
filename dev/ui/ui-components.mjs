@@ -245,7 +245,10 @@ const CSS = [
     '.mbu-ov-x{flex:0 0 auto;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;',
     'font-size:15px;line-height:1;cursor:pointer;color:var(--mbu-text-dim);background:none;border:none;border-radius:var(--mbu-radius)}',
     '.mbu-ov-x:hover{background:var(--mbu-bg-hover);color:var(--mbu-text)}',
-    '.mbu-ov-body{flex:1 1 auto;overflow:auto;padding:14px 16px}',
+    '.mbu-ov-body{flex:1 1 auto;overflow:auto;scrollbar-gutter:stable;padding:14px 16px}',
+    // one scrollbar look in every window: thin, a soft thumb on no track (Falcon's queue had it first);
+    // :where keeps it at zero specificity, so a window's own scrollbar rule still wins
+    ':where(' + ROOTS.join(',') + '),' + scoped('*') + '{scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}',
 
 
     // Placeholders — muted AND italic, so a hint can never be mistaken for typed
