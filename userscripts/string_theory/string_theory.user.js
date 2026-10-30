@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.174214
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.30.180000, art_station 2026.10.29.235800, credit_hoarder 2026.10.30.135221, event_horizon 2026.10.30.180000, falcon 2026.10.29.235901, first_contact 2026.10.29.092022, fusion 2026.10.29.235901, group_therapy 2026.10.30.160000, isrc_scout 2026.10.30.140000, mammoth 2026.10.29.092022, mission_control 2026.10.30.140245, platform_check 2026.10.30.134830). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.30.174244
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.30.180000, art_station 2026.10.29.235800, credit_hoarder 2026.10.30.135221, event_horizon 2026.10.30.181500, falcon 2026.10.29.235901, first_contact 2026.10.29.092022, fusion 2026.10.29.235901, group_therapy 2026.10.30.160000, isrc_scout 2026.10.30.140000, mammoth 2026.10.29.092022, mission_control 2026.10.30.140245, platform_check 2026.10.30.134830). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -185,8 +185,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.30.174214 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.30.180000\n  · Art Station v2026.10.29.235800\n  · Credit Hoarder v2026.10.30.135221\n  · Event Horizon v2026.10.30.180000\n  · Falcon v2026.10.29.235901\n  · First Contact v2026.10.29.092022\n  · Fusion v2026.10.29.235901\n  · Group Therapy v2026.10.30.160000\n  · ISRC Scout v2026.10.30.140000\n  · Mammoth v2026.10.29.092022\n  · Mission Control v2026.10.30.140245\n  · Platform Check v2026.10.30.134830");
+  console.log('%c String Theory %c v2026.10.30.174244 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.30.180000\n  · Art Station v2026.10.29.235800\n  · Credit Hoarder v2026.10.30.135221\n  · Event Horizon v2026.10.30.181500\n  · Falcon v2026.10.29.235901\n  · First Contact v2026.10.29.092022\n  · Fusion v2026.10.29.235901\n  · Group Therapy v2026.10.30.160000\n  · ISRC Scout v2026.10.30.140000\n  · Mammoth v2026.10.29.092022\n  · Mission Control v2026.10.30.140245\n  · Platform Check v2026.10.30.134830");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -196,7 +196,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.30.180000"],["art_station","Art Station","2026.10.29.235800"],["credit_hoarder","Credit Hoarder","2026.10.30.135221"],["event_horizon","Event Horizon","2026.10.30.180000"],["falcon","Falcon","2026.10.29.235901"],["first_contact","First Contact","2026.10.29.092022"],["fusion","Fusion","2026.10.29.235901"],["group_therapy","Group Therapy","2026.10.30.160000"],["isrc_scout","ISRC Scout","2026.10.30.140000"],["mammoth","Mammoth","2026.10.29.092022"],["mission_control","Mission Control","2026.10.30.140245"],["platform_check","Platform Check","2026.10.30.134830"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.30.180000"],["art_station","Art Station","2026.10.29.235800"],["credit_hoarder","Credit Hoarder","2026.10.30.135221"],["event_horizon","Event Horizon","2026.10.30.181500"],["falcon","Falcon","2026.10.29.235901"],["first_contact","First Contact","2026.10.29.092022"],["fusion","Fusion","2026.10.29.235901"],["group_therapy","Group Therapy","2026.10.30.160000"],["isrc_scout","ISRC Scout","2026.10.30.140000"],["mammoth","Mammoth","2026.10.29.092022"],["mission_control","Mission Control","2026.10.30.140245"],["platform_check","Platform Check","2026.10.30.134830"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -36957,7 +36957,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.30.180000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.30.180000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.30.181500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.30.181500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -37215,6 +37215,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .rgc dt{text-align:right;color:var(--muted);font-weight:600}
 .rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
 .rgc .rga{color:var(--muted)}
+.rls dd>.rq{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.rls dd>.rq>svg{flex:none;align-self:center;color:var(--muted)}.rls dd .uchips{display:flex;flex-wrap:wrap;gap:6px}
+.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
 .secthead .rgt{font-weight:600}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
@@ -38059,8 +38061,9 @@ const relActs = r => r && r.media && r.media.length && !r.media.some(m => discOk
 // actions keep their labels in More even when header menu titles are off.
 function actionRow(actions, type, id, active = '') {
     // More's items show their label, so they carry no tooltip (majkinetor)
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
-    const less = actions.filter(a => ['details', 'tags', 'discids'].includes(a[0]));
+    if (RELS_TYPES.includes(type) && !actions.some(a => a[0] === 'relationships')) actions = [...actions, ['relationships', 'Relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>']];
+    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'relationships', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const less = actions.filter(a => ['details', 'tags', 'relationships', 'discids'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
     const main = actions.filter(a => !less.includes(a));
     // the Releases tab sits in the row itself, before History
@@ -39562,6 +39565,116 @@ function tgTools(d) {
         + (d.ent ? '' : `<button type="button" class="tg-sw" role="switch" data-tgset="dn:${d.dn ? 0 : 1}" aria-checked="${d.dn}"><u></u>Downvotes</button>`)
         + `<span class="seg tg-vw" role="group" aria-label="View">${TG_VIEWS.map(([v, t]) => `<button type="button" data-tgset="view:${v}" aria-pressed="${d.view === v}" aria-label="${t}" data-tip="${t}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TG_IC[v]}</svg></button>`).join('')}</span></div>`;
 }
+// an entity's Relationships page → "erels/<type>:<mbid>": MusicBrainz's own page read (its phrases, dates and credits as it
+// words them), drawn as cards, one per kind of entity, and its Appearances as tables, one per kind
+const RELS_TYPES = ['artist', 'label', 'area', 'instrument', 'place', 'series', 'event', 'release-group', 'recording', 'work'];
+const RELS_KINDS = { artist: 'Artists', label: 'Labels', area: 'Areas', instrument: 'Instruments', place: 'Places', series: 'Series', event: 'Events', work: 'Works', recording: 'Recordings', release: 'Releases', 'release-group': 'Release groups', url: 'Links', genre: 'Genres' };
+// a page's markup reduced to text and links to MusicBrainz's pages (an instrument in a phrase, an artist credit)
+function relsSafe(n) {
+    if (n.nodeType === 3) return esc(n.textContent);
+    if (n.nodeType !== 1 || /^(script|style)$/i.test(n.tagName)) return '';
+    const inner = [...n.childNodes].map(relsSafe).join(''), h = n.tagName === 'A' && n.getAttribute('href');
+    return h && h.startsWith('/') && !h.startsWith('//') ? `<a href="${MB}${esc(h)}">${inner}</a>` : inner;
+}
+const relsKind = h => !h ? '' : /^\/[a-z-]+\//.test(h) ? h.split('/')[1] : /^(https?:)?\/\//.test(h) ? 'url' : '';
+function relsParse(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html'), c = doc.querySelector('#content') || doc.body, tx = e => (e ? e.textContent : '').replace(/\s+/g, ' ').trim();
+    const h1 = c.querySelector('h1'), hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
+    // each table.details is one kind of entity: a row is a phrase and what it relates to, one per line
+    const cards = [...c.querySelectorAll('table.details')].map(t => {
+        const rows = [...t.querySelectorAll(':scope > tbody > tr')].map(tr => {
+            const th = tr.querySelector('th'), td = tr.querySelector('td'); if (!th || !td) return null;
+            const items = [], seg = () => ({ a: null, dis: '', rest: [] }); let cur = seg();
+            const end = () => { if (cur.a) items.push({ href: cur.a.getAttribute('href') || '', name: tx(cur.a), dis: cur.dis, extra: cur.rest.map(relsSafe).join('').replace(/\[\s*<a [^>]*>info<\/a>\s*\]/, '').trim() }); cur = seg(); };
+            for (const n of td.childNodes) {
+                if (n.nodeName === 'BR') { end(); continue; }
+                if (!cur.a && n.nodeName === 'A') { cur.a = n; continue; }
+                if (!cur.a && n.nodeType === 1 && n.querySelector && n.querySelector('a') && !n.classList.contains('comment')) { cur.a = n.querySelector('a'); continue; }
+                if (cur.a && n.nodeType === 1 && n.classList.contains('comment') && !cur.dis) { cur.dis = tx(n).replace(/^\(|\)$/g, ''); continue; }
+                if (cur.a) cur.rest.push(n);
+            }
+            end();
+            return { ph: relsSafe(th).trim().replace(/:\s*$/, ''), items };
+        }).filter(r => r && r.items.length);
+        const k = rows.length && relsKind(rows[0].items[0].href);
+        return { kind: k, rows };
+    }).filter(x => x.rows.length);
+    // the Appearances table: a sub-heading row names the phrase; each row's title links what it is
+    const tb = c.querySelector('table.tbl'), apps = [];
+    if (tb) {
+        const cols = [...tb.querySelectorAll('thead th')].map(tx);
+        let ph = '';
+        for (const tr of tb.querySelectorAll('tbody > tr')) {
+            if (tr.classList.contains('subh')) { ph = tx(tr); continue; }
+            // the title's cell is the one with MusicBrainz's entity marker (recordinglink, worklink, …)
+            const tds = [...tr.children], mk = tds.findIndex(td => td.querySelector('span[class$="link"]')), ti = mk >= 0 ? mk : tds.findIndex(td => td.querySelector('a[href^="/"]'));
+            const a = tds[ti] && tds[ti].querySelector('a[href^="/"]'); if (!a) continue;
+            apps.push({ ph, kind: relsKind(a.getAttribute('href')), href: a.getAttribute('href'), name: tx(a), ti, cells: tds.map(td => relsSafe(td).trim()), video: !!tds[ti].querySelector('.video') });
+        }
+        apps.cols = cols;
+    }
+    return { name: hn ? tx(hn) : tx(h1), dis: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', cards, apps, cols: tb ? apps.cols : [] };
+}
+async function relsLoad(n, key) {
+    const d = data, ent = key.slice(key.indexOf('/') + 1), [ty, eid] = ent.split(':');
+    try {
+        let html;
+        if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { const r = await mbnFetch(`${MB}/${ty}/${eid}/relationships`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const t = relsParse(html);
+        LOG.debug(`Relationships of ${ty} ${eid}: ${t.cards.reduce((s, c) => s + c.rows.reduce((x, r) => x + r.items.length, 0), 0)} on cards, ${t.apps.length} appearances`);
+        if (n === showing && data === d) { d.t = t; d.err = ''; render(); }
+        if ((ty === 'artist' || ty === 'label') && ARTIMG.cached(eid) === undefined) ws(`${ty}/${eid}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource)).then(ls => ARTIMG.findAll(eid, ls)).then(x => { if (x[0] && n === showing && data === d) { d.img = x[0].src; render(); } }).catch(() => {});
+    } catch (e) {
+        LOG.err('Loading the relationships failed: ' + e.message);
+        if (n === showing && data === d) { d.err = e.message; render(); }
+    }
+}
+const relsN = t => t.cards.reduce((s, c) => s + c.rows.reduce((x, r) => x + r.items.length, 0), 0) + t.apps.length;
+function relsCard(c, i) {
+    const n = c.rows.reduce((x, r) => x + r.items.length, 0), name = RELS_KINDS[c.kind] || 'Relationships';
+    const ent = it => `<div class="rq">${c.kind === 'url' ? '' : mkSvg((HM_KIND[c.kind] || ['', ''])[1])}<a href="${esc(c.kind === 'url' ? it.href.replace(/^\/\//, 'https://') : MB + it.href)}"${c.kind === 'url' ? ' target="_blank" rel="noopener"' : ''}>${esc(it.name)}</a>${it.dis ? ` <span class="rga">(${esc(it.dis)})</span>` : ''}${it.extra ? ` <span class="rga">${it.extra}</span>` : ''}</div>`;
+    const url = (r) => `<span class="uchips">${platforms(r.items.map(it => ({ type: r.ph, url: it.href.replace(/^\/\//, 'https://') }))).map(p => p.urls.map(u => `<a class="uchip rq" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}">${icon(p, 16)}<span>${esc(p.name)}</span></a>`).join('')).join('')}</span>`;
+    const body = `<div class="card"><dl class="rgc rls">${c.rows.map(r => `<dt class="rqg">${r.ph}</dt><dd class="rqg">${c.kind === 'url' ? url(r) : r.items.map(ent).join('')}</dd>`).join('')}</dl></div>`;
+    return sect('rl' + (c.kind || i), `${name} <span class="count">${fmtN(n)}</span>`, '', body, `<div class="folded-note">${fmtN(n)} relationship${n === 1 ? '' : 's'}</div>`);
+}
+function relsApps(t) {
+    const by = new Map(); for (const a of t.apps) { const l = by.get(a.kind) || []; l.push(a); by.set(a.kind, l); }
+    return [...by].map(([k, xs]) => {
+        // MusicBrainz's columns, less those empty in every row of this kind
+        const keep = t.cols.map((_, i) => i).filter(i => i === xs[0].ti || xs.some(x => (x.cells[i] || '').replace(/<[^>]+>/g, '').trim()));
+        const row = x => `<tr class="rq"><td class="rls-ph">${esc(x.ph)}</td>${keep.map(i => i === x.ti ? `<td>${mkSvg((HM_KIND[k] || ['', MK_REC])[1])}<a href="${MB}${esc(x.href)}">${esc(x.name)}</a>${x.video ? ' <span class="rga">(video)</span>' : ''}</td>` : `<td>${x.cells[i] || ''}</td>`).join('')}</tr>`;
+        const name = RELS_KINDS[k] || 'Appearances';
+        return sect('ra' + k, `Appearances · ${name} <span class="count">${fmtN(xs.length)}</span>`, '', `<div class="ed-tw"><table class="ed-t rls-t"><thead><tr><th>Relationship</th>${keep.map(i => `<th>${esc(t.cols[i])}</th>`).join('')}</tr></thead><tbody>${xs.map(row).join('')}</tbody></table></div>`, `<div class="folded-note">${fmtN(xs.length)} appearance${xs.length === 1 ? '' : 's'}</div>`);
+    }).join('');
+}
+function relsHtml(d) {
+    const t = d.t, [ty, eid] = d.ent.split(':');
+    const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, 'relationships');
+    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Relationships · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
+    if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : 'Loading the relationships…'}</p>`;
+    const n = relsN(t);
+    if (!n) return head + '<p class="hm-none">No relationships.</p>';
+    const bar = `<div class="tg-bar rls-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="rls-q" value="${esc(d.q || '')}" placeholder="Filter ${fmtN(n)} relationships" aria-label="Filter relationships" autocomplete="off"></span><span class="fn aside"></span></div>`;
+    return head + bar + t.cards.map(relsCard).join('') + relsApps(t);
+}
+// the filter hides what doesn't hold it, in place: a phrase with nothing left goes, a section with nothing left folds away
+function relsFilter(app) {
+    const q = ((data && data.q) || '').trim().toLowerCase(); let shown = 0, all = 0;
+    for (const s of app.querySelectorAll('section.sec')) {
+        let any = 0;
+        for (const r of s.querySelectorAll('.rq')) { const ph = (r.closest('dd') && r.closest('dd').previousElementSibling || {}).textContent || ''; const on = !q || (r.textContent + ' ' + ph).toLowerCase().includes(q); r.hidden = !on; all++; if (on) { shown++; any++; } }
+        for (const dd of s.querySelectorAll('dd.rqg')) { const on = !!dd.querySelector('.rq:not([hidden])'); dd.hidden = !on; dd.previousElementSibling.hidden = !on; }
+        s.style.display = q && !any ? 'none' : '';
+    }
+    const fn = app.querySelector('.rls-bar .fn'); if (fn) fn.textContent = q ? `${fmtN(shown)} of ${fmtN(all)}` : '';
+}
+let rlsWired = false;
+function relsWire(app) {
+    relsFilter(app);
+    if (rlsWired) return; rlsWired = true;
+    document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'rels' && ev.target.id === 'rls-q') { data.q = ev.target.value; relsFilter($('#app')); } });
+}
 function entHead({ type, id, img, kick, title, disamb, acts }) {
     const mk = (HM_KIND[type] || ['', CI_TAG])[1];
     return `${img ? `<img class="rhcv" alt="" ${/^https:\/\/coverartarchive.org\//.test(img) ? 'data-cover' : 'src'}="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
@@ -40057,6 +40170,7 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove(); return; }
+    if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); relsWire(app); secRail(app); pinBar(app); save(); return; }
     if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); save(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
@@ -40750,6 +40864,9 @@ function navTo(href) {
     if (ux) return 'utag/' + ux[1] + '/' + ux[2] + (ux[3] ? '/' + ux[3] : '') + (/show_downvoted=1/.test(u.search) ? '/-' : '');
     const et = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/tags/?$', 'i'));
     if (et) return 'etags/' + et[1].toLowerCase() + ':' + et[2].toLowerCase();
+    // an entity's relationships → "erels/<type>:<mbid>"
+    const er = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + RELS_TYPES.join('|') + ')/(' + MBID.source + ')/relationships/?$', 'i'));
+    if (er) return 'erels/' + er[1].toLowerCase() + ':' + er[2].toLowerCase();
     // an editor's profile → "user/<name as in the path>"
     const e = u.origin === location.origin && u.pathname.match(/^\/user\/([^/]+)\/?$/);
     if (e) return 'user/' + e[1];
@@ -40758,7 +40875,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · Relationships · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -42040,6 +42157,7 @@ async function show(key, o = {}) {
         data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: !ent && key === PAGE_ID && /[?&]show_downvoted=1/.test(location.search), ao: !!ent && location.hash === '#add' };
         scrollTo(0, 0); render(); tagsLoad(n, key); if (data.dn) tagsLoad(n, key, true); return;
     }
+    if (kind === 'erels') { data = { kind: 'rels', key, ent: id, q: '' }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
