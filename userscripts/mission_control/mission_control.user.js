@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.30.134830
+// @version      2026.10.30.140245
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -652,11 +652,16 @@ function reviewWindow() {
                 const key = x.entity.mbid || x.entity.name;
                 if (!artists.has(key)) artists.set(key, { name: x.entity.name, mbid: x.entity.mbid, items: [] });
                 const name = ccName(x.icon || urlIcon(x.url));
-                artists.get(key).items.push(Object.assign({}, it, { artistLink: true, text: name + ': ' + x.url,
+                artists.get(key).items.push(Object.assign({}, it, { artistLink: true, platform: name, text: name + ': ' + x.url,
                     html: esc(name) + '<a class="mc-rv-url" href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.url) + '</a>' }));
                 return false;
             });
-            artists.forEach(a => items.push({ artistHead: a.name, artistMbid: a.mbid }, ...a.items));
+            artists.forEach(a => {
+                if (new Set(a.items.map(it => it.platform)).size === 1) {
+                    const artist = a.mbid ? '<a href="/artist/' + esc(a.mbid) + '" target="_blank" rel="noopener">' + esc(a.name) + '</a>' : esc(a.name);
+                    a.items.forEach(it => items.push(Object.assign({}, it, { artistSingle: true, text: a.name + ' · ' + it.text, html: artist + ' · ' + it.html })));
+                } else items.push({ artistHead: a.name, artistMbid: a.mbid }, ...a.items);
+            });
             trackChanges.forEach(c => items.push({ trackChange: c, text: 'Track ' + c.position + ': ' + [c.title != null && '“' + (c.was.title || '') + '” → “' + c.title + '”', c.ms && 'length ' + (c.was.ms ? reviewLen(c.was.ms) : 'none') + ' → ' + reviewLen(c.ms)].filter(Boolean).join(', ') }));
         }
         if (items.length) groups.push({ p, items });
@@ -668,7 +673,7 @@ function reviewWindow() {
     const panel = el('div', 'mbu-ov-panel mc-review');
     panel.style.cssText = 'width:calc(100vw - 32px);max-width:none;height:calc(100vh - 32px);max-height:none';
     let gi = 0;
-    const row = (g, it, grp) => '<label class="mc-rv-i' + (grp != null || it.artistLink ? ' mc-rv-in' : '') + '"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + (grp != null ? ' data-in="' + grp + '"' : '') + '>'
+    const row = (g, it, grp) => '<label class="mc-rv-i' + (grp != null || it.artistLink && !it.artistSingle ? ' mc-rv-in' : '') + '"><input type="checkbox" checked' + (it.keys ? ' data-p="' + g.p.id + '" data-key="' + esc(JSON.stringify(it.keys)) + '"' : ' disabled') + (it.artistLink ? ' data-artist-link' : '') + (grp != null ? ' data-in="' + grp + '"' : '') + '>'
         + (it.ico ? '<span class="mc-rv-ico">' + it.ico + '</span>' : '') + '<span>' + (it.html || esc(it.text)) + '</span></label>';
     const changedValue = (was, next) => next != null ? '<del class="mc-rv-dim">' + esc(was) + '</del> → ' + esc(next) : esc(was);
     // ISRC Scout as a grid: a row per track, a column per platform (the ISRCs first), a box per change
@@ -691,15 +696,15 @@ function reviewWindow() {
         if (g.p.id === 'is') return '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>' + grid(g);
         return '<div class="mc-rv-g">' + sIcon(g.p.id) + esc(g.p.name) + ' <span>' + esc(g.p.provider) + '</span></div>'
             + g.items.map(it => {
+                const allArtists = it === g.items.find(x => x.artistHead || x.artistLink) ? '<label class="mc-rv-t"><input type="checkbox" checked data-artists>All artists</label>' : '';
                 if (it.trackChange && groups.some(g => g.p.id === 'is' && g.items.some(h => h.head && h.change === it.trackChange))) return '';
                 if (it.artistHead) {
-                    const first = g.items.find(x => x.artistHead) === it;
                     grp = gi++;
-                    return (first ? '<label class="mc-rv-t"><input type="checkbox" checked data-artists>All artists</label>' : '')
+                    return allArtists
                         + '<div class="mc-rv-t"><input type="checkbox" checked data-grp="' + grp + '" data-artist-group aria-label="' + esc('Select all links for ' + it.artistHead) + '">' + (it.artistMbid ? '<a href="/artist/' + esc(it.artistMbid) + '" target="_blank" rel="noopener">' + esc(it.artistHead) + '</a>' : esc(it.artistHead)) + '</div>';
                 }
-                if (!it.artistLink) grp = null;
-                if (!it.head) return row(g, it, grp);
+                if (!it.artistLink || it.artistSingle) grp = null;
+                if (!it.head) return allArtists + row(g, it, grp);
                 grp = gi++;
                 return '<label class="mc-rv-t"><input type="checkbox" checked data-grp="' + grp + '" data-tip="Select or unselect this track\'s ' + it.n + ' change' + (it.n === 1 ? '' : 's') + '">'
                     + '<span class="pos">' + esc(it.pos) + '</span><span class="tt">' + esc(it.title) + '</span>' + (it.len ? '<span class="len">' + esc(it.len) + '</span>' : '') + '<span class="n">' + it.n + '</span></label>';
@@ -716,7 +721,7 @@ function reviewWindow() {
     panel.addEventListener('change', e => {
         const i = e.target;
         if (i.dataset.grp != null) panel.querySelectorAll('input[data-in="' + i.dataset.grp + '"]').forEach(c => { c.checked = i.checked; });
-        if (i.dataset.artists != null) panel.querySelectorAll('.mc-rv-in input[data-p="pc"]').forEach(c => { c.checked = i.checked; });
+        if (i.dataset.artists != null) panel.querySelectorAll('input[data-artist-link]').forEach(c => { c.checked = i.checked; });
         if (i.dataset.m != null) { const c = panel.querySelector('input[data-id="' + i.dataset.m + '"]'); c.checked = i.checked; }
         if (i.dataset.all != null) i.closest('table').querySelectorAll('tbody input').forEach(c => { c.checked = i.checked; c.indeterminate = false; });
         if (i.dataset.col != null) panel.querySelectorAll('input[data-c="' + i.dataset.col + '"]').forEach(c => { c.checked = i.checked; });
@@ -724,7 +729,7 @@ function reviewWindow() {
         panel.querySelectorAll('input[data-grp]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-in="' + h.dataset.grp + '"]')]));
         panel.querySelectorAll('input[data-col]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-c="' + h.dataset.col + '"]')]));
         panel.querySelectorAll('input[data-all]').forEach(h => sync(h, [...h.closest('table').querySelectorAll('tbody input[data-key]')]));
-        panel.querySelectorAll('input[data-artists]').forEach(h => sync(h, [...panel.querySelectorAll('.mc-rv-in input[data-p="pc"]')]));
+        panel.querySelectorAll('input[data-artists]').forEach(h => sync(h, [...panel.querySelectorAll('input[data-artist-link]')]));
         panel.querySelectorAll('input[data-m]').forEach(m => { m.checked = panel.querySelector('input[data-id="' + m.dataset.m + '"]').checked; });
         const left = [...panel.querySelectorAll('input[data-key]')].filter(c => c.checked).length
             + groups.reduce((n, g) => n + g.items.filter(it => !it.keys && !it.head && !it.artistHead).length, 0);
@@ -776,7 +781,7 @@ function reviewMarkdown(groups, panel) {
             if (it.head) { head = it; return; }
             if (!kept(g, it)) return;
             if (head) { lines.push(head.artistHead ? '- **' + head.artistHead + '**' : '- **' + head.pos + '** ' + head.title + (head.len ? ' (' + head.len + ')' : '')); head = null; }
-            lines.push((g.p.id === 'is' || it.artistLink ? '  - ' : '- ') + (it.md || it.text));
+            lines.push((g.p.id === 'is' || it.artistLink && !it.artistSingle ? '  - ' : '- ') + (it.md || it.text));
         });
         if (lines.length) out.push('', '### ' + g.p.name + ' (' + g.p.provider + ')', '', ...lines);
     });
