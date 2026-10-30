@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.150350
+// @version      2026.10.30.150727
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2488,7 +2488,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
 .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
-.ed-tw{overflow-x:auto}@media (min-width:900px){.ed-tw{overflow-x:clip}#app>section.sec .ed-t thead th{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-sh,56px) - 6px);z-index:19;background:var(--bg)}}.ed-t th[aria-sort=ascending],.ed-t th[aria-sort=descending]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--accent)}
+.ed-tw{overflow-x:auto}@media (min-width:900px){.ed-tw{overflow-x:clip}#app>section.sec .ed-t thead th{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-sh,56px) - 6px);z-index:19;background:var(--bg)}}.ed-t col.sc{background:color-mix(in srgb,var(--accent) 6%,transparent)}#app .ed-t th[aria-sort=ascending],#app .ed-t th[aria-sort=descending]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--accent)}
 .ed-t{width:100%;border-collapse:collapse;font-size:14px}
 .ed-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
 .dg-sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}.dg-sort i{font-style:normal;margin-left:5px;opacity:0}.dg-sort:hover{color:var(--text)}.dg-sort:hover i{opacity:.5}.dg-sort.on{color:var(--accent)}.dg-sort.on i{opacity:1}
@@ -3387,7 +3387,7 @@ function edTable(es, curId, flat, part) {
             <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
         </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="9">${edTracksHtml(e)}</td></tr>` : ''}`;
     };
-    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${ED_COLS.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
+    return `<div class="ed-tw"><table class="ed-t"><colgroup><col>${ED_COLS.map(c => `<col${c[0] === sk ? ' class="sc"' : ''}>`).join('')}<col></colgroup><thead><tr><th></th>${ED_COLS.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
 }
 const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
 const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
