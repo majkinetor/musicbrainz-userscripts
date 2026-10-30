@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.220501
+// @version      2026.10.30.221501
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2736,7 +2736,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
@@ -2745,6 +2745,7 @@ const S = {
     byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1600, bg: 'aura',
     on: true, menuTitles: false,
     thumbs: true,
+    factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
     noAliases: false, // the release header's aliases, shown unless turned off
     extras: ['rating', 'tags'],
     facts: ['released', 'labels', 'barcode', 'length', 'links'],
@@ -5490,15 +5491,15 @@ const LB_ACTS = AR_ACTS.map(([p, n, t, ic]) => [p, n, t.replace('artist', 'label
 function lbHero(d) {
     const g = d.g, on = k => S.extras.includes(k);
     const F = [
-        ['Founded', g.begin && fdate(g.begin)],
-        ['Defunct', g.end ? fdate(g.end) : g.ended ? 'yes' : ''],
-        ['Area', g.area && areaA(g.area)],
-        ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0'))],
-        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
-        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
-        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
-        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
-        ['', g.links.length && rlQuiet(g), 'wide'],
+        ['Founded', g.begin && fdate(g.begin), '', 'begin'],
+        ['Defunct', g.end ? fdate(g.end) : g.ended ? 'yes' : '', '', 'end'],
+        ['Area', g.area && areaA(g.area), '', 'area'],
+        ['Label code', g.code && copyB('LC-' + String(g.code).padStart(5, '0')), '', 'code'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide', 'aliases'],
+        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' '), '', 'ipi'],
+        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' '), '', 'isni'],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
+        ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
     const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}</div>`);
     return `<section class="hero">
@@ -5506,8 +5507,8 @@ function lbHero(d) {
         <div class="facts-col">
             <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
-            <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="img" aria-label="Picture settings" data-tip="Picture settings
-Where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+            <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="label" aria-label="Header settings" data-tip="Header settings
+Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1] && !S.factOff.label.includes(x[3])).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
     </section>`;
 }
@@ -5516,15 +5517,15 @@ function arHero(d) {
     const g = d.g, person = g.type === 'Person' || g.type === 'Character', on = k => S.extras.includes(k);
     const when = (date, area) => [date && fdate(date), area && areaA(area)].filter(Boolean).join(' · ');
     const F = [
-        [person ? 'Born' : 'Formed', when(g.begin, g.beginArea)],
-        [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : '')],
-        ['Area', g.area && areaA(g.area)],
-        ['Gender', g.gender && esc(g.gender)],
-        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide'],
-        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' ')],
-        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' ')],
-        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide'],
-        ['', g.links.length && rlQuiet(g), 'wide'],
+        [person ? 'Born' : 'Formed', when(g.begin, g.beginArea), '', 'begin'],
+        [person ? 'Died' : 'Dissolved', when(g.end, g.endArea) || (g.ended ? 'yes' : ''), '', 'end'],
+        ['Area', g.area && areaA(g.area), '', 'area'],
+        ['Gender', g.gender && esc(g.gender), '', 'gender'],
+        [`Alias${g.aliases.length === 1 ? '' : 'es'}`, aliasList(g.aliases), 'wide', 'aliases'],
+        ['IPI', g.ipis.length && g.ipis.map(i => copyB(i)).join(' '), '', 'ipi'],
+        ['ISNI', g.isnis.length && g.isnis.map(i => copyB(i)).join(' '), '', 'isni'],
+        ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
+        ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
     const tags = on('tags') ? tagsMore(g.tags) : '';
     const pic = picHtml(g, 'apic', `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}</div>`);
@@ -5534,8 +5535,8 @@ function arHero(d) {
             <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
             <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
-            <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="img" aria-label="Picture settings" data-tip="Picture settings
-Where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
+            <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="artist" aria-label="Header settings" data-tip="Header settings
+Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1] && !S.factOff.artist.includes(x[3])).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
     </section>`;
 }
@@ -8363,6 +8364,13 @@ function plBody() {
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
             + row('Visible', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
 }
+const KFACTS = {
+    artist: [['begin', 'Born / formed'], ['end', 'Died / dissolved'], ['area', 'Area'], ['gender', 'Gender'], ['aliases', 'Aliases'], ['ipi', 'IPI'], ['isni', 'ISNI'], ['links', 'Links']],
+    label: [['begin', 'Founded'], ['end', 'Defunct'], ['area', 'Area'], ['code', 'Label code'], ['aliases', 'Aliases'], ['ipi', 'IPI'], ['isni', 'ISNI'], ['links', 'Links']],
+};
+// an artist's or label's header: its facts, rating and tags, then its picture's sources
+const kindBody = kind => () => cfgRow('Info', KFACTS[kind].map(([k, n]) => cfgChip('factOff', kind + ':' + k, !S.factOff[kind].includes(k), n)).join('') + cfgChip('extra', 'rating', S.extras.includes('rating'), 'Rating') + cfgChip('extra', 'tags', S.extras.includes('tags'), 'Tags'))
+    + '<h3 class="plh">Picture</h3>' + imgBody();
 function hdBody() {
     // in the header's order: the facts, then rating, aliases, genres, and the links last
     const fc = ([k, n]) => cfgChip('fact', k, S.facts.includes(k), n), ex = k => cfgChip('extra', k, S.extras.includes(k), k === 'tags' ? 'Tags' : 'Rating');
@@ -8400,7 +8408,7 @@ function openCfg() {
 function openPlCfg(btn, hd) {
     const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); if (old.dataset.hd === hd) return; }
     const pop = document.createElement('div'); pop.id = 'eh-plcfg'; pop.className = 'eh-cfg eh-plpop mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Platform icons');
-    const [title, body] = hd === 'hd' ? ['Header', hdBody] : hd === 'img' ? ['Picture', imgBody] : ['Platforms', plBody];
+    const [title, body] = hd === 'hd' ? ['Header', hdBody] : KFACTS[hd] ? ['Header', kindBody(hd)] : ['Platforms', plBody];
     pop.dataset.hd = hd; pop.setAttribute('aria-label', title + ' settings');
     pop.innerHTML = `<h3 class="plh">${title}</h3><div class="eh-cfg-b">${body()}</div>`;
     document.documentElement.append(pop);
@@ -8459,6 +8467,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'fact') S.facts = toggle(S.facts, k);
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
             else if (g === 'noAliases') S.noAliases = !S.noAliases;
+            else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
             else if (g === 'plNames' || g === 'plHover' || g === 'menuTitles') S[g] = !S[g];

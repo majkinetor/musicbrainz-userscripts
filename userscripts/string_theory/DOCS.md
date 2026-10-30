@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-30 10:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-30 11:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -815,7 +815,7 @@ Open a track to see its recording and work credits. The platforms it is on (Spot
 
 Which platforms show, in which order, and how big, are set with the gear beside the tracklist's **Show** toggles. Click a platform to show or hide it, drag it to reorder.
 
-Which facts the header shows (rating, aliases and tags among them), and whether other covers show, are set with the gear at the right end of the header's divider line. On an artist's or label's page that gear sets where the picture comes from.
+Which facts the header shows (rating, aliases and tags among them), and whether other covers show, are set with the gear at the right end of the header's divider line. On an artist's or label's page that gear sets which facts show and where the picture comes from.
 
 ### Releases and discography
 

@@ -38,8 +38,14 @@ test('the tracklist gear opens the platform icon settings', { tag: '@sandbox' },
 test('the artist header gear opens the picture settings', { tag: '@sandbox' }, async ({ page, inject }) => {
   await page.goto('https://test.musicbrainz.org/artist/f27ec8db-af05-4f36-916e-3d57f91ecf5e');
   await inject('event_horizon');
-  await until(() => page.locator('[data-plcfg=img]').count(), n => n === 1);
-  await page.locator('[data-plcfg=img]').click();
+  await until(() => page.locator('[data-plcfg=artist]').count(), n => n === 1);
+  await page.locator('[data-plcfg=artist]').click();
   check(await until(() => page.locator('#eh-plcfg [data-g=imgP]').count(), n => n > 0) > 0, 'it lists the picture sources');
+  const mb = () => page.locator('.facts .label', { hasText: /^Area$/ }).count(), chip = page.locator('#eh-plcfg [data-k="artist:area"]');
+  if (await chip.getAttribute('aria-pressed') === 'false') await chip.click();
+  check(await until(mb, n => n === 1) === 1, 'the artist shows its area');
+  await chip.click();
+  check(await until(mb, n => n === 0) === 0, 'turning Area off hides it');
+  await chip.click();
   await page.locator('#eh-plcfg').screenshot({ path: 'test-results/eh-imgpop.png' });
 });
