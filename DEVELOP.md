@@ -161,7 +161,7 @@ A new shared setting gets a row here.
 
 ## Bot identity
 
-Assistant commits, comments and releases use the **`claude-ai-milic`** account ([Standard 7](dev/agents/STANDARDS.general.md#standard-7) says how). Its commit identity: `-c user.name=claude-ai-milic -c user.email=287434337+claude-ai-milic@users.noreply.github.com`.
+Assistant commits, comments and releases use the **`milic-bot`** account ([Standard 7](dev/agents/STANDARDS.general.md#standard-7) says how). Its commit identity: `-c user.name=milic-bot -c user.email=bot@milic.info`.
 
 One-time setup, by the maintainer:
 
@@ -170,5 +170,5 @@ One-time setup, by the maintainer:
 3. Save it in the hub's `C:\ai\_hub\.github-credentials.json`, the token's only home on the machine:
 
    ```jsonc
-   { "username": "claude-ai-milic", "token": "github_pat_..." }
+   { "username": "milic-bot", "token": "github_pat_..." }
    ```

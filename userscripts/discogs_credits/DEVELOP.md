@@ -63,18 +63,18 @@ After this, the `gh` CLI works against your GitHub identity.
 
 ### Bot identity for AI-driven work
 
-This repo uses a dedicated GitHub account **`claude-ai-milic`** for any commits, Issues, or PRs that an AI assistant produces. Keeping bot activity separate from the maintainer's identity makes review easier and prevents accidental impersonation.
+This repo uses a dedicated GitHub account **`milic-bot`** for any commits, Issues, or PRs that an AI assistant produces. Keeping bot activity separate from the maintainer's identity makes review easier and prevents accidental impersonation.
 
 Setup (one-time, done by the maintainer):
 
-1. Create the `claude-ai-milic` GitHub account.
+1. Create the `milic-bot` GitHub account.
 2. Add it as a **collaborator** on `majkinetor/musicbrainz-userscripts` with write access; accept the invite from the bot account.
 3. While logged in as the bot, generate a classic Personal Access Token at <https://github.com/settings/tokens> with scopes `repo` + `write:discussion`.
 4. Save the token in the hub's `C:\ai\_hub\.github-credentials.json`, never in the repo:
 
    ```jsonc
    {
-     "username": "claude-ai-milic",
+     "username": "milic-bot",
      "token":    "github_pat_..."
    }
    ```

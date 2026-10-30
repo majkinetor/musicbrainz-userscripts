@@ -104,12 +104,12 @@ function Publish-Reports {
     if (-not $token) { Write-Log 'NOT pushing — no token in the credentials file'; return }
 
     & git -C $repo add -- $expected
-    & git -C $repo -c user.name='claude-ai-milic' -c user.email='claude-ai-milic@users.noreply.github.com' `
+    & git -C $repo -c user.name='milic-bot' -c user.email='bot@milic.info' `
         commit -q -m "metrics: rebuild from the $DumpId snapshot"
     if ($LASTEXITCODE -ne 0) { Write-Log "commit failed ($LASTEXITCODE)"; return }
     Write-Log "committed $((& git -C $repo rev-parse --short HEAD).Trim())"
 
-    $b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("claude-ai-milic:$token"))
+    $b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("milic-bot:$token"))
     $env:GIT_CONFIG_COUNT = '1'
     $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/.extraheader'
     $env:GIT_CONFIG_VALUE_0 = "AUTHORIZATION: basic $b64"

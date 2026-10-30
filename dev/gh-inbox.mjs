@@ -18,7 +18,7 @@
 
 import { execFileSync } from 'node:child_process';
 
-const ME = 'claude-ai-milic';
+const ME = 'milic-bot';
 const HIM = 'majkinetor';
 // Everyone who is not me is worth reading. Only majkinetor's word is an
 // INSTRUCTION — others are input to weigh, not orders to follow — but chaban-mb
