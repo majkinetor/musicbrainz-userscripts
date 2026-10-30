@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.150002
+// @version      2026.10.30.150001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2649,6 +2649,10 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .cline .role{color:var(--muted)}
 .cline>.role:first-child{text-align:right}
 .cline .who{font-weight:600}
+.cline .uchips{display:flex;flex-wrap:wrap;gap:6px}
+.uchip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px 2px 3px;border-radius:999px;background:none;color:var(--text)!important;font-weight:600;text-decoration:none!important;white-space:nowrap}
+.uchip:hover{background:var(--chip);color:var(--accent)!important}
+.uchip>svg,.uchip>.mgram{flex:none;border-radius:50%}
 .dm-below .cline .ents{display:flex;flex-direction:column;gap:4px}
 .dm-below .cline .sep{display:none}
 .dm-below .cline .hasd{display:inline-flex;flex-direction:column;vertical-align:top}
@@ -3558,8 +3562,9 @@ function creditsCard(r) {
     const relLines = S.byName ? relLinesN : relLinesR, trackLines = S.byName ? trackLinesN : trackLinesR;
     const urls = r.urlCredits || [];
     const urlRoles = new Map();
-    for (const u of urls) { const role = phrase(u); const list = urlRoles.get(role) || []; if (!list.includes(u.url)) list.push(u.url); urlRoles.set(role, list); }
-    const urlLines = [...urlRoles].map(([role, list]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="who">${list.map(url => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a>`).join('<br>')}</span></div>`).join('');
+    for (const u of urls) { const role = phrase(u); const list = urlRoles.get(role) || []; list.push(u); urlRoles.set(role, list); }
+    // a link reads as its site, icon and name in a chip; the URL is in the tooltip (majkinetor, from a mock)
+    const urlLines = [...urlRoles].map(([role, list]) => `<div class="cline"><span class="role">${esc(role)}</span><span class="uchips">${platforms(list).map(p => p.urls.map(u => `<a class="uchip" href="${esc(u.url)}" target="_blank" rel="noopener" data-tip="${esc(u.url)}">${icon(p, 16)}<span>${esc(p.name)}${p.urls.length > 1 && u.region ? ' · ' + esc(u.region.toUpperCase()) : ''}</span></a>`).join('')).join('')}</span></div>`).join('');
     const n = r.credits.length + m.size + urls.length;
     if (!n) return '';
     const body = `<div class="card dm-${S.dis}"><div class="cols">
