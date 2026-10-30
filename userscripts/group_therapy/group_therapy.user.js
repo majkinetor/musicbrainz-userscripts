@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.130000
+// @version      2026.10.30.140000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -3981,6 +3981,18 @@
   // push the current Type/language choice onto every new work already staged (params can change after some
   // were created — MB reads these off the entity on submit)
   function wmApplyNewParams() { wmNewWorks.forEach(w => { w.typeID = wmNewType; w.languages = wmLangRels(); }); }
+  // #869 a new work's link is "#new-work-<id>", and MB's relationship dialog resolves a pasted one only
+  // through linkedEntities.work[id]. MB exposes linkedEntities (the very object its modules read) but not
+  // mergeLinkedEntities, so the work is written in directly. Without it the paste fell through to the page
+  // URL (the release) or to a blank new work named after the recording.
+  function gtRegisterWork(w) {
+    try {
+      const le = W.MB && W.MB.linkedEntities;
+      if (!le || !le.work) { LOG().cat('Works').warn(`new work ${entLabel(w)}: MB.linkedEntities missing, its link will not paste`); return; }
+      le.work[w.id] = w;
+      LOG().cat('Works').debug(`new work ${entLabel(w)} registered, link #new-work-${w.id}`);
+    } catch (e) { LOG().cat('Works').warn(`new work ${entLabel(w)}: registering failed: ${e}`); }
+  }
   function wmMakeNewWork(title) {
     const key = (title || '').normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim();
     if (key && wmNewWorks.has(key)) return wmNewWorks.get(key);
@@ -3996,10 +4008,7 @@
       artists: [], other_artists: [], authors: [], editsPending: false, last_updated: null,
       _fromBatchCreateWorksDialog: true, _gtNew: true,
     };
-    // #869 register it in MB's linked entities like txpCreateWork does: MB resolves a new work's link (pasted
-    // into another rel's target field) through them, and without it took the work for an artist
-    try { if (W.MB && W.MB.mergeLinkedEntities) W.MB.mergeLinkedEntities({ work: { [w.id]: w } }); } catch (e) { LOG().warn('new work: mergeLinkedEntities failed: ' + e); }
-    LOG().cat('Works').debug(`new work ${entLabel(w)}, in MB.linkedEntities: ${!!(W.MB && W.MB.linkedEntities && W.MB.linkedEntities.work && W.MB.linkedEntities.work[w.id])}`);
+    gtRegisterWork(w);
     if (key) wmNewWorks.set(key, w);
     return w;
   }
@@ -7304,7 +7313,7 @@
       const id = re.getRelationshipStateId();
       const work = { _fromBatchCreateWorksDialog: true, attributes: [], comment: '', editsPending: false, entityType: 'work',
         gid: null, id, iswcs: [], languages: [], name: val(rec.name) || '', typeID: null };
-      if (MB.mergeLinkedEntities) MB.mergeLinkedEntities({ work: { [id]: work } });
+      gtRegisterWork(work);
       dispatchRelationship(re, rec, work, perf, '', null, null);
       return work;
     }
