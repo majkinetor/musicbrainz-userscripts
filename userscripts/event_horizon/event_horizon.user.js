@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.003000
+// @version      2026.10.31.004000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5885,7 +5885,7 @@ const tsKey = sid => 'eh-tsort:' + location.pathname + ':' + sid;
 const tsGet = sid => { if (!(sid in TSORT)) { try { const v = JSON.parse(sessionStorage.getItem(tsKey(sid)) || 'null'); if (v) TSORT[sid] = v; } catch {} } return TSORT[sid]; };
 const tsSet = (sid, v) => { TSORT[sid] = v; try { v.length ? sessionStorage.setItem(tsKey(sid), JSON.stringify(v)) : sessionStorage.removeItem(tsKey(sid)); } catch {} };
 // a cover that doesn't load is its kind's mark
-const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; im.outerHTML = `<span class="dn"${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
+const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; im.outerHTML = `<span class="dn"${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
 const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
 // the box's text, split into column terms (key:value, the value in quotes when it has spaces) and the rest, searched in the whole row
@@ -6358,6 +6358,21 @@ function relsParse(html) {
     return { name: hn ? tx(hn) : tx(h1), dis: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', cards, apps, cols: tb ? apps.cols : [], last };
 }
 // a label's artists, which MusicBrainz has no page for: the artists credited on its releases, by how many
+// an artist's links, when a list already brought them: its picture is then found with no lookup of its own
+const ART_LINKS = {};
+// an area's artists from MusicBrainz's API, 100 a page with their links, so their pictures need no request each
+async function areaArts(d, ty, eid) {
+    const L = d.lab || (d.lab = { xs: [], off: 0, total: 0, name: '', dis: '' });
+    if (!L.name) { const g = await ws(`${ty}/${eid}`); L.name = g.name; L.dis = g.disambiguation || ''; }
+    const j = await ws(`artist?area=${eid}&inc=url-rels&limit=100&offset=${L.off}`);
+    L.total = j['artist-count'] || 0; L.off += (j.artists || []).length;
+    for (const a of j.artists || []) { ART_LINKS[a.id] = (a.relations || []).filter(x => x.url).map(x => x.url.resource); L.xs.push(a); }
+    const ls = a => a['life-span'] || {};
+    const apps = L.xs.map(a => ({ ph: '', kind: 'artist', href: '/artist/' + a.id, name: a.name, ti: 0, cells: ['', esc(a.type || ''), esc(a.gender || ''), esc(ls(a).begin || ''), esc(ls(a).end || ''), a.disambiguation ? `<span class="rga">${esc(a.disambiguation)}</span>` : ''] }));
+    apps.cols = ['Artist', 'Type', 'Gender', 'Begin', 'End', 'Disambiguation']; apps.skip = [];
+    LOG.debug(`Artists of area ${eid}: ${L.off} of ${L.total}`);
+    return { name: L.name, dis: L.dis, cards: [], apps, cols: apps.cols, last: Math.max(1, Math.ceil(L.total / 100)) };
+}
 async function labArts(d, ty, eid) {
     const L = d.lab || (d.lab = { by: new Map(), off: 0, total: 0, name: '', dis: '' });
     if (!L.name) { const g = await ws(`${ty}/${eid}`); L.name = g.name; L.dis = g.disambiguation || ''; }
@@ -6377,7 +6392,7 @@ async function relsLoad(n, key) {
     const d = data, ent = key.slice(key.indexOf('/') + 1), [ty, eid] = ent.split(':');
     try {
         let html;
-        if (ty === 'label' && d.mode === 'artists') { const t = await labArts(d, ty, eid); if (n === showing && data === d) { d.t = t; d.err = ''; render(); } return; }
+        if (d.mode === 'artists') { const t = await (ty === 'label' ? labArts : areaArts)(d, ty, eid); if (n === showing && data === d) { d.t = t; d.err = ''; render(); } return; }
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
         else { const r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode || 'relationships'}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const t = relsParse(html);
@@ -6414,7 +6429,7 @@ function relsApps(t, d = {}) {
 async function recsMore(d) {
     if (!d.t || d.page >= d.t.last) return;
     const [ty, eid] = d.ent.split(':');
-    if (ty === 'label' && d.mode === 'artists') { const t = await labArts(d, ty, eid); if (data !== d) return; d.t = t; d.page++; return; }
+    if (d.mode === 'artists') { const t = await (ty === 'label' ? labArts : areaArts)(d, ty, eid); if (data !== d) return; d.t = t; d.page++; return; }
     const r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode}?page=${d.page + 1}`);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const t = relsParse(await r.text()); if (data !== d) return;
@@ -6614,10 +6629,10 @@ let tgxIo = null;
 function tagxArt(app) {
     if (tgxIo) tgxIo.disconnect();
     const q = [], busy = { n: 0 };
-    const next = () => { while (busy.n < 2 && q.length) { const el = q.shift(), [k, id] = el.dataset.tgxart.split(':'); if (TGX_ART[id] !== undefined) continue; busy.n++;
-        ws(`${k}/${id}?inc=url-rels`).then(g => ARTIMG.findAll(id, (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(xs => xs[0] || null, () => null)
+    const next = () => { while (busy.n < 6 && q.length) { const i = q.findIndex(e => ART_LINKS[e.dataset.tgxart.split(':')[1]]), el = q.splice(i < 0 ? 0 : i, 1)[0], [k, id] = el.dataset.tgxart.split(':'); if (TGX_ART[id] !== undefined) continue; if (!ART_LINKS[id] && busy.ws >= 2) { q.unshift(el); break; } busy.n++; const viaWs = !ART_LINKS[id]; if (viaWs) busy.ws = (busy.ws || 0) + 1;
+        (ART_LINKS[id] ? Promise.resolve(ART_LINKS[id]) : ws(`${k}/${id}?inc=url-rels`).then(g => (g.relations || []).filter(x => x.url).map(x => x.url.resource))).then(ls => ARTIMG.findAll(id, ls)).then(xs => xs[0] || null, () => null)
             .then(a => { TGX_ART[id] = a; for (const t of document.querySelectorAll(`[data-tgxart$=":${id}"]`)) { t.removeAttribute('data-tgxart'); if (a) t.outerHTML = `<img src="${esc(a.src)}" alt="" referrerpolicy="no-referrer">`; } })
-            .finally(() => { busy.n--; next(); }); } };
+            .finally(() => { busy.n--; if (viaWs) busy.ws--; next(); }); } };
     tgxIo = new IntersectionObserver(es => { for (const e of es) if (e.isIntersecting) { tgxIo.unobserve(e.target); q.push(e.target); } next(); }, { rootMargin: '300px' });
     for (const el of app.querySelectorAll('[data-tgxart]')) tgxIo.observe(el);
 }
