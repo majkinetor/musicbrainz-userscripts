@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-31 09:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-31 10:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1931,7 +1931,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 #### Match
 
-**⚡ Match** does both: it imports ISRCs from the fastest source the release links (Qobuz, Audiomack, Apple Music, Tidal… before Deezer, 7digital and Spotify), moving on when one fails or gives nothing, then runs **Find links**. It skips the release group's links, which need you to look.
+**⚡ Match** does both: it imports ISRCs from the fastest source the release links (Qobuz, Audiomack, Apple Music, Tidal… before Deezer, 7digital and Spotify), moving on when one fails or gives nothing, then runs **Find links**. It skips the release group's links, which need you to look. *Auto match* runs it on opening the window or in the background. The launcher's count follows the window, and its card says whether results are cached or live.
 
 | Click               | on an **Add** icon               | on a **Linked** icon                           |
 | ------------------- | -------------------------------- | ---------------------------------------------- |
@@ -1965,7 +1965,8 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 | Add ISRC/Links columns to tracklist | on | columns and their controls on the release page ([Tracklist](#tracklist-1)) |
 | Show ISRCs in parts | on | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
 | Use providers from the whole release group | off | take missing providers from sibling releases (one more lookup) |
-| Auto match | off (in the background) | runs **Match** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher shows the new ISRCs (⚡) and links (link icon) it found, ✓ when there are none, and the dock in Event Horizon their total (kept for a week) |
+| Auto match | off (in the background) | run [Match](#match-1) on opening or in the background |
+| Cache Match results | on, 7 days | reuse Match results for the chosen time; off keeps them only for this page |
 | Include slow platforms | on | in the background, Tidal too (about 1 s a track) |
 | Ignore Platform Check link confidence | off | use links Platform Check withheld for a barcode or format mismatch |
 | Repeat failed submits | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
@@ -2391,7 +2392,7 @@ A platform the release already links is used as is; the others are searched by b
 | ?           | link found, track count unreadable     |
 | red —       | not found                              |
 
-A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD).
+A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and the launcher card say whether platform results are cached, live, or mixed.
 
 > [!TIP]
 > *Compact › Unmatched* shrinks a platform that found nothing (yet) to a dimmed icon at the bottom; *Compact › Low-confidence* does the same, with an amber ring, for a match that isn't clean. Discogs and Bandcamp always keep their rows.
@@ -2507,22 +2508,23 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 <img width="400" src="../platform_check/screenshots/config.png" />
 
-| Setting                                | Default      |                                                                                      |
-| -------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
-| Platforms                              | all          | order them, or leave some out                                                        |
-| Logins                                 | none         | Beatport and Qobuz; see [Platforms](#platforms-2)                                      |
-| Use barcodes                           | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
-| Use formats                            | on, strictly | the same, for the format                                                             |
-| Open the editor in a new tab           | on           | off navigates this tab                                                               |
-| Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                    |
-| Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                 |
-| Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                        |
-| Icon, Name                             | icon only    | what each row shows, and its size                                                    |
-| Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                          |
-| In MusicBrainz                         | Ring         | how a platform already linked is marked                                              |
-| Format                                 | Circle       | the release's format as a circle or as text                                          |
-| Layout                                 | 1 row        | or 2 rows per platform                                                               |
-| Spacing                                | 5 px         | between rows, and between columns in the 1-row layout                                |
+| Setting                                | Default              |                                                                                      |
+| -------------------------------------- | -------------------- | ------------------------------------------------------------------------------------ |
+| Platforms                              | all                  | order them, or leave some out                                                        |
+| Logins                                 | none                 | Beatport and Qobuz; see [Platforms](#platforms-2)                                      |
+| Use barcodes                           | on, strictly         | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
+| Use formats                            | on, strictly         | the same, for the format                                                             |
+| Open the editor in a new tab           | on                   | off navigates this tab                                                               |
+| Keep background tabs awake             | off                  | see [Adding links](#adding-links)                                                    |
+| Count the links to add                 | on                   | the badge on [Artists & labels](#artists-and-labels)                                 |
+| Cache scan results                     | on, default duration | reuse scan results; choose how long to keep them                                     |
+| Close Falcon after a successful import | on                   | see [Artists and labels](#artists-and-labels)                                        |
+| Icon, Name                             | icon only            | what each row shows, and its size                                                    |
+| Compact: Unmatched, Low-confidence     | on, off              | see [Dashboard](#dashboard)                                                          |
+| In MusicBrainz                         | Ring                 | how a platform already linked is marked                                              |
+| Format                                 | Circle               | the release's format as a circle or as text                                          |
+| Layout                                 | 1 row                | or 2 rows per platform                                                               |
+| Spacing                                | 5 px                 | between rows, and between columns in the 1-row layout                                |
 
 ### Shortcuts
 

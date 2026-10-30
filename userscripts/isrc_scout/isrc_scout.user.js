@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.094220
+// @version      2026.10.31.100400
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -3209,8 +3209,10 @@
   // current release lacks from its sibling releases (one browse, fill-if-empty).
   async function augmentProvidersFromRG(rgId) {
     if (!rgId) return;
+    const snapshot = RELEASE, target = mbid;
     try {
       const r = await gmGet(MB_WS2 + 'release?release-group=' + rgId + '&inc=url-rels&limit=100&fmt=json', { 'Accept': 'application/json', 'User-Agent': UA });
+      if (target !== mbid || snapshot !== RELEASE) return;
       if (r.status !== 200) { Log.warn('Release group: sibling scan gave ' + r.status); return; }
       const j = JSON.parse(r.responseText || '{}');
       const added = [];
@@ -3241,8 +3243,8 @@
   function fetchRelease() {
     if (RELEASE) return Promise.resolve(RELEASE);
     if (_relInFlight) return _relInFlight;
-    _relInFlight = fetchReleaseNow();
-    _relInFlight.catch(() => {}).then(() => { _relInFlight = null; });
+    const request = _relInFlight = fetchReleaseNow();
+    request.catch(() => {}).then(() => { if (_relInFlight === request) _relInFlight = null; });
     // #607: the page button's count follows EVERY successful load, not just the
     // page-load one. That one can fail (MB 503s under its rate limit) and leave
     // "?" — and opening the dialog later loaded the release without telling it.
@@ -3250,11 +3252,12 @@
     return _relInFlight;
   }
   function fetchReleaseNow() {
+    const target = mbid;
     return gmGet(
       // recording-level-rels folds each recording's URL relationships into this one
       // call (same data the overview's "Display credits inline" shows) — so the
       // #219 track-link icons know what's already linked with no extra request.
-      MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
+      MB_WS2 + 'release/' + target + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
       { 'Accept': 'application/json', 'User-Agent': UA }
     ).then(async r => {
       if (r.status !== 200) throw new Error('MB ' + r.status);
@@ -3297,9 +3300,11 @@
       const rgYear = parseInt((String(rg['first-release-date'] || '').match(/^(\d{4})/) || [])[1]) || null;
       const releaseYear = parseInt((String(data.date || '').match(/^(\d{4})/) || [])[1]) || rgYear;
       const artist = acName(data['artist-credit']);
+      if (target !== mbid) throw new Error('Release changed while loading');
       RELEASE = Object.assign({ title: data.title || '', tracks, rgId: rg.id || '', releaseYear, artist }, prov);
       // #302: when enabled, fill missing provider links from sibling releases in the RG.
       if (rgProvidersEnabled() && RELEASE.rgId) await augmentProvidersFromRG(RELEASE.rgId);
+      if (target !== mbid) throw new Error('Release changed while loading');
       const _pf = { bandcamp: 'bandcampUrl', apple: 'appleUrl', soundcloud: 'scUrl', audiomack: 'akUrl', sevendigital: 'sdUrl' };
       const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'presto', 'bandcamp', 'apple', 'soundcloud', 'audiomack', 'sevendigital']
         .map(k => { const f = _pf[k] || k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
@@ -3452,7 +3457,7 @@
       }
     }
   }
-  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit'); }
+  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit').then(result => { bgInvalidate(); return result; }); }
   async function submitIsrcsOnce(map, editNote) {
     const token = await Auth.accessToken();
     const xml = buildIsrcXml(map, editNote);
@@ -5256,11 +5261,12 @@
             <label><input type="checkbox" id="ii-show-icons">icons</label>
             <label><input type="checkbox" id="ii-show-text">text</label></div>
         <div class="ii-set-row"><label data-tip="Use providers from the whole release group&#10;Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup."><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group</span></label></div>
-          <div class="ii-set-row ii-set-inline" data-tip="Run Match by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the button and the dock in Event Horizon count the new ISRCs and links it found (ISRCs/links). It uses a lot of network. What it finds is kept for a week."><label><input type="checkbox" id="ii-links-auto-on">Auto match</label>
+          <div class="ii-set-row ii-set-inline" data-tip="Run Match by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the button and the dock in Event Horizon count the new ISRCs and links it found (ISRCs/links). It uses a lot of network. What it finds is kept according to the cache settings."><label><input type="checkbox" id="ii-links-auto-on">Auto match</label>
             <select id="ii-links-auto">
               <option value="start">on start</option>
               <option value="background">in the background</option>
             </select></div>
+        <div class="ii-set-row ii-set-inline"><label><input type="checkbox" id="ii-cache-enabled">Cache Match results</label> <span>for</span> <input type="number" id="ii-cache-days" min="1" max="365" step="1"> <span>days</span></div>
         <div class="ii-set-row"><label data-tip="Include slow platforms&#10;In the background, Tidal too: it takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
         <div class="ii-set-row"><label data-tip="Ignore Platform Check link confidence&#10;Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong."><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence</span></label></div>
           <div class="ii-set-row ii-set-inline" data-tip="Where Spotify&#x27;s ISRCs come from&#10;Spotify&#x27;s own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another."><span class="ii-set-k">Spotify ISRC source</span>
@@ -5596,6 +5602,26 @@
       selAuto.disabled = !cbAuto.checked; cbSlow.checked = bgSlowOn(); cbSlow.disabled = cur !== 'background';
       [cbAuto, selAuto].forEach(el => el.addEventListener('change', () => Log.info('Match runs: ' + sync())));
       cbSlow.addEventListener('change', () => store.set('bg_links_slow', cbSlow.checked));
+    }
+
+    {
+      const enabled = modal.querySelector('#ii-cache-enabled'), days = modal.querySelector('#ii-cache-days');
+      enabled.checked = store.get('match_cache_enabled', true) !== false;
+      days.value = bgCacheDays(); days.disabled = !enabled.checked;
+      enabled.addEventListener('change', () => {
+        store.set('match_cache_enabled', enabled.checked); days.disabled = !enabled.checked;
+        bgCache.memory = {}; bgCache.sources = {}; store.del('bg_links_cache');
+        bgCache.stale = new Set();
+        BG.generation = (BG.generation || 0) + 1; BG.running = {}; BG.started = false; BG.stale = true;
+        updateBtnLinks(); requestDockUpdate();
+      });
+      days.addEventListener('change', () => {
+        const n = Math.max(1, Math.min(365, Math.round(Number(days.value) || 7)));
+        days.value = n; store.set('match_cache_days', n);
+        bgCache.memory = {}; bgCache.sources = {}; bgCache.stale = new Set();
+        BG.generation = (BG.generation || 0) + 1; BG.running = {}; BG.started = false; BG.stale = true;
+        updateBtnLinks(); requestDockUpdate();
+      });
     }
 
     // #749: ISRCs and links on the release page's tracklist
@@ -6787,7 +6813,7 @@
     // logged-in session cookie (same-origin) — no OAuth, no CSRF. One POST carries
     // the whole batch (auto-applied for auto-editors, else queued). items:
     // [{ recGid, url, linkTypeID }].
-    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit'); }   // #748
+    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit').then(result => { bgInvalidate(); return result; }); }   // #748
     async function submitRelsOnce(items, note) {
       const body = {
         edits: items.map(it => ({
@@ -7194,16 +7220,21 @@
       allBtn.style.display = n > 1 ? '' : 'none';
       allBtn.dataset.tip = 'Check every track’s ISRC on every provider at once\n' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + '\nA verdict per row, the comparison on its chip'; }
   }
-  var _bgIsrcsSeeded = false;
+  var _bgIsrcsSeeded = false, _bgSeen = new Map();
   function renderTracks() {
     // #301: release title centered (Zen), artist + year on the line below
     modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
     modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
     paintSourceButtons();
     // the ISRCs the background Match found go into the new-ISRC inputs, once a page (a cleared one stays cleared)
-    if (bgLinksOn() && !_bgIsrcsSeeded) {
+    if (!_bgIsrcsSeeded) {
       _bgIsrcsSeeded = true;
-      bgIsrcsNew().forEach(x => { const t = RELEASE.tracks.find(y => y.recId === x.rec); if (t && !t.pending) t.pending = x.isrc; });
+      const found = bgCache().isrcs;
+      RELEASE.tracks.forEach(t => {
+        const value = found[t.recId];
+        if (value) _bgSeen.set(t.recId, value);
+        if (value && !t.existing.length && !t.pending && isValidIsrc(value)) t.pending = value;
+      });
     }
 
     tbody.innerHTML = '';
@@ -7313,7 +7344,10 @@
       if (hoverSx) hoverSx.addEventListener('click', () => openSxPanel(idx));
       tbody.appendChild(tr);
       validateInput(input, t);
+      const cached = bgCache(), suspect = (cached.suspects || {})[t.recId];
+      if (suspect && normalizeIsrc(t.pending) === normalizeIsrc(cached.isrcs[t.recId])) { input.classList.add('ii-in-suspect'); input.dataset.tip = suspect; }
     });
+    updateSuspectBadge();
     // #643: the rows are built with SoundExchange's label; the picked provider (kept while the
     // page is open) re-skins them, or SoundExchange when this release doesn't offer it
     setTrackProvider(trackProvAvailable(trackProv) ? trackProv : TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
@@ -7551,7 +7585,7 @@
     const parts = [];
     if (_isrcMissing) parts.push('<b>' + _isrcMissing + '</b> ISRC' + (_isrcMissing === 1 ? '' : 's') + ' missing');
     if (linksMissing) parts.push('<b>' + linksMissing + '</b> link' + (linksMissing === 1 ? '' : 's') + ' missing');
-    el.innerHTML = parts.length ? parts.join(' · ') : 'All ISRCs and links present';
+    el.innerHTML = (parts.length ? parts.join(' · ') : 'All ISRCs and links present') + (bgSource() ? ' · ' + bgSource() : '');
   }
 
   function updateSummary() {
@@ -7610,6 +7644,12 @@
     // Enabled when there's something to submit OR a collection is still running (so it's
     // never grayed mid-import/mid-resolve — the count fills in live as results arrive).
     submitBtn.disabled = parts.length === 0 && !busy;
+    requestDockUpdate();
+  }
+  function requestDockUpdate() {
+    if (requestDockUpdate.queued) return;
+    requestDockUpdate.queued = true;
+    queueMicrotask(() => { requestDockUpdate.queued = false; document.dispatchEvent(new Event('is:count-changed')); });
   }
 
   // If every track has a valid ISRC and they form one perfect +1 run (same first
@@ -8526,6 +8566,8 @@
       }
       Log.info('Match: Find links');
       await TrackLinks.resolve();
+      const current = bgCache(); if (bgCache.stale) bgCache.stale.delete(mbid); bgSave(current);
+      BG.stale = false; BG.checked = true; updateBtnLinks(); requestDockUpdate();
     } catch (e) {
       Log.err('Match failed: ' + errText(e));
     } finally {
@@ -9028,18 +9070,30 @@
     const mirror = () => {
       if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
       if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
-      const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
-      const busy = Object.keys(BG.running).length > 0;
-      // Findings can arrive after the editor opened. Keep its addable links in step with the dock.
-      if (modal && modal.classList.contains('open')) TrackLinks.seedCached();
-      // with Match in the background: the new ISRCs and links it found, together (the card splits them); else the tracks without an ISRC
-      if (bgLinksOn()) { const n = bgIsrcsNew().length + bgLinksToAdd().length; item.status(n ? String(n) : busy ? '' : '\u2713'); }
-      else item.status(missing ? String(missing) : '\u2713');
+      const busy = Object.keys(BG.running).length > 0 || !!(modal && collecting());
+      // A window that has been opened owns the pending values shown by Submit.
+      if (modal && tbody && tbody.querySelector('tr[data-idx]')) {
+        const found = bgCache().isrcs, fresh = new Set(Object.keys(found).filter(rec => _bgSeen.get(rec) !== found[rec]));
+        fresh.forEach(rec => _bgSeen.set(rec, found[rec]));
+        let changed = false;
+        RELEASE.tracks.forEach((t, i) => {
+          if (!fresh.has(t.recId) || t.existing.length || t.pending || !isValidIsrc(found[t.recId])) return;
+          setPending(i, found[t.recId], false, 'background'); changed = true;
+        });
+        if (changed) updateSummary();
+        TrackLinks.seedCached();
+      }
+      const c = bgCache(), known = BG.started || BG.checked || c.isrcsDone || c.done.length;
+      const n = modal && tbody && tbody.querySelector('tr[data-idx]')
+        ? _validIsrcCount + modal.querySelectorAll('.ii-tl-add .ii-tl.new').length
+        : bgIsrcsNew().length + bgLinksToAdd().length;
+      item.status(BG.stale ? '?' : n ? String(n) : busy ? '' : known ? '\u2713' : '?');
       item.busy(busy);
       item.card(scoutCard);
       updateBtnLinks();
     };
     new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
+    document.addEventListener('is:count-changed', mirror);
     mirror();
   });
   whenDomReady(() => {
@@ -9065,10 +9119,11 @@
     const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
     const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
     let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
-    if (bgLinksOn()) {
-      const isrcs = bgIsrcsNew();
+    if (bgSource()) h += row('#8a8494', 'Results', bgSource() + (BG.stale ? ' · refresh needed' : ''));
+    if (bgLinksOn() || BG.checked) {
+      const isrcs = modal && tbody && tbody.querySelector('tr[data-idx]') ? Array(_validIsrcCount).fill(null) : bgIsrcsNew();
       h += row(isrcs.length ? '#e0a640' : '#4cbf7a', 'Matched', '<b>' + isrcs.length + '</b> new ISRC' + (isrcs.length === 1 ? '' : 's'));
-      const links = bgLinksToAdd(), byCode = {};
+      const links = modal && tbody && tbody.querySelector('tr[data-idx]') ? [...modal.querySelectorAll('.ii-tl-add .ii-tl.new')].map(a => ({ code: a.dataset.code })) : bgLinksToAdd(), byCode = {};
       links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
       const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
       h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
@@ -9082,10 +9137,11 @@
   function updateBtnLinks() {
     let el = btn.querySelector('#ii-btn-links');
     let html = '';
-    if (RELEASE && bgLinksOn()) {
+    if (RELEASE && (bgLinksOn() || BG.checked)) {
       const LINK = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" style="vertical-align:-2px;margin-left:4px"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/></svg>';   // in here, not a const beside it: this can run before that line has (see btnStatus)
-      const i = bgIsrcsNew().length, l = bgLinksToAdd().length;
-      html = Object.keys(BG.running).length ? '⚡ …' : !i && !l ? '⚡ \u2713' : (i ? '⚡ ' + i : '') + (l ? LINK + ' ' + l : '');
+      const hasWindow = modal && tbody && tbody.querySelector('tr[data-idx]');
+      const i = hasWindow ? _validIsrcCount : bgIsrcsNew().length, l = hasWindow ? modal.querySelectorAll('.ii-tl-add .ii-tl.new').length : bgLinksToAdd().length;
+      html = BG.stale ? '⚡ ?' : i || l ? (i ? '⚡ ' + i : '') + (l ? LINK + ' ' + l : '') : Object.keys(BG.running).length ? '⚡ …' : '⚡ \u2713';
     }
     if (!el) { if (!html) return; el = document.createElement('span'); el.id = 'ii-btn-links'; el.className = 'ii-status ii-btn-links'; btn.appendChild(el); }
     if (el.mbuHtml !== html) { el.mbuHtml = html; el.innerHTML = html; }
@@ -9109,7 +9165,7 @@
     if (!r || r === mbid || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
     Log.info('Event Horizon shows release ' + r + ': following it');
     try { abortSxWork('Event Horizon moved to another release'); } catch (e) { /* nothing running */ }
-    mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
+    mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _bgSeen = new Map(); BG.checked = false; BG.stale = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
     BG.started = false; BG.running = {};
     fetchRelease().catch(e => Log.warn('Release load failed: ' + errText(e)));
   }
@@ -9123,22 +9179,57 @@
   }
   function bgLinksOn() { return linksAuto() === 'background'; }
   function bgSlowOn() { return store.get('bg_links_slow', true) !== false; }
+  function bgCacheDays() { return Math.max(1, Math.min(365, Number(store.get('match_cache_days', BG_DAYS)) || BG_DAYS)); }
   function bgCache() {
-    const all = store.get('bg_links_cache', {}) || {};
+    const enabled = store.get('match_cache_enabled', true) !== false && !(bgCache.stale && bgCache.stale.has(mbid));
+    const all = enabled ? (store.get('bg_links_cache', {}) || {}) : (bgCache.memory || (bgCache.memory = {}));
     const c = all[mbid];
-    const ok = c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+    const ok = c && Date.now() - c.at < bgCacheDays() * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+    const sources = bgCache.sources || (bgCache.sources = {});
+    if (!(mbid in sources)) sources[mbid] = enabled && ok === c ? 'cached' : '';
     ok.isrcs = ok.isrcs || {};
     if (ok.v !== 2) { ok.v = 2; if (!Object.keys(ok.isrcs).length) ok.isrcsDone = false; }   // older caches could hold "done" with every source failed
     return ok;
   }
+  function bgSource() { return (bgCache.sources && bgCache.sources[mbid]) || ''; }
+  function bgMarkLive() {
+    bgCache();
+    const sources = bgCache.sources;
+    sources[mbid] = sources[mbid] === 'cached' || sources[mbid] === 'cached + live' ? 'cached + live' : 'live';
+  }
   function bgSave(c) {
+    if (store.get('match_cache_enabled', true) === false || (bgCache.stale && bgCache.stale.has(mbid))) {
+      (bgCache.memory || (bgCache.memory = {}))[mbid] = c;
+      return;
+    }
     const all = store.get('bg_links_cache', {}) || {};
     all[mbid] = c;
     const keys = Object.keys(all).sort((a, b) => all[b].at - all[a].at);
     keys.slice(50).forEach(k => delete all[k]);   // the 50 latest releases
     store.set('bg_links_cache', all);
   }
+  function bgInvalidate(broadcast = true) {
+    const current = bgCache();
+    const all = store.get('bg_links_cache', {}) || {};
+    delete all[mbid]; store.set('bg_links_cache', all);
+    (bgCache.memory || (bgCache.memory = {}))[mbid] = current;
+    (bgCache.stale || (bgCache.stale = new Set())).add(mbid);
+    BG.generation = (BG.generation || 0) + 1;
+    BG.stale = true;
+    if (broadcast) try { localStorage.setItem('ii:match-changed', JSON.stringify({ release: mbid, at: Date.now(), nonce: Math.random() })); } catch (e) { /* current tab is still invalidated */ }
+    updateBtnLinks();
+    document.dispatchEvent(new Event('is:count-changed'));
+  }
+  window.addEventListener('storage', e => {
+    if (e.key === `pc:dirty:${mbid}` && e.newValue) { bgInvalidate(false); return; }
+    if (e.key !== 'ii:match-changed' || !e.newValue) return;
+    try { if (JSON.parse(e.newValue).release === mbid) bgInvalidate(false); } catch (x) { /* another value */ }
+  });
+  document.addEventListener('mbu:release-changed', e => {
+    try { if (JSON.parse(e.detail).release === mbid) bgInvalidate(false); } catch (x) { /* another event */ }
+  });
   function bgRemember(rec, code, url) {
+    bgMarkLive();
     const c = bgCache();
     if (c.links.some(x => x.rec === rec && x.url === url)) return;
     c.links.push({ rec, code, url }); bgSave(c);
@@ -9146,22 +9237,37 @@
   }
   // Match clicked by hand: its plausible fills go in the background's cache, so the count after a reload has them too
   function bgKeepFills(suspects) {
-    const c = bgCache();
+    bgMarkLive();
+    const c = bgCache(); c.suspects = c.suspects || {};
     let n = 0;
     RELEASE.tracks.forEach((t, i) => {
       const isrc = normalizeIsrc(t.pending);
-      if (t.existing.length || !isValidIsrc(isrc) || suspects.includes(i) || c.isrcs[t.recId] === isrc) return;
-      c.isrcs[t.recId] = isrc; n++;
+      if (t.existing.length || !isValidIsrc(isrc)) return;
+      if (c.isrcs[t.recId] !== isrc) { c.isrcs[t.recId] = isrc; n++; }
+      if (suspects.includes(i)) c.suspects[t.recId] = rowInput(i)?.dataset.tip || '⚠ Check this match before submitting';
+      else delete c.suspects[t.recId];
     });
-    if (!n) return;
     c.isrcsDone = true; bgSave(c);
     Log.info('Match: ' + n + ' ISRC(s) kept for the background count');
     updateBtnLinks();
   }
   // the matched ISRCs MusicBrainz doesn't have yet, for tracks without one
   function bgIsrcsNew() {
-    const m = bgCache().isrcs;
-    return RELEASE.tracks.filter(t => m[t.recId] && !t.existing.length).map(t => ({ rec: t.recId, isrc: m[t.recId] }));
+    const m = bgCache().isrcs, recs = new Map();
+    RELEASE.tracks.forEach((t, i) => {
+      const add = raw => {
+        const value = normalizeIsrc(raw);
+        if (!isValidIsrc(value)) return;
+        if (!recs.has(value)) recs.set(value, new Set());
+        recs.get(value).add(t.recId || 'i' + i);
+      };
+      t.existing.forEach(add);
+      if (!t.existing.length && m[t.recId]) add(m[t.recId]);
+    });
+    return RELEASE.tracks.filter(t => {
+      const value = normalizeIsrc(m[t.recId]);
+      return !t.existing.length && isValidIsrc(value) && recs.get(value).size === 1;
+    }).map(t => ({ rec: t.recId, isrc: m[t.recId] }));
   }
   // the cached links MusicBrainz doesn't have yet: one drops out once its track has a link on that platform,
   // not only this one, as Find links skips it (Tidal has two ids for a track: 4 "to add" that the window didn't show)
@@ -9177,6 +9283,9 @@
   }
   async function bgLinksRun(onChange) {
     BG.started = true;
+    const release = mbid, snapshot = RELEASE, generation = BG.generation || 0;
+    BG.stale = false;
+    const current = () => release === mbid && snapshot === RELEASE && generation === (BG.generation || 0);
     const c = bgCache();
     // Match's first half: ISRCs from the fastest source this release links, sure matches only
     if (!c.isrcsDone && RELEASE.tracks.some(t => !t.existing.length)) {
@@ -9185,7 +9294,9 @@
       for (const src of isrcSourcesFastest(true)) {
         let n = 0;
         try {
+          bgMarkLive();
           await src.fetcher(src.id, () => {}, x => {
+            if (!current()) return;
             const isrc = normalizeIsrc(x.isrc);
             if (!isValidIsrc(isrc)) return;
             const m = trackForSource(x);
@@ -9195,10 +9306,12 @@
             c.isrcs[t.recId] = isrc; n++;
           }, 0);
         } catch (x) { Log.warn('Background Match: ' + src.source + ' failed: ' + errText(x)); continue; }
+        if (!current()) return;
         answered = true;
         Log.info('Background Match: ' + src.source + ' gave ' + n + ' ISRC(s)');
         if (n) break;
       }
+      if (!current()) return;
       c.isrcsDone = answered; bgSave(c);   // every source failed: try again next load, not in a week
       delete BG.running.isrc; onChange();
     }
@@ -9209,12 +9322,14 @@
     try {
       await TrackLinks.findHeadless(t => c.isrcs[t.recId] || null, null, {
         skip: p => c.done.includes(p.code) || (!bgSlowOn() && BG_SLOW.includes(p.code)),
-        onStep: (p, done, of) => { BG.running[p.code] = { done, of }; onChange(); },
-        onHit: (idx, l) => { const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
-        onDone: p => { delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
+        onStep: (p, done, of) => { if (!current()) return; bgMarkLive(); BG.running[p.code] = { done, of }; onChange(); },
+        onHit: (idx, l) => { if (!current()) return; const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
+        onDone: p => { if (!current()) return; delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
       });
+      if (!current()) return;
       Log.info('Background Match: ' + bgIsrcsNew().length + ' new ISRC(s), ' + bgLinksToAdd().length + ' link(s) to add');
     } catch (x) { Log.warn('Background link check failed: ' + errText(x)); }
+    if (!current()) return;
     BG.running = {};
     onChange();
   }

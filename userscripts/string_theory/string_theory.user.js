@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.094332
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.31.093300, art_station 2026.10.31.093300, credit_hoarder 2026.10.31.093350, event_horizon 2026.10.31.093300, falcon 2026.10.31.093300, first_contact 2026.10.31.093300, fusion 2026.10.31.093300, group_therapy 2026.10.31.093300, isrc_scout 2026.10.31.094220, mammoth 2026.10.31.093300, mission_control 2026.10.31.093300, platform_check 2026.10.31.093300). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.31.100555
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.31.093300, art_station 2026.10.31.093300, credit_hoarder 2026.10.31.100552, event_horizon 2026.10.31.093300, falcon 2026.10.31.093300, first_contact 2026.10.31.093300, fusion 2026.10.31.093300, group_therapy 2026.10.31.093300, isrc_scout 2026.10.31.100400, mammoth 2026.10.31.093300, mission_control 2026.10.31.093300, platform_check 2026.10.31.094408). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -185,8 +185,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.31.094332 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.31.093300\n  · Art Station v2026.10.31.093300\n  · Credit Hoarder v2026.10.31.093350\n  · Event Horizon v2026.10.31.093300\n  · Falcon v2026.10.31.093300\n  · First Contact v2026.10.31.093300\n  · Fusion v2026.10.31.093300\n  · Group Therapy v2026.10.31.093300\n  · ISRC Scout v2026.10.31.094220\n  · Mammoth v2026.10.31.093300\n  · Mission Control v2026.10.31.093300\n  · Platform Check v2026.10.31.093300");
+  console.log('%c String Theory %c v2026.10.31.100555 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.31.093300\n  · Art Station v2026.10.31.093300\n  · Credit Hoarder v2026.10.31.100552\n  · Event Horizon v2026.10.31.093300\n  · Falcon v2026.10.31.093300\n  · First Contact v2026.10.31.093300\n  · Fusion v2026.10.31.093300\n  · Group Therapy v2026.10.31.093300\n  · ISRC Scout v2026.10.31.100400\n  · Mammoth v2026.10.31.093300\n  · Mission Control v2026.10.31.093300\n  · Platform Check v2026.10.31.094408");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -196,7 +196,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.31.093300"],["art_station","Art Station","2026.10.31.093300"],["credit_hoarder","Credit Hoarder","2026.10.31.093350"],["event_horizon","Event Horizon","2026.10.31.093300"],["falcon","Falcon","2026.10.31.093300"],["first_contact","First Contact","2026.10.31.093300"],["fusion","Fusion","2026.10.31.093300"],["group_therapy","Group Therapy","2026.10.31.093300"],["isrc_scout","ISRC Scout","2026.10.31.094220"],["mammoth","Mammoth","2026.10.31.093300"],["mission_control","Mission Control","2026.10.31.093300"],["platform_check","Platform Check","2026.10.31.093300"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.31.093300"],["art_station","Art Station","2026.10.31.093300"],["credit_hoarder","Credit Hoarder","2026.10.31.100552"],["event_horizon","Event Horizon","2026.10.31.093300"],["falcon","Falcon","2026.10.31.093300"],["first_contact","First Contact","2026.10.31.093300"],["fusion","Fusion","2026.10.31.093300"],["group_therapy","Group Therapy","2026.10.31.093300"],["isrc_scout","ISRC Scout","2026.10.31.100400"],["mammoth","Mammoth","2026.10.31.093300"],["mission_control","Mission Control","2026.10.31.093300"],["platform_check","Platform Check","2026.10.31.094408"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -23229,7 +23229,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
 
 // ===== credit_hoarder (@run-at document-end) ====================================
 if (__stOff.indexOf("credit_hoarder") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.31.093350","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.31.093350","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.31.100552","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"}) }) : { script: {"name":"Credit Hoarder*","namespace":"majkinetor","version":"2026.10.31.100552","description":"Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/credit_hoarder/README.md","supportURL":"https://github.com/majkinetor/musicbrainz-userscripts/issues","icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K"} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (() => {
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
@@ -63009,7 +63009,7 @@ Created this ${kind} while adding credits parsed from text to ${relUrl}`;
 
 // ===== isrc_scout (@run-at document-start) ========================================
 if (__stOff.indexOf("isrc_scout") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.31.094220","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.31.094220","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.31.100400","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"ISRC Scout*","namespace":"https://musicbrainz.org/","version":"2026.10.31.100400","description":"Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/isrc_scout/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 /*
  * ─────────────────────────────────────────────────────────────────────────
@@ -64181,8 +64181,10 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   // current release lacks from its sibling releases (one browse, fill-if-empty).
   async function augmentProvidersFromRG(rgId) {
     if (!rgId) return;
+    const snapshot = RELEASE, target = mbid;
     try {
       const r = await gmGet(MB_WS2 + 'release?release-group=' + rgId + '&inc=url-rels&limit=100&fmt=json', { 'Accept': 'application/json', 'User-Agent': UA });
+      if (target !== mbid || snapshot !== RELEASE) return;
       if (r.status !== 200) { Log.warn('Release group: sibling scan gave ' + r.status); return; }
       const j = JSON.parse(r.responseText || '{}');
       const added = [];
@@ -64213,8 +64215,8 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   function fetchRelease() {
     if (RELEASE) return Promise.resolve(RELEASE);
     if (_relInFlight) return _relInFlight;
-    _relInFlight = fetchReleaseNow();
-    _relInFlight.catch(() => {}).then(() => { _relInFlight = null; });
+    const request = _relInFlight = fetchReleaseNow();
+    request.catch(() => {}).then(() => { if (_relInFlight === request) _relInFlight = null; });
     // #607: the page button's count follows EVERY successful load, not just the
     // page-load one. That one can fail (MB 503s under its rate limit) and leave
     // "?" — and opening the dialog later loaded the release without telling it.
@@ -64222,11 +64224,12 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     return _relInFlight;
   }
   function fetchReleaseNow() {
+    const target = mbid;
     return gmGet(
       // recording-level-rels folds each recording's URL relationships into this one
       // call (same data the overview's "Display credits inline" shows) — so the
       // #219 track-link icons know what's already linked with no extra request.
-      MB_WS2 + 'release/' + mbid + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
+      MB_WS2 + 'release/' + target + '?inc=recordings+artist-credits+isrcs+url-rels+recording-level-rels+release-groups&fmt=json',
       { 'Accept': 'application/json', 'User-Agent': UA }
     ).then(async r => {
       if (r.status !== 200) throw new Error('MB ' + r.status);
@@ -64269,9 +64272,11 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       const rgYear = parseInt((String(rg['first-release-date'] || '').match(/^(\d{4})/) || [])[1]) || null;
       const releaseYear = parseInt((String(data.date || '').match(/^(\d{4})/) || [])[1]) || rgYear;
       const artist = acName(data['artist-credit']);
+      if (target !== mbid) throw new Error('Release changed while loading');
       RELEASE = Object.assign({ title: data.title || '', tracks, rgId: rg.id || '', releaseYear, artist }, prov);
       // #302: when enabled, fill missing provider links from sibling releases in the RG.
       if (rgProvidersEnabled() && RELEASE.rgId) await augmentProvidersFromRG(RELEASE.rgId);
+      if (target !== mbid) throw new Error('Release changed while loading');
       const _pf = { bandcamp: 'bandcampUrl', apple: 'appleUrl', soundcloud: 'scUrl', audiomack: 'akUrl', sevendigital: 'sdUrl' };
       const linkStr = ['deezer', 'spotify', 'beatport', 'tidal', 'volumo', 'hdtracks', 'presto', 'bandcamp', 'apple', 'soundcloud', 'audiomack', 'sevendigital']
         .map(k => { const f = _pf[k] || k + 'Id'; return RELEASE[f] ? k[0].toUpperCase() + k.slice(1) + ' ' + RELEASE[f] : null; }).filter(Boolean).join(', ');
@@ -64424,7 +64429,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       }
     }
   }
-  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit'); }
+  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit').then(result => { bgInvalidate(); return result; }); }
   async function submitIsrcsOnce(map, editNote) {
     const token = await Auth.accessToken();
     const xml = buildIsrcXml(map, editNote);
@@ -66228,11 +66233,12 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
             <label><input type="checkbox" id="ii-show-icons">icons</label>
             <label><input type="checkbox" id="ii-show-text">text</label></div>
         <div class="ii-set-row"><label data-tip="Use providers from the whole release group&#10;Fill missing Deezer / Tidal / Bandcamp / … album links from sibling releases in the release group: recordings are shared, so a link on any edition resolves here. Costs one extra lookup."><input type="checkbox" id="ii-rg-providers"><span>Use providers from the whole release group</span></label></div>
-          <div class="ii-set-row ii-set-inline" data-tip="Run Match by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the button and the dock in Event Horizon count the new ISRCs and links it found (ISRCs/links). It uses a lot of network. What it finds is kept for a week."><label><input type="checkbox" id="ii-links-auto-on">Auto match</label>
+          <div class="ii-set-row ii-set-inline" data-tip="Run Match by itself&#10;Off: only when you click it.&#10;On start: when you open the window.&#10;In the background: on the release page, before you open anything; the button and the dock in Event Horizon count the new ISRCs and links it found (ISRCs/links). It uses a lot of network. What it finds is kept according to the cache settings."><label><input type="checkbox" id="ii-links-auto-on">Auto match</label>
             <select id="ii-links-auto">
               <option value="start">on start</option>
               <option value="background">in the background</option>
             </select></div>
+        <div class="ii-set-row ii-set-inline"><label><input type="checkbox" id="ii-cache-enabled">Cache Match results</label> <span>for</span> <input type="number" id="ii-cache-days" min="1" max="365" step="1"> <span>days</span></div>
         <div class="ii-set-row"><label data-tip="Include slow platforms&#10;In the background, Tidal too: it takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
         <div class="ii-set-row"><label data-tip="Ignore Platform Check link confidence&#10;Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong."><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence</span></label></div>
           <div class="ii-set-row ii-set-inline" data-tip="Where Spotify&#x27;s ISRCs come from&#10;Spotify&#x27;s own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another."><span class="ii-set-k">Spotify ISRC source</span>
@@ -66568,6 +66574,26 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       selAuto.disabled = !cbAuto.checked; cbSlow.checked = bgSlowOn(); cbSlow.disabled = cur !== 'background';
       [cbAuto, selAuto].forEach(el => el.addEventListener('change', () => Log.info('Match runs: ' + sync())));
       cbSlow.addEventListener('change', () => store.set('bg_links_slow', cbSlow.checked));
+    }
+
+    {
+      const enabled = modal.querySelector('#ii-cache-enabled'), days = modal.querySelector('#ii-cache-days');
+      enabled.checked = store.get('match_cache_enabled', true) !== false;
+      days.value = bgCacheDays(); days.disabled = !enabled.checked;
+      enabled.addEventListener('change', () => {
+        store.set('match_cache_enabled', enabled.checked); days.disabled = !enabled.checked;
+        bgCache.memory = {}; bgCache.sources = {}; store.del('bg_links_cache');
+        bgCache.stale = new Set();
+        BG.generation = (BG.generation || 0) + 1; BG.running = {}; BG.started = false; BG.stale = true;
+        updateBtnLinks(); requestDockUpdate();
+      });
+      days.addEventListener('change', () => {
+        const n = Math.max(1, Math.min(365, Math.round(Number(days.value) || 7)));
+        days.value = n; store.set('match_cache_days', n);
+        bgCache.memory = {}; bgCache.sources = {}; bgCache.stale = new Set();
+        BG.generation = (BG.generation || 0) + 1; BG.running = {}; BG.started = false; BG.stale = true;
+        updateBtnLinks(); requestDockUpdate();
+      });
     }
 
     // #749: ISRCs and links on the release page's tracklist
@@ -67759,7 +67785,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     // logged-in session cookie (same-origin) — no OAuth, no CSRF. One POST carries
     // the whole batch (auto-applied for auto-editors, else queued). items:
     // [{ recGid, url, linkTypeID }].
-    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit'); }   // #748
+    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit').then(result => { bgInvalidate(); return result; }); }   // #748
     async function submitRelsOnce(items, note) {
       const body = {
         edits: items.map(it => ({
@@ -68166,16 +68192,21 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       allBtn.style.display = n > 1 ? '' : 'none';
       allBtn.dataset.tip = 'Check every track’s ISRC on every provider at once\n' + allProviders().map(k => TRACK_PROV[k].name).join(', ') + '\nA verdict per row, the comparison on its chip'; }
   }
-  var _bgIsrcsSeeded = false;
+  var _bgIsrcsSeeded = false, _bgSeen = new Map();
   function renderTracks() {
     // #301: release title centered (Zen), artist + year on the line below
     modal.querySelector('#ii-rel-title').textContent = RELEASE.title || '';
     modal.querySelector('#ii-rel-sub').textContent = [RELEASE.artist, RELEASE.releaseYear].filter(Boolean).join(' · ');
     paintSourceButtons();
     // the ISRCs the background Match found go into the new-ISRC inputs, once a page (a cleared one stays cleared)
-    if (bgLinksOn() && !_bgIsrcsSeeded) {
+    if (!_bgIsrcsSeeded) {
       _bgIsrcsSeeded = true;
-      bgIsrcsNew().forEach(x => { const t = RELEASE.tracks.find(y => y.recId === x.rec); if (t && !t.pending) t.pending = x.isrc; });
+      const found = bgCache().isrcs;
+      RELEASE.tracks.forEach(t => {
+        const value = found[t.recId];
+        if (value) _bgSeen.set(t.recId, value);
+        if (value && !t.existing.length && !t.pending && isValidIsrc(value)) t.pending = value;
+      });
     }
 
     tbody.innerHTML = '';
@@ -68285,7 +68316,10 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       if (hoverSx) hoverSx.addEventListener('click', () => openSxPanel(idx));
       tbody.appendChild(tr);
       validateInput(input, t);
+      const cached = bgCache(), suspect = (cached.suspects || {})[t.recId];
+      if (suspect && normalizeIsrc(t.pending) === normalizeIsrc(cached.isrcs[t.recId])) { input.classList.add('ii-in-suspect'); input.dataset.tip = suspect; }
     });
+    updateSuspectBadge();
     // #643: the rows are built with SoundExchange's label; the picked provider (kept while the
     // page is open) re-skins them, or SoundExchange when this release doesn't offer it
     setTrackProvider(trackProvAvailable(trackProv) ? trackProv : TRACK_PROV_ORDER.find(k => k !== 'all' && trackProvAvailable(k)) || 'sx', { quiet: true });
@@ -68523,7 +68557,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     const parts = [];
     if (_isrcMissing) parts.push('<b>' + _isrcMissing + '</b> ISRC' + (_isrcMissing === 1 ? '' : 's') + ' missing');
     if (linksMissing) parts.push('<b>' + linksMissing + '</b> link' + (linksMissing === 1 ? '' : 's') + ' missing');
-    el.innerHTML = parts.length ? parts.join(' · ') : 'All ISRCs and links present';
+    el.innerHTML = (parts.length ? parts.join(' · ') : 'All ISRCs and links present') + (bgSource() ? ' · ' + bgSource() : '');
   }
 
   function updateSummary() {
@@ -68582,6 +68616,12 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     // Enabled when there's something to submit OR a collection is still running (so it's
     // never grayed mid-import/mid-resolve — the count fills in live as results arrive).
     submitBtn.disabled = parts.length === 0 && !busy;
+    requestDockUpdate();
+  }
+  function requestDockUpdate() {
+    if (requestDockUpdate.queued) return;
+    requestDockUpdate.queued = true;
+    queueMicrotask(() => { requestDockUpdate.queued = false; document.dispatchEvent(new Event('is:count-changed')); });
   }
 
   // If every track has a valid ISRC and they form one perfect +1 run (same first
@@ -69498,6 +69538,8 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       }
       Log.info('Match: Find links');
       await TrackLinks.resolve();
+      const current = bgCache(); if (bgCache.stale) bgCache.stale.delete(mbid); bgSave(current);
+      BG.stale = false; BG.checked = true; updateBtnLinks(); requestDockUpdate();
     } catch (e) {
       Log.err('Match failed: ' + errText(e));
     } finally {
@@ -70000,18 +70042,30 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     const mirror = () => {
       if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
       if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
-      const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
-      const busy = Object.keys(BG.running).length > 0;
-      // Findings can arrive after the editor opened. Keep its addable links in step with the dock.
-      if (modal && modal.classList.contains('open')) TrackLinks.seedCached();
-      // with Match in the background: the new ISRCs and links it found, together (the card splits them); else the tracks without an ISRC
-      if (bgLinksOn()) { const n = bgIsrcsNew().length + bgLinksToAdd().length; item.status(n ? String(n) : busy ? '' : '\u2713'); }
-      else item.status(missing ? String(missing) : '\u2713');
+      const busy = Object.keys(BG.running).length > 0 || !!(modal && collecting());
+      // A window that has been opened owns the pending values shown by Submit.
+      if (modal && tbody && tbody.querySelector('tr[data-idx]')) {
+        const found = bgCache().isrcs, fresh = new Set(Object.keys(found).filter(rec => _bgSeen.get(rec) !== found[rec]));
+        fresh.forEach(rec => _bgSeen.set(rec, found[rec]));
+        let changed = false;
+        RELEASE.tracks.forEach((t, i) => {
+          if (!fresh.has(t.recId) || t.existing.length || t.pending || !isValidIsrc(found[t.recId])) return;
+          setPending(i, found[t.recId], false, 'background'); changed = true;
+        });
+        if (changed) updateSummary();
+        TrackLinks.seedCached();
+      }
+      const c = bgCache(), known = BG.started || BG.checked || c.isrcsDone || c.done.length;
+      const n = modal && tbody && tbody.querySelector('tr[data-idx]')
+        ? _validIsrcCount + modal.querySelectorAll('.ii-tl-add .ii-tl.new').length
+        : bgIsrcsNew().length + bgLinksToAdd().length;
+      item.status(BG.stale ? '?' : n ? String(n) : busy ? '' : known ? '\u2713' : '?');
       item.busy(busy);
       item.card(scoutCard);
       updateBtnLinks();
     };
     new MutationObserver(mirror).observe(btn, { childList: true, subtree: true, characterData: true });
+    document.addEventListener('is:count-changed', mirror);
     mirror();
   });
   whenDomReady(() => {
@@ -70037,10 +70091,11 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     const total = RELEASE.tracks.length, missing = RELEASE.tracks.filter(t => !t.existing.length).length;
     const row = (dot, k, v) => '<span class="mbu-tip-dl"><i style="background:' + dot + '"></i>' + k + '</span><span class="mbu-tip-dt">' + v + '</span>';
     let h = row(missing ? '#e0a640' : '#4cbf7a', 'ISRCs', '<b>' + (total - missing) + '/' + total + '</b>');
-    if (bgLinksOn()) {
-      const isrcs = bgIsrcsNew();
+    if (bgSource()) h += row('#8a8494', 'Results', bgSource() + (BG.stale ? ' · refresh needed' : ''));
+    if (bgLinksOn() || BG.checked) {
+      const isrcs = modal && tbody && tbody.querySelector('tr[data-idx]') ? Array(_validIsrcCount).fill(null) : bgIsrcsNew();
       h += row(isrcs.length ? '#e0a640' : '#4cbf7a', 'Matched', '<b>' + isrcs.length + '</b> new ISRC' + (isrcs.length === 1 ? '' : 's'));
-      const links = bgLinksToAdd(), byCode = {};
+      const links = modal && tbody && tbody.querySelector('tr[data-idx]') ? [...modal.querySelectorAll('.ii-tl-add .ii-tl.new')].map(a => ({ code: a.dataset.code })) : bgLinksToAdd(), byCode = {};
       links.forEach(l => { byCode[l.code] = (byCode[l.code] || 0) + 1; });
       const icons = Object.keys(byCode).map(c => { const p = BG.prov(c); return '<span title="' + tipEsc(p ? p.name : c) + ' · ' + byCode[c] + '" style="display:inline-block;vertical-align:-3px;margin-left:3px">' + (p ? p.icon : c) + '</span>'; }).join('');
       h += row(links.length ? '#e0a640' : '#4cbf7a', 'Links', '<b>' + links.length + '</b> to add' + icons);
@@ -70054,10 +70109,11 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   function updateBtnLinks() {
     let el = btn.querySelector('#ii-btn-links');
     let html = '';
-    if (RELEASE && bgLinksOn()) {
+    if (RELEASE && (bgLinksOn() || BG.checked)) {
       const LINK = '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" style="vertical-align:-2px;margin-left:4px"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/></svg>';   // in here, not a const beside it: this can run before that line has (see btnStatus)
-      const i = bgIsrcsNew().length, l = bgLinksToAdd().length;
-      html = Object.keys(BG.running).length ? '⚡ …' : !i && !l ? '⚡ \u2713' : (i ? '⚡ ' + i : '') + (l ? LINK + ' ' + l : '');
+      const hasWindow = modal && tbody && tbody.querySelector('tr[data-idx]');
+      const i = hasWindow ? _validIsrcCount : bgIsrcsNew().length, l = hasWindow ? modal.querySelectorAll('.ii-tl-add .ii-tl.new').length : bgLinksToAdd().length;
+      html = BG.stale ? '⚡ ?' : i || l ? (i ? '⚡ ' + i : '') + (l ? LINK + ' ' + l : '') : Object.keys(BG.running).length ? '⚡ …' : '⚡ \u2713';
     }
     if (!el) { if (!html) return; el = document.createElement('span'); el.id = 'ii-btn-links'; el.className = 'ii-status ii-btn-links'; btn.appendChild(el); }
     if (el.mbuHtml !== html) { el.mbuHtml = html; el.innerHTML = html; }
@@ -70081,7 +70137,7 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     if (!r || r === mbid || _removalBusy || (typeof modal !== 'undefined' && modal && modal.classList.contains('open'))) return;
     Log.info('Event Horizon shows release ' + r + ': following it');
     try { abortSxWork('Event Horizon moved to another release'); } catch (e) { /* nothing running */ }
-    mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
+    mbid = r; RELEASE = null; _relInFlight = null; _autoLinksDone = false; _bgIsrcsSeeded = false; _bgSeen = new Map(); BG.checked = false; BG.stale = false; _dzListCache = null; _suspectUndo = null; _allEpoch++;
     BG.started = false; BG.running = {};
     fetchRelease().catch(e => Log.warn('Release load failed: ' + errText(e)));
   }
@@ -70095,22 +70151,57 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   }
   function bgLinksOn() { return linksAuto() === 'background'; }
   function bgSlowOn() { return store.get('bg_links_slow', true) !== false; }
+  function bgCacheDays() { return Math.max(1, Math.min(365, Number(store.get('match_cache_days', BG_DAYS)) || BG_DAYS)); }
   function bgCache() {
-    const all = store.get('bg_links_cache', {}) || {};
+    const enabled = store.get('match_cache_enabled', true) !== false && !(bgCache.stale && bgCache.stale.has(mbid));
+    const all = enabled ? (store.get('bg_links_cache', {}) || {}) : (bgCache.memory || (bgCache.memory = {}));
     const c = all[mbid];
-    const ok = c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+    const ok = c && Date.now() - c.at < bgCacheDays() * 864e5 ? c : { at: Date.now(), links: [], done: [] };
+    const sources = bgCache.sources || (bgCache.sources = {});
+    if (!(mbid in sources)) sources[mbid] = enabled && ok === c ? 'cached' : '';
     ok.isrcs = ok.isrcs || {};
     if (ok.v !== 2) { ok.v = 2; if (!Object.keys(ok.isrcs).length) ok.isrcsDone = false; }   // older caches could hold "done" with every source failed
     return ok;
   }
+  function bgSource() { return (bgCache.sources && bgCache.sources[mbid]) || ''; }
+  function bgMarkLive() {
+    bgCache();
+    const sources = bgCache.sources;
+    sources[mbid] = sources[mbid] === 'cached' || sources[mbid] === 'cached + live' ? 'cached + live' : 'live';
+  }
   function bgSave(c) {
+    if (store.get('match_cache_enabled', true) === false || (bgCache.stale && bgCache.stale.has(mbid))) {
+      (bgCache.memory || (bgCache.memory = {}))[mbid] = c;
+      return;
+    }
     const all = store.get('bg_links_cache', {}) || {};
     all[mbid] = c;
     const keys = Object.keys(all).sort((a, b) => all[b].at - all[a].at);
     keys.slice(50).forEach(k => delete all[k]);   // the 50 latest releases
     store.set('bg_links_cache', all);
   }
+  function bgInvalidate(broadcast = true) {
+    const current = bgCache();
+    const all = store.get('bg_links_cache', {}) || {};
+    delete all[mbid]; store.set('bg_links_cache', all);
+    (bgCache.memory || (bgCache.memory = {}))[mbid] = current;
+    (bgCache.stale || (bgCache.stale = new Set())).add(mbid);
+    BG.generation = (BG.generation || 0) + 1;
+    BG.stale = true;
+    if (broadcast) try { localStorage.setItem('ii:match-changed', JSON.stringify({ release: mbid, at: Date.now(), nonce: Math.random() })); } catch (e) { /* current tab is still invalidated */ }
+    updateBtnLinks();
+    document.dispatchEvent(new Event('is:count-changed'));
+  }
+  window.addEventListener('storage', e => {
+    if (e.key === `pc:dirty:${mbid}` && e.newValue) { bgInvalidate(false); return; }
+    if (e.key !== 'ii:match-changed' || !e.newValue) return;
+    try { if (JSON.parse(e.newValue).release === mbid) bgInvalidate(false); } catch (x) { /* another value */ }
+  });
+  document.addEventListener('mbu:release-changed', e => {
+    try { if (JSON.parse(e.detail).release === mbid) bgInvalidate(false); } catch (x) { /* another event */ }
+  });
   function bgRemember(rec, code, url) {
+    bgMarkLive();
     const c = bgCache();
     if (c.links.some(x => x.rec === rec && x.url === url)) return;
     c.links.push({ rec, code, url }); bgSave(c);
@@ -70118,22 +70209,37 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   }
   // Match clicked by hand: its plausible fills go in the background's cache, so the count after a reload has them too
   function bgKeepFills(suspects) {
-    const c = bgCache();
+    bgMarkLive();
+    const c = bgCache(); c.suspects = c.suspects || {};
     let n = 0;
     RELEASE.tracks.forEach((t, i) => {
       const isrc = normalizeIsrc(t.pending);
-      if (t.existing.length || !isValidIsrc(isrc) || suspects.includes(i) || c.isrcs[t.recId] === isrc) return;
-      c.isrcs[t.recId] = isrc; n++;
+      if (t.existing.length || !isValidIsrc(isrc)) return;
+      if (c.isrcs[t.recId] !== isrc) { c.isrcs[t.recId] = isrc; n++; }
+      if (suspects.includes(i)) c.suspects[t.recId] = rowInput(i)?.dataset.tip || '⚠ Check this match before submitting';
+      else delete c.suspects[t.recId];
     });
-    if (!n) return;
     c.isrcsDone = true; bgSave(c);
     Log.info('Match: ' + n + ' ISRC(s) kept for the background count');
     updateBtnLinks();
   }
   // the matched ISRCs MusicBrainz doesn't have yet, for tracks without one
   function bgIsrcsNew() {
-    const m = bgCache().isrcs;
-    return RELEASE.tracks.filter(t => m[t.recId] && !t.existing.length).map(t => ({ rec: t.recId, isrc: m[t.recId] }));
+    const m = bgCache().isrcs, recs = new Map();
+    RELEASE.tracks.forEach((t, i) => {
+      const add = raw => {
+        const value = normalizeIsrc(raw);
+        if (!isValidIsrc(value)) return;
+        if (!recs.has(value)) recs.set(value, new Set());
+        recs.get(value).add(t.recId || 'i' + i);
+      };
+      t.existing.forEach(add);
+      if (!t.existing.length && m[t.recId]) add(m[t.recId]);
+    });
+    return RELEASE.tracks.filter(t => {
+      const value = normalizeIsrc(m[t.recId]);
+      return !t.existing.length && isValidIsrc(value) && recs.get(value).size === 1;
+    }).map(t => ({ rec: t.recId, isrc: m[t.recId] }));
   }
   // the cached links MusicBrainz doesn't have yet: one drops out once its track has a link on that platform,
   // not only this one, as Find links skips it (Tidal has two ids for a track: 4 "to add" that the window didn't show)
@@ -70149,6 +70255,9 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
   }
   async function bgLinksRun(onChange) {
     BG.started = true;
+    const release = mbid, snapshot = RELEASE, generation = BG.generation || 0;
+    BG.stale = false;
+    const current = () => release === mbid && snapshot === RELEASE && generation === (BG.generation || 0);
     const c = bgCache();
     // Match's first half: ISRCs from the fastest source this release links, sure matches only
     if (!c.isrcsDone && RELEASE.tracks.some(t => !t.existing.length)) {
@@ -70157,7 +70266,9 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
       for (const src of isrcSourcesFastest(true)) {
         let n = 0;
         try {
+          bgMarkLive();
           await src.fetcher(src.id, () => {}, x => {
+            if (!current()) return;
             const isrc = normalizeIsrc(x.isrc);
             if (!isValidIsrc(isrc)) return;
             const m = trackForSource(x);
@@ -70167,10 +70278,12 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
             c.isrcs[t.recId] = isrc; n++;
           }, 0);
         } catch (x) { Log.warn('Background Match: ' + src.source + ' failed: ' + errText(x)); continue; }
+        if (!current()) return;
         answered = true;
         Log.info('Background Match: ' + src.source + ' gave ' + n + ' ISRC(s)');
         if (n) break;
       }
+      if (!current()) return;
       c.isrcsDone = answered; bgSave(c);   // every source failed: try again next load, not in a week
       delete BG.running.isrc; onChange();
     }
@@ -70181,12 +70294,14 @@ var { MBU_UI_CSS, mbuHelpHref, MBU_HELP_ICON, MBU_SORT_ICON, MBU_EDIT_ICON, mbuH
     try {
       await TrackLinks.findHeadless(t => c.isrcs[t.recId] || null, null, {
         skip: p => c.done.includes(p.code) || (!bgSlowOn() && BG_SLOW.includes(p.code)),
-        onStep: (p, done, of) => { BG.running[p.code] = { done, of }; onChange(); },
-        onHit: (idx, l) => { const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
-        onDone: p => { delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
+        onStep: (p, done, of) => { if (!current()) return; bgMarkLive(); BG.running[p.code] = { done, of }; onChange(); },
+        onHit: (idx, l) => { if (!current()) return; const t = RELEASE.tracks[idx]; if (t && !c.links.some(x => x.rec === t.recId && x.url === l.url)) { c.links.push({ rec: t.recId, code: l.code, url: l.url }); bgSave(c); } },
+        onDone: p => { if (!current()) return; delete BG.running[p.code]; if (!c.done.includes(p.code)) c.done.push(p.code); bgSave(c); onChange(); },
       });
+      if (!current()) return;
       Log.info('Background Match: ' + bgIsrcsNew().length + ' new ISRC(s), ' + bgLinksToAdd().length + ' link(s) to add');
     } catch (x) { Log.warn('Background link check failed: ' + errText(x)); }
+    if (!current()) return;
     BG.running = {};
     onChange();
   }
@@ -76016,7 +76131,7 @@ else { launcher(); if (FC_UPDATE) fcUpdate(FC_UPDATE); else afterSave(); }
 
 // ===== platform_check (@run-at document-end) ====================================
 if (__stOff.indexOf("platform_check") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.31.093300","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.31.093300","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.31.094408","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Platform Check*","namespace":"http://tampermonkey.net/","version":"2026.10.31.094408","description":"Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.","author":"majkinetor","homepage":null,"homepageURL":"https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/platform_check/README.md","supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo="} };
   (f=>document.readyState!=='loading'?f():document.addEventListener('DOMContentLoaded',f,{once:true}))(function(){ try { (function(){
 (async function () {
 'use strict';
@@ -77372,6 +77487,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
+      <span id="pc-result-source" style="font-size:10px;color:var(--mbu-text-weak)"></span>
       <span id="mb-refresh-btn" class="pc-icon-btn" data-tip="Refresh\nClear the cache and scan again" style="${iconBtn}">↻</span>
     </div>
   </div>
@@ -77475,6 +77591,10 @@ providerModal.innerHTML = `
     <div class="pc-set-row"><label data-tip="Count the artist and label links to add\nOn: once the scans finish, MusicBrainz is asked which pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added\nOff: it is asked when you open the table"><input type="checkbox" id="mb-links-count"> <span><b>Count</b> the links to add</span></label></div>
     <div class="pc-set-row"><label data-tip="Close Falcon after a clean run\nAfter Run in Falcon from Artists &amp; labels, Falcon closes its panel once every link is added. A failed or partial edit leaves it open, to read why.\nSend only, and a Falcon in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <span><b>Close Falcon</b> after a successful import</span></label></div>
 
+    <div class="pc-setup-sec">Cache</div>
+    <div class="pc-set-row"><label><input type="checkbox" id="mb-cache-enabled"> Cache scan results</label>
+      <span>for</span> <select id="mb-cache-days"><option value="default">the default duration</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="90">90 days</option></select></div>
+
     <div class="pc-setup-sec">Appearance</div>
     <div class="pc-set-grid">
       <div class="pc-set-k">Icon</div>
@@ -77560,11 +77680,13 @@ else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
 var pcDockItem = null;
 // the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
-var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
+var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0, pcDockStale = false;
+const pcDirty = new Set(), pcMcPending = new Map(), pcSources = new Set();
+function pcSourceText() { return pcSources.size === 2 ? 'cached + live' : pcSources.has('cached') ? 'cached' : pcSources.has('live') ? 'live' : ''; }
 // "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
 function pcDockStatus() {
     const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
-    if (pcDockItem) pcDockItem.status(pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '✓');
+    if (pcDockItem) pcDockItem.status(pcDockStale ? '?' : pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : pcDockArtists === null && GM_getValue('pc:links-count', true) ? '?' : '✓');
 }
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
@@ -77803,6 +77925,9 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
     document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
     document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', true);
+    document.getElementById('mb-cache-enabled').checked = GM_getValue('pc:cache-enabled', true);
+    document.getElementById('mb-cache-days').value = String(GM_getValue('pc:cache-days', 'default'));
+    document.getElementById('mb-cache-days').disabled = !GM_getValue('pc:cache-enabled', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -77869,6 +77994,15 @@ document.getElementById('mb-format-mode').addEventListener('change', e => {
 document.getElementById('mb-links-count').addEventListener('change', e => {
     GM_setValue('pc:links-count', e.target.checked);       // #671 — count the links to add once the scans finish
     if (e.target.checked) pcCountLinks(); else pcShowLinksCount(null);
+});
+document.getElementById('mb-cache-enabled').addEventListener('change', e => {
+    GM_setValue('pc:cache-enabled', e.target.checked);
+    document.getElementById('mb-cache-days').disabled = !e.target.checked;
+    pcMarkDirty(mbid, false, false);
+});
+document.getElementById('mb-cache-days').addEventListener('change', e => {
+    GM_setValue('pc:cache-days', e.target.value === 'default' ? 'default' : Number(e.target.value));
+    pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-links-close-falcon').addEventListener('change', e => {
     GM_setValue('pc:links-close-falcon', e.target.checked);   // Falcon closes its panel after a Run with nothing failed
@@ -78383,6 +78517,8 @@ function pcWireForce(el, fn) {
     }
 }
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, unoffered, barcode }) {
+    pcSources.add(fromCache ? 'cached' : 'live');
+    const sourceLabel = document.getElementById('pc-result-source'); if (sourceLabel) sourceLabel.textContent = pcSourceText();
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
     const val  = document.getElementById(`val-${p}`);
@@ -79034,6 +79170,9 @@ function pcSameUrl(a, b) { return !!a && !!b && pcUrlKey(a) === pcUrlKey(b); }
    here is still in its temporal dead zone — the trap PC_URL_ID fell into (#556). */
 function pcTtlOf(key, v) {
     const TTL = { miss: 14 * 864e5, hit: 90 * 864e5, mbdata: 30 * 864e5 };
+    const days = typeof GM_getValue === 'function' ? GM_getValue('pc:cache-days', 'default') : 'default';
+    const custom = Number(days);
+    if (Number.isFinite(custom) && custom >= 1 && custom <= 365) return custom * 864e5;
     return key.startsWith('pc:mbdata:') ? TTL.mbdata : (v && v.url ? TTL.hit : TTL.miss);
 }
 function pcMaxReleases() { return 500; }
@@ -82194,6 +82333,9 @@ async function runScans() {
     if (pcStale(n)) return;
     PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
+    if (ok) { pcDockStale = false; document.getElementById('pc-stale-note')?.remove(); }
+    else pcMarkDirty(mbid);
+    pcDockStatus();
     if (pcDockItem) pcDockItem.busy(false);
 }
 async function runScansInner() {
@@ -82455,11 +82597,12 @@ async function runScansInner() {
         pcDockStatus();
         const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
         pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
+            + (pcSourceText() ? `<span class="mbu-tip-dl">Platform results</span><span class="mbu-tip-dt">${pcSourceText()}</span>` : '')
             + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + (held.length ? line('#a0a0a0', 'Withheld', held) : '') + line('#e06060', 'Not found', none)
             + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add${pcDockArtistsHeld ? ` · <b>${pcDockArtistsHeld}</b> withheld` : ''}</span>`)
             + '</div>' }));
     }
-    pcCountLinks();   // #671
+    await pcCountLinks();   // #671: the dock stays busy until this count finishes
 }
 
 // ─── Artists & labels table (#671) ──────────────────────────────────────────
@@ -82734,8 +82877,9 @@ function pcLinksNote() {
 let _pcLinked = null;   // { key, map }: the last lookup, keyed by the urls it asked about
 const pcLinkedKey = urls => [...new Set(urls)].sort().join('\n');
 async function pcLinkedFresh(urls) {
+    const generation = pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1, release = mbid;
     const map = await pcLinkedTo(urls);
-    _pcLinked = { key: pcLinkedKey(urls), map };
+    if (generation === pcLinkedFresh.generation && release === mbid) _pcLinked = { key: pcLinkedKey(urls), map };
     return map;
 }
 const pcLinkedCached = urls => (_pcLinked && _pcLinked.key === pcLinkedKey(urls)) ? Promise.resolve(_pcLinked.map) : pcLinkedFresh(urls);
@@ -82749,21 +82893,26 @@ function pcShowLinksCount(n, held = 0) {
     pcDockArtists = n; pcDockArtistsHeld = held; pcDockStatus();
 }
 async function pcCountLinks() {
+    const generation = pcCountLinks.generation = (pcCountLinks.generation || 0) + 1, release = mbid;
     if (!GM_getValue('pc:links-count', true)) return;
     const mbRec = mbDataGet(mbid) || {};
     const { rows } = pcLinkRows(pcMbCredits(document, mbRec.mbTracks || 0), pcConfirmedCredits().byProvider);
     const urls = rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url));
     if (!urls.length) { pcShowLinksCount(0); appendLog('System', 'Artists & labels: no artist or label pages to count'); return; }
     try {
-        const linked = await pcLinkedFresh(urls), n = pcNewCount(rows, linked);
-        pcShowLinksCount(n, pcNewCount(rows, linked, 'withheld'));
+        const linked = await pcLinkedFresh(urls);
+        if (generation !== pcCountLinks.generation || release !== mbid || !GM_getValue('pc:links-count', true)) return;
+        const n = pcNewCount(rows, linked);
+        pcShowLinksCount(n, pcNewCount(rows, linked, 'other') + pcNewCount(rows, linked, 'unsure'));
         appendLog('System', `Artists & labels: ${n} link(s) to add, of ${urls.length} page(s) found`);
     } catch (e) {
+        if (generation === pcCountLinks.generation && release === mbid) pcShowLinksCount(null);
         appendLog('System', `Artists & labels: couldn't count the links to add (${e.message})`, 'warn');
     }
 }
 
 async function pcOpenLinksTable(btn) {
+    const release = mbid, generation = pcCountLinks.generation;
     document.getElementById('pc-links-ov')?.remove();
     const mbRec = mbDataGet(mbid) || {};
     const mb = pcMbCredits(document, mbRec.mbTracks || 0);
@@ -82810,7 +82959,8 @@ async function pcOpenLinksTable(btn) {
     <div class="mbu-ov-body"></div>
     <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled data-tip="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled data-tip="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" data-tip="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
     document.documentElement.appendChild(ov);
-    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
+    let restoreCount = null;
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); if (restoreCount) restoreCount(); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     document.addEventListener('keydown', onKey, true);
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
@@ -82824,7 +82974,7 @@ async function pcOpenLinksTable(btn) {
     } catch (e) {
         appendLog('System', `Artists & labels: couldn't ask MusicBrainz which links it already has (${e.message})`, 'error');
     }
-    if (!ov.isConnected) return;
+    if (!ov.isConnected || release !== mbid || generation !== pcCountLinks.generation) { close(); return; }
     const provs = PROVIDER_ORDER.filter(p => rows.some(r => r.cells[p]));
     // a link is in the batch when it's new (an uncertain one only once you include it)
     const marked = rows.map(r => {
@@ -82832,7 +82982,11 @@ async function pcOpenLinksTable(btn) {
         for (const p of provs) if (r.cells[p]) cells[p] = pcMarkCell(r, r.cells[p], linked).map(c => ({ ...c, on: c.state === 'new' }));
         return { ...r, cells };
     });
-    if (checked && GM_getValue('pc:links-count', true)) pcShowLinksCount(pcNewCount(rows, linked), pcNewCount(rows, linked, 'withheld'));
+    if (checked && GM_getValue('pc:links-count', true)) {
+        const original = pcNewCount(rows, linked), held = pcNewCount(rows, linked, 'other') + pcNewCount(rows, linked, 'unsure');
+        pcShowLinksCount(original, held);
+        restoreCount = () => { if (!pcDockStale && release === mbid && generation === pcCountLinks.generation && GM_getValue('pc:links-count', true)) pcShowLinksCount(original, held); };
+    }
     const batch = () => marked.map(r => ({ type: r.type, mbid: r.mbid, name: r.name, urls: Object.values(r.cells).flat().filter(c => c.on).map(c => c.url) })).filter(r => r.urls.length);
     const MARK = { linked: '✓', new: '+', unsure: '+?', other: '⚠' };
     const cellMark = cs => {
@@ -82857,6 +83011,10 @@ async function pcOpenLinksTable(btn) {
     const body = tbl.createTBody();
     const refresh = () => {
         const b = batch(), n = b.reduce((s, r) => s + r.urls.length, 0);
+        if (checked && GM_getValue('pc:links-count', true)) {
+            const held = marked.flatMap(r => Object.values(r.cells).flat()).filter(c => c.state === 'other' || (c.state === 'unsure' && !c.on)).length;
+            pcShowLinksCount(n, held);
+        }
         send.textContent = `Run ${n} in Falcon`;
         send.disabled = more.disabled = !n;
         if (!n) menu.hidden = true;
@@ -82893,6 +83051,7 @@ async function pcOpenLinksTable(btn) {
             const urls = Object.values(r.cells).flat().filter(c => c.on).map(c => c.url);
             if (!urls.length) { flashInfo(edit, 'No new links in this row'); return; }
             window.open(pcSeededEditUrl(r.type, r.mbid, urls, pcLinksNote()), '_blank');
+            pcShowUnverified('An editor was opened — refresh after submitting');
         };
         act.appendChild(edit);
     }
@@ -82903,12 +83062,15 @@ async function pcOpenLinksTable(btn) {
     const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', true)), run);
+        const tag = `pc:links:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+        const payload = JSON.parse(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', true)));
+        payload.tag = tag;
+        const here = pcSendToFalconHere(JSON.stringify(payload), run);
+        if (here) pcMcPending.set(tag, { release: mbid, seen: new Set() });
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
-        // the links are on their way: the count and the lookup behind it no longer hold
-        _pcLinked = null;
-        pcShowLinksCount(null);
+        // A different tab cannot report its completion to this page.
+        if (!here) pcShowUnverified('Falcon opened in another tab — refresh after completing it');
         close();
     };
     send.onclick = () => toFalcon(true);
@@ -83392,6 +83554,7 @@ function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit'
             PC_CHANNEL.removeEventListener('message', onCommitted);
             try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
             appendLog('System', `Background add committed for ${mbid_} — refreshing`, 'ok');
+            pcMarkDirty(mbid_);
             location.reload();
         };
         PC_CHANNEL.addEventListener('message', onCommitted);
@@ -83410,6 +83573,7 @@ function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit'
 // tab instead" rule all differ, and folding them together made every line a
 // conditional.
 function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = {}) {
+    const originRelease = mbid;
     const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
@@ -83426,6 +83590,7 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
             PC_CHANNEL.removeEventListener('message', onCommitted);
             try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
             appendLog('System', `Background master add committed for release-group ${rgMbid}`, 'ok');
+            pcMarkDirty(originRelease);
         };
         PC_CHANNEL.addEventListener('message', onCommitted);
         return;
@@ -83657,7 +83822,34 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
 // userscripts/mission_control/DEVELOP.md). PC already scans on load, so a probe
 // waits for the scan running (or the last one) and reports what it found — it
 // never starts a second scan. Apply hands the ticked links to Falcon.
-function pcScan() { PC_SCAN.last = runScans(); return PC_SCAN.last; }
+function pcScan() {
+    pcSources.clear();
+    const sourceLabel = document.getElementById('pc-result-source'); if (sourceLabel) sourceLabel.textContent = '';
+    const dirty = pcDirty.has(mbid) || !!localStorage.getItem(`pc:dirty:${mbid}`);
+    if (dirty || !GM_getValue('pc:cache-enabled', true)) cacheClear(mbid);
+    pcDirty.delete(mbid); localStorage.removeItem(`pc:dirty:${mbid}`);
+    pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
+    pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
+    _pcLinked = null;
+    PC_SCAN.last = runScans(); return PC_SCAN.last;
+}
+function pcMarkDirty(release, broadcast = true, notify = true) {
+    pcDirty.add(release);
+    if (notify) document.dispatchEvent(new CustomEvent('mbu:release-changed', { detail: JSON.stringify({ release }) }));
+    if (broadcast) try { localStorage.setItem(`pc:dirty:${release}`, String(Date.now())); } catch (e) { /* current tab still knows */ }
+    if (release !== mbid) return;
+    if (PC_SCAN.busy) { pcCancelScan(); PC_SCAN.busy = false; setScanStatus('stopped'); if (pcDockItem) pcDockItem.busy(false); }
+    pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
+    pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
+    _pcLinked = null;
+    pcShowUnverified('Results changed — refresh to check again');
+}
+function pcShowUnverified(message) {
+    pcDockStale = true; pcShowLinksCount(null);
+    let note = document.getElementById('pc-stale-note');
+    if (!note) { note = document.createElement('div'); note.id = 'pc-stale-note'; container.prepend(note); }
+    note.textContent = message;
+}
 const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
 // One platform's state, as MC shows it:
 //   linked   — the release already has the link
@@ -84038,12 +84230,26 @@ document.addEventListener('mc:apply', e => {
     // headless: Falcon keeps its panel shut and reports the batch as falcon:status, tagged, for MC's card
     const json = JSON.stringify({ name: `${album} — platform links`, note, items, headless: !d.dry, tag: `mc:pc:${d.run}` });
     const ok = pcSendToFalconHere(json, !d.dry);
+    if (ok && !d.dry) pcMcPending.set(`mc:pc:${d.run}`, { release: mbid, seen: new Set() });
     const n = urls.length + entN + (barcode ? 1 : 0) + labels.length + (event ? 1 : 0) + (nFill ? 1 : 0) + tch.length;
-    if (ok && entN) { _pcLinked = null; pcShowLinksCount(null); }
     appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${barcode ? `barcode ${barcode}, ` : ''}${urls.length} release link(s), ${entN} artist/label link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.concat([...ents.values()].flatMap(r => r.urls)).join(' ')}`, ok ? 'ok' : 'error');
     const nAdd = labels.filter(l => l.add).length, nCat = labels.length - nAdd;
     const what = (barcode ? ['the barcode'] : []).concat(nCat ? [nCat === 1 ? 'the catalog number' : nCat + ' catalog numbers'] : [], nAdd ? [nAdd === 1 ? 'a label' : nAdd + ' labels'] : [], event ? ['the release event'] : [], nFill ? [`${nFill} track length${nFill === 1 ? '' : 's'}`] : [], tch.length ? [`${tch.length} track change${tch.length === 1 ? '' : 's'}`] : [], urls.length + entN ? [`${urls.length + entN} link${urls.length + entN === 1 ? '' : 's'}`] : []).join(' and ');
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${what} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
+});
+function pcFalconStatus(e) {
+    let data; try { data = JSON.parse(e.detail); } catch (x) { return; }
+    const pending = data && pcMcPending.get(data.tag); if (!pending) return;
+    for (const item of data.items || []) {
+        const key = item.entityType + ':' + item.mbid;
+        if (!['done', 'skipped'].includes(item.status) || pending.seen.has(key)) continue;
+        pending.seen.add(key); pcMarkDirty(pending.release);
+    }
+    if (!data.running && (data.items || []).every(item => !['queued', 'active'].includes(item.status))) pcMcPending.delete(data.tag);
+}
+document.addEventListener('falcon:status', pcFalconStatus);
+window.addEventListener('storage', e => {
+    if (e.key === `pc:dirty:${mbid}` && e.newValue) pcMarkDirty(mbid, false);
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };

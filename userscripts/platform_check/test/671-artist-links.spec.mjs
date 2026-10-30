@@ -248,7 +248,7 @@ test('Artists & labels shows how many links it would add, from one lookup', { ta
       { type: 'artist', mbid: 'b', name: 'B', cells: { discogs: [{ url: 'https://www.discogs.com/artist/3' }, { url: 'https://x.bandcamp.com/', uncertain: true }] } },
     ];
     const env = new Function('document', 'GM_getValue', 'mbDataGet', 'mbid', 'pcLinkRows', 'pcMbCredits', 'pcConfirmedCredits', 'pcLinkedTo', 'appendLog',
-      'let _pcLinked = null;\n' + src + '\nreturn { pcCountLinks, pcLinkedCached, pcUrlKey };')(
+      'let _pcLinked = null, pcDockArtists = null, pcDockArtistsHeld = 0; function pcDockStatus() {}\n' + src + '\nreturn { pcCountLinks, pcLinkedCached, pcUrlKey };')(
       { getElementById: () => btn }, (k, d) => k === 'pc:links-count' ? setting : d, () => ({ mbTracks: 1 }), 'm',
       () => ({ rows }), () => ({}), () => ({ byProvider: {} }),
       async urls => { calls.push(urls); return new Map([[key('https://www.discogs.com/artist/1'), [{ type: 'artist', mbid: 'a' }]]]); }, () => {});

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.31.093300
+// @version      2026.10.31.094408
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3393,6 +3393,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   <div style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
+      <span id="pc-result-source" style="font-size:10px;color:var(--mbu-text-weak)"></span>
       <span id="mb-refresh-btn" class="pc-icon-btn" data-tip="Refresh\nClear the cache and scan again" style="${iconBtn}">↻</span>
     </div>
   </div>
@@ -3496,6 +3497,10 @@ providerModal.innerHTML = `
     <div class="pc-set-row"><label data-tip="Count the artist and label links to add\nOn: once the scans finish, MusicBrainz is asked which pages it already has (one request per 100 links), and Artists &amp; labels shows how many would be added\nOff: it is asked when you open the table"><input type="checkbox" id="mb-links-count"> <span><b>Count</b> the links to add</span></label></div>
     <div class="pc-set-row"><label data-tip="Close Falcon after a clean run\nAfter Run in Falcon from Artists &amp; labels, Falcon closes its panel once every link is added. A failed or partial edit leaves it open, to read why.\nSend only, and a Falcon in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <span><b>Close Falcon</b> after a successful import</span></label></div>
 
+    <div class="pc-setup-sec">Cache</div>
+    <div class="pc-set-row"><label><input type="checkbox" id="mb-cache-enabled"> Cache scan results</label>
+      <span>for</span> <select id="mb-cache-days"><option value="default">the default duration</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="90">90 days</option></select></div>
+
     <div class="pc-setup-sec">Appearance</div>
     <div class="pc-set-grid">
       <div class="pc-set-k">Icon</div>
@@ -3581,11 +3586,13 @@ else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
 var pcDockItem = null;
 // the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
-var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
+var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0, pcDockStale = false;
+const pcDirty = new Set(), pcMcPending = new Map(), pcSources = new Set();
+function pcSourceText() { return pcSources.size === 2 ? 'cached + live' : pcSources.has('cached') ? 'cached' : pcSources.has('live') ? 'live' : ''; }
 // "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
 function pcDockStatus() {
     const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
-    if (pcDockItem) pcDockItem.status(pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '✓');
+    if (pcDockItem) pcDockItem.status(pcDockStale ? '?' : pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : pcDockArtists === null && GM_getValue('pc:links-count', true) ? '?' : '✓');
 }
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
@@ -3824,6 +3831,9 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-bg-audio').checked = GM_getValue('pc:bg-audio', false);
     document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
     document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', true);
+    document.getElementById('mb-cache-enabled').checked = GM_getValue('pc:cache-enabled', true);
+    document.getElementById('mb-cache-days').value = String(GM_getValue('pc:cache-days', 'default'));
+    document.getElementById('mb-cache-days').disabled = !GM_getValue('pc:cache-enabled', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
@@ -3890,6 +3900,15 @@ document.getElementById('mb-format-mode').addEventListener('change', e => {
 document.getElementById('mb-links-count').addEventListener('change', e => {
     GM_setValue('pc:links-count', e.target.checked);       // #671 — count the links to add once the scans finish
     if (e.target.checked) pcCountLinks(); else pcShowLinksCount(null);
+});
+document.getElementById('mb-cache-enabled').addEventListener('change', e => {
+    GM_setValue('pc:cache-enabled', e.target.checked);
+    document.getElementById('mb-cache-days').disabled = !e.target.checked;
+    pcMarkDirty(mbid, false, false);
+});
+document.getElementById('mb-cache-days').addEventListener('change', e => {
+    GM_setValue('pc:cache-days', e.target.value === 'default' ? 'default' : Number(e.target.value));
+    pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-links-close-falcon').addEventListener('change', e => {
     GM_setValue('pc:links-close-falcon', e.target.checked);   // Falcon closes its panel after a Run with nothing failed
@@ -4404,6 +4423,8 @@ function pcWireForce(el, fn) {
     }
 }
 function updateRow(p, { url, mbTracks, remoteTracks, year, label, source, fromCache, format, masterState, hiddenTracks, unoffered, barcode }) {
+    pcSources.add(fromCache ? 'cached' : 'live');
+    const sourceLabel = document.getElementById('pc-result-source'); if (sourceLabel) sourceLabel.textContent = pcSourceText();
     const a    = document.getElementById(`mb-online-${p}`);
     const ico  = document.getElementById(`ico-${p}`);
     const val  = document.getElementById(`val-${p}`);
@@ -5055,6 +5076,9 @@ function pcSameUrl(a, b) { return !!a && !!b && pcUrlKey(a) === pcUrlKey(b); }
    here is still in its temporal dead zone — the trap PC_URL_ID fell into (#556). */
 function pcTtlOf(key, v) {
     const TTL = { miss: 14 * 864e5, hit: 90 * 864e5, mbdata: 30 * 864e5 };
+    const days = typeof GM_getValue === 'function' ? GM_getValue('pc:cache-days', 'default') : 'default';
+    const custom = Number(days);
+    if (Number.isFinite(custom) && custom >= 1 && custom <= 365) return custom * 864e5;
     return key.startsWith('pc:mbdata:') ? TTL.mbdata : (v && v.url ? TTL.hit : TTL.miss);
 }
 function pcMaxReleases() { return 500; }
@@ -8215,6 +8239,9 @@ async function runScans() {
     if (pcStale(n)) return;
     PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
+    if (ok) { pcDockStale = false; document.getElementById('pc-stale-note')?.remove(); }
+    else pcMarkDirty(mbid);
+    pcDockStatus();
     if (pcDockItem) pcDockItem.busy(false);
 }
 async function runScansInner() {
@@ -8476,11 +8503,12 @@ async function runScansInner() {
         pcDockStatus();
         const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
         pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
+            + (pcSourceText() ? `<span class="mbu-tip-dl">Platform results</span><span class="mbu-tip-dt">${pcSourceText()}</span>` : '')
             + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + (held.length ? line('#a0a0a0', 'Withheld', held) : '') + line('#e06060', 'Not found', none)
             + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add${pcDockArtistsHeld ? ` · <b>${pcDockArtistsHeld}</b> withheld` : ''}</span>`)
             + '</div>' }));
     }
-    pcCountLinks();   // #671
+    await pcCountLinks();   // #671: the dock stays busy until this count finishes
 }
 
 // ─── Artists & labels table (#671) ──────────────────────────────────────────
@@ -8755,8 +8783,9 @@ function pcLinksNote() {
 let _pcLinked = null;   // { key, map }: the last lookup, keyed by the urls it asked about
 const pcLinkedKey = urls => [...new Set(urls)].sort().join('\n');
 async function pcLinkedFresh(urls) {
+    const generation = pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1, release = mbid;
     const map = await pcLinkedTo(urls);
-    _pcLinked = { key: pcLinkedKey(urls), map };
+    if (generation === pcLinkedFresh.generation && release === mbid) _pcLinked = { key: pcLinkedKey(urls), map };
     return map;
 }
 const pcLinkedCached = urls => (_pcLinked && _pcLinked.key === pcLinkedKey(urls)) ? Promise.resolve(_pcLinked.map) : pcLinkedFresh(urls);
@@ -8770,21 +8799,26 @@ function pcShowLinksCount(n, held = 0) {
     pcDockArtists = n; pcDockArtistsHeld = held; pcDockStatus();
 }
 async function pcCountLinks() {
+    const generation = pcCountLinks.generation = (pcCountLinks.generation || 0) + 1, release = mbid;
     if (!GM_getValue('pc:links-count', true)) return;
     const mbRec = mbDataGet(mbid) || {};
     const { rows } = pcLinkRows(pcMbCredits(document, mbRec.mbTracks || 0), pcConfirmedCredits().byProvider);
     const urls = rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url));
     if (!urls.length) { pcShowLinksCount(0); appendLog('System', 'Artists & labels: no artist or label pages to count'); return; }
     try {
-        const linked = await pcLinkedFresh(urls), n = pcNewCount(rows, linked);
-        pcShowLinksCount(n, pcNewCount(rows, linked, 'withheld'));
+        const linked = await pcLinkedFresh(urls);
+        if (generation !== pcCountLinks.generation || release !== mbid || !GM_getValue('pc:links-count', true)) return;
+        const n = pcNewCount(rows, linked);
+        pcShowLinksCount(n, pcNewCount(rows, linked, 'other') + pcNewCount(rows, linked, 'unsure'));
         appendLog('System', `Artists & labels: ${n} link(s) to add, of ${urls.length} page(s) found`);
     } catch (e) {
+        if (generation === pcCountLinks.generation && release === mbid) pcShowLinksCount(null);
         appendLog('System', `Artists & labels: couldn't count the links to add (${e.message})`, 'warn');
     }
 }
 
 async function pcOpenLinksTable(btn) {
+    const release = mbid, generation = pcCountLinks.generation;
     document.getElementById('pc-links-ov')?.remove();
     const mbRec = mbDataGet(mbid) || {};
     const mb = pcMbCredits(document, mbRec.mbTracks || 0);
@@ -8831,7 +8865,8 @@ async function pcOpenLinksTable(btn) {
     <div class="mbu-ov-body"></div>
     <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled data-tip="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled data-tip="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" data-tip="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
     document.documentElement.appendChild(ov);
-    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
+    let restoreCount = null;
+    const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); if (restoreCount) restoreCount(); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     document.addEventListener('keydown', onKey, true);
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
@@ -8845,7 +8880,7 @@ async function pcOpenLinksTable(btn) {
     } catch (e) {
         appendLog('System', `Artists & labels: couldn't ask MusicBrainz which links it already has (${e.message})`, 'error');
     }
-    if (!ov.isConnected) return;
+    if (!ov.isConnected || release !== mbid || generation !== pcCountLinks.generation) { close(); return; }
     const provs = PROVIDER_ORDER.filter(p => rows.some(r => r.cells[p]));
     // a link is in the batch when it's new (an uncertain one only once you include it)
     const marked = rows.map(r => {
@@ -8853,7 +8888,11 @@ async function pcOpenLinksTable(btn) {
         for (const p of provs) if (r.cells[p]) cells[p] = pcMarkCell(r, r.cells[p], linked).map(c => ({ ...c, on: c.state === 'new' }));
         return { ...r, cells };
     });
-    if (checked && GM_getValue('pc:links-count', true)) pcShowLinksCount(pcNewCount(rows, linked), pcNewCount(rows, linked, 'withheld'));
+    if (checked && GM_getValue('pc:links-count', true)) {
+        const original = pcNewCount(rows, linked), held = pcNewCount(rows, linked, 'other') + pcNewCount(rows, linked, 'unsure');
+        pcShowLinksCount(original, held);
+        restoreCount = () => { if (!pcDockStale && release === mbid && generation === pcCountLinks.generation && GM_getValue('pc:links-count', true)) pcShowLinksCount(original, held); };
+    }
     const batch = () => marked.map(r => ({ type: r.type, mbid: r.mbid, name: r.name, urls: Object.values(r.cells).flat().filter(c => c.on).map(c => c.url) })).filter(r => r.urls.length);
     const MARK = { linked: '✓', new: '+', unsure: '+?', other: '⚠' };
     const cellMark = cs => {
@@ -8878,6 +8917,10 @@ async function pcOpenLinksTable(btn) {
     const body = tbl.createTBody();
     const refresh = () => {
         const b = batch(), n = b.reduce((s, r) => s + r.urls.length, 0);
+        if (checked && GM_getValue('pc:links-count', true)) {
+            const held = marked.flatMap(r => Object.values(r.cells).flat()).filter(c => c.state === 'other' || (c.state === 'unsure' && !c.on)).length;
+            pcShowLinksCount(n, held);
+        }
         send.textContent = `Run ${n} in Falcon`;
         send.disabled = more.disabled = !n;
         if (!n) menu.hidden = true;
@@ -8914,6 +8957,7 @@ async function pcOpenLinksTable(btn) {
             const urls = Object.values(r.cells).flat().filter(c => c.on).map(c => c.url);
             if (!urls.length) { flashInfo(edit, 'No new links in this row'); return; }
             window.open(pcSeededEditUrl(r.type, r.mbid, urls, pcLinksNote()), '_blank');
+            pcShowUnverified('An editor was opened — refresh after submitting');
         };
         act.appendChild(edit);
     }
@@ -8924,12 +8968,15 @@ async function pcOpenLinksTable(btn) {
     const toFalcon = run => {
         const b = batch();
         if (!b.length) return;
-        const here = pcSendToFalconHere(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', true)), run);
+        const tag = `pc:links:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+        const payload = JSON.parse(pcFalconJson(b, pcLinksNote(), pcLinksName(), run && GM_getValue('pc:links-close-falcon', true)));
+        payload.tag = tag;
+        const here = pcSendToFalconHere(JSON.stringify(payload), run);
+        if (here) pcMcPending.set(tag, { release: mbid, seen: new Set() });
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
-        // the links are on their way: the count and the lookup behind it no longer hold
-        _pcLinked = null;
-        pcShowLinksCount(null);
+        // A different tab cannot report its completion to this page.
+        if (!here) pcShowUnverified('Falcon opened in another tab — refresh after completing it');
         close();
     };
     send.onclick = () => toFalcon(true);
@@ -9413,6 +9460,7 @@ function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit'
             PC_CHANNEL.removeEventListener('message', onCommitted);
             try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
             appendLog('System', `Background add committed for ${mbid_} — refreshing`, 'ok');
+            pcMarkDirty(mbid_);
             location.reload();
         };
         PC_CHANNEL.addEventListener('message', onCommitted);
@@ -9431,6 +9479,7 @@ function openReleaseEditTab(mbid_, { background = false, hash = '#pc-autocommit'
 // tab instead" rule all differ, and folding them together made every line a
 // conditional.
 function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = {}) {
+    const originRelease = mbid;
     const url = `${MB_ORIGIN}/release-group/${rgMbid}/edit`;
     if (background) {
         if (typeof GM_openInTab !== 'function' || !PC_CHANNEL) {
@@ -9447,6 +9496,7 @@ function openRgEditTab(rgMbid, { background = false, sameTabAllowed = false } = 
             PC_CHANNEL.removeEventListener('message', onCommitted);
             try { if (bgTab && typeof bgTab.close === 'function') bgTab.close(); } catch (x) {}
             appendLog('System', `Background master add committed for release-group ${rgMbid}`, 'ok');
+            pcMarkDirty(originRelease);
         };
         PC_CHANNEL.addEventListener('message', onCommitted);
         return;
@@ -9678,7 +9728,34 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
 // userscripts/mission_control/DEVELOP.md). PC already scans on load, so a probe
 // waits for the scan running (or the last one) and reports what it found — it
 // never starts a second scan. Apply hands the ticked links to Falcon.
-function pcScan() { PC_SCAN.last = runScans(); return PC_SCAN.last; }
+function pcScan() {
+    pcSources.clear();
+    const sourceLabel = document.getElementById('pc-result-source'); if (sourceLabel) sourceLabel.textContent = '';
+    const dirty = pcDirty.has(mbid) || !!localStorage.getItem(`pc:dirty:${mbid}`);
+    if (dirty || !GM_getValue('pc:cache-enabled', true)) cacheClear(mbid);
+    pcDirty.delete(mbid); localStorage.removeItem(`pc:dirty:${mbid}`);
+    pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
+    pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
+    _pcLinked = null;
+    PC_SCAN.last = runScans(); return PC_SCAN.last;
+}
+function pcMarkDirty(release, broadcast = true, notify = true) {
+    pcDirty.add(release);
+    if (notify) document.dispatchEvent(new CustomEvent('mbu:release-changed', { detail: JSON.stringify({ release }) }));
+    if (broadcast) try { localStorage.setItem(`pc:dirty:${release}`, String(Date.now())); } catch (e) { /* current tab still knows */ }
+    if (release !== mbid) return;
+    if (PC_SCAN.busy) { pcCancelScan(); PC_SCAN.busy = false; setScanStatus('stopped'); if (pcDockItem) pcDockItem.busy(false); }
+    pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
+    pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
+    _pcLinked = null;
+    pcShowUnverified('Results changed — refresh to check again');
+}
+function pcShowUnverified(message) {
+    pcDockStale = true; pcShowLinksCount(null);
+    let note = document.getElementById('pc-stale-note');
+    if (!note) { note = document.createElement('div'); note.id = 'pc-stale-note'; container.prepend(note); }
+    note.textContent = message;
+}
 const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
 // One platform's state, as MC shows it:
 //   linked   — the release already has the link
@@ -10059,12 +10136,26 @@ document.addEventListener('mc:apply', e => {
     // headless: Falcon keeps its panel shut and reports the batch as falcon:status, tagged, for MC's card
     const json = JSON.stringify({ name: `${album} — platform links`, note, items, headless: !d.dry, tag: `mc:pc:${d.run}` });
     const ok = pcSendToFalconHere(json, !d.dry);
+    if (ok && !d.dry) pcMcPending.set(`mc:pc:${d.run}`, { release: mbid, seen: new Set() });
     const n = urls.length + entN + (barcode ? 1 : 0) + labels.length + (event ? 1 : 0) + (nFill ? 1 : 0) + tch.length;
-    if (ok && entN) { _pcLinked = null; pcShowLinksCount(null); }
     appendLog('System', `Mission Control apply${d.dry ? ' (dry run: queued, not run)' : ''}: ${barcode ? `barcode ${barcode}, ` : ''}${urls.length} release link(s), ${entN} artist/label link(s) ${ok ? 'handed to Falcon' : 'NOT taken — no Falcon on this page'}: ${urls.concat([...ents.values()].flatMap(r => r.urls)).join(' ')}`, ok ? 'ok' : 'error');
     const nAdd = labels.filter(l => l.add).length, nCat = labels.length - nAdd;
     const what = (barcode ? ['the barcode'] : []).concat(nCat ? [nCat === 1 ? 'the catalog number' : nCat + ' catalog numbers'] : [], nAdd ? [nAdd === 1 ? 'a label' : nAdd + ' labels'] : [], event ? ['the release event'] : [], nFill ? [`${nFill} track length${nFill === 1 ? '' : 's'}`] : [], tch.length ? [`${tch.length} track change${tch.length === 1 ? '' : 's'}`] : [], urls.length + entN ? [`${urls.length + entN} link${urls.length + entN === 1 ? '' : 's'}`] : []).join(' and ');
     reply(ok ? { ok: true, sent: n, via: 'falcon', tag: `mc:pc:${d.run}`, note: `${what} ${d.dry ? 'queued in' : 'sent to'} Falcon` } : { ok: false, sent: 0, note: 'Falcon is not running on this page' });
+});
+function pcFalconStatus(e) {
+    let data; try { data = JSON.parse(e.detail); } catch (x) { return; }
+    const pending = data && pcMcPending.get(data.tag); if (!pending) return;
+    for (const item of data.items || []) {
+        const key = item.entityType + ':' + item.mbid;
+        if (!['done', 'skipped'].includes(item.status) || pending.seen.has(key)) continue;
+        pending.seen.add(key); pcMarkDirty(pending.release);
+    }
+    if (!data.running && (data.items || []).every(item => !['queued', 'active'].includes(item.status))) pcMcPending.delete(data.tag);
+}
+document.addEventListener('falcon:status', pcFalconStatus);
+window.addEventListener('storage', e => {
+    if (e.key === `pc:dirty:${mbid}` && e.newValue) pcMarkDirty(mbid, false);
 });
 pcMcHello();   // MC may have asked before PC loaded
 if (mbuTestHooks()) window.__pcTest702 = { seed: () => PC_SEED, seedData: () => PC_SEED_DATA, pcMcSeedProbe };
