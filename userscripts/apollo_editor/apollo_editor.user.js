@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.30.180000
+// @version      2026.10.30.231000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -16279,9 +16279,9 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
         const addRow = r => {
           const tr = document.createElement('div'); r.tr = tr;
-          tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
-            + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
-            + '<input class="tc-al-t" title="Type to filter the types">'
+          tr.innerHTML = '<input class="tc-al-n" placeholder="Alias"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
+            + '<span class="tc-al-lw"><input class="tc-al-l" placeholder="Locale" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
+            + '<input class="tc-al-t" placeholder="Type" title="Type to filter the types">'
             + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
             + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label><button type="button" class="tc-al-cp" title="Copy the begin date to the end">\u2192</button><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label>'
             + '<label class="tc-al-ew"><input type="checkbox" class="tc-al-ed"> This alias is no longer current</label></span>';
@@ -16438,6 +16438,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias input:not([type=checkbox]),#tc-alias select{box-sizing:border-box;width:100%;min-width:0;background:transparent !important;color:var(--mbu-text) !important;border:0;border-bottom:1px solid transparent;border-radius:0;padding:3px 4px;font:inherit;outline:0;filter:none!important}
         #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) minmax(0,2fr) minmax(0,1.6fr) 92px 26px;gap:4px;align-items:center;padding:1px 4px}
         #tc-alias .tc-al-head{font-weight:600;font-size:12px;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border);padding-bottom:3px}
+        @media (max-width:600px){#tc-alias .tc-al-head{display:none}#tc-alias .tc-al-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:2px 6px;padding:6px 2px}#tc-alias .tc-al-n{grid-area:1/1/2/3;font-weight:600}#tc-alias .tc-al-x{grid-area:1/3}#tc-alias .tc-al-sw{grid-area:2/1/3/3}#tc-alias .tc-al-c{grid-area:2/3;justify-content:center}#tc-alias .tc-al-row input:not([type=checkbox]){border-bottom-color:var(--mbu-border-soft, var(--mbu-border))}#tc-alias .tc-al-dt{flex-wrap:wrap;gap:8px 16px;padding-left:0}}
         #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
         #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
         #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}

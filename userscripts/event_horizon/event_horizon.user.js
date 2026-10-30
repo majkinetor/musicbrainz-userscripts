@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.010000
+// @version      2026.10.31.011000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5229,9 +5229,9 @@ const mbuAliasEditor = (() => {
       const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
       const addRow = r => {
         const tr = document.createElement('div'); r.tr = tr;
-        tr.innerHTML = '<input class="tc-al-n"><span class="tc-al-sw"><input class="tc-al-s"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
-          + '<span class="tc-al-lw"><input class="tc-al-l" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
-          + '<input class="tc-al-t" title="Type to filter the types">'
+        tr.innerHTML = '<input class="tc-al-n" placeholder="Alias"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
+          + '<span class="tc-al-lw"><input class="tc-al-l" placeholder="Locale" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
+          + '<input class="tc-al-t" placeholder="Type" title="Type to filter the types">'
           + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
           + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label><button type="button" class="tc-al-cp" title="Copy the begin date to the end">\u2192</button><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label>'
           + '<label class="tc-al-ew"><input type="checkbox" class="tc-al-ed"> This alias is no longer current</label></span>';
@@ -5388,6 +5388,7 @@ const mbuAliasEditor = (() => {
       #tc-alias input:not([type=checkbox]),#tc-alias select{box-sizing:border-box;width:100%;min-width:0;background:transparent !important;color:var(--mbu-text) !important;border:0;border-bottom:1px solid transparent;border-radius:0;padding:3px 4px;font:inherit;outline:0;filter:none!important}
       #tc-alias .tc-al-head,#tc-alias .tc-al-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,3fr) minmax(0,2fr) minmax(0,1.6fr) 92px 26px;gap:4px;align-items:center;padding:1px 4px}
       #tc-alias .tc-al-head{font-weight:600;font-size:12px;color:var(--mbu-text-weak);border-bottom:1px solid var(--mbu-border);padding-bottom:3px}
+      @media (max-width:600px){#tc-alias .tc-al-head{display:none}#tc-alias .tc-al-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:2px 6px;padding:6px 2px}#tc-alias .tc-al-n{grid-area:1/1/2/3;font-weight:600}#tc-alias .tc-al-x{grid-area:1/3}#tc-alias .tc-al-sw{grid-area:2/1/3/3}#tc-alias .tc-al-c{grid-area:2/3;justify-content:center}#tc-alias .tc-al-row input:not([type=checkbox]){border-bottom-color:var(--mbu-border-soft, var(--mbu-border))}#tc-alias .tc-al-dt{flex-wrap:wrap;gap:8px 16px;padding-left:0}}
       #tc-alias .tc-al-row{border-bottom:1px solid var(--mbu-border-soft, var(--mbu-border))}
       #tc-alias .tc-al-sw{position:relative;display:flex;min-width:0}
       #tc-alias .tc-al-sw .tc-al-s{padding-right:26px}

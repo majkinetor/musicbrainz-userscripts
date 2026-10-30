@@ -29,3 +29,16 @@ test('on a phone the page keeps no column for the launchers', { tag: '@sandbox' 
   const pad = await page.evaluate(() => parseFloat(getComputedStyle([...document.querySelectorAll('.wrap')].find(e => e.offsetWidth)).paddingRight));
   check(pad <= 16, `the right padding is the usual 16px (${pad}px)`);
 });
+
+test('on a phone the alias editor stacks each alias so its fields have room', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await page.setViewportSize({ width: 420, height: 800 });
+  await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await inject('event_horizon');
+  check(await until(() => page.locator('button.eh-edit[data-aliases]').count(), n => n > 0, 20000) > 0, 'the pencil shows');
+  await page.locator('button.eh-edit[data-aliases]').first().click();
+  check(await until(() => page.locator('#eh-aliases .tc-al-row').count(), n => n > 1, 15000) > 1, 'the editor lists the aliases');
+  const w = await page.locator('#eh-aliases .tc-al-row .tc-al-n').first().evaluate(i => i.getBoundingClientRect().width);
+  check(w > 200, `the name field is wide (${w}px)`);
+  check(!(await page.locator('#eh-aliases .tc-al-head').isVisible()), 'the column headings give way to placeholders');
+  await page.screenshot({ path: 'dev/_eh-aliases-mobile.png' });
+});
