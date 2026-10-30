@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.006000
+// @version      2026.10.31.007000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2631,6 +2631,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .dmenu.open{display:block;z-index:5}
 .crdis{display:inline-flex;align-items:center;gap:2px}
 .crdis .dmenu{top:100%;right:0;margin-top:4px}
+.hlm{display:inline-flex}.hlm>.sk-b:first-child{border-top-right-radius:0;border-bottom-right-radius:0}.hlm .hlmc{padding:3px 6px;margin-left:-1px;border-top-left-radius:0;border-bottom-left-radius:0}.hlm .dmenu{top:100%;left:0;right:auto;min-width:120px;margin-top:4px}
 .dmh{padding:4px 10px 6px;font:700 10.5px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .dmenu button{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border-radius:5px;font-size:13px;white-space:nowrap;color:var(--text);cursor:pointer}
 .dmenu button svg{flex:none}
@@ -8330,16 +8331,16 @@ function histBursts(es) {
     }
     return out;
 }
-const H_BATCH = 2000;
+const H_BATCHES = [500, 1000, 2000], CARET = '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
 async function histLoad(n, all) {
     const d = data; if (d.busy || !d.more) return;
     d.busy = true; render();
     // the header's release loads beside the edits, not after them
     const relGet = () => { if (!d.rel && !d.relAsk && histRid(d.id)) { d.relAsk = true; relHd(histRid(d.id), r => { if (data === d) { d.rel = r; render(); } }).catch(() => { d.relAsk = false; }); } };
     relGet();
-    // "Load 2,000" takes a fixed batch per click: a list of 100,000 edits never loads whole by accident
-    const target = d.edits.length + H_MIN, cap = d.edits.length + H_BATCH;
-    LOG.info(`History ${d.id}: loading ${all ? H_BATCH + ' more' : 'more'} from page ${d.page + 1}`);
+    // a batch from Load more's menu takes a fixed count per click: a list of 100,000 edits never loads whole by accident
+    const target = d.edits.length + H_MIN, cap = d.edits.length + (all || 0);
+    LOG.info(`History ${d.id}: loading ${all ? all + ' more' : 'more'} from page ${d.page + 1}`);
     try {
         for (let i = 0; (all ? d.edits.length < cap : i < H_MAXP) && d.more; i++) {
             const p = d.page + 1;
@@ -8454,7 +8455,7 @@ function histPage(app, d) {
     }
     const cnt = k => d.edits.filter(e => e.st === k).length;
     // how much is loaded, and the buttons for more, sit at the bar's right end
-    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <button type="button" class="sk-b" data-hmore>Load more</button><button type="button" class="sk-b" data-hmore="all">Load 2,000</button>` : `All ${d.edits.length} edits`}</span>`;
+    const hload = `<span class="hld">${d.busy ? `${d.edits.length} edits, loading…` : d.more ? `${d.edits.length} edits <span class="dwrap hlm"><button type="button" class="sk-b" data-hmore>Load more</button><button type="button" class="sk-b hlmc" data-hlmenu aria-haspopup="menu" aria-label="Load a batch" data-tip="Load a batch of edits">${CARET}</button><div class="dmenu" role="menu">${H_BATCHES.map(b => `<button type="button" role="menuitem" data-hmore="${b}">Load ${b.toLocaleString('en')}</button>`).join('')}</div></span>` : `All ${d.edits.length} edits`}</span>`;
     const bar = `<div class="hbar"><span class="lb">Group</span><span class="hseg">${[['burst', 'Bursts'], ['day', 'Day'], ['editor', 'Editor'], ['type', 'Type'], ['status', 'Status']].map(([k, t]) => `<button type="button" data-hgrp="${k}" class="${d.grp === k ? 'on' : ''}">${t}</button>`).join('')}</span><span class="sp"></span>${Object.keys(H_ST).map(k => cnt(k) ? `<button type="button" class="hchip${d.st === k ? ' on' : ''}" data-hst="${k}">${H_ST[k]} ${cnt(k)}</button>` : '').join('')}${hload}</div>` + `<div class="hql">${[...(rid ? [[`/release/${rid}/open_edits`, 'Open edits for this release'], [`/release/${rid}/edits`, 'All its edits']] : []), ['/edit/subscribed', 'Subscribed entities'], ['/edit/subscribed_editors', 'Subscribed editors'], ['/edit/open', 'Open edits'], ['/vote', 'Voting suggestions'], ['/search/edits', 'Search for edits']].map(([u, t]) => `<a href="${MB}${u}">${t}</a>`).join('')}</div>`;
     const foot = d.err ? `<div class="hmore msg err">${esc(d.err)} <button type="button" class="sk-b" data-hmore>Retry</button></div>` : d.edits.length ? '' : d.busy ? '<div class="hmore">Loading edits…</div>' : '<div class="hmore">No edits</div>';
     const en = histEntOf(d.id);
@@ -8468,7 +8469,8 @@ function histPage(app, d) {
         const t = ev.target, g = t.closest('[data-hgrp]'), s = t.closest('[data-hst]'), h = t.closest('.hgh');
         if (g) { d.grp = S.hgrp = g.dataset.hgrp; d.open.clear(); save(); render(); }
         else if (s) { d.st = d.st === s.dataset.hst ? '' : s.dataset.hst; render(); }
-        else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing, t.closest('[data-hmore]').dataset.hmore === 'all'); }
+        else if (t.closest('[data-hlmenu]')) { const m = t.closest('[data-hlmenu]').nextElementSibling; m.classList.toggle('open'); }
+        else if (t.closest('[data-hmore]')) { d.err = ''; histLoad(showing, +t.closest('[data-hmore]').dataset.hmore || 0); }
         else if (h && !t.closest('a')) { const k = h.parentNode.dataset.hg; d.open.has(k) ? d.open.delete(k) : d.open.add(k);
             // the render redraws every group: the other groups keep the edits and runs open in them
             const keep = new Map([...app.querySelectorAll('.hgrp')].map(g => [g.dataset.hg, [...g.querySelectorAll('details')].map(x => x.open)]));
