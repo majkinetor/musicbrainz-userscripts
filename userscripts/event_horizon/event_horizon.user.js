@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.191500
+// @version      2026.10.30.192500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2282,7 +2282,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .rgc dd{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
 .rgc .rga{color:var(--muted)}
 .rls dd>.rq{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.rls dd>.rq>svg{flex:none;align-self:center;color:var(--muted)}.rls dd .uchips{display:flex;flex-wrap:wrap;gap:6px}
-.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls .qk>.popwrap{right:auto;left:14px;bottom:-4px}.rls .qk>.uchip>span{margin-left:5px}.rls .pop{z-index:40;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.rls .pop .row{align-items:center}.rls .pop .row>:first-child{flex:none}.rls .pop .row>span{min-width:0}.rls .pop .row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
+.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls .qk>.popwrap{right:auto;left:14px;bottom:-4px}.rls .qk>.uchip>span{margin-left:5px}.rls .pop{z-index:40;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.rls .pop .row{align-items:center}.rls .pop .row>:first-child{flex:none}.rls .pop .row>span{min-width:0}.rls .pop .row small{display:block;font-size:10.5px;line-height:1.35;word-break:break-all;color:var(--muted)}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
 .secthead .rgt{font-weight:600}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
