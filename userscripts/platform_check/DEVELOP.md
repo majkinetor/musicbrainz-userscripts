@@ -248,6 +248,10 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Notes:**
     - The catalogue is per country: GB, then US. The link is to the store the album was found in.
 
+## Scan counts and cache
+
+The dock uses the panel's confirmed and withheld results, including the current Artists & labels selection when its table is open. Cache enablement and duration are settings. A scan marks its release incomplete until all its requests and artist counts finish; a failed, cancelled or interrupted scan is retried instead of being presented as complete. Successful edits, including Falcon submissions initiated by Mission Control, invalidate the snapshot across tabs. Release and artist-count generations prevent late results from replacing newer state.
+
 ## Artists and labels
 
 MusicBrainz is asked once which of the found links it already has, and on whom, one request per 100 links: when the scans finish, for the count on **Artists & labels**, and the table reuses that answer. With *Count the links to add* off, it is asked only when the table opens. A match cached before the feature existed is read again once, on the next scan of the release.

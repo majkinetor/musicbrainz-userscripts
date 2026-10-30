@@ -3592,7 +3592,9 @@ function pcSourceText() { return pcSources.size === 2 ? 'cached + live' : pcSour
 // "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
 function pcDockStatus() {
     const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
-    if (pcDockItem) pcDockItem.status(pcDockStale ? '?' : pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : pcDockArtists === null && GM_getValue('pc:links-count', true) ? '?' : '✓');
+    const base = pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '';
+    const incomplete = pcDockArtists === null && GM_getValue('pc:links-count', true);
+    if (pcDockItem) pcDockItem.status(pcDockStale ? '?' : incomplete ? (base ? base + '/?' : '?') : base || '✓');
 }
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
@@ -3863,6 +3865,7 @@ PROVIDER_ORDER.forEach(p => {
         GM_setValue(`pc:prov_${p}`, e.target.checked);
         pcSetupBadges();
         if (providerRows[p]) providerRows[p].style.display = e.target.checked ? '' : 'none';
+        pcMarkDirty(mbid, false, false);
     });
 });
 document.getElementById('mb-show-icons').addEventListener('change', e => {
@@ -3886,16 +3889,20 @@ document.getElementById('mb-show-names').addEventListener('change', e => {
 document.getElementById('mb-respect-barcode').addEventListener('change', e => {
     GM_setValue('pc:respect-barcode', e.target.checked);   // (#182) gate + / ↗ on barcode match
     document.getElementById('mb-barcode-mode').disabled = !e.target.checked;
+    pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-barcode-mode').addEventListener('change', e => {
     GM_setValue('pc:barcode-mode', e.target.value);        // 'exists' (known mismatch only) | 'strict' (also unconfirmable)
+    pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-respect-format').addEventListener('change', e => {
     GM_setValue('pc:respect-format', e.target.checked);    // (#182) gate + / ↗ on format compatibility
     document.getElementById('mb-format-mode').disabled = !e.target.checked;
+    pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-format-mode').addEventListener('change', e => {
     GM_setValue('pc:format-mode', e.target.value);         // 'exists' (known incompatible only) | 'strict' (also undeterminable)
+    pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-links-count').addEventListener('change', e => {
     GM_setValue('pc:links-count', e.target.checked);       // #671 — count the links to add once the scans finish
@@ -4000,11 +4007,12 @@ const pcGateLog = (lv, m) => appendLog('MusicBrainz', m, lv === 'warn' ? 'warn' 
 // write a row the next scan owns. A request is the scan's when it was made while one ran; it
 // carries that scan's number (PC_SCAN.n), and one made after the cancel by a scan still on its
 // way to the network (behind the MusicBrainz gate) is never sent.
-const PC_SCAN = { n: 0, busy: false, live: new Set() };
+const PC_SCAN = { n: 0, busy: false, live: new Set(), errors: new Map() };
 const pcScanOf = () => (PC_SCAN.busy ? PC_SCAN.n : null);
 const pcStale = n => n != null && n !== PC_SCAN.n;
 function pcCancelScan() {
     PC_SCAN.n++;
+    if (PC_SCAN.cancel) { const cancel = PC_SCAN.cancel; PC_SCAN.cancel = null; cancel(); }
     PC_SCAN.live.forEach(req => { try { req.abort(); } catch (e) {} });
     PC_SCAN.live.clear();
     // what the scans share would wait on a dropped request for good: asked again instead
@@ -4016,7 +4024,16 @@ function pcCancelScan() {
 function pcGmRequest(opts, resolve, n) {
     if (pcStale(n)) return;
     let req = null;
-    const done = f => (...a) => { PC_SCAN.live.delete(req); if (!pcStale(n)) resolve(f(...a)); };
+    const done = f => (...a) => {
+        PC_SCAN.live.delete(req);
+        if (pcStale(n)) return;
+        const result = f(...a);
+        if (n != null) {
+            if (result.status === 0 || result.status === 429 || result.status >= 500) PC_SCAN.errors.set(opts.url, result.status);
+            else PC_SCAN.errors.delete(opts.url);
+        }
+        resolve(result);
+    };
     opts.onload = done(opts.onload); opts.onerror = done(opts.onerror); opts.ontimeout = done(opts.ontimeout);
     req = GM_xmlhttpRequest(opts);
     if (n != null && req && req.abort) PC_SCAN.live.add(req);
@@ -8239,8 +8256,10 @@ async function runScans() {
     if (pcStale(n)) return;
     PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
-    if (ok) { pcDockStale = false; document.getElementById('pc-stale-note')?.remove(); }
-    else pcMarkDirty(mbid);
+    if (ok) {
+        pcDockStale = false; document.getElementById('pc-stale-note')?.remove();
+        try { localStorage.removeItem(`pc:incomplete:${mbid}`); } catch (e) { /* storage blocked */ }
+    } else pcMarkDirty(mbid, false, false, false);
     pcDockStatus();
     if (pcDockItem) pcDockItem.busy(false);
 }
@@ -8488,8 +8507,9 @@ async function runScansInner() {
     if (providerEnabled('soundcloud')) tasks.push(scanSoundcloud({ ...ctx, existingUrl: existing.soundcloud }));
     if (providerEnabled('audiomack')) tasks.push(scanAudiomack({ ...ctx, existingUrl: existing.audiomack }));
     if (providerEnabled('sevendigital')) tasks.push(scanSevendigital({ ...ctx, existingUrl: existing.sevendigital }));
-    await Promise.allSettled(tasks);
-    appendLog('System', 'All scans completed', 'ok');
+    const settled = await Promise.allSettled(tasks);
+    const failed = settled.filter(x => x.status === 'rejected');
+    appendLog('System', 'All scans completed' + (failed.length || PC_SCAN.errors.size ? ' with errors' : ''), failed.length || PC_SCAN.errors.size ? 'warn' : 'ok');
     // the dock entry's state (#847): the platforms to link, and a card with on MusicBrainz · to link · not found
     if (pcDockItem) {
         const on = [], found = [], held = [], none = [];
@@ -8509,6 +8529,7 @@ async function runScansInner() {
             + '</div>' }));
     }
     await pcCountLinks();   // #671: the dock stays busy until this count finishes
+    if (failed.length || PC_SCAN.errors.size) return false;
 }
 
 // ─── Artists & labels table (#671) ──────────────────────────────────────────
@@ -8818,6 +8839,7 @@ async function pcCountLinks() {
 }
 
 async function pcOpenLinksTable(btn) {
+    if (pcDockStale) { flashInfo(btn, 'Results changed — press ↻ first'); return; }
     const release = mbid, generation = pcCountLinks.generation;
     document.getElementById('pc-links-ov')?.remove();
     const mbRec = mbDataGet(mbid) || {};
@@ -9729,21 +9751,28 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
 // waits for the scan running (or the last one) and reports what it found — it
 // never starts a second scan. Apply hands the ticked links to Falcon.
 function pcScan() {
+    PC_SCAN.errors.clear(); pcDockStale = true; pcDockStatus();
     pcSources.clear();
     const sourceLabel = document.getElementById('pc-result-source'); if (sourceLabel) sourceLabel.textContent = '';
-    const dirty = pcDirty.has(mbid) || !!localStorage.getItem(`pc:dirty:${mbid}`);
+    let dirty = pcDirty.has(mbid);
+    try { dirty = dirty || !!localStorage.getItem(`pc:dirty:${mbid}`) || !!localStorage.getItem(`pc:incomplete:${mbid}`); } catch (e) { /* storage blocked */ }
     if (dirty || !GM_getValue('pc:cache-enabled', true)) cacheClear(mbid);
-    pcDirty.delete(mbid); localStorage.removeItem(`pc:dirty:${mbid}`);
+    pcDirty.delete(mbid);
+    try { localStorage.removeItem(`pc:dirty:${mbid}`); localStorage.setItem(`pc:incomplete:${mbid}`, '1'); } catch (e) { /* storage blocked */ }
     pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
     pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
     _pcLinked = null;
-    PC_SCAN.last = runScans(); return PC_SCAN.last;
+    const cancelled = new Promise(resolve => { PC_SCAN.cancel = resolve; });
+    const promise = PC_SCAN.last = Promise.race([runScans(), cancelled]);
+    promise.then(() => { if (PC_SCAN.last === promise) PC_SCAN.cancel = null; });
+    return promise;
 }
-function pcMarkDirty(release, broadcast = true, notify = true) {
+function pcMarkDirty(release, broadcast = true, notify = true, invalidateScan = true) {
     pcDirty.add(release);
     if (notify) document.dispatchEvent(new CustomEvent('mbu:release-changed', { detail: JSON.stringify({ release }) }));
     if (broadcast) try { localStorage.setItem(`pc:dirty:${release}`, String(Date.now())); } catch (e) { /* current tab still knows */ }
     if (release !== mbid) return;
+    if (invalidateScan) PC_SCAN.last = null;
     if (PC_SCAN.busy) { pcCancelScan(); PC_SCAN.busy = false; setScanStatus('stopped'); if (pcDockItem) pcDockItem.busy(false); }
     pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
     pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;

@@ -23,6 +23,11 @@ test('main view, sub-views, sizes, and the new-tab setting', { tag: ['@sandbox']
   check(main.main && !main.order && !main.auth, `#188: it opens on the main view (${JSON.stringify(main)})`);
   check(await page.locator('#mb-icon-size').count() && await page.locator('#mb-name-size').count(), '#188: with the icon and name sizes');
   await attachShot(testInfo, card, 'main');
+  check(await page.isChecked('#mb-cache-enabled') && await page.inputValue('#mb-cache-days') === 'default', 'scan caching starts enabled with the existing durations');
+  await page.selectOption('#mb-cache-days', '7');
+  await page.locator('#mb-cache-enabled').uncheck();
+  check(await page.evaluate(() => GM_getValue('pc:cache-days') === 7 && GM_getValue('pc:cache-enabled') === false), 'the cache duration and switch are saved');
+  await page.locator('#mb-cache-enabled').check();
   const iconVar = await page.evaluate(() => {
     const el = document.getElementById('mb-icon-size'); el.value = '30'; el.dispatchEvent(new Event('input', { bubbles: true }));
     return getComputedStyle(document.getElementById('mb-pc-panel')).getPropertyValue('--pc-icon-size').trim();

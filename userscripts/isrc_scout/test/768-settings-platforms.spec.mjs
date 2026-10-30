@@ -20,8 +20,14 @@ test('the settings window, and a platform switched off leaves the editor', { tag
   });
   console.log('window: ' + JSON.stringify(win));
   check(win.open && win.pos === 'absolute' && win.w > 300 && win.inside, 'the settings open as a window over the editor');
-  check(['MusicBrainz', 'Imports', 'Submitting', 'Release page', 'More'].every(x => win.secs.includes(x)), `its sections (${win.secs.join(', ')})`);
+  check(['MusicBrainz', 'Imports', 'Submitting', 'Release page'].every(x => win.secs.includes(x)), `its sections (${win.secs.join(', ')})`);
   await attachShot(info, page.locator('#ii-setup-pane'), 'settings');
+  check(await page.isChecked('#ii-cache-enabled') && await page.inputValue('#ii-cache-days') === '7', 'Match caching defaults to seven days');
+  await page.locator('#ii-cache-days').fill('3');
+  await page.locator('#ii-cache-days').press('Tab');
+  await page.locator('#ii-cache-enabled').uncheck();
+  check(await page.evaluate(() => GM_getValue('ii:match_cache_days') === 3 && GM_getValue('ii:match_cache_enabled') === false), 'the cache duration and switch are saved');
+  await page.locator('#ii-cache-enabled').check();
 
   await page.click('#ii-cfg-to-platforms');
   check(await page.evaluate(() => document.getElementById('ii-cfg-main').hidden && !document.getElementById('ii-cfg-platforms').hidden), 'Platforms opens its own view');

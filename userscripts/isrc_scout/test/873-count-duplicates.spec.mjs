@@ -40,9 +40,10 @@ test('background Match cannot save an old release into the next release', { tag:
     { findHeadless: async () => ({}) }, { info() {}, warn() {} }, () => [], () => [], () => true, []];
   const env = build(...deps);
   const old = env.run(() => {});
+  const before = saved.length;
   env.follow({ tracks: [{ recId: 'new', existing: [] }] });
   finish(); await old;
-  check(saved.length === 0, 'the old result is discarded after the release changes');
+  check(saved.length === before, 'the old result is discarded after the release changes');
 });
 
 test('an old release load cannot clear the newer in-flight load', { tag: '@unit' }, async () => {
@@ -69,4 +70,25 @@ test('only a successful ISRC submission invalidates the Match cache', { tag: '@u
   fail = true;
   await submit({}, '').catch(() => {});
   check(invalidations === 1, 'a failed submit does not invalidate');
+});
+
+test('a failed provider is not recorded as a completed background check', { tag: '@unit' }, async () => {
+  const src = await functionSource('isrc_scout', ['findHeadless']);
+  const provider = { code: 'x', name: 'X', conc: 1, resolve: async () => { throw new Error('offline'); } };
+  const run = new Function('PROV', 'RELEASE', 'codeOn', 'linkedUrl', 'normalizeIsrc', 'isValidIsrc', 'Log', src + '\nreturn findHeadless;')(
+    [provider], { tracks: [{ recId: 'r', existing: [] }] }, () => true, () => false, x => x, x => !!x, { info() {}, debug() {} });
+  let complete;
+  await run(() => 'USAAA2000001', null, { onDone: (p, ok) => { complete = ok; } });
+  check(complete === false, 'the failed lookup is incomplete and must be retried');
+});
+
+test('successful edits expire the saved snapshot but retain unfinished page results', { tag: '@unit' }, async () => {
+  const src = await functionSource('isrc_scout', ['bgCacheDays', 'bgCache', 'bgSave', 'bgInvalidate']);
+  const data = { bg_links_cache: { release: { at: Date.now(), links: [{ rec: 'r', code: 'x', url: 'https://x.test' }], done: [], isrcs: {} } } };
+  const store = { get: (k, d) => k in data ? data[k] : d, set: (k, v) => { data[k] = v; } }, bg = { generation: 0 };
+  const build = new Function('store', 'mbid', 'BG_DAYS', 'BG', 'updateBtnLinks', 'document', 'Event', src + '\nreturn { bgCache, bgInvalidate };');
+  const api = build(store, 'release', 7, bg, () => {}, { dispatchEvent() {} }, class {});
+  api.bgInvalidate(false);
+  check(!data.bg_links_cache.release && bg.stale && bg.generation === 1, 'the persisted result is invalidated and marked unverified');
+  check(api.bgCache().links.length === 1, 'other unfinished findings remain available in this page');
 });

@@ -39,7 +39,7 @@ A platform the release already links is used as is; the others are searched by b
 | ?           | link found, track count unreadable     |
 | red —       | not found                              |
 
-A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and the launcher card say whether platform results are cached, live, or mixed.
+A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and the launcher card say whether platform results are cached, live, or mixed. By default, cached matches last 90 days, misses 14 days, and MusicBrainz fallback data 30 days; the cache setting can choose one duration for all three. A question mark means the count needs a fresh scan.
 
 > [!TIP]
 > *Compact › Unmatched* shrinks a platform that found nothing (yet) to a dimmed icon at the bottom; *Compact › Low-confidence* does the same, with an amber ring, for a match that isn't clean. Discogs and Bandcamp always keep their rows.

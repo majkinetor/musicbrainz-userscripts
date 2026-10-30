@@ -2,6 +2,10 @@
 
 *Reference for maintainers and other scripts' authors*. The repo-wide procedure is in the root [DEVELOP.md](../../DEVELOP.md).
 
+## Match counts and cache
+
+The dock and editor count the same actionable ISRCs and recording links. Background Match results are stored per release, with source completion flags; an interrupted or failed scan stays incomplete and is retried. Cache enablement and lifetime are user settings. Successful submissions invalidate the saved snapshot, including submissions initiated by Mission Control, while preserving unfinished work in the open editor. Release changes and cross-tab invalidation advance a generation so old responses cannot replace the current release's state.
+
 ## Providers
 
 ISRC Scout has two independent provider systems, and a provider can support one without the other: **ISRC import** fills the release's missing ISRCs, and **track links** resolve a per-track URL for the Links tab's **Add** column.
