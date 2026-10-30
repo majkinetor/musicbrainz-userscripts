@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.144948
+// @version      2026.10.30.145658
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2482,7 +2482,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-sw[aria-checked=true]{color:var(--text)}
 .ed-sw[aria-checked=true] i{background:var(--accent)}
 .ed-sw[aria-checked=true] i::after{left:16px}
-.ed-div{width:1px;height:20px;background:var(--border)}
+.ed-div{width:1px;height:20px;background:var(--border)}.ed-ld{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
 .ed-views{display:inline-flex;gap:2px}
 .ed-views button{all:unset;width:30px;height:30px;display:grid;place-items:center;border-radius:8px;color:var(--muted);cursor:pointer}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
@@ -3384,7 +3384,7 @@ function edTable(es, curId, flat, part) {
             <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
         </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="9">${edTracksHtml(e)}</td></tr>` : ''}`;
     };
-    return `<div class="ed-tw"><table class="ed-t">${col && part ? `<caption class="folded-note">Sorted: the ${es.length} loaded so far</caption>` : ''}<thead><tr><th></th>${ED_COLS.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
+    return `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${ED_COLS.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
 }
 const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
 const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
@@ -3414,7 +3414,10 @@ function edHtml(r, eds, count) {
     const folded = `<div class="ed-folded"><span class="stack">${all.filter(e => e.thumb).slice(0, 7).map(e => `<img src="${e.thumb}" alt="">`).join('')}</span>
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
-    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
+    // a paged list says how many are in, on the right, and takes 2,000 more at a click (as History's "Load 2,000")
+    const left = r.native ? r.more : paged && count > all.length;
+    const loaded = (paged || r.native) && left ? `<span class="ed-ld" data-tip="Sorting and filters cover only the releases loaded so far">${all.length} loaded so far<button class="lnk" type="button" data-lmgo="ed+">${LM_BUSY.has('ed') ? 'Loading…' : 'Load 2,000'}</button></span>` : '';
+    let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}${loaded}</div>` + fltBar('ed', all);
     const tools = fltBtn('ed', all) + views;
     filters = filters.replace(fltBtn('ed', all), '').replace(views.replace('<span class="ed-div"></span>', ''), '');
     if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
@@ -6848,9 +6851,12 @@ function lmWatch(app) {
 }
 async function lmMore(k) {
     const d = data;
+    // "Load 2,000": a fixed batch of pages per click, so a label of 100,000 releases never loads whole by accident
+    if (k === 'ed+') { const cap = d.editions.length + 2000; LOG.info('Releases: loading 2,000 more'); for (let n = -1; d === data && d.editions.length < cap && d.editions.length > n && (d.kind === 'native-releases' ? d.more : d.edCount > d.editions.length);) { n = d.editions.length; await lmMore('ed'); if (LM_ERR.has('ed')) break; } return; }
     if (!d || LM_BUSY.has(k)) return;
     LM_BUSY.add(k); LM_ERR.delete(k);
-    const b = document.querySelector(`[data-lmgo="${k}"]`);
+    const b = document.querySelector(`[data-lmgo="${k}"]`), b2 = k === 'ed' && document.querySelector('[data-lmgo="ed+"]');
+    if (b2) { b2.disabled = true; b2.textContent = 'Loading…'; }
     if (b) { b.disabled = true; b.textContent = 'Loading…'; }
     LOG.debug('Load more: ' + k);
     try { await (k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
