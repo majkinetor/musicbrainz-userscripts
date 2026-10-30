@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.180001
+// @version      2026.10.30.181001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8354,7 +8354,7 @@ function plBody() {
     const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
     return row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
-            + row('Icons', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
+            + row('Visible', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
