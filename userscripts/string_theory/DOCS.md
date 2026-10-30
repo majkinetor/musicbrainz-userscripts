@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-30 09:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-30 10:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -813,7 +813,7 @@ Open a track to see its recording and work credits. The platforms it is on (Spot
 
 **Release credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
 
-Which platforms show, in which order, and how big, are in the settings' **Platforms** tab.
+Which platforms show, in which order, and how big, are set with the gear beside the tracklist's **Show** toggles. Click a platform to show or hide it, drag it to reorder.
 
 ### Releases and discography
 
