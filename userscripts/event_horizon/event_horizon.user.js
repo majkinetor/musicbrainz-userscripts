@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.235500
+// @version      2026.10.31.000000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2686,7 +2686,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .artgrid img,.artgrid .art-miss{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;background:var(--chip);color:transparent}
 .artgrid .art-miss{display:grid;place-items:center;color:var(--muted)}.art-miss svg{opacity:.55}
 .artgrid figure{margin:0;display:flex;flex-direction:column;gap:6px}
-.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default;justify-content:flex-start}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.ed-t tr.tsub td{padding-top:18px;font-weight:600;color:var(--soft)}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}
+.disco{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.disco a{display:flex;flex-direction:column;gap:5px;color:inherit;text-decoration:none}.disco img,.disco .dn{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:grid;place-items:center;background:var(--chip);color:var(--muted)}.disco .dt{font-weight:600;line-height:1.3;min-width:0;overflow-wrap:anywhere}.disco .dy{font-size:13px;color:var(--soft)}.disco-h{margin:18px 0 10px;font-size:14px;color:var(--soft)}.gf{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}.gf .cv{display:grid;place-items:center;width:22px;height:22px;border-radius:6px;border:1px solid var(--border)}.gf:hover{color:var(--text)}.gf:hover .cv{border-color:var(--accent)}.disco-h:first-of-type{margin-top:0}.sec.pend .secthead{cursor:default;justify-content:flex-start}.sec.pend .fold{display:flex;align-items:center;gap:inherit;opacity:.6}.ld{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite}@keyframes ldspin{to{transform:rotate(360deg)}}.als{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}.als span:not(:last-of-type)::after{content:'·';margin:0 8px;color:var(--soft)}.als .chip{margin-left:10px;cursor:pointer}.disco.ed-row{grid-template-columns:none;grid-auto-columns:140px}.ed-t a.tt .dn{width:100%;height:100%;display:grid;place-items:center}.disco .dn svg,.ed-t a.tt .dn svg{opacity:.45}.art .apic{object-fit:cover;object-position:top}.art .ipic{object-fit:cover}.ed-t td ul{list-style:none;margin:0;padding:0}.ed-t tr.tsub td{padding-top:18px;font-weight:600;color:var(--soft)}.art .lpic{object-fit:contain;background:#fff;padding:12px;box-sizing:border-box}.art .mpic{object-fit:contain;background:var(--chip);padding:16px;box-sizing:border-box}.art .imgflag{position:absolute;left:12px;top:12px;width:40px;height:auto;border-radius:2px;box-shadow:0 1px 4px var(--shadow);pointer-events:none}
 .artgrid figcaption{font-size:13px;color:var(--soft)}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
@@ -6291,7 +6291,7 @@ const WORKS_TYPES = ['artist', 'area'];
 // and with an Events tab
 const EVENTS_TYPES = ['artist', 'area', 'place'];
 // and with Artists and Labels tabs (an instrument's Artists is on its own page)
-const ARTISTS_TYPES = ['area'];
+const ARTISTS_TYPES = ['area', 'label'];
 const LABELS_TYPES = ['area'];
 const RELS_TYPES = ['artist', 'label', 'area', 'instrument', 'place', 'series', 'event', 'release-group', 'recording', 'work'];
 const RELS_KINDS = { artist: 'Artists', label: 'Labels', area: 'Areas', instrument: 'Instruments', place: 'Places', series: 'Series', event: 'Events', work: 'Works', recording: 'Recordings', release: 'Releases', 'release-group': 'Release groups', url: 'Links', genre: 'Genres' };
@@ -6354,10 +6354,27 @@ function relsParse(html) {
     const last = Math.max(1, ...[...c.querySelectorAll('ul.pagination a')].map(a => +(new URL(a.getAttribute('href'), location.origin).searchParams.get('page')) || 1));
     return { name: hn ? tx(hn) : tx(h1), dis: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', cards, apps, cols: tb ? apps.cols : [], last };
 }
+// a label's artists, which MusicBrainz has no page for: the artists credited on its releases, by how many
+async function labArts(d, ty, eid) {
+    const L = d.lab || (d.lab = { by: new Map(), off: 0, total: 0, name: '', dis: '' });
+    if (!L.name) { const g = await ws(`${ty}/${eid}`); L.name = g.name; L.dis = g.disambiguation || ''; }
+    const j = await ws(`release?label=${eid}&inc=artist-credits&limit=100&offset=${L.off}`);
+    L.total = j['release-count'] || 0; L.off += (j.releases || []).length;
+    for (const r of j.releases || []) for (const c of r['artist-credit'] || []) {
+        const a = c.artist; if (!a || !a.id) continue;
+        const x = L.by.get(a.id) || { a, rels: new Set() }; x.rels.add(r.id); L.by.set(a.id, x);
+    }
+    const xs = [...L.by.values()].sort((p, q) => q.rels.size - p.rels.size || p.a.name.localeCompare(q.a.name));
+    const apps = xs.map(x => ({ ph: '', kind: 'artist', href: '/artist/' + x.a.id, name: x.a.name, ti: 0, cells: ['', x.a.disambiguation ? `<span class="rga">${esc(x.a.disambiguation)}</span>` : '', fmtN(x.rels.size)] }));
+    apps.cols = ['Artist', 'Disambiguation', 'Releases']; apps.skip = [];
+    LOG.debug(`Artists of label ${eid}: ${L.off} of ${L.total} releases read, ${xs.length} artists`);
+    return { name: L.name, dis: L.dis, cards: [], apps, cols: apps.cols, last: Math.max(1, Math.ceil(L.total / 100)) };
+}
 async function relsLoad(n, key) {
     const d = data, ent = key.slice(key.indexOf('/') + 1), [ty, eid] = ent.split(':');
     try {
         let html;
+        if (ty === 'label' && d.mode === 'artists') { const t = await labArts(d, ty, eid); if (n === showing && data === d) { d.t = t; d.err = ''; render(); } return; }
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
         else { const r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode || 'relationships'}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
         const t = relsParse(html);
@@ -6393,7 +6410,9 @@ function relsApps(t, d = {}) {
 // the next page of an entity's recordings or works
 async function recsMore(d) {
     if (!d.t || d.page >= d.t.last) return;
-    const [ty, eid] = d.ent.split(':'), r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode}?page=${d.page + 1}`);
+    const [ty, eid] = d.ent.split(':');
+    if (ty === 'label' && d.mode === 'artists') { const t = await labArts(d, ty, eid); if (data !== d) return; d.t = t; d.page++; return; }
+    const r = await mbnFetch(`${MB}/${ty}/${eid}/${d.mode}?page=${d.page + 1}`);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const t = relsParse(await r.text()); if (data !== d) return;
     d.t.apps.push(...t.apps); d.page++;
