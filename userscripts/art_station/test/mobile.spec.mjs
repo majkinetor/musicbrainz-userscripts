@@ -25,6 +25,8 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   });
   console.log(JSON.stringify(r));
   check(r.tops.length < 2 || r.tops[0] === r.tops[1], `two covers to a row (${r.tops})`);
+  const barH = await page.evaluate(() => Math.round(document.querySelector('#as-root .as-bar').getBoundingClientRect().height));
+  check(barH <= 100, `the toolbar is compact, two rows at most (${barH}px)`);
   check(r.out.length === 0, `nothing of Art Station's runs past the screen's right edge (${r.vw}px: ${r.out.slice(0, 8).join(' · ')})`);
 
   // full screen: the viewer covers the screen, not the page's 780px, and closing it puts the page back where it was
