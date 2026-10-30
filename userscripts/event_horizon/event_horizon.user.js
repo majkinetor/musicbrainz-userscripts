@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.133800
+// @version      2026.10.30.135900
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2712,7 +2712,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sk-page .info{flex:1 1 0;min-width:0}
 .sk-cover{aspect-ratio:1;border-radius:16px;display:grid;place-items:center}
 .sk-orbit{width:84px;height:84px;overflow:visible}
-.sk-orbit path{transform-origin:64px 64px;animation:skspin 1.6s ease-in-out infinite alternate}
+.sk-orbit path,:root[data-eh-checking] .eh-home svg path{transform-origin:64px 64px;animation:skspin 1.6s ease-in-out infinite alternate}
 @keyframes skspin{from{transform:rotate(-30deg)}to{transform:rotate(0deg)}}
 .sk-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.sk-thumbs .sk{aspect-ratio:1}
 .sk.k{width:180px;height:12px;margin-top:20px}.sk.ti{width:min(420px,90%);height:56px;margin:18px 0 14px;border-radius:12px}.sk.by{width:240px;height:24px}
@@ -2725,7 +2725,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sk-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:16px}.sk-tiles .sk{aspect-ratio:1;border-radius:12px}
 .sk-rows{margin-top:16px;display:grid}.sk-r{display:grid;grid-template-columns:28px 1fr 120px 60px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.sk-r .sk{height:14px}
 @media (max-width:700px){.sk-r{grid-template-columns:20px 1fr 50px}.sk-r .sk:nth-child(3){display:none}}
-@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot{animation:none}}
+@media (prefers-reduced-motion:reduce){.sk,.sk-orbit path,.sk-dot,:root[data-eh-checking] .eh-home svg path{animation:none}}
 #mbu-tip:has(.ehtip){width:340px;padding:10px 12px 11px;background:var(--surface);color:var(--text);border-color:var(--border);border-radius:10px;font-family:Manrope,system-ui,sans-serif}
 #mbu-tip:has(.ehtip)::before{border-color:var(--border)}
 .ehtip .hd{display:flex;align-items:baseline;gap:8px}
@@ -8692,6 +8692,7 @@ function ehPageMark() { const r = document.documentElement; if (ehOn) r.setAttri
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
 async function show(key, o = {}) {
     const app = $('#app'), n = ++showing;
+    document.documentElement.removeAttribute('data-eh-checking');
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     ehRel = kind === 'release' && id || null; ehRelMark(); ehPageMark();
     mbRestackCorner('br');   // the dock drops the launchers that don't belong on this page (#847)
@@ -8739,6 +8740,7 @@ async function show(key, o = {}) {
     early = null;
     if (pre) { pre.done.forEach(step); pre.on = step; }
     const used = pre ? pre.used : (kpUsed = new Map()), lead = pre ? pre.lead : o.quiet ? '' : leadOn();
+    document.documentElement.setAttribute('data-eh-checking', '');
     const d = await (pre ? pre.p : LOADERS[kind](id, step));
         d.id = id;
         if (!d.g && !d.rel && d.gP) {
@@ -8779,6 +8781,7 @@ async function show(key, o = {}) {
         // a cover kept before draws from the kept image; a new one is only kept, as the page already shows it
         if (kind === 'release') d.covers.then(x => { const f = x.find(i => i.front); return f && keptCover(id, f); }).then(c => { if (c && c.had && n === showing && data === d && !d.rel.frontFull) { d.rel.frontSrc = c.u; render(); } }, e => LOG.debug('release cover not kept: ' + (e && e.message || e)));
         all.then(async () => {
+            try {
             if (n !== showing) return;
             // Back and Forward come back where the page was left, unless the reader has scrolled meanwhile; a redraw stays put
             if (o.quiet) scrollTo(0, o.y); else if (o.y > 0 && scrollY < 2) scrollTo(0, o.y);
@@ -8788,9 +8791,13 @@ async function show(key, o = {}) {
             if (a && app.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) { LOG.debug('Changed answers not drawn: a box is being typed in'); return; }
             LOG.info('Redrawing ' + kind.replace('-', ' ') + ' ' + id + ': MusicBrainz has changed it since it was kept');
             show(key, { quiet: true, y: scrollY });
+            } finally {
+                if (n === showing) document.documentElement.removeAttribute('data-eh-checking');
+            }
         });
     }
     catch (e) {
+        if (n === showing) document.documentElement.removeAttribute('data-eh-checking');
         LOG.err('Loading ' + id + ' failed: ' + e.message);
         if (n === showing) leadOff(ehLead);   // the page failed: it no longer holds anyone back
         if (n !== showing || o.quiet) return;
