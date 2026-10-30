@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.120900
+// @version      2026.10.30.123756
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7675,6 +7675,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-details] #page .eh-details table.details{width:100%;border-collapse:collapse}
 :root[data-eh-details] #page .eh-details table.details :is(th,td){padding:2px 0;vertical-align:baseline;line-height:1.45;border:0;background:transparent!important;overflow-wrap:anywhere}
 :root[data-eh-details] #page .eh-details table.details th{width:1%;white-space:nowrap;padding-right:12px;color:var(--text);font-weight:700;text-align:right}
+:root[data-eh-details] #page .eh-details td>a[href*="/ws/2/"],:root[data-eh-details] #page .eh-details td>a[href^="http"]:not([href^="/"]){font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:-.01em}
 :root[data-eh-details] #page .eh-details code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text)}
 @media(max-width:600px){:root[data-eh-details] .eh-details{padding:16px}:root[data-eh-details] #page .eh-details table.details th{white-space:normal;width:90px}:root[data-eh-details] #eh-relhd>.rhtx{flex-basis:100%}:root[data-eh-details] #eh-relhd .acts{margin-left:0}}
 #eh-relhd>.u-av{flex:none;position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:var(--chip);color:var(--chip-text);font-size:40px;font-weight:800}#eh-relhd>.u-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
