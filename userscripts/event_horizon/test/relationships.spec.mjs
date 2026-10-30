@@ -50,7 +50,7 @@ test('an artist\'s recordings show as a table that loads more', { tag: ['@sandbo
   check(await page.locator('#app .arthd h1 a').innerText() === 'Michael Jackson', 'the header names the artist');
   check(await page.locator('#app #s-rarecording th', { hasText: 'Relationship' }).count() === 0, 'no Relationship column on an artist\'s own');
   await attachShot(testInfo, page, 'recordings');
-  await page.locator('#app [data-lmgo="recs"]').click();
+  await page.locator('#app [data-lmgo^="tab:ra"]:not([data-lmgo$="+"])').click();
   check(await until(rows, n => n > 100) > 100, 'Load more brings the next page');
 });
 
@@ -72,6 +72,6 @@ test('an artist\'s works show as a table that loads more', { tag: ['@sandbox', '
   check(await until(rows, n => n >= 100) === 100, 'the first page is in');
   check((await page.locator('#app .arthd').innerText()).includes('WORKS') || (await page.locator('#app .arthd').innerText()).includes('Works'), 'the kicker says Works');
   await attachShot(testInfo, page, 'works');
-  await page.locator('#app [data-lmgo="recs"]').click();
+  await page.locator('#app [data-lmgo^="tab:ra"]:not([data-lmgo$="+"])').click();
   check(await until(rows, n => n > 100) > 100, 'Load more brings the next page');
 });
