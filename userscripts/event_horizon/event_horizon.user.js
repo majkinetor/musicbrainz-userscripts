@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.175001
+// @version      2026.10.30.180001
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8310,6 +8310,7 @@ const CFG_CSS = '#eh-cfg{background:none;pointer-events:none}#eh-cfg>.mbu-ov-pan
     + '.eh-cfg .tab{all:unset;padding:5px 9px;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--mbu-text-weak);font:500 13px var(--mbu-font);cursor:pointer}'
     + '.eh-cfg .tab:hover{color:var(--mbu-text)}.eh-cfg .tab[aria-selected=true]{color:var(--mbu-accent-text);border-bottom-color:var(--mbu-accent);font-weight:600}.eh-cfg .tab .n{font-size:10px;color:var(--mbu-text-weak)}'
     + '.eh-cfg .pane{height:230px;overflow-y:auto;padding-top:2px}'
+    + '.eh-plpop .plh{margin:6px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--mbu-border-soft);font:700 11px var(--mbu-font);letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-accent-text)}'
     + '.eh-plpop{position:absolute;z-index:2147482000;width:min(560px,94vw);max-height:70vh;overflow-y:auto;padding:4px 10px;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}'
     + '.eh-cfg .cr{display:grid;grid-template-columns:108px 1fr;gap:6px;padding:4px 0;border-bottom:1px solid var(--mbu-border-soft);align-items:start}.eh-cfg .cr:last-child{border:0}'
     + '.eh-cfg .cl{padding-top:5px;font:600 10px var(--mbu-font);letter-spacing:.06em;text-transform:uppercase;color:var(--mbu-text-weak)}'
@@ -8353,7 +8354,7 @@ function plBody() {
     const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
     return row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
-            + row('Platforms', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
+            + row('Icons', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
 }
 function cfgBody() {
     const chip = cfgChip, row = cfgRow;
@@ -8385,12 +8386,12 @@ function openCfg() {
 function openPlCfg(btn) {
     const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); return; }
     const pop = document.createElement('div'); pop.id = 'eh-plcfg'; pop.className = 'eh-cfg eh-plpop mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Platform icons');
-    pop.innerHTML = `<div class="eh-cfg-b">${plBody()}</div>`;
+    pop.innerHTML = `<h3 class="plh">Platforms</h3><div class="eh-cfg-b">${plBody()}</div>`;
     document.documentElement.append(pop);
     const r = btn.getBoundingClientRect(), w = pop.offsetWidth;
     pop.style.left = (scrollX + Math.max(8, Math.min(r.right - w, innerWidth - w - 8))) + 'px'; pop.style.top = (scrollY + r.bottom + 6) + 'px';
     mbuDismissOn(pop, () => pop.remove(), { ignore: '[data-plcfg]' });
-    cfgWire(pop, pop.firstChild, plBody);
+    cfgWire(pop, pop.querySelector('.eh-cfg-b'), plBody);
 }
 // clicks and drags in a settings body; body() redraws it
 function cfgWire(panel, b, body) {
