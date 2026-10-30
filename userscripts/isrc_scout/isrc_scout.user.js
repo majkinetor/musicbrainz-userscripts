@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.30.120000
+// @version      2026.10.30.130000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -8527,7 +8527,7 @@
         await runStreamingSource(src.source, src.id, src.fetcher);
         const filled = (_stream && _stream.counts && _stream.counts.filled) || 0;
         Log.info('Match: ' + src.source + ' filled ' + filled);
-        if (filled) break;
+        if (filled) { bgKeepFills(_stream.suspects || []); break; }
       }
       Log.info('Match: Find links');
       await TrackLinks.resolve();
@@ -9133,6 +9133,7 @@
     const c = all[mbid];
     const ok = c && Date.now() - c.at < BG_DAYS * 864e5 ? c : { at: Date.now(), links: [], done: [] };
     ok.isrcs = ok.isrcs || {};
+    if (ok.v !== 2) { ok.v = 2; if (!Object.keys(ok.isrcs).length) ok.isrcsDone = false; }   // older caches could hold "done" with every source failed
     return ok;
   }
   function bgSave(c) {
@@ -9146,6 +9147,20 @@
     const c = bgCache();
     if (c.links.some(x => x.rec === rec && x.url === url)) return;
     c.links.push({ rec, code, url }); bgSave(c);
+    updateBtnLinks();
+  }
+  // Match clicked by hand: its plausible fills go in the background's cache, so the count after a reload has them too
+  function bgKeepFills(suspects) {
+    const c = bgCache();
+    let n = 0;
+    RELEASE.tracks.forEach((t, i) => {
+      const isrc = normalizeIsrc(t.pending);
+      if (t.existing.length || !isValidIsrc(isrc) || suspects.includes(i) || c.isrcs[t.recId] === isrc) return;
+      c.isrcs[t.recId] = isrc; n++;
+    });
+    if (!n) return;
+    c.isrcsDone = true; bgSave(c);
+    Log.info('Match: ' + n + ' ISRC(s) kept for the background count');
     updateBtnLinks();
   }
   // the matched ISRCs MusicBrainz doesn't have yet, for tracks without one
