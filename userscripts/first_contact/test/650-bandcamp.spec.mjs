@@ -55,13 +55,16 @@ test('a comma list of artists is split; the account artist keeps the link and is
 
 // #743: an album not out yet hides its unreleased tracks' lengths on the page (duration 0); Bandcamp's app data
 // has them, and the edit note says where they came from. Out on 2026-11-06: from then on, the page has them all.
-// Bandcamp answers the harness's requests with its "Client Challenge" page (dev/test/README.md), so the app data's
-// answer is fetched here from Node and handed over.
+// Bandcamp answers the harness's GM requests and Node with its "Client Challenge" page (dev/test/README.md), so the
+// app data's answer is fetched from a bandcamp.com page of the signed-in browser and handed over.
 test('an album not out yet: the hidden track lengths come from Bandcamp\'s app data', { tag: ['@web'] }, async ({ page, context, inject }) => {
   answerGm(context, async ({ url }) => {
     if (!/bandcamp\.com\/api\/mobile\/24\/tralbum_details/.test(url)) return null;
-    const r = await fetch(url, { headers: { Accept: 'application/json' } });
-    return { status: r.status, body: await r.text() };
+    const home = await context.newPage();
+    try {
+      await home.goto('https://bandcamp.com/robots.txt', { waitUntil: 'domcontentloaded' });
+      return await home.evaluate(async u => { const r = await fetch(u, { headers: { Accept: 'application/json' } }); return { status: r.status, body: await r.text() }; }, url);
+    } finally { await home.close(); }
   });
   const rel = await read(page, inject, 'https://ctrlclick.bandcamp.com/album/systems-for-disassembly');
   const tracks = rel.mediums[0].tracks;

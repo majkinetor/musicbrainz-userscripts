@@ -13,7 +13,7 @@ test('Icon only: the button loses its text, keeps its tooltip, and stays that wa
   };
   const look = () => page.evaluate(() => {
     const go = document.querySelector('#fc-root .fc-go'), span = go.querySelector('span');
-    return { text: getComputedStyle(span).display !== 'none', width: Math.round(go.getBoundingClientRect().width), title: go.title, icon: !!go.querySelector('svg') };
+    return { text: getComputedStyle(span).display !== 'none', width: Math.round(go.getBoundingClientRect().width), title: go.dataset.tip, icon: !!go.querySelector('svg') };
   });
   await open();
   const before = await look();
