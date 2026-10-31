@@ -38,3 +38,19 @@ test('Art Station\'s settings open from the dock', { tag: '@sandbox' }, async ({
   await page.locator('#as-dock').click();
   check(await until(() => page.locator('#as-setup').count(), n => n === 0) === 0, 'a second click closes them');
 });
+
+// scrolled down, Art Station's bar sticks under Event Horizon's pinned header, not behind it
+test('Art Station\'s bar pins under the pinned header', { tag: '@sandbox' }, async ({ page, inject }, testInfo) => {
+  await page.setViewportSize({ width: 1200, height: 420 });
+  await page.goto(`https://test.musicbrainz.org/release/${RELEASE}/cover-art`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await idle(page);
+  await inject('event_horizon');
+  await inject('art_station');
+  check(await until(() => page.locator('#as-root .as-card').count(), n => n > 0) > 0, 'the gallery shows its covers');
+  await page.evaluate(() => { document.body.style.paddingBottom = '2000px'; scrollTo(0, document.querySelector('#as-slot .as-bar').getBoundingClientRect().top + scrollY + 100); });
+  const pinH = await until(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eh-pin-h')) || 0), h => h > 0);
+  check(pinH > 0, `the header pins (${pinH})`);
+  const top = await until(() => page.evaluate(() => Math.round(document.querySelector('#as-slot .as-bar').getBoundingClientRect().top)), t => Math.abs(t - pinH) <= 1);
+  check(Math.abs(top - pinH) <= 1, `the bar sits under the header (top ${top}, header ${pinH})`);
+  await attachShot(testInfo, page, 'pinned');
+});
