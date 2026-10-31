@@ -46,7 +46,7 @@
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
 - Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
-- About checks for updates each time you open it, shows the install channel, and links to GitHub, issues and the website.
+- About checks for updates each time you open it, shows the install channel, and links to the website and issues.
 - The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts

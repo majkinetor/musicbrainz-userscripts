@@ -206,7 +206,7 @@ var ST_CSS = ''
   + '#st-cfg .st-di>img,#st-cfg .st-di>svg{width:100%;height:100%;display:block;pointer-events:none}'
   + '#st-cfg .st-di.st-drag{outline:2px solid var(--mbu-accent);outline-offset:2px;cursor:grabbing}'
   + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
-  + '#st-cfg .st-links{flex-wrap:wrap;gap:4px 14px}'
+  + '#st-cfg .st-links{display:flex;gap:14px;margin-left:auto;white-space:nowrap}'
   + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
   + '#st-cfg .st-si{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}#st-cfg .st-si>img,#st-cfg .st-si>svg{width:100%;height:100%;display:block}'
   + '#st-cfg [hidden]{display:none!important}'
@@ -249,11 +249,10 @@ function stSettings() {
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
-    + '<div class="st-row"><span class="st-note" id="st-chan"></span></div>'
+    + '<div class="st-row"><span class="st-note" id="st-chan"></span><span class="st-links">'
+    + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
+    + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span></div>'
     + '<div class="st-upd" id="st-upd" hidden></div>'
-    + '<div class="st-row st-links"><a href="' + stEsc(ST_HOME) + '" target="_blank" rel="noopener">GitHub</a>'
-    + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a>'
-    + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a></div>'
     + '<div class="st-scripts" title="Right-click a script for its settings">' + stMembers.map(function (m) {
       var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';
       return '<label class="st-row" data-name="' + stEsc(m[1]) + '"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '>'
