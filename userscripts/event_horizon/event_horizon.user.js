@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.1
+// @version      2026.11.01.2308.2
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6651,6 +6651,7 @@ function entHead({ type, id, img, kick, title, disamb, acts }) {
         + `<h1>${title ? `<a href="${MB}/${type}/${id}">${esc(title)}</a>` : '&nbsp;'}${disamb ? `<span class="disamb">(${esc(disamb)})</span>` : ''}</h1></div>`;
 }
 const entHeadWire = el => cvWire(el);
+const entActs = (ty, eid, active) => actionRow(ty === 'release' ? ACTS : ty === 'release-group' ? RG_ACTS : ty === 'label' ? LB_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, active);
 function tagsHtml(d) {
     const t = d.t, abs = h => h.startsWith('/') ? MB + h : h;
     const back = d.ent ? `<a class="u-tab" href="${MB}/${d.ent.replace(':', '/')}">Back to the ${esc(d.ent.split(':')[0].replace('-', ' '))}</a>` : '';
@@ -6661,7 +6662,7 @@ function tagsHtml(d) {
         : `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tags</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
-    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed })}</section>` : hero;
+    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
     return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
 }
 const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';

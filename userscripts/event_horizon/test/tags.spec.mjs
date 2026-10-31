@@ -11,6 +11,8 @@ test('an entity\'s tags show in every view, genres apart, with the filter', { ta
   const chips = await until(() => page.locator('#tg-body .tg-chip').count(), n => n >= 5);
   check(chips >= 5, 'the tags show as chips: ' + chips);
   check(await page.locator('#tg-body .tg-chip.tg-gc a', { hasText: /^jazz$/ }).count() === 1, 'jazz shows as a genre');
+  check(await page.locator('.arthd .acts .eh-more a[href$="/details"]').count() === 1, 'More in the header has Details');
+  check(await page.locator('.arthd .acts .eh-more a.on[href$="/tags"]').count() === 1, 'More marks Tags as this page');
   await attachShot(testInfo, page, 'chips');
   for (const [v, sel] of [['bars', '.tg-row'], ['cloud', '.tg-cloud a'], ['az', '.tg-az span'], ['table', '.tg-t tbody tr']]) {
     await page.click(`[data-tgset="view:${v}"]`);
