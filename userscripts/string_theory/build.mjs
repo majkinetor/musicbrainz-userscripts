@@ -165,7 +165,7 @@ const DEFAULT_OFF = [].filter(n => MEMBERS.includes(n));
 const ON_KEY = 'string_theory.on';
 // The corner launchers' layout: a column (the default) or a row along the page's edge, on the right
 // (the default) or the left, their size and their place. They're shared settings (mbuShared 'cornerFlow',
-// 'cornerSide', 'cornerSize', 'cornerOffset', 'stDock': the page's localStorage, which every script's
+// 'cornerSide', 'cornerSize', 'cornerOffset': the page's localStorage, which every script's
 // mbRestackCorner reads, standalone copies too); the settings window sets one and restacks the corners at
 // once, with the same mbRestackCorner and mbuShared the members carry.
 const SHARED = (UI_JS.match(/function mbuShared\(key, value\) \{[\s\S]*?\n\}\n/) || [])[0];

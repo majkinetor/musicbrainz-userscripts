@@ -88,13 +88,10 @@ function stSettings() {
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' })
     .replace(/<[/]div>$/, '<button type="button" class="mbu-ov-x" id="st-x" aria-label="Close">×</button></div>');
   if (ST_ON_MB) {
-    var eh = html.hasAttribute('data-mbu-dock');
     h += '<section class="st-sec"><h3>Launchers</h3>'
       + '<div class="st-row"><label for="st-side">Side</label><select id="st-side"><option value="right">Right</option><option value="left">Left</option></select></div>'
       + '<div class="st-row"><label for="st-flow">Layout</label><select id="st-flow"><option value="column">Column</option><option value="row">Row</option></select></div>'
       + '<div class="st-row"><label for="st-size">Size</label><input type="number" id="st-size" min="60" max="160" step="10"><span>%</span></div>'
-      + '<label class="st-row"><input type="checkbox" id="st-dock"' + (eh ? ' checked disabled' : '') + '> Fold them into String Theory’s icon'
-      + (eh ? '<span class="st-ver">always, while Event Horizon shows</span>' : '') + '</label>'
       + '<div class="st-row"><span class="st-note">Drag a launcher to move them.</span><button type="button" class="st-b" id="st-reset">Reset position and size</button></div>'
       + '</section>';
   }
@@ -133,7 +130,6 @@ function stSettings() {
     q('#st-side').value = mbuShared('cornerSide') === 'left' ? 'left' : 'right';
     q('#st-flow').value = mbuShared('cornerFlow') === 'row' ? 'row' : 'column';
     showSize();
-    if (!html.hasAttribute('data-mbu-dock')) q('#st-dock').checked = mbuShared('stDock') !== false;
     q('#st-side').onchange = function () { mbuShared('cornerSide', this.value === 'left' ? 'left' : null); restack(); };
     q('#st-flow').onchange = function () { mbuShared('cornerFlow', this.value === 'row' ? 'row' : null); restack(); };
     var setSize = function () {
@@ -144,7 +140,6 @@ function stSettings() {
     };
     sizeIn.addEventListener('input', setSize);
     sizeIn.addEventListener('change', function () { setSize(); showSize(); });
-    q('#st-dock').onchange = function () { mbuShared('stDock', this.checked ? null : false); restack(); };
     q('#st-reset').onclick = function () { mbuShared('cornerOffset', null); mbuShared('cornerSize', null); showSize(); restack(); };
   }
 
