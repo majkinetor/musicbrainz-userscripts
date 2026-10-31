@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.174000
+// @version      2026.10.31.190000
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -1169,7 +1169,7 @@
     let sw = document.getElementById('as-switch');
     if (!sw) {
       sw = document.createElement('button'); sw.type = 'button'; sw.id = 'as-switch';
-      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10'; sw.dataset.mbCornerDock = 'hide';   // Event Horizon replaces its page (#847)
+      sw.dataset.mbCorner = 'br'; sw.dataset.mbCornerOrder = '10'; sw.dataset.mbCornerDock = 'hide'; sw.dataset.mbCornerLabel = 'Art Station';   // Event Horizon replaces its page (#847)
       sw.innerHTML = `<img src="${ICON_URL}" alt="">`;
       sw.onclick = () => { _showOrig = !_showOrig; SETTINGS.showOrig = _showOrig; save(); render(); };
       sw.oncontextmenu = e => { e.preventDefault(); if (document.getElementById('as-setup')) document.getElementById('as-setup').remove(); else openSetup(); };
@@ -5921,9 +5921,11 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   // on there too, the same with Event Horizon or without: folded until a click unrolls it (dockOpen).
   // Outside Event Horizon "hide" launchers stay in it: their pages are MusicBrainz's own. A right-click
   // on the dock's button opens String Theory's settings (the mbu-st-settings event on document).
-  // The shared cornerSize (0.6–1.6) scales every launcher in a corner, and cornerOffset ({br:{x,y}},
-  // px in from the corner's edges) moves a corner's whole stack; dragging a launcher sets it.
-  // Scribe keeps its own copy of the restack and knows neither.
+  // The shared cornerSize (0.6–1.6) scales every launcher in a corner. The bottom-right launchers are
+  // keyed by their name (data-mb-corner-label): the dock records each one it sees in dockKnown
+  // ({name: icon HTML}, for String Theory's settings to list), and dockOrder, a list of names from
+  // String Theory's settings, orders them, the first nearest the corner; a name not in it follows,
+  // by data-mb-corner-order. Scribe keeps its own copy of the restack and knows neither.
   var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> </svg>';   // String Theory's icon.svg
   function mbuDock() {
       var root = document.documentElement, eh = root.hasAttribute('data-mbu-dock');
@@ -5936,9 +5938,9 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
               + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
               + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
-              // beside the dock's button, wherever the corner's offset and size (--mbu-ox/oy/cs, set by the restack) put it
-              + '.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1) + var(--mbu-ox,0px));--mbu-dw-y:calc(6px + var(--mbu-oy,0px));right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px - var(--mbu-oy,0px)));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
-              + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:calc(6px + var(--mbu-ox,0px));--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1) + var(--mbu-oy,0px));max-height:min(75vh,calc(100vh - 80px - var(--mbu-oy,0px)))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
+              // beside the dock's button, wherever the corner's size (--mbu-cs, set by the restack) puts it
+              + '.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+              + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
               + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
               + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
@@ -6017,6 +6019,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           }, true);
           root.appendChild(btn);   // outside the body, which Event Horizon swaps
           root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
+          if (mbuShared('cornerOffset') !== undefined) mbuShared('cornerOffset', null);   // dragging the launchers is gone (#851)
       }
       var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
       if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
@@ -6031,8 +6034,30 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
           if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
       });
+      mbuDockKnow(els);
       btn.toggleAttribute('data-mbu-busy', busy);
       btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '') + '<span class="mbu-dock-dots"><i></i><i></i><i></i></span>';
+  }
+  // Records each named bottom-right launcher's icon in dockKnown, for String Theory's settings to list
+  // the ones not on this page too; written only when something changed.
+  function mbuDockKnow(els) {
+      var known = mbuShared('dockKnown') || {}, changed = false, seen = {};
+      els.forEach(function (el) {
+          var name = el.dataset.mbCornerLabel, ic = name && !seen[name] && el.querySelector('img,svg');
+          if (!ic) return;
+          seen[name] = true;   // one icon a name: Art Station has two launchers
+          var icon = ic.tagName.toLowerCase() === 'img' ? '<img src="' + String(ic.getAttribute('src') || '').replace(/"/g, '&quot;') + '" alt="">' : ic.outerHTML;
+          if (icon.length > 40000 || known[name] === icon) return;
+          known[name] = icon; changed = true;
+      });
+      if (changed) mbuShared('dockKnown', known);
+  }
+  // A launcher's place in the bottom-right corner: the dock's button first, then dockOrder's names, then
+  // the rest by data-mb-corner-order
+  function mbuCornerRank(el, order) {
+      if (el.id === 'mbu-dock') return -1e6;
+      var i = order ? order.indexOf(el.dataset.mbCornerLabel) : -1;
+      return i >= 0 ? i - 1e5 : Number(el.dataset.mbCornerOrder) || 0;
   }
   // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
   // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
@@ -6069,63 +6094,15 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
       var vv = window.visualViewport, gapX = 0, gapY = 0, html = document.documentElement;
-      // a launcher, not a panel: only those scale and drag (First Contact's open card is neither)
+      // a launcher, not a panel: only those scale (First Contact's open card isn't one)
       var small = function (el) { return el.offsetHeight <= 64 && el.offsetWidth <= 240; };
       var size = Math.min(1.6, Math.max(0.6, Number(mbuShared('cornerSize')) || 1));
-      var off = (mbuShared('cornerOffset') || {})[corner] || {};
-      // kept on screen, whatever the window's size now
-      var ox = Math.min(Math.max(0, Number(off.x) || 0), Math.max(0, html.clientWidth - 60));
-      var oy = Math.min(Math.max(0, Number(off.y) || 0), Math.max(0, window.innerHeight - 60));
-      if (corner === 'br') { html.style.setProperty('--mbu-ox', ox + 'px'); html.style.setProperty('--mbu-oy', oy + 'px'); html.style.setProperty('--mbu-cs', String(size)); }
+      if (corner === 'br') html.style.setProperty('--mbu-cs', String(size));
       var fit = function (el) {
           var on = size !== 1 && small(el);
           if (on) { el.style.scale = String(size); el.style.transformOrigin = (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left'); el.setAttribute('data-mb-corner-scaled', ''); }
           else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = el.style.transformOrigin = ''; el.removeAttribute('data-mb-corner-scaled'); }
       };
-      if (!html.hasAttribute('data-mb-corner-drag')) {   // one listener for every script's copy
-          html.setAttribute('data-mb-corner-drag', '');
-          // dragging a launcher moves its corner's stack (#851); the click that ends a drag is swallowed
-          document.addEventListener('pointerdown', function (e) {
-              if (e.button !== 0 || !e.isPrimary || !e.target || !e.target.closest) return;
-              var el = e.target.closest('[data-mb-corner]');
-              if (!el || e.target.closest('input,textarea,select,[contenteditable]') || !(el.offsetHeight <= 64 && el.offsetWidth <= 240)) return;
-              var c = el.dataset.mbCorner;
-              if (!/^[bt][lr]$/.test(c)) return;
-              var b = c[0] === 'b', r = (c[1] === 'r') !== (mbuShared('cornerSide') === 'left');
-              var o0 = (mbuShared('cornerOffset') || {})[c] || {}, x0 = Number(o0.x) || 0, y0 = Number(o0.y) || 0;
-              var sx = e.clientX, sy = e.clientY, moved = false, raf = 0, nx = x0, ny = y0;
-              var save = function () {
-                  var all = mbuShared('cornerOffset') || {};
-                  nx = Math.min(Math.max(0, nx), Math.max(0, html.clientWidth - 60)); ny = Math.min(Math.max(0, ny), Math.max(0, window.innerHeight - 60));
-                  all[c] = { x: Math.round(nx), y: Math.round(ny) };
-                  mbuShared('cornerOffset', all);
-                  mbRestackCorner(c);
-              };
-              var move = function (ev) {
-                  var dx = ev.clientX - sx, dy = ev.clientY - sy;
-                  if (!moved && Math.abs(dx) + Math.abs(dy) < 6) return;
-                  if (!moved) { moved = true; html.style.userSelect = 'none'; html.setAttribute('data-mb-corner-dragging', ''); }
-                  ev.preventDefault();
-                  nx = x0 + (r ? -dx : dx); ny = y0 + (b ? -dy : dy);
-                  if (!raf) raf = requestAnimationFrame(function () { raf = 0; save(); });
-              };
-              var up = function () {
-                  document.removeEventListener('pointermove', move, true);
-                  document.removeEventListener('pointerup', up, true);
-                  document.removeEventListener('pointercancel', up, true);
-                  if (!moved) return;
-                  if (raf) cancelAnimationFrame(raf);
-                  raf = 0; save();
-                  html.style.userSelect = ''; html.removeAttribute('data-mb-corner-dragging');
-                  var swallow = function (ce) { ce.preventDefault(); ce.stopImmediatePropagation(); };
-                  window.addEventListener('click', swallow, true);
-                  setTimeout(function () { window.removeEventListener('click', swallow, true); }, 300);
-              };
-              document.addEventListener('pointermove', move, true);
-              document.addEventListener('pointerup', up, true);
-              document.addEventListener('pointercancel', up, true);
-          }, true);
-      }
       if (vv) {
           gapX = Math.max(0, right ? document.documentElement.clientWidth - vv.offsetLeft - vv.width : vv.offsetLeft);   // clientWidth, not innerWidth: a fixed element already sits inside the scrollbar
           gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
@@ -6146,14 +6123,15 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
               if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
           }
       }
-      gapX += ox; gapY += oy;
       var edge = document.documentElement.hasAttribute('data-mbu-dock') ? 6 : 14;   // docked (Event Horizon), nearer the edge: the page keeps a column clear for them
-      var peeks = [];
+      var peeks = [], order = corner === 'br' && mbuShared('dockOrder');
+      order = Array.isArray(order) ? order : null;
+      var byRank = function (a, b) { return mbuCornerRank(a, order) - mbuCornerRank(b, order); };
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
           // offsetParent is always null for position:fixed, so it can't tell visibility here
           .filter(function (el) { return !el.hidden && getComputedStyle(el).display !== 'none'; })
           .filter(function (el) { if (el.getAttribute('data-mbu-docked') !== 'peek') return true; peeks.push(el); return false; })
-          .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
+          .sort(byRank);
       var pos = edge;
       els.forEach(function (el) {
           fit(el);
@@ -6164,7 +6142,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       });
       // the folded dock's peeking entries: in a line from its button, along the stack's flow
       var side = edge + 44 * size;
-      peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
+      peeks.sort(byRank).forEach(function (el) {
           fit(el);
           el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : side)) + 'px';
           el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge)) + 'px';
