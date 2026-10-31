@@ -26,13 +26,20 @@ test('the cover opens Art Station\'s viewer', { tag: '@sandbox' }, async ({ page
   check(await until(() => lb.isVisible(), v => !v) === false, 'Esc closes it');
   // arrows walk the images it was given
   const answered = await page.evaluate(([release, image]) => {
-    const ask = new CustomEvent('mbu-gallery-open', { cancelable: true, detail: JSON.stringify({ release, start: 1, images: [{ id: 1, types: ['Front'], image }, { id: 2, types: ['Back'], image: image + '?second' }] }) });
+    const ask = new CustomEvent('mbu-gallery-open', { cancelable: true, detail: JSON.stringify({ release, start: 1, images: [{ id: 1, types: ['Front'], comment: 'the sleeve', image }, { id: 2, types: ['Back'], image: image + '?second' }] }) });
     document.dispatchEvent(ask);
     return ask.defaultPrevented;
   }, [RELEASE, first]);
   check(answered, 'Art Station answers the event');
   await until(() => lb.isVisible(), v => v);
   const start = await until(shown, v => v);
+  check(await until(() => page.locator('#as-lb .as-lb-cmt-text').textContent(), v => v === 'the sleeve') === 'the sleeve', 'the comment shows');
+  check(/d+ × d+/.test(await until(() => page.locator('#as-lb .as-lb-cap').textContent(), v => /×/.test(v))), 'the dimensions show');
   await page.keyboard.press('ArrowRight');
   check(await until(shown, v => v && v !== start), 'the arrow moves to the next image');
+  await page.keyboard.press('Escape');
+  await until(() => lb.isVisible(), v => !v);
+  // an image in the Artwork section opens the viewer too, not its link
+  await page.evaluate(() => document.querySelector('#app img[data-artimg]').click());
+  check(await until(() => lb.isVisible(), v => v), 'an Artwork image opens the viewer');
 });

@@ -25,7 +25,7 @@ Event Horizon shows its own page for each of these, and for search results. A li
 - **Search results** keep MusicBrainz's columns, with the score as a bar.
 - **History** groups a release's edits, and MusicBrainz's other edit lists, into bursts; **a single edit** opens with its changes under the release it touches.
 - **Art**, the cover-art page and the add-cover-art page alike, holds Art Station's gallery under the release's title; an event's event-art and add-event-art pages hold it under the event's.
-- **Covers**: click a release's cover or thumbnail to view all its covers full screen in Art Station.
+- **Covers**: click a release's cover, thumbnail or Artwork image to view all its covers full screen in Art Station.
 - **Relate**, the release's relationship editor, stays MusicBrainz's but takes Event Horizon's look; its regions and tracks fold like cards.
 - **Annotation** opens from **More**; a release group's **Cover art** opens from Edit's menu (point at Edit), and its cover also offers **Set cover art** when you point at it. Both forms stay MusicBrainz's, in Event Horizon's look.
 - **A page seen before** shows at once from what Event Horizon kept of it, then is checked with MusicBrainz in the background, and redrawn if anything changed. Back and Forward return to where you were on the page.
