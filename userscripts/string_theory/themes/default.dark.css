@@ -641,6 +641,29 @@ body.skin--responsive #p-cactions li.selected a {
 	filter: var(--invert);
 }
 
+/* MusicBrainz's dialogs: its own rules outrank the :where() above */
+.dialog button:not(.icon, .btn-link), .dialog input[type=number], input[type=number]:not([class]) {
+	background: var(--control) !important;
+	color: var(--control-text) !important;
+	border: 1px solid var(--control-border);
+}
+.dialog button.positive:not(:disabled) {
+	background: var(--positive) !important;
+}
+.dialog button.negative {
+	background: var(--negative) !important;
+}
+.dialog button:disabled {
+	color: var(--text-dimmed) !important;
+}
+
+/* Event Horizon's search pills: their fields have no box of their own */
+.kicker .srch input, .kicker .srch select, .hm-srch input {
+	background: none !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+
 /* the header search: MusicBrainz's own rule outranks the :where() above */
 #headerid-type, .header select, .header .search button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
 .header .search button img {

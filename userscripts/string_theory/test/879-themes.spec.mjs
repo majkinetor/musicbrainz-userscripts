@@ -1,6 +1,6 @@
 // #879: String Theory's own themes. The mode and each variant's theme are in the GM value
 // 'string_theory.theme'; the theme is a <style id="st-theme"> and needs no userstyle.
-import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
+import { test, check, requireLogin, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 const bg = page => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 const variant = page => page.evaluate(() => document.getElementById('st-theme').dataset.variant);
@@ -68,6 +68,25 @@ test.describe('Time', () => {
     await until(() => variant(page), v => v === 'dark', { timeout: 5000 });
     check(await page.locator('#st-th-from').inputValue() === '00:00', 'tidied to 24h');
     await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), v => v === 'dark', { timeout: 5000 });
+  });
+});
+
+test.describe('dialog', () => {
+  test.use({ gm: { name: 'String Theory', values: { 'string_theory.theme': { mode: 'dark' } } } });
+  test('Add relationship has dark controls', { tag: ['@sandbox', '@login', '@cosmetic'] }, async ({ page, inject }) => {
+    await page.goto(SANDBOX + '/release/3a37a35f-1e06-457f-9b2a-46155c5c03ce/edit-relationships', { waitUntil: 'domcontentloaded' });
+    await requireLogin(page);
+    await inject('string_theory');
+    await page.getByRole('button', { name: 'Add relationship' }).first().click();
+    await page.locator('#add-relationship-dialog button.positive').waitFor();
+    const bg = await page.evaluate(() => {
+      const d = document.querySelector('#add-relationship-dialog');
+      const n = d.appendChild(document.createElement('input')); n.type = 'number';
+      const of = e => getComputedStyle(e).backgroundColor;
+      return [of(n), of(d.querySelector('button.positive')), of(d.querySelector('button.negative'))];
+    });
+    const dark = c => { const [r, g, b] = c.match(/[0-9]+/g).map(Number); return r + g + b < 300; };
+    check(bg.every(dark), 'number, Done and Cancel are dark: ' + bg);
   });
 });
 
