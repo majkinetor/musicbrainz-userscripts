@@ -26,6 +26,7 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
+- **The dock** groups script buttons while Event Horizon is open. The **minimized dock** keeps buttons with actionable results visible.
 - **Turn a script off** in the userscript manager's menu: each bundled script has a ☑/☐ entry with its version, applied from the next page load. A script that is off doesn't run, so its standalone copy can run instead.
 - **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge, and **→ Launchers on the right** (default) or **← Launchers on the left**. Every script follows them, standalone ones too.
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).

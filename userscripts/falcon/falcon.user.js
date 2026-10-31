@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.093300
+// @version      2026.10.31.132127
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -668,7 +668,7 @@
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-withheld-only]::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // the script marks results held back
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               // nothing counted yet: three small dots lighting in turn, no badge
@@ -728,7 +728,7 @@
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
           if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
-          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : el.dataset.mbuActionable === 'true' ? 'peek' : 'hide');
           // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
           if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
       });
@@ -751,11 +751,17 @@
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
       b.dataset.mbCornerLabel = o.label;
-      // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+      // .status(t, { actionable, withheldOnly }): badge text and the script's minimized-dock decision;
+      // .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
       var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
-      b.status = function (t) { b.mbuSt = t || ''; show(); };
+      b.status = function (t, state) {
+          b.mbuSt = t || '';
+          if (state && typeof state.actionable === 'boolean') b.dataset.mbuActionable = String(state.actionable);
+          if (state && typeof state.withheldOnly === 'boolean') b.toggleAttribute('data-mbu-withheld-only', state.withheldOnly);
+          show();
+      };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
       if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';

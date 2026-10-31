@@ -39,6 +39,10 @@ Every viewer has a **debug** switch, remembered per script and off by default: o
 
 `mbuToast(msg, { action: { label, onClick } })` puts one button on a toast: it then takes clicks and stays up 12 s. A script uses it to ask for the log when something goes wrong in the wild, as Apollo does for #638.
 
+## Dock
+
+`mbuDockItem` creates a button in the dock. Call `item.status(text, { actionable, withheldOnly })` with booleans supplied by the script: `actionable` keeps the button visible in the minimized dock, and `withheldOnly` uses the muted withheld style. The dock does not infer either from the text. `item.busy(on)` and `item.card(fn)` control activity and the hover card.
+
 ## Drop-downs and steppers
 
 A settings window's drop-downs and number fields are the shared controls: a pill drop-down with a small arrow, and a **− n +** stepper in the same pill. A script writes plain `<select>` and `<input type="number">` with their `min`, `max` and `step`, and calls `mbuControls(panel)` once the markup is in. The field stays the script's own, its value and listeners included: − and + step it within its limits and fire `input` and `change`, as typing would. A disabled field greys its stepper out. The log window's session list is the same drop-down.

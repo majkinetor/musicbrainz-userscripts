@@ -116,7 +116,7 @@ The **Links** tab shows, per track, what each recording already links to (**Link
 
 ### Match
 
-**⚡ Match** does both: it imports ISRCs from the fastest source the release links (Qobuz, Audiomack, Apple Music, Tidal… before Deezer, 7digital and Spotify), moving on when one fails or gives nothing, then runs **Find links**. It skips the release group's links, which need you to look. *Auto match* runs it on opening the window or in the background. The launcher shows new ISRCs and links to add as two counts, for example `0,7`; its card says whether results are cached or live.
+**⚡ Match** does both: it imports ISRCs from the fastest source the release links (Qobuz, Audiomack, Apple Music, Tidal… before Deezer, 7digital and Spotify), moving on when one fails or gives nothing, then runs **Find links**. It skips the release group's links, which need you to look. *Auto match* runs it on opening the window or in the background. The dock shows new ISRCs and links to add as two counts, for example `0,7`; its card says whether results are cached or live. The minimized dock keeps Scout visible while either count is nonzero.
 
 | Click               | on an **Add** icon               | on a **Linked** icon                           |
 | ------------------- | -------------------------------- | ---------------------------------------------- |
@@ -142,20 +142,20 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 
 <img width="420" src="./screenshots/options.png" />
 
-| Setting | Default |  |
-| --- | --- | --- |
-| Platforms | all on | the platforms ISRC Scout uses ([Platforms](#platforms)) |
-| Authorize |  | OAuth for submitting ISRCs |
-| Import buttons | icons | icons, text, or both |
-| Add ISRC/Links columns to tracklist | on | columns and their controls on the release page ([Tracklist](#tracklist)) |
-| Show ISRCs in parts | on | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
-| Use providers from the whole release group | off | take missing providers from sibling releases (one more lookup) |
-| Auto match | off (in the background) | run [Match](#match) on opening or in the background |
-| Cache Match results | on, 7 days | reuse Match results for the chosen time; off keeps them only for this page |
-| Include slow platforms | on | in the background, Tidal too (about 1 s a track) |
-| Ignore Platform Check link confidence | off | use links Platform Check withheld for a barcode or format mismatch |
-| Repeat failed submits | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
-| Spotify ISRC source | Harmony | or molla, or ISRC Hunt |
+| Setting                                    | Default                    |                                                                                |
+| ------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------ |
+| Platforms                                  | all on                     | the platforms ISRC Scout uses ([Platforms](#platforms))                        |
+| Authorize                                  |                            | OAuth for submitting ISRCs                                                     |
+| Import buttons                             | icons                      | icons, text, or both                                                           |
+| Add ISRC/Links columns to tracklist        | on                         | columns and their controls on the release page ([Tracklist](#tracklist))       |
+| Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
+| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                 |
+| Auto match                                 | off (in the background)    | run [Match](#match) on opening or in the background                            |
+| Cache Match results                        | on, 7 days                 | reuse Match results for the chosen time; off keeps them only for this page     |
+| Include slow platforms                     | on                         | in the background, Tidal too (about 1 s a track)                               |
+| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch             |
+| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops      |
+| Spotify ISRC source                        | Harmony                    | or molla, or ISRC Hunt                                                         |
 
 ### Platforms
 

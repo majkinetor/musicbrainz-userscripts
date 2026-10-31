@@ -9,6 +9,12 @@ test('background findings reach an already open editor', { tag: '@sandbox' }, as
   } });
   await page.evaluate(() => {
     const store = window.__isrcScoutTestStore.store;
+    localStorage.removeItem('mbu.dockOpen');
+    document.documentElement.setAttribute('data-mbu-dock', '');
+    document.documentElement.removeAttribute('data-mbu-dock-open');
+    const withheld = document.createElement('button'); withheld.id = 'test-withheld-only';
+    withheld.dataset.mbCorner = 'br'; withheld.dataset.mbCornerStatus = '0,3'; withheld.dataset.mbuActionable = 'false'; withheld.dataset.mbuWithheldOnly = '';
+    document.documentElement.appendChild(withheld);
     const rec = document.querySelector('#ii-tbody .ii-tl-add').dataset.rec;
     const release = location.pathname.split('/')[2];
     store.set('bg_links_cache', { [release]: { at: Date.now(), isrcs: {}, isrcsDone: true,
@@ -27,6 +33,9 @@ test('background findings reach an already open editor', { tag: '@sandbox' }, as
   check(/1 to add/.test(await page.locator('#ii-summary-links').textContent()), 'footer counts the finding');
   check(/1/.test(await page.locator('#ii-btn-links').textContent()), 'launcher counts the same finding');
   check((await page.locator('#ii-dock').getAttribute('data-mb-corner-status')) === '0,1', 'dock separates zero new ISRCs from one new link');
+  const dockState = await page.evaluate(() => ({ root: document.documentElement.outerHTML.slice(0, 500), scout: document.querySelector('#ii-dock')?.outerHTML, held: document.querySelector('#test-withheld-only')?.outerHTML }));
+  check((await page.locator('#ii-dock').getAttribute('data-mbu-docked')) === 'peek', `a link-only finding remains visible in the folded dock (${JSON.stringify(dockState)})`);
+  check((await page.locator('#test-withheld-only').getAttribute('data-mbu-docked')) === 'hide', 'a withheld-only count remains hidden in the folded dock');
 });
 
 test('launcher counts only cached links the editor can offer', { tag: '@unit' }, async () => {

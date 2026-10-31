@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.100400
+// @version      2026.10.31.132127
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1083,7 +1083,7 @@
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-withheld-only]::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // the script marks results held back
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               // nothing counted yet: three small dots lighting in turn, no badge
@@ -1143,7 +1143,7 @@
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
           if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
-          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : el.dataset.mbuActionable === 'true' ? 'peek' : 'hide');
           // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
           if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
       });
@@ -1166,11 +1166,17 @@
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
       b.dataset.mbCornerLabel = o.label;
-      // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+      // .status(t, { actionable, withheldOnly }): badge text and the script's minimized-dock decision;
+      // .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
       var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
-      b.status = function (t) { b.mbuSt = t || ''; show(); };
+      b.status = function (t, state) {
+          b.mbuSt = t || '';
+          if (state && typeof state.actionable === 'boolean') b.dataset.mbuActionable = String(state.actionable);
+          if (state && typeof state.withheldOnly === 'boolean') b.toggleAttribute('data-mbu-withheld-only', state.withheldOnly);
+          show();
+      };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
       if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';
@@ -3457,7 +3463,7 @@
       }
     }
   }
-  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit').then(result => { bgInvalidate(); return result; }); }
+  function submitIsrcs(map, editNote) { return withRepeat(() => submitIsrcsOnce(map, editNote), 'The ISRC submit').then(result => { bgInvalidate(true, true); return result; }); }
   async function submitIsrcsOnce(map, editNote) {
     const token = await Auth.accessToken();
     const xml = buildIsrcXml(map, editNote);
@@ -6813,7 +6819,7 @@
     // logged-in session cookie (same-origin) — no OAuth, no CSRF. One POST carries
     // the whole batch (auto-applied for auto-editors, else queued). items:
     // [{ recGid, url, linkTypeID }].
-    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit').then(result => { bgInvalidate(); return result; }); }   // #748
+    function submitRels(items, note) { return withRepeat(() => submitRelsOnce(items, note), 'The links submit').then(result => { bgInvalidate(true, true); return result; }); }   // #748
     async function submitRelsOnce(items, note) {
       const body = {
         edits: items.map(it => ({
@@ -9080,7 +9086,7 @@
     };
     // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
     const mirror = () => {
-      if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
+      if (!RELEASE) { item.status('', { actionable: false, withheldOnly: false }); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
       if (bgLinksOn() && !BG.started) bgLinksRun(mirror);
       const busy = Object.keys(BG.running).length > 0 || !!(modal && (collecting() || _findingAll));
       // A window that has been opened owns the pending values shown by Submit.
@@ -9099,7 +9105,9 @@
       const hasWindow = modal && tbody && tbody.querySelector('tr[data-idx]');
       const isrcs = hasWindow ? _validIsrcCount : bgIsrcsNew().length;
       const links = hasWindow ? modal.querySelectorAll('.ii-tl-add .ii-tl.new').length : bgLinksToAdd().length;
-      item.status(BG.stale || (c.incomplete && !busy) ? '?' : isrcs || links ? isrcs + ',' + links : busy ? '' : known ? '\u2713' : '?');
+      const unverified = BG.stale || (c.incomplete && !busy);
+      item.status(unverified ? '?' : isrcs || links ? isrcs + ',' + links : busy ? '' : known ? '\u2713' : '?',
+        { actionable: !unverified && !!(isrcs || links), withheldOnly: false });
       item.busy(busy);
       item.card(scoutCard);
       updateBtnLinks();
@@ -9221,7 +9229,7 @@
     keys.slice(50).forEach(k => delete all[k]);   // the 50 latest releases
     store.set('bg_links_cache', all);
   }
-  function bgInvalidate(broadcast = true) {
+  function bgInvalidate(broadcast = true, known = false) {
     const current = bgCache();
     const all = store.get('bg_links_cache', {}) || {};
     delete all[mbid]; store.set('bg_links_cache', all);
@@ -9229,7 +9237,7 @@
     (bgCache.stale || (bgCache.stale = new Set())).add(mbid);
     BG.generation = (BG.generation || 0) + 1;
     BG.running = {};
-    BG.stale = true;
+    BG.stale = !known || !!current.incomplete;
     if (broadcast) try { localStorage.setItem('ii:match-changed', JSON.stringify({ release: mbid, at: Date.now(), nonce: Math.random() })); } catch (e) { /* current tab is still invalidated */ }
     updateBtnLinks();
     document.dispatchEvent(new Event('is:count-changed'));

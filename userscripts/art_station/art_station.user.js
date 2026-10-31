@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.093300
+// @version      2026.10.31.132127
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -5942,7 +5942,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-withheld-only]::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // the script marks results held back
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               // nothing counted yet: three small dots lighting in turn, no badge
@@ -6002,7 +6002,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
           if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
-          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : el.dataset.mbuActionable === 'true' ? 'peek' : 'hide');
           // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
           if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
       });
@@ -6025,11 +6025,17 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           document.documentElement.appendChild(b);   // outside the body, which Event Horizon swaps
       }
       b.dataset.mbCornerLabel = o.label;
-      // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
+      // .status(t, { actionable, withheldOnly }): badge text and the script's minimized-dock decision;
+      // .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
       var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
           var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
-      b.status = function (t) { b.mbuSt = t || ''; show(); };
+      b.status = function (t, state) {
+          b.mbuSt = t || '';
+          if (state && typeof state.actionable === 'boolean') b.dataset.mbuActionable = String(state.actionable);
+          if (state && typeof state.withheldOnly === 'boolean') b.toggleAttribute('data-mbu-withheld-only', state.withheldOnly);
+          show();
+      };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
       if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';

@@ -115,3 +115,16 @@ test('Falcon artist completions invalidate artist counts without discarding plat
   handler({ detail: JSON.stringify({ tag: 'pc:links:run', running: false, items: [{ entityType: 'artist', mbid: 'a', status: 'done' }] }) });
   check(scopes[0] === true, 'artist-only completion preserves platform results');
 });
+
+test('PC explicitly tells the minimized dock which results are actionable', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcDockStatus']);
+  const seen = [];
+  const api = new Function('seen', 'GM_getValue',
+    'let pcDockFound = 0, pcDockHeld = 3, pcDockArtists = 0, pcDockArtistsHeld = 0, pcDockStale = false, pcDockFailed = false; const pcDockItem = { status: (text, state) => seen.push({ text, ...state }) };\n' + src + '\nreturn { show: pcDockStatus, artists: n => { pcDockArtists = n; }, platforms: n => { pcDockFound = n; } };')(seen, (_key, fallback) => fallback);
+  api.show();
+  check(seen.at(-1).text === '0,3' && seen.at(-1).actionable === false && seen.at(-1).withheldOnly === true, 'withheld platforms alone are not actionable');
+  api.artists(3); api.show();
+  check(seen.at(-1).text === '0,3/3' && seen.at(-1).actionable === true && seen.at(-1).withheldOnly === false, 'new artist links are actionable even with no platform links');
+  api.artists(0); api.platforms(2); api.show();
+  check(seen.at(-1).text === '2,3' && seen.at(-1).actionable === true, 'new platform links are actionable');
+});

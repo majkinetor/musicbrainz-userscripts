@@ -39,7 +39,7 @@ A platform the release already links is used as is; the others are searched by b
 | ?           | link found, track count unreadable     |
 | red —       | not found                              |
 
-A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and the launcher card say whether platform results are cached, live, or mixed. Cached results last 90 days by default; the cache setting changes the duration. A question mark means the scan or artist-link count failed.
+A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and dock card say whether platform results are cached, live, or mixed. Cached results last 90 days by default; the cache setting changes the duration. A question mark means the scan or artist-link count failed.
 
 > [!TIP]
 > *Compact › Unmatched* shrinks a platform that found nothing (yet) to a dimmed icon at the bottom; *Compact › Low-confidence* does the same, with an amber ring, for a match that isn't clean. Discogs and Bandcamp always keep their rows.

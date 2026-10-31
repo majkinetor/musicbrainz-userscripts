@@ -93,3 +93,15 @@ test('successful edits expire the saved snapshot but retain unfinished page resu
   check(api.bgCache().links.length === 1, 'other unfinished findings remain available in this page');
   check(Object.keys(bg.running).length === 0, 'the cancelled generation no longer leaves the launcher busy');
 });
+
+test('a successful local edit keeps known findings usable while expiring the saved cache', { tag: '@unit' }, async () => {
+  const src = await functionSource('isrc_scout', ['bgCacheDays', 'bgCache', 'bgSave', 'bgInvalidate']);
+  const data = { bg_links_cache: { release: { at: Date.now(), links: [{ rec: 'r', code: 'x', url: 'https://x.test' }], done: ['x'], isrcs: {}, incomplete: false } } };
+  const store = { get: (k, d) => k in data ? data[k] : d, set: (k, v) => { data[k] = v; } }, bg = { generation: 0, running: {} };
+  const api = new Function('store', 'mbid', 'BG_DAYS', 'BG', 'updateBtnLinks', 'document', 'Event', src + '\nreturn { bgCache, bgInvalidate };')(
+    store, 'release', 7, bg, () => {}, { dispatchEvent() {} }, class {});
+  api.bgInvalidate(false, true);
+  check(!data.bg_links_cache.release, 'the persistent snapshot is expired');
+  check(bg.stale === false, 'the page retains its known count after its own successful edit');
+  check(api.bgCache().links.length === 1, 'unsubmitted findings remain available');
+});
