@@ -171,7 +171,7 @@ test.describe('Event Horizon turned off', () => {
     check(Math.abs(b1.w - b0.w * 1.4) <= 2 && b1.right === 14, `${b0.id} scaled in its place (${b0.w} → ${b1.w}, right ${b1.right})`);
     check(Math.abs(await icon() - i0 * 1.4) <= 2, `the settings' icons scale too (${i0} → ${await icon()})`);
     await page.screenshot({ path: info.outputPath('size-140.png') });
-    for (let i = 0; i < 3; i++) await page.locator('#st-size-up').click();
+    for (let i = 0; i < 2; i++) await page.locator('#st-size-up').click();
     check(await page.locator('#st-size').textContent() === '160 %' && await page.locator('#st-size-up').isDisabled(), 'it stops at 160 %');
     for (let i = 0; i < 6; i++) await page.locator('#st-size-dn').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSize')) === null, '100 % clears the setting');
