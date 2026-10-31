@@ -76,6 +76,10 @@
 	--invert: none;
 	--invert-value: none;
 
+	/* text fields and checkboxes */
+	--field: #f6efdc;
+	--checkbox-border: #93a1a1;
+	--checkbox-on: #6c71c4;
 	/* controls */
 	--control: #eee8d5;
 	--control-hover: #c7dac9;
@@ -334,6 +338,34 @@ table.statistics th, table.database-statistics tr.thead th {
 	color: initial;
 }
 
+/* checkboxes: drawn in the field colour, since Chrome paints an unchecked one white */
+:where(input[type=checkbox]) {
+	appearance: none;
+	box-sizing: border-box;
+	width: 13px;
+	height: 13px;
+	border: 1px solid var(--checkbox-border);
+	border-radius: 2px;
+	vertical-align: -2px;
+	background: var(--field) center / 100% no-repeat;
+}
+:where(input[type=checkbox]):hover {
+	border-color: var(--text-weak);
+}
+:where(input[type=checkbox]):checked {
+	background-color: var(--checkbox-on);
+	border-color: var(--checkbox-on);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%23fdf6e3' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+:where(input[type=checkbox]):indeterminate {
+	background-color: var(--checkbox-on);
+	border-color: var(--checkbox-on);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8h8' stroke='%23fdf6e3' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+:where(input[type=checkbox]):disabled {
+	opacity: 0.5;
+}
+
 /* form elements */
 input, textarea {
 	border-color: var(--border-accent);
@@ -346,7 +378,7 @@ input[disabled], textarea[disabled] {
 input[type=text]:not(.lookup-performed):not(.success):not(.error):not(.preview):not(.modified):not([style*=background]),
 input:not([type]):not(.lookup-performed):not(.required):not([style*=background]), textarea:not([style*=background]),
 input[type=url], input[type=search], input[type=password], input[type=email] {
-	background: var(--background-dimmed);
+	background: var(--field);
 	color: var(--text);
 }
 input[type=text].modified {
@@ -739,7 +771,7 @@ body.skin--responsive #p-cactions li.selected a {
 }
 
 /* the header search: MusicBrainz's own rule outranks the :where() above */
-#headerid-type, .header select, .header .search button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
-.header .search button img {
+#headerid-type, .header select, .header .search button, .header .search-container form button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
+.header .search button img, .header .search-container form button img {
 	filter: var(--invert-value);
 }

@@ -76,6 +76,8 @@
 	--invert: invert(0.9);
 	--invert-value: invert(0.9) hue-rotate(180deg);
 
+	/* text fields */
+	--field: var(--background-dimmed);
 	/* controls */
 	--control: #073642;
 	--control-hover: #0d4951;
@@ -346,7 +348,7 @@ input[disabled], textarea[disabled] {
 input[type=text]:not(.lookup-performed):not(.success):not(.error):not(.preview):not(.modified):not([style*=background]),
 input:not([type]):not(.lookup-performed):not(.required):not([style*=background]), textarea:not([style*=background]),
 input[type=url], input[type=search], input[type=password], input[type=email] {
-	background: var(--background-dimmed);
+	background: var(--field);
 	color: var(--text);
 }
 input[type=text].modified {
@@ -739,7 +741,7 @@ body.skin--responsive #p-cactions li.selected a {
 }
 
 /* the header search: MusicBrainz's own rule outranks the :where() above */
-#headerid-type, .header select, .header .search button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
-.header .search button img {
+#headerid-type, .header select, .header .search button, .header .search-container form button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
+.header .search button img, .header .search-container form button img {
 	filter: var(--invert-value);
 }
