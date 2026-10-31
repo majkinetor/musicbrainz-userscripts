@@ -23,8 +23,9 @@ test('main view, sub-views, sizes, and the new-tab setting', { tag: ['@sandbox']
   check(main.main && !main.order && !main.auth, `#188: it opens on the main view (${JSON.stringify(main)})`);
   check(await page.locator('#mb-icon-size').count() && await page.locator('#mb-name-size').count(), '#188: with the icon and name sizes');
   await attachShot(testInfo, card, 'main');
-  check(await page.isChecked('#mb-cache-enabled') && await page.inputValue('#mb-cache-days') === 'default', 'scan caching starts enabled with the existing durations');
-  await page.selectOption('#mb-cache-days', '7');
+  check(await page.isChecked('#mb-cache-enabled') && await page.inputValue('#mb-cache-days') === '90', 'scan caching starts enabled for 90 days');
+  await page.locator('#mb-cache-days').fill('7');
+  await page.locator('#mb-cache-days').dispatchEvent('change');
   await page.locator('#mb-cache-enabled').uncheck();
   check(await page.evaluate(() => GM_getValue('pc:cache-days') === 7 && GM_getValue('pc:cache-enabled') === false), 'the cache duration and switch are saved');
   await page.locator('#mb-cache-enabled').check();

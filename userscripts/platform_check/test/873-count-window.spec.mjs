@@ -25,3 +25,19 @@ test('the dock follows artist and label selections while the table is open', { t
   check(!!after && !/\/1$/.test(after), `leaving the link out removes it from the dock count (${after})`);
   check((await page.locator('#pc-links-ov .pc-lk-send').first().textContent()).includes('Run 0'), 'the table also shows zero selected links');
 });
+
+test('a completed scan shows its count even when a provider request fails', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+  let first = true;
+  answerGm(context, ({ url }) => {
+    if (/musicbrainz\.org/.test(url)) return null;
+    const status = first ? 503 : 404; first = false;
+    return { status, body: '' };
+  });
+  await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#content table.medium');
+  await inject('platform_check', { waitFor: '__pcTest680' });
+  await page.evaluate(() => window.__pcTest680.scanDone());
+  const status = await page.locator('#mb-pc-dock').getAttribute('data-mb-corner-status');
+  check(status !== '?', `completed scan displays its count (${status})`);
+  check(await page.locator('#pc-stale-note').count() === 0, 'no persistent refresh message');
+});

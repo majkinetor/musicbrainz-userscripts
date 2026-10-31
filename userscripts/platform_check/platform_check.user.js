@@ -3498,8 +3498,7 @@ providerModal.innerHTML = `
     <div class="pc-set-row"><label data-tip="Close Falcon after a clean run\nAfter Run in Falcon from Artists &amp; labels, Falcon closes its panel once every link is added. A failed or partial edit leaves it open, to read why.\nSend only, and a Falcon in a new tab, are not affected."><input type="checkbox" id="mb-links-close-falcon"> <span><b>Close Falcon</b> after a successful import</span></label></div>
 
     <div class="pc-setup-sec">Cache</div>
-    <div class="pc-set-row"><label><input type="checkbox" id="mb-cache-enabled"> Cache scan results</label>
-      <span>for</span> <select id="mb-cache-days"><option value="default">the default duration</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">14 days</option><option value="30">30 days</option><option value="90">90 days</option></select></div>
+    <div class="pc-set-row" style="gap:6px"><label><input type="checkbox" id="mb-cache-enabled"> Cache scan results</label> <span>for</span> <input type="number" id="mb-cache-days" min="1" max="365" step="1"> <span>days</span></div>
 
     <div class="pc-setup-sec">Appearance</div>
     <div class="pc-set-grid">
@@ -3586,7 +3585,7 @@ else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
 var pcDockItem = null;
 // the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
-var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0, pcDockStale = false;
+var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0, pcDockStale = false, pcDockFailed = false;
 const pcDirty = new Set(), pcMcPending = new Map(), pcSources = new Set();
 function pcSourceText() { return pcSources.size === 2 ? 'cached + live' : pcSources.has('cached') ? 'cached' : pcSources.has('live') ? 'live' : ''; }
 // "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
@@ -3594,7 +3593,7 @@ function pcDockStatus() {
     const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
     const base = pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '';
     const incomplete = pcDockArtists === null && GM_getValue('pc:links-count', true);
-    if (pcDockItem) pcDockItem.status(pcDockStale ? '?' : incomplete ? (base ? base + '/?' : '?') : base || '✓');
+    if (pcDockItem) pcDockItem.status(pcDockFailed ? '?' : pcDockStale ? '' : incomplete ? base : base || '✓');
 }
 if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling;
@@ -3834,7 +3833,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-links-count').checked = GM_getValue('pc:links-count', true);
     document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', true);
     document.getElementById('mb-cache-enabled').checked = GM_getValue('pc:cache-enabled', true);
-    document.getElementById('mb-cache-days').value = String(GM_getValue('pc:cache-days', 'default'));
+    document.getElementById('mb-cache-days').value = Number(GM_getValue('pc:cache-days', 90)) || 90;
     document.getElementById('mb-cache-days').disabled = !GM_getValue('pc:cache-enabled', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
@@ -3914,7 +3913,8 @@ document.getElementById('mb-cache-enabled').addEventListener('change', e => {
     pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-cache-days').addEventListener('change', e => {
-    GM_setValue('pc:cache-days', e.target.value === 'default' ? 'default' : Number(e.target.value));
+    const days = Math.max(1, Math.min(365, Math.round(Number(e.target.value) || 90)));
+    e.target.value = days; GM_setValue('pc:cache-days', days);
     pcMarkDirty(mbid, false, false);
 });
 document.getElementById('mb-links-close-falcon').addEventListener('change', e => {
@@ -5085,18 +5085,14 @@ function pcSameUrl(a, b) { return !!a && !!b && pcUrlKey(a) === pcUrlKey(b); }
    release that reached a platform later was never searched there again; and once
    musicbrainz.org's ~5 MB of localStorage filled up, every write failed silently —
    the platform logins' token refreshes included. Entries now carry their time (_t):
-   a "not found" is searched again after 14 days, a found link after 90, the
-   release's MusicBrainz data after 30. A daily prune drops what expired and keeps
+   entries expire after the configured duration, 90 days by default. A daily prune drops what expired and keeps
    the newest 500 releases.
    ⚠ Functions, not consts: the release editor's helper reads the cache (injectInto →
    cacheGet, #423) and runs above the script's early return, where a const declared down
    here is still in its temporal dead zone — the trap PC_URL_ID fell into (#556). */
-function pcTtlOf(key, v) {
-    const TTL = { miss: 14 * 864e5, hit: 90 * 864e5, mbdata: 30 * 864e5 };
-    const days = typeof GM_getValue === 'function' ? GM_getValue('pc:cache-days', 'default') : 'default';
-    const custom = Number(days);
-    if (Number.isFinite(custom) && custom >= 1 && custom <= 365) return custom * 864e5;
-    return key.startsWith('pc:mbdata:') ? TTL.mbdata : (v && v.url ? TTL.hit : TTL.miss);
+function pcTtlOf() {
+    const days = typeof GM_getValue === 'function' ? Number(GM_getValue('pc:cache-days', 90)) : 90;
+    return (Number.isFinite(days) && days >= 1 && days <= 365 ? days : 90) * 864e5;
 }
 function pcMaxReleases() { return 500; }
 function pcLsGet(key) {   // the entry, or null when absent, unreadable or expired (then removed)
@@ -8257,9 +8253,9 @@ async function runScans() {
     PC_SCAN.busy = false;
     setScanStatus(ok ? 'done' : 'halt');
     if (ok) {
-        pcDockStale = false; document.getElementById('pc-stale-note')?.remove();
+        pcDockStale = false;
         try { localStorage.removeItem(`pc:incomplete:${mbid}`); } catch (e) { /* storage blocked */ }
-    } else pcMarkDirty(mbid, false, false, false);
+    } else { pcMarkDirty(mbid, false, false, false); pcDockFailed = true; }
     pcDockStatus();
     if (pcDockItem) pcDockItem.busy(false);
 }
@@ -8529,7 +8525,7 @@ async function runScansInner() {
             + '</div>' }));
     }
     await pcCountLinks();   // #671: the dock stays busy until this count finishes
-    if (failed.length || PC_SCAN.errors.size) return false;
+    if (failed.length) return false;
 }
 
 // ─── Artists & labels table (#671) ──────────────────────────────────────────
@@ -8833,7 +8829,7 @@ async function pcCountLinks() {
         pcShowLinksCount(n, pcNewCount(rows, linked, 'other') + pcNewCount(rows, linked, 'unsure'));
         appendLog('System', `Artists & labels: ${n} link(s) to add, of ${urls.length} page(s) found`);
     } catch (e) {
-        if (generation === pcCountLinks.generation && release === mbid) pcShowLinksCount(null);
+        if (generation === pcCountLinks.generation && release === mbid) { pcDockFailed = true; pcShowLinksCount(null); }
         appendLog('System', `Artists & labels: couldn't count the links to add (${e.message})`, 'warn');
     }
 }
@@ -8979,7 +8975,7 @@ async function pcOpenLinksTable(btn) {
             const urls = Object.values(r.cells).flat().filter(c => c.on).map(c => c.url);
             if (!urls.length) { flashInfo(edit, 'No new links in this row'); return; }
             window.open(pcSeededEditUrl(r.type, r.mbid, urls, pcLinksNote()), '_blank');
-            pcShowUnverified('An editor was opened — refresh after submitting');
+            pcShowUnverified();
         };
         act.appendChild(edit);
     }
@@ -8998,7 +8994,7 @@ async function pcOpenLinksTable(btn) {
         appendLog('System', `Artists & labels: ${run && here ? 'running' : 'sent'} ${b.reduce((s, r) => s + r.urls.length, 0)} link(s) on ${b.length} artist(s)/label(s) ${run && here ? 'in' : 'to'} Falcon${here ? '' : ` (in a new tab: no Falcon on this page${run ? '; press Start there' : ''})`}`, 'ok');
         if (!here) window.open(`${MB_ORIGIN}/?falcon=${encodeURIComponent(pcFalconPayload(b, pcLinksNote(), pcLinksName()))}`, '_blank');
         // A different tab cannot report its completion to this page.
-        if (!here) pcShowUnverified('Falcon opened in another tab — refresh after completing it');
+        if (!here) pcShowUnverified();
         close();
     };
     send.onclick = () => toFalcon(true);
@@ -9751,7 +9747,7 @@ document.getElementById('mb-openall-btn').addEventListener('click', (e) => {
 // waits for the scan running (or the last one) and reports what it found — it
 // never starts a second scan. Apply hands the ticked links to Falcon.
 function pcScan() {
-    PC_SCAN.errors.clear(); pcDockStale = true; pcDockStatus();
+    PC_SCAN.errors.clear(); pcDockFailed = false; pcDockStale = true; pcDockStatus();
     pcSources.clear();
     const sourceLabel = document.getElementById('pc-result-source'); if (sourceLabel) sourceLabel.textContent = '';
     let dirty = pcDirty.has(mbid);
@@ -9777,13 +9773,10 @@ function pcMarkDirty(release, broadcast = true, notify = true, invalidateScan = 
     pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
     pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
     _pcLinked = null;
-    pcShowUnverified('Results changed — refresh to check again');
+    pcShowUnverified();
 }
-function pcShowUnverified(message) {
+function pcShowUnverified() {
     pcDockStale = true; pcShowLinksCount(null);
-    let note = document.getElementById('pc-stale-note');
-    if (!note) { note = document.createElement('div'); note.id = 'pc-stale-note'; container.prepend(note); }
-    note.textContent = message;
 }
 const PC_MC_VERSION = (typeof GM_info !== 'undefined' && GM_info.script && GM_info.script.version) || '?';
 // One platform's state, as MC shows it:

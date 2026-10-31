@@ -39,7 +39,7 @@ A platform the release already links is used as is; the others are searched by b
 | ?           | link found, track count unreadable     |
 | red —       | not found                              |
 
-A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and the launcher card say whether platform results are cached, live, or mixed. By default, cached matches last 90 days, misses 14 days, and MusicBrainz fallback data 30 days; the cache setting can choose one duration for all three. A question mark means the count needs a fresh scan.
+A release's format is a four-quadrant circle: vinyl, cassette, CD, digital (DVD, SACD and Blu-ray count as CD). The panel and the launcher card say whether platform results are cached, live, or mixed. Cached results last 90 days by default; the cache setting changes the duration. A question mark means the scan or artist-link count failed.
 
 > [!TIP]
 > *Compact › Unmatched* shrinks a platform that found nothing (yet) to a dimmed icon at the bottom; *Compact › Low-confidence* does the same, with an amber ring, for a match that isn't clean. Discogs and Bandcamp always keep their rows.
@@ -155,23 +155,23 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 <img width="400" src="./screenshots/config.png" />
 
-| Setting                                | Default              |                                                                                      |
-| -------------------------------------- | -------------------- | ------------------------------------------------------------------------------------ |
-| Platforms                              | all                  | order them, or leave some out                                                        |
-| Logins                                 | none                 | Beatport and Qobuz; see [Platforms](#platforms)                                      |
-| Use barcodes                           | on, strictly         | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
-| Use formats                            | on, strictly         | the same, for the format                                                             |
-| Open the editor in a new tab           | on                   | off navigates this tab                                                               |
-| Keep background tabs awake             | off                  | see [Adding links](#adding-links)                                                    |
-| Count the links to add                 | on                   | the badge on [Artists & labels](#artists-and-labels)                                 |
-| Cache scan results                     | on, default duration | reuse scan results; choose how long to keep them                                     |
-| Close Falcon after a successful import | on                   | see [Artists and labels](#artists-and-labels)                                        |
-| Icon, Name                             | icon only            | what each row shows, and its size                                                    |
-| Compact: Unmatched, Low-confidence     | on, off              | see [Dashboard](#dashboard)                                                          |
-| In MusicBrainz                         | Ring                 | how a platform already linked is marked                                              |
-| Format                                 | Circle               | the release's format as a circle or as text                                          |
-| Layout                                 | 1 row                | or 2 rows per platform                                                               |
-| Spacing                                | 5 px                 | between rows, and between columns in the 1-row layout                                |
+| Setting                                | Default      |                                                                                      |
+| -------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
+| Platforms                              | all          | order them, or leave some out                                                        |
+| Logins                                 | none         | Beatport and Qobuz; see [Platforms](#platforms)                                      |
+| Use barcodes                           | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
+| Use formats                            | on, strictly | the same, for the format                                                             |
+| Open the editor in a new tab           | on           | off navigates this tab                                                               |
+| Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                    |
+| Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                 |
+| Cache scan results                     | on, 90 days  | reuse scan results; choose how long to keep them                                     |
+| Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                        |
+| Icon, Name                             | icon only    | what each row shows, and its size                                                    |
+| Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                          |
+| In MusicBrainz                         | Ring         | how a platform already linked is marked                                              |
+| Format                                 | Circle       | the release's format as a circle or as text                                          |
+| Layout                                 | 1 row        | or 2 rows per platform                                                               |
+| Spacing                                | 5 px         | between rows, and between columns in the 1-row layout                                |
 
 ## Shortcuts
 

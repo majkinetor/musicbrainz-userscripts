@@ -26,8 +26,9 @@ test('a real Falcon edit invalidates the PC count after it completes', { tag: ['
   }, null, { timeout: 120000 });
   const outcome = await page.evaluate(() => window.__falconTest.getQueue());
   check(outcome.some(item => item.status === 'done'), `Falcon completed the real edit: ${JSON.stringify(outcome)}`);
-  await page.waitForSelector('#pc-stale-note', { timeout: 15000 });
-  check((await page.locator('#mb-pc-dock').getAttribute('data-mb-corner-status')) === '?', 'the completed edit makes the old count unverified');
+  await page.waitForFunction(id => !!localStorage.getItem(`pc:dirty:${id}`), mbid, { timeout: 15000 });
+  check((await page.locator('#mb-pc-dock').getAttribute('data-mb-corner-status')) !== '?', 'an edit is not shown as a failed scan');
+  check(await page.locator('#pc-stale-note').count() === 0, 'the completed edit does not show a persistent message');
   const actual = await until(async () => page.evaluate(async id => {
     const r = await fetch(`/ws/2/release/${id}?inc=url-rels&fmt=json`, { headers: { Accept: 'application/json' } });
     return r.ok ? r.json() : null;

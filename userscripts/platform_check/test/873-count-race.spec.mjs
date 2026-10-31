@@ -24,9 +24,12 @@ test('cache duration and disabling reuse affect the next scan', { tag: '@unit' }
   const values = { 'pc:cache-days': 7, 'pc:cache-enabled': false }, cleared = [], saved = new Map();
   const storage = { getItem: key => saved.get(key) || null, setItem: (key, value) => saved.set(key, value), removeItem: key => saved.delete(key) };
   const env = new Function('GM_getValue', 'cacheClear', 'mbid', 'PC_SCAN', 'runScans', 'localStorage',
-    'const pcDirty = new Set(), pcSources = new Set(), document = { getElementById: () => null }; let _pcLinked = null, pcDockStale = false; function pcDockStatus() {} function pcCountLinks() {} function pcLinkedFresh() {}\n' + src + '\nreturn { pcTtlOf, pcScan };')(
+    'const pcDirty = new Set(), pcSources = new Set(), document = { getElementById: () => null }; let _pcLinked = null, pcDockStale = false, pcDockFailed = false; function pcDockStatus() {} function pcCountLinks() {} function pcLinkedFresh() {}\n' + src + '\nreturn { pcTtlOf, pcScan };')(
     (k, d) => k in values ? values[k] : d, id => cleared.push(id), 'release', { errors: new Map() }, () => Promise.resolve(), storage);
   check(env.pcTtlOf('pc:cache:v2:deezer:release', { url: 'x' }) === 7 * 864e5, 'the configured duration applies to a found link');
+  values['pc:cache-days'] = 'default';
+  check(env.pcTtlOf('pc:cache:v2:deezer:release', { url: null }) === 90 * 864e5 && env.pcTtlOf('pc:mbdata:release', {}) === 90 * 864e5, 'the former default migrates to 90 days for misses and MusicBrainz data');
+  values['pc:cache-days'] = 7;
   await env.pcScan();
   check(cleared.join() === 'release', 'disabling the cache discards earlier results before scanning');
   check(saved.has('pc:incomplete:release'), 'an in-progress scan is marked incomplete');
@@ -70,4 +73,17 @@ test('cancelling a scan releases callers waiting for it', { tag: '@unit' }, asyn
   const cancel = new Function('PC_SCAN', 'let _appleTokP, _sdKeyP, _amzSession, searchChain;\n' + src + '\nreturn pcCancelScan;')(state);
   cancel();
   check(signalled === 1, 'a waiting scan promise is released on cancellation');
+});
+
+test('the launcher marks failures but not an invalidated or uncounted result with a question mark', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcDockStatus']);
+  const statuses = [];
+  const env = new Function('statuses', 'GM_getValue',
+    'let pcDockFound = 2, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0, pcDockStale = false, pcDockFailed = false; const pcDockItem = { status: s => statuses.push(s) };\n' + src + '\nreturn { show: pcDockStatus, stale: v => { pcDockStale = v; }, failed: v => { pcDockFailed = v; } };')(statuses, (_key, fallback) => fallback);
+  env.show();
+  check(statuses.at(-1) === '2', 'a pending artist count does not mark known platform results as failed');
+  env.stale(true); env.show();
+  check(statuses.at(-1) !== '?', 'an invalidated count is not a failure');
+  env.failed(true); env.show();
+  check(statuses.at(-1) === '?', 'a failed scan is marked with a question mark');
 });
