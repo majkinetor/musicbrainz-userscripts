@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.102500
+// @version      2026.10.31.113200
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2259,6 +2259,12 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail .eye svg{width:14px;height:14px}
 #eh-rail .fa{display:none;align-items:center;gap:6px;height:28px;margin-top:4px;padding:0 10px;border:0;border-top:1px solid var(--border)!important;border-radius:0;background:none!important;color:var(--soft)!important;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0}#eh-rail.open .fa{display:flex}#eh-rail .fa:hover{color:var(--accent)!important}#eh-rail .fa svg{width:14px;height:14px}
 #eh-rail[hidden]{display:none}
+/* the home page has no header row for the Sections button: it floats in the corner, above the dock */
+#eh-secfab{position:fixed;right:16px;bottom:16px;z-index:31;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--border)!important;background:var(--surface)!important;color:var(--chip-text)!important;box-shadow:0 4px 14px var(--shadow);cursor:pointer;filter:none!important;mix-blend-mode:normal!important;opacity:1!important;transition:border-color .12s,color .12s}
+#eh-secfab:hover,#eh-secfab[aria-expanded=true]{border-color:var(--accent)!important;color:var(--accent)!important}
+#eh-secfab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#eh-secfab svg,#eh-secfab svg *{stroke:currentColor!important;fill:none!important;filter:none!important}
+#eh-secfab[hidden]{display:none}
 /* A dark userstyle (Stylus, kellnerd's theme) colours and inverts buttons and headings with !important; these outrank it. */
 :root[data-eh-theme] #app button:not(#as-root *),:root[data-eh-theme] #app button:not(#as-root *) *,:root[data-eh-theme] #app h2,#eh-rail button,#eh-rail button *{filter:none!important;mix-blend-mode:normal!important;opacity:1!important;-webkit-text-fill-color:currentColor!important;text-shadow:none!important}
 :root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
@@ -6956,6 +6962,7 @@ function editMenu(app) {
 }
 var releasePageDraw;
 function render(keepPop) {
+    if (!data || data.kind !== 'home') secFab(false);
     if (releasePageDraw) { releasePageDraw(); save(); return; }
     const app = $('#app');
     bgApply();
@@ -7433,10 +7440,52 @@ const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.7
 const SEC_BTN = `<button class="ab" type="button" data-ehsec aria-label="Sections" data-tip="Sections\nJump to, hide, reorder or fold the page's sections">${SVG('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</button>`;
 function railPlace() {
     const rail = document.getElementById('eh-rail'), button = document.querySelector('[data-ehsec]');
+    const fab = document.getElementById('eh-secfab'); if (fab) fab.setAttribute('aria-expanded', String(!!rail && rail.classList.contains('open')));
     if (!rail || !rail.classList.contains('open') || !button) return;
     const r = button.getBoundingClientRect();
-    rail.style.top = (r.bottom + 6) + 'px';
-    rail.style.left = (r.right - rail.offsetWidth) + 'px';
+    // the corner button opens it upward
+    rail.style.top = (r.top > innerHeight / 2 ? Math.max(8, r.top - 6 - rail.offsetHeight) : r.bottom + 6) + 'px';
+    rail.style.left = Math.max(8, r.right - rail.offsetWidth) + 'px';
+}
+// the floating Sections button sits in the corner's column, above whatever stands there: String Theory's dock,
+// its entries when the dock is open, or the scripts' corner launchers
+let fabMo = null, fabQ = false;
+function fabPlace() {
+    const fab = document.getElementById('eh-secfab'); if (!fab) return;
+    // measured from where it stands now, not from the window's edges: a fixed element's box needn't start at them
+    const fr = fab.getBoundingClientRect(), cs = getComputedStyle(fab), cr = parseFloat(cs.right) || 16, cb = parseFloat(cs.bottom) || 16;
+    const vw = document.documentElement.clientWidth;
+    let right = 16, bottom = 16;
+    const busy = [...document.querySelectorAll('#mbu-dock,[data-mb-corner="br"]')]
+        .filter(el => el !== fab && !el.hidden && getComputedStyle(el).display !== 'none')
+        .map(el => el.getBoundingClientRect()).filter(r => r.width && r.height && r.bottom > innerHeight / 2);
+    const dock = busy.find(r => vw - r.right < 80 && r.left > vw - 120);
+    let shift = 0;   // how far right it moves, to stand centred over the dock
+    if (dock) { shift = (dock.left + dock.width / 2) - (fr.left + fr.width / 2); right = Math.max(0, Math.round(cr - shift)); }
+    const x0 = fr.left + shift, x1 = fr.right + shift, col = busy.filter(r => r.right > x0 - 4 && r.left < x1 + 4);
+    if (col.length) bottom = Math.round(cb + fr.bottom - (Math.min(...col.map(r => r.top)) - 10));
+    if (fab.style.right !== right + 'px') fab.style.right = right + 'px';
+    if (fab.style.bottom !== bottom + 'px') { fab.style.bottom = bottom + 'px'; requestAnimationFrame(railPlace); }
+}
+function fabQueue() { if (fabQ) return; fabQ = true; requestAnimationFrame(() => { fabQ = false; fabPlace(); }); }
+function secFab(on) {
+    let fab = document.getElementById('eh-secfab');
+    if (!on) {
+        if (fab) fab.remove();
+        if (fabMo) { fabMo.disconnect(); fabMo = null; removeEventListener('resize', fabQueue); }
+        return;
+    }
+    if (!fab) {
+        document.body.insertAdjacentHTML('beforeend', SEC_BTN.replace('class="ab"', 'id="eh-secfab" aria-haspopup="true" aria-expanded="false"'));
+        fab = document.getElementById('eh-secfab');
+    }
+    if (!fabMo) {
+        // the dock opens, folds and moves its entries by their inline style; the launchers come and go
+        fabMo = new MutationObserver(ms => { if (ms.some(m => m.target !== fab && m.target.id !== 'eh-rail')) fabQueue(); });
+        fabMo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'hidden', 'data-mbu-docked', 'data-mbu-dock-open', 'data-mbu-flow', 'data-mbu-side'] });
+        addEventListener('resize', fabQueue);
+    }
+    fabPlace();
 }
 function secRail(app) {
     const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
@@ -7497,7 +7546,8 @@ function secRail(app) {
     if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
         acts.querySelector('.srch,[data-srch]') ? acts.querySelector('.srch,[data-srch]').insertAdjacentHTML('beforebegin', SEC_BTN) : acts.insertAdjacentHTML('beforeend', SEC_BTN);
     }
-    if (!acts) rail.classList.remove('open');
+    secFab(!acts && !rail.hidden && !!app.querySelector('.hm-hero'));
+    if (!acts && !document.getElementById('eh-secfab')) rail.classList.remove('open');
     rail.innerHTML = '<div class="rr top" data-top><button class="nm" type="button">Top</button></div>' + secs.map(x => { const k = id(x), off = x.hidden;
         return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
