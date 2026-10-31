@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.000500
+// @version      2026.11.01.001500
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -5954,10 +5954,10 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
               + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
               + ':root[data-mbu-dock-over] [data-mbu-docked=show]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85) reads as dim on the shelf
               // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
-              + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
-              + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
+              + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
+              + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
+              + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
               + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
-              + ':root[data-mbu-dock-plain] #mbu-dock-shelf{display:none!important}'   // String Theory's Hover: None
               // folded, an entry with something to do peeks beside the button, smaller
               + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
@@ -6015,8 +6015,15 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
           // the shelf: shown while the pointer is over the dock, dark on a dark page (a dark userstyle)
           var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; root.appendChild(shelf);
           var pageDark = function () {
-              var t = mbuThemeOf(document.body && getComputedStyle(document.body).backgroundColor) || mbuThemeOf(getComputedStyle(root).backgroundColor);
-              return t === 'dark';
+              // the dock block can ship without mbuThemeOf, so read the luminance here
+              var lum = function (bg) {
+                  var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(bg || '');
+                  if (!m || (m[4] !== undefined && +m[4] < 0.5)) return null;
+                  return (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255;
+              };
+              var l = lum(document.body && getComputedStyle(document.body).backgroundColor);
+              if (l === null) l = lum(getComputedStyle(root).backgroundColor);
+              return l !== null && l < 0.5;
           };
           var shelfOver = function (e) {
               var b = dockBox(), over = inBox(e, b, 6);
@@ -6026,10 +6033,24 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
                   shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
                   if (!root.hasAttribute('data-mbu-dock-over')) {
                       shelf.toggleAttribute('data-dark', pageDark());
+                      // a launcher inside its own stacking layer (a body with isolation:isolate, a z-indexed
+                      // container) paints within that layer, under a shelf on <html> whatever its z-index:
+                      // the shelf joins the outermost such layer, below every launcher in it
+                      var stacks = function (cs) {
+                          return (cs.zIndex !== 'auto' && cs.position !== 'static') || cs.isolation === 'isolate' || +cs.opacity < 1
+                              || cs.transform !== 'none' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || /paint|layout|strict|content/.test(cs.contain || '');
+                      };
+                      var items = Array.prototype.filter.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) { return el !== shelf; });
+                      var host = root;
+                      items.forEach(function (el) {
+                          for (var a = el.parentElement; a && a !== root; a = a.parentElement) if (stacks(getComputedStyle(a)) && (host === root || a.contains(host))) host = a;
+                      });
+                      if (shelf.parentNode !== host) host.insertBefore(shelf, host.firstChild);
                       var z = 2147482989;
-                      Array.prototype.forEach.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) {
+                      items.forEach(function (el) {
+                          if (!host.contains(el)) return;
                           var top = null;
-                          for (var a = el; a && a !== root && a !== document.body; a = a.parentElement) { var cz = getComputedStyle(a).zIndex; if (cz !== 'auto') top = +cz; }
+                          for (var a = el; a && a !== host; a = a.parentElement) { var cz = getComputedStyle(a).zIndex; if (cz !== 'auto' && getComputedStyle(a).position !== 'static') top = +cz; }
                           if (top !== null && top <= z) z = top - 1;
                       });
                       shelf.style.zIndex = String(z);
@@ -6062,7 +6083,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
       if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
       if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
-      root.toggleAttribute('data-mbu-dock-plain', mbuShared('dockHover') === 'none');
+      root.toggleAttribute('data-mbu-dock-frost', mbuShared('dockHover') === 'shelf');
       els.forEach(function (el) {
           if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
           var was = el.getAttribute('data-mbu-docked');

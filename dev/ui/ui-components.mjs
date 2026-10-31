@@ -772,10 +772,10 @@ function mbuDock() {
             + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
             + ':root[data-mbu-dock-over] [data-mbu-docked=show]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85) reads as dim on the shelf
             // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
-            + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
-            + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
+            + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
+            + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
+            + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
             + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
-            + ':root[data-mbu-dock-plain] #mbu-dock-shelf{display:none!important}'   // String Theory's Hover: None
             // folded, an entry with something to do peeks beside the button, smaller
             + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
@@ -833,8 +833,15 @@ function mbuDock() {
         // the shelf: shown while the pointer is over the dock, dark on a dark page (a dark userstyle)
         var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; root.appendChild(shelf);
         var pageDark = function () {
-            var t = mbuThemeOf(document.body && getComputedStyle(document.body).backgroundColor) || mbuThemeOf(getComputedStyle(root).backgroundColor);
-            return t === 'dark';
+            // the dock block can ship without mbuThemeOf, so read the luminance here
+            var lum = function (bg) {
+                var m = /rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)(?:,\\s*([\\d.]+))?/.exec(bg || '');
+                if (!m || (m[4] !== undefined && +m[4] < 0.5)) return null;
+                return (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255;
+            };
+            var l = lum(document.body && getComputedStyle(document.body).backgroundColor);
+            if (l === null) l = lum(getComputedStyle(root).backgroundColor);
+            return l !== null && l < 0.5;
         };
         var shelfOver = function (e) {
             var b = dockBox(), over = inBox(e, b, 6);
@@ -844,10 +851,24 @@ function mbuDock() {
                 shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
                 if (!root.hasAttribute('data-mbu-dock-over')) {
                     shelf.toggleAttribute('data-dark', pageDark());
+                    // a launcher inside its own stacking layer (a body with isolation:isolate, a z-indexed
+                    // container) paints within that layer, under a shelf on <html> whatever its z-index:
+                    // the shelf joins the outermost such layer, below every launcher in it
+                    var stacks = function (cs) {
+                        return (cs.zIndex !== 'auto' && cs.position !== 'static') || cs.isolation === 'isolate' || +cs.opacity < 1
+                            || cs.transform !== 'none' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || /paint|layout|strict|content/.test(cs.contain || '');
+                    };
+                    var items = Array.prototype.filter.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) { return el !== shelf; });
+                    var host = root;
+                    items.forEach(function (el) {
+                        for (var a = el.parentElement; a && a !== root; a = a.parentElement) if (stacks(getComputedStyle(a)) && (host === root || a.contains(host))) host = a;
+                    });
+                    if (shelf.parentNode !== host) host.insertBefore(shelf, host.firstChild);
                     var z = 2147482989;
-                    Array.prototype.forEach.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) {
+                    items.forEach(function (el) {
+                        if (!host.contains(el)) return;
                         var top = null;
-                        for (var a = el; a && a !== root && a !== document.body; a = a.parentElement) { var cz = getComputedStyle(a).zIndex; if (cz !== 'auto') top = +cz; }
+                        for (var a = el; a && a !== host; a = a.parentElement) { var cz = getComputedStyle(a).zIndex; if (cz !== 'auto' && getComputedStyle(a).position !== 'static') top = +cz; }
                         if (top !== null && top <= z) z = top - 1;
                     });
                     shelf.style.zIndex = String(z);
@@ -880,7 +901,7 @@ function mbuDock() {
     var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
     if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
     if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
-    root.toggleAttribute('data-mbu-dock-plain', mbuShared('dockHover') === 'none');
+    root.toggleAttribute('data-mbu-dock-frost', mbuShared('dockHover') === 'shelf');
     els.forEach(function (el) {
         if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
         var was = el.getAttribute('data-mbu-docked');

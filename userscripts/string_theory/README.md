@@ -37,7 +37,7 @@
 | Side              | Right             | The launchers' side of the page                                                                                                                                             |
 | Orientation       | Column            | A column, or a row along the bottom edge                                                                                                                                    |
 | Size              | 100 %             | The launchers' size, 60 to 160 %                                                                                                                                            |
-| Hover             | Shelf             | While the pointer is over the dock, a frosted shelf behind its icons, or None                                                                                               |
+| Hover             | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                                                                               |
 | Launcher order    | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                                                  |
 | Check for updates |                   | Whether a newer String Theory is out on your channel: stable, latest or a branch                                                                                            |
 | Scripts           | All on            | Turns each bundled script on or off, from the next page load                                                                                                                |
