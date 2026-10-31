@@ -657,6 +657,12 @@ body.skin--responsive #p-cactions li.selected a {
 	color: var(--text-dimmed) !important;
 }
 
+/* Event Horizon paints its own page: the theme's greys under its rows stood out against its dark sticky headers */
+#app {
+	--background: transparent;
+	--background-accent: transparent;
+}
+
 /* Event Horizon's search pills: their fields have no box of their own */
 .kicker .srch input, .kicker .srch select, .hm-srch input {
 	background: none !important;
