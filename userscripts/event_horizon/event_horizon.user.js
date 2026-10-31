@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170100
+// @version      2026.10.31.170101
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7689,6 +7689,27 @@ function fitQuietBox(box) {
 let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 1600); }
 let rowKeys = [];
+// Folding a track should not rebuild the release's other cards and images.
+function redrawTrack(key) {
+    const row = [...document.querySelectorAll('#s-tl .tr[data-row]')].find(x => x.dataset.row === key);
+    const r = data && data.rel;
+    if (!row || !r) return false;
+    const track = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi }))).find(t => t.key === key);
+    if (!track) return false;
+    const old = row.nextElementSibling;
+    if (old && old.matches('.detail')) old.remove();
+    row.setAttribute('aria-expanded', String(S.open.has(key)));
+    if (S.open.has(key)) row.insertAdjacentHTML('afterend', detail(track));
+    return true;
+}
+function redrawTracks() {
+    const old = document.querySelector('#s-tl > .tl'), r = data && data.rel;
+    if (!old || !r) { render(); return; }
+    const box = document.createElement('div'); box.innerHTML = tracklist(r);
+    const fresh = box.querySelector('.tl'); old.replaceWith(fresh);
+    const links = [...fresh.querySelectorAll('.tr .lk')], width = Math.max(0, ...links.map(e => e.offsetWidth));
+    if (width) for (const e of links) e.style.minWidth = width + 'px';
+}
 function onClick(ev) {
     if (!ehOn) return;
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
@@ -7701,7 +7722,7 @@ function onClick(ev) {
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
     const tr = ev.target.closest('.tr');
-    if (tr && !ev.target.closest('a,button,.pop')) { const k = tr.dataset.row; S.open.has(k) ? S.open.delete(k) : S.open.add(k); const y = scrollY; render(); scrollTo(0, y); return; }
+    if (tr && !ev.target.closest('a,button,.pop')) { const k = tr.dataset.row; S.open.has(k) ? S.open.delete(k) : S.open.add(k); const y = scrollY; if (!redrawTrack(k)) render(); scrollTo(0, y); return; }
     if (!b) return;
     const d = b.dataset;
     let keep;
@@ -7726,8 +7747,8 @@ function onClick(ev) {
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
-    else if (d.fx) S.fxOpen = toggle(S.fxOpen, d.fx);
-    else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
+    else if (d.fx) { S.fxOpen = toggle(S.fxOpen, d.fx); const part = b.closest('.tl > .detail'), row = part && part.previousElementSibling, y = scrollY; if (row && redrawTrack(row.dataset.row)) { save(); scrollTo(0, y); return; } }
+    else if (d.disc) { S.discFold = toggle(S.discFold, +d.disc); const y = scrollY; redrawTracks(); scrollTo(0, y); return; }
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
     else if (d.dgview) S.dgView = d.dgview;
@@ -8699,7 +8720,9 @@ function build() {
             const open = !S.fxOpen.includes(fx.dataset.fx);
             S.fxOpen = S.fxOpen.filter(x => !keys.includes(x));
             if (open) S.fxOpen.push(...keys);
-            const y = scrollY; render(); scrollTo(0, y); return;
+            const y = scrollY, part = detailGroup.closest('.tl > .detail'), row = part && part.previousElementSibling;
+            if (row && redrawTrack(row.dataset.row)) save(); else render();
+            scrollTo(0, y); return;
         }
         // A track's detail follows its row in the DOM, rather than being its child.
         const trackPart = ev.target.closest('.tl > .tr, .tl > .detail');
@@ -8710,7 +8733,7 @@ function build() {
             const keys = rowKeys.filter(k => k.startsWith(prefix));
             const open = !S.open.has(track.dataset.row);
             keys.forEach(k => open ? S.open.add(k) : S.open.delete(k));
-            const y = scrollY; render(); scrollTo(0, y); return;
+            const y = scrollY; redrawTracks(); scrollTo(0, y); return;
         }
         const disc = ev.target.closest('.disc[data-disc]');
         if (disc) {
@@ -8719,7 +8742,7 @@ function build() {
             const fold = !S.discFold.includes(+disc.dataset.disc);
             S.discFold = S.discFold.filter(x => !keys.includes(x));
             if (fold) S.discFold.push(...keys);
-            const y = scrollY; render(); scrollTo(0, y); return;
+            const y = scrollY; redrawTracks(); scrollTo(0, y); return;
         }
         // a group's chevron does the same for its section's groups
         const g = ev.target.closest('.gf[data-gfold]') || (ev.target.closest('.gh,.disco-h') && ev.target.closest('.gh,.disco-h').querySelector('.gf[data-gfold]')) || grpOf(ev.target);
