@@ -34,6 +34,11 @@ const openSettings = async page => {
   await page.evaluate(() => [...window.__menu.values()].find(e => /Settings/.test(e.caption)).fn());
   await page.waitForSelector('#st-cfg', { timeout: 10000 });
 };
+// String Theory's settings, opened afresh: a script's settings leave them open behind (#851)
+const reopenSettings = async page => {
+  for (let i = 0; i < 3 && await page.evaluate(() => !!document.getElementById('st-cfg')); i++) await page.keyboard.press('Escape');
+  await openSettings(page);
+};
 // the visible corner launchers, the dock's button left out unless asked for
 const at = (page, dock = false) => page.evaluate(dock => [...document.querySelectorAll('[data-mb-corner="br"]')]
   .filter(e => (dock || e.id !== 'mbu-dock') && getComputedStyle(e).display !== 'none')
@@ -255,13 +260,13 @@ test.describe('Event Horizon turned off', () => {
     await page.mouse.click(spot.x, spot.y);
     check(await page.evaluate(() => document.getElementById('st-cfg-ov').style.zIndex === ''), "a click in String Theory's brings them to the front");
     await page.evaluate(() => document.getElementById('as-setup')?.remove());
-    await openSettings(page);
+    await reopenSettings(page);
     await page.locator('#st-tab-a').click();
     await page.locator('#st-cfg .st-scripts [data-name="Fusion"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion in About opens Fusion\'s settings');
     await page.keyboard.press('Escape');
     await page.evaluate(() => document.getElementById('fs-settings')?.remove());
-    await openSettings(page);
+    await reopenSettings(page);
 
     await page.locator('#st-order [data-name="Fusion"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion opens Fusion\'s settings');
