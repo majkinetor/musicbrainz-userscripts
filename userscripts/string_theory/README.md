@@ -26,9 +26,27 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
-- **Turn a script off** in the userscript manager's menu: each bundled script has a ☑/☐ entry with its version, applied from the next page load. A script that is off doesn't run, so its standalone copy can run instead.
-- **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge, and **→ Launchers on the right** (default) or **← Launchers on the left**. Every script follows them, standalone ones too.
+- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them.
+- **Settings**: open them from **⚙ Settings** in the userscript manager's menu, or by right-clicking String Theory's icon.
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
+
+## Settings
+
+| Setting                             | Default | What it does                                                                        |
+| ----------------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| Side                                | Right   | The launchers' side of the page                                                     |
+| Layout                              | Column  | A column, or a row along the bottom edge                                            |
+| Size                                | 100 %   | The launchers' size, 60 to 160 %                                                    |
+| Fold them into String Theory's icon | On      | Off shows every launcher on its own; always on in [Event Horizon](../event_horizon) |
+| Reset position and size             |         | Puts the launchers back in the corner at their normal size                          |
+| Check for updates                   |         | Whether a newer String Theory is out on your channel: stable, latest or a branch    |
+| Scripts                             | All on  | Turns each bundled script on or off, from the next page load                        |
+| Copy versions                       |         | Copies String Theory's version and each bundled script's, for a bug report          |
+
+- **Move the launchers** by dragging any of them; they move together. **Reset position and size** brings them back.
+- **A script that is off** doesn't run, so its standalone copy can run instead.
+- Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
+- The settings window shows which channel String Theory was installed from and links to its GitHub page.
 - The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts
@@ -40,5 +58,6 @@
 
 ## Notes
 
-- **Launchers without String Theory**: each MusicBrainz server keeps its own layout. In the browser console (F12) on its page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, `localStorage.setItem('mbu.cornerSide', '"left"')` for the left side or `localStorage.removeItem('mbu.cornerSide')` for the right, then reload.
+- **Each MusicBrainz server keeps its own launcher settings**: musicbrainz.org, beta and test are set apart.
+- **Launchers without String Theory**: in the browser console (F12) on a MusicBrainz page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, `localStorage.setItem('mbu.cornerSide', '"left"')` for the left side or `localStorage.removeItem('mbu.cornerSide')` for the right, then reload.
 - How the bundle is built is in [DEVELOP.md](DEVELOP.md).

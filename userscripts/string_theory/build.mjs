@@ -97,8 +97,8 @@ for (const p of parts) for (const [k, v] of p.meta) {
   seen.add(id);
   out.push([k, v]);
 }
-// the bundle's own grants: the on/off menu below (#693)
-for (const g of ['GM_getValue', 'GM_setValue', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand']) {
+// the bundle's own grants: the on/off list and the settings window below (#693, #851)
+for (const g of ['GM_getValue', 'GM_setValue', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
   if (!seen.has(`grant\t${g}`)) { seen.add(`grant\t${g}`); out.push(['grant', g]); }
 }
 const metaBlock = ['// ==UserScript==', ...out.map(([k, v]) => `// @${k.padEnd(12)} ${v}`.trimEnd()), '// ==/UserScript=='].join('\n');
@@ -153,79 +153,71 @@ const sharedCode = `// ── shared blocks, each written once (#786) ${'─'.re
 // a cached copy). Runs at document-start, before the gated bodies.
 const memberVers = parts.map(p => `${metaVal(p.meta, 'name')} v${verOf(p.meta)}`);
 const startupLog = `try {\n  console.log('%c String Theory %c v${version} ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');\n  console.log(${JSON.stringify('String Theory bundles:\n' + memberVers.map(v => '  · ' + v).join('\n'))});\n} catch (e) {}`;
-// Per-script on/off (#693): the manager's menu lists every member as ☑/☐; a click flips it and the
-// change applies from the next page load. Each entry shows the member's version. The off list is the GM value OFF_KEY (folder names), read
-// once here; an off member's body doesn't run, so its standalone copy (if installed) can claim the page.
-// The menu goes only in the top frame, or a manager lists it again for every iframe.
+// Per-script on/off (#693), set in String Theory's settings window (#851, settings.js): a change applies
+// from the next page load. The off list is the GM value OFF_KEY (folder names), read once here; an off
+// member's body doesn't run, so its standalone copy (if installed) can claim the page. The window opens
+// from the manager's menu (one entry, ⚙ Settings) and from a right-click on the dock's button; both only
+// in the top frame, or a manager lists the entry again for every iframe.
 const OFF_KEY = 'string_theory.off';
 // Members that start off until turned on in the menu (new, still settling). Their "on" is kept apart,
 // in ON_KEY, so an off list a user already has doesn't switch them on.
 const DEFAULT_OFF = [].filter(n => MEMBERS.includes(n));
 const ON_KEY = 'string_theory.on';
 // The corner launchers' layout: a column (the default) or a row along the page's edge, on the right
-// (the default) or the left. They're shared settings (mbuShared 'cornerFlow' and 'cornerSide': the page's
-// localStorage, which every script's mbRestackCorner reads, standalone copies too); each menu entry flips
-// one and restacks the corners at once, with the same mbRestackCorner and mbuShared the members carry.
+// (the default) or the left, their size and their place. They're shared settings (mbuShared 'cornerFlow',
+// 'cornerSide', 'cornerSize', 'cornerOffset', 'stDock': the page's localStorage, which every script's
+// mbRestackCorner reads, standalone copies too); the settings window sets one and restacks the corners at
+// once, with the same mbRestackCorner and mbuShared the members carry.
 const SHARED = (UI_JS.match(/function mbuShared\(key, value\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!SHARED) throw new Error('mbuShared not found in dev/ui/ui-components.mjs');
 // with the dock (#847), which mbRestackCorner calls: the icon, mbuDock and mbuDockItem come along
 const RESTACK = (UI_JS.match(/var MBU_DOCK_ICON[\s\S]*?\nfunction mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!RESTACK) throw new Error('mbRestackCorner not found in dev/ui/ui-components.mjs');
+// The window is built from the shared UI and token blocks the bundle already writes once (share.mjs): their
+// factories are function declarations, hoisted, so the window can call them whenever it first opens.
+const factoryWith = name => {
+  const fac = shared.factories.find(x => x.own.includes(name));
+  if (!fac) throw new Error(`no shared block defines ${name} (settings window, #851)`);
+  if (fac.params.length !== 1) throw new Error(`${fac.fname} takes more than GM_info (settings window, #851)`);
+  return fac.fname;
+};
+const UI_FACTORY = factoryWith('mbuCfgHeader'), TOKENS_FACTORY = factoryWith('MBU_TOKENS');
+const SETTINGS = readFileSync(resolve(HERE, 'settings.js'), 'utf8').replace(/\r\n/g, '\n');
 const toggles = `var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
 function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function __stReadOff() { var on = __stList(${JSON.stringify(ON_KEY)}); return __stList(${JSON.stringify(OFF_KEY)}).concat(__stDefOff.filter(function (n) { return on.indexOf(n) < 0; })); }
 var __stOff = __stReadOff();
 (function () {
-  if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = ${JSON.stringify(parts.map(p => [p.n, metaVal(p.meta, 'name') || p.n, verOf(p.meta)]))};
-  // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
-  // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
-  // still there and the new one appended at the end. A manager that ignores options.id hands back
-  // an id of its own, and only then is the old entry unregistered.
-  var ids = {};
-  function put(id, caption, fn, title) {
-    var got = GM_registerMenuCommand(caption, fn, { id: id, autoClose: false, title: title });
-    if (ids[id] != null && ids[id] !== got && typeof GM_unregisterMenuCommand === 'function') { try { GM_unregisterMenuCommand(ids[id]); } catch (e) {} }
-    ids[id] = got;
-  }
-  function draw() {
-    var off = __stReadOff();
-    members.forEach(function (m) {
-      var on = off.indexOf(m[0]) < 0;
-      put('st-' + m[0], (on ? '☑ ' : '☐ ') + m[1] + ' v' + m[2], function () { flip(m[0]); },
-        (on ? 'On' : 'Off') + ' — click to turn ' + (on ? 'off' : 'on') + '; applies from the next page load');
-    });
-    var row = mbuShared('cornerFlow') === 'row';
-    put('st-flow', row ? '↔ Launchers in a row' : '↕ Launchers in a column', flipFlow,
-      'The round launchers in the page corner — click to put them in a ' + (row ? 'column' : 'row'));
-    var left = mbuShared('cornerSide') === 'left';
-    put('st-side', left ? '← Launchers on the left' : '→ Launchers on the right', flipSide,
-      'The round launchers in the page corner — click to move them to the ' + (left ? 'right' : 'left'));
-  }
+  var stMembers = ${JSON.stringify(parts.map(p => [p.n, metaVal(p.meta, 'name') || p.n, verOf(p.meta)]))};
+  var ST_VERSION = ${JSON.stringify(version)}, ST_ICON = ${JSON.stringify(ICON)}, ST_HOME = ${JSON.stringify(HOMEPAGE)};
+  var ST_ON_MB = /(^|[.])musicbrainz[.]org$/.test(location.hostname);
+  // on MusicBrainz String Theory's icon is the dock (mbuDock), Event Horizon or not; the mark goes up
+  // before any member stacks its launcher
+  if (ST_ON_MB) try { document.documentElement.setAttribute('data-mbu-st', ST_VERSION); } catch (e) {}
   ${SHARED.replace(/\n/g, '\n  ').trimEnd()}
   ${RESTACK.replace(/\n/g, '\n  ').trimEnd()}
-  function flipFlow() {
-    mbuShared('cornerFlow', mbuShared('cornerFlow') === 'row' ? null : 'row');
-    ['br', 'bl', 'tr', 'tl'].forEach(mbRestackCorner);
-    draw();
-  }
-  function flipSide() {
-    mbuShared('cornerSide', mbuShared('cornerSide') === 'left' ? null : 'left');
-    ['br', 'bl', 'tr', 'tl'].forEach(mbRestackCorner);
-    draw();
-  }
-  function flip(key) {
+  function stFlip(key) {
     var k = __stDefOff.indexOf(key) < 0 ? ${JSON.stringify(OFF_KEY)} : ${JSON.stringify(ON_KEY)};
     var list = __stList(k);
     var i = list.indexOf(key);
     if (i < 0) list.push(key); else list.splice(i, 1);
     GM_setValue(k, list);
-    draw();
   }
-  try { draw(); } catch (e) { try { console.error('[String Theory] menu failed:', e); } catch (x) {} }
+  var stUIBlock = null, stTokensBlock = null;
+  function stUI() { return stUIBlock || (stUIBlock = ${UI_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
+  function stTokens() { return stTokensBlock || (stTokensBlock = ${TOKENS_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
+  ${SETTINGS.replace(/\n/g, '\n  ').trimEnd()}
+  var open = function () { try { stSettings(); } catch (e) { try { console.error('[String Theory] settings failed:', e); } catch (x) {} } };
+  try { if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('⚙ Settings', open, { id: 'st-settings', autoClose: true, title: 'Launchers, the scripts on and off, versions and updates' }); } catch (e) {}
+  document.addEventListener('mbu-st-settings', open);
+  // String Theory's icon shows even on a page none of its scripts puts a launcher on
+  if (ST_ON_MB) {
+    var first = function () { try { mbRestackCorner('br'); } catch (e) {} };
+    if (document.readyState !== 'loading') first(); else document.addEventListener('DOMContentLoaded', first, { once: true });
+  }
 })();
-try { if (__stOff.length) console.log('String Theory: turned off in the manager menu — ' + __stOff.join(', ')); } catch (e) {}
+try { if (__stOff.length) console.log('String Theory: turned off in its settings — ' + __stOff.join(', ')); } catch (e) {}
 var __stInFrame = (function () { try { return window.top !== window.self; } catch (e) { return true; } })();
 var __stSkipped = [];
 var __stRunsHere = ${runsHere.toString()};

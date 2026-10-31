@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.122900.1.1
+// @version      2026.10.31.173000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1041,9 +1041,9 @@
   // whatever order they loaded in, so two launchers never land on the same pixel.
   // Orders in use, all bottom-right: Apollo and Art Station 10 (never on the same page), Scribe 15
   // (above Apollo on the edit page), Falcon 20, Fusion 30, Mission Control 40. Scribe is not on the shared block and keeps a copy of this.
-  // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set from String
-  // Theory's menu) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
-  // The shared setting cornerSide = 'left' (also from the menu) mirrors every corner across the screen: a
+  // The stack is a column; the shared setting cornerFlow = 'row' (mbuShared, set in String
+  // Theory's settings) lines it up along the bottom/top edge instead, the lowest order still nearest the corner.
+  // The shared setting cornerSide = 'left' (also from there) mirrors every corner across the screen: a
   // launcher tagged 'br' sits bottom-left. Its other side is set to auto, so a CSS left/right can't stretch it.
   // On a phone MusicBrainz's page is wider than the screen, so the browser widens the layout
   // viewport, which position:fixed measures from, to the page: the corner was off screen, a scroll
@@ -1057,9 +1057,18 @@
   // whose pages Event Horizon replaces). data-mb-corner-paths, a regular expression, names the paths a
   // launcher belongs on: Event Horizon moves to another page without loading it, and the dock hides
   // a launcher that came along to a page its script doesn't run on.
+  //
+  // String Theory (#851) marks the page with data-mbu-st (its version) on MusicBrainz, and the dock is
+  // on there too, Event Horizon or not, unless its settings turn it off (the shared stDock = false).
+  // Outside Event Horizon "hide" launchers stay in it: their pages are MusicBrainz's own. A right-click
+  // on the dock's button opens String Theory's settings (the mbu-st-settings event on document).
+  // The shared cornerSize (0.6–1.6) scales every launcher in a corner, and cornerOffset ({br:{x,y}},
+  // px in from the corner's edges) moves a corner's whole stack; dragging a launcher sets it.
+  // Scribe keeps its own copy of the restack and knows neither.
   var MBU_DOCK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"> <path d="M64 10 L66.4 10.2 L68.7 10.6 L70.9 11.4 L73.1 12.4 L75.2 13.7 L77.1 15.2 L78.8 17 L80.4 18.9 L81.8 21 L83.1 23.1 L84.1 25.4 L85 27.6 L85.7 29.9 L86.3 32.1 L86.8 34.3 L87.1 36.4 L87.4 38.4 L87.7 40.3 L87.9 42.1 L88.2 43.7 L88.5 45.2 L88.9 46.6 L89.4 47.8 L90 49 L90.7 50.1 L91.6 51.1 L92.6 52.2 L93.7 53.2 L95 54.2 L96.4 55.3 L97.9 56.5 L99.5 57.7 L101.1 59.1 L102.7 60.6 L104.4 62.2 L106 64 L107.5 65.9 L108.9 67.9 L110.2 70.1 L111.3 72.3 L112.1 74.7 L112.8 77.1 L113.1 79.5 L113.2 81.9 L113 84.3 L112.6 86.6 L111.8 88.9 L110.8 91 L109.5 93 L107.9 94.7 L106.1 96.3 L104.1 97.7 L102 98.8 L99.7 99.7 L97.3 100.4 L94.9 100.8 L92.4 101 L89.9 100.9 L87.4 100.7 L85 100.4 L82.7 99.9 L80.4 99.3 L78.3 98.6 L76.3 97.8 L74.4 97.1 L72.7 96.4 L71 95.7 L69.5 95.1 L68 94.6 L66.7 94.3 L65.3 94.1 L64 94 L62.7 94.1 L61.3 94.3 L60 94.6 L58.5 95.1 L57 95.7 L55.3 96.4 L53.6 97.1 L51.7 97.8 L49.7 98.6 L47.6 99.3 L45.3 99.9 L43 100.4 L40.6 100.7 L38.1 100.9 L35.6 101 L33.1 100.8 L30.7 100.4 L28.3 99.7 L26 98.8 L23.9 97.7 L21.9 96.3 L20.1 94.7 L18.5 93 L17.2 91 L16.2 88.9 L15.4 86.6 L15 84.3 L14.8 81.9 L14.9 79.5 L15.2 77.1 L15.9 74.7 L16.7 72.3 L17.8 70.1 L19.1 67.9 L20.5 65.9 L22 64 L23.6 62.2 L25.3 60.6 L26.9 59.1 L28.5 57.7 L30.1 56.5 L31.6 55.3 L33 54.2 L34.3 53.2 L35.4 52.2 L36.4 51.1 L37.3 50.1 L38 49 L38.6 47.8 L39.1 46.6 L39.5 45.2 L39.8 43.7 L40.1 42.1 L40.3 40.3 L40.6 38.4 L40.9 36.4 L41.2 34.3 L41.7 32.1 L42.3 29.9 L43 27.6 L43.9 25.4 L44.9 23.1 L46.2 21 L47.6 18.9 L49.2 17 L50.9 15.2 L52.8 13.7 L54.9 12.4 L57.1 11.4 L59.3 10.6 L61.6 10.2Z" fill="none" stroke="#9c86ea" stroke-width="10" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#ffffff" stroke-width="20" stroke-linejoin="round"/> <path d="M64 34 L65.3 33.9 L66.7 33.7 L68 33.4 L69.5 32.9 L71 32.3 L72.7 31.6 L74.4 30.9 L76.3 30.2 L78.3 29.4 L80.4 28.7 L82.7 28.1 L85 27.6 L87.4 27.3 L89.9 27.1 L92.4 27 L94.9 27.2 L97.3 27.6 L99.7 28.3 L102 29.2 L104.1 30.3 L106.1 31.7 L107.9 33.3 L109.5 35 L110.8 37 L111.8 39.1 L112.6 41.4 L113 43.7 L113.2 46.1 L113.1 48.5 L112.8 50.9 L112.1 53.3 L111.3 55.7 L110.2 57.9 L108.9 60.1 L107.5 62.1 L106 64 L104.4 65.8 L102.7 67.4 L101.1 68.9 L99.5 70.3 L97.9 71.5 L96.4 72.7 L95 73.8 L93.7 74.8 L92.6 75.8 L91.6 76.9 L90.7 77.9 L90 79 L89.4 80.2 L88.9 81.4 L88.5 82.8 L88.2 84.3 L87.9 85.9 L87.7 87.7 L87.4 89.6 L87.1 91.6 L86.8 93.7 L86.3 95.9 L85.7 98.1 L85 100.4 L84.1 102.6 L83.1 104.9 L81.8 107 L80.4 109.1 L78.8 111 L77.1 112.8 L75.2 114.3 L73.1 115.6 L70.9 116.6 L68.7 117.4 L66.4 117.8 L64 118 L61.6 117.8 L59.3 117.4 L57.1 116.6 L54.9 115.6 L52.8 114.3 L50.9 112.8 L49.2 111 L47.6 109.1 L46.2 107 L44.9 104.9 L43.9 102.6 L43 100.4 L42.3 98.1 L41.7 95.9 L41.2 93.7 L40.9 91.6 L40.6 89.6 L40.3 87.7 L40.1 85.9 L39.8 84.3 L39.5 82.8 L39.1 81.4 L38.6 80.2 L38 79 L37.3 77.9 L36.4 76.9 L35.4 75.8 L34.3 74.8 L33 73.8 L31.6 72.7 L30.1 71.5 L28.5 70.3 L26.9 68.9 L25.3 67.4 L23.6 65.8 L22 64 L20.5 62.1 L19.1 60.1 L17.8 57.9 L16.7 55.7 L15.9 53.3 L15.2 50.9 L14.9 48.5 L14.8 46.1 L15 43.7 L15.4 41.4 L16.2 39.1 L17.2 37 L18.5 35 L20.1 33.3 L21.9 31.7 L23.9 30.3 L26 29.2 L28.3 28.3 L30.7 27.6 L33.1 27.2 L35.6 27 L38.1 27.1 L40.6 27.3 L43 27.6 L45.3 28.1 L47.6 28.7 L49.7 29.4 L51.7 30.2 L53.6 30.9 L55.3 31.6 L57 32.3 L58.5 32.9 L60 33.4 L61.3 33.7 L62.7 33.9Z" fill="none" stroke="#6c47e0" stroke-width="13" stroke-linejoin="round"/> </svg>';   // String Theory's icon.svg
   function mbuDock() {
-      var root = document.documentElement, on = root.hasAttribute('data-mbu-dock');
+      var root = document.documentElement, eh = root.hasAttribute('data-mbu-dock');
+      var on = eh || (root.hasAttribute('data-mbu-st') && mbuShared('stDock') !== false);
       var btn = document.getElementById('mbu-dock');
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="br"]'))
           .filter(function (el) { return el.id !== 'mbu-dock' && el.dataset.mbCornerDock !== 'no'; });
@@ -1068,8 +1077,9 @@
           css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}'
               + '.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}'
               + '.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}'
-              + '.mbu-dock-win{position:fixed;z-index:2147482995;right:62px;bottom:6px;width:max-content;max-width:calc(100vw - 90px);max-height:75vh;overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
-              + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{right:6px;bottom:60px}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:62px}:root[data-mbu-side=left][data-mbu-flow=row] .mbu-dock-win{left:6px}'
+              // beside the dock's button, wherever the corner's offset and size (--mbu-ox/oy/cs, set by the restack) put it
+              + '.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1) + var(--mbu-ox,0px));--mbu-dw-y:calc(6px + var(--mbu-oy,0px));right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px - var(--mbu-oy,0px)));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}'
+              + '.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:calc(6px + var(--mbu-ox,0px));--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1) + var(--mbu-oy,0px));max-height:min(75vh,calc(100vh - 80px - var(--mbu-oy,0px)))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}'
               + '#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}'
               + '#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}'
               + '#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}'
@@ -1112,6 +1122,12 @@
               mbuShared('dockOpen', open || null);   // remembered for the next page
               mbRestackCorner('br');
           };
+          // with String Theory, a right-click opens its settings (#851)
+          btn.addEventListener('contextmenu', function (e) {
+              if (!root.hasAttribute('data-mbu-st')) return;
+              e.preventDefault();
+              document.dispatchEvent(new CustomEvent('mbu-st-settings'));
+          });
           // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
           var leaveT = 0;
           var inDock = function (e) {
@@ -1147,7 +1163,7 @@
       if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
       if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
       els.forEach(function (el) {
-          if (el.dataset.mbCornerDock === 'hide' || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
+          if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
           var was = el.getAttribute('data-mbu-docked');
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
@@ -1193,7 +1209,64 @@
       if (corner === 'br') mbuDock();
       var bottom = corner[0] === 'b', right = (corner[1] === 'r') !== (mbuShared('cornerSide') === 'left');
       var row = mbuShared('cornerFlow') === 'row';
-      var vv = window.visualViewport, gapX = 0, gapY = 0;
+      var vv = window.visualViewport, gapX = 0, gapY = 0, html = document.documentElement;
+      // a launcher, not a panel: only those scale and drag (First Contact's open card is neither)
+      var small = function (el) { return el.offsetHeight <= 64 && el.offsetWidth <= 240; };
+      var size = Math.min(1.6, Math.max(0.6, Number(mbuShared('cornerSize')) || 1));
+      var off = (mbuShared('cornerOffset') || {})[corner] || {};
+      // kept on screen, whatever the window's size now
+      var ox = Math.min(Math.max(0, Number(off.x) || 0), Math.max(0, html.clientWidth - 60));
+      var oy = Math.min(Math.max(0, Number(off.y) || 0), Math.max(0, window.innerHeight - 60));
+      if (corner === 'br') { html.style.setProperty('--mbu-ox', ox + 'px'); html.style.setProperty('--mbu-oy', oy + 'px'); html.style.setProperty('--mbu-cs', String(size)); }
+      var fit = function (el) {
+          var on = size !== 1 && small(el);
+          if (on) { el.style.scale = String(size); el.style.transformOrigin = (bottom ? 'bottom ' : 'top ') + (right ? 'right' : 'left'); el.setAttribute('data-mb-corner-scaled', ''); }
+          else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = el.style.transformOrigin = ''; el.removeAttribute('data-mb-corner-scaled'); }
+      };
+      if (!html.hasAttribute('data-mb-corner-drag')) {   // one listener for every script's copy
+          html.setAttribute('data-mb-corner-drag', '');
+          // dragging a launcher moves its corner's stack (#851); the click that ends a drag is swallowed
+          document.addEventListener('pointerdown', function (e) {
+              if (e.button !== 0 || !e.isPrimary || !e.target || !e.target.closest) return;
+              var el = e.target.closest('[data-mb-corner]');
+              if (!el || e.target.closest('input,textarea,select,[contenteditable]') || !(el.offsetHeight <= 64 && el.offsetWidth <= 240)) return;
+              var c = el.dataset.mbCorner;
+              if (!/^[bt][lr]$/.test(c)) return;
+              var b = c[0] === 'b', r = (c[1] === 'r') !== (mbuShared('cornerSide') === 'left');
+              var o0 = (mbuShared('cornerOffset') || {})[c] || {}, x0 = Number(o0.x) || 0, y0 = Number(o0.y) || 0;
+              var sx = e.clientX, sy = e.clientY, moved = false, raf = 0, nx = x0, ny = y0;
+              var save = function () {
+                  var all = mbuShared('cornerOffset') || {};
+                  nx = Math.min(Math.max(0, nx), Math.max(0, html.clientWidth - 60)); ny = Math.min(Math.max(0, ny), Math.max(0, window.innerHeight - 60));
+                  all[c] = { x: Math.round(nx), y: Math.round(ny) };
+                  mbuShared('cornerOffset', all);
+                  mbRestackCorner(c);
+              };
+              var move = function (ev) {
+                  var dx = ev.clientX - sx, dy = ev.clientY - sy;
+                  if (!moved && Math.abs(dx) + Math.abs(dy) < 6) return;
+                  if (!moved) { moved = true; html.style.userSelect = 'none'; html.setAttribute('data-mb-corner-dragging', ''); }
+                  ev.preventDefault();
+                  nx = x0 + (r ? -dx : dx); ny = y0 + (b ? -dy : dy);
+                  if (!raf) raf = requestAnimationFrame(function () { raf = 0; save(); });
+              };
+              var up = function () {
+                  document.removeEventListener('pointermove', move, true);
+                  document.removeEventListener('pointerup', up, true);
+                  document.removeEventListener('pointercancel', up, true);
+                  if (!moved) return;
+                  if (raf) cancelAnimationFrame(raf);
+                  raf = 0; save();
+                  html.style.userSelect = ''; html.removeAttribute('data-mb-corner-dragging');
+                  var swallow = function (ce) { ce.preventDefault(); ce.stopImmediatePropagation(); };
+                  window.addEventListener('click', swallow, true);
+                  setTimeout(function () { window.removeEventListener('click', swallow, true); }, 300);
+              };
+              document.addEventListener('pointermove', move, true);
+              document.addEventListener('pointerup', up, true);
+              document.addEventListener('pointercancel', up, true);
+          }, true);
+      }
       if (vv) {
           gapX = Math.max(0, right ? document.documentElement.clientWidth - vv.offsetLeft - vv.width : vv.offsetLeft);   // clientWidth, not innerWidth: a fixed element already sits inside the scrollbar
           gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
@@ -1214,6 +1287,7 @@
               if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
           }
       }
+      gapX += ox; gapY += oy;
       var edge = document.documentElement.hasAttribute('data-mbu-dock') ? 6 : 14;   // docked (Event Horizon), nearer the edge: the page keeps a column clear for them
       var peeks = [];
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]'))
@@ -1223,18 +1297,20 @@
           .sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); });
       var pos = edge;
       els.forEach(function (el) {
+          fit(el);
           el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : pos)) + 'px';
           el.style[right ? 'right' : 'left'] = (gapX + (row ? pos : edge)) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
-          pos += (row ? el.offsetWidth : el.offsetHeight) + 8;
+          pos += (row ? el.offsetWidth : el.offsetHeight) * (el.hasAttribute('data-mb-corner-scaled') ? size : 1) + 8;
       });
       // the folded dock's peeking entries: in a line from its button, along the stack's flow
-      var side = edge + 40 + 4;
+      var side = edge + 44 * size;
       peeks.sort(function (a, b) { return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0); }).forEach(function (el) {
+          fit(el);
           el.style[bottom ? 'bottom' : 'top'] = (gapY + (row ? edge : side)) + 'px';
           el.style[right ? 'right' : 'left'] = (gapX + (row ? side : edge)) + 'px';
           el.style[right ? 'left' : 'right'] = 'auto';
-          side += 36;
+          side += 36 * size;
       });
   }
 
