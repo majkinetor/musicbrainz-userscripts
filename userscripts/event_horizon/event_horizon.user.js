@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.001704.2
+// @version      2026.11.01.0120
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7362,7 +7362,10 @@ function hmFetch() {
         if (n === showing && data && data.kind === 'home') render();
     }).catch(e => { hmGet = null; console.warn('[Event Horizon] front page fetch failed', e); });
 }
+// read once: MusicBrainz's own scripts later rewrite the live page's tiles (those without a cover vanish), so a return home reuses the first reading
+let hmFr = null;
 function hmFront() {
+    if (hmFr) return hmFr;
     const doc = hmDoc || (mbHome ? mbBody : null), art = { release: [], event: [] };
     if (!doc) { hmFetch(); return { rel: [], ev: [], blog: [] }; }
     doc.querySelectorAll('.artwork-cont a[href]').forEach(a => {
@@ -7372,7 +7375,7 @@ function hmFront() {
         art[m[1]].push({ href: `${MB}/${m[1]}/${m[2]}`, img: img ? (img.startsWith('//') ? 'https:' + img : img) : '', t: i > 0 ? t.slice(0, i) : t, by: i > 0 ? t.slice(i + 4) : '' });
     });
     const blog = [...doc.querySelectorAll('#blog-feed li a[href]')].map(a => ({ href: a.href, t: a.textContent.trim() }));
-    return { rel: art.release.slice(0, 12), ev: art.event.slice(0, 12), blog };
+    return (hmFr = { rel: art.release.slice(0, 12), ev: art.event.slice(0, 12), blog });
 }
 // Your profile card: the one request the home page makes (your /user page), fetched once a browser session (kept up to 6 hours across sessions).
 // The page's labels are translated, so rows are read by position and shape, not by their text.
