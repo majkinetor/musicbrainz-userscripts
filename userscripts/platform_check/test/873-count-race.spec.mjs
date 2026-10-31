@@ -87,3 +87,12 @@ test('the launcher marks failures but not an invalidated or uncounted result wit
   env.failed(true); env.show();
   check(statuses.at(-1) === '?', 'a failed scan is marked with a question mark');
 });
+
+test('the launcher withheld count excludes withheld artist links', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcDockStatus']);
+  const statuses = [];
+  const show = new Function('statuses', 'GM_getValue',
+    'const pcDockFound = 2, pcDockHeld = 3, pcDockArtists = 3, pcDockArtistsHeld = 2, pcDockStale = false, pcDockFailed = false; const pcDockItem = { status: s => statuses.push(s) };\n' + src + '\nreturn pcDockStatus;')(statuses, (_key, fallback) => fallback);
+  show();
+  check(statuses.at(-1) === '2,3/3', `platforms to add, withheld platforms and artist links should be separate (${statuses.at(-1)})`);
+});
