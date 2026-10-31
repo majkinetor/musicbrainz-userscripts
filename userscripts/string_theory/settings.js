@@ -231,6 +231,7 @@ function stSettings() {
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
+      + '<div class="st-row">' + seg('st-hover', 'Hover', [['shelf', 'Shelf'], ['none', 'None']]) + '</div>'
       + '<div class="st-strip" id="st-order"></div>'
       + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
       + '</section>';
@@ -320,6 +321,7 @@ function stSettings() {
       var pick = function (id, v) { Array.prototype.forEach.call(q(id).children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === v)); }); };
       pick('#st-side', mbuShared('cornerSide') === 'left' ? 'left' : 'right');
       pick('#st-flow', mbuShared('cornerFlow') === 'row' ? 'row' : 'column');
+      pick('#st-hover', mbuShared('dockHover') === 'none' ? 'none' : 'shelf');
       var v = size();
       q('#st-size').textContent = v + ' %';
       q('#st-size-dn').disabled = v <= 60;
@@ -335,6 +337,7 @@ function stSettings() {
     };
     q('#st-side').onclick = segSet('cornerSide', 'left');
     q('#st-flow').onclick = segSet('cornerFlow', 'row');
+    q('#st-hover').onclick = segSet('dockHover', 'none');
     var step = function (d) {
       var v = Math.min(160, Math.max(60, size() + d));
       mbuShared('cornerSize', v === 100 ? null : v / 100);

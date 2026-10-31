@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.235500
+// @version      2026.11.01.000500
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2157,11 +2157,13 @@ function mbuDock() {
             + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
             // no names, only a short state (a count) as a badge on the entry's top-right corner
             // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
-            + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf{filter:none!important}'
+            + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
+            + ':root[data-mbu-dock-over] [data-mbu-docked=show]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85) reads as dim on the shelf
             // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
-            + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
-            + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.85);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
+            + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
+            + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
             + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
+            + ':root[data-mbu-dock-plain] #mbu-dock-shelf{display:none!important}'   // String Theory's Hover: None
             // folded, an entry with something to do peeks beside the button, smaller
             + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
@@ -2228,7 +2230,16 @@ function mbuDock() {
                 var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
                 shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
                 shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
-                if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
+                if (!root.hasAttribute('data-mbu-dock-over')) {
+                    shelf.toggleAttribute('data-dark', pageDark());
+                    var z = 2147482989;
+                    Array.prototype.forEach.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) {
+                        var top = null;
+                        for (var a = el; a && a !== root && a !== document.body; a = a.parentElement) { var cz = getComputedStyle(a).zIndex; if (cz !== 'auto') top = +cz; }
+                        if (top !== null && top <= z) z = top - 1;
+                    });
+                    shelf.style.zIndex = String(z);
+                }
             }
             root.toggleAttribute('data-mbu-dock-over', over);
         };
@@ -2257,6 +2268,7 @@ function mbuDock() {
     var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
     if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
     if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+    root.toggleAttribute('data-mbu-dock-plain', mbuShared('dockHover') === 'none');
     els.forEach(function (el) {
         if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
         var was = el.getAttribute('data-mbu-docked');
