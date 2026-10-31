@@ -853,7 +853,9 @@ function mbuDockItem(o) {
     b.status = function (t) { b.mbuSt = t || ''; show(); };
     b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
     b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
-    if (o.scale) b.querySelector('img').style.transform = 'scale(' + o.scale + ')';
+    // a bigger icon gets its size, whole pixels, not a transform: inside a folded entry's scale(.8) a second one
+    // drew seams through the badge in Chrome
+    if (o.scale) { var px = Math.round(17 * o.scale) * 2, m = (34 - px) / 2 + 'px'; Object.assign(b.querySelector('img').style, { width: px + 'px', height: px + 'px', maxWidth: 'none', margin: m }); }
     b.status('');
     mbRestackCorner('br');
     return b;
