@@ -5,7 +5,7 @@ import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 const bg = page => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 const variant = page => page.evaluate(() => document.getElementById('st-theme').dataset.variant);
 const open = async (page, inject) => {
-  await page.goto(`${SANDBOX}/`, { waitUntil: 'load', timeout: 60000 });
+  await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
   await page.evaluate(() => {
     const menu = window.__menu = new Map();
     window.GM_registerMenuCommand = (caption, fn, o) => { menu.set(o.id, { caption, fn }); return o.id; };

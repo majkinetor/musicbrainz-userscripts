@@ -1,4 +1,4 @@
-// Themes (#879). Built into the bundle by build.mjs, which fills in __ST_THEMES__ from this folder.
+// Themes (#879). Built into the bundle by build.mjs, which fills in the themes from this folder.
 // Runs at document-start, before the members, on MusicBrainz pages only.
 var __stTheme = (function () {
   var THEMES = __ST_THEMES__;
