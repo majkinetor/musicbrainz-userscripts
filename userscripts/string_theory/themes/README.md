@@ -1,6 +1,6 @@
 # Themes
 
-String Theory's themes for MusicBrainz. Each is one CSS file, `<name>.dark.css` or `<name>.light.css`, whose first comment holds a `Theme: <shown name>` line. Every such file here is built into the bundle and shows up in the menu.
+String Theory's themes for MusicBrainz. Each is one CSS file, `<name>.dark.css` or `<name>.light.css`, whose first comment holds a `Theme: <shown name>` line. Every such file here is built into the bundle and shows up in the settings.
 
 To tweak a theme, change the values in its `:root`. To add one, copy `default.dark.css`, rename it, give it a new `Theme:` name and run `node userscripts/string_theory/build.mjs`.
 

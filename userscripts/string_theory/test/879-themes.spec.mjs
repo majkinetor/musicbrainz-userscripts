@@ -6,27 +6,24 @@ const bg = page => page.evaluate(() => getComputedStyle(document.body).backgroun
 const variant = page => page.evaluate(() => document.getElementById('st-theme').dataset.variant);
 const open = async (page, inject) => {
   await page.goto(`${SANDBOX}/search/edits`, { waitUntil: 'load', timeout: 60000 });
-  await page.evaluate(() => {
-    const menu = window.__menu = new Map();
-    window.GM_registerMenuCommand = (caption, fn, o) => { menu.set(o.id, { caption, fn }); return o.id; };
-    window.GM_unregisterMenuCommand = id => menu.delete(id);
-  });
   await inject('string_theory');
 };
-const click = (page, id) => page.evaluate(i => window.__menu.get(i).fn(), id);
-const caption = (page, id) => page.evaluate(i => window.__menu.get(i).caption, id);
+const pick = (page, v) => page.locator(`#st-th-mode [data-v=${v}]`).click();
+const picked = page => page.locator('#st-th-mode [aria-checked=true]').getAttribute('data-v');
 
-test.describe('menu', () => {
+test.describe('settings', () => {
   test.use({ gm: { name: 'String Theory', values: {} } });
-  test('light by default, and the menu walks the modes with the page following at once', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  test('light by default, and the Theme tab sets the mode with the page following at once', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await open(page, inject);
-    check(/Theme: light/.test(await caption(page, 'st-theme')), 'starts on light');
+    await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
+    await page.locator('#st-tab-t').click();
+    check(await picked(page) === 'light', 'starts on light');
     check(await variant(page) === 'light', 'the light variant');
-    await click(page, 'st-theme');
-    check(/Theme: dark/.test(await caption(page, 'st-theme')), 'then dark');
+    await pick(page, 'dark');
+    check(await picked(page) === 'dark', 'then dark');
     check(await bg(page) === 'rgb(51, 51, 51)', 'the page turns dark');
-    await click(page, 'st-theme');
-    check(/auto \(system\)/.test(await caption(page, 'st-theme')), 'then auto');
+    await pick(page, 'auto');
+    check(await picked(page) === 'auto', 'then the system');
   });
 });
 

@@ -26,10 +26,27 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
-- **Turn a script off** in the userscript manager's menu: each bundled script has a ☑/☐ entry with its version, applied from the next page load. A script that is off doesn't run, so its standalone copy can run instead.
-- **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge, and **→ Launchers on the right** (default) or **← Launchers on the left**. Every script follows them, standalone ones too.
-- **Dark mode and themes**, also in that menu, with no userstyle needed: **Theme** picks light (default), dark, auto by the system, or auto by sunrise and sunset where you are (the browser asks for your location once, and the system setting is used if you refuse). **Dark theme** and **Light theme** pick the theme for each. Turn off any dark userstyle you used before. To add or tweak a theme, see [themes](themes/README.md).
+- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again.
+- **Settings**: open them from **⚙ Settings** in the userscript manager's menu, or by right-clicking String Theory's icon.
+- **Dark mode and themes**, with no userstyle needed: in the settings, **Theme** picks light (default), dark, by your system, or by sunrise and sunset where you are (the browser asks for your location once, and your system setting is used if you refuse). **Dark theme** and **Light theme** pick the theme for each. Turn off any dark userstyle you used before. To add or tweak a theme, see [themes](themes/README.md).
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
+
+## Settings
+
+| Setting           | Default           | What it does                                                                                                                                                                |
+| ----------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Side              | Right             | The launchers' side of the page                                                                                                                                             |
+| Orientation       | Column            | A column, or a row along the bottom edge                                                                                                                                    |
+| Size              | 100 %             | The launchers' size, 60 to 160 %                                                                                                                                            |
+| Launcher order    | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                                                  |
+| Check for updates |                   | Whether a newer String Theory is out on your channel: stable, latest or a branch                                                                                            |
+| Scripts           | All on            | Turns each bundled script on or off, from the next page load                                                                                                                |
+| Copy versions     |                   | Copies String Theory's version, each bundled script's, the manager, the browser and the site, for a bug report; *Copy as Markdown* copies them ready to paste into an issue |
+
+- **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
+- **A script that is off** doesn't run, so its standalone copy can run instead.
+- Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
+- The settings window shows which channel String Theory was installed from, and links to its GitHub page, its issues and the website.
 - The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts
@@ -41,5 +58,6 @@
 
 ## Notes
 
-- **Launchers without String Theory**: each MusicBrainz server keeps its own layout. In the browser console (F12) on its page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, `localStorage.setItem('mbu.cornerSide', '"left"')` for the left side or `localStorage.removeItem('mbu.cornerSide')` for the right, then reload.
+- **Each MusicBrainz server keeps its own launcher settings**: musicbrainz.org, beta and test are set apart.
+- **Launchers without String Theory**: in the browser console (F12) on a MusicBrainz page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, `localStorage.setItem('mbu.cornerSide', '"left"')` for the left side or `localStorage.removeItem('mbu.cornerSide')` for the right, then reload.
 - How the bundle is built is in [DEVELOP.md](DEVELOP.md).

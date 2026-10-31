@@ -62,19 +62,15 @@ var __stTheme = (function () {
   return {
     read: read, set: set, isDay: isDay,
     names: function (v) { return Object.keys(THEMES[v]); },
-    // the next mode; the location one asks the browser where we are, once, and keeps it coarse
-    nextMode: function (done) {
-      var s = read(), next = MODES[(MODES.indexOf(s.mode) + 1) % MODES.length];
-      set({ mode: next }); done();
-      if (next !== 'sun' || s.lat != null || !navigator.geolocation) return;
+    // the location mode asks the browser where we are, once, and keeps it coarse
+    setMode: function (mode, done) {
+      var s = read();
+      set({ mode: mode });
+      if (mode !== 'sun' || s.lat != null || !navigator.geolocation) return;
       navigator.geolocation.getCurrentPosition(function (p) {
-        set({ lat: Math.round(p.coords.latitude * 10) / 10, lon: Math.round(p.coords.longitude * 10) / 10 }); done();
+        set({ lat: Math.round(p.coords.latitude * 10) / 10, lon: Math.round(p.coords.longitude * 10) / 10 });
+        if (done) done();
       }, function () {}, { maximumAge: 864e5, timeout: 30000 });
-    },
-    nextName: function (v) {
-      var list = Object.keys(THEMES[v]), s = read(), p = {};
-      p[v] = list[(list.indexOf(s[v]) + 1) % list.length];
-      set(p);
     }
   };
 })();
