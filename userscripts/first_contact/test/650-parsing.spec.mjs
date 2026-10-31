@@ -2,7 +2,23 @@
 // release editor's seed parameters.
 import { test, check, loadFunctions } from '../../../dev/test/harness.mjs';
 
-const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER', 'VARIOUS_ARTISTS_MBID', 'variousArtistsWhy'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType', 'labelFromCopyright']));
+const fns = () => loadFunctions('first_contact', ['TYPE_VERSION_MARKER', 'VARIOUS_ARTISTS_MBID', 'variousArtistsWhy'].concat( ['splitFeat', 'normName', 'toCredit', 'creditFromTitle', 'guessScript', 'seedParams', 'normTrackTitle', 'guessReleaseType', 'labelFromCopyright', 'normalizeDistributorLabels']));
+
+test('DistroKid placeholders yield no label only when no real label is listed', { tag: '@unit' }, async () => {
+  const { normalizeDistributorLabels, seedParams } = await fns();
+  const label = name => ({ name, catno: '' });
+  const noLabel = '157afde4-4bf5-4039-8ad2-5a15acc85176';
+  for (const name of ['DistroKid', '123456 Records DK', '123 Records DK2']) {
+    const labels = normalizeDistributorLabels([label(name)]);
+    const seed = Object.fromEntries(seedParams({ credit: [], types: [], labels, urls: [], mediums: [] }, ''));
+    check(labels.length === 1 && seed['labels.0.mbid'] === noLabel && seed['labels.0.name'] === '[no label]', `${name} seeds [no label]`);
+  }
+  const mixed = normalizeDistributorLabels([label('123 Records DK2'), label('Real Records')]);
+  check(mixed.length === 1 && mixed[0].name === 'Real Records', 'a real label wins over the placeholder');
+  const real = normalizeDistributorLabels([label('Records DK2'), label('123 Records DK Studio')]);
+  check(real.length === 2, 'similar real names are kept');
+  check(normalizeDistributorLabels([]).length === 0, 'a missing label stays unknown');
+});
 
 test('a feat. clause leaves the title and names the featured artists', { tag: ['@unit', '@critical'] }, async () => {
   const { splitFeat } = await fns();

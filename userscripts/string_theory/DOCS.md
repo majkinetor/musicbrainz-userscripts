@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-31 18:58 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-31 19:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1120,6 +1120,8 @@ On a platform's album page, click **Import to MusicBrainz**: once the release is
 
 A compilation the platform credits to one of its artists becomes Various Artists and a Compilation, when the credited artists are on fewer than half the tracks and the tracks have five or more artists.
 
+DistroKid and its numbered *Records DK* placeholders are omitted when a label is listed; otherwise they become MusicBrainz's [no label](https://musicbrainz.org/label/157afde4-4bf5-4039-8ad2-5a15acc85176).
+
 #### Release type
 
 When the platform gives no type, or only a plain *album* while the title says otherwise, it is guessed, the most certain sign first:
@@ -1178,11 +1180,11 @@ The button with [Harmony](https://harmony.pulsewidth.org.uk/)'s icon opens the a
 
 The *Harmony* setting picks which Harmony opens: [harmony.pulsewidth.org.uk](https://harmony.pulsewidth.org.uk/) or [harmony.mybrainz.dev](https://harmony.mybrainz.dev/). Each keeps its own settings.
 
-| Platform                                                                        | Sent                                |
-| ------------------------------------------------------------------------------- | ----------------------------------- |
-| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once |
-| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                 | the barcode, once the album is read |
-| YouTube Music, Amazon Music                                                     | nothing; the button is greyed out   |
+| Platform                                                                                                     | Sent                                |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, Ototoy, mora, Melon, Bugs, AllMusic | the album link, at once             |
+| Volumo, HDtracks, SoundCloud, Audiomack, 7digital, Presto Music                                              | the barcode, once the album is read |
+| YouTube Music, Amazon Music                                                                                  | nothing; the button is greyed out   |
 
 Harmony can't read the last two rows' platforms, so for the middle row First Contact sends the barcode; an album without one (a SoundCloud set that isn't a label's) sends nothing. YouTube Music and Amazon Music show no barcode.
 
@@ -1206,7 +1208,7 @@ Harmony can't read the last two rows' platforms, so for the middle row First Con
 | [Audiomack](#audiomack)         |        ✓        |     ✓      | from the ℗ line       | description    |
 | [7digital](#7digital)           |        ✓        |     ✓      | ✓                     | ℗ and © lines  |
 | [Ototoy](#ototoy)               |                 |            | ✓                     | album info     |
-| [mora](#mora)                   |                 |  some      | ✓                     |                |
+| [mora](#mora)                   |                 |    some    | ✓                     |                |
 | [Melon](#melon)                 |                 |            | ✓                     |                |
 | [Bugs](#bugs)                   |                 |            | ✓                     |                |
 | [AllMusic](#allmusic)           |        ✓        |     ✓      | ✓ with catalog number |                |
