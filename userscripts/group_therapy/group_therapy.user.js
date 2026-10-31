@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.122900
+// @version      2026.10.31.122900.1
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1017,17 +1017,26 @@
           };
           // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
           var leaveT = 0;
-          var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+          var inDock = function (e) {
+              if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
+              var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
+                  .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+              if (!boxes.length) return false;
+              return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
+                  && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
+                  && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
+                  && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+          };
           btn.addEventListener('mouseenter', function () {
               clearTimeout(leaveT);
               if (root.hasAttribute('data-mbu-dock-open')) return;
               root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
               mbRestackCorner('br');
           });
-          document.addEventListener('mouseover', function (e) {
+          document.addEventListener('mousemove', function (e) {
               if (!root.hasAttribute('data-mbu-dock-hover')) return;
               clearTimeout(leaveT);
-              if (inDock(e.target)) return;
+              if (inDock(e)) return;
               leaveT = setTimeout(function () {
                   if (!root.hasAttribute('data-mbu-dock-hover')) return;
                   root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');

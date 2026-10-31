@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.122900
+// @version      2026.10.31.122900.1
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1114,17 +1114,26 @@
           };
           // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
           var leaveT = 0;
-          var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+          var inDock = function (e) {
+              if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
+              var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
+                  .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+              if (!boxes.length) return false;
+              return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
+                  && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
+                  && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
+                  && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+          };
           btn.addEventListener('mouseenter', function () {
               clearTimeout(leaveT);
               if (root.hasAttribute('data-mbu-dock-open')) return;
               root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
               mbRestackCorner('br');
           });
-          document.addEventListener('mouseover', function (e) {
+          document.addEventListener('mousemove', function (e) {
               if (!root.hasAttribute('data-mbu-dock-hover')) return;
               clearTimeout(leaveT);
-              if (inDock(e.target)) return;
+              if (inDock(e)) return;
               leaveT = setTimeout(function () {
                   if (!root.hasAttribute('data-mbu-dock-hover')) return;
                   root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');

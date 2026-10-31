@@ -794,17 +794,26 @@ function mbuDock() {
         };
         // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
         var leaveT = 0;
-        var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+        var inDock = function (e) {
+            if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
+                .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+            if (!boxes.length) return false;
+            return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
+                && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
+                && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
+                && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+        };
         btn.addEventListener('mouseenter', function () {
             clearTimeout(leaveT);
             if (root.hasAttribute('data-mbu-dock-open')) return;
             root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
             mbRestackCorner('br');
         });
-        document.addEventListener('mouseover', function (e) {
+        document.addEventListener('mousemove', function (e) {
             if (!root.hasAttribute('data-mbu-dock-hover')) return;
             clearTimeout(leaveT);
-            if (inDock(e.target)) return;
+            if (inDock(e)) return;
             leaveT = setTimeout(function () {
                 if (!root.hasAttribute('data-mbu-dock-hover')) return;
                 root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');

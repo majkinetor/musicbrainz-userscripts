@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.31.122900
+// @version      2026.10.31.122900.1
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1765,17 +1765,26 @@ function mbuDock() {
         };
         // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
         var leaveT = 0;
-        var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+        var inDock = function (e) {
+            if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
+                .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+            if (!boxes.length) return false;
+            return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
+                && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
+                && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
+                && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+        };
         btn.addEventListener('mouseenter', function () {
             clearTimeout(leaveT);
             if (root.hasAttribute('data-mbu-dock-open')) return;
             root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
             mbRestackCorner('br');
         });
-        document.addEventListener('mouseover', function (e) {
+        document.addEventListener('mousemove', function (e) {
             if (!root.hasAttribute('data-mbu-dock-hover')) return;
             clearTimeout(leaveT);
-            if (inDock(e.target)) return;
+            if (inDock(e)) return;
             leaveT = setTimeout(function () {
                 if (!root.hasAttribute('data-mbu-dock-hover')) return;
                 root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');

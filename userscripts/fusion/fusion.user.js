@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.122900
+// @version      2026.10.31.122900.1
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2181,17 +2181,26 @@ function mbuDock() {
         };
         // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
         var leaveT = 0;
-        var inDock = function (t) { return !!(t && t.closest && t.closest('#mbu-dock,[data-mbu-docked],.mbu-dock-win,#mbu-tip')); };
+        var inDock = function (e) {
+            if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
+            var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
+                .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+            if (!boxes.length) return false;
+            return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
+                && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
+                && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
+                && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+        };
         btn.addEventListener('mouseenter', function () {
             clearTimeout(leaveT);
             if (root.hasAttribute('data-mbu-dock-open')) return;
             root.setAttribute('data-mbu-dock-hover', ''); root.setAttribute('data-mbu-dock-open', '');
             mbRestackCorner('br');
         });
-        document.addEventListener('mouseover', function (e) {
+        document.addEventListener('mousemove', function (e) {
             if (!root.hasAttribute('data-mbu-dock-hover')) return;
             clearTimeout(leaveT);
-            if (inDock(e.target)) return;
+            if (inDock(e)) return;
             leaveT = setTimeout(function () {
                 if (!root.hasAttribute('data-mbu-dock-hover')) return;
                 root.removeAttribute('data-mbu-dock-hover'); root.removeAttribute('data-mbu-dock-open');
