@@ -243,6 +243,10 @@ test.describe('Event Horizon turned off', () => {
     await page.locator('#st-cfg .st-scripts [data-name="Art Station"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('as-setup')), Boolean, { timeout: 5000 }), 'a script not on this page opens its settings');
     check(await page.evaluate(() => !document.getElementById('as-css') || !!document.getElementById('as-setup')), 'and only them');
+    check(await page.evaluate(() => !!document.getElementById('st-cfg')), 'String Theory\'s settings stay open');
+    check(await page.evaluate(() => { const r = document.getElementById('as-setup').getBoundingClientRect(), t = document.elementFromPoint(r.x + r.width / 2, r.y + 20); return !!(t && t.closest('#as-setup')); }), 'the script\'s are in front of them');
+    await page.locator('#st-cfg #st-tab-a').click();
+    check(await page.evaluate(() => { const p = document.getElementById('st-cfg').getBoundingClientRect(), t = document.elementFromPoint(p.x + 10, p.y + 10); return !!(t && t.closest('#st-cfg')); }), 'a click in String Theory\'s brings them to the front');
     await page.evaluate(() => document.getElementById('as-setup')?.remove());
     await openSettings(page);
     await page.locator('#st-tab-a').click();
@@ -254,7 +258,12 @@ test.describe('Event Horizon turned off', () => {
 
     await page.locator('#st-order [data-name="Fusion"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion opens Fusion\'s settings');
-    check(!(await page.evaluate(() => !!document.getElementById('st-cfg-ov'))), 'and closes String Theory\'s');
+    check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'and String Theory\'s stay open');
+    await page.keyboard.press('Escape');
+    check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'Escape closes Fusion\'s first');
+    await page.keyboard.press('Escape');
+    check(!(await page.evaluate(() => !!document.getElementById('st-cfg-ov'))), 'then String Theory\'s');
+    await page.evaluate(() => document.getElementById('fs-settings')?.remove());
 
     // a fresh load keeps the order
     await page.reload({ waitUntil: 'load' });

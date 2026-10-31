@@ -241,9 +241,25 @@ function stSettings() {
   stCfgOv = ov;
   var panel = ov.querySelector('#st-cfg'), q = function (s) { return panel.querySelector(s); };
   var close = function () { ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
-  var onKey = function (e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
+  // #851: a script's settings opened from here sit above this window, which stays open; the one used last
+  // is in front and takes Escape. A floating (position: fixed) element is taken for such a window.
+  var front = true, toFront = function (on) { front = on; ov.style.zIndex = on ? '' : 'calc(var(--mbu-z-modal) - 1)'; };
+  var floating = function (t) {
+    for (var n = t; n && n.nodeType === 1 && n !== ov; n = n.parentElement) if (getComputedStyle(n).position === 'fixed') return true;
+    return false;
+  };
+  var onKey = function (e) {
+    if (e.key !== 'Escape') return;
+    if (!front) { toFront(true); return; }   // the script's window closes first, this one on the next Escape
+    e.stopPropagation(); close();
+  };
   document.addEventListener('keydown', onKey, true);
-  var onOut = function (e) { if (!panel.contains(e.target) && !(e.target.closest && e.target.closest('#mbu-toast'))) close(); };
+  var onOut = function (e) {
+    if (panel.contains(e.target)) { if (!front) toFront(true); return; }
+    if (e.target.closest && e.target.closest('#mbu-toast')) return;
+    if (floating(e.target)) { toFront(false); return; }
+    close();
+  };
   document.addEventListener('mousedown', onOut, true);
   q('#st-x').onclick = close;
   if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
@@ -265,11 +281,12 @@ function stSettings() {
   // right-click does, else String Theory starts it only to open its settings, off or not on this page
   var openFor = function (name) {
     var m = stMembers.filter(function (x) { return x[1] === name; })[0], folder = m ? m[0] : name, el = live(name);
-    close();
+    toFront(false);
     if (!document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: folder, cancelable: true }))) return;
     if (el) { el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 })); return; }
     var st = __stStarters[folder];
     if (st && st.so && !st.soStarted()) { st.go(); return; }
+    toFront(true);
     try { U.mbuToast('⚠ ' + name + ' has no settings'); } catch (err) { /* no toast */ }
   };
   q('.st-scripts').addEventListener('contextmenu', function (e) {
