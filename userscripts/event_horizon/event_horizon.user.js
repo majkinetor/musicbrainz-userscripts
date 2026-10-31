@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170106.1.2
+// @version      2026.10.31.170106.1.3
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2280,7 +2280,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 :root[data-eh-theme] #app .secthead,:root[data-eh-theme] #app section{filter:none!important;mix-blend-mode:normal!important}
 :root[data-eh-theme] #app .cv svg,:root[data-eh-theme] #app .cv svg *,:root[data-eh-theme] #app button.ib svg,:root[data-eh-theme] #app button.ib svg *{stroke:currentColor!important;fill:none!important;color:inherit!important}
 :root[data-eh-theme] .secthead button.fold,:root[data-eh-theme] .secthead button.fold h2{background:transparent!important;color:var(--text)!important}
-:root[data-eh-theme] .tl button.disc{background:var(--hover)!important;color:var(--text)!important}
+:root[data-eh-theme] .tl button.disc{background:var(--chip)!important;color:var(--text)!important}
 :root[data-eh-theme] .tl button.disc .cv,:root[data-eh-theme] button.ib{background:transparent!important;color:var(--soft)!important;border-color:var(--border)!important}
 :root[data-eh-theme] button.ib:hover{color:var(--text)!important}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
@@ -2569,7 +2569,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tile .cap i{display:block;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .tl{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:visible}.tl>:first-child{border-top-left-radius:13px;border-top-right-radius:13px}.tl>:last-child{border-bottom-left-radius:13px;border-bottom-right-radius:13px}
-.tl .disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--hover)!important;color:var(--text)!important;border:0;border-top:1px solid var(--line);font-weight:700;font-size:16px;cursor:pointer;text-align:left}
+.tl .disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--chip)!important;color:var(--text)!important;border:0;border-top:1px solid var(--line);font-weight:700;font-size:16px;cursor:pointer;text-align:left}
 .tl>.disc:first-child{border-top:0}
 .disc .cv{width:24px;height:24px;border-radius:7px;border:1px solid var(--border);display:grid;place-items:center;color:var(--soft)}
 .disc:hover .cv{border-color:var(--accent)}
