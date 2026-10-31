@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.5
+// @version      2026.11.01.2308.6
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2722,6 +2722,8 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .slots{display:flex;gap:2px}
 .slot{display:inline-grid;place-items:center;width:calc(var(--pl-size,22px) + 2px);height:calc(var(--pl-size,22px) + 2px);border-radius:6px;filter:grayscale(1);opacity:.55}
 .tr:hover .slot{filter:none;opacity:1}
+:root[data-eh-theme=dark] .slot,:root[data-eh-theme=dark] .pl-hov .detail .pls>a,:root[data-eh-theme=dark] .pl-hov .detail .pls>.qk>a,:root[data-eh-theme=dark] .rl-one.pl-hov a.qi{filter:grayscale(1) brightness(var(--gl,1))}
+:root[data-eh-theme=dark] .tr:hover .slot,:root[data-eh-theme=dark] .pl-hov .detail .pls>a:hover,:root[data-eh-theme=dark] .pl-hov .detail .pls>a:focus-visible,:root[data-eh-theme=dark] .pl-hov .detail .pls>.qk>a:hover,:root[data-eh-theme=dark] .pl-hov .detail .pls>.qk>a:focus-visible,:root[data-eh-theme=dark] .rl-one.pl-hov a.qi:hover,:root[data-eh-theme=dark] .rl-one.pl-hov a.qi:focus-visible{filter:none}
 .slot.off{opacity:0;pointer-events:none}
 .more{height:calc(var(--pl-size,22px) + 4px);min-width:34px;padding:0 8px;border-radius:8px;border:1px dashed var(--border);background:none;font-weight:700;font-size:12px;color:var(--soft);cursor:pointer}
 .more:hover{border-color:var(--accent);color:var(--text)}
@@ -3265,7 +3267,14 @@ const KINDS = [['free', 'Stream free'], ['listen', 'Stream'], ['buy', 'Buy'], ['
 const primaryKind = p => p.kinds.includes('free') ? 'free' : p.kinds.includes('listen') ? 'listen' : p.kinds.includes('buy') ? 'buy' : 'info';
 const regions = p => [...new Set(p.urls.map(u => u.region).filter(Boolean))];
 const tipOf = p => p.name + (regions(p).length ? ' · ' + regions(p).join(', ').toUpperCase() : '') + (p.urls.length > 1 && !regions(p).length ? ` · ${p.urls.length} links` : '') + '\n' + p.urls[0].url.replace(/^https?:\/\/(www\.)?/, ''); // the link itself, under the name
-const plA = (p, size, cls) => `<a class="${cls}" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
+// how much a platform's grey needs lifting to read on the dark theme: its brand colour's luma brought up to about Spotify's
+function greyLift(k) {
+    const c = ST_ICONS[k] && ST_ICONS[k].color, m = c && /^#([0-9a-f]{6})$/i.exec(c);
+    if (!m) return '';
+    const n = parseInt(m[1], 16), y = (.2126 * (n >> 16) + .7152 * (n >> 8 & 255) + .0722 * (n & 255)) / 255;
+    return y > 0 && y < .45 ? `--gl:${Math.min(3, .55 / y).toFixed(2)};` : '';
+}
+const plA = (p, size, cls, st = '') => `<a class="${cls}"${greyLift(p.key) + st ? ` style="${greyLift(p.key) + st}"` : ''} href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
 const CI_TAG = '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>';
@@ -3627,8 +3636,8 @@ function trackLinks(t, ctx) {
     const ps = sortP(t.links), slotKeys = ctx.slots;
     const slots = slotKeys.map((k, i) => {
         const p = ps.find(x => x.key === k);
-        if (!p) return '<span class="slot off" style="--pl-size:${S.plSize}px"></span>';
-        const a = plA(p, S.plSize, 'slot').replace('<a ', `<a style="--pl-size:${S.plSize}px" `);
+        if (!p) return `<span class="slot off" style="--pl-size:${S.plSize}px"></span>`;
+        const a = plA(p, S.plSize, 'slot', `--pl-size:${S.plSize}px`);
         return trackPlatform(p, `tk-${t.key}-${i}`, a);
     });
     const rest = ps.filter(p => !slotKeys.includes(p.key));
@@ -3671,7 +3680,7 @@ function disMenu(cls) {
 }
 function detail(t) {
     const ps = sortP(t.links).filter(p => primaryKind(p) !== 'info');
-    const pl = p => trackPlatform(p, `td-${t.key}-${ps.indexOf(p)}`, `<a href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`);
+    const pl = p => trackPlatform(p, `td-${t.key}-${ps.indexOf(p)}`, `<a href="${esc(p.urls[0].url)}"${!S.plNames && greyLift(p.key) ? ` style="${greyLift(p.key)}"` : ''} target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, S.plSize)}${S.plNames ? esc(p.name) : ''}</a>`);
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const fx = (k, rows) => ({ k, open: S.fxOpen.includes(k), rows });
@@ -3719,7 +3728,7 @@ function tracklist(r) {
     const tracks = r.media.flatMap((m, mi) => m.tracks.map(t => ({ ...t, key: (mi + 1) + '-' + t.n, mi })));
     const unionMap = new Map(); for (const t of tracks) for (const p of t.links) if (!unionMap.has(p.key)) unionMap.set(p.key, p);
     // a column for each provider you picked that any track here has
-    const ctx = { slots: S.prov.filter(k => unionMap.has(k)).sort((a, b) => rank({ key: a }) - rank({ key: b })) };
+    const ctx = { slots: plSorted(S.prov.filter(k => unionMap.has(k)).map(key => ({ key }))).map(p => p.key) };
     const withIsrc = tracks.filter(t => t.isrcs.length).length, credits = tracks.reduce((s, t) => s + t.credits, 0);
     const cls = Object.entries(S.cols).filter(([, v]) => v === false).map(([k]) => 'hide-' + k).join(' ');
     // a Various Artists release names each track's artist in a column of its own (majkinetor, as MusicBrainz's page does)
