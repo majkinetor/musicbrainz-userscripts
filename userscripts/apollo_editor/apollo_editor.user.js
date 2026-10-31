@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.220000
+// @version      2026.10.31.230000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -7253,7 +7253,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       t.classList.remove('compact', 'cozy', 'normal'); t.classList.add(layout);
     });
   }
-  function openSettings(anchor) {
+  function openSettings() {
     style(); let s = document.getElementById('tc-settings'); if (s) { s.remove(); return; }
     s = document.createElement('div'); s.id = 'tc-settings';
     s.innerHTML = `${mbuCfgHeader({ script: 'apollo_editor', name: 'Apollo Editor', version: scriptVersion(), icon: ICON, log: true, logClass: 'tc-logbtn' })}
@@ -7308,17 +7308,10 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       </div>`;
     document.body.appendChild(s);
     mbuControls(s);   // the shared drop-downs and − n + steppers
-    const r = anchor ? anchor.getBoundingClientRect() : { left: 60, right: 60, bottom: 80 };
-    // keep it fully on-screen — right-align to the gear if it would overflow (uses the real width), and
-    // clamp/scroll vertically so a tall dialog never runs off the bottom (#119). Re-run on each tab
-    // switch since panes differ in height.
-    const maxH = window.innerHeight - 16; s.style.maxHeight = maxH + 'px'; s.style.overflowY = 'auto';
-    const place = () => {
-      s.style.left = Math.max(8, Math.min(r.right - s.offsetWidth, window.innerWidth - s.offsetWidth - 10)) + 'px';
-      const h = Math.min(s.offsetHeight, maxH); let top = r.bottom + 6;
-      if (top + h > window.innerHeight - 8) top = r.top - h - 6 >= 8 ? r.top - h - 6 : Math.max(8, window.innerHeight - h - 8);   // #695: from the corner icon, open above it
-      s.style.top = top + 'px';
-    };
+    // in the middle of the screen like every script's settings, moved by its header; a tall dialog scrolls (#119)
+    s.style.maxHeight = (window.innerHeight - 16) + 'px'; s.style.overflowY = 'auto';
+    Object.assign(s.style, { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' });
+    mbuCfgDrag(s);
     // tabs: show one pane at a time so the panel stays short (#294)
     const tabBtns = s.querySelectorAll('.tc-tab-btn'), panes = s.querySelectorAll('.tc-tab-pane');
     // #407: pin every pane to the TALLEST pane's height so the dialog keeps a constant
@@ -7331,9 +7324,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       let max = 0;
       panes.forEach(p => { if (p.offsetHeight > max) max = p.offsetHeight; });
       panes.forEach((p, i) => { p.hidden = prev[i]; p.style.minHeight = max + 'px'; });
-      place();   // re-anchor now the constant height is known
     };
-    const showTab = name => { _cfgTab = name; tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name)); panes.forEach(p => { p.hidden = p.dataset.pane !== name; }); place(); };
+    const showTab = name => { _cfgTab = name; tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name)); panes.forEach(p => { p.hidden = p.dataset.pane !== name; }); };
     tabBtns.forEach(b => b.onclick = () => showTab(b.dataset.tab));
     showTab(_cfgTab);
     requestAnimationFrame(pinPaneHeight);

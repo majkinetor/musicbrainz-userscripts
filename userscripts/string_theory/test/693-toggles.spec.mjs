@@ -245,8 +245,15 @@ test.describe('Event Horizon turned off', () => {
     check(await page.evaluate(() => !document.getElementById('as-css') || !!document.getElementById('as-setup')), 'and only them');
     check(await page.evaluate(() => !!document.getElementById('st-cfg')), 'String Theory\'s settings stay open');
     check(await page.evaluate(() => { const r = document.getElementById('as-setup').getBoundingClientRect(), t = document.elementFromPoint(r.x + r.width / 2, r.y + 20); return !!(t && t.closest('#as-setup')); }), 'the script\'s are in front of them');
-    await page.locator('#st-cfg #st-tab-a').click();
-    check(await page.evaluate(() => { const p = document.getElementById('st-cfg').getBoundingClientRect(), t = document.elementFromPoint(p.x + 10, p.y + 10); return !!(t && t.closest('#st-cfg')); }), 'a click in String Theory\'s brings them to the front');
+    // a click on a part of String Theory's settings that the script's don't cover
+    const spot = await page.evaluate(() => {
+      const p = document.getElementById('st-cfg').getBoundingClientRect(), q = document.getElementById('as-setup').getBoundingClientRect();
+      for (let y = p.top + 6; y < p.bottom; y += 8) for (let x = p.left + 6; x < p.right; x += 8) if ((x < q.left || x > q.right || y < q.top || y > q.bottom) && document.elementFromPoint(x, y)?.closest('#st-cfg')) return { x, y };
+      return null;
+    });
+    check(!!spot, "part of String Theory's settings shows beside the script's");
+    await page.mouse.click(spot.x, spot.y);
+    check(await page.evaluate(() => document.getElementById('st-cfg-ov').style.zIndex === ''), "a click in String Theory's brings them to the front");
     await page.evaluate(() => document.getElementById('as-setup')?.remove());
     await openSettings(page);
     await page.locator('#st-tab-a').click();
