@@ -249,7 +249,7 @@ function stSettings() {
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
-    + '<div class="st-row"><span class="st-note" id="st-chan"></span><button type="button" class="st-b" id="st-check">Check for updates</button></div>'
+    + '<div class="st-row"><span class="st-note" id="st-chan"></span></div>'
     + '<div class="st-upd" id="st-upd" hidden></div>'
     + '<div class="st-row st-links"><a href="' + stEsc(ST_HOME) + '" target="_blank" rel="noopener">GitHub</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a>'
@@ -294,10 +294,12 @@ function stSettings() {
   if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
     var t = e.target.closest('[role=tab]');
     if (!t) return;
+    var enteringAbout = t.id === 'st-tab-a' && t.getAttribute('aria-selected') !== 'true';
     Array.prototype.forEach.call(q('.st-tabs').children, function (b) {
       b.setAttribute('aria-selected', String(b === t));
       q('#' + b.getAttribute('aria-controls')).hidden = b !== t;
     });
+    if (enteringAbout) checkUpdates();
   };
   // a launcher opens its script's settings on right-click: pass the click on to the live one
   var live = function (name) {
@@ -447,20 +449,18 @@ function stSettings() {
     link.href = ch.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = ch.url;
     q('#st-chan').appendChild(link);
   }
-  q('#st-check').onclick = function () {
-    var btn = this, box = q('#st-upd');
+  var updateCheck = 0;
+  function checkUpdates() {
+    var check = ++updateCheck, box = q('#st-upd');
     var refs = ['main', 'stable'];
     if (ch.kind === 'branch') refs.push(ch.ref);
-    btn.disabled = true;
-    btn.textContent = 'Checking…';
+    box.hidden = false;
+    box.textContent = 'Checking for updates…';
     var got = {}, left = refs.length;
     refs.forEach(function (ref) {
       stRemoteVersion(ref, function (v) {
         got[ref] = v;
-        if (--left) return;
-        btn.disabled = false;
-        btn.textContent = 'Check again';
-        box.hidden = false;
+        if (--left || check !== updateCheck) return;
         box.innerHTML = refs.map(function (r) {
           var v2 = got[r], name = r === 'main' ? 'Latest' : r === 'stable' ? 'Stable' : r;
           var mine = (ch.kind === 'latest' && r === 'main') || ch.kind === r || (ch.kind === 'branch' && r === ch.ref);
@@ -473,7 +473,8 @@ function stSettings() {
         }).join('');
       });
     });
-  };
+  }
+  if (!ST_ON_MB) checkUpdates();
   Array.prototype.forEach.call(panel.querySelectorAll('[data-st-m]'), function (box) {
     box.onchange = function () {
       stFlip(box.getAttribute('data-st-m'));
