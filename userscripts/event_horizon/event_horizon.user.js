@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.8
+// @version      2026.11.01.2308.9
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7833,7 +7833,9 @@ function pinBar(app) {
     align();
     // A centred, capped header moves on viewport resize even when its own size stays the same.
     pinAlign = align; addEventListener('resize', pinAlign);
-    if (window.ResizeObserver) { pinRo = new window.ResizeObserver(align); pinRo.observe(hd); pinRo.observe(kick); }
+    // the section headers and Art Station's bar stick just under the bar, so its height is read once it holds the action row, and again when that wraps
+    const pinH = () => document.documentElement.style.setProperty('--eh-pin-h', bar.classList.contains('on') ? bar.offsetHeight + 'px' : '0px');
+    if (window.ResizeObserver) { pinRo = new window.ResizeObserver(() => { align(); pinH(); }); pinRo.observe(hd); pinRo.observe(kick); pinRo.observe(bar); }
     const home = document.createElement('span'); home.hidden = true; acts.before(home);
     // a shown bar takes the new action row at once: left to the observer, the row leaves the header a frame later and the page jumps
     if (wasOn) k.appendChild(acts);
@@ -7844,10 +7846,10 @@ function pinBar(app) {
         if (pin === bar.classList.contains('on') && !first) return;
         first = false;
         bar.classList.toggle('on', pin);
-        // the section headers stick just under the bar (majkinetor)
-        document.documentElement.style.setProperty('--eh-pin-h', pin ? bar.offsetHeight + 'px' : '0px');
         if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
         pinFold(acts, pin);
+        // the section headers stick just under the bar (majkinetor)
+        pinH();
         railPlace();
         requestAnimationFrame(railSpy);
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));

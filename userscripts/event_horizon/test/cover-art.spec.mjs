@@ -48,7 +48,8 @@ test('Art Station\'s bar pins under the pinned header', { tag: '@sandbox' }, asy
   await inject('art_station');
   check(await until(() => page.locator('#as-root .as-card').count(), n => n > 0) > 0, 'the gallery shows its covers');
   await page.evaluate(() => { document.body.style.paddingBottom = '2000px'; scrollTo(0, document.querySelector('#as-slot .as-bar').getBoundingClientRect().top + scrollY + 100); });
-  const pinH = await until(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eh-pin-h')) || 0), h => h > 0);
+  // the header's real bottom edge, with its action row in: the height EH notes once read it without that row
+  const pinH = await until(() => page.evaluate(() => { const p = document.getElementById('eh-pin'); const b = Math.round(p.getBoundingClientRect().bottom); return p.classList.contains('on') && b === p.offsetHeight ? b : 0; }), h => h > 0);
   check(pinH > 0, `the header pins (${pinH})`);
   const top = await until(() => page.evaluate(() => Math.round(document.querySelector('#as-slot .as-bar').getBoundingClientRect().top)), t => Math.abs(t - pinH) <= 1);
   check(Math.abs(top - pinH) <= 1, `the bar sits under the header (top ${top}, header ${pinH})`);
