@@ -202,7 +202,7 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
   await page.evaluate(() => window.__groupTherapy.closeTextParser());
   await frames(page);
   await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button')].find(x => /⬆/.test(x.textContent || ''));
+    const b = [...document.querySelectorAll('button')].find(x => /^↑$/.test(x.textContent || ''));
     if (b) b.click();
   });
   await frames(page);
@@ -244,7 +244,7 @@ test('a "(tracks 2,6,9)" clause scopes a credit to those tracks, and nothing els
 
   console.log('\nVERTICAL MOVE (⬇ recordings → release):');
   await page.evaluate(() => {
-    const b = [...document.querySelectorAll('button')].find(x => /⬇/.test(x.textContent || ''));
+    const b = [...document.querySelectorAll('button')].find(x => /^↓$/.test(x.textContent || ''));
     if (b) b.click();
   });
   await frames(page);
