@@ -3,16 +3,16 @@
 var __stTheme = (function () {
   var THEMES = __ST_THEMES__;
   var KEY = 'string_theory.theme';
-  var MODES = ['light', 'dark', 'auto', 'sun'];
+  var MODES = ['light', 'dark', 'auto', 'sun', 'time'];
   var onMb = /(^|\.)musicbrainz\.org$/.test(location.hostname);
-  var style = null;
+  var style = null, wasDark = false;
   var sys = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
 
   function read() {
     var v; try { v = GM_getValue(KEY, null); } catch (e) { v = null; }
     v = v && typeof v === 'object' ? v : {};
     // light is the start: its Default is MusicBrainz untouched, so nothing changes until it's asked for
-    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon };
+    return { mode: MODES.indexOf(v.mode) < 0 ? 'light' : v.mode, dark: v.dark || 'Default', light: v.light || 'Default', lat: v.lat, lon: v.lon, from: v.from || '20:00', to: v.to || '07:00' };
   }
   function save(s) { try { GM_setValue(KEY, s); } catch (e) {} }
 
@@ -35,19 +35,31 @@ var __stTheme = (function () {
     var since = (((h - s.rise) % 24) + 24) % 24;   // both may fall outside 0-24 far from Greenwich
     return since < (((s.set - s.rise) % 24) + 24) % 24;
   }
+  // from and to are 'HH:MM' local; a span across midnight is the usual case
+  function isDarkAt(from, to, now) {
+    var min = function (t) { var p = t.split(':'); return p[0] * 60 + +p[1]; };
+    var f = min(from), t = min(to), n = now.getHours() * 60 + now.getMinutes();
+    return f <= t ? n >= f && n < t : n >= f || n < t;
+  }
   function variant(s) {
     if (s.mode === 'light' || s.mode === 'dark') return s.mode;
     if (s.mode === 'sun' && s.lat != null) return isDay(s.lat, s.lon, new Date()) ? 'light' : 'dark';
+    if (s.mode === 'time') return isDarkAt(s.from, s.to, new Date()) ? 'dark' : 'light';
     return sys && sys.matches ? 'dark' : 'light';
   }
   function apply() {
     if (!onMb) return;
     var s = read(), v = variant(s);
     var css = THEMES[v][s[v]] || THEMES[v].Default;
+    // Say which variant this is: a page's own background can't, Event Horizon paints over ours.
+    // Not before dark was ever used here, so a dark userstyle over the light start keeps being measured.
+    wasDark = wasDark || v === 'dark';
+    if (wasDark) css += '\n:root{--mbu-theme:' + v + '}';
     if (!style) { style = document.createElement('style'); style.id = 'st-theme'; }
     style.setAttribute('data-variant', v);
     if (style.textContent !== css) style.textContent = css;
     if (!style.isConnected) (document.head || document.documentElement).appendChild(style);
+    document.documentElement.classList.toggle('st-dark', v === 'dark');   // wakes the shared theme watch
   }
   if (onMb) {
     apply();
@@ -55,12 +67,12 @@ var __stTheme = (function () {
     var last = function () { if (style) document.documentElement.appendChild(style); apply(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', last, { once: true }); else last();
     if (sys && sys.addEventListener) sys.addEventListener('change', apply);
-    setInterval(function () { if (read().mode === 'sun') apply(); }, 60000);
+    setInterval(function () { var m = read().mode; if (m === 'sun' || m === 'time') apply(); }, 60000);
   }
 
   function set(patch) { var s = read(); Object.keys(patch).forEach(function (k) { s[k] = patch[k]; }); save(s); apply(); }
   return {
-    read: read, set: set, isDay: isDay,
+    read: read, set: set, isDay: isDay, isDarkAt: isDarkAt,
     names: function (v) { return Object.keys(THEMES[v]); },
     // the location mode asks the browser where we are, once, and keeps it coarse
     setMode: function (mode, done) {

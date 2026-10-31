@@ -182,6 +182,7 @@ var ST_CSS = ''
   + '#st-cfg h3{margin:0 0 4px;padding:0;border:0;background:none;font:600 11px/1.4 var(--mbu-font);text-transform:uppercase;letter-spacing:.06em;color:var(--mbu-text-weak)}'
   + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:30px;margin:0;font-weight:400}'
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
+  + '#st-cfg #st-p-t .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-t select{flex:1;min-width:0}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
@@ -236,12 +237,13 @@ function stSettings() {
       + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
       + '</section>'
       + '<section class="st-sec" id="st-p-t" role="tabpanel" aria-labelledby="st-tab-t" hidden>'
-      + '<div class="st-row">' + seg('st-th-mode', 'Theme', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun']]) + '</div>'
+      + '<div class="st-row">' + seg('st-th-mode', 'Theme', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']]) + '</div>'
       + ['dark', 'light'].map(function (v) {
         return '<div class="st-row"><label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
           + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select></div>';
       }).join('')
-      + '<div class="st-cap">Sun follows sunrise and sunset where you are: the browser asks for your location once, and your system setting is used if you refuse.</div>'
+      + '<div class="st-row" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark from</label><input type="time" id="st-th-from"><label for="st-th-to">to</label><input type="time" id="st-th-to"></div>'
+      + '<div class="st-cap" id="st-th-sun">Sun follows sunrise and sunset where you are: the browser asks for your location once, and your system setting is used if you refuse.</div>'
       + '</section>';
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
@@ -346,6 +348,9 @@ function stSettings() {
       var th = __stTheme.read();
       Array.prototype.forEach.call(q('#st-th-mode').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === th.mode)); });
       q('#st-th-dark').value = th.dark; q('#st-th-light').value = th.light;
+      q('#st-th-from').value = th.from; q('#st-th-to').value = th.to;
+      q('#st-th-time').style.display = th.mode === 'time' ? '' : 'none';
+      q('#st-th-sun').style.display = th.mode === 'sun' ? '' : 'none';
     };
     q('#st-th-mode').onclick = function (e) {
       var b = e.target.closest('button');
@@ -355,6 +360,9 @@ function stSettings() {
     };
     ['dark', 'light'].forEach(function (v) {
       q('#st-th-' + v).onchange = function (e) { var p = {}; p[v] = e.target.value; __stTheme.set(p); };
+    });
+    ['from', 'to'].forEach(function (k) {
+      q('#st-th-' + k).onchange = function (e) { if (!e.target.value) return; var p = {}; p[k] = e.target.value; __stTheme.set(p); };
     });
     showTheme();
     q('#st-side').onclick = segSet('cornerSide', 'left');
