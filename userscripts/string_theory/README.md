@@ -32,16 +32,16 @@
 
 ## Settings
 
-| Setting                             | Default | What it does                                                                        |
-| ----------------------------------- | ------- | ----------------------------------------------------------------------------------- |
-| Side                                | Right   | The launchers' side of the page                                                     |
-| Layout                              | Column  | A column, or a row along the bottom edge                                            |
-| Size                                | 100 %   | The launchers' size, 60 to 160 %                                                    |
-| Fold them into String Theory's icon | On      | Off shows every launcher on its own; always on in [Event Horizon](../event_horizon) |
-| Reset position and size             |         | Puts the launchers back in the corner at their normal size                          |
-| Check for updates                   |         | Whether a newer String Theory is out on your channel: stable, latest or a branch    |
-| Scripts                             | All on  | Turns each bundled script on or off, from the next page load                        |
-| Copy versions                       |         | Copies String Theory's version and each bundled script's, for a bug report          |
+| Setting                             | Default | What it does                                                                                               |
+| ----------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| Side                                | Right   | The launchers' side of the page                                                                            |
+| Layout                              | Column  | A column, or a row along the bottom edge                                                                   |
+| Size                                | 100 %   | The launchers' size, 60 to 160 %                                                                           |
+| Fold them into String Theory's icon | On      | Off shows every launcher on its own; they always fold while [Event Horizon](../event_horizon)'s view shows |
+| Reset position and size             |         | Puts the launchers back in the corner at their normal size                                                 |
+| Check for updates                   |         | Whether a newer String Theory is out on your channel: stable, latest or a branch                           |
+| Scripts                             | All on  | Turns each bundled script on or off, from the next page load                                               |
+| Copy versions                       |         | Copies String Theory's version and each bundled script's, for a bug report                                 |
 
 - **Move the launchers** by dragging any of them; they move together. **Reset position and size** brings them back.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
