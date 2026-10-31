@@ -58,8 +58,8 @@ test('an emptied artist field shows one collapsed Recent, pinned artists first',
   await page.locator('.tc-acpop .tc-acrow[data-i="0"]').dispatchEvent('mousedown');
   const picked = page.locator('.tc-medsec .tc-search input.nm').first();
   check(await until(() => picked.inputValue(), v => v === mozart.name), 'picking a recent artist sets it');
+  check(await until(() => picked.evaluate(el => el === document.activeElement)), 'the field keeps the focus');
   await frames(page, 3);
-  check(await picked.evaluate(el => el === document.activeElement), 'the field keeps the focus');
   check((await read()) === null, `the picker doesn't reopen after the pick (${JSON.stringify(await read())})`);
   check(submitted.length === 0, 'nothing submitted');
 });

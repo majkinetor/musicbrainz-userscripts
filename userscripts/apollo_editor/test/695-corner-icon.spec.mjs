@@ -49,7 +49,8 @@ test('the corner launcher is an icon: click switches, monochrome while off, righ
     const s = document.getElementById('tc-settings'); s.style.width = '300px';
     s.querySelector('.mbu-cfg-ver').textContent = 'v2026.10.10.100123';
     const sr = s.getBoundingClientRect(), hr = s.querySelector('.mbu-cfg-h .mbu-help').getBoundingClientRect();
-    const r = { scrollX: s.scrollWidth - s.clientWidth, helpIn: hr.right <= sr.right - 1 }; s.style.width = ''; return r;
+    const h = s.querySelector('.mbu-cfg-h');
+    const r = { scrollX: h.scrollWidth - h.clientWidth, helpIn: hr.right <= sr.right - 1 }; s.style.width = ''; return r;
   });
   check(sq.scrollX <= 0 && sq.helpIn, `a cramped header shrinks the version, not pushes Help out (${JSON.stringify(sq)})`);
   await attachShot(testInfo, page.locator('#tc-settings'), 'settings');

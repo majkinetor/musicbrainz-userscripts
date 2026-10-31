@@ -43,11 +43,11 @@ test('the artist edit page gets the links column, the name highlight and loujine
   const fav = await until(() => page.evaluate(() => [...document.querySelectorAll('#external-links-editor tr.external-link-item')].filter(tr => tr.querySelector('a[href]')).map(tr => [new URL(tr.querySelector('a[href]').href).hostname, tr.querySelector('.favicon')?.dataset.tcIcon || '', !!tr.querySelector('.favicon > svg')])), v => v.some(r => /discogs/.test(r[0]) && r[2]));
   const dc = fav.find(r => /discogs/.test(r[0]));
   check(dc && dc[1] === 'discogs' && dc[2], `Discogs gets our icon (${JSON.stringify(dc)})`);
-  // Sort name: guess is Apollo's Aa, MusicBrainz's copy button is gone
-  const sn = await page.evaluate(() => ({ gc: getComputedStyle(document.querySelector('button.guesscase-sortname'), '::before').content, copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
-  check(sn.gc === '"Aa"' && sn.copy === 'none', `sort name: Aa guess, no copy (${sn.gc}, ${sn.copy})`);
+  // Sort name: guess is the shared sort icon, MusicBrainz's copy button is gone
+  const sn = await page.evaluate(() => ({ gc: !!document.querySelector('button.guesscase-sortname svg'), copy: getComputedStyle(document.querySelector('button.sortname-copy')).display }));
+  check(sn.gc && sn.copy === 'none', `sort name: the sort icon, no copy (${sn.gc}, ${sn.copy})`);
   check(await page.evaluate(() => getComputedStyle(document.querySelector('button.guesscase-options')).display) === 'none', 'the guess-case ⚙ is hidden');
-  await page.locator('button.guesscase-sortname').click({ button: 'right' });
+  await page.locator('form.tc-ent-form button.guesscase-title').first().click({ button: 'right' });
   check(await until(() => page.evaluate(() => !!document.querySelector('.tc-gcpop')), v => v), 'right-click on Aa opens the guess-case options');
   await page.keyboard.press('Escape');
   await attachShot(testInfo, page.locator('[id="id-edit-artist.name"]').locator('xpath=ancestor::fieldset[1]'), 'artist-details');
