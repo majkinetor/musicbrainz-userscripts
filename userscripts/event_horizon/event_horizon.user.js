@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170101
+// @version      2026.10.31.170102
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8711,9 +8711,10 @@ function build() {
         // a platform icon with more links: right-click opens its menu, the dot beside it is a small target (majkinetor)
         const q = ehOn && ev.target.closest && ev.target.closest('.qk');
         if (q && q.querySelector('.kn')) { ev.preventDefault(); q.querySelector('.kn').click(); return; }
-        // A detail group is the nearest foldable object, even in its body.
+        // In a track, the recording/work facts are foldable; the credits below belong to the track.
         const detailGroup = ev.target.closest('.detail .grp');
-        const fx = detailGroup && detailGroup.querySelector('[data-fx]');
+        const inTrack = detailGroup && detailGroup.closest('.tl > .detail');
+        const fx = detailGroup && (!inTrack || ev.target.closest('.grp > h4, .grp > .tfx, .grp > .fxsum')) && detailGroup.querySelector('[data-fx]');
         if (fx) {
             ev.preventDefault();
             const keys = [...detailGroup.closest('.detail').querySelectorAll('.fxc[data-fx]')].map(x => x.dataset.fx);

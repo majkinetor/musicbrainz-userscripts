@@ -18,6 +18,8 @@ test('track and credit gestures toggle one object or its siblings', { tag: '@san
   await first.first().click();
   check(await first.first().getAttribute('aria-expanded') === 'true', 'click opens one credit');
   check(await second.first().getAttribute('aria-expanded') === 'false', 'other tracks stay unchanged');
-  await details.first().click({ button: 'right', position: { x: 3, y: 3 } });
-  check(await rows.locator('..').locator('.tr[aria-expanded="true"]').count() === 0, 'right-click in track body closes siblings');
+  const credit = details.first().locator('.grp dt').first();
+  check(await credit.count() > 0, 'the track has a credit');
+  await credit.click({ button: 'right' });
+  check(await rows.locator('..').locator('.tr[aria-expanded="true"]').count() === 0, 'right-click on a credit closes sibling tracks');
 });
