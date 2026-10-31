@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.0200
+// @version      2026.11.01.0210
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2410,7 +2410,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .folded-note{font-size:14px;color:var(--muted)}
 .secthead .folded-note{margin-right:auto}
 .secthead:has(>.folded-note){align-items:baseline}
-.an-preview{visibility:hidden;position:absolute;z-index:30;top:100%;left:0;right:0;max-height:50vh;overflow:auto;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 14px var(--shadow)}#s-an,#s-wp{position:relative}#s-an .secthead>.tools:empty,#s-wp .secthead>.tools:empty{display:none}#s-an .an-summary,#s-wp .an-summary{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:14px}#s-an:hover .an-preview,#s-an:has(>.secthead .fold:focus-visible) .an-preview,#s-wp:hover .an-preview,#s-wp:has(>.secthead .fold:focus-visible) .an-preview{visibility:visible;transition:visibility 0s 1s}
+.an-preview{visibility:hidden;position:absolute;z-index:30;top:100%;left:0;right:0;max-height:50vh;overflow:auto;padding:16px;background:var(--bg);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 14px var(--shadow)}#s-an,#s-wp{position:relative}.an-esc .an-preview{visibility:hidden!important;transition:none!important}#s-an .secthead>.tools:empty,#s-wp .secthead>.tools:empty{display:none}#s-an .an-summary,#s-wp .an-summary{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:14px}#s-an:hover .an-preview,#s-an:has(>.secthead .fold:focus-visible) .an-preview,#s-wp:hover .an-preview,#s-wp:has(>.secthead .fold:focus-visible) .an-preview{visibility:visible;transition:visibility 0s 1s}
 .anno{font-size:15px;line-height:1.6;overflow-wrap:anywhere}.anno p{margin:0 0 10px}.anno p:last-child{margin:0}
 .chip.tag{background:none;border-color:var(--chip)}
 .rgc{display:grid;grid-template-columns:fit-content(14em) minmax(0,1fr);gap:10px 14px;margin:0;font-size:14px}
@@ -3935,6 +3935,16 @@ function wikiHtml(w) {
     const preview = S.annoHover ? `<div class="an-preview anno">${w.content}</div>` : '';
     return sect('wp', 'Wikipedia', '', `<div class="anno">${w.content}</div><div class="folded-note"><a href="${esc(w.url)}" target="_blank" rel="noopener">Continue reading at Wikipedia</a> · content under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA</a></div>`, preview, controls);
 }
+// Esc hides the hover preview until the pointer leaves the section
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    for (const el of document.querySelectorAll('#s-an, #s-wp')) {
+        if (!el.matches(':hover') && !el.querySelector('.fold:focus-visible')) continue;
+        el.classList.add('an-esc');
+        el.addEventListener('mouseleave', () => el.classList.remove('an-esc'), { once: true });
+        el.addEventListener('focusout', () => el.classList.remove('an-esc'), { once: true });
+    }
+});
 function annotation(g) {
     if (!g.annotation) return '';
     const type = data.kind === 'rg' ? 'release-group' : data.kind || 'release';
