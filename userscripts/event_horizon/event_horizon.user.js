@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170104
+// @version      2026.10.31.170105
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2277,7 +2277,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 :root[data-eh-theme] button.ib:hover{color:var(--text)!important}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .secthead .fold h2{font-size:19px}
-#app>section.sec>.secthead{position:sticky;top:calc(var(--eh-pin-h,0px) + 8px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:10px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);transition:top .18s}
+#app>section.sec>.secthead{position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:0 0 10px 10px;background:var(--bg);transition:top .18s}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
@@ -2561,7 +2561,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tile .cap i{display:block;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .tl{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:visible}.tl>:first-child{border-top-left-radius:13px;border-top-right-radius:13px}.tl>:last-child{border-bottom-left-radius:13px;border-bottom-right-radius:13px}
-.tl .disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--hover)!important;color:var(--text)!important;border:0;border-top:1px solid var(--line);font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+.tl .disc{display:flex;align-items:center;gap:10px;width:100%;padding:10px 16px;background:var(--hover)!important;color:var(--text)!important;border:0;border-top:1px solid var(--line);font-weight:700;font-size:16px;cursor:pointer;text-align:left}
 .tl>.disc:first-child{border-top:0}
 .disc .cv{width:24px;height:24px;border-radius:7px;border:1px solid var(--border);display:grid;place-items:center;color:var(--soft)}
 .disc:hover .cv{border-color:var(--accent)}
@@ -2571,7 +2571,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tr:hover{background:var(--hover)}
 .tr .n{width:28px;flex:none;color:var(--muted);font-size:14px}
 .tr .ti{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
-.tr .ti a.t{font-weight:700;font-size:16px;color:var(--text)}
+.tr .ti a.t{font-weight:700;font-size:14px;color:var(--text)}
 .tr .ti .mk{display:inline-flex;align-items:center;gap:8px;align-self:center}
 .tr .ti .mk>*{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:12px;font-weight:700}
 .tr .ti .mk>.on{color:var(--accent)}
@@ -2582,7 +2582,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tr .is{flex:none;width:200px;display:flex;flex-direction:column;gap:3px;align-items:flex-start}
 .tr .lk{flex:none;display:flex;gap:6px;align-items:center;justify-content:flex-end}
 .tr .ln{flex:none;width:52px;text-align:right;font-size:14px}
-.tr .ar{flex:0 1 32%;min-width:0;font-size:15px;color:var(--muted)}
+.tr .ar{flex:0 1 32%;min-width:0;font-size:14px;color:var(--muted)}
 .isrc{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;padding:4px 0;color:var(--muted);white-space:nowrap;display:inline-block}
 .isrc .d{opacity:.5}
 .tr:hover .isrc{color:var(--isrc)}
