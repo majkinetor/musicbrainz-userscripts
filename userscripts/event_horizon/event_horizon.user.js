@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.063842
+// @version      2026.10.31.091149
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8023,7 +8023,10 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 @media(max-width:650px){:root[data-eh-rel] .release-relationship-editor>#medium-toolbox{white-space:normal;max-width:45vw;text-align:right}}
 :root[data-eh-rel] .release-relationship-editor>:is(#tracklist,.ars){border-radius:0 0 12px 12px}
 :root[data-eh-rel] #tracklist{border-collapse:separate!important;border-spacing:0 2px!important;overflow:visible!important}
+:root[data-eh-rel] #page #tracklist>thead tr,:root[data-eh-rel] #page #tracklist>thead th{background:transparent!important}
 :root[data-eh-rel] #page #tracklist>thead th{padding:4px 8px!important;font-size:11px;line-height:1.25;letter-spacing:.03em}
+:root[data-eh-rel] #page #tracklist .rel-editor-table th{background:transparent!important}
+:root[data-eh-rel] #tracklist .expand-medium .expand-triangle{margin:0 5px}
 :root[data-eh-rel] #page #tracklist{font-size:13px}:root[data-eh-rel] #tracklist>tbody table :is(th,td){font-size:13px!important}
 :root[data-eh-rel] #page #tracklist>tbody>tr.track,:root[data-eh-rel] #page #tracklist>tbody>tr.track:hover,:root[data-eh-rel] #page #tracklist>tbody>tr.track>td,:root[data-eh-rel] #page #tracklist>tbody>tr.track:hover>td{background:transparent!important}
 :root[data-eh-rel] #page #tracklist>tbody>tr.track>td{border:0!important;border-radius:0;padding:3px 8px!important;line-height:1.3}
