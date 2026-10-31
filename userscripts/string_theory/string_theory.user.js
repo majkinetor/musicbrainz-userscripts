@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.123222
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.31.122900, art_station 2026.10.31.122900, credit_hoarder 2026.10.31.123219, event_horizon 2026.10.31.160100, falcon 2026.10.31.122900, first_contact 2026.10.31.122900, fusion 2026.10.31.122900, group_therapy 2026.10.31.122900, isrc_scout 2026.10.31.122900, mammoth 2026.10.31.122900, mission_control 2026.10.31.122900, platform_check 2026.10.31.122900). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.31.123959
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.31.122900, art_station 2026.10.31.122900, credit_hoarder 2026.10.31.123219, event_horizon 2026.10.31.170000, falcon 2026.10.31.122900, first_contact 2026.10.31.122900, fusion 2026.10.31.122900, group_therapy 2026.10.31.122900, isrc_scout 2026.10.31.122900, mammoth 2026.10.31.122900, mission_control 2026.10.31.122900, platform_check 2026.10.31.122900). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -185,8 +185,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.31.123222 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.31.122900\n  · Art Station v2026.10.31.122900\n  · Credit Hoarder v2026.10.31.123219\n  · Event Horizon v2026.10.31.160100\n  · Falcon v2026.10.31.122900\n  · First Contact v2026.10.31.122900\n  · Fusion v2026.10.31.122900\n  · Group Therapy v2026.10.31.122900\n  · ISRC Scout v2026.10.31.122900\n  · Mammoth v2026.10.31.122900\n  · Mission Control v2026.10.31.122900\n  · Platform Check v2026.10.31.122900");
+  console.log('%c String Theory %c v2026.10.31.123959 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.31.122900\n  · Art Station v2026.10.31.122900\n  · Credit Hoarder v2026.10.31.123219\n  · Event Horizon v2026.10.31.170000\n  · Falcon v2026.10.31.122900\n  · First Contact v2026.10.31.122900\n  · Fusion v2026.10.31.122900\n  · Group Therapy v2026.10.31.122900\n  · ISRC Scout v2026.10.31.122900\n  · Mammoth v2026.10.31.122900\n  · Mission Control v2026.10.31.122900\n  · Platform Check v2026.10.31.122900");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -196,7 +196,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.31.122900"],["art_station","Art Station","2026.10.31.122900"],["credit_hoarder","Credit Hoarder","2026.10.31.123219"],["event_horizon","Event Horizon","2026.10.31.160100"],["falcon","Falcon","2026.10.31.122900"],["first_contact","First Contact","2026.10.31.122900"],["fusion","Fusion","2026.10.31.122900"],["group_therapy","Group Therapy","2026.10.31.122900"],["isrc_scout","ISRC Scout","2026.10.31.122900"],["mammoth","Mammoth","2026.10.31.122900"],["mission_control","Mission Control","2026.10.31.122900"],["platform_check","Platform Check","2026.10.31.122900"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.31.122900"],["art_station","Art Station","2026.10.31.122900"],["credit_hoarder","Credit Hoarder","2026.10.31.123219"],["event_horizon","Event Horizon","2026.10.31.170000"],["falcon","Falcon","2026.10.31.122900"],["first_contact","First Contact","2026.10.31.122900"],["fusion","Fusion","2026.10.31.122900"],["group_therapy","Group Therapy","2026.10.31.122900"],["isrc_scout","ISRC Scout","2026.10.31.122900"],["mammoth","Mammoth","2026.10.31.122900"],["mission_control","Mission Control","2026.10.31.122900"],["platform_check","Platform Check","2026.10.31.122900"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -36985,7 +36985,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.160100","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.160100","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.170000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.170000","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -37072,7 +37072,6 @@ const CSS = `
 .hm-bars i{height:8px;border-radius:4px;background:linear-gradient(90deg,#ba478f,#eb743b)}.hm-bars em{font-style:normal;text-align:right;color:var(--muted)}
 .hm-home{position:absolute;inset:0 0 auto auto;width:400px;height:190px}@media (max-width:1100px){.hm-home{width:190px}}@media (max-width:700px){.hm-home{display:none}}.hm-hi{overflow-wrap:anywhere}.sr-sub{position:relative;margin:-8px 0 20px}
 .sr-t td.sr-sc,.sr-t th.sr-sc{width:64px;white-space:nowrap}.sr-sc i{display:inline-block;vertical-align:middle;width:34px;height:6px;border-radius:3px;background:linear-gradient(90deg,#ba478f,#eb743b) 0/var(--w) 100% no-repeat,var(--chip)}.sr-sc small{margin-left:6px;color:var(--muted)}
-.sr-pg{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}.sr-pg a,.sr-pg span{min-width:30px;padding:4px 9px;border-radius:8px;text-align:center;font-weight:600;font-size:13px}.sr-pg a{border:1px solid var(--border);color:var(--text)!important;text-decoration:none!important}.sr-pg a:hover{border-color:var(--accent)}.sr-pg span{color:var(--muted)}.sr-pg span.on{background:var(--accent);color:#fff}
 .u-hero{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.9fr);gap:24px;align-items:start;margin:8px 0 26px}
 .u-hero{position:relative}.u-hero .kicker .acts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:6px}
 @media (max-width:900px){.u-hero{grid-template-columns:auto minmax(0,1fr)}.u-facts{grid-column:1/-1}}@media (min-width:901px){.u-hero>.u-facts{margin-top:44px}}
@@ -37109,7 +37108,7 @@ const CSS = `
 .tgx-ic{display:inline-flex}.tgx-ic a{display:inline-flex;align-items:center;justify-content:center;width:40px;height:34px}.tgx-ic a[aria-pressed="true"]{background:var(--accent);color:#fff}.tgx-ic svg{width:18px;height:18px}
 .tgx-l{columns:300px 3;min-width:0;overflow-wrap:anywhere;column-gap:28px;margin:0;padding:0;list-style:none}.tgx-l li{break-inside:avoid;margin:0 0 6px;display:flex;gap:8px;align-items:baseline}.tgx-l li>b{flex:none;font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 7px}.tgx-cm{color:var(--muted)}
 .tgx-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}.tgx-c{min-width:0;display:grid;gap:4px;align-content:start}.tgx-p{display:block}.tgx-c img,.tgx-mk{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--chip)}.tgx-mk{display:grid;place-items:center;color:var(--muted)}.tgx-mk svg{width:44%;height:44%}.tgx-n{font-weight:600;overflow-wrap:anywhere}.tgx-n b{font:400 11px 'JetBrains Mono',ui-monospace,monospace;background:var(--chip);border-radius:9px;padding:0 6px}.tgx-by{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.u-hero.tgx-hero{grid-template-columns:auto minmax(0,1fr)}.tgx-l .comment{color:var(--muted)}.tgx-pg{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.tgx-tb{display:inline-flex;gap:6px;white-space:nowrap}.u-hero.tgx-hero{grid-template-columns:auto minmax(0,1fr)}.tgx-l .comment{color:var(--muted)}
 .rt-l li>.stars,.tgx-c>.stars{flex:none;font-size:14px;letter-spacing:1px;line-height:1}.tg-bar .seg button[disabled]{opacity:.4;cursor:default}.u-hero .tg-tools{margin:12px 0 0}
 .tg-tools{display:flex;margin:0 0 14px}.secthead>.tg-tools{margin:0;flex:1;justify-content:flex-end}.secthead>.tg-tools>.tg-bar{justify-content:flex-end}.tg-tools>.tg-bar{flex:1}
 .secthead>.tg-new{position:relative;display:inline-flex;align-items:center;gap:6px;margin-left:10px;flex:none}.secthead>.tg-tools>.tg-bar{flex-wrap:nowrap}
@@ -39933,7 +39932,7 @@ function tagsWire() {
     document.addEventListener('submit', ev => { const f = ev.target; if (!ehOn || !data || data.kind !== 'tags' || !f.matches('[data-tgadd]')) return; ev.preventDefault(); const i = f.querySelector('input'); tagsAdd(data, i.value); i.value = ''; });
 }
 // one tag of an editor's: what they tagged with it, by entity type (or one type, paged)
-function tagxParse(html) {
+function tagxParse(html, base) {
     const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
     const c = d.querySelector('#page') || d.body, abs = h => h && h.startsWith('/') ? MB + h : h;
     for (const a of c.querySelectorAll('a[href]')) a.setAttribute('href', abs(a.getAttribute('href')));
@@ -39945,20 +39944,20 @@ function tagxParse(html) {
         const lis = [...ul.children], more = lis.find(li => li.querySelector('em > a'));
         groups.push({ t: tx(h).replace(/\s*[\d(].*$/, '').replace(/ tagged .*$/i, ''), items: lis.filter(li => li !== more).map(li => { const as = [...li.querySelectorAll('a')], m = li.textContent.match(/^\s*([\d,]+)\s*-\s/); return { u: as[0] ? as[0].getAttribute('href') : '', h: li.innerHTML.trim(), c: m ? m[1] : '', a: as[0] ? as[0].outerHTML : tx(li), by: as.slice(1).map(x => x.outerHTML).join(', '), cm: tx(li.querySelector('.comment')).replace(/^\(|\)$/g, '') }; }), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
     }
-    const pg = [...(c.querySelector('ul.pagination') || d.createElement('ul')).querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href')]);
-    return { found: tx([...c.querySelectorAll('p')].find(p => /\d/.test(p.textContent) && /found/i.test(p.textContent))), tabs, groups, pg };
+    return { found: tx([...c.querySelectorAll('p')].find(p => /\d/.test(p.textContent) && /found/i.test(p.textContent))), tabs, groups, next: mbNextPage(c, base) };
 }
-async function tagxLoad(n, d, url) {
+async function tagxLoad(n, d) {
     try {
-        let html;
-        if (!url && d.key === PAGE_ID && mbBody && !d.dn === !/show_downvoted=1/.test(location.search) && !/[?&]page=/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        let html, base = location.href;
+        if (d.key === PAGE_ID && mbBody && !d.dn === !/show_downvoted=1/.test(location.search) && !/[?&]page=/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
         else {
-            const u = new URL(url || `${MB}${d.name ? '/user/' + encodeURIComponent(d.name) : ''}/tag/${encodeURIComponent(d.tag)}${d.type ? '/' + d.type : ''}`);
+            const u = new URL(`${MB}${d.name ? '/user/' + encodeURIComponent(d.name) : ''}/tag/${encodeURIComponent(d.tag)}${d.type ? '/' + d.type : ''}`);
             if (d.name) u.searchParams.set('show_downvoted', d.dn ? '1' : '0');
-            const r = await mbnFetch(u.href); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text();
+            base = u.href; const r = await mbnFetch(base); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text();
         }
-        const t = tagxParse(html);
-        if (n === showing && data === d) { d.t = t; d.err = ''; render(); if (url) scrollTo(0, 0); }
+        const t = tagxParse(html, base);
+        LOG.debug(`Tag ${d.tag}: ${t.groups.length} cards${t.next ? ', more at ' + t.next : ''}`);
+        if (n === showing && data === d) { d.t = t; d.err = ''; LM_ERR.delete('tgx'); render(); }
     } catch (e) {
         LOG.err('Loading the tag ' + d.tag + ' failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
@@ -40003,20 +40002,17 @@ function tagxHtml(d) {
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>${esc(g.t.replace(/s$/, ''))}</th>${xs.some(x => x.by) ? '<th>By</th>' : ''}<th>Disambiguation</th>${cnt ? '<th>Count</th>' : ''}</tr></thead><tbody>${xs.map(x => `<tr><td>${x.a}</td>${xs.some(y => y.by) ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td>${cnt ? `<td>${x.c}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l">${xs.map(x => `<li>${x.c ? `<b>${x.c}</b>` : ''}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
         // a card folds as every other: its caret, right-click for all
-        return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : ''), ''); }).join('');
-    const pg = t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-tgxpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
-    // the pager sits in the hero, under the tabs, so no empty band opens between it and the cards
-    return hero.replace('</nav></div></section>', '</nav>' + pg + '</div></section>') + tools + (secs || '<p class="hm-none">Nothing tagged.</p>');
+        return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'tgxview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">${esc(g.more[0])}</a></p>` : '') + (g === t.groups[t.groups.length - 1] ? cardsFoot('tgx', t, +(t.found.match(/\d[\d,.]*/) || ['0'])[0].replace(/\D/g, '')) : ''), ''); }).join('');
+    return hero + tools + (secs || '<p class="hm-none">Nothing tagged.</p>');
 }
 let tgxWired = false;
 function tagxWire() {
     if (tgxWired) return; tgxWired = true;
     document.addEventListener('click', ev => {
-        const b = ehOn && data && data.kind === 'tagx' && ev.target.closest('[data-tgxdn],[data-tgxpg],[data-tgxf],[data-tgxview]'); if (!b) return;
+        const b = ehOn && data && data.kind === 'tagx' && ev.target.closest('[data-tgxdn],[data-tgxf],[data-tgxview]'); if (!b) return;
         const d = data;
         if (b.dataset.tgxview) { S.tgxView = b.dataset.tgxview; save(); render(); return; }
         if (b.dataset.tgxf) { const [a, id] = b.dataset.tgxf.split(':'); if (a === 'clr' || d.fo[id] || d.qs[id]) { d.qs[id] = ''; d.fo[id] = a === 'clr'; } else d.fo[id] = true; render(); const i = $(`[data-tgxq="${id}"]`); if (i) i.focus(); return; }
-        if (b.dataset.tgxpg) { tagxLoad(showing, d, b.dataset.tgxpg); return; }
         d.dn = b.dataset.tgxdn === '1'; d.t = null; render(); tagxLoad(showing, d);
     });
     document.addEventListener('input', ev => {
@@ -40025,12 +40021,31 @@ function tagxWire() {
         const i = $(`[data-tgxq="${id}"]`); if (i) { i.focus(); i.setSelectionRange(at, at); }
     });
 }
+// a MusicBrainz page's next page, off its pager: the link to the page after the current one, made absolute against the page's own address
+function mbNextPage(c, base) {
+    const ul = c.querySelector('ul.pagination'); if (!ul) return '';
+    const pn = h => +new URL(h, base).searchParams.get('page') || 1, as = [...ul.querySelectorAll('a[href]')];
+    const sel = as.find(a => a.classList.contains('sel')), cur = sel ? pn(sel.getAttribute('href')) : pn(base);
+    const nx = as.find(a => pn(a.getAttribute('href')) === cur + 1);
+    return nx ? new URL(nx.getAttribute('href'), base).href : '';
+}
+// a tag or ratings page's next page: its items join their cards (matched by title), a card new to it goes last
+async function cardsMore(d, parse) {
+    const t = d.t; if (!t || !t.next) return;
+    const r = await mbnFetch(t.next); if (!r.ok) throw new Error('HTTP ' + r.status);
+    const y = parse(await r.text(), t.next);
+    if (data !== d || d.t !== t) return;
+    for (const g of y.groups) { const o = t.groups.find(x => x.t === g.t); if (o) o.items = o.items.concat(g.items); else t.groups.push(g); }
+    t.next = y.groups.some(g => g.items.length) ? y.next : '';
+}
+// the standard foot under the last card while MusicBrainz has a next page
+function cardsFoot(k, t, total) { return t.next ? lmFoot(k, t.groups.reduce((a, g) => a + g.items.length, 0), total ? fmtN(total) : 0) : ''; }
 /* ── ratings ──────────────────────────────────────── */
 // an editor's ratings (/user/<name>/ratings, a few of each type; /ratings/<type>, one type paged), read off MusicBrainz's page:
 // a card per type as the tag pages have, with Grid, Row and Table views, and the stars to filter by
 const RT_TYPES = [['artist', 'Artists'], ['label', 'Labels'], ['recording', 'Recordings'], ['release_group', 'Release groups'], ['work', 'Works'], ['event', 'Events'], ['place', 'Places']];
 const RT_STAR = '<path d="m12 3 2.800 5.700 6.200.9-4.500 4.400 1.100 6.200L12 17.300 6.400 20.200l1.100-6.200L3 9.600l6.200-.9z"/>';
-function ratesParse(html) {
+function ratesParse(html, base) {
     const d = new DOMParser().parseFromString(html, 'text/html'), tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
     const c = d.querySelector('#content') || d.querySelector('#page') || d.body, abs = h => h && h.startsWith('/') ? MB + h : h;
     for (const a of c.querySelectorAll('a[href]')) a.setAttribute('href', abs(a.getAttribute('href')));
@@ -40046,18 +40061,18 @@ function ratesParse(html) {
             return { u: as[0] ? as[0].getAttribute('href') : '', et: sq ? sq.get('entity_type') : '', ei: sq ? sq.get('entity_id') : '', r: Math.round((parseFloat(r.style.width) || 0) / 20) || +tx(r) || 0, n: tx(as[0]), a: as[0] ? as[0].outerHTML : '', by: as.slice(1).map(x => x.outerHTML).join(', '), cm: tx(li.querySelector(':scope > .comment')).replace(/^\(|\)$/g, '') };
         }), more: more ? [tx(more), more.querySelector('a').getAttribute('href')] : null });
     }
-    const pg = [...(c.querySelector('ul.pagination') || d.createElement('ul')).querySelectorAll('a[href]')].map(a => [tx(a), a.getAttribute('href')]);
     const h1 = c.querySelector('h1');
     const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
-    return { name: tx(h1), groups, pg, tabs };
+    return { name: tx(h1), groups, next: mbNextPage(c, base), tabs };
 }
-async function ratesLoad(n, d, url) {
+async function ratesLoad(n, d) {
     try {
-        let html;
-        if (!url && d.key === PAGE_ID && mbBody && !/[?&]page=/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
-        else { const r = await mbnFetch(url || `${MB}/user/${encodeURIComponent(d.name)}/ratings${d.type ? '/' + d.type : ''}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
-        const t = ratesParse(html);
-        if (n === showing && data === d) { d.t = t; d.err = ''; render(); if (url) scrollTo(0, 0); }
+        let html, base = location.href;
+        if (d.key === PAGE_ID && mbBody && !/[?&]page=/.test(location.search)) html = '<body>' + mbBody.innerHTML + '</body>';
+        else { base = `${MB}/user/${encodeURIComponent(d.name)}/ratings${d.type ? '/' + d.type : ''}`; const r = await mbnFetch(base); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const t = ratesParse(html, base);
+        LOG.debug(`Ratings of ${d.name}: ${t.groups.length} cards${t.next ? ', more at ' + t.next : ''}`);
+        if (n === showing && data === d) { d.t = t; d.err = ''; LM_ERR.delete('rt'); render(); }
     } catch (e) {
         LOG.err('Loading the ratings of ' + d.name + ' failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
@@ -40079,8 +40094,7 @@ function ratesHtml(d) {
     const tabs = `${ic}${ME && ME !== d.name ? `<span class="tgx-tb"><a class="u-tab" href="${MB}/user/${encodeURIComponent(ME)}/ratings">Your ratings</a></span>` : ''}`;
     const ty = d.type && RT_TYPES.find(x => x[0] === d.type);
     const sub = d.err ? `<span class="u-err">${esc(d.err)}</span>` : !t ? 'Loading the ratings…' : !t.groups.length ? 'Nothing rated' : `${fmtN(all.length)} shown${d.type ? '' : ', the highest of each type'} · rated by <a href="${MB}/user/${U}">${esc(d.name)}</a>`;
-    const pg = t && t.pg.length ? `<nav class="tgx-pg">${t.pg.map(([x, h]) => `<button type="button" class="u-tab" data-rtpg="${esc(h)}">${esc(x)}</button>`).join('')}</nav>` : '';
-    const hero = userHead(d.name, '', t && t.tabs) + `<div class="u-pbar tgx-hero"><nav class="u-tabs">${tabs}</nav><p class="u-sub">${sub}</p>${pg}</div>`;
+    const hero = userHead(d.name, '', t && t.tabs) + `<div class="u-pbar tgx-hero"><nav class="u-tabs">${tabs}</nav><p class="u-sub">${sub}</p></div>`;
     if (!t) return hero;
     // the stars to show: every rating, or those of one score
     const cn = k => all.filter(x => x.r === k).length;
@@ -40093,20 +40107,19 @@ function ratesHtml(d) {
             : view === 'grid' ? `<div class="tgx-g">${xs.map(x => `<div class="tgx-c">${tgxPic(x.u)}${rtStars(x.r, x)}<div class="tgx-n">${x.a}</div>${x.by ? `<div class="tgx-by">${x.by}</div>` : x.cm ? `<div class="tgx-by">${esc(x.cm)}</div>` : ''}</div>`).join('')}</div>`
             : view === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Rating</th><th>${esc(g.t.replace(/s$/, ''))}</th>${by ? '<th>By</th>' : ''}<th>Disambiguation</th></tr></thead><tbody>${xs.map(x => `<tr><td>${rtStars(x.r, x)}</td><td>${x.a}</td>${by ? `<td>${x.by}</td>` : ''}<td class="tgx-cm">${esc(x.cm)}</td></tr>`).join('')}</tbody></table></div>`
             : `<ul class="tgx-l rt-l">${xs.map(x => `<li>${rtStars(x.r, x)}<span>${x.a}${x.by ? ' by ' + x.by : ''}${x.cm ? ` <span class="comment">(${esc(x.cm)})</span>` : ''}</span></li>`).join('')}</ul>`;
-        return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'rtview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">See all ${esc(g.t.toLowerCase().replace(/(?<!s)$/, 's'))}</a></p>` : ''), ''); }).join('');
-    // the stars sit in the hero, under its tabs, as a tag page's pager does
+        return sect(id, `${esc(g.t)} <span class="count">${fmtN(g.items.length)}</span>`, `${fb}<span class="ed-div"></span>${viewBs(['grid', 'row', 'table'], view, 'rtview', 'View')}`, body + (g.more ? `<p><a class="u-tab" href="${esc(g.more[1])}">See all ${esc(g.t.toLowerCase().replace(/(?<!s)$/, 's'))}</a></p>` : '') + (g === t.groups[t.groups.length - 1] ? cardsFoot('rt', t, 0) : ''), ''); }).join('');
+    // the stars sit in the hero, under its tabs
     return hero.replace(/<\/div><\/section>$/, tools + '</div></section>') + (secs || '<p class="hm-none">Nothing rated.</p>');
 }
 let rtWired = false;
 function ratesWire() {
     if (rtWired) return; rtWired = true;
     document.addEventListener('click', ev => {
-        const b = ehOn && data && data.kind === 'rates' && ev.target.closest('[data-rtst],[data-rtpg],[data-rtf],[data-rtview],[data-rtrate]'); if (!b) return;
+        const b = ehOn && data && data.kind === 'rates' && ev.target.closest('[data-rtst],[data-rtf],[data-rtview],[data-rtrate]'); if (!b) return;
         const d = data;
         if (b.dataset.rtrate) { const [gi, ii, k] = b.dataset.rtrate.split(':').map(Number); ratesRate(d, gi, ii, k); return; }
         if (b.dataset.rtview) { S.rtView = b.dataset.rtview; save(); render(); return; }
         if (b.dataset.rtf) { const [a, id] = b.dataset.rtf.split(':'); if (a === 'clr' || d.fo[id] || d.qs[id]) { d.qs[id] = ''; d.fo[id] = a === 'clr'; } else d.fo[id] = true; render(); const i = $(`[data-rtq="${id}"]`); if (i) i.focus(); return; }
-        if (b.dataset.rtpg) { ratesLoad(showing, d, b.dataset.rtpg); return; }
         d.st = +b.dataset.rtst; render();
     });
     document.addEventListener('input', ev => {
@@ -40301,10 +40314,10 @@ function render(keepPop) {
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove(); return; }
     if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); relsWire(app); dgWire(app); secRail(app); pinBar(app); lmWatch(app); for (const h of app.querySelectorAll('section.sec>.secthead')) h.parentNode.style.setProperty('--eh-sh', h.offsetHeight + 'px'); save(); return; }
-    if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); save(); return; }
-    if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); save(); return; }
+    if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
-    if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); srchWire(app); secRail(app); save(); return; }
+    if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); srchWire(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { document.title = titleOf(data); histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
@@ -40405,15 +40418,25 @@ function lmWatch(app) {
 }
 async function lmMore(k) {
     const d = data;
-    // a batch off the caret's menu ("k+500"): that many in pages of 100; stops when the list's foot is gone (all in)
+    // a batch off the caret's menu ("k+500"): pages until that many more are in, counted off the foot, whatever a page holds;
+    // stops when the list's foot is gone (all in) or a page adds nothing
     const bm = /^(.+)\+(\d+)$/.exec(k);
-    if (bm) { const b = bm[1], np = Math.ceil(+bm[2] / 100); LOG.info(`Load ${bm[2]}: ${b}`); for (let i = 0; i < np && d === data && document.querySelector(`[data-lm="${b}"]`); i++) { await lmMore(b); if (LM_ERR.has(b)) break; } return; }
+    if (bm) {
+        const b = bm[1], cnt = () => { const f = document.querySelector(`[data-lm="${b}"]`); return f ? +f.dataset.lmn : -1; }, n0 = cnt();
+        LOG.info(`Load ${bm[2]}: ${b}`);
+        for (let n = n0; n >= 0 && n < n0 + +bm[2] && d === data;) {
+            while (LM_BUSY.has(b)) await new Promise(r => setTimeout(r, 100));
+            await lmMore(b); if (LM_ERR.has(b)) break;
+            const m = cnt(); if (m <= n) break; n = m;
+        }
+        return;
+    }
     if (!d || LM_BUSY.has(k)) return;
     LM_BUSY.add(k); LM_ERR.delete(k);
     const b = document.querySelector(`[data-lmgo="${k}"]`);
     if (b) { b.disabled = true; b.textContent = 'Loading…'; }
     LOG.debug('Load more: ' + k);
-    try { await (k === 'recs' ? recsMore(d) : k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
+    try { await (k === 'recs' ? recsMore(d) : k === 'ed' ? (d.kind === 'native-releases' ? nativeMore(d) : edMore(d)) : k === 'sr' ? srMore(d) : k === 'tgx' ? cardsMore(d, tagxParse) : k === 'rt' ? cardsMore(d, ratesParse) : k.startsWith('tab:') ? tabMore(d, k.slice(4)) : wsMore(d, k.slice(3))); }
     catch (e) { LOG.debug('Load more failed: ' + k, e); LM_ERR.add(k); }
     finally { LM_BUSY.delete(k); }
     if (data === d) { const y = scrollY; render(); scrollTo(0, y); }
@@ -40721,7 +40744,7 @@ function userHtml(d) {
 }
 /* ── search results ────────────────────────────────── */
 // MusicBrainz's /search page, read off its own markup (every type has its own columns): this tab's page as loaded, another one fetched.
-function searchParse(html) {
+function searchParse(html, base) {
     const d = new DOMParser().parseFromString(html, 'text/html'), c = d.querySelector('#content') || d.body, tx = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : '';
     const t = c.querySelector('table.tbl');
     // the release's cover-art icon and the blank one beside a name go, and the release events' JSON
@@ -40730,23 +40753,31 @@ function searchParse(html) {
     const rows = t ? [...t.querySelectorAll('tbody tr')].map(r => ({ score: +r.dataset.score || 0, cells: [...r.querySelectorAll('td')].map(cell) })) : [];
     const ps = [...c.querySelectorAll(':scope>p')].map(tx).filter(x => x && !/^\S+:\s*\d{4}-\d\d-\d\d/.test(x));
     const found = tx(c.querySelector('.pageselector-results')) || ps.find(x => /\d/.test(x) && x.includes('"')) || '';
-    const pages = [...((c.querySelector('ul.pagination') || {}).children || [])].filter(li => !li.classList.contains('separator')).map(li => { const a = li.querySelector('a'); return { t: tx(li), href: a ? a.getAttribute('href') : '', sel: !!(a && a.classList.contains('sel')) }; });
     const err = t ? '' : ps.filter(x => x !== found).join(' ') || tx(c.querySelector('.error, p'));
-    return { head, rows, found, pages, err };
+    // how many there are, the first number in "Found 4,676,836 results"
+    return { head, rows, found, total: +(found.match(/\d[\d,.\u00a0 ]*/) || ['0'])[0].replace(/\D/g, ''), next: mbNextPage(c, base), err };
 }
 async function searchLoad(n, key) {
     const d = data;
     try {
-        let html;
+        let html, base = location.href;
         if (key === PAGE_ID && mbBody) html = '<body>' + mbBody.innerHTML + '</body>';
-        else { const r = await mbnFetch(`${MB}/search?${key.slice(7)}`); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
-        const s = searchParse(html);
-        LOG.info(`Search "${d.q}" (${d.t}): ${s.rows.length} rows, ${s.pages.length} page links${s.err ? ' — ' + s.err : ''}`);
-        if (n === showing && data === d) { d.s = s; render(); }
+        else { base = `${MB}/search?${key.slice(7)}`; const r = await mbnFetch(base); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); }
+        const s = searchParse(html, base);
+        LOG.info(`Search "${d.q}" (${d.t}): ${s.rows.length} rows of ${s.total}${s.next ? ', more at ' + s.next : ''}${s.err ? ' — ' + s.err : ''}`);
+        if (n === showing && data === d) { d.s = s; LM_ERR.delete('sr'); render(); }
     } catch (e) {
         LOG.err('Search "' + d.q + '" failed: ' + e.message);
         if (n === showing && data === d) { d.err = e.message; render(); }
     }
+}
+// the search's next page: its rows join the ones in
+async function srMore(d) {
+    const s = d.s; if (!s || !s.next) return;
+    const r = await mbnFetch(s.next); if (!r.ok) throw new Error('HTTP ' + r.status);
+    const y = searchParse(await r.text(), s.next);
+    if (data !== d || d.s !== s) return;
+    s.rows = s.rows.concat(y.rows); s.next = y.rows.length ? y.next : '';
 }
 const srchName = t => t === 'doc' ? 'Documentation' : t === 'cdstub' ? 'CD stub' : (t[0].toUpperCase() + t.slice(1)).replace('_', ' ');
 function searchHtml(d) {
@@ -40756,10 +40787,10 @@ function searchHtml(d) {
     if (!s || !s.rows.length) return hero;
     // a column empty in every row goes; the score shows as a bar
     const txt = c => (c || '').replace(/<[^>]*>/g, '').trim(), on = s.head.map((_, i) => s.rows.some(r => txt(r.cells[i])));
-    const abs = h => h && h.startsWith('/') ? MB + h : h;
-    const pager = s.pages.length > 1 ? `<nav class="sr-pg">${s.pages.map(x => x.href && !x.sel ? `<a href="${esc(abs(x.href))}">${esc(x.t)}</a>` : `<span${x.sel ? ' class="on"' : ''}>${esc(x.t)}</span>`).join('')}</nav>` : '';
     const table = `<div class="ed-tw"><table class="ed-t sr-t"><thead><tr><th class="sr-sc" data-tip="How well it matches">Score</th>${s.head.filter((_, i) => on[i]).map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${s.rows.map(r => `<tr><td class="sr-sc"><i style="--w:${r.score}%"></i><small>${r.score}</small></td>${r.cells.filter((_, i) => on[i]).map(c => `<td>${txt(c) ? c : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-    return hero + sect('sr', `Results <span class="count">${s.rows.length}</span>`, '', table + pager, `<div class="folded-note">${esc(s.found)}</div>`);
+    // MusicBrainz's next page comes in under these, by Load more or Auto, as every paged list's does
+    const more = s.next ? lmFoot('sr', s.rows.length, s.total ? fmtN(s.total) : 0) : '';
+    return hero + sect('sr', `Results <span class="count">${fmtN(s.rows.length)}</span>`, '', table + more, `<div class="folded-note">${esc(s.found)}</div>`);
 }
 /* ── section rail ──────────────────────────────────── */
 // The Sections button in the page's action row opens a list of the sections, the one in view lit: a name jumps
