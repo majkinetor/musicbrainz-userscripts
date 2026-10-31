@@ -97,3 +97,24 @@ test('dropping over Collapse all moves a section to the last position', { tag: '
   check(result.line, 'the insertion line appears below the last section');
   check(result.last === result.moved && result.pageLast === result.moved, 'the rail and page put the section last');
 });
+
+test('a page redraw does not interrupt a section drag', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d');
+  await inject('event_horizon');
+  const btn = page.locator('#app .kicker .acts [data-ehsec]');
+  check(await until(() => btn.count(), n => n > 0, 20000) === 1, 'the page drew');
+  await btn.click();
+  const result = await page.evaluate(() => {
+    const rail = document.querySelector('#eh-rail'), rows = [...rail.querySelectorAll('[data-sec]')], transfer = new DataTransfer();
+    const fire = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, clientY: y, dataTransfer: transfer }));
+    const moved = rows[0].dataset.sec, last = rows[rows.length - 1], y = last.getBoundingClientRect().bottom - 2;
+    fire(rows[0], 'dragstart', y);
+    rows[1].querySelector('.eye').click(); // redraw while the drag is in progress
+    const retained = rows[0].isConnected;
+    fire(last, 'dragover', y);
+    fire(last, 'drop', y);
+    return { retained, moved, last: [...rail.querySelectorAll('[data-sec]')].at(-1).dataset.sec };
+  });
+  check(result.retained, 'the dragged row stays in the document during a redraw');
+  check(result.last === result.moved, 'the drop still reorders the sections');
+});

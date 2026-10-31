@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170106.1.12
+// @version      2026.10.31.170106.1.13
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6987,8 +6987,9 @@ function editMenu(app) {
     e.removeAttribute("data-tip"); e.removeAttribute("title");    // the menu opening under it says enough; a tip would cover it
     w.insertAdjacentHTML('beforeend', `<span class="abm">${it.map(([p, n, ic]) => `<a class="ab" href="${base}/${p}">${SVG(ic)}<span>${n}</span></a>`).join('')}</span>`);
 }
-var releasePageDraw;
+var releasePageDraw, secDrag = null, secRedraw = false;
 function render(keepPop) {
+    if (secDrag) { secRedraw = true; return; } // keep the dragged rail row attached until the drag ends
     if (!data || data.kind !== 'home') secFab(false);
     if (releasePageDraw) { releasePageDraw(); save(); return; }
     const app = $('#app');
@@ -7566,8 +7567,7 @@ function secRail(app) {
             rail.classList.remove('open'); render();
             const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
         });
-        let drag = null;
-        rail.addEventListener('dragstart', ev => { const row = ev.target.closest('[data-sec]'); drag = row && row.dataset.sec; if (row) row.classList.add('drag'); });
+        rail.addEventListener('dragstart', ev => { const row = ev.target.closest('[data-sec]'); secDrag = row && row.dataset.sec; if (row) row.classList.add('drag'); });
         // a line shows where the dragged row will land
         const clearLine = () => rail.querySelectorAll('.db,.da').forEach(x => x.classList.remove('db', 'da'));
         const dropAt = ev => {
@@ -7577,18 +7577,19 @@ function secRail(app) {
             const row = ev.target.closest('[data-sec]');
             return row && { row, after: ev.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2 };
         };
-        rail.addEventListener('dragend', () => { drag = null; clearLine(); rail.querySelectorAll('.drag').forEach(x => x.classList.remove('drag')); });
+        rail.addEventListener('dragend', () => { secDrag = null; clearLine(); rail.querySelectorAll('.drag').forEach(x => x.classList.remove('drag')); if (secRedraw) { secRedraw = false; render(); } });
         rail.addEventListener('dragover', ev => {
-            if (!drag) return; ev.preventDefault();
+            if (!secDrag) return; ev.preventDefault();
             const target = dropAt(ev); clearLine();
-            if (target && target.row.dataset.sec !== drag) target.row.classList.add(target.after ? 'da' : 'db');
+            if (target && target.row.dataset.sec !== secDrag) target.row.classList.add(target.after ? 'da' : 'db');
         });
         rail.addEventListener('dragleave', ev => { if (!rail.contains(ev.relatedTarget)) clearLine(); });
         rail.addEventListener('drop', ev => {
-            const target = dropAt(ev); if (!drag || !target || target.row.dataset.sec === drag) return;
+            const target = dropAt(ev); if (!secDrag || !target || target.row.dataset.sec === secDrag) return;
             ev.preventDefault(); clearLine();
-            const ks = [...rail.querySelectorAll('[data-sec]')].map(x => x.dataset.sec).filter(x => x !== drag);
-            ks.splice(ks.indexOf(target.row.dataset.sec) + (target.after ? 1 : 0), 0, drag);
+            const ks = [...rail.querySelectorAll('[data-sec]')].map(x => x.dataset.sec).filter(x => x !== secDrag);
+            ks.splice(ks.indexOf(target.row.dataset.sec) + (target.after ? 1 : 0), 0, secDrag);
+            secDrag = null; secRedraw = false;
             S.secOrder = [...ks, ...S.secOrder.filter(x => !ks.includes(x))]; const y = scrollY; render(); scrollTo(0, y);   // other pages' sections keep their order
         });
     }
