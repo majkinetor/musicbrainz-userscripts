@@ -849,6 +849,7 @@ function mbuDock() {
                 var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
                 shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
                 shelf.style.width = w + 'px'; shelf.style.height = h + 'px';
+                shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
                 if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
                 // a launcher inside its own stacking layer (MB's body is isolation:isolate) paints within that
                 // layer, under the shelf whatever its z-index, and launchers sit in different layers: the shelf
