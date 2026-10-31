@@ -57,17 +57,15 @@ test('on by default: an ISRC and a Links column before Rating, and the setting t
   }
   if (!status.startsWith('?')) await page.evaluate(() => document.getElementById('ii-btn').click());
   await page.waitForSelector('#ii-modal.open', { timeout: 15000 });
-  // vzell: "Could we have two separate options for displaying ISRC and Links": one goes, the other stays
-  await page.evaluate(() => document.getElementById('ii-track-links').click());
-  const isrcOnly = await until(() => page.evaluate(() => ({ links: document.querySelectorAll('.ii-col-links').length, isrc: document.querySelectorAll('td.ii-col-isrc').length, aligned: [...document.querySelectorAll('table.tbl')].filter(t => t.querySelector('.ii-col')).every(t => { const w = r => [...r.cells].reduce((n, c) => n + c.colSpan, 0); const h = t.querySelector('tr.subh'); const top = t.querySelector('thead th[colspan]'); return [...t.querySelectorAll('tbody > tr:not(.subh)')].every(r => w(r) === w(h)) && (!top || top.colSpan === w(h)); }) })), x => x.links === 0 && x.isrc > 0);
-  check(isrcOnly.links === 0 && isrcOnly.isrc > 0 && isrcOnly.aligned, `unticking Links leaves the ISRC column, aligned (${JSON.stringify(isrcOnly)})`);
-  await page.evaluate(() => document.getElementById('ii-track-isrc').click());
-  check(await until(() => page.evaluate(() => document.querySelectorAll('.ii-col').length), n => n === 0) === 0, 'unticking both takes the columns off');
+  await page.evaluate(() => document.getElementById('ii-track-toggles').click());
+  check(await until(() => page.evaluate(() => document.querySelectorAll('.ii-col, #ii-col-toggles').length), n => n === 0) === 0, 'turning off the setting removes both columns and their controls');
   check(await page.evaluate(() => !document.querySelector('th[data-ii-colspan]')), "the medium's heading spans what it did before");
+  await page.evaluate(() => document.getElementById('ii-track-toggles').click());
+  check(await until(() => page.evaluate(() => document.querySelectorAll('td.ii-col-isrc, td.ii-col-links').length), n => n > 0) > 0, 'turning it back on restores the columns');
 });
 
 test.describe('setting off', () => {
-  test.use({ gm: { name: 'ISRC Scout', values: { 'ii:track_data': false } } });
+  test.use({ gm: { name: 'ISRC Scout', values: { 'ii:track_columns_enabled': false } } });
 
   test('the tracklist is left as it is', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await openScout(page, inject, { open: false });

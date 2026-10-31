@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.093300
+// @version      2026.10.31.094220
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -5273,11 +5273,10 @@
           <div class="ii-cfg-sec">Submitting</div>
           <div class="ii-set-row"><label data-tip="Repeat failed submits up to … minutes or … times&#10;When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes."><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times</span></label></div>
 
-          <div class="ii-cfg-sec">Release page</div>
-        <div class="ii-set-row"><label data-tip="ISRC column on the tracklist&#10;The release page&#x27;s tracklist gets each track&#x27;s ISRCs."><input type="checkbox" id="ii-track-isrc"><span>ISRC column on the tracklist</span></label></div>
-        <div class="ii-set-row"><label data-tip="Links column on the tracklist&#10;The release page&#x27;s tracklist gets each recording&#x27;s links, an icon per platform."><input type="checkbox" id="ii-track-links"><span>Links column on the tracklist</span></label></div>
-        <div class="ii-set-row"><label data-tip="Column toggles above the tracklist&#10;ISRC and Links beside MusicBrainz&#x27;s own &quot;Display credits at bottom&quot;, to show or hide each column there."><input type="checkbox" id="ii-track-toggles"><span>Column toggles above the tracklist</span></label></div>
+          <div class="ii-cfg-sec">Display</div>
         <div class="ii-set-row"><label data-tip="Show ISRCs in parts&#10;CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain."><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts</span></label></div>
+
+        <div class="ii-set-row"><label data-tip="Add ISRC/Links columns to tracklist&#10;Show each track&#x27;s ISRCs and links, with controls above the tracklist to hide either column."><input type="checkbox" id="ii-track-toggles"><span>Add ISRC/Links columns to tracklist</span></label></div>
 
         </div>
 
@@ -5600,18 +5599,8 @@
     }
 
     // #749: ISRCs and links on the release page's tracklist
-    // (a setting each since vzell's request on #749)
-    [['isrc', '#ii-track-isrc', 'ISRC'], ['links', '#ii-track-links', 'Links']].forEach(([k, sel, name]) => {
-      const cb = modal.querySelector(sel); if (!cb) return;
-      cb.checked = trackCols()[k];
-      cb.addEventListener('change', () => {
-        store.set('track_' + k, cb.checked);
-        showTrackData();
-        Log.info(name + ' column on the tracklist: ' + (cb.checked ? 'on' : 'off'));
-      });
-    });
     { const cb = modal.querySelector('#ii-track-toggles');
-      if (cb) { cb.checked = colTogglesOn(); cb.addEventListener('change', () => { store.set('track_toggles', cb.checked); showTrackData(); Log.info('Column toggles above the tracklist: ' + (cb.checked ? 'on' : 'off')); }); } }
+      if (cb) { cb.checked = colTogglesOn(); cb.addEventListener('change', () => { store.set('track_columns_enabled', cb.checked); showTrackData(); Log.info('Add ISRC/Links columns to tracklist: ' + (cb.checked ? 'on' : 'off')); }); } }
     // #766: ISRCs in parts, a shared setting Mission Control reads too
     const cbFmt = modal.querySelector('#ii-isrc-format');
     if (cbFmt) {
@@ -9253,16 +9242,13 @@
      by its track MBID (the row's id); the columns go before Rating (else Length), found by class.
      A medium MusicBrainz loads later (expanded) gets them as it comes. */
   // declarations and var, hoisted: updateBtnStatus can run before this point (see btnStatus)
-  // #749 (vzell): "Could we have two separate options for displaying ISRC and Links … it broke my
-  // userscript": a setting each, both from the one they replace (track_data)
   function trackCols() {
-    const both = store.get('track_data', true) !== false;
-    return { isrc: store.get('track_isrc', both) !== false, links: store.get('track_links', both) !== false };
+    return { isrc: store.get('track_isrc', true) !== false, links: store.get('track_links', true) !== false };
   }
-  function trackDataEnabled() { const c = trackCols(); return c.isrc || c.links; }
+  function trackDataEnabled() { const c = trackCols(); return colTogglesOn() && (c.isrc || c.links); }
   // majkinetor: a toggle for each column above the tracklist, beside MusicBrainz's own "Display
   // credits at bottom" (#medium-toolbox, the same in every language); a setting, on by default
-  const colTogglesOn = () => store.get('track_toggles', true) !== false;
+  function colTogglesOn() { return store.get('track_columns_enabled', true) !== false; }
   function paintColToggles() {
     const box = document.getElementById('medium-toolbox');
     let el = document.getElementById('ii-col-toggles');
@@ -9279,7 +9265,6 @@
         store.set('track_' + k, on);
         Log.info((k === 'isrc' ? 'ISRC' : 'Links') + ' column on the tracklist: ' + (on ? 'on' : 'off') + ' (toggle above the tracklist)');
         showTrackData();
-        const cb = document.getElementById('ii-track-' + k); if (cb) cb.checked = on;
       });
       if (after) { el.style.cssFloat = fl; el.style.marginRight = '0.3em'; box.after(el); } else box.parentNode.insertBefore(el, box);
     }
