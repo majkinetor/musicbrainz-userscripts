@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.30.235900
+// @version      2026.10.31.001500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1291,7 +1291,7 @@ function showInjectBanner(text, reports = [], opts = {}) {
         body += `<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid ${palette.border}; font-size: 11px; color: var(--mbu-text-dim);">Remember to set an edit note and click <strong style="color: ${palette.accent};">Enter edit</strong> to save.</div>`;
     }
     overlay.innerHTML = body + closeBtn;
-    document.body.appendChild(overlay);
+    document.documentElement.appendChild(overlay);
     const close = document.getElementById('pc-inject-close');
     close?.addEventListener('mouseenter', () => { close.style.opacity = '1'; close.style.background = 'rgba(0,0,0,0.06)'; });
     close?.addEventListener('mouseleave', () => { close.style.opacity = '0.6'; close.style.background = 'transparent'; });
@@ -3467,7 +3467,7 @@ pcSharedStyle.textContent = `${MBU_TOKENS}${MBU_UI_CSS}
 // Provider toggles
 const providerModal = document.createElement('div');
 providerModal.id = 'mb-provider-modal-overlay';
-providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: 100000; font-family: sans-serif;';
+providerModal.style.cssText = 'display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: transparent; z-index: var(--mbu-z-modal, 2147483000); font-family: sans-serif;';
 providerModal.innerHTML = `
 <div id="mb-provider-modal-card" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 420px; background: var(--mbu-bg); padding: 20px 22px; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid var(--mbu-border); font-size: 13px; color: var(--mbu-text);">
     ${mbuCfgHeader({ script: 'platform_check', name: 'Platform Check', icon: '<img src="' + 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=' + '" alt="">',
@@ -3571,7 +3571,7 @@ providerModal.innerHTML = `
 </div>`;
 
 document.head.appendChild(pcSharedStyle);
-document.body.appendChild(providerModal);
+document.documentElement.appendChild(providerModal);
 mbuControls(providerModal);   // the shared drop-downs and − n + steppers
 const coverArt = sidebar.querySelector('.cover-art');
 if (coverArt) sidebar.insertBefore(container, coverArt);
@@ -3607,7 +3607,7 @@ if (!PC_SEED) {
             if (open) { close(); return; }
             park(); open = true; win.hidden = false;
         } });
-    pcDockItem.oncontextmenu = e => { e.preventDefault(); if (providerModal.parentNode !== document.body) document.body.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); };   // into the body that shows (Event Horizon swaps it)   // #695: right-click opens the settings
+    pcDockItem.oncontextmenu = e => { e.preventDefault(); if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); };   // into the body that shows (Event Horizon swaps it)   // #695: right-click opens the settings
 }
 // Belt-and-suspenders: pin the panel to the sidebar's natural width *now* — measured
 // synchronously, before the async scans fill in long meta lines AND before the cover
@@ -8828,7 +8828,7 @@ async function pcOpenLinksTable(btn) {
     <div class="mbu-ov-panel"><div class="mbu-ov-h"><span class="mbu-ov-title">Artists &amp; labels</span><button type="button" class="mbu-ov-x" data-tip="Close">✕</button></div>
     <div class="mbu-ov-body"></div>
     <div class="pc-lk-foot"><span class="pc-lk-status">Checking MusicBrainz for links already there…</span><span class="pc-lk-split"><button type="button" class="pc-lk-send" disabled data-tip="Queue the new links in Falcon and start it">Run in Falcon</button><button type="button" class="pc-lk-send pc-lk-more" disabled data-tip="More">▾</button><span class="pc-lk-menu" hidden><button type="button" class="pc-lk-queue" data-tip="Queue the new links in Falcon without starting it">Send only</button></span></span></div></div>`);
-    document.body.appendChild(ov);
+    document.documentElement.appendChild(ov);
     const close = () => { ov.remove(); document.removeEventListener('keydown', onKey, true); };
     const onKey = e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
     document.addEventListener('keydown', onKey, true);
