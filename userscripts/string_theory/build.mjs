@@ -14,6 +14,7 @@
 // document-end/idle bodies wait for DOMContentLoaded).
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { UI_JS } from '../../dev/ui/ui-components.mjs';
@@ -36,6 +37,19 @@ const NAME = 'String Theory';
 const ICON = 'data:image/svg+xml;base64,' + Buffer.from(readFileSync(resolve(HERE, 'icon.svg'), 'utf8').replace(/\r\n/g, '\n')).toString('base64');
 const HOMEPAGE = 'https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory';
 const OUT = resolve(HERE, 'string_theory.user.js');
+// The branch a test build was made on, for the settings' About when the manager doesn't say where the
+// script came from (#851). Empty on main and stable, and in CI there, so their bundle stays the same
+// wherever it's built; a rebase reads the branch being rebased.
+function buildBranch() {
+  const git = (...a) => { try { return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch (e) { return ''; } };
+  let b = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || git('branch', '--show-current');
+  if (!b) for (const p of ['rebase-merge/head-name', 'rebase-apply/head-name']) {
+    try { b = readFileSync(resolve(ROOT, git('rev-parse', '--git-path', p)), 'utf8').trim().replace(/^refs[/]heads[/]/, ''); } catch (e) { /* not rebasing */ }
+    if (b) break;
+  }
+  return /^(main|stable|HEAD)$/.test(b) ? '' : b;
+}
+const BRANCH = buildBranch();
 
 // prefer a built dist/, else the top-level single file
 function distOf(n) {
@@ -189,8 +203,8 @@ function __stReadOff() { var on = __stList(${JSON.stringify(ON_KEY)}); return __
 var __stOff = __stReadOff();
 (function () {
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var stMembers = ${JSON.stringify(parts.map(p => [p.n, metaVal(p.meta, 'name') || p.n, verOf(p.meta)]))};
-  var ST_VERSION = ${JSON.stringify(version)}, ST_ICON = ${JSON.stringify(ICON)}, ST_HOME = ${JSON.stringify(HOMEPAGE)};
+  var stMembers = ${JSON.stringify(parts.map(p => [p.n, metaVal(p.meta, 'name') || p.n, verOf(p.meta), metaVal(p.meta, 'icon')]))};
+  var ST_VERSION = ${JSON.stringify(version)}, ST_BRANCH = ${JSON.stringify(BRANCH)}, ST_ICON = ${JSON.stringify(ICON)}, ST_HOME = ${JSON.stringify(HOMEPAGE)};
   var ST_ON_MB = /(^|[.])musicbrainz[.]org$/.test(location.hostname);
   // on MusicBrainz String Theory's icon is the dock (mbuDock), Event Horizon or not; the mark goes up
   // before any member stacks its launcher
