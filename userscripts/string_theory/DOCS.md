@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-31 18:43 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-31 18:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -801,7 +801,7 @@ Once the page's header scrolls away, a single bar keeps its cover, title and art
 
 ### Sections
 
-Click **Sections** (the list icon beside Search, top right) to open the list. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered.
+Click **Sections** (the list icon beside Search, top right) to open the list. Click a section to jump to it; the last row folds every section, or opens them all again. The order and what is hidden are remembered. The Annotation card has an **Edit** link and a gear to turn its collapsed hover preview on or off.
 
 ### Details
 
@@ -835,17 +835,18 @@ Every table's filter (the discography, the releases, an instrument's releases, a
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                   | Default                                                             |                                                                            |
-| ------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Release → Info            | released, labels, barcode, length, links                            | the facts shown beside the cover                                           |
-| Release → Under the cover | Other covers, Rating, Genres                                        | what shows under the cover                                                 |
-| Tracklist → Tracks        | Alternating colors                                                  | shade every other track                                                    |
-| Platforms → Show          | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
-| Platforms → Icon size     | 22px                                                                | the size of a platform icon                                                |
-| Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
-| Artist → Artist images    | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
-| General → Page width      | Wide                                                                | how wide the page grows on a big screen                                    |
-| General → Menu titles     | off                                                                 | text beside menu icons in page headers and pinned bars                     |
+| Setting                               | Default                                                             |                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                           |
+| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                 |
+| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                    |
+| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
+| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                |
+| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
+| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
+| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                |
+| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                    |
+| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                     |
 
 ### Shortcuts
 
