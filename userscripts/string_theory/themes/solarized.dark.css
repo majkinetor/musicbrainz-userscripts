@@ -24,6 +24,9 @@
 	/* MB's brand colours, in Solarized's orange and violet */
 	--mb-orange: #cb4b16;
 	--mb-purple: #6c71c4;
+	/* header menu hover */
+	--menu-hover: #51382a;
+	--menu-hover-text: #eee8d5;
 	/* highlights: Solarized's accents mixed into the page */
 	--negative: #422d34;
 	--negative-emphasis: #6e2f33;
@@ -111,6 +114,19 @@ div.caa-warning, div.eaa-warning, div.warning {
 }
 .header .right ul.menu li ul li {
 	background-color: var(--background-accent);
+}
+.header .right ul.menu li:hover, .header .right ul.menu li:active, .header .right ul.menu li.fake-active,
+.header .right ul.menu li ul li:hover {
+	background-color: var(--menu-hover);
+}
+.header .right ul.menu li:hover > a, .header .right ul.menu li:hover .menu-header,
+.header .right ul.menu li:active > a, .header .right ul.menu li:active .menu-header,
+.header .right ul.menu li.fake-active > a, .header .right ul.menu li.fake-active .menu-header,
+.header .right ul.menu li ul li:hover a {
+	color: var(--menu-hover-text);
+}
+.header .right ul.menu li ul {
+	background-color: var(--border-emphasis);
 }
 .header .right ul.menu li ul li a, div.tabs, div.tabs ul li a {
 	color: inherit;
