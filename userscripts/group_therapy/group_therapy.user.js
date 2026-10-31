@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.30.235900
+// @version      2026.10.31.093300
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -992,6 +992,7 @@
               // nothing counted yet: three small dots lighting in turn, no badge
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
               + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+              + '#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}'
               + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
               + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
               + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
@@ -1036,7 +1037,7 @@
           root.appendChild(btn);   // outside the body, which Event Horizon swaps
           root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
       }
-      var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+      var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
       if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
       if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
       els.forEach(function (el) {
@@ -1044,12 +1045,13 @@
           var was = el.getAttribute('data-mbu-docked');
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
-          if (shown) n++;
+          if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
           el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
           // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
           if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
       });
-      btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+      btn.toggleAttribute('data-mbu-busy', busy);
+      btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '') + '<span class="mbu-dock-dots"><i></i><i></i><i></i></span>';
   }
   // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
   // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
@@ -1070,7 +1072,7 @@
       // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
       // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
       var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
-          var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && !r.hasAttribute('data-mbu-dock-open') && b.isConnected) mbRestackCorner('br'); };   // folded: it may peek now, or stop
+          var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
       b.status = function (t) { b.mbuSt = t || ''; show(); };
       b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
       b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };

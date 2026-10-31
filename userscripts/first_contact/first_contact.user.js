@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.30.235900
+// @version      2026.10.31.093300
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -4939,6 +4939,7 @@ function mbuDock() {
             // nothing counted yet: three small dots lighting in turn, no badge
             + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
             + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+            + '#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}'
             + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
             + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
             + '@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
@@ -4983,7 +4984,7 @@ function mbuDock() {
         root.appendChild(btn);   // outside the body, which Event Horizon swaps
         root.toggleAttribute('data-mbu-dock-open', !!mbuShared('dockOpen'));
     }
-    var open = root.hasAttribute('data-mbu-dock-open'), n = 0;
+    var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
     if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
     if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
     els.forEach(function (el) {
@@ -4991,12 +4992,13 @@ function mbuDock() {
         var was = el.getAttribute('data-mbu-docked');
         el.removeAttribute('data-mbu-docked');   // measured as its script left it
         var shown = getComputedStyle(el).display !== 'none';
-        if (shown) n++;
+        if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
         el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
         // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
         if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
     });
-    btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '');
+    btn.toggleAttribute('data-mbu-busy', busy);
+    btn.innerHTML = MBU_DOCK_ICON + (n ? '<b>' + n + '</b>' : '') + '<span class="mbu-dock-dots"><i></i><i></i><i></i></span>';
 }
 // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
 // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
@@ -5017,7 +5019,7 @@ function mbuDockItem(o) {
     // .status(t): the count beside it; .busy(on): while it works, a faint "···" where the count goes,
     // or the count so far, fading; .card(fn): a hover card, fn() → its HTML (mbuTipCard)
     var show = function () { var t = b.mbuSt || (b.hasAttribute('data-mbu-busy') ? '···' : ''); if (t) b.dataset.mbCornerStatus = t; else delete b.dataset.mbCornerStatus;
-        var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && !r.hasAttribute('data-mbu-dock-open') && b.isConnected) mbRestackCorner('br'); };   // folded: it may peek now, or stop
+        var r = document.documentElement; if (r.hasAttribute('data-mbu-dock') && b.isConnected) mbRestackCorner('br'); };   // update the dock's loading state and any peek
     b.status = function (t) { b.mbuSt = t || ''; show(); };
     b.busy = function (on) { if (on) b.dataset.mbuBusy = ''; else delete b.dataset.mbuBusy; show(); };
     b.card = function (fn) { if (typeof mbuTip === 'function') mbuTip(b, fn || null, { card: true }); };
