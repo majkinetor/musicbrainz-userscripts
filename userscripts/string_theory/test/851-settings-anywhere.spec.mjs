@@ -45,7 +45,8 @@ async function survey(page, inject, info, only) {
     await page.waitForTimeout(1500);
     page.off('request', onReq);
     await page.screenshot({ path: info.outputPath(n.replace(/\W+/g, '-') + '.png') });
-    out.push({ n, added: (await snap(page)).filter(x => !before.has(x)).slice(0, 4), reqs, errs: errors.slice(errs) });
+    const stays = await page.evaluate(() => !!document.getElementById('st-cfg'));
+    out.push({ n, stays, added: (await snap(page)).filter(x => !before.has(x)).slice(0, 4), reqs, errs: errors.slice(errs) });
     // close whatever opened: Escape, then drop overlays it left
     await page.keyboard.press('Escape');
   }
@@ -58,6 +59,7 @@ test('every member\'s settings open on a release page', { tag: ['@sandbox'] }, a
   for (const r of out) {
     check(r.added.length > 0, `${r.n}: its settings open (${r.added.join(' ')})`);
     check(r.errs.length === 0, `${r.n}: no error (${r.errs.join('; ')})`);
+    check(r.stays, `${r.n}: String Theory's settings stay open`);
   }
 });
 
