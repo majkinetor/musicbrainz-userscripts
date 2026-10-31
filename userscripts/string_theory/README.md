@@ -28,6 +28,7 @@
 
 - **Turn a script off** in the userscript manager's menu: each bundled script has a ☑/☐ entry with its version, applied from the next page load. A script that is off doesn't run, so its standalone copy can run instead.
 - **Lay out the corner launchers** (the round buttons of Mission Control, Fusion, Falcon, …) from the same menu: **↕ Launchers in a column** (default) or **↔ Launchers in a row** along the bottom edge, and **→ Launchers on the right** (default) or **← Launchers on the left**. Every script follows them, standalone ones too.
+- **Dark mode and themes**, also in that menu, with no userstyle needed: **Theme** picks light (default), dark, auto by the system, or auto by sunrise and sunset where you are (the browser asks for your location once, and the system setting is used if you refuse). **Dark theme** and **Light theme** pick the theme for each. Turn off any dark userstyle you used before. To add or tweak a theme, see [themes](themes/README.md).
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
 - The browser console (F12) lists String Theory's version and each bundled script's.
 

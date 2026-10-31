@@ -13,7 +13,7 @@
 // of all of them), and the @run-at gate times it (document-start bodies run immediately;
 // document-end/idle bodies wait for DOMContentLoaded).
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { UI_JS } from '../../dev/ui/ui-components.mjs';
@@ -171,7 +171,23 @@ if (!SHARED) throw new Error('mbuShared not found in dev/ui/ui-components.mjs');
 // with the dock (#847), which mbRestackCorner calls: the icon, mbuDock and mbuDockItem come along
 const RESTACK = (UI_JS.match(/var MBU_DOCK_ICON[\s\S]*?\nfunction mbRestackCorner\(corner\) \{[\s\S]*?\n\}\n/) || [])[0];
 if (!RESTACK) throw new Error('mbRestackCorner not found in dev/ui/ui-components.mjs');
-const toggles = `var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
+// Themes (#879): every themes/<name>.<dark|light>.css, named by its "Theme:" line
+const THEMES_DIR = resolve(dirname(fileURLToPath(import.meta.url)), 'themes');
+const THEMES = { dark: {}, light: {} };
+for (const file of readdirSync(THEMES_DIR).sort()) {
+  const m = file.match(/\.(dark|light)\.css$/);
+  if (!m) continue;
+  const css = readFileSync(resolve(THEMES_DIR, file), 'utf8').replace(/\r\n/g, '\n');
+  const name = (css.match(/Theme:\s*(.+)/) || [])[1];
+  if (!name) throw new Error(`${file}: no "Theme: <name>" line`);
+  THEMES[m[1]][name.trim()] = css;
+}
+if (!THEMES.dark.Default || !THEMES.light.Default) throw new Error('themes/ needs a Default for dark and for light');
+const themeRuntime = readFileSync(resolve(THEMES_DIR, 'runtime.js'), 'utf8').replace(/\r\n/g, '\n')
+  .replace('__ST_THEMES__', () => JSON.stringify(THEMES));
+
+const toggles = `${themeRuntime}
+var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
 function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function __stReadOff() { var on = __stList(${JSON.stringify(ON_KEY)}); return __stList(${JSON.stringify(OFF_KEY)}).concat(__stDefOff.filter(function (n) { return on.indexOf(n) < 0; })); }
 var __stOff = __stReadOff();
@@ -195,6 +211,14 @@ var __stOff = __stReadOff();
       var on = off.indexOf(m[0]) < 0;
       put('st-' + m[0], (on ? '☑ ' : '☐ ') + m[1] + ' v' + m[2], function () { flip(m[0]); },
         (on ? 'On' : 'Off') + ' — click to turn ' + (on ? 'off' : 'on') + '; applies from the next page load');
+    });
+    var th = __stTheme.read();
+    var modes = { light: '☀ Theme: light', dark: '☾ Theme: dark', auto: '◐ Theme: auto (system)', sun: '◐ Theme: auto (location)' };
+    put('st-theme', modes[th.mode], function () { __stTheme.nextMode(draw); },
+      'Which variant shows — click for the next: light, dark, as the system says, or by sunrise and sunset where you are');
+    ['dark', 'light'].forEach(function (v) {
+      put('st-theme-' + v, (v === 'dark' ? '☾ Dark theme: ' : '☀ Light theme: ') + th[v], function () { __stTheme.nextName(v); draw(); },
+        'The theme used for the ' + v + ' variant — click for the next one (' + __stTheme.names(v).join(', ') + ')');
     });
     var row = mbuShared('cornerFlow') === 'row';
     put('st-flow', row ? '↔ Launchers in a row' : '↕ Launchers in a column', flipFlow,
