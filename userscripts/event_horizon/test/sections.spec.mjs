@@ -55,3 +55,24 @@ test('dragging a section shows a line where it will land', { tag: '@sandbox' }, 
   check(line.after, 'over the bottom half, below it');
   check(line.cleared, 'letting go clears it');
 });
+
+test('dropping over Top moves a section to the first position', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d');
+  await inject('event_horizon');
+  const btn = page.locator('#app .kicker .acts [data-ehsec]');
+  check(await until(() => btn.count(), n => n > 0, 20000) === 1, 'the page drew');
+  await btn.click();
+  const result = await page.evaluate(() => {
+    const rail = document.querySelector('#eh-rail'), rows = [...rail.querySelectorAll('[data-sec]')];
+    const top = rail.querySelector('[data-top] button'), transfer = new DataTransfer();
+    const fire = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, clientY: y, dataTransfer: transfer }));
+    const moved = rows[1].dataset.sec, y = top.getBoundingClientRect().top + 2;
+    fire(rows[1], 'dragstart', y);
+    fire(top, 'dragover', y);
+    const line = rows[0].classList.contains('db');
+    fire(top, 'drop', y);
+    return { moved, line, first: rail.querySelector('[data-sec]').dataset.sec, pageFirst: document.querySelector('#app>section.sec').id.slice(2) };
+  });
+  check(result.line, 'the insertion line appears above the first section');
+  check(result.first === result.moved && result.pageFirst === result.moved, 'the rail and page put the section first');
+});
