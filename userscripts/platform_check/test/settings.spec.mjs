@@ -23,6 +23,9 @@ test('main view, sub-views, sizes, and the new-tab setting', { tag: ['@sandbox']
   check(main.main && !main.order && !main.auth, `#188: it opens on the main view (${JSON.stringify(main)})`);
   check(await page.locator('#mb-icon-size').count() && await page.locator('#mb-name-size').count(), '#188: with the icon and name sizes');
   await attachShot(testInfo, card, 'main');
+  await page.click('#mb-cfg-log');
+  check(await page.locator('#mbu-logpop').isVisible(), 'settings opens the PC log');
+  await page.click('#mb-cfg-log');
   check(await page.isChecked('#mb-cache-enabled') && await page.inputValue('#mb-cache-days') === '90', 'scan caching starts enabled for 90 days');
   await page.locator('#mb-cache-days').fill('7');
   await page.locator('#mb-cache-days').dispatchEvent('change');

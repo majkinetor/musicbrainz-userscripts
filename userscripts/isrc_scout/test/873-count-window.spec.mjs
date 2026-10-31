@@ -11,8 +11,8 @@ test('the dock mirrors the editor pending count as inputs change', { tag: '@sand
   await inputs.nth(0).fill('USAAA2000001');
   await inputs.nth(1).fill('USAAA2000002');
   const status = () => page.locator('#ii-dock').getAttribute('data-mb-corner-status');
-  check(await until(status, value => value === '2') === '2', 'dock shows the same two pending ISRCs as Submit');
+  check(await until(status, value => value === '2,0') === '2,0', 'dock shows the same two pending ISRCs as Submit');
   check((await page.locator('#ii-submit').textContent()).includes('2 ISRCs'), 'the editor counts two pending ISRCs');
   await inputs.nth(0).fill('');
-  check(await until(status, value => value === '1') === '1', 'clearing one input updates the dock');
+  check(await until(status, value => value === '1,0') === '1,0', 'clearing one input updates the dock');
 });

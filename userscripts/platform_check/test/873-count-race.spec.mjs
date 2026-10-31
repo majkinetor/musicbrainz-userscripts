@@ -96,3 +96,22 @@ test('the launcher withheld count excludes withheld artist links', { tag: '@unit
   show();
   check(statuses.at(-1) === '2,3/3', `platforms to add, withheld platforms and artist links should be separate (${statuses.at(-1)})`);
 });
+
+test('an artist edit keeps the existing platform count while invalidating the artist count', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcShowUnverified', 'pcDockStatus']);
+  const statuses = [];
+  const api = new Function('statuses', 'GM_getValue',
+    'let pcDockFound = 2, pcDockHeld = 3, pcDockArtists = 3, pcDockArtistsHeld = 2, pcDockStale = false, pcDockFailed = false; const pcDockItem = { status: s => statuses.push(s) }; function pcShowLinksCount(n) { pcDockArtists = n; pcDockStatus(); }\n' + src + '\nreturn { invalidate: pcShowUnverified };')(statuses, (_key, fallback) => fallback);
+  api.invalidate(true);
+  check(statuses.at(-1) === '2,3', `release counts remain visible after artist edits (${statuses.at(-1)})`);
+  api.invalidate(false);
+  check(statuses.at(-1) === '', 'release edits still hide stale platform counts');
+});
+
+test('Falcon artist completions invalidate artist counts without discarding platform counts', { tag: '@unit' }, async () => {
+  const src = await functionSource('platform_check', ['pcFalconStatus']);
+  const pending = new Map([['pc:links:run', { release: 'release', seen: new Set() }]]), scopes = [];
+  const handler = new Function('pcMcPending', 'pcMarkDirty', src + '\nreturn pcFalconStatus;')(pending, (...args) => scopes.push(args[4]));
+  handler({ detail: JSON.stringify({ tag: 'pc:links:run', running: false, items: [{ entityType: 'artist', mbid: 'a', status: 'done' }] }) });
+  check(scopes[0] === true, 'artist-only completion preserves platform results');
+});

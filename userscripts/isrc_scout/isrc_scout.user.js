@@ -5248,7 +5248,7 @@
            Check's: sections, and a Platforms view of switches. The ids are the inline pane's. -->
       <div class="ii-pane ii-cfgwin" id="ii-setup-pane">
         <!-- #301: standard config-window header — icon · name · version · ? Help (no ✕); Log is in the main header, as on Platform Check -->
-        ${mbuCfgHeader({ script: 'isrc_scout', name: 'ISRC Scout', version: SCRIPT_VERSION,
+        ${mbuCfgHeader({ script: 'isrc_scout', name: 'ISRC Scout', version: SCRIPT_VERSION, log: true, logId: 'ii-cfg-log',
           icon: '<img src="' + 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=' + '" alt="">',
         }).replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span>' + `<a class="mbu-help ii-cfg-hist" id="ii-history" target="_blank" rel="noopener"
            href="${MB_ROOT}/search/edits?auto_edit_filter=&order=desc&negation=0&combinator=and&conditions.0.field=type&conditions.0.operator=%3D&conditions.0.args=76&conditions.0.args=78&conditions.1.field=editor&conditions.1.operator=me&conditions.1.name=&conditions.1.args.0="
@@ -5524,6 +5524,7 @@
 
     // the shared log window — opened from the config window's "Log" link (#301, #701)
     modal.querySelector('#ii-log-link').addEventListener('click', () => { if (Log.isOpen()) Log.close(); else Log.open(); });
+    modal.querySelector('#ii-cfg-log').addEventListener('click', () => { if (Log.isOpen()) Log.close(); else Log.open(); });
 
     // SX exact toggles + their collapsible container (collapsed state persisted)
     const sxGroup = modal.querySelector('#ii-sx-group');
@@ -9095,10 +9096,10 @@
         TrackLinks.seedCached();
       }
       const c = bgCache(), known = BG.started || BG.checked || c.isrcsDone || c.done.length;
-      const n = modal && tbody && tbody.querySelector('tr[data-idx]')
-        ? _validIsrcCount + modal.querySelectorAll('.ii-tl-add .ii-tl.new').length
-        : bgIsrcsNew().length + bgLinksToAdd().length;
-      item.status(BG.stale || (c.incomplete && !busy) ? '?' : n ? String(n) : busy ? '' : known ? '\u2713' : '?');
+      const hasWindow = modal && tbody && tbody.querySelector('tr[data-idx]');
+      const isrcs = hasWindow ? _validIsrcCount : bgIsrcsNew().length;
+      const links = hasWindow ? modal.querySelectorAll('.ii-tl-add .ii-tl.new').length : bgLinksToAdd().length;
+      item.status(BG.stale || (c.incomplete && !busy) ? '?' : isrcs || links ? isrcs + ',' + links : busy ? '' : known ? '\u2713' : '?');
       item.busy(busy);
       item.card(scoutCard);
       updateBtnLinks();
@@ -9227,6 +9228,7 @@
     (bgCache.memory || (bgCache.memory = {}))[mbid] = current;
     (bgCache.stale || (bgCache.stale = new Set())).add(mbid);
     BG.generation = (BG.generation || 0) + 1;
+    BG.running = {};
     BG.stale = true;
     if (broadcast) try { localStorage.setItem('ii:match-changed', JSON.stringify({ release: mbid, at: Date.now(), nonce: Math.random() })); } catch (e) { /* current tab is still invalidated */ }
     updateBtnLinks();
@@ -9340,7 +9342,7 @@
       });
       if (!current()) return;
       Log.info('Background Match: ' + bgIsrcsNew().length + ' new ISRC(s), ' + bgLinksToAdd().length + ' link(s) to add');
-    } catch (x) { BG.failed = true; Log.warn('Background link check failed: ' + errText(x)); }
+    } catch (x) { if (!current()) return; BG.failed = true; Log.warn('Background link check failed: ' + errText(x)); }
     if (!current()) return;
     c.incomplete = BG.failed; bgSave(c); BG.stale = BG.failed;
     BG.running = {};

@@ -85,10 +85,11 @@ test('a failed provider is not recorded as a completed background check', { tag:
 test('successful edits expire the saved snapshot but retain unfinished page results', { tag: '@unit' }, async () => {
   const src = await functionSource('isrc_scout', ['bgCacheDays', 'bgCache', 'bgSave', 'bgInvalidate']);
   const data = { bg_links_cache: { release: { at: Date.now(), links: [{ rec: 'r', code: 'x', url: 'https://x.test' }], done: [], isrcs: {} } } };
-  const store = { get: (k, d) => k in data ? data[k] : d, set: (k, v) => { data[k] = v; } }, bg = { generation: 0 };
+  const store = { get: (k, d) => k in data ? data[k] : d, set: (k, v) => { data[k] = v; } }, bg = { generation: 0, running: { isrc: { done: 0, of: 1 } } };
   const build = new Function('store', 'mbid', 'BG_DAYS', 'BG', 'updateBtnLinks', 'document', 'Event', src + '\nreturn { bgCache, bgInvalidate };');
   const api = build(store, 'release', 7, bg, () => {}, { dispatchEvent() {} }, class {});
   api.bgInvalidate(false);
   check(!data.bg_links_cache.release && bg.stale && bg.generation === 1, 'the persisted result is invalidated and marked unverified');
   check(api.bgCache().links.length === 1, 'other unfinished findings remain available in this page');
+  check(Object.keys(bg.running).length === 0, 'the cancelled generation no longer leaves the launcher busy');
 });
