@@ -22,6 +22,8 @@ test.describe('settings', () => {
     await pick(page, 'dark');
     check(await picked(page) === 'dark', 'then dark');
     check(await bg(page) === 'rgb(51, 51, 51)', 'the page turns dark');
+    const hs = await page.evaluate(() => { const c = getComputedStyle(document.getElementById('headerid-type')); return [c.backgroundColor, c.color]; });
+    check(hs[0] !== 'rgb(255, 255, 255)' && hs[0] !== hs[1], 'the header search select is dark too');
     await pick(page, 'time');
     check(await page.locator('#st-th-from').isVisible(), 'time asks for the hours');
     for (const id of ['#st-th-dark', '#st-th-light']) {

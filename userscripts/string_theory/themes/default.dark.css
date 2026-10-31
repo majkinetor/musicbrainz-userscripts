@@ -642,10 +642,7 @@ body.skin--responsive #p-cactions li.selected a {
 }
 
 /* the header search: MusicBrainz's own rule outranks the :where() above */
-.header select, .header .search button {
-	background: var(--control);
-	color: var(--control-text);
-}
+#headerid-type, .header select, .header .search button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
 .header .search button img {
 	filter: var(--invert-value);
 }
