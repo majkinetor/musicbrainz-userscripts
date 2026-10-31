@@ -557,7 +557,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                 return inBox(e, dockBox(), 0);
             };
             // the shelf: shown while the pointer is over the dock, dark on a dark page (a dark userstyle)
-            var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; root.appendChild(shelf);
+            var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; (document.body || root).appendChild(shelf);
             var pageDark = function () {
                 // the dock block can ship without mbuThemeOf, so read the luminance here
                 var lum = function (bg) {
@@ -572,14 +572,14 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
             var shelfOver = function (e) {
                 var b = dockBox(), over = inBox(e, b, 6);
                 if (over) {
+                    if (document.body && shelf.parentNode !== document.body) document.body.appendChild(shelf);
                     var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
                     shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
                     shelf.style.width = w + 'px'; shelf.style.height = h + 'px';
                     shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
                     if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
-                    // a launcher inside its own stacking layer (MB's body is isolation:isolate) paints within that
-                    // layer, under the shelf whatever its z-index, and launchers sit in different layers: the shelf
-                    // stays on <html>, below the launchers there, and cuts a hole where each of the others is
+                    // The shelf shares the body's stacking layer with its launchers, while launchers on <html>
+                    // remain above it. Only launchers inside another stacking layer need a cutout.
                     var stacks = function (cs) {
                         return (cs.zIndex !== 'auto' && cs.position !== 'static') || cs.isolation === 'isolate' || +cs.opacity < 1
                             || cs.transform !== 'none' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || /paint|layout|strict|content/.test(cs.contain || '');
@@ -593,7 +593,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
                     var ox = b.left - pad, oy = b.top - pad, d = rr(0, 0, w, h, Math.min(w, h) / 2);
                     Array.prototype.forEach.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) {
                         var under = false;
-                        for (var p = el.parentElement; p && p !== root; p = p.parentElement) if (stacks(getComputedStyle(p))) { under = true; break; }
+                        for (var p = el.parentElement; p && p !== document.body && p !== root; p = p.parentElement) if (stacks(getComputedStyle(p))) { under = true; break; }
                         if (!under) return;
                         var r = el.getBoundingClientRect();
                         if (r.width && r.height) d += rr(r.left - ox, r.top - oy, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0);
