@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.2
+// @version      2026.11.01.2308.3
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -7856,16 +7856,18 @@ function pinFold(acts, pin) {
 }
 PIN_NARROW.addEventListener('change', () => { const bar = document.getElementById('eh-pin'), acts = bar && bar.querySelector('.acts'); if (acts) pinFold(acts, bar.classList.contains('on')); });
 // lights the section at the top of the window
+// and gives a stuck section header its background, MusicBrainz's releases page's too, which has no rail
 function railSpy() {
-    const rail = document.getElementById('eh-rail'); if (!rail || !ehOn) return;
+    if (!ehOn) return;
+    const rail = document.getElementById('eh-rail');
     let cur = null;
     const pinTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eh-pin-h')) || 0;
-    for (const x of document.querySelectorAll('#app>section.sec:not([hidden])')) {
+    for (const x of document.querySelectorAll('#app>section.sec:not([hidden]),.eh-release-views>section.sec:not([hidden])')) {
         const top = x.getBoundingClientRect().top, head = x.querySelector(':scope>.secthead');
         if (top < innerHeight / 3) cur = x.id.slice(2);
         if (head) head.classList.toggle('stuck', !!head.querySelector(':scope>.fold[aria-expanded="true"]') && top - 6 < pinTop);
     }
-    rail.querySelectorAll('[data-sec]').forEach(r => r.classList.toggle('on', r.dataset.sec === cur));
+    if (rail) rail.querySelectorAll('[data-sec]').forEach(r => r.classList.toggle('on', r.dataset.sec === cur));
 }
 // the release links stay on one row; what doesn't fit goes behind +N
 function fitQuiet() {
@@ -8241,7 +8243,9 @@ new MutationObserver(() => {
     const de = document.documentElement, t = de.getAttribute('data-mbu-theme');
     if (t && de.hasAttribute('data-eh-theme')) de.setAttribute('data-eh-theme', t);
 }).observe(document.documentElement, { attributeFilter: ['data-mbu-theme'] });
-const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
+const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-theme=dark\]\{[\s\S]*?\}/) || [''])[0].replace(/:root/g, ':root[data-eh-rel]')
+    // the theme's band and bar colours, which the stuck section header and the pinned bar take
+    + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
 :root[data-eh-rel] body{background:var(--bg)!important}
 :root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
@@ -8321,6 +8325,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #set-cover-art-images .release-description strong{display:inline-block;margin-top:6px;padding:2px 8px;border-radius:6px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:11.5px}
 :root[data-eh-rel] :is(.ui-dialog,.dialog,[role=dialog]){background:var(--surface)!important;color:var(--text)!important;border-color:var(--border)!important}
 #eh-relhd{font-family:Manrope,system-ui,sans-serif;color:var(--text);margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:20px;align-items:center}#eh-relhd>.u-nav{margin:0}#eh-relhd .u-k{position:absolute;top:0;right:0}#eh-relhd{position:relative}#eh-relhd .u-nav{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 28px;margin:0 0 -21px;flex-basis:100%}#eh-relhd .u-ng{display:flex;flex-wrap:wrap;gap:0 22px}#eh-relhd .u-ng.acc{margin-left:auto;padding-left:22px;border-left:1px solid var(--border);margin-bottom:10px;align-self:stretch;align-items:flex-end}#eh-relhd .u-ng.acc .u-nt{margin-bottom:-10px}#eh-relhd .u-nt{padding:10px 0 9px;font-weight:600;font-size:14px;color:var(--muted)!important;text-decoration:none!important;border-bottom:3px solid transparent;white-space:nowrap}#eh-relhd .u-nt:hover{color:var(--text)!important}#eh-relhd .u-nt.on{color:var(--text)!important;border-color:var(--accent)}#eh-relhd .u-av{position:relative;overflow:visible!important}#eh-relhd.u-fhd{margin:24px 0 8px;gap:24px;align-items:flex-start}#eh-relhd.u-fhd h1{margin:6px 0 4px!important}#eh-relhd.u-fhd .u-nav{min-height:44px;margin:0}#eh-relhd .u-av>img{border-radius:50%}#eh-relhd .u-avb{position:absolute;right:-4px;bottom:-4px;width:32px;height:32px;border-radius:50%;background:var(--surface);border:2px solid var(--bg);display:grid;place-items:center;color:var(--accent)}#eh-relhd>.rhcv{flex:none;width:112px;height:112px;border-radius:10px;object-fit:cover;box-shadow:0 6px 18px var(--shadow)}#eh-relhd>.rhcv[hidden]{display:none}#eh-relhd>.rhtx{flex:1;min-width:0}#eh-relhd .kicker.label{font-size:10.5px}#eh-relhd .ab.on{background:var(--accent);color:#fff!important;border-radius:9px}#eh-relhd .ab.on svg{stroke:#fff}#eh-relhd h1{white-space:normal!important;overflow-wrap:anywhere;margin:14px 0 10px!important}#eh-relhd h1 a{white-space:normal!important}
+#eh-pin{font-family:Manrope,system-ui,sans-serif;color:var(--text)}#eh-pin .pnm a{color:inherit;text-decoration:none}
 :root[data-eh-rel] .release-relationship-editor button:not(.submit),:root[data-eh-rel] #page button.add-item{filter:none!important;background-color:transparent!important;color:var(--soft)!important;-webkit-text-fill-color:currentColor!important;border-color:var(--border)!important}
 :root[data-eh-rel] #relationship-editor-form{padding:14px 18px 16px;margin-top:28px}:root[data-eh-rel] #relationship-editor-form :is(div,fieldset,form){margin-left:0!important;padding-left:0!important;padding-top:0!important}:root[data-eh-rel] #relationship-editor-form>:first-child,:root[data-eh-rel] #relationship-editor-form>:first-child>:first-child{margin-top:0!important}
 :root[data-eh-rel] #relationship-editor-form :is(fieldset,.row,.no-label,.edit-note){margin-left:0!important;padding-left:0!important;border:0}
@@ -8369,8 +8374,9 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #relationship-editor-form.eh-fold>:not(fieldset),:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset>:not(legend){display:none!important}
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
-const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l)/.test(l)).join('\n')
-    .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => '#eh-relhd ' + x.trim()).join(',') + '{');
+// and to the bar pinned over the releases and details pages, which carries its title and action row
+const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l|#eh-pin)/.test(l)).join('\n')
+    .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => /^#eh-pin\b/.test(x.trim()) ? x.trim() : ':is(#eh-relhd,#eh-pin) ' + x.trim()).join(',') + '{');
 // the header: the same as the cover-art page's; title and artist read off MusicBrainz's own header at once, then the full kicker from the release
 function relHeader(id, tab = 'edit-relationships', name = 'Relationships') {
     const { t, by } = mbHead(), hd = hdSect();
@@ -8469,8 +8475,11 @@ function releasesDress(c) {
         const d = data;
         host.innerHTML = edHtml({page:location.pathname, native:true, more:d.more}, d.editions, d.editions.length);
         // a release without a front cover shows its format, as a tile without one does
-        host.querySelectorAll('.tile img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'), e = d.editions.find(x => x.id === tile.dataset.ed); im.outerHTML = '<span class="nc">' + fmtSvg(fmtKind(e && e.formats[0]), 40, 1.8) + 'no cover</span>'; tile.querySelector('.fb')?.remove(); }; });
+        host.querySelectorAll('.tile img').forEach(im => { im.onerror = () => { const tile = im.closest('.tile'); if (!tile) return; const e = d.editions.find(x => x.id === tile.dataset.ed); im.outerHTML = '<span class="nc">' + fmtSvg(fmtKind(e && e.formats[0]), 40, 1.8) + 'no cover</span>'; tile.querySelector('.fb')?.remove(); }; });
         lmWatch(host);
+        // the table's head sticks under the section's, as on EH's own pages
+        for (const h of host.querySelectorAll('section.sec>.secthead')) h.parentNode.style.setProperty('--eh-sh', h.offsetHeight + 'px');
+        railSpy();
     };
     host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
     listFilters(host);
@@ -8499,11 +8508,12 @@ function userFormHeader(id, form) {
 // the header's section; its search opens in place
 function hdSect() {
     const hd = document.createElement('section'); hd.id = 'eh-relhd'; hd.className = 'arthd';
-    hd.addEventListener('click', e => {
-        const b = e.target.closest('[data-srch]'); if (!b) return;
-        e.preventDefault(); const s = b.closest('.srch'); s.classList.toggle('open'); const q = s.querySelector('input'); if (q && s.classList.contains('open')) q.focus();
-    });
+    hd.addEventListener('click', hdSrch);
     return hd;
+}
+function hdSrch(e) {
+    const b = e.target.closest('[data-srch]'); if (!b) return;
+    e.preventDefault(); const s = b.closest('.srch'); s.classList.toggle('open'); const q = s.querySelector('input'); if (q && s.classList.contains('open')) q.focus();
 }
 // the editor's regions as cards: a heading folds its region, a track's number folds its relationships.
 // The editor is React's, so nothing is moved; classes go back on after it redraws
@@ -8580,6 +8590,12 @@ function relSet(on) {
         if (c) c.prepend(rel ? relHeader(PAGE_ID.split('/')[1]) : formHeader(PAGE_ID));
         if (c && PAGE_ID.endsWith('/details')) detailsDress(c);
         if (c && PAGE_ID.endsWith('/releases')) releasesDress(c);
+        // a releases or details page pins its header's bar once it scrolls away, as EH's own pages do
+        if (c && /\/(details|releases)$/.test(PAGE_ID) && c.querySelector('#eh-relhd .kicker .acts')) {
+            pinBar(c);
+            document.getElementById('eh-pin')?.addEventListener('click', hdSrch);
+            addEventListener('scroll', railSpy, { passive: true });
+        }
         LOG.info(rel ? 'Dressing the relationship editor of ' + PAGE_ID.split('/')[1] : 'Dressing the form ' + PAGE_ID.slice(5));
         if (rel) relCards();
         else coverDims();
@@ -8592,6 +8608,7 @@ function relSet(on) {
     else { de.removeAttribute('data-eh-rel'); de.removeAttribute('data-eh-theme'); de.removeAttribute('data-eh-bg'); }
     for (const id of ['eh-rel-css', 'eh-font']) { const n = document.getElementById(id); if (n) n.disabled = !on; }
     const hd = document.getElementById('eh-relhd'); if (hd) hd.hidden = !on;   // its sheet is off with it
+    const pin = document.getElementById('eh-pin'); if (pin) pin.hidden = !on;
     const h = document.getElementById('eh-hide'); if (h) h.remove();
     const l = document.getElementById('eh-launch');
     if (l) { l.classList.toggle('on', on); l.dataset.tip = (on ? 'Event Horizon\nClick: MusicBrainz\'s page' : 'Event Horizon\nClick: Event Horizon') + '\nRight-click: settings'; }
