@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.190000
+// @version      2026.10.31.220000
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -89,7 +89,8 @@
 (function () {
 'use strict';
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
-if (!mbuClaim('first_contact', 'First Contact')) return;
+const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
+if (!SETTINGS_ONLY && !mbuClaim('first_contact', 'First Contact')) return;
 
 const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';
 const SCRIPT = 'first_contact';
@@ -3530,8 +3531,8 @@ function askMissing(rel, provider, anchor) {
     });
 }
 function placePanel(panel, anchor) {
-    const r = anchor.getBoundingClientRect();
     const vw = document.documentElement.clientWidth, vh = window.innerHeight, M = 8;
+    const r = anchor ? anchor.getBoundingClientRect() : { left: vw - M, right: vw - M, top: vh - M, bottom: vh - M };   // #851: no button (String Theory opened them): the bottom-right corner
     const above = r.top - M * 2, below = vh - r.bottom - M * 2;
     const up = panel.offsetHeight <= above || above >= below;
     panel.style.maxHeight = Math.max(120, up ? above : below) + 'px';
@@ -3570,7 +3571,7 @@ function togglePanel(anchor) {
         + `<label data-tip="Look the album up in MusicBrainz before the release editor opens\nBy its link, its barcode, and its title and artist. If MusicBrainz may have it, you choose: update that release in Mission Control, add only the link, or import anyway.\n- On import: when you click Import\n- On page load: the album is read and checked as the page opens, its light on the button; Import uses that read">Check MusicBrainz <select class="fc-check-mode">`
         + CHECK_MODES.map(([v, t]) => `<option value="${v}"${v === checkMode() ? ' selected' : ''}>${t}</option>`).join('')
         + '</select></label>'
-        + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
+        + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${here ? '' : ' disabled'}${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
         + `<label class="fc-check" data-tip="Close the platform's tab once the release editor has the release\nOr once the album is sent to Harmony. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         + `<label class="fc-check" data-tip="A Consolidate button beside Import\nIt reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor."><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
         + `<label class="fc-check" data-tip="A Send to Harmony button between Import and ⚙︎\nIt looks this album up on Harmony instead, with every platform that has its barcode. Falcon carries on from there."><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
@@ -3584,17 +3585,18 @@ function togglePanel(anchor) {
         + '<div class="fc-sec">Button</div>'
         + `<label class="fc-check" data-tip="Only the icon on the button\nHover it for what it does"><input type="checkbox" class="fc-iconly-opt"${s.iconOnly ? ' checked' : ''}> Icon only</label>`
         + `<label class="fc-check" data-tip="No ⚙︎ button\nRight-click: any of the buttons opens the settings (with ⚙︎ shown too)"><input type="checkbox" class="fc-gear-hidden-opt"${s.gearHidden ? ' checked' : ''}> Hide settings button, use right click instead</label>`
-        + `<label class="fc-check" data-tip="A moved button scrolls with the page\nIt stays on its spot on the page (above the cover, say) instead of on the screen. In its corner it always stays on the screen. For ${here} only."><input type="checkbox" class="fc-scroll-opt"${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
+        + `<label class="fc-check" data-tip="A moved button scrolls with the page\nIt stays on its spot on the page (above the cover, say) instead of on the screen. In its corner it always stays on the screen. For ${here} only."><input type="checkbox" class="fc-scroll-opt"${here ? '' : ' disabled'}${scrollsWithPage(here) ? ' checked' : ''}> Moved button scrolls with the page on ${here}</label>`
         // majkinetor: "change this to Reset: all | this one"
         + `<div class="fc-reset" data-tip="Drag the button to move it\nEach platform remembers its own place. Reset puts it back in the bottom-right corner."><span class="fc-pos">Position</span>Reset: `
         + `<button type="button" class="fc-reset-all" data-tip="Back in the corner on every platform">all</button> | `
-        + `<button type="button" class="fc-reset-pos" data-tip="Back in the corner on ${document.getElementById('fc-root').dataset.fcProvider}">this one</button></div>`
+        + `<button type="button" class="fc-reset-pos" data-tip="Back in the corner on ${here || 'this platform'}">this one</button></div>`
         + '</div>');
     document.body.appendChild(panel);
     mbuControls(panel);   // the shared drop-downs
-    placePanel(panel, anchor.closest('#fc-root') || anchor);
+    placePanel(panel, anchor ? (anchor.closest('#fc-root') || anchor) : null);
     panel.querySelector('.fc-reset-pos').addEventListener('click', () => {
         const root = document.getElementById('fc-root');
+        if (!root) { closePanel(); return; }
         storePos(root.dataset.fcProvider, null);
         setScrollsWithPage(root.dataset.fcProvider, false);
         placeButton(root);
@@ -3606,7 +3608,7 @@ function togglePanel(anchor) {
         const had = Object.keys(GM_getValue(POS_KEY, {}) || {});
         GM_setValue(POS_KEY, {});
         GM_setValue(SCROLL_KEY, {});
-        placeButton(root);
+        if (root) placeButton(root);
         closePanel();
         Log.info(`button back in the corner on every platform (it had been moved on ${had.join(', ') || 'none'})`);
     });
@@ -6562,6 +6564,9 @@ ${s} input::placeholder { color: var(--mbu-text-weak); opacity: 1; font-style: n
 }
 // </ST-ARCHIVE>
 
+// #851: String Theory's settings open these settings on any page, whether this script runs here or not
+document.addEventListener('mbu-open-settings', e => { if (e.detail === 'first_contact' && !e.defaultPrevented) { e.preventDefault(); injectStyle(); togglePanel(null); } });
+if (SETTINGS_ONLY) { injectStyle(); togglePanel(null); return; }
 try {
     // a provider that must hear the player's own requests hooks them now, before the page's scripts run
     const early = !ON_MB && PROVIDERS.find(p => p.early && p.host.test(location.hostname));

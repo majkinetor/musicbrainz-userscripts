@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mammoth
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.190000
+// @version      2026.10.31.220000
 // @description  Edit-note memory for MusicBrainz: auto-remembers your last edit notes and lets you save reusable ones, recalling them from a compact panel beside the edit-note field on every edit form. A nicer replacement for Elephant Editor.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iIzdhNGExZiI+PHBhdGggZD0iTTIxIDE5QzIxIDEyLjUgMTcuNSA4LjUgMTEuNSA4LjVDNyA4LjUgNC4yIDExLjIgNC4yIDE1TDQuMiAxOVoiLz48Y2lyY2xlIGN4PSI3LjYiIGN5PSIxMC42IiByPSI1Ii8+PHJlY3QgeD0iNyIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48cmVjdCB4PSIxNSIgeT0iMTYuNSIgd2lkdGg9IjIuOCIgaGVpZ2h0PSI1LjIiIHJ4PSIxLjMiLz48L2c+PHBhdGggZD0iTTMuMSAxMS4yQzEuNiAxMy42IDIgMTYuNiAzLjcgMTguMUM0LjYgMTguOSA1LjkgMTguNiA2LjEgMTcuNUM2LjMgMTYuNSA1LjcgMTUuOCA1LjMgMTUuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjN2E0YTFmIiBzdHJva2Utd2lkdGg9IjIuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTUuMiAxNS4yQzQuMSAxNi42IDQuMyAxOC4yIDUuNiAxOC45IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZmU3ZDIiIHN0cm9rZS13aWR0aD0iMS40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4NCg==
@@ -34,7 +34,8 @@
 (function () {
   'use strict';
   // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
-  if (!mbuClaim('mammoth', 'Mammoth')) return;
+  const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
+  if (!SETTINGS_ONLY && !mbuClaim('mammoth', 'Mammoth')) return;
   try { console.info('[Mammoth] ' + mbuStartupInfo('Mammoth')); } catch (e) { /* no console */ }   // Mammoth keeps no session log
 
   const KEY = 'mammoth:data';
@@ -2935,6 +2936,9 @@
   };
   const acObs = new MutationObserver(syncAc);
   const watchAcMenus = () => { document.querySelectorAll('ul.ui-autocomplete').forEach(u => { if (!u._mmthfAc) { u._mmthfAc = 1; acObs.observe(u, { attributes: true, attributeFilter: ['style', 'class'] }); } }); syncAc(); };
+  // #851: String Theory's settings open these settings on any page, whether this script runs here or not
+  document.addEventListener('mbu-open-settings', e => { if (e.detail === 'mammoth' && !e.defaultPrevented) { e.preventDefault(); if (document.querySelector('.mmth-cfg')) closePop(); else openSettings(null); } });
+  if (SETTINGS_ONLY) { if (document.querySelector('.mmth-cfg')) closePop(); else openSettings(null); return; }
   // #623 (sweep, M1): this observer sees every node on every MusicBrainz page, and each
   // mutation re-queried the edit notes, dialogs and autocomplete menus (a
   // getComputedStyle per menu) — hundreds of times while a page renders in bursts. Now a

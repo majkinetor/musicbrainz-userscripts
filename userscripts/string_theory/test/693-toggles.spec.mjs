@@ -202,7 +202,8 @@ test.describe('Event Horizon turned off', () => {
     const names = await strip(), on = await stack();
     check(['Fusion', 'Mission Control', 'Elsewhere'].every(n => names.includes(n)), `the launchers are listed (${names.join(', ')})`);
     check(JSON.stringify(names.filter(n => on.includes(n))) === JSON.stringify(on), `in the page's order (${on.join(', ')})`);
-    check(await page.evaluate(() => document.querySelector('#st-order [data-name="Elsewhere"]').classList.contains('st-away')), 'one not on this page is dimmed');
+    check(await page.evaluate(() => getComputedStyle(document.querySelector('#st-order [data-name="Elsewhere"]')).opacity === '1'), 'one not on this page is not dimmed');
+    check(await page.evaluate(() => getComputedStyle(document.getElementById('st-cfg-ov')).backgroundColor === 'rgba(0, 0, 0, 0)'), 'the page behind is not dimmed');
     await page.screenshot({ path: info.outputPath('order.png') });
 
     // drag the last launcher on the page to the front
@@ -216,9 +217,10 @@ test.describe('Event Horizon turned off', () => {
     check(order && order[0] === last, `stored with ${last} first (${JSON.stringify(order)})`);
     check((await stack())[0] === last, `${last} moved nearest the corner (${(await stack()).join(', ')})`);
 
+    // #851: settings open anywhere; a launcher that isn't a member has none
     await page.locator('#st-order [data-name="Elsewhere"]').click({ button: 'right' });
-    check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'a right-click on one not here keeps the settings open');
-    check(await page.evaluate(() => getComputedStyle(document.getElementById('st-cfg-ov')).backgroundColor === 'rgba(0, 0, 0, 0)'), 'the page behind is not dimmed');
+    check(await until(() => page.evaluate(() => /Elsewhere has no settings/.test(document.getElementById('mbu-toast')?.textContent || '')), Boolean, { timeout: 5000 }), 'a right-click on one that is not a member says it has no settings');
+    await openSettings(page);
     // every icon in the settings is cropped to what it draws (the pixel crop runs once drawn), so all show the same size
     await page.waitForTimeout(600);
     const sizes = await page.evaluate(() => Promise.all([...document.querySelectorAll('#st-order .st-di img')].map(img => new Promise(ok => {
@@ -237,8 +239,13 @@ test.describe('Event Horizon turned off', () => {
     check(list.length > 5 && list.every(r => r[1]), `every script in About has its icon (${list.filter(r => !r[1]).map(r => r[0]).join(', ') || 'all'})`);
     check(list.every(r => r[2] < 30), `no name wraps (${Math.max(...list.map(r => r[2]))} px rows)`);
     await page.screenshot({ path: info.outputPath('about.png') });
-    await page.locator('#st-cfg .st-scripts [data-name="Credit Hoarder"]').click({ button: 'right' });
-    check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'a script not on this page keeps the settings open');
+    // #851: Art Station doesn't run on a release page; String Theory starts it only to open its settings
+    await page.locator('#st-cfg .st-scripts [data-name="Art Station"]').click({ button: 'right' });
+    check(await until(() => page.evaluate(() => !!document.getElementById('as-setup')), Boolean, { timeout: 5000 }), 'a script not on this page opens its settings');
+    check(await page.evaluate(() => !document.getElementById('as-css') || !!document.getElementById('as-setup')), 'and only them');
+    await page.evaluate(() => document.getElementById('as-setup')?.remove());
+    await openSettings(page);
+    await page.locator('#st-tab-a').click();
     await page.locator('#st-cfg .st-scripts [data-name="Fusion"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion in About opens Fusion\'s settings');
     await page.keyboard.press('Escape');

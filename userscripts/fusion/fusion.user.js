@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.190000
+// @version      2026.10.31.220000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -19,7 +19,8 @@
 (function () {
 'use strict';
 // one copy per page: with String Theory and a standalone install both on, the newer one runs (#653)
-if (!mbuClaim('fusion', 'Fusion')) return;
+const SETTINGS_ONLY = typeof MBU_SETTINGS_ONLY !== 'undefined' && !!MBU_SETTINGS_ONLY;   // #851: String Theory started this copy only to open its settings
+if (!SETTINGS_ONLY && !mbuClaim('fusion', 'Fusion')) return;
 
 const VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || '?';   // GM_info carries the real one; every script manager provides it (a hard-coded copy only ever went stale)
 const HELP_URL = 'https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/fusion/README.md';
@@ -5169,7 +5170,7 @@ function openSettings(anchor) {
     s.querySelector('#fs-opt-tol').onchange = e => { SETTINGS.lengthToleranceMs = Math.max(0, Number(e.target.value) || 0) * 1000; saveSettings(); };
     s.querySelector('#fs-opt-gross').onchange = e => { SETTINGS.grossLengthMs = Math.max(5, Number(e.target.value) || 30) * 1000; saveSettings(); Log.info('Gross-length guard set to ' + Math.round(SETTINGS.grossLengthMs / 1000) + 's'); };
     s.querySelector('.mbu-cfg-log').onclick = () => { s.remove(); openLog(); };
-    const off = e => { if (!s.contains(e.target) && !anchor.contains(e.target)) { s.remove(); document.removeEventListener('mousedown', off); } };
+    const off = e => { if (!s.contains(e.target) && !(anchor && anchor.contains(e.target))) { s.remove(); document.removeEventListener('mousedown', off); } };
     setTimeout(() => document.addEventListener('mousedown', off), 0);
     // Escape closes the popup only (capture, so the main window's own Escape doesn't also fire)
     const esc = e => {
@@ -5460,6 +5461,9 @@ function boot() {
     // reopen the log window if it was left open (same as apollo_editor #283)
     setTimeout(() => { try { Log.reopen(); } catch (e) {} }, 800);   // #283 reopen the log if it was left open
 }
+// #851: String Theory's settings open these settings on any page, whether this script runs here or not
+document.addEventListener('mbu-open-settings', e => { if (e.detail === 'fusion' && !e.defaultPrevented) { e.preventDefault(); fsStyle(); const fsS = document.getElementById('fs-settings'); if (fsS) fsS.remove(); else openSettings(null); } });
+if (SETTINGS_ONLY) { fsStyle(); const fsS = document.getElementById('fs-settings'); if (fsS) fsS.remove(); else openSettings(null); return; }
 boot();
 new MutationObserver(() => { closeFusion(); ensureLauncher(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-page'] });
 

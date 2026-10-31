@@ -13,7 +13,9 @@ import globals from 'globals';
 const gm = Object.fromEntries(['unsafeWindow', 'GM_info', 'GM', 'GM_setValue', 'GM_getValue', 'GM_deleteValue', 'GM_listValues',
   'GM_addValueChangeListener', 'GM_removeValueChangeListener', 'GM_xmlhttpRequest', 'GM_addStyle', 'GM_openInTab',
   'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_cookie', 'GM_setClipboard', 'GM_download', 'GM_notification',
-  'cloneInto', 'exportFunction'].map(k => [k, 'readonly']));
+  'cloneInto', 'exportFunction',
+  'MBU_SETTINGS_ONLY',   // set by String Theory's bundle when it starts a member only to open its settings (#851)
+  ].map(k => [k, 'readonly']));
 
 const rules = {
   // real bugs

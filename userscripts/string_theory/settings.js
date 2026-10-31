@@ -1,7 +1,7 @@
 // String Theory's settings window (#851). build.mjs writes this file into the bundle, inside the scope of
 // its toggles, where these are defined: stMembers ([folder, name, version, @icon] per member), ST_VERSION,
 // ST_BRANCH (the branch a test build was made on, empty on main and stable),
-// ST_ICON, ST_HOME, ST_ON_MB, stFlip(folder), __stReadOff(), mbuShared(), mbRestackCorner(), and stUI()
+// ST_ICON, ST_HOME, ST_ON_MB, stFlip(folder), __stReadOff(), __stStarters (folder → { so, soStarted(), go() }), mbuShared(), mbRestackCorner(), and stUI()
 // and stTokens(), which return the shared UI and token blocks (each made once, the first time the window
 // opens). Plain ES5, as the bundle's own code: no build step touches it.
 var stCfgOv = null;
@@ -185,7 +185,6 @@ var ST_CSS = ''
   + '#st-cfg .st-di{display:grid;place-items:center;flex:0 0 auto;border-radius:50%;cursor:grab;user-select:none}'
   + '#st-cfg .st-di>img,#st-cfg .st-di>svg{width:100%;height:100%;display:block;pointer-events:none}'
   + '#st-cfg .st-di.st-drag{outline:2px solid var(--mbu-accent);outline-offset:2px;cursor:grabbing}'
-  + '#st-cfg .st-di.st-away{opacity:.45}'
   + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-links{flex-wrap:wrap;gap:4px 14px}'
   + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
@@ -262,11 +261,16 @@ function stSettings() {
     });
     return els.filter(function (el) { return el.dataset.mbuDocked !== 'off'; })[0] || els[0] || null;
   };
+  // On any page: the script opens them itself when it runs here (mbu-open-settings), else its launcher's
+  // right-click does, else String Theory starts it only to open its settings, off or not on this page
   var openFor = function (name) {
-    var el = live(name);
-    if (!el) { try { U.mbuToast('⚠ ' + name + ' isn’t on this page'); } catch (err) { /* no toast */ } return; }
+    var m = stMembers.filter(function (x) { return x[1] === name; })[0], folder = m ? m[0] : name, el = live(name);
     close();
-    el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }));
+    if (!document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: folder, cancelable: true }))) return;
+    if (el) { el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 })); return; }
+    var st = __stStarters[folder];
+    if (st && st.so && !st.soStarted()) { st.go(); return; }
+    try { U.mbuToast('⚠ ' + name + ' has no settings'); } catch (err) { /* no toast */ }
   };
   q('.st-scripts').addEventListener('contextmenu', function (e) {
     var r = e.target.closest('[data-name]');
@@ -315,9 +319,9 @@ function stSettings() {
     };
     Object.keys(known).sort(function (a, b) { return rank(a) - rank(b) || (a < b ? -1 : 1); }).forEach(function (n) {
       var d = document.createElement('div');
-      d.className = 'st-di' + (live(n) ? '' : ' st-away');
+      d.className = 'st-di';
       d.dataset.name = n;
-      d.title = n + (live(n) ? '' : ' (not on this page)');
+      d.title = n;
       d.innerHTML = stFitIcon(known[n]);
       strip.appendChild(d);
     });
