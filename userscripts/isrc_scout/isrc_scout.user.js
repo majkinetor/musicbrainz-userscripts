@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.001500
+// @version      2026.11.01.001501
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1228,7 +1228,7 @@
           el.removeAttribute('data-mbu-docked');   // measured as its script left it
           var shown = getComputedStyle(el).display !== 'none';
           if (shown) { n++; if (el.hasAttribute('data-mbu-busy')) busy = true; }
-          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') ? 'peek' : 'hide');
+          el.setAttribute('data-mbu-docked', !shown ? 'hide' : open ? 'show' : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || '') || el.hasAttribute('data-mbu-actionable') ? 'peek' : 'hide');
           // fades in only when it starts peeking: this runs on every restack, so a CSS animation would replay
           if (was !== 'peek' && el.getAttribute('data-mbu-docked') === 'peek' && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: 'ease-out' });
       });
@@ -9185,9 +9185,15 @@
       const busy = Object.keys(BG.running).length > 0;
       // Findings can arrive after the editor opened. Keep its addable links in step with the dock.
       if (modal && modal.classList.contains('open')) TrackLinks.seedCached();
-      // with Match in the background: the new ISRCs and links it found, together (the card splits them); else the tracks without an ISRC
-      if (bgLinksOn()) { const n = bgIsrcsNew().length + bgLinksToAdd().length; item.status(n ? String(n) : busy ? '' : '\u2713'); }
-      else item.status(missing ? String(missing) : '\u2713');
+      // With Match in the background, show new ISRCs and links separately; otherwise, missing ISRCs.
+      if (bgLinksOn()) {
+        const i = bgIsrcsNew().length, l = bgLinksToAdd().length;
+        item.toggleAttribute('data-mbu-actionable', !!(i || l));
+        item.status(i || l ? i + ',' + l : busy ? '' : '\u2713');
+      } else {
+        item.removeAttribute('data-mbu-actionable');
+        item.status(missing ? String(missing) : '\u2713');
+      }
       item.busy(busy);
       item.card(scoutCard);
       updateBtnLinks();

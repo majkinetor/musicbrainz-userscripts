@@ -23,9 +23,12 @@ test('background findings reach an already open editor', { tag: '@sandbox' }, as
     document.querySelector('#ii-btn-status').textContent += ' ';
   });
   await page.waitForSelector('#ii-tbody .ii-tl-add .ii-tl.new');
+  await page.waitForFunction(() => document.querySelector('#ii-dock')?.dataset.mbCornerStatus === '0,1');
   check(await page.locator('#ii-tbody .ii-tl-add .ii-tl.new').count() === 1, 'late findings populate one provider slot');
   check(/1 to add/.test(await page.locator('#ii-summary-links').textContent()), 'footer counts the finding');
-  check(/1/.test(await page.locator('#ii-btn-links').textContent()), 'launcher counts the same finding');
+  check(/1|…/.test(await page.locator('#ii-btn-links').textContent()), 'launcher counts the finding or shows that Match is still running');
+  check(await page.locator('#ii-dock').getAttribute('data-mb-corner-status') === '0,1', 'dock separates new ISRCs and links');
+  check(await page.locator('#ii-dock').evaluate(el => el.hasAttribute('data-mbu-actionable')), 'links alone keep the dock actionable');
 });
 
 test('launcher counts only cached links the editor can offer', { tag: '@unit' }, async () => {
