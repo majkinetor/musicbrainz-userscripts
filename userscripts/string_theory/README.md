@@ -32,17 +32,17 @@
 
 ## Settings
 
-| Setting           | Default           | What it does                                                                     |
-| ----------------- | ----------------- | -------------------------------------------------------------------------------- |
-| Side              | Right             | The launchers' side of the page                                                  |
-| Orientation       | Column            | A column, or a row along the bottom edge                                         |
-| Size              | 100 %             | The launchers' size, 60 to 160 %                                                 |
-| Launcher order    | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner       |
-| Check for updates |                   | Whether a newer String Theory is out on your channel: stable, latest or a branch |
-| Scripts           | All on            | Turns each bundled script on or off, from the next page load                     |
-| Copy versions     |                   | Copies String Theory's version and each bundled script's, for a bug report       |
+| Setting           | Default           | What it does                                                                                                                                                                |
+| ----------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Side              | Right             | The launchers' side of the page                                                                                                                                             |
+| Orientation       | Column            | A column, or a row along the bottom edge                                                                                                                                    |
+| Size              | 100 %             | The launchers' size, 60 to 160 %                                                                                                                                            |
+| Launcher order    | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                                                  |
+| Check for updates |                   | Whether a newer String Theory is out on your channel: stable, latest or a branch                                                                                            |
+| Scripts           | All on            | Turns each bundled script on or off, from the next page load                                                                                                                |
+| Copy versions     |                   | Copies String Theory's version, each bundled script's, the manager, the browser and the site, for a bug report; *Copy as Markdown* copies them ready to paste into an issue |
 
-- **Right-click a launcher's icon** in the settings to open that script's settings. A dimmed icon is a launcher this page doesn't have.
+- **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
 - Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
 - The settings window shows which channel String Theory was installed from, and links to its GitHub page, its issues and the website.
