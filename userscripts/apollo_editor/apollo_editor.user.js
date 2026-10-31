@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.093300
+// @version      2026.10.31.101500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13446,6 +13446,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-nav-title .tc-nav-split{display:flex;align-items:center;justify-content:center;gap:12px;min-width:0}
     #tc-nav-title .tc-nav-kind{display:inline-flex;align-items:center;gap:4px;padding-right:12px;border-right:1px solid var(--mbu-border);align-self:stretch;font:700 10px Arial;letter-spacing:.08em;text-transform:uppercase;color:var(--mbu-text-weak);white-space:nowrap;flex:none}
     #tc-nav-title .tc-nav-split-b{text-align:left;min-width:0}#tc-nav-title .tc-nav-split-b .tc-nav-title-artist:empty{display:none}
+    #tc-nav-title .tc-nav-new{margin-right:4px;padding:2px 6px;border-radius:9px;background:var(--mbu-accent);color:var(--mbu-text-on-accent);font:700 9.5px Arial;letter-spacing:.08em;line-height:1.2}
+    #tc-nav-title .tc-nav-title-name.tc-nav-ph{font-weight:400;font-style:italic;color:var(--mbu-text-weak)}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name{background:var(--mbu-warn-bg);padding:0 5px}
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:var(--mbu-warn)}
     #tc-nav-title .tc-nav-title-artist{font:12px Arial;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -15249,13 +15251,15 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   function entKindHtml() {
     if (!ENT_KIND) return '';
     const ic = ENT_KIND_ICON[ENT_KIND] || '', lbl = ENT_KIND.replace('-', ' ');
-    return '<span class="tc-nav-kind">' + (ic ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ic + '</svg>' : '') + lbl + '</span>';
+    // an Add page: a New pill before the type (majkinetor, from a mock)
+    return '<span class="tc-nav-kind">' + (rgGid() ? '' : '<span class="tc-nav-new">New</span>') + (ic ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ic + '</svg>' : '') + lbl + '</span>';
   }
   function rgNav(form) {
     navStyle();
     const on = navOn(), sb = rgSubmitBtn(form), row = sb && (sb.closest('.row') || sb.parentElement);
     if (row) mbuCls(row, 'tc-nav-vh', on);
     mbuCls(document.body, 'tc-zen-on', !!(on && SETTINGS.zenMode));
+    mbuCls(document.body, 'tc-ent-new', !!(on && SETTINGS.zenMode && !rgGid()));   // an Add page: the bar's New pill replaces MB's "Add …" heading
     let bar = document.getElementById('tc-nav-bar');
     if (!on) { if (bar) bar.remove(); return; }
     if (!bar) {
@@ -15277,8 +15281,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const sig = name + '\x01' + rgKey();
     if (t && t.dataset.sig !== sig) {
       t.dataset.sig = sig;
-      const nm = rgGid() ? '<a href="' + ORIGIN + '/' + ENT_KIND + '/' + esc(rgGid()) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
-      const body = '<div class="tc-nav-title-album"><span class="tc-nav-title-name">' + nm + '</span></div><div class="tc-nav-title-artist">' + (RG_PAGE ? acLinks(_rgAC) || '' : '') + '</div>';
+      const nm = rgGid() ? '<a href="' + ORIGIN + '/' + ENT_KIND + '/' + esc(rgGid()) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name) || 'Untitled';
+      const body = '<div class="tc-nav-title-album"><span class="tc-nav-title-name' + (rgGid() || name ? '' : ' tc-nav-ph') + '">' + nm + '</span></div><div class="tc-nav-title-artist">' + (RG_PAGE ? acLinks(_rgAC) || '' : '') + '</div>';
       // the entity's type to the left, divided from its name and artist (majkinetor, from a mock)
       t.innerHTML = ENT_KIND ? '<div class="tc-nav-split">' + entKindHtml() + '<div class="tc-nav-split-b">' + body + '</div></div>' : body;
     }
@@ -15320,6 +15324,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.tc-ent-plain .date-range-fieldset > fieldset > p{display:none}
     body.tc-ri-on form.tc-ent-plain :is(.partial-date-month,.partial-date-day){width:3.2em!important;box-sizing:border-box}
     body.tc-zen-on :is(.rgheader,.artistheader,.labelheader,.placeheader,.workheader,.recordingheader,.eventheader,.seriesheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
+    body.tc-ent-new :is(#content, #page) > h1{display:none!important}
     body:has(#tc-nav-bar) form.tc-ent-form{margin-top:4px}
     body.tc-ri-on form.tc-ent-form input[id$=".comment"]{box-sizing:border-box;width:calc(100% - 170px)!important}
     body.tc-ri-on form.tc-ent-form .row:has(input[name*="make_votable"]){padding-left:0!important;margin-left:0!important}
