@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.001702.1
+// @version      2026.11.01.001702.2
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3933,7 +3933,7 @@ function annotation(g) {
     if (!g.annotation) return '';
     const type = data.kind === 'rg' ? 'release-group' : data.kind || 'release';
     const summary = S.fold.includes('an') ? `<span class="an-summary">${esc(g.annotation.replace(/\s+/g, ' ').trim())}</span>` : '';
-    const controls = `${summary}<div class="tools"><a class="lnk" href="${MB}/${type}/${g.id}/edit_annotation">Edit</a><button class="tx plcfg" type="button" data-plcfg="annotation" aria-label="Annotation settings" data-tip="Annotation settings">${MBU_CFG_ICON}</button></div>`;
+    const controls = `${summary}<div class="tools"><a class="eh-edit" href="${MB}/${type}/${g.id}/edit_annotation" aria-label="Edit annotation" data-tip="Edit annotation">${MBU_EDIT_ICON}</a><button class="tx plcfg" type="button" data-plcfg="annotation" aria-label="Annotation settings" data-tip="Annotation settings">${MBU_CFG_ICON}</button></div>`;
     const preview = S.annoHover ? `<div class="an-preview anno">${annoHtml(g.annotation)}</div>` : '';
     return sect('an', 'Annotation', '', `<div class="anno">${annoHtml(g.annotation)}</div>`, preview, controls);
 }
