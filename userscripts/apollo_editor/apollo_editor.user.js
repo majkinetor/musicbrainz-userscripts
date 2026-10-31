@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.235500
+// @version      2026.11.01.001500
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -4897,10 +4897,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
               + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
               // no names, only a short state (a count) as a badge on the entry's top-right corner
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
-              + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf{filter:none!important}'
+              + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf,[data-mbu-docked=show],[data-mbu-docked=peek]{filter:none!important}'
+              + ':root[data-mbu-dock-over] [data-mbu-docked=show]{opacity:1!important}'   // a launcher's own resting fade (Fusion's .85) reads as dim on the shelf
               // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
-              + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
-              + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.85);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
+              + '#mbu-dock-shelf{position:fixed;z-index:2147482989;box-sizing:border-box;background:transparent;opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'   // catches the pointer between icons, so the page behind the dock's gaps doesn't react
+              + ':root[data-mbu-dock-frost] #mbu-dock-shelf{background:rgba(255,255,255,.6);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6)}'   // String Theory's Hover: Shelf
+              + ':root[data-mbu-dock-frost] #mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.6);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
               + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
               // folded, an entry with something to do peeks beside the button, smaller
               + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
@@ -4959,16 +4961,45 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           // the shelf: shown while the pointer is over the dock, dark on a dark page (a dark userstyle)
           var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; root.appendChild(shelf);
           var pageDark = function () {
-              var t = mbuThemeOf(document.body && getComputedStyle(document.body).backgroundColor) || mbuThemeOf(getComputedStyle(root).backgroundColor);
-              return t === 'dark';
+              // the dock block can ship without mbuThemeOf, so read the luminance here
+              var lum = function (bg) {
+                  var m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/.exec(bg || '');
+                  if (!m || (m[4] !== undefined && +m[4] < 0.5)) return null;
+                  return (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255;
+              };
+              var l = lum(document.body && getComputedStyle(document.body).backgroundColor);
+              if (l === null) l = lum(getComputedStyle(root).backgroundColor);
+              return l !== null && l < 0.5;
           };
           var shelfOver = function (e) {
               var b = dockBox(), over = inBox(e, b, 6);
               if (over) {
                   var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
                   shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
-                  shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
+                  shelf.style.width = w + 'px'; shelf.style.height = h + 'px';
                   if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
+                  // a launcher inside its own stacking layer (MB's body is isolation:isolate) paints within that
+                  // layer, under the shelf whatever its z-index, and launchers sit in different layers: the shelf
+                  // stays on <html>, below the launchers there, and cuts a hole where each of the others is
+                  var stacks = function (cs) {
+                      return (cs.zIndex !== 'auto' && cs.position !== 'static') || cs.isolation === 'isolate' || +cs.opacity < 1
+                          || cs.transform !== 'none' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || /paint|layout|strict|content/.test(cs.contain || '');
+                  };
+                  var rr = function (x, y, rw, rh, r) {
+                      r = Math.max(0, Math.min(r, rw / 2, rh / 2));
+                      var a = function (dx, dy) { return 'a' + r + ' ' + r + ' 0 0 1 ' + dx + ' ' + dy; };
+                      return 'M' + (x + r) + ' ' + y + 'h' + (rw - 2 * r) + a(r, r) + 'v' + (rh - 2 * r) + a(-r, r)
+                          + 'h' + (2 * r - rw) + a(-r, -r) + 'v' + (2 * r - rh) + a(r, -r) + 'z';
+                  };
+                  var ox = b.left - pad, oy = b.top - pad, d = rr(0, 0, w, h, Math.min(w, h) / 2);
+                  Array.prototype.forEach.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) {
+                      var under = false;
+                      for (var p = el.parentElement; p && p !== root; p = p.parentElement) if (stacks(getComputedStyle(p))) { under = true; break; }
+                      if (!under) return;
+                      var r = el.getBoundingClientRect();
+                      if (r.width && r.height) d += rr(r.left - ox, r.top - oy, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0);
+                  });
+                  shelf.style.clipPath = 'path(evenodd, "' + d + '")';
               }
               root.toggleAttribute('data-mbu-dock-over', over);
           };
@@ -4997,6 +5028,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       var open = root.hasAttribute('data-mbu-dock-open'), n = 0, busy = false;
       if (mbuShared('cornerFlow') === 'row') root.setAttribute('data-mbu-flow', 'row'); else root.removeAttribute('data-mbu-flow');
       if (mbuShared('cornerSide') === 'left') root.setAttribute('data-mbu-side', 'left'); else root.removeAttribute('data-mbu-side');
+      root.toggleAttribute('data-mbu-dock-frost', mbuShared('dockHover') === 'shelf');
       els.forEach(function (el) {
           if ((eh && el.dataset.mbCornerDock === 'hide') || (el.dataset.mbCornerPaths && !new RegExp(el.dataset.mbCornerPaths).test(location.pathname))) { el.setAttribute('data-mbu-docked', 'off'); return; }
           var was = el.getAttribute('data-mbu-docked');
