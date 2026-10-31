@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         String Theory
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.100858
-// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.31.093300, art_station 2026.10.31.093300, credit_hoarder 2026.10.31.093350, event_horizon 2026.10.31.100643, falcon 2026.10.31.093300, first_contact 2026.10.31.093300, fusion 2026.10.31.093300, group_therapy 2026.10.31.093300, isrc_scout 2026.10.31.094220, mammoth 2026.10.31.093300, mission_control 2026.10.31.093300, platform_check 2026.10.31.093300). Built by userscripts/string_theory/build.mjs — do not hand-edit.
+// @version      2026.10.31.102741
+// @description  Unified bundle of 12 MusicBrainz userscripts (apollo_editor 2026.10.31.093300, art_station 2026.10.31.093300, credit_hoarder 2026.10.31.093350, event_horizon 2026.10.31.102500, falcon 2026.10.31.093300, first_contact 2026.10.31.093300, fusion 2026.10.31.093300, group_therapy 2026.10.31.093300, isrc_scout 2026.10.31.094220, mammoth 2026.10.31.093300, mission_control 2026.10.31.093300, platform_check 2026.10.31.093300). Built by userscripts/string_theory/build.mjs — do not hand-edit.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5TdHJpbmcgVGhlb3J5PC90aXRsZT4KPHBhdGggZD0iTTY0IDEwIEw2Ni40IDEwLjIgTDY4LjcgMTAuNiBMNzAuOSAxMS40IEw3My4xIDEyLjQgTDc1LjIgMTMuNyBMNzcuMSAxNS4yIEw3OC44IDE3IEw4MC40IDE4LjkgTDgxLjggMjEgTDgzLjEgMjMuMSBMODQuMSAyNS40IEw4NSAyNy42IEw4NS43IDI5LjkgTDg2LjMgMzIuMSBMODYuOCAzNC4zIEw4Ny4xIDM2LjQgTDg3LjQgMzguNCBMODcuNyA0MC4zIEw4Ny45IDQyLjEgTDg4LjIgNDMuNyBMODguNSA0NS4yIEw4OC45IDQ2LjYgTDg5LjQgNDcuOCBMOTAgNDkgTDkwLjcgNTAuMSBMOTEuNiA1MS4xIEw5Mi42IDUyLjIgTDkzLjcgNTMuMiBMOTUgNTQuMiBMOTYuNCA1NS4zIEw5Ny45IDU2LjUgTDk5LjUgNTcuNyBMMTAxLjEgNTkuMSBMMTAyLjcgNjAuNiBMMTA0LjQgNjIuMiBMMTA2IDY0IEwxMDcuNSA2NS45IEwxMDguOSA2Ny45IEwxMTAuMiA3MC4xIEwxMTEuMyA3Mi4zIEwxMTIuMSA3NC43IEwxMTIuOCA3Ny4xIEwxMTMuMSA3OS41IEwxMTMuMiA4MS45IEwxMTMgODQuMyBMMTEyLjYgODYuNiBMMTExLjggODguOSBMMTEwLjggOTEgTDEwOS41IDkzIEwxMDcuOSA5NC43IEwxMDYuMSA5Ni4zIEwxMDQuMSA5Ny43IEwxMDIgOTguOCBMOTkuNyA5OS43IEw5Ny4zIDEwMC40IEw5NC45IDEwMC44IEw5Mi40IDEwMSBMODkuOSAxMDAuOSBMODcuNCAxMDAuNyBMODUgMTAwLjQgTDgyLjcgOTkuOSBMODAuNCA5OS4zIEw3OC4zIDk4LjYgTDc2LjMgOTcuOCBMNzQuNCA5Ny4xIEw3Mi43IDk2LjQgTDcxIDk1LjcgTDY5LjUgOTUuMSBMNjggOTQuNiBMNjYuNyA5NC4zIEw2NS4zIDk0LjEgTDY0IDk0IEw2Mi43IDk0LjEgTDYxLjMgOTQuMyBMNjAgOTQuNiBMNTguNSA5NS4xIEw1NyA5NS43IEw1NS4zIDk2LjQgTDUzLjYgOTcuMSBMNTEuNyA5Ny44IEw0OS43IDk4LjYgTDQ3LjYgOTkuMyBMNDUuMyA5OS45IEw0MyAxMDAuNCBMNDAuNiAxMDAuNyBMMzguMSAxMDAuOSBMMzUuNiAxMDEgTDMzLjEgMTAwLjggTDMwLjcgMTAwLjQgTDI4LjMgOTkuNyBMMjYgOTguOCBMMjMuOSA5Ny43IEwyMS45IDk2LjMgTDIwLjEgOTQuNyBMMTguNSA5MyBMMTcuMiA5MSBMMTYuMiA4OC45IEwxNS40IDg2LjYgTDE1IDg0LjMgTDE0LjggODEuOSBMMTQuOSA3OS41IEwxNS4yIDc3LjEgTDE1LjkgNzQuNyBMMTYuNyA3Mi4zIEwxNy44IDcwLjEgTDE5LjEgNjcuOSBMMjAuNSA2NS45IEwyMiA2NCBMMjMuNiA2Mi4yIEwyNS4zIDYwLjYgTDI2LjkgNTkuMSBMMjguNSA1Ny43IEwzMC4xIDU2LjUgTDMxLjYgNTUuMyBMMzMgNTQuMiBMMzQuMyA1My4yIEwzNS40IDUyLjIgTDM2LjQgNTEuMSBMMzcuMyA1MC4xIEwzOCA0OSBMMzguNiA0Ny44IEwzOS4xIDQ2LjYgTDM5LjUgNDUuMiBMMzkuOCA0My43IEw0MC4xIDQyLjEgTDQwLjMgNDAuMyBMNDAuNiAzOC40IEw0MC45IDM2LjQgTDQxLjIgMzQuMyBMNDEuNyAzMi4xIEw0Mi4zIDI5LjkgTDQzIDI3LjYgTDQzLjkgMjUuNCBMNDQuOSAyMy4xIEw0Ni4yIDIxIEw0Ny42IDE4LjkgTDQ5LjIgMTcgTDUwLjkgMTUuMiBMNTIuOCAxMy43IEw1NC45IDEyLjQgTDU3LjEgMTEuNCBMNTkuMyAxMC42IEw2MS42IDEwLjJaIiBmaWxsPSJub25lIiBzdHJva2U9IiM5Yzg2ZWEiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTY0IDM0IEw2NS4zIDMzLjkgTDY2LjcgMzMuNyBMNjggMzMuNCBMNjkuNSAzMi45IEw3MSAzMi4zIEw3Mi43IDMxLjYgTDc0LjQgMzAuOSBMNzYuMyAzMC4yIEw3OC4zIDI5LjQgTDgwLjQgMjguNyBMODIuNyAyOC4xIEw4NSAyNy42IEw4Ny40IDI3LjMgTDg5LjkgMjcuMSBMOTIuNCAyNyBMOTQuOSAyNy4yIEw5Ny4zIDI3LjYgTDk5LjcgMjguMyBMMTAyIDI5LjIgTDEwNC4xIDMwLjMgTDEwNi4xIDMxLjcgTDEwNy45IDMzLjMgTDEwOS41IDM1IEwxMTAuOCAzNyBMMTExLjggMzkuMSBMMTEyLjYgNDEuNCBMMTEzIDQzLjcgTDExMy4yIDQ2LjEgTDExMy4xIDQ4LjUgTDExMi44IDUwLjkgTDExMi4xIDUzLjMgTDExMS4zIDU1LjcgTDExMC4yIDU3LjkgTDEwOC45IDYwLjEgTDEwNy41IDYyLjEgTDEwNiA2NCBMMTA0LjQgNjUuOCBMMTAyLjcgNjcuNCBMMTAxLjEgNjguOSBMOTkuNSA3MC4zIEw5Ny45IDcxLjUgTDk2LjQgNzIuNyBMOTUgNzMuOCBMOTMuNyA3NC44IEw5Mi42IDc1LjggTDkxLjYgNzYuOSBMOTAuNyA3Ny45IEw5MCA3OSBMODkuNCA4MC4yIEw4OC45IDgxLjQgTDg4LjUgODIuOCBMODguMiA4NC4zIEw4Ny45IDg1LjkgTDg3LjcgODcuNyBMODcuNCA4OS42IEw4Ny4xIDkxLjYgTDg2LjggOTMuNyBMODYuMyA5NS45IEw4NS43IDk4LjEgTDg1IDEwMC40IEw4NC4xIDEwMi42IEw4My4xIDEwNC45IEw4MS44IDEwNyBMODAuNCAxMDkuMSBMNzguOCAxMTEgTDc3LjEgMTEyLjggTDc1LjIgMTE0LjMgTDczLjEgMTE1LjYgTDcwLjkgMTE2LjYgTDY4LjcgMTE3LjQgTDY2LjQgMTE3LjggTDY0IDExOCBMNjEuNiAxMTcuOCBMNTkuMyAxMTcuNCBMNTcuMSAxMTYuNiBMNTQuOSAxMTUuNiBMNTIuOCAxMTQuMyBMNTAuOSAxMTIuOCBMNDkuMiAxMTEgTDQ3LjYgMTA5LjEgTDQ2LjIgMTA3IEw0NC45IDEwNC45IEw0My45IDEwMi42IEw0MyAxMDAuNCBMNDIuMyA5OC4xIEw0MS43IDk1LjkgTDQxLjIgOTMuNyBMNDAuOSA5MS42IEw0MC42IDg5LjYgTDQwLjMgODcuNyBMNDAuMSA4NS45IEwzOS44IDg0LjMgTDM5LjUgODIuOCBMMzkuMSA4MS40IEwzOC42IDgwLjIgTDM4IDc5IEwzNy4zIDc3LjkgTDM2LjQgNzYuOSBMMzUuNCA3NS44IEwzNC4zIDc0LjggTDMzIDczLjggTDMxLjYgNzIuNyBMMzAuMSA3MS41IEwyOC41IDcwLjMgTDI2LjkgNjguOSBMMjUuMyA2Ny40IEwyMy42IDY1LjggTDIyIDY0IEwyMC41IDYyLjEgTDE5LjEgNjAuMSBMMTcuOCA1Ny45IEwxNi43IDU1LjcgTDE1LjkgNTMuMyBMMTUuMiA1MC45IEwxNC45IDQ4LjUgTDE0LjggNDYuMSBMMTUgNDMuNyBMMTUuNCA0MS40IEwxNi4yIDM5LjEgTDE3LjIgMzcgTDE4LjUgMzUgTDIwLjEgMzMuMyBMMjEuOSAzMS43IEwyMy45IDMwLjMgTDI2IDI5LjIgTDI4LjMgMjguMyBMMzAuNyAyNy42IEwzMy4xIDI3LjIgTDM1LjYgMjcgTDM4LjEgMjcuMSBMNDAuNiAyNy4zIEw0MyAyNy42IEw0NS4zIDI4LjEgTDQ3LjYgMjguNyBMNDkuNyAyOS40IEw1MS43IDMwLjIgTDUzLjYgMzAuOSBMNTUuMyAzMS42IEw1NyAzMi4zIEw1OC41IDMyLjkgTDYwIDMzLjQgTDYxLjMgMzMuNyBMNjIuNyAzMy45WiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik02NCAzNCBMNjUuMyAzMy45IEw2Ni43IDMzLjcgTDY4IDMzLjQgTDY5LjUgMzIuOSBMNzEgMzIuMyBMNzIuNyAzMS42IEw3NC40IDMwLjkgTDc2LjMgMzAuMiBMNzguMyAyOS40IEw4MC40IDI4LjcgTDgyLjcgMjguMSBMODUgMjcuNiBMODcuNCAyNy4zIEw4OS45IDI3LjEgTDkyLjQgMjcgTDk0LjkgMjcuMiBMOTcuMyAyNy42IEw5OS43IDI4LjMgTDEwMiAyOS4yIEwxMDQuMSAzMC4zIEwxMDYuMSAzMS43IEwxMDcuOSAzMy4zIEwxMDkuNSAzNSBMMTEwLjggMzcgTDExMS44IDM5LjEgTDExMi42IDQxLjQgTDExMyA0My43IEwxMTMuMiA0Ni4xIEwxMTMuMSA0OC41IEwxMTIuOCA1MC45IEwxMTIuMSA1My4zIEwxMTEuMyA1NS43IEwxMTAuMiA1Ny45IEwxMDguOSA2MC4xIEwxMDcuNSA2Mi4xIEwxMDYgNjQgTDEwNC40IDY1LjggTDEwMi43IDY3LjQgTDEwMS4xIDY4LjkgTDk5LjUgNzAuMyBMOTcuOSA3MS41IEw5Ni40IDcyLjcgTDk1IDczLjggTDkzLjcgNzQuOCBMOTIuNiA3NS44IEw5MS42IDc2LjkgTDkwLjcgNzcuOSBMOTAgNzkgTDg5LjQgODAuMiBMODguOSA4MS40IEw4OC41IDgyLjggTDg4LjIgODQuMyBMODcuOSA4NS45IEw4Ny43IDg3LjcgTDg3LjQgODkuNiBMODcuMSA5MS42IEw4Ni44IDkzLjcgTDg2LjMgOTUuOSBMODUuNyA5OC4xIEw4NSAxMDAuNCBMODQuMSAxMDIuNiBMODMuMSAxMDQuOSBMODEuOCAxMDcgTDgwLjQgMTA5LjEgTDc4LjggMTExIEw3Ny4xIDExMi44IEw3NS4yIDExNC4zIEw3My4xIDExNS42IEw3MC45IDExNi42IEw2OC43IDExNy40IEw2Ni40IDExNy44IEw2NCAxMTggTDYxLjYgMTE3LjggTDU5LjMgMTE3LjQgTDU3LjEgMTE2LjYgTDU0LjkgMTE1LjYgTDUyLjggMTE0LjMgTDUwLjkgMTEyLjggTDQ5LjIgMTExIEw0Ny42IDEwOS4xIEw0Ni4yIDEwNyBMNDQuOSAxMDQuOSBMNDMuOSAxMDIuNiBMNDMgMTAwLjQgTDQyLjMgOTguMSBMNDEuNyA5NS45IEw0MS4yIDkzLjcgTDQwLjkgOTEuNiBMNDAuNiA4OS42IEw0MC4zIDg3LjcgTDQwLjEgODUuOSBMMzkuOCA4NC4zIEwzOS41IDgyLjggTDM5LjEgODEuNCBMMzguNiA4MC4yIEwzOCA3OSBMMzcuMyA3Ny45IEwzNi40IDc2LjkgTDM1LjQgNzUuOCBMMzQuMyA3NC44IEwzMyA3My44IEwzMS42IDcyLjcgTDMwLjEgNzEuNSBMMjguNSA3MC4zIEwyNi45IDY4LjkgTDI1LjMgNjcuNCBMMjMuNiA2NS44IEwyMiA2NCBMMjAuNSA2Mi4xIEwxOS4xIDYwLjEgTDE3LjggNTcuOSBMMTYuNyA1NS43IEwxNS45IDUzLjMgTDE1LjIgNTAuOSBMMTQuOSA0OC41IEwxNC44IDQ2LjEgTDE1IDQzLjcgTDE1LjQgNDEuNCBMMTYuMiAzOS4xIEwxNy4yIDM3IEwxOC41IDM1IEwyMC4xIDMzLjMgTDIxLjkgMzEuNyBMMjMuOSAzMC4zIEwyNiAyOS4yIEwyOC4zIDI4LjMgTDMwLjcgMjcuNiBMMzMuMSAyNy4yIEwzNS42IDI3IEwzOC4xIDI3LjEgTDQwLjYgMjcuMyBMNDMgMjcuNiBMNDUuMyAyOC4xIEw0Ny42IDI4LjcgTDQ5LjcgMjkuNCBMNTEuNyAzMC4yIEw1My42IDMwLjkgTDU1LjMgMzEuNiBMNTcgMzIuMyBMNTguNSAzMi45IEw2MCAzMy40IEw2MS4zIDMzLjcgTDYyLjcgMzMuOVoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZjNDdlMCIgc3Ryb2tlLXdpZHRoPSIxMyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K
 // @homepageURL  https://github.com/majkinetor/musicbrainz-userscripts/tree/main/userscripts/string_theory
@@ -185,8 +185,8 @@
 // The shared blocks (// <ST-…>) are written once, below, and each member calls them for its own copy (#786).
 
 try {
-  console.log('%c String Theory %c v2026.10.31.100858 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
-  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.31.093300\n  · Art Station v2026.10.31.093300\n  · Credit Hoarder v2026.10.31.093350\n  · Event Horizon v2026.10.31.100643\n  · Falcon v2026.10.31.093300\n  · First Contact v2026.10.31.093300\n  · Fusion v2026.10.31.093300\n  · Group Therapy v2026.10.31.093300\n  · ISRC Scout v2026.10.31.094220\n  · Mammoth v2026.10.31.093300\n  · Mission Control v2026.10.31.093300\n  · Platform Check v2026.10.31.093300");
+  console.log('%c String Theory %c v2026.10.31.102741 ', 'background:#7c5cff;color:#fff;font-weight:bold;border-radius:3px;padding:2px 6px', 'color:#7c5cff;font-weight:bold');
+  console.log("String Theory bundles:\n  · Apollo Editor v2026.10.31.093300\n  · Art Station v2026.10.31.093300\n  · Credit Hoarder v2026.10.31.093350\n  · Event Horizon v2026.10.31.102500\n  · Falcon v2026.10.31.093300\n  · First Contact v2026.10.31.093300\n  · Fusion v2026.10.31.093300\n  · Group Therapy v2026.10.31.093300\n  · ISRC Scout v2026.10.31.094220\n  · Mammoth v2026.10.31.093300\n  · Mission Control v2026.10.31.093300\n  · Platform Check v2026.10.31.093300");
 } catch (e) {}
 
 var __stDefOff = [];
@@ -196,7 +196,7 @@ var __stOff = __stReadOff();
 (function () {
   if (typeof GM_registerMenuCommand !== 'function') return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
-  var members = [["apollo_editor","Apollo Editor","2026.10.31.093300"],["art_station","Art Station","2026.10.31.093300"],["credit_hoarder","Credit Hoarder","2026.10.31.093350"],["event_horizon","Event Horizon","2026.10.31.100643"],["falcon","Falcon","2026.10.31.093300"],["first_contact","First Contact","2026.10.31.093300"],["fusion","Fusion","2026.10.31.093300"],["group_therapy","Group Therapy","2026.10.31.093300"],["isrc_scout","ISRC Scout","2026.10.31.094220"],["mammoth","Mammoth","2026.10.31.093300"],["mission_control","Mission Control","2026.10.31.093300"],["platform_check","Platform Check","2026.10.31.093300"]];
+  var members = [["apollo_editor","Apollo Editor","2026.10.31.093300"],["art_station","Art Station","2026.10.31.093300"],["credit_hoarder","Credit Hoarder","2026.10.31.093350"],["event_horizon","Event Horizon","2026.10.31.102500"],["falcon","Falcon","2026.10.31.093300"],["first_contact","First Contact","2026.10.31.093300"],["fusion","Fusion","2026.10.31.093300"],["group_therapy","Group Therapy","2026.10.31.093300"],["isrc_scout","ISRC Scout","2026.10.31.094220"],["mammoth","Mammoth","2026.10.31.093300"],["mission_control","Mission Control","2026.10.31.093300"],["platform_check","Platform Check","2026.10.31.093300"]];
   // Each entry carries a stable id (options.id): Violentmonkey and Tampermonkey then relabel it in
   // place, where it stands. Unregister-and-add left Violentmonkey's open menu with the old entry
   // still there and the new one appended at the end. A manager that ignores options.id hands back
@@ -36973,7 +36973,7 @@ ${lines}
 
 // ===== event_horizon (@run-at document-start) =====================================
 if (__stOff.indexOf("event_horizon") < 0) (function(__stGM){ var __stGo = function(){
-  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.100643","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.100643","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
+  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.102500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="}) }) : { script: {"name":"Event Horizon*","namespace":"https://github.com/majkinetor/musicbrainz-userscripts","version":"2026.10.31.102500","description":"An alternative MusicBrainz viewer.","author":"majkinetor","homepage":null,"homepageURL":null,"supportURL":null,"icon":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo="} };
   (f=>f())(function(){ try { (function(){
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
 // (not their subpages), and the home page, and moves between them in place: the page is hidden
@@ -38434,7 +38434,7 @@ const crName = c => {
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
 function crGroup(tag, type, ent, cr, extra = '', fx) {
-    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details">${CHEV}</button>` : '';
+    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details" data-tip="${fx.open ? 'Hide' : 'Show'} these details&#10;Right-click: ${fx.open ? 'hide' : 'show'} sibling details">${CHEV}</button>` : '';
     const head = `<h4>${chev}<span class="tag${chev ? ' fxt' : ''}"${chev ? ` data-fx="${esc(fx.k)}"` : ''}>${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
     if (fx && fx.rows.length) extra = (fx.open ? `<div class="tfx">${fx.rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>` : `<div class="fxsum">${fx.rows.map(r => r[2] || r[1]).join(' · ')}</div>`) + extra;
     const rows = !cr.length ? ''
@@ -38463,9 +38463,9 @@ function detail(t) {
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const fx = (k, rows) => ({ k, open: S.fxOpen.includes(k), rows });
-    const works = (t.works || []).map(w => crGroup('Work', 'work', w, w.cr, '', fx('work', workFacts(w))));
+    const works = (t.works || []).map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx(`${t.rid}:${t.key}:work:${w.id || i}`, workFacts(w))));
     const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
-    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx('rec', recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
+    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx(`${t.rid}:${t.key}:rec`, recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
 // a side's facts: [label, html, short form for the folded summary]
 const mono = s => `<span class="mono">${esc(s)}</span>`;
@@ -38525,16 +38525,13 @@ function tracklist(r) {
     let rows = '';
     r.media.forEach((m, mi) => {
         const shut = S.discFold.includes(mi), ts = tracks.filter(t => t.mi === mi);
-        rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
+        rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this disc&#10;Right-click: ${shut ? 'open' : 'fold'} every disc">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
     const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release">Artist</button>` + [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
     rowKeys = tracks.map(t => t.key);
-    const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
-    // open: arrows apart (expand); all open: arrows together (collapse)
-    const rowsB = `<button class="ib" type="button" data-rows="${allOpen ? 0 : 1}" aria-label="${allOpen ? 'Close all tracks' : 'Open all tracks'}" data-tip="${allOpen ? 'Close all tracks' : 'Open all tracks\nShows every track\'s credits'}">${SVG(allOpen ? '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>' : '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>')}</button>`;
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Platform icons" data-tip="Platform icons\nWhich platforms the tracklist shows, their order and size">${MBU_CFG_ICON}</button>`;
-    const tools = `${rowsB}<span class="ed-div"></span><span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
+    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
@@ -38996,7 +38993,7 @@ function pgCredits(own, side) {
     return sect('cr', 'Credits', '', `<div class="detail pg dm-${S.dis}">${sw}<div class="cols">${own || ''}${side ? `<div class="side">${side}</div>` : ''}</div></div>`, '<div class="folded-note">Credits</div>');
 }
 function recCredits(g) {
-    const works = g.works.map(w => crGroup('Work', 'work', w, w.cr, '', { k: 'work', open: S.fxOpen.includes('work'), rows: workFacts(w) }));
+    const works = g.works.map((w, i) => { const k = `page:work:${w.id || i}`; return crGroup('Work', 'work', w, w.cr, '', { k, open: S.fxOpen.includes(k), rows: workFacts(w) }); });
     return pgCredits(g.cr.length ? crGroup('Recording', 'recording', null, g.cr) : '', works.join(''));
 }
 function wkCredits(g) {
@@ -40932,7 +40929,8 @@ function onClick(ev) {
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
-    const b = ev.target.closest('button,[data-pop],[data-fx]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
+    const gh = ev.target.closest('.gh,.disco-h,.detail .grp h4');
+    const b = ev.target.closest('button,[data-pop],[data-fx]') || (gh && !ev.target.closest('a,input,select') ? gh.querySelector('[data-gfold],[data-fx]') : null) || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
     const tr = ev.target.closest('.tr');
@@ -40959,10 +40957,9 @@ function onClick(ev) {
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
-    else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
-    else if (d.fx) S.fxOpen = toggle(S.fxOpen, d.fx); // a side opens or closes on every track, and stays so
+    else if (d.fx) S.fxOpen = toggle(S.fxOpen, d.fx);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
@@ -41838,11 +41835,12 @@ function histPage(app, d) {
     // right-click on a row: it and its siblings all open, or all close when it is open
     app.oncontextmenu = ev => {
         if (data !== d) return;
-        const t = ev.target, h = t.closest('.hgh'), sm = !h && t.closest('.hrun>summary,.hed>summary');
-        if (t.closest('a') || (!h && !sm)) return;
+        const t = ev.target, item = t.closest('details.hed,details.hrun'), group = t.closest('.hgrp');
+        const h = !item && group && group.querySelector('.hgh');
+        if (!h && !item) return;
         ev.preventDefault();
         if (h) { const keys = [...app.querySelectorAll('.hgrp')].map(g => g.dataset.hg), open = !d.open.has(h.parentNode.dataset.hg); keys.forEach(k => open ? d.open.add(k) : d.open.delete(k)); const y = scrollY; render(); scrollTo(0, y); return; }
-        const me = sm.parentNode, open = !me.open;
+        const me = item, open = !me.open;
         [...me.parentNode.children].filter(x => x.tagName === 'DETAILS').forEach(x => { x.open = open; });
     };
 }
@@ -41898,21 +41896,24 @@ function build() {
     listFilters(document);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
-    // a click anywhere on a release table row opens that release's page (its links and buttons keep their own); Ctrl/middle: a new tab
+    // A release row and its tracklist caret have the same action; links keep navigation.
     const edRow = ev => {
         const r = ehOn && ev.target.closest && ev.target.closest('tr.ed-r[data-edhref]');
         if (!r || ev.target.closest('a,button,input,select,label,summary') || (ev.button === 0 && String(getSelection()).trim())) return;
-        if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(r.dataset.edhref, '_blank'); } else if (ev.button === 0) location.href = r.dataset.edhref;
+        if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(r.dataset.edhref, '_blank'); } else if (ev.button === 0) edToggle(r.querySelector('[data-edtr]').dataset.edtr);
     };
     document.addEventListener('click', edRow);
     document.addEventListener('auxclick', edRow);
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
+        if (!ehOn || ev.defaultPrevented || !ev.target.closest) return;
         // a release row's tracks chevron: every row's tracklist, shown one after another, or all hidden
-        const t = ehOn && ev.target.closest && ev.target.closest('.ed-tr[data-edtr]');
+        const er = ev.target.closest('tr.ed-r, tr.ed-x');
+        const erow = er && (er.matches('.ed-r') ? er : er.previousElementSibling);
+        const t = ev.target.closest('.ed-tr[data-edtr]') || (erow && erow.querySelector('.ed-tr[data-edtr]'));
         if (t) {
             ev.preventDefault();
-            const ids = [...t.closest('table').querySelectorAll('.ed-tr[data-edtr]')].map(x => x.dataset.edtr);
+            const ids = [...t.closest('tbody').querySelectorAll('.ed-tr[data-edtr]')].map(x => x.dataset.edtr);
             if (edOpen.has(t.dataset.edtr)) { ids.forEach(i => edOpen.delete(i)); const y = scrollY; render(); scrollTo(0, y); }
             else (async () => { for (const i of ids) if (!edOpen.has(i)) await edToggle(i); })();
             return;
@@ -41920,8 +41921,39 @@ function build() {
         // a platform icon with more links: right-click opens its menu, the dot beside it is a small target (majkinetor)
         const q = ehOn && ev.target.closest && ev.target.closest('.qk');
         if (q && q.querySelector('.kn')) { ev.preventDefault(); q.querySelector('.kn').click(); return; }
+        // A detail group is the nearest foldable object, even in its body.
+        const detailGroup = ev.target.closest('.detail .grp');
+        const fx = detailGroup && detailGroup.querySelector('[data-fx]');
+        if (fx) {
+            ev.preventDefault();
+            const keys = [...detailGroup.closest('.detail').querySelectorAll('.fxc[data-fx]')].map(x => x.dataset.fx);
+            const open = !S.fxOpen.includes(fx.dataset.fx);
+            S.fxOpen = S.fxOpen.filter(x => !keys.includes(x));
+            if (open) S.fxOpen.push(...keys);
+            const y = scrollY; render(); scrollTo(0, y); return;
+        }
+        // A track's detail follows its row in the DOM, rather than being its child.
+        const trackPart = ev.target.closest('.tl > .tr, .tl > .detail');
+        const track = trackPart && (trackPart.matches('.tr') ? trackPart : trackPart.previousElementSibling);
+        if (track && track.matches('.tr')) {
+            ev.preventDefault();
+            const prefix = track.dataset.row.split('-')[0] + '-';
+            const keys = rowKeys.filter(k => k.startsWith(prefix));
+            const open = !S.open.has(track.dataset.row);
+            keys.forEach(k => open ? S.open.add(k) : S.open.delete(k));
+            const y = scrollY; render(); scrollTo(0, y); return;
+        }
+        const disc = ev.target.closest('.disc[data-disc]');
+        if (disc) {
+            ev.preventDefault();
+            const keys = [...disc.parentElement.querySelectorAll('.disc[data-disc]')].map(x => +x.dataset.disc);
+            const fold = !S.discFold.includes(+disc.dataset.disc);
+            S.discFold = S.discFold.filter(x => !keys.includes(x));
+            if (fold) S.discFold.push(...keys);
+            const y = scrollY; render(); scrollTo(0, y); return;
+        }
         // a group's chevron does the same for its section's groups
-        const g = ehOn && ev.target.closest && ev.target.closest('.gf[data-gfold]');
+        const g = ev.target.closest('.gf[data-gfold]') || (ev.target.closest('.gh,.disco-h') && ev.target.closest('.gh,.disco-h').querySelector('.gf[data-gfold]')) || grpOf(ev.target);
         if (g) {
             ev.preventDefault();
             const ks = [...g.closest('section').querySelectorAll('.gf[data-gfold]')].map(x => x.dataset.gfold);
@@ -41929,40 +41961,8 @@ function build() {
             const y = scrollY; render(); scrollTo(0, y);
             return;
         }
-        // a row in a group folds that group (a link or field keeps the browser's menu)
-        const gr = ehOn && ev.target.closest && !ev.target.closest('a,input,select,textarea,.gh') && grpOf(ev.target);
-        if (gr) {
-            ev.preventDefault();
-            S.grpFold = [...new Set([...S.grpFold, gr.dataset.gfold])];
-            const top = gr.getBoundingClientRect().top, y = scrollY; render();
-            const nb = [...document.querySelectorAll('.gf[data-gfold]')].find(x => x.dataset.gfold === gr.dataset.gfold);
-            scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
-            return;
-        }
-        // a track row folds its disc; a disc's head, or anything else in a section, folds the section
-        // (a link, a field or selected text keeps the browser's menu)
-        const own = ehOn && ev.target.closest && !ev.target.closest('a,input,select,textarea,.fold') && !String(getSelection()).trim();
-        let dk = own && ev.target.closest('.tl>:not(.disc,.tl-foot)');
-        while (dk && !dk.matches('.disc')) dk = dk.previousElementSibling;
-        if (dk) {
-            ev.preventDefault();
-            S.discFold = [...new Set([...S.discFold, +dk.dataset.disc])];
-            const top = dk.getBoundingClientRect().top, y = scrollY; render();
-            const nb = document.querySelector(`.disc[data-disc="${dk.dataset.disc}"]`);
-            scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
-            return;
-        }
-        const sc = own && ev.target.closest('#app>section.sec');
-        const sb = sc && sc.querySelector('.fold[data-fold]');
-        if (sb && !S.fold.includes(sb.dataset.fold)) {
-            ev.preventDefault();
-            S.fold = [...S.fold, sb.dataset.fold];
-            const top = sc.getBoundingClientRect().top, y = scrollY; render();
-            const ns = document.getElementById(sc.id);
-            scrollTo(0, ns && top < 0 ? scrollY + ns.getBoundingClientRect().top - 80 : y);
-            return;
-        }
-        const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
+        const sc = ev.target.closest('#app>section.sec');
+        const b = sc && sc.querySelector('.fold[data-fold]');
         if (!b) return;
         ev.preventDefault();
         const ids = [...document.querySelectorAll('.fold[data-fold]')].map(x => x.dataset.fold);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.100643
+// @version      2026.10.31.102500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3487,7 +3487,7 @@ const crName = c => {
 // each person once, their roles beside them
 function byPerson(cr) { const m = new Map(); for (const c of cr) { const k = c.id || c.name, e = m.get(k) || { c, roles: [] }; const r = c.role.toLowerCase(); if (!e.roles.includes(r)) e.roles.push(r); m.set(k, e); } return [...m.values()]; }
 function crGroup(tag, type, ent, cr, extra = '', fx) {
-    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details">${CHEV}</button>` : '';
+    const chev = fx && fx.rows.length ? `<button class="fxc" type="button" data-fx="${esc(fx.k)}" aria-expanded="${fx.open}" aria-label="${fx.open ? 'Hide' : 'Show'} the ${type}'s details" data-tip="${fx.open ? 'Hide' : 'Show'} these details&#10;Right-click: ${fx.open ? 'hide' : 'show'} sibling details">${CHEV}</button>` : '';
     const head = `<h4>${chev}<span class="tag${chev ? ' fxt' : ''}"${chev ? ` data-fx="${esc(fx.k)}"` : ''}>${type === 'recording' ? mkSvg(MK_REC) : type === 'work' ? mkSvg(MK_WORK) : ''}${tag}</span>${ent ? `<a href="${MB}/${type}/${ent.id}">${esc(ent.title)}</a>` : ''}</h4>`;
     if (fx && fx.rows.length) extra = (fx.open ? `<div class="tfx">${fx.rows.map(([k, v]) => `<span>${esc(k)}</span><span>${v}</span>`).join('')}</div>` : `<div class="fxsum">${fx.rows.map(r => r[2] || r[1]).join(' · ')}</div>`) + extra;
     const rows = !cr.length ? ''
@@ -3516,9 +3516,9 @@ function detail(t) {
     const free = ps.filter(p => primaryKind(p) === 'free'), paid = ps.filter(p => primaryKind(p) !== 'free');
     const listen = ps.length ? `<dl class="grp ls"><h4><span class="tag">Listen</span></h4><dd class="pls${S.plNames ? ' nm' : ''}">${free.map(pl).join('')}${free.length && paid.length ? '<span class="sep"></span>' : ''}${paid.map(pl).join('')}</dd></dl>` : '';
     const fx = (k, rows) => ({ k, open: S.fxOpen.includes(k), rows });
-    const works = (t.works || []).map(w => crGroup('Work', 'work', w, w.cr, '', fx('work', workFacts(w))));
+    const works = (t.works || []).map((w, i) => crGroup('Work', 'work', w, w.cr, '', fx(`${t.rid}:${t.key}:work:${w.id || i}`, workFacts(w))));
     const sw = `<div class="gtools">${byNameB('gsw')}${disMenu('gsw')}</div>`;
-    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx('rec', recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
+    return `<div class="detail dm-${S.dis}">${sw}<div class="cols">${crGroup('Recording', 'recording', { id: t.rid, title: t.title }, t.cr, '', fx(`${t.rid}:${t.key}:rec`, recFacts(t)))}${works.length || listen ? `<div class="side">${works.join('')}${listen}</div>` : ''}</div></div>`;
 }
 // a side's facts: [label, html, short form for the folded summary]
 const mono = s => `<span class="mono">${esc(s)}</span>`;
@@ -3578,16 +3578,13 @@ function tracklist(r) {
     let rows = '';
     r.media.forEach((m, mi) => {
         const shut = S.discFold.includes(mi), ts = tracks.filter(t => t.mi === mi);
-        rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
+        rows += `<button class="disc" type="button" data-disc="${mi}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this disc&#10;Right-click: ${shut ? 'open' : 'fold'} every disc">${CHEV}<span class="fi">${fmtSvg(fmtKind(m.format), 18)}</span>${esc(fmtName(m.format))}${multi ? ' ' + m.position : ''}${m.title ? ' · ' + esc(m.title) : ''}<span class="count">${m.tracks.length}</span><span class="tot">${total(ts)}</span></button>`;
         if (!shut) rows += ts.map(row).join('');
     });
     const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release">Artist</button>` + [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
     rowKeys = tracks.map(t => t.key);
-    const allOpen = tracks.length > 0 && tracks.every(t => S.open.has(t.key));
-    // open: arrows apart (expand); all open: arrows together (collapse)
-    const rowsB = `<button class="ib" type="button" data-rows="${allOpen ? 0 : 1}" aria-label="${allOpen ? 'Close all tracks' : 'Open all tracks'}" data-tip="${allOpen ? 'Close all tracks' : 'Open all tracks\nShows every track\'s credits'}">${SVG(allOpen ? '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>' : '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>')}</button>`;
     const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Platform icons" data-tip="Platform icons\nWhich platforms the tracklist shows, their order and size">${MBU_CFG_ICON}</button>`;
-    const tools = `${rowsB}<span class="ed-div"></span><span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
+    const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
     const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
@@ -5679,7 +5676,7 @@ function pgCredits(own, side) {
     return sect('cr', 'Credits', '', `<div class="detail pg dm-${S.dis}">${sw}<div class="cols">${own || ''}${side ? `<div class="side">${side}</div>` : ''}</div></div>`, '<div class="folded-note">Credits</div>');
 }
 function recCredits(g) {
-    const works = g.works.map(w => crGroup('Work', 'work', w, w.cr, '', { k: 'work', open: S.fxOpen.includes('work'), rows: workFacts(w) }));
+    const works = g.works.map((w, i) => { const k = `page:work:${w.id || i}`; return crGroup('Work', 'work', w, w.cr, '', { k, open: S.fxOpen.includes(k), rows: workFacts(w) }); });
     return pgCredits(g.cr.length ? crGroup('Recording', 'recording', null, g.cr) : '', works.join(''));
 }
 function wkCredits(g) {
@@ -7615,7 +7612,8 @@ function onClick(ev) {
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }
     // a click anywhere on a section's header row, outside its tools, folds the section
     const hd = ev.target.closest('.secthead');
-    const b = ev.target.closest('button,[data-pop],[data-fx]') || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
+    const gh = ev.target.closest('.gh,.disco-h,.detail .grp h4');
+    const b = ev.target.closest('button,[data-pop],[data-fx]') || (gh && !ev.target.closest('a,input,select') ? gh.querySelector('[data-gfold],[data-fx]') : null) || (hd && !ev.target.closest('.tools,a,input,select') ? hd.querySelector('[data-fold]') : null);
     const openPop = $('.pop:not([hidden])');
     if (openPop && !ev.target.closest('.pop') && !(b && b.dataset.pop && openPop.id === 'pop-' + b.dataset.pop)) { openPop.hidden = true; const t = $('[aria-expanded="true"][data-pop]'); if (t) t.setAttribute('aria-expanded', 'false'); }
     const tr = ev.target.closest('.tr');
@@ -7642,10 +7640,9 @@ function onClick(ev) {
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
     else if (d.col) S.cols[d.col] = S.cols[d.col] === false; // a column added since the view was saved is on
-    else if (d.rows) { S.open = new Set(d.rows === '1' ? rowKeys : []); const y = scrollY; render(); scrollTo(0, y); return; }
     else if ('goart' in d) { if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); } const a = $('#s-art'); if (a) a.scrollIntoView({ behavior: 'smooth' }); return; }
     else if (d.fold) S.fold = toggle(S.fold, d.fold);
-    else if (d.fx) S.fxOpen = toggle(S.fxOpen, d.fx); // a side opens or closes on every track, and stays so
+    else if (d.fx) S.fxOpen = toggle(S.fxOpen, d.fx);
     else if (d.disc) S.discFold = toggle(S.discFold, +d.disc);
     else if (d.gfold) S.grpFold = toggle(S.grpFold, d.gfold);
     else if ('tagsmore' in d) tagsOpen = !tagsOpen;
@@ -8521,11 +8518,12 @@ function histPage(app, d) {
     // right-click on a row: it and its siblings all open, or all close when it is open
     app.oncontextmenu = ev => {
         if (data !== d) return;
-        const t = ev.target, h = t.closest('.hgh'), sm = !h && t.closest('.hrun>summary,.hed>summary');
-        if (t.closest('a') || (!h && !sm)) return;
+        const t = ev.target, item = t.closest('details.hed,details.hrun'), group = t.closest('.hgrp');
+        const h = !item && group && group.querySelector('.hgh');
+        if (!h && !item) return;
         ev.preventDefault();
         if (h) { const keys = [...app.querySelectorAll('.hgrp')].map(g => g.dataset.hg), open = !d.open.has(h.parentNode.dataset.hg); keys.forEach(k => open ? d.open.add(k) : d.open.delete(k)); const y = scrollY; render(); scrollTo(0, y); return; }
-        const me = sm.parentNode, open = !me.open;
+        const me = item, open = !me.open;
         [...me.parentNode.children].filter(x => x.tagName === 'DETAILS').forEach(x => { x.open = open; });
     };
 }
@@ -8581,21 +8579,24 @@ function build() {
     listFilters(document);
     // the search field folds away once focus leaves it
     document.addEventListener('focusout', ev => { const fm = ev.target.closest && ev.target.closest('.srch.open'); if (fm && !fm.contains(ev.relatedTarget)) fm.classList.remove('open'); });
-    // a click anywhere on a release table row opens that release's page (its links and buttons keep their own); Ctrl/middle: a new tab
+    // A release row and its tracklist caret have the same action; links keep navigation.
     const edRow = ev => {
         const r = ehOn && ev.target.closest && ev.target.closest('tr.ed-r[data-edhref]');
         if (!r || ev.target.closest('a,button,input,select,label,summary') || (ev.button === 0 && String(getSelection()).trim())) return;
-        if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(r.dataset.edhref, '_blank'); } else if (ev.button === 0) location.href = r.dataset.edhref;
+        if (ev.button === 1 || ev.ctrlKey || ev.metaKey) { ev.preventDefault(); open(r.dataset.edhref, '_blank'); } else if (ev.button === 0) edToggle(r.querySelector('[data-edtr]').dataset.edtr);
     };
     document.addEventListener('click', edRow);
     document.addEventListener('auxclick', edRow);
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
+        if (!ehOn || ev.defaultPrevented || !ev.target.closest) return;
         // a release row's tracks chevron: every row's tracklist, shown one after another, or all hidden
-        const t = ehOn && ev.target.closest && ev.target.closest('.ed-tr[data-edtr]');
+        const er = ev.target.closest('tr.ed-r, tr.ed-x');
+        const erow = er && (er.matches('.ed-r') ? er : er.previousElementSibling);
+        const t = ev.target.closest('.ed-tr[data-edtr]') || (erow && erow.querySelector('.ed-tr[data-edtr]'));
         if (t) {
             ev.preventDefault();
-            const ids = [...t.closest('table').querySelectorAll('.ed-tr[data-edtr]')].map(x => x.dataset.edtr);
+            const ids = [...t.closest('tbody').querySelectorAll('.ed-tr[data-edtr]')].map(x => x.dataset.edtr);
             if (edOpen.has(t.dataset.edtr)) { ids.forEach(i => edOpen.delete(i)); const y = scrollY; render(); scrollTo(0, y); }
             else (async () => { for (const i of ids) if (!edOpen.has(i)) await edToggle(i); })();
             return;
@@ -8603,8 +8604,39 @@ function build() {
         // a platform icon with more links: right-click opens its menu, the dot beside it is a small target (majkinetor)
         const q = ehOn && ev.target.closest && ev.target.closest('.qk');
         if (q && q.querySelector('.kn')) { ev.preventDefault(); q.querySelector('.kn').click(); return; }
+        // A detail group is the nearest foldable object, even in its body.
+        const detailGroup = ev.target.closest('.detail .grp');
+        const fx = detailGroup && detailGroup.querySelector('[data-fx]');
+        if (fx) {
+            ev.preventDefault();
+            const keys = [...detailGroup.closest('.detail').querySelectorAll('.fxc[data-fx]')].map(x => x.dataset.fx);
+            const open = !S.fxOpen.includes(fx.dataset.fx);
+            S.fxOpen = S.fxOpen.filter(x => !keys.includes(x));
+            if (open) S.fxOpen.push(...keys);
+            const y = scrollY; render(); scrollTo(0, y); return;
+        }
+        // A track's detail follows its row in the DOM, rather than being its child.
+        const trackPart = ev.target.closest('.tl > .tr, .tl > .detail');
+        const track = trackPart && (trackPart.matches('.tr') ? trackPart : trackPart.previousElementSibling);
+        if (track && track.matches('.tr')) {
+            ev.preventDefault();
+            const prefix = track.dataset.row.split('-')[0] + '-';
+            const keys = rowKeys.filter(k => k.startsWith(prefix));
+            const open = !S.open.has(track.dataset.row);
+            keys.forEach(k => open ? S.open.add(k) : S.open.delete(k));
+            const y = scrollY; render(); scrollTo(0, y); return;
+        }
+        const disc = ev.target.closest('.disc[data-disc]');
+        if (disc) {
+            ev.preventDefault();
+            const keys = [...disc.parentElement.querySelectorAll('.disc[data-disc]')].map(x => +x.dataset.disc);
+            const fold = !S.discFold.includes(+disc.dataset.disc);
+            S.discFold = S.discFold.filter(x => !keys.includes(x));
+            if (fold) S.discFold.push(...keys);
+            const y = scrollY; render(); scrollTo(0, y); return;
+        }
         // a group's chevron does the same for its section's groups
-        const g = ehOn && ev.target.closest && ev.target.closest('.gf[data-gfold]');
+        const g = ev.target.closest('.gf[data-gfold]') || (ev.target.closest('.gh,.disco-h') && ev.target.closest('.gh,.disco-h').querySelector('.gf[data-gfold]')) || grpOf(ev.target);
         if (g) {
             ev.preventDefault();
             const ks = [...g.closest('section').querySelectorAll('.gf[data-gfold]')].map(x => x.dataset.gfold);
@@ -8612,40 +8644,8 @@ function build() {
             const y = scrollY; render(); scrollTo(0, y);
             return;
         }
-        // a row in a group folds that group (a link or field keeps the browser's menu)
-        const gr = ehOn && ev.target.closest && !ev.target.closest('a,input,select,textarea,.gh') && grpOf(ev.target);
-        if (gr) {
-            ev.preventDefault();
-            S.grpFold = [...new Set([...S.grpFold, gr.dataset.gfold])];
-            const top = gr.getBoundingClientRect().top, y = scrollY; render();
-            const nb = [...document.querySelectorAll('.gf[data-gfold]')].find(x => x.dataset.gfold === gr.dataset.gfold);
-            scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
-            return;
-        }
-        // a track row folds its disc; a disc's head, or anything else in a section, folds the section
-        // (a link, a field or selected text keeps the browser's menu)
-        const own = ehOn && ev.target.closest && !ev.target.closest('a,input,select,textarea,.fold') && !String(getSelection()).trim();
-        let dk = own && ev.target.closest('.tl>:not(.disc,.tl-foot)');
-        while (dk && !dk.matches('.disc')) dk = dk.previousElementSibling;
-        if (dk) {
-            ev.preventDefault();
-            S.discFold = [...new Set([...S.discFold, +dk.dataset.disc])];
-            const top = dk.getBoundingClientRect().top, y = scrollY; render();
-            const nb = document.querySelector(`.disc[data-disc="${dk.dataset.disc}"]`);
-            scrollTo(0, nb && top < 0 ? scrollY + nb.getBoundingClientRect().top - 80 : y);
-            return;
-        }
-        const sc = own && ev.target.closest('#app>section.sec');
-        const sb = sc && sc.querySelector('.fold[data-fold]');
-        if (sb && !S.fold.includes(sb.dataset.fold)) {
-            ev.preventDefault();
-            S.fold = [...S.fold, sb.dataset.fold];
-            const top = sc.getBoundingClientRect().top, y = scrollY; render();
-            const ns = document.getElementById(sc.id);
-            scrollTo(0, ns && top < 0 ? scrollY + ns.getBoundingClientRect().top - 80 : y);
-            return;
-        }
-        const b = ehOn && ev.target.closest && ev.target.closest('.fold[data-fold]');
+        const sc = ev.target.closest('#app>section.sec');
+        const b = sc && sc.querySelector('.fold[data-fold]');
         if (!b) return;
         ev.preventDefault();
         const ids = [...document.querySelectorAll('.fold[data-fold]')].map(x => x.dataset.fold);

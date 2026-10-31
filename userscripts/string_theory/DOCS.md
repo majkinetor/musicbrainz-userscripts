@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-31 10:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-31 10:27 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -811,6 +811,8 @@ Open **More** (the three dots in the header) → **Details** for all of an entit
 
 Open a track to see its recording and work credits. The platforms it is on (Spotify, Apple Music, Tidal, …) show as icons; point at one for its URL. A site without an icon of its own shows two letters of its domain.
 
+Click a card header, group or row to open or fold it. Right-click it, or its contents, to open or fold its siblings together. In the tracklist, tracks are siblings within a disc; right-click a card header to fold all cards into a contents list.
+
 **Release credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
 
 Which platforms show, in which order, and how big, are set with the gear beside the tracklist's **Show** toggles. Click a platform to show or hide it, drag it to reorder.
@@ -840,20 +842,19 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Platforms → Show          | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
 | Platforms → Icon size     | 22px                                                                | the size of a platform icon                                                |
 | Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
-| Artist → Artist images      | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
+| Artist → Artist images    | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
 | General → Page width      | Wide                                                                | how wide the page grows on a big screen                                    |
 | General → Menu titles     | off                                                                 | text beside menu icons in page headers and pinned bars                     |
 
 ### Shortcuts
 
-| Key         | Where                           |                   |
-| ----------- | ------------------------------- | ----------------- |
-| Esc         | filter                          | clear it          |
-| Esc         | a menu                          | close it          |
-| Right-click | corner icon                     | open the settings |
-| Right-click | a track                         | fold its disc     |
-| Right-click | a section                       | fold the section  |
-| Right-click | a platform icon with more links | open its links    |
+| Key         | Where                           |                     |
+| ----------- | ------------------------------- | ------------------- |
+| Esc         | filter                          | clear it            |
+| Esc         | a menu                          | close it            |
+| Right-click | corner icon                     | open the settings   |
+| Right-click | a card, group or row            | toggle its siblings |
+| Right-click | a platform icon with more links | open its links      |
 
 ---
 
