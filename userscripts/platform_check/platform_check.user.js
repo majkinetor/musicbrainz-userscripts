@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.01.214500
+// @version      2026.11.01.235959
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3764,12 +3764,12 @@ function pcApplyIface() {
     if (pcPark) pcPark();
     mbRestackCorner('br');
 }
-// the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
+// the dock's number: the platforms to link, after a comma the withheld platforms, after a slash the Artists & labels links to add (null: not counted)
 var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
 var pcSummaryRows = null;   // fn → the finished scan's rows (on MusicBrainz, to link, withheld, not found), for the dock's card and the + button's tooltip
-// "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
+// "2,4/44": 2 platforms to link, 4 withheld platforms, 44 Artists & labels links to add
 function pcDockStatus() {
-    const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
+    const a = pcDockArtists || 0, h = pcDockHeld;
     if (pcDockItem) pcDockItem.status(pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '✓');
 }
 if (!PC_SEED) {
@@ -9028,8 +9028,9 @@ function pcLinksNote() {
 let _pcLinked = null;   // { key, map }: the last lookup, keyed by the urls it asked about
 const pcLinkedKey = urls => [...new Set(urls)].sort().join('\n');
 async function pcLinkedFresh(urls) {
+    const generation = pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1, release = mbid;
     const map = await pcLinkedTo(urls);
-    _pcLinked = { key: pcLinkedKey(urls), map };
+    if (generation === pcLinkedFresh.generation && release === mbid) _pcLinked = { key: pcLinkedKey(urls), map };
     return map;
 }
 const pcLinkedCached = urls => (_pcLinked && _pcLinked.key === pcLinkedKey(urls)) ? Promise.resolve(_pcLinked.map) : pcLinkedFresh(urls);
@@ -9043,13 +9044,17 @@ function pcShowLinksCount(n, held = 0) {
     pcDockArtists = n; pcDockArtistsHeld = held; pcDockStatus();
 }
 async function pcCountLinks() {
+    const generation = pcCountLinks.generation = (pcCountLinks.generation || 0) + 1, release = mbid;
+    pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
     if (!GM_getValue('pc:links-count', true)) return;
     const mbRec = mbDataGet(mbid) || {};
     const { rows } = pcLinkRows(pcMbCredits(document, mbRec.mbTracks || 0), pcConfirmedCredits().byProvider);
     const urls = rows.flatMap(r => Object.values(r.cells).flat().map(c => c.url));
     if (!urls.length) { pcShowLinksCount(0); appendLog('System', 'Artists & labels: no artist or label pages to count'); return; }
     try {
-        const linked = await pcLinkedFresh(urls), n = pcNewCount(rows, linked);
+        const linked = await pcLinkedFresh(urls);
+        if (generation !== pcCountLinks.generation || release !== mbid || !GM_getValue('pc:links-count', true)) return;
+        const n = pcNewCount(rows, linked);
         pcShowLinksCount(n, pcNewCount(rows, linked, 'withheld'));
         appendLog('System', `Artists & labels: ${n} link(s) to add, of ${urls.length} page(s) found`);
     } catch (e) {
@@ -10350,6 +10355,8 @@ if (mbuTestHooks()) window.__pcTest680 = { pcMcFinding, pcMcMasterFinding, pcSca
 
 // #847: Event Horizon shows another release without loading its page: the panel follows it
 function pcFollow(r) {
+    pcCountLinks.generation = (pcCountLinks.generation || 0) + 1;
+    pcLinkedFresh.generation = (pcLinkedFresh.generation || 0) + 1;
     appendLog('System', `Event Horizon shows release ${r} — following it (read from the API)`);
     if (PC_SCAN.busy) pcCancelScan();
     mbid = r; PC_FOLLOW = true;

@@ -22,6 +22,11 @@ test('the settings window, and a platform switched off leaves the editor', { tag
   check(win.open && win.pos === 'absolute' && win.w > 300 && win.inside, 'the settings open as a window over the editor');
   check(['Imports', 'Submitting', 'Display', 'Logins'].every(x => win.secs.some(s => s.startsWith(x))), `its sections (${win.secs.join(', ')})`);
   await attachShot(info, page.locator('#ii-setup-pane'), 'settings');
+  check(await page.isChecked('#ii-match-cache') && await page.inputValue('#ii-match-cache-days') === '7', 'Match results default to a seven-day cache');
+  await page.locator('#ii-match-cache-days').fill('3'); await page.locator('#ii-match-cache-days').press('Tab');
+  await page.locator('#ii-match-cache').uncheck();
+  check(await page.evaluate(() => GM_getValue('ii:match_cache_enabled') === false && GM_getValue('ii:match_cache_days') === 3), 'cache settings are saved');
+  await page.locator('#ii-match-cache').check();
 
   await page.click('#ii-cfg-to-platforms');
   check(await page.evaluate(() => document.getElementById('ii-cfg-main').hidden && !document.getElementById('ii-cfg-platforms').hidden), 'Platforms opens its own view');

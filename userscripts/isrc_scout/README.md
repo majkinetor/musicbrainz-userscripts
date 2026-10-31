@@ -142,20 +142,21 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 
 <img width="420" src="./screenshots/options.png" />
 
-| Setting | Default |  |
-| --- | --- | --- |
-| Platforms | all on | the platforms ISRC Scout uses ([Platforms](#platforms)) |
-| Authorize |  | OAuth for submitting ISRCs |
-| Interface | HUD | the button beside the release's title, or *Dock icon*: an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon |
-| Import buttons | icons | icons, text, or both |
-| Add ISRC/Links columns to tracklist | on | columns and their controls on the release page ([Tracklist](#tracklist)) |
-| Show ISRCs in parts | on | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
-| Use providers from the whole release group | off | take missing providers from sibling releases (one more lookup) |
-| Auto match | off (in the background) | runs **Match** by itself: *on start* when you open the window, *in the background* on the release page, where the launcher shows the new ISRCs (⚡) and links (link icon) it found, ✓ when there are none, and the dock in Event Horizon their total (kept for a week) |
-| Include slow platforms | on | in the background, Tidal too (about 1 s a track) |
-| Ignore Platform Check link confidence | off | use links Platform Check withheld for a barcode or format mismatch |
-| Repeat failed submits | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops |
-| Spotify ISRC source | Harmony | or molla, or ISRC Hunt |
+| Setting                                    | Default                    |                                                                                                                                                      |
+| ------------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platforms                                  | all on                     | the platforms ISRC Scout uses ([Platforms](#platforms))                                                                                              |
+| Authorize                                  |                            | OAuth for submitting ISRCs                                                                                                                           |
+| Interface                                  | HUD                        | the button beside the release's title, or *Dock icon*: an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon |
+| Import buttons                             | icons                      | icons, text, or both                                                                                                                                 |
+| Add ISRC/Links columns to tracklist        | on                         | columns and their controls on the release page ([Tracklist](#tracklist))                                                                             |
+| Show ISRCs in parts                        | on                         | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md)                                                                       |
+| Use providers from the whole release group | off                        | take missing providers from sibling releases (one more lookup)                                                                                       |
+| Auto match                                 | off (in the background)    | run [Match](#match) on opening or in the background                                                                                                  |
+| Cache Match results                        | on, 7 days                 | reuse Match results for the chosen time; off keeps them only on this page                                                                            |
+| Include slow platforms                     | on                         | in the background, Tidal too (about 1 s a track)                                                                                                     |
+| Ignore Platform Check link confidence      | off                        | use links Platform Check withheld for a barcode or format mismatch                                                                                   |
+| Repeat failed submits                      | on, 10 minutes or 10 times | try a submit again when MusicBrainz is busy (503) or the connection drops                                                                            |
+| Spotify ISRC source                        | Harmony                    | or molla, or ISRC Hunt                                                                                                                               |
 
 ### Platforms
 
