@@ -213,9 +213,9 @@ test('Moved button scrolls with the page is per platform, and the old setting ca
 });
 
 // majkinetor: "make settings more compact and prevent overflow" — with the button dragged near the
-// top, the settings ran off the window's left edge and covered the button. Wherever the button
-// is, the settings are inside the window and clear of it.
-test('the settings stay inside the window and off the button, wherever it was dragged', { tag: ['@web'] }, async ({ page, inject }) => {
+// top, the settings ran off the window's left edge and covered the button. Since #851 they open
+// centred, like every script's settings: wherever the button is, they are inside the window and centred.
+test('the settings stay inside the window, centred, wherever the button was dragged', { tag: ['@web'] }, async ({ page, inject }) => {
   await page.goto(BC, { waitUntil: 'domcontentloaded' });
   await inject('first_contact', { waitFor: '__fcTest' });
   await page.locator('#fc-root .fc-go').waitFor({ state: 'visible' });
@@ -233,9 +233,9 @@ test('the settings stay inside the window and off the button, wherever it was dr
     await page.locator('#fc-root .fc-go').click({ button: 'right' });
     const p = await page.locator('#fc-panel').boundingBox(), b = await page.locator('#fc-root').boundingBox();
     const inside = p.x >= 0 && p.y >= 0 && p.x + p.width <= vp.width && p.y + p.height <= vp.height;
-    const clear = p.y + p.height <= b.y || p.y >= b.y + b.height || p.x + p.width <= b.x || p.x >= b.x + b.width;
+    const centred = Math.abs(p.x + p.width / 2 - vp.width / 2) <= 2 && Math.abs(p.y + p.height / 2 - vp.height / 2) <= 2;
     check(inside, `${name}: inside the window (${JSON.stringify(p)})`);
-    check(clear, `${name}: not over the button (panel ${JSON.stringify(p)}, button ${JSON.stringify(b)})`);
+    check(centred, `${name}: centred (${JSON.stringify(p)}, window ${vp.width}×${vp.height})`);
     if (process.env.FC_SHOT && name === 'just below the top') await page.screenshot({ path: process.env.FC_SHOT, clip: { x: Math.min(p.x, b.x) - 10, y: Math.min(p.y, b.y) - 10, width: Math.max(p.x + p.width, b.x + b.width) - Math.min(p.x, b.x) + 20, height: Math.max(p.y + p.height, b.y + b.height) - Math.min(p.y, b.y) + 20 } });
     await page.keyboard.press('Escape');
   }
