@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.093300
+// @version      2026.10.31.100643
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2238,7 +2238,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 .msg{font-size:16px;color:var(--soft)}
 .msg.err{color:var(--warn)}
 .sec{display:flex;flex-direction:column;gap:16px}
-#eh-rail{position:absolute;z-index:30;display:none;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent;min-width:200px}
+#eh-rail{position:fixed;z-index:30;display:none;gap:2px;padding:6px;border-radius:12px;border:1px solid transparent;min-width:200px}
 #eh-rail.open{display:grid;background:var(--surface);border-color:var(--border);box-shadow:0 16px 40px var(--shadow)}
 #eh-rail .rr{display:flex;align-items:center;justify-content:flex-end;gap:8px;height:30px;min-width:16px;padding:0 6px;border-radius:8px;cursor:pointer}
 #eh-rail .rr>i{width:8px;height:8px;border-radius:50%;background:var(--border);flex:none}
@@ -7434,6 +7434,13 @@ const SEC_NAME = { sr: 'Results', hadd: 'Add', hme: 'You', hrec: 'Recently opene
 const EYE = '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_OFF = '<path d="M3 3l18 18"/><path d="M2 12s3.5-7 10-7c1.8 0 3.4.5 4.700 1.300M22 12s-3.500 7-10 7c-1.800 0-3.400-.5-4.700-1.300"/>';
 const SEC_BTN = `<button class="ab" type="button" data-ehsec aria-label="Sections" data-tip="Sections\nJump to, hide, reorder or fold the page's sections">${SVG('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>')}</button>`;
+function railPlace() {
+    const rail = document.getElementById('eh-rail'), button = document.querySelector('[data-ehsec]');
+    if (!rail || !rail.classList.contains('open') || !button) return;
+    const r = button.getBoundingClientRect();
+    rail.style.top = (r.bottom + 6) + 'px';
+    rail.style.left = (r.right - rail.offsetWidth) + 'px';
+}
 function secRail(app) {
     const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
     const at = x => { const i = S.secOrder.indexOf(id(x)); return i < 0 ? 100 + secs.indexOf(x) : i; };
@@ -7448,11 +7455,13 @@ function secRail(app) {
         document.addEventListener('click', ev => {
             const b = ev.target.closest('[data-ehsec]');
             if (b) {
-                if (rail.classList.toggle('open')) { const r = b.getBoundingClientRect(); rail.style.top = (r.bottom + scrollY + 6) + 'px'; rail.style.right = (document.documentElement.clientWidth - r.right - scrollX) + 'px'; }
+                if (rail.classList.toggle('open')) railPlace();
                 return;
             }
             if (rail.classList.contains('open') && !rail.contains(ev.target)) shut();
         }, true);
+        addEventListener('scroll', railPlace, { passive: true });
+        addEventListener('resize', railPlace);
         document.addEventListener('keydown', ev => { if (ev.key === 'Escape') shut(); });
         rail.addEventListener('click', ev => {
             if (ev.target.closest('[data-top]')) { rail.classList.remove('open'); scrollTo({ top: 0, behavior: 'smooth' }); return; }
@@ -7497,6 +7506,7 @@ function secRail(app) {
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
     railSpy();
     pinBar(app);
+    requestAnimationFrame(railPlace);
 }
 // once the page's header scrolls away, a slim bar pinned to the top carries its cover, its title and its action row
 // (the very buttons, moved in and back, so their menus and the search keep working)
@@ -7543,6 +7553,7 @@ function pinBar(app) {
         document.documentElement.style.setProperty('--eh-pin-h', pin ? bar.offsetHeight + 'px' : '0px');
         if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
         pinFold(acts, pin);
+        railPlace();
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
     });
     pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
