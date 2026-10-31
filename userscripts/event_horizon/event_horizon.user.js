@@ -2399,7 +2399,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .secthead .fold h2{font-size:19px}
 #app>section.sec>.secthead:has(>.fold[aria-expanded="true"]){position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;transition:top .18s}
-#app>section.sec>.secthead.stuck{background:var(--bg)}
+#app>section.sec>.secthead.stuck{background:color-mix(in srgb,var(--bg) 35%,transparent);backdrop-filter:blur(14px)}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
