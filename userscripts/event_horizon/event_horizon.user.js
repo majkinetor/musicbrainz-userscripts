@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.0240
+// @version      2026.11.01.0250
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2627,7 +2627,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-views button:hover{background:var(--chip);color:var(--text)}
 .ed-views button[aria-pressed=true]{background:var(--chip);color:var(--accent)}
 .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:20px 16px}
-.ed-tw{overflow-x:auto}@media (min-width:900px){.ed-tw{overflow-x:clip}#app>section.sec .ed-t thead th{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-sh,56px) + 2px);z-index:19;background:var(--bg)}}.ed-t col.sc{background:color-mix(in srgb,var(--accent) 6%,transparent)}#app .ed-t th[aria-sort=ascending],#app .ed-t th[aria-sort=descending]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--accent)}
+.ed-tw{overflow-x:auto}@media (min-width:900px){.ed-tw{overflow-x:clip}#app>section.sec .ed-t thead th{position:sticky;top:calc(var(--eh-pin-h,0px) + var(--eh-sh,56px) + 2px);z-index:19;background:transparent;backdrop-filter:blur(14px)}}.ed-t col.sc{background:color-mix(in srgb,var(--accent) 6%,transparent)}#app .ed-t th[aria-sort=ascending],#app .ed-t th[aria-sort=descending]{background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--accent)}
 .ed-t{width:100%;border-collapse:collapse;font-size:14px}
 .ed-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
 .dg-sort{all:unset;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}.dg-sort i{font-style:normal;margin-left:5px;opacity:0}.dg-sort:hover{color:var(--text)}.dg-sort:hover i{opacity:.5}.dg-sort.on{color:var(--accent)}.dg-sort.on i{opacity:1}
@@ -8224,7 +8224,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page :is(h2,legend){color:var(--text)!important;font:800 20px Manrope,system-ui,sans-serif;margin:32px 0 12px;border:0}
 :root[data-eh-rel] #page :is(p,td,th,label,span,input,select,textarea,button){font-family:Manrope,system-ui,sans-serif}
 :root[data-eh-rel] #tracklist{border-collapse:separate;border-spacing:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
-:root[data-eh-rel] #tracklist>tbody table th{font-size:14px!important;text-align:right!important;background:none!important;text-transform:none!important;letter-spacing:normal!important;color:var(--text)!important;font-weight:700!important}:root[data-eh-rel] #page :is(th.link-phrase,th.link-phrase *){background-color:transparent!important;box-shadow:none!important}:root[data-eh-rel] #tracklist>tbody table :is(th,td){font-size:14px!important;padding:1px 3px!important;line-height:1.3!important;border:0!important}:root[data-eh-rel] #tracklist>thead th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+:root[data-eh-rel] #tracklist>tbody table th{font-size:14px!important;text-align:right!important;background:none!important;text-transform:none!important;letter-spacing:normal!important;color:var(--text)!important;font-weight:700!important}:root[data-eh-rel] #page :is(th.link-phrase,th.link-phrase *){background-color:transparent!important;box-shadow:none!important}:root[data-eh-rel] #tracklist>tbody table :is(th,td){font-size:14px!important;padding:1px 3px!important;line-height:1.3!important;border:0!important}:root[data-eh-rel] #tracklist>thead th{background:transparent!important;backdrop-filter:blur(14px);color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
 :root[data-eh-rel] #tracklist .subh th,:root[data-eh-rel] #tracklist tr.subh>*{background:var(--hover)!important;color:var(--text);border-color:var(--border)}
 :root[data-eh-rel] #tracklist>tbody>tr>td{background:var(--surface)!important;border-color:var(--line)}
 :root[data-eh-rel] #tracklist>tbody>tr.even>td{background:transparent!important}
