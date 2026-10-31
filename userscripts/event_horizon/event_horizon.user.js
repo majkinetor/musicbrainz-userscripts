@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.0120
+// @version      2026.11.01.0130
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2894,7 +2894,7 @@ const S = {
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 22, trackStripe: true, dis: 'below', width: 1600, bg: 'aura',
+    byName: false, plNames: false, plHover: false, plSize: 18, trackStripe: true, dis: 'below', width: 1600, bg: 'aura',
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -9053,7 +9053,10 @@ const cfgRow = (label, html, tip) => `<div class="cr"><div class="cl">${label}</
 function plBody() {
     const chip = cfgChip, row = cfgRow, ps = cfgProviders();
     // count and number only the picks this release has; the rest stay saved for other releases
-    const all = plSorted(ps), shown = all.map(p => p.key).filter(k => S.prov.includes(k));
+    // with every platform listed, the unpicked ones follow the picks A-Z
+    let all = plSorted(ps);
+    if (cfgAll) all = [...all.filter(p => S.prov.includes(p.key)), ...all.filter(p => !S.prov.includes(p.key)).sort((a, b) => a.name.localeCompare(b.name))];
+    const shown = all.map(p => p.key).filter(k => S.prov.includes(k));
     const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
     return row('Tracks', chip('trackStripe', 'trackStripe', S.trackStripe, 'Alternating colors'))
             + '<h3 class="plh">Platforms</h3>'
