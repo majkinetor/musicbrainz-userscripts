@@ -5266,8 +5266,6 @@
               <option value="start">on start</option>
               <option value="background">in the background</option>
             </select></div>
-        <div class="ii-set-row ii-set-inline" style="gap:6px"><label><input type="checkbox" id="ii-cache-enabled">Cache Match results</label> <span>for</span> <input type="number" id="ii-cache-days" min="1" max="365" step="1"> <span>days</span></div>
-        <div class="ii-set-row"><label data-tip="Include slow platforms&#10;In the background, Tidal too: it takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
         <div class="ii-set-row"><label data-tip="Ignore Platform Check link confidence&#10;Import from a Platform Check link even when it withheld it for a barcode or format mismatch. Off by default: a mismatch can mean it matched the wrong release, so its ISRCs would be wrong."><input type="checkbox" id="ii-ignore-pc"><span>Ignore Platform Check link confidence</span></label></div>
           <div class="ii-set-row ii-set-inline" data-tip="Where Spotify&#x27;s ISRCs come from&#10;Spotify&#x27;s own ISRC API needs a paid developer account, so the lookup goes through one of these services. If one is down or rate-limited, switch to another."><span class="ii-set-k">Spotify ISRC source</span>
             <select id="ii-sp-source">
@@ -5276,7 +5274,9 @@
               <option value="isrchunt">ISRC Hunt</option>
             </select></div>
 
-          <div class="ii-cfg-sec">Submitting</div>
+          <div class="ii-cfg-sec">General</div>
+        <div class="ii-set-row ii-set-inline" style="gap:6px"><label><input type="checkbox" id="ii-cache-enabled">Cache Match results</label> <span>for</span> <input type="number" id="ii-cache-days" min="1" max="365" step="1"> <span>days</span></div>
+        <div class="ii-set-row"><label data-tip="Include slow platforms&#10;In the background, Tidal too: it takes about a second a track. Off: it waits until you run Find links."><input type="checkbox" id="ii-bg-slow"><span>Include slow platforms</span></label></div>
           <div class="ii-set-row"><label data-tip="Repeat failed submits up to … minutes or … times&#10;When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes."><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times</span></label></div>
 
           <div class="ii-cfg-sec">Display</div>

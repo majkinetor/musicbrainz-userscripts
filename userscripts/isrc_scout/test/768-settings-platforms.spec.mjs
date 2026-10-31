@@ -20,7 +20,7 @@ test('the settings window, and a platform switched off leaves the editor', { tag
   });
   console.log('window: ' + JSON.stringify(win));
   check(win.open && win.pos === 'absolute' && win.w > 300 && win.inside, 'the settings open as a window over the editor');
-  check(['MusicBrainz', 'Imports', 'Submitting', 'Release page'].every(x => win.secs.includes(x)), `its sections (${win.secs.join(', ')})`);
+  check(['MusicBrainz', 'Imports', 'General', 'Release page'].every(x => win.secs.includes(x)), `its sections (${win.secs.join(', ')})`);
   await attachShot(info, page.locator('#ii-setup-pane'), 'settings');
   check(await page.isChecked('#ii-cache-enabled') && await page.inputValue('#ii-cache-days') === '7', 'Match caching defaults to seven days');
   await page.locator('#ii-cache-days').fill('3');
