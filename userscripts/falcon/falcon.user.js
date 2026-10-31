@@ -889,7 +889,10 @@
           else if (el.hasAttribute('data-mb-corner-scaled')) { el.style.scale = el.style.transformOrigin = ''; el.removeAttribute('data-mb-corner-scaled'); }
       };
       if (vv) {
-          gapX = Math.max(0, right ? document.documentElement.clientWidth - vv.offsetLeft - vv.width : vv.offsetLeft);   // clientWidth, not innerWidth: a fixed element already sits inside the scrollbar
+          // what a fixed element is placed against, measured: clientWidth leaves out a scrollbar but is the screen's width on a phone, where the page is wider (360 of 780), and innerWidth is the reverse
+          var box = document.createElement('div'); box.style.cssText = 'position:fixed;left:0;right:0;height:0;visibility:hidden;pointer-events:none';
+          document.documentElement.appendChild(box); var fixedW = box.offsetWidth; box.remove();
+          gapX = Math.max(0, right ? fixedW - vv.offsetLeft - vv.width : vv.offsetLeft);
           gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
           var root = document.documentElement;
           if (!root.hasAttribute('data-mb-corner-vv')) {   // one listener for every script's copy

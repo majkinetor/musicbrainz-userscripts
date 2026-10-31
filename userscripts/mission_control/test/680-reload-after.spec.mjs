@@ -24,8 +24,8 @@ test('#680: reload the release page after an Execute without errors', { tag: ['@
       setTimeout(() => send('mc:applied', window.__fail ? { id: d.id, run: d.run, ok: false, note: 'stand-in failure' } : { id: d.id, run: d.run, ok: true, sent: 1, note: 'stand-in' }), 20);
     });
     send('mc:provider', { id: 'pc', name: 'pc', version: 1, capabilities: ['probe', 'apply'] });
-    // #792: First Contact reads the link without a barcode (an album it can't compare), so it is selected
-    document.addEventListener('mc:read', e => { const d = JSON.parse(e.detail); setTimeout(() => send('mc:read-result', { url: d.url, run: d.run, ok: true, provider: { id: 'deezer' }, rel: { title: 'x', mediums: [] }, ms: 1 }), 10); });
+    // #792: First Contact reads the link: the release's own tracks, so the album matches and it is selected
+    document.addEventListener('mc:read', e => { const d = JSON.parse(e.detail); setTimeout(() => send('mc:read-result', { url: d.url, run: d.run, ok: true, provider: { id: 'deezer' }, rel: { title: 'x', mediums: [{ tracks: window.__mcTest.release().tracks.map(t => ({ title: t.title })) }] }, ms: 1 }), 10); });
     send('mc:provider', { id: 'fc', name: 'fc', version: 1, capabilities: ['read'] });
   });
   await page.click('#mc-launch');
@@ -43,6 +43,7 @@ test('#680: reload the release page after an Execute without errors', { tag: ['@
 
   await page.click('#mc-root [data-act="probe"]');
   await page.waitForSelector('#mc-root [data-card="pc"] .mc-line');
+  check((await page.evaluate(() => window.__mcTest.picked())).pc?.length === 1, 'the finding is selected, so Execute has a step to run');
   await page.evaluate(() => window.__mcTest.execute(false));
   await page.waitForTimeout(2000);   // past the reload's delay
   check(await page.evaluate(() => window.__marker) === 1, 'a failed step: no reload');
