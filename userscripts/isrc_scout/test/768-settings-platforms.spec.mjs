@@ -20,7 +20,7 @@ test('the settings window, and a platform switched off leaves the editor', { tag
   });
   console.log('window: ' + JSON.stringify(win));
   check(win.open && win.pos === 'absolute' && win.w > 300 && win.inside, 'the settings open as a window over the editor');
-  check(['MusicBrainz', 'Imports', 'Submitting', 'Release page', 'More'].every(x => win.secs.includes(x)), `its sections (${win.secs.join(', ')})`);
+  check(['Imports', 'Submitting', 'Display', 'Logins'].every(x => win.secs.some(s => s.startsWith(x))), `its sections (${win.secs.join(', ')})`);
   await attachShot(info, page.locator('#ii-setup-pane'), 'settings');
 
   await page.click('#ii-cfg-to-platforms');

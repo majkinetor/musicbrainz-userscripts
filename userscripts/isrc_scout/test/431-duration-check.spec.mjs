@@ -32,7 +32,7 @@ test('position-matched fills from a different edition are flagged, kept, and con
   const log = await ended(page, 'Deezer', 120000);
   const r = await page.evaluate(() => {
     const suspects = [...document.querySelectorAll('input.ii-in-suspect')];
-    return { suspects: suspects.length, title: suspects[0] ? suspects[0].title : '' };
+    return { suspects: suspects.length, title: suspects[0] ? suspects[0].dataset.tip : '' };
   });
   const done = (log.match(/Deezer done[^\n]*/) || [''])[0];
   const perRow = (log.match(/filled by position, but length differs/g) || []).length;
@@ -41,7 +41,7 @@ test('position-matched fills from a different edition are flagged, kept, and con
   // one pair sits near the 10 s tolerance, so 3 or 4 are flagged: check consistency
   check(r.suspects >= 3 && perRow === r.suspects, `most fills are flagged amber, each with its log line (${r.suspects} amber, ${perRow} lines)`);
   check(new RegExp('⚠ ' + r.suspects + ' implausible').test(done), `the summary agrees ("${done}")`);
-  check(/matched by position only, but length differs/.test(r.title), 'an amber field explains itself');
+  check(/Matched by position only, but the length differs/.test(r.title), 'an amber field explains itself');
 
   const fu = await page.evaluate(async () => {
     // polled until the popup is there, and until it has gone
