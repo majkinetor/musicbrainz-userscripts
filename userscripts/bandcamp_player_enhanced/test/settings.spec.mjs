@@ -14,7 +14,7 @@ import { test, check, until, idle, frames } from '../../../dev/test/harness.mjs'
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/punisher';
 // Bandcamp's own player logs this when a play() is cut short; not ours
 const PLAY_ABORT = 'play\\(\\) request was interrupted by a call to pause\\(\\)';
-test.use({ profile: 'fresh', gm: { name: 'Bandcamp Player Enhanced', persist: true }, pageErrors: [PLAY_ABORT] });
+test.use({ gm: { name: 'Bandcamp Player Enhanced', persist: true }, pageErrors: [PLAY_ABORT] });
 
 async function load(page, inject) {
   await idle(page);

@@ -45,4 +45,11 @@ export async function openArtStation(page, inject, { path = 'cover-art', release
   await inject('art_station', { transform });
   await page.waitForSelector('#as-root', { timeout: 20000 });
   await idle(page);
+  await artLoaded(page);
+}
+
+// The grid replaces its loader only when the Cover Art Archive answers, which outlasts idle() when
+// the archive is slow (seen at 5.6 s).
+export async function artLoaded(page) {
+  await page.waitForFunction(() => !document.querySelector('.as-loading'), null, { timeout: 30000 });
 }

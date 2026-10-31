@@ -8,7 +8,7 @@ import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/punisher';   // 11 tracks: the dropdown scrolls
 const PLAY_ABORT = 'play\\(\\) request was interrupted by a call to pause\\(\\)';
 // a known volume, as for a user who saved one before
-test.use({ profile: 'fresh', gm: { name: 'Bandcamp Player Enhanced', values: { bcp_volume: '0.5', bcp_muted: '0' } }, pageErrors: [PLAY_ABORT] });
+test.use({ gm: { name: 'Bandcamp Player Enhanced', values: { bcp_volume: '0.5', bcp_muted: '0' } }, pageErrors: [PLAY_ABORT] });
 
 test('the wheel seeks over the bar, but sets the volume over its control and scrolls the open dropdown', { tag: ['@web'] }, async ({ page, inject }) => {
   await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });

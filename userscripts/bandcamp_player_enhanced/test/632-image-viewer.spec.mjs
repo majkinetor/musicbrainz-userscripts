@@ -5,7 +5,7 @@ import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/punisher';
 // Bandcamp's own viewer throws this when it closes, with or without the script
-test.use({ profile: 'fresh', gm: { name: 'Bandcamp Player Enhanced' }, pageErrors: ["Cannot read properties of undefined \\(reading 'style'\\)"] });
+test.use({ gm: { name: 'Bandcamp Player Enhanced' }, pageErrors: ["Cannot read properties of undefined \\(reading 'style'\\)"] });
 
 test('an opened cover shows over the bar', { tag: ['@cosmetic', '@web'] }, async ({ page, inject }) => {
   await page.goto(ALBUM, { waitUntil: 'domcontentloaded' });

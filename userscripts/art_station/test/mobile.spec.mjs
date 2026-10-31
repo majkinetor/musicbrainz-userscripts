@@ -2,7 +2,7 @@
 // screen. Art Station's own area keeps to the screen's width, so its toolbar and covers need no
 // scroll to the side; the rest of MusicBrainz's page stays as it is.
 import { test, check, until, idle, attachShot, SANDBOX } from '../../../dev/test/harness.mjs';
-import { RELEASE } from './as.mjs';
+import { RELEASE, artLoaded } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' }, viewport: { width: 414, height: 846 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
 
@@ -11,6 +11,7 @@ test('the cover-art page fits a phone screen', { tag: ['@sandbox', '@cosmetic'] 
   await idle(page);
   await inject('art_station');
   await page.waitForSelector('#as-root .as-bar');
+  await artLoaded(page);
   await idle(page);
   await attachShot(testInfo, page, 'cover-art');
   if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/as-mobile.png' });

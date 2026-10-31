@@ -8,7 +8,7 @@ import { test, check, until, idle } from '../../../dev/test/harness.mjs';
 const ALBUM = 'https://phoebebridgers.bandcamp.com/album/stranger-in-the-alps';
 const PLAY_ABORT = 'play\\(\\) request was interrupted by a call to pause\\(\\)';
 const GM = { name: 'Bandcamp Player Enhanced' };
-test.use({ profile: 'fresh', gm: GM, pageErrors: [PLAY_ABORT] });
+test.use({ gm: GM, pageErrors: [PLAY_ABORT] });
 
 const playerState = page => page.evaluate(() => {
   const a = document.querySelector('audio');
