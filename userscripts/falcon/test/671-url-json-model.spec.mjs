@@ -81,7 +81,7 @@ test('one platform page under any of its url forms', { tag: '@unit' }, async () 
     && k('https://open.qobuz.com/artist/38324') === k('https://www.qobuz.com/gb-en/interpreter/pink-floyd/38324'), 'Qobuz: any locale, and open.qobuz.com');
   check(k('https://www.qobuz.com/us-en/interpreter/blink-182/12345') === 'qobuz:artist:12345', 'the id, not a number in the slug');
   check(k('https://www.qobuz.com/us-en/label/x/download-streaming-albums/7') === 'qobuz:label:7' && k('https://www.qobuz.com/us-en/label/x/download-streaming-albums/7') !== k('https://open.qobuz.com/artist/7'), 'a label is not the artist of the same number');
-  check(k('https://music.apple.com/us/artist/487143') === k('https://music.apple.com/gb/artist/pink-floyd/487143') && k('https://itunes.apple.com/gb/artist/id487143') === 'apple:artist:487143', 'Apple Music: any storefront, slug or not, itunes.apple.com');
+  check(k('https://music.apple.com/us/artist/487143') === k('https://music.apple.com/gb/artist/pink-floyd/487143') && k('https://itunes.apple.com/gb/artist/id487143') === 'itunes:artist:487143' && k('https://itunes.apple.com/is/artist/id487143') === k('https://itunes.apple.com/us/artist/487143'), 'Apple Music: any storefront, slug or not; itunes.apple.com is its own page');
   check(k('https://www.discogs.com/artist/1') === null && k('nonsense') === null, 'others: no equivalence');
   const row = (href, ours) => ({ ours, querySelector: () => ({ getAttribute: () => href }) });
   const doc = { querySelectorAll: () => [row('https://www.qobuz.com/us-en/interpreter/x/9', true), row('https://music.apple.com/gb/artist/5', false)] };
