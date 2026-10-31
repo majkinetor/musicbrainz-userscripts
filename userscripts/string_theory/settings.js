@@ -174,7 +174,6 @@ function stVersionsText(md) {
 }
 var ST_CSS = ''
   + '#st-cfg{width:min(620px,94vw);padding:14px 16px;box-sizing:border-box;overflow:auto;font:13px/1.4 var(--mbu-font);outline:none}'
-  + '#st-cfg .mbu-cfg-h .mbu-ov-x{margin:-4px -6px -4px 0}'
   + '#st-cfg .st-sec{margin:0 0 14px}#st-cfg .st-sec:last-child{margin:0}'
   + '#st-cfg .st-tabs{display:flex;gap:2px;margin:0 0 10px;border-bottom:1px solid var(--mbu-border)}'
   + '#st-cfg .st-tabs button{font:inherit;font-size:12px;font-weight:600;margin:0 0 -1px;padding:5px 12px;border:1px solid transparent;border-bottom:0;border-radius:var(--mbu-radius) var(--mbu-radius) 0 0;background:none;color:var(--mbu-text-dim);cursor:pointer}'
@@ -192,17 +191,17 @@ var ST_CSS = ''
   + '#st-cfg .st-upd{margin:4px 0 0;padding:6px 10px;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);font-size:12px}'
   + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 auto;min-width:64px;font-weight:600;white-space:nowrap}#st-cfg .st-upd span{white-space:nowrap}'
   + '#st-cfg .st-upd .st-mine{color:var(--mbu-text-weak)}#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
-  + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-dim)}'
+  + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-weak)!important;font:600 11px/1.4 var(--mbu-font, system-ui, sans-serif);text-transform:uppercase;letter-spacing:.06em}'
   + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
   + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:2px 10px;min-height:22px;line-height:18px;cursor:pointer}'
   + '#st-cfg .st-seg button+button{border-left:1px solid var(--mbu-border)}#st-cfg .st-seg button:hover{background:var(--mbu-bg-hover)}'
   + '#st-cfg .st-seg button[aria-checked=true]{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}'
   + '#st-cfg .st-step{display:inline-flex;align-items:center;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
-  + '#st-cfg .st-step button{font:inherit;font-size:15px;line-height:1;border:0;margin:0;border-radius:0;background:none;color:inherit;width:28px;height:22px;cursor:pointer}'
-  + '#st-cfg .st-step button:hover:not(:disabled){background:var(--mbu-bg-hover)}#st-cfg .st-step button:disabled{opacity:.4;cursor:default}'
+  + '#st-cfg .st-step button{font:inherit;font-size:15px;line-height:1;border:0!important;margin:0!important;padding:0!important;border-radius:0!important;background:none!important;color:inherit;box-sizing:border-box;flex:0 0 28px;width:28px!important;min-width:28px!important;height:22px!important;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}'
+  + '#st-cfg .st-step button:hover:not(:disabled){background:var(--mbu-bg-hover)!important}#st-cfg .st-step button:disabled{opacity:.4;cursor:default}'
   + '#st-cfg .st-step output{min-width:50px;text-align:center;font-variant-numeric:tabular-nums}'
   + '#st-cfg .st-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;margin:4px 0 2px;border:1px dashed var(--mbu-border);border-radius:var(--mbu-radius);touch-action:none;min-height:24px}'
-  + '#st-cfg .st-di{display:grid;place-items:center;flex:0 0 auto;border-radius:50%;cursor:grab;user-select:none}'
+  + '#st-cfg .st-di{display:grid;place-items:center;flex:0 0 auto;width:34px;height:34px;border-radius:50%;cursor:grab;user-select:none}'
   + '#st-cfg .st-di>img,#st-cfg .st-di>svg{width:100%;height:100%;display:block;pointer-events:none}'
   + '#st-cfg .st-di.st-drag{outline:2px solid var(--mbu-accent);outline-offset:2px;cursor:grabbing}'
   + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
@@ -220,8 +219,7 @@ function stSettings() {
     css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_CSS;
     (document.head || html).appendChild(css);
   }
-  var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' })
-    .replace(/<[/]div>$/, '<button type="button" class="mbu-ov-x" id="st-x" aria-label="Close">×</button></div>');
+  var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
   if (ST_ON_MB) {
     var seg = function (id, label, opts) {
       return '<span class="st-lbl" id="' + id + '-l">' + label + '</span><span class="st-seg" role="radiogroup" id="' + id + '" aria-labelledby="' + id + '-l">'
@@ -263,7 +261,7 @@ function stSettings() {
   var close = function () { ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
   // is in front and takes Escape. A floating (position: fixed) element is taken for such a window.
-  var front = true, toFront = function (on) { front = on; ov.style.zIndex = on ? '' : 'calc(var(--mbu-z-modal) - 1)'; };
+  var front = true, toFront = function (on) { front = on; ov.style.zIndex = on ? '' : '9000'; };   // #851: behind every script's window, the lowest of which is 9990
   var floating = function (t) {
     for (var n = t; n && n.nodeType === 1 && n !== ov; n = n.parentElement) if (getComputedStyle(n).position === 'fixed') return true;
     return false;
@@ -281,7 +279,6 @@ function stSettings() {
     close();
   };
   document.addEventListener('mousedown', onOut, true);
-  q('#st-x').onclick = close;
   if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
     var t = e.target.closest('[role=tab]');
     if (!t) return;
@@ -323,11 +320,10 @@ function stSettings() {
       var pick = function (id, v) { Array.prototype.forEach.call(q(id).children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === v)); }); };
       pick('#st-side', mbuShared('cornerSide') === 'left' ? 'left' : 'right');
       pick('#st-flow', mbuShared('cornerFlow') === 'row' ? 'row' : 'column');
-      var v = size(), px = Math.round(34 * v / 100) + 'px';
+      var v = size();
       q('#st-size').textContent = v + ' %';
       q('#st-size-dn').disabled = v <= 60;
       q('#st-size-up').disabled = v >= 160;
-      Array.prototype.forEach.call(strip.children, function (d) { d.style.width = d.style.height = px; });
     };
     var segSet = function (key, alt) {
       return function (e) {

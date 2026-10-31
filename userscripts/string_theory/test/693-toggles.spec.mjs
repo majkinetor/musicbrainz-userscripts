@@ -162,7 +162,7 @@ test.describe('Event Horizon turned off', () => {
     await page.evaluate(keys => keys.forEach(k => localStorage.removeItem('mbu.' + k)), SHARED);
   });
 
-  // The size stepper scales every launcher and the icons in the settings, 60 to 160 % by 10.
+  // The size stepper scales every launcher, 60 to 160 % by 10; the settings' icons, and so the window, keep their size (#851).
   test('the size stepper', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await load(page, inject, { open: true });
@@ -170,14 +170,15 @@ test.describe('Event Horizon turned off', () => {
     const base = await at(page);
     await openSettings(page);
     const icon = () => page.evaluate(() => Math.round(document.querySelector('#st-order .st-di').getBoundingClientRect().width));
-    const i0 = await icon();
+    const i0 = await icon(), win = () => page.evaluate(() => { const r = document.querySelector('#st-cfg').getBoundingClientRect(); return Math.round(r.width) + '×' + Math.round(r.height); });
+    const w0 = await win();
     for (let i = 0; i < 4; i++) await page.locator('#st-size-up').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSize')) === '1.4', `stored as 1.4 (${await page.evaluate(() => localStorage.getItem('mbu.cornerSize'))})`);
     check(await page.locator('#st-size').textContent() === '140 %', 'the stepper shows 140 %');
     const big = await at(page);
     const [b0, b1] = [base[0], big.find(e => e.id === base[0].id)];
     check(Math.abs(b1.w - b0.w * 1.4) <= 2 && b1.right === 14, `${b0.id} scaled in its place (${b0.w} → ${b1.w}, right ${b1.right})`);
-    check(Math.abs(await icon() - i0 * 1.4) <= 2, `the settings' icons scale too (${i0} → ${await icon()})`);
+    check(await icon() === i0 && await win() === w0, `the settings' icons and window keep their size (${i0} → ${await icon()}, ${w0} → ${await win()})`);
     await page.screenshot({ path: info.outputPath('size-140.png') });
     for (let i = 0; i < 2; i++) await page.locator('#st-size-up').click();
     check(await page.locator('#st-size').textContent() === '160 %' && await page.locator('#st-size-up').isDisabled(), 'it stops at 160 %');
