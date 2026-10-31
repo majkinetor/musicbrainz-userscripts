@@ -72,7 +72,7 @@ test('a page that stops mouseover at the window still gets its tip; a lone key l
   check(/M6 1C3\.2/.test(k('Click')) && !/<kbd/.test(k('Click')), 'Click: the left button, no key');
   check(/mbu-tip-kx" aria-hidden="true">×2/.test(k('Double-click')), 'Double-click: ×2');
   check(/aria-hidden="true">C\+⇧<\/kbd><svg/.test(k('Ctrl+Shift+click')), 'Ctrl+Shift+click: C+⇧ and the mouse');
-  check(/rx="1" fill/.test(k('Middle-click')) && !/<path d="M6 1C/.test(k('Middle-click')), 'Middle-click: the wheel');
+  check(/M4 1.4h4V7H4z/.test(k('Middle-click')) && !/<path d="M6 1C/.test(k('Middle-click')), 'Middle-click: the wheel');
   check(/mbu-tip-k">Esc</.test(k('Esc')) && !/svg/.test(k('Esc')), 'Esc stays a key chip');
   // majkinetor, on Platform Check's "Middle/Alt+click" (with a screenshot): "doesn't look good"
   const alt = k('Ctrl+middle-click / Ctrl+Alt+click');
