@@ -94,7 +94,7 @@ function stSettings() {
       + '<div class="st-row"><label for="st-flow">Layout</label><select id="st-flow"><option value="column">Column</option><option value="row">Row</option></select></div>'
       + '<div class="st-row"><label for="st-size">Size</label><input type="number" id="st-size" min="60" max="160" step="10"><span>%</span></div>'
       + '<label class="st-row"><input type="checkbox" id="st-dock"' + (eh ? ' checked disabled' : '') + '> Fold them into String Theory’s icon'
-      + (eh ? '<span class="st-ver">always, in Event Horizon</span>' : '') + '</label>'
+      + (eh ? '<span class="st-ver">always, while Event Horizon shows</span>' : '') + '</label>'
       + '<div class="st-row"><span class="st-note">Drag a launcher to move them.</span><button type="button" class="st-b" id="st-reset">Reset position and size</button></div>'
       + '</section>';
   }
