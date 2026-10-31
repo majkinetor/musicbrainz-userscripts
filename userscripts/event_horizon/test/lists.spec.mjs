@@ -77,3 +77,17 @@ test('a heading\'s funnel filters the table by that column (#845)', { tag: '@san
   check(left.length > 0 && left.every(t => t.toLowerCase().includes(word.toLowerCase())), `every row left has "${word}" in its artist`);
   check(left.length <= all.length, 'the filter does not add rows');
 });
+
+// a table's pinned header meets its section's pinned header, with no strip of rows showing between them
+test('a table\'s pinned header leaves no gap under its section\'s pinned header', { tag: ['@sandbox', '@cosmetic'] }, async ({ page, inject }) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto('https://test.musicbrainz.org/instrument/63021302-86cd-4aee-80df-2270d54f4978');
+  await inject('event_horizon');
+  check(await until(() => page.locator('#s-ir tbody tr').count(), n => n > 5) > 5, 'the releases table fills in');
+  await page.evaluate(() => scrollTo(0, document.querySelector('#s-ir thead').getBoundingClientRect().top + scrollY + 150));
+  const gap = await until(() => page.evaluate(() => {
+    const s = document.querySelector('#s-ir'), h = s.querySelector(':scope>.secthead').getBoundingClientRect(), th = s.querySelector('thead th').getBoundingClientRect();
+    return th.top - h.bottom;
+  }), g => g <= 0);
+  check(gap <= 0 && gap > -4, `the table's header sits right under the section's (gap ${gap}px)`);
+});
