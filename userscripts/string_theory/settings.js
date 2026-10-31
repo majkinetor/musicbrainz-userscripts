@@ -1,5 +1,6 @@
 // String Theory's settings window (#851). build.mjs writes this file into the bundle, inside the scope of
-// its toggles, where these are defined: stMembers ([folder, name, version] per member), ST_VERSION,
+// its toggles, where these are defined: stMembers ([folder, name, version, @icon] per member), ST_VERSION,
+// ST_BRANCH (the branch a test build was made on, empty on main and stable),
 // ST_ICON, ST_HOME, ST_ON_MB, stFlip(folder), __stReadOff(), mbuShared(), mbRestackCorner(), and stUI()
 // and stTokens(), which return the shared UI and token blocks (each made once, the first time the window
 // opens). Plain ES5, as the bundle's own code: no build step touches it.
@@ -28,7 +29,8 @@ function stChannel() {
   } catch (e) { /* no GM_info */ }
   try { console.debug('[String Theory] install URL: ' + (u || '(none)')); } catch (e) { /* no console */ }
   var m = /musicbrainz-userscripts[/](?:raw[/])?(?:refs[/]heads[/])?(.+?)[/]userscripts[/]string_theory[/]/.exec(u);
-  if (!m) return { kind: 'unknown', url: u };
+  // a manager that doesn't say where the script came from: a test build still knows its branch
+  if (!m) return ST_BRANCH && !/github/i.test(u) ? { kind: 'branch', ref: ST_BRANCH } : { kind: 'unknown', url: u };
   var ref = decodeURIComponent(m[1]);
   if (/^[0-9a-f]{40}$/.test(ref)) return { kind: 'pinned', ref: ref };
   if (ref === 'main') return { kind: 'latest', ref: ref };
@@ -59,6 +61,45 @@ function stRemoteVersion(ref, cb) {
     }
   } catch (e) { done(null); }
 }
+// Icons are drawn with different margins, so the same box shows them at different sizes: crop an SVG
+// icon to what it draws, square and with a little room for strokes. A raster icon is left as it is.
+var stFitCache = {};
+function stFitIcon(src) {
+  if (!src) return '';
+  if (stFitCache[src]) return stFitCache[src];
+  var out = src;
+  try {
+    var txt = null, m = /^<img\b[^>]*?\ssrc="([^"]*)"/i.exec(src);
+    if (m) {
+      var url = m[1].replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+      var d = /^data:image[/]svg\+xml([^,]*),([\s\S]*)$/i.exec(url);
+      if (d) txt = /;base64/i.test(d[1]) ? decodeURIComponent(escape(atob(d[2]))) : decodeURIComponent(d[2]);
+    } else if (/^<svg\b/i.test(src)) txt = src;
+    if (txt) {
+      var box = document.createElement('div');
+      box.style.cssText = 'position:absolute;left:-9999px;top:0;width:128px;height:128px;visibility:hidden;pointer-events:none';
+      box.innerHTML = txt;
+      (document.body || document.documentElement).appendChild(box);
+      var svg = box.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '128');
+        svg.setAttribute('height', '128');
+        var b = svg.getBBox();
+        if (b.width > 0 && b.height > 0) {
+          var side = Math.max(b.width, b.height) * 1.08, cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+          svg.setAttribute('viewBox', [cx - side / 2, cy - side / 2, side, side].map(function (n) { return Math.round(n * 100) / 100; }).join(' '));
+          svg.removeAttribute('width');
+          svg.removeAttribute('height');
+          svg.removeAttribute('style');
+          out = '<img alt="" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg)) + '">';
+        }
+      }
+      box.remove();
+    }
+  } catch (e) { /* keep the icon as it is */ }
+  stFitCache[src] = out;
+  return out;
+}
 function stCopy(text, ok) {
   try { if (typeof GM_setClipboard === 'function') { GM_setClipboard(text, 'text'); ok(true); return; } } catch (e) { /* fall back */ }
   try { navigator.clipboard.writeText(text).then(function () { ok(true); }, function () { ok(false); }); } catch (e) { ok(false); }
@@ -70,9 +111,13 @@ function stVersionsText() {
   return lines.join('\n');
 }
 var ST_CSS = ''
-  + '#st-cfg{width:min(460px,94vw);padding:14px 16px;box-sizing:border-box;overflow:auto;font:13px/1.4 var(--mbu-font);outline:none}'
+  + '#st-cfg{width:min(620px,94vw);padding:14px 16px;box-sizing:border-box;overflow:auto;font:13px/1.4 var(--mbu-font);outline:none}'
   + '#st-cfg .mbu-cfg-h .mbu-ov-x{margin:-4px -6px -4px 0}'
   + '#st-cfg .st-sec{margin:0 0 14px}#st-cfg .st-sec:last-child{margin:0}'
+  + '#st-cfg .st-tabs{display:flex;gap:2px;margin:0 0 10px;border-bottom:1px solid var(--mbu-border)}'
+  + '#st-cfg .st-tabs button{font:inherit;font-size:12px;font-weight:600;margin:0 0 -1px;padding:5px 12px;border:1px solid transparent;border-bottom:0;border-radius:var(--mbu-radius) var(--mbu-radius) 0 0;background:none;color:var(--mbu-text-dim);cursor:pointer}'
+  + '#st-cfg .st-tabs button:hover{color:inherit}'
+  + '#st-cfg .st-tabs button[aria-selected=true]{color:inherit;background:var(--mbu-bg);border-color:var(--mbu-border)}'
   + '#st-cfg h3{margin:0 0 4px;padding:0;border:0;background:none;font:600 11px/1.4 var(--mbu-font);text-transform:uppercase;letter-spacing:.06em;color:var(--mbu-text-weak)}'
   + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:30px;margin:0;font-weight:400}'
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
@@ -87,11 +132,11 @@ var ST_CSS = ''
   + '#st-cfg .st-upd .st-mine{color:var(--mbu-text-weak)}#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
   + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-dim)}'
   + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
-  + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:4px 12px;min-height:26px;cursor:pointer}'
+  + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:2px 10px;min-height:22px;line-height:18px;cursor:pointer}'
   + '#st-cfg .st-seg button+button{border-left:1px solid var(--mbu-border)}#st-cfg .st-seg button:hover{background:var(--mbu-bg-hover)}'
   + '#st-cfg .st-seg button[aria-checked=true]{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}'
   + '#st-cfg .st-step{display:inline-flex;align-items:center;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
-  + '#st-cfg .st-step button{font:inherit;font-size:15px;line-height:1;border:0;margin:0;border-radius:0;background:none;color:inherit;width:32px;height:26px;cursor:pointer}'
+  + '#st-cfg .st-step button{font:inherit;font-size:15px;line-height:1;border:0;margin:0;border-radius:0;background:none;color:inherit;width:28px;height:22px;cursor:pointer}'
   + '#st-cfg .st-step button:hover:not(:disabled){background:var(--mbu-bg-hover)}#st-cfg .st-step button:disabled{opacity:.4;cursor:default}'
   + '#st-cfg .st-step output{min-width:50px;text-align:center;font-variant-numeric:tabular-nums}'
   + '#st-cfg .st-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;margin:4px 0 2px;border:1px dashed var(--mbu-border);border-radius:var(--mbu-radius);touch-action:none;min-height:24px}'
@@ -101,7 +146,8 @@ var ST_CSS = ''
   + '#st-cfg .st-di.st-away{opacity:.45}'
   + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-links{flex-wrap:wrap;gap:4px 14px}'
-  + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px}'
+  + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
+  + '#st-cfg .st-si{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}#st-cfg .st-si>img,#st-cfg .st-si>svg{width:100%;height:100%;display:block}'
   + '#st-cfg [hidden]{display:none!important}';
 function stSettings() {
   if (stCfgOv && stCfgOv.isConnected) { stCfgOv.querySelector('#st-cfg').focus(); return; }
@@ -119,24 +165,27 @@ function stSettings() {
       return '<span class="st-lbl" id="' + id + '-l">' + label + '</span><span class="st-seg" role="radiogroup" id="' + id + '" aria-labelledby="' + id + '-l">'
         + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
     };
-    h += '<section class="st-sec"><h3>Launchers</h3>'
-      + '<div class="st-row">' + seg('st-side', 'Side', [['right', 'Right'], ['left', 'Left']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']]) + '</div>'
-      + '<div class="st-row"><span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
+    h += '<div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Launchers</button>'
+      + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>'
+      + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l">'
+      + '<div class="st-row">' + seg('st-side', 'Side', [['right', 'Right'], ['left', 'Left']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
+      + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
       + '<div class="st-strip" id="st-order"></div>'
       + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
       + '</section>';
   }
-  var off = __stReadOff();
-  h += '<section class="st-sec"><h3>About</h3>'
+  var off = __stReadOff(), known = mbuShared('dockKnown') || {};
+  h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
     + '<div class="st-row"><span class="st-note" id="st-chan"></span><button type="button" class="st-b" id="st-check">Check for updates</button></div>'
     + '<div class="st-upd" id="st-upd" hidden></div>'
     + '<div class="st-row st-links"><a href="' + stEsc(ST_HOME) + '" target="_blank" rel="noopener">GitHub</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a>'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a></div>'
-    + '<div class="st-scripts">' + stMembers.map(function (m) {
-      return '<label class="st-row"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '> '
-        + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
+    + '<div class="st-scripts" title="Right-click a script for its settings">' + stMembers.map(function (m) {
+      var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';
+      return '<label class="st-row" data-name="' + stEsc(m[1]) + '"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '>'
+        + '<span class="st-si">' + stFitIcon(icon) + '</span>' + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
     }).join('') + '</div>'
     + '<div class="st-row"><span class="st-note" id="st-apply">A change applies from the next page load.</span>'
     + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy">Copy versions</button></div>'
@@ -154,6 +203,33 @@ function stSettings() {
   document.addEventListener('keydown', onKey, true);
   ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
   q('#st-x').onclick = close;
+  if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
+    var t = e.target.closest('[role=tab]');
+    if (!t) return;
+    Array.prototype.forEach.call(q('.st-tabs').children, function (b) {
+      b.setAttribute('aria-selected', String(b === t));
+      q('#' + b.getAttribute('aria-controls')).hidden = b !== t;
+    });
+  };
+  // a launcher opens its script's settings on right-click: pass the click on to the live one
+  var live = function (name) {
+    var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
+      return el.id !== 'mbu-dock' && el.dataset.mbCornerLabel === name;
+    });
+    return els.filter(function (el) { return el.dataset.mbuDocked !== 'off'; })[0] || els[0] || null;
+  };
+  var openFor = function (name) {
+    var el = live(name);
+    if (!el) { try { U.mbuToast('⚠ ' + name + ' isn’t on this page'); } catch (err) { /* no toast */ } return; }
+    close();
+    el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window }));
+  };
+  q('.st-scripts').addEventListener('contextmenu', function (e) {
+    var r = e.target.closest('[data-name]');
+    if (!r) return;
+    e.preventDefault();
+    openFor(r.dataset.name);
+  });
 
   if (ST_ON_MB) {
     var restack = function () { ['br', 'bl', 'tr', 'tl'].forEach(function (c) { try { mbRestackCorner(c); } catch (e) { /* a corner's script broke */ } }); };
@@ -187,14 +263,7 @@ function stSettings() {
     q('#st-size-up').onclick = function () { step(10); };
 
     // Every launcher any page has shown (dockKnown), in dockOrder, then as the page stacks them.
-    var strip = q('#st-order');
-    var live = function (name) {
-      var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
-        return el.id !== 'mbu-dock' && el.dataset.mbCornerLabel === name;
-      });
-      return els.filter(function (el) { return el.dataset.mbuDocked !== 'off'; })[0] || els[0] || null;
-    };
-    var known = mbuShared('dockKnown') || {}, order = mbuShared('dockOrder');
+    var strip = q('#st-order'), order = mbuShared('dockOrder');
     order = Array.isArray(order) ? order : [];
     var rank = function (n) {
       var i = order.indexOf(n), el = i < 0 && live(n);
@@ -205,7 +274,7 @@ function stSettings() {
       d.className = 'st-di' + (live(n) ? '' : ' st-away');
       d.dataset.name = n;
       d.title = n + (live(n) ? '' : ' (not on this page)');
-      d.innerHTML = known[n];
+      d.innerHTML = stFitIcon(known[n]);
       strip.appendChild(d);
     });
     if (!strip.children.length) strip.innerHTML = '<span class="st-cap">The launchers show here once a page has them.</span>';
@@ -240,15 +309,11 @@ function stSettings() {
     };
     strip.addEventListener('pointerup', drop);
     strip.addEventListener('pointercancel', drop);
-    // a launcher opens its script's settings on right-click: pass the click on to the live one
     strip.addEventListener('contextmenu', function (e) {
       var d = e.target.closest('.st-di');
       if (!d) return;
       e.preventDefault();
-      var el = live(d.dataset.name);
-      if (!el) { try { U.mbuToast('⚠ ' + d.dataset.name + ' isn’t on this page'); } catch (err) { /* no toast */ } return; }
-      close();
-      el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window }));
+      openFor(d.dataset.name);
     });
     show();
   }

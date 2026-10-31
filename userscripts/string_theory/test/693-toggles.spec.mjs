@@ -61,6 +61,9 @@ test('one menu entry opens the settings, which turn a script off and on', { tag:
   const captions = await page.evaluate(() => [...window.__menu.values()].map(e => e.caption));
   check(captions.length === 1 && captions[0] === '⚙ Settings', `one entry (${captions.join(' · ')})`);
   await openSettings(page);
+  check(await page.evaluate(() => document.getElementById('st-p-a').hidden), 'About is its own tab, closed at first');
+  await page.locator('#st-tab-a').click();
+  check(await page.evaluate(() => document.getElementById('st-p-l').hidden), 'opening it closes Launchers');
   const boxes = await page.evaluate(() => [...document.querySelectorAll('#st-cfg [data-st-m]')].map(b => [b.dataset.stM, b.checked, b.closest('label').textContent]));
   check(boxes.length === MEMBERS && boxes.every(b => b[1]), `${MEMBERS} scripts, all on (${boxes.map(b => b[0]).join(' ')})`);
   check(boxes.some(b => b[0] === 'platform_check' && /Platform Check.*\d{4}\.\d+\.\d+/.test(b[2])), 'with the script\'s name and version');
@@ -215,6 +218,31 @@ test.describe('Event Horizon turned off', () => {
 
     await page.locator('#st-order [data-name="Elsewhere"]').click({ button: 'right' });
     check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'a right-click on one not here keeps the settings open');
+    // every icon in the settings is cropped to what it draws, so all show the same size
+    const sizes = await page.evaluate(() => Promise.all([...document.querySelectorAll('#st-order .st-di img')].map(img => new Promise(ok => {
+      const c = document.createElement('canvas'); c.width = c.height = 64;
+      const im = new Image(); im.onload = () => {
+        const x = c.getContext('2d'); x.drawImage(im, 0, 0, 64, 64);
+        const d = x.getImageData(0, 0, 64, 64).data; let lo = 64, hi = -1;
+        for (let i = 0; i < 64 * 64; i++) if (d[i * 4 + 3] > 20) { const y = i >> 6, xx = i & 63; lo = Math.min(lo, xx, y); hi = Math.max(hi, xx, y); }
+        ok([img.closest('.st-di').dataset.name, hi - lo]);
+      }; im.onerror = () => ok([img.closest('.st-di').dataset.name, -1]); im.src = img.src;
+    }))));
+    check(sizes.length >= 3 && sizes.every(([, w]) => w >= 54), `each icon fills its circle (${sizes.map(([n, w]) => n + ' ' + w).join(', ')})`);
+
+    await page.locator('#st-tab-a').click();
+    const list = await page.evaluate(() => [...document.querySelectorAll('#st-cfg .st-scripts label')].map(l => [l.dataset.name, !!l.querySelector('.st-si img'), l.getBoundingClientRect().height]));
+    check(list.length > 5 && list.every(r => r[1]), `every script in About has its icon (${list.filter(r => !r[1]).map(r => r[0]).join(', ') || 'all'})`);
+    check(list.every(r => r[2] < 30), `no name wraps (${Math.max(...list.map(r => r[2]))} px rows)`);
+    await page.screenshot({ path: info.outputPath('about.png') });
+    await page.locator('#st-cfg .st-scripts [data-name="Credit Hoarder"]').click({ button: 'right' });
+    check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'a script not on this page keeps the settings open');
+    await page.locator('#st-cfg .st-scripts [data-name="Fusion"]').click({ button: 'right' });
+    check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion in About opens Fusion\'s settings');
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => document.getElementById('fs-settings')?.remove());
+    await openSettings(page);
+
     await page.locator('#st-order [data-name="Fusion"]').click({ button: 'right' });
     check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion opens Fusion\'s settings');
     check(!(await page.evaluate(() => !!document.getElementById('st-cfg-ov'))), 'and closes String Theory\'s');
