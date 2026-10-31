@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170106.1.3
+// @version      2026.10.31.170106.1.4
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2285,7 +2285,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 :root[data-eh-theme] button.ib:hover{color:var(--text)!important}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .secthead .fold h2{font-size:19px}
-#app>section.sec>.secthead{position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:0 0 10px 10px;background:var(--bg);transition:top .18s}
+#app>section.sec>.secthead:has(>.fold[aria-expanded="true"]){position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;border-radius:0 0 10px 10px;background:var(--bg);transition:top .18s}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
@@ -3206,7 +3206,7 @@ function byRole(cr) { const m = new Map(); for (const c of cr) { const l = m.get
 const relUrl = id => '/release/' + id;
 
 /* ── sections fold ─────────────────────────────────── */
-function sect(id, title, tools, body, folded) {
+function sect(id, title, tools, body, folded, headerNote = '') {
     // folded, a one-line summary sits beside the title and anything bigger (the editions' covers) below it
     const shut = S.fold.includes(id), inl = shut && folded.startsWith('<div class="folded-note"');
     // a paged list's Auto sits in the header too, where it stays put while pages load below (majkinetor)
@@ -3214,7 +3214,7 @@ function sect(id, title, tools, body, folded) {
     const lm = /data-lm="([^"]+)" data-lmn="([0-9]+)"/.exec(body);
     if (lm) tools = `<span class="ed-ld aside" data-tip="Sorting and filters cover only what is loaded so far">${lm[2]} loaded so far<span class="dwrap lmw"><button class="lnk" type="button" data-lmgo="${lm[1]}">${LM_BUSY.has(lm[1]) ? 'Loading…' : 'Load more'}</button>${lmMenu('lnk', b => `data-lmgo="${lm[1]}+${b}"`)}</span></span>` + tools;
     if (body.includes('data-lm="')) tools = `<label class="lm-auto aside" data-tip="Load more as the list's end comes into view"><input type="checkbox" data-lmauto${S.lmAuto ? ' checked' : ''}>Auto</label>` + tools;
-    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
+    return `<section class="sec" id="s-${id}"><div class="secthead"><button class="fold" type="button" data-fold="${id}" aria-expanded="${!shut}" data-tip="${shut ? 'Open' : 'Fold'} this section&#10;Right-click: ${shut ? 'open' : 'fold'} every section">${CHEV}<h2>${title}</h2></button>${headerNote}${inl ? folded : shut ? '' : `<div class="tools">${tools}</div>`}</div>${inl ? '' : shut ? folded : body}</section>`;
 }
 
 /* ── hero ──────────────────────────────────────────── */
@@ -3474,7 +3474,7 @@ function edHtml(r, eds, count) {
     else body = `<div class="ed-grid">${shown.map(e => edTile(e, r.id, !r.id)).join('')}</div>`;
     const go = `<button class="lnk" type="button" data-mbgo="${MB}${r.page || '/release-group/' + r.rgId}">${paged ? 'Date order' : 'All'} on MusicBrainz's page</button>`;
     const more = r.native ? (r.more ? lmFoot('ed', all.length, 0) : '') : paged ? lmFoot('ed', all.length, count) : count > all.length ? `<div class="folded-note">The first ${all.length} of ${count}. ${go}</div>` : '';
-    return sect('ed', r.id ? `${count} editions of this ${esc((r.type || 'release').toLowerCase())}` : `Releases <span class="count">${count}${r.more ? '+' : ''}</span>`, tools, filters + body + more, folded);
+    return sect('ed', r.id ? 'Editions' : `Releases <span class="count">${count}${r.more ? '+' : ''}</span>`, tools, filters + body + more, folded, r.id ? `<div class="folded-note">${count} edition${count === 1 ? '' : 's'}</div>` : '');
 }
 
 /* ── tracklist ─────────────────────────────────────── */
