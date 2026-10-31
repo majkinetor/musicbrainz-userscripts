@@ -100,6 +100,48 @@ function stFitIcon(src) {
   stFitCache[src] = out;
   return out;
 }
+// getBBox counts what a clip path or a mask hides (Art Station's sky), so the box can still be too big:
+// once an icon is drawn, crop it again to its visible pixels.
+var stPixCache = {};
+function stFitPixels(root) {
+  Array.prototype.forEach.call(root.querySelectorAll('img[src^="data:image/svg+xml"]'), function (img) {
+    var src = img.getAttribute('src');
+    if (stPixCache[src]) { if (stPixCache[src] !== src) img.src = stPixCache[src]; return; }
+    try {
+      var txt = decodeURIComponent(src.slice(src.indexOf(',') + 1));
+      var svg = new DOMParser().parseFromString(txt, 'image/svg+xml').documentElement;
+      var vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+      if (vb.length !== 4 || !(vb[2] > 0) || vb[2] !== vb[3]) { stPixCache[src] = src; return; }
+      var N = 256;
+      svg.setAttribute('width', N);
+      svg.setAttribute('height', N);
+      var im = new Image();
+      im.onload = function () {
+        try {
+          var c = document.createElement('canvas');
+          c.width = c.height = N;
+          var x = c.getContext('2d');
+          x.drawImage(im, 0, 0, N, N);
+          var px = x.getImageData(0, 0, N, N).data, x0 = N, y0 = N, x1 = -1, y1 = -1;
+          for (var i = 0; i < N * N; i++) if (px[i * 4 + 3] > 8) {
+            var yy = Math.floor(i / N), xx = i % N;
+            if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy;
+          }
+          if (x1 < 0) { stPixCache[src] = src; return; }
+          var k = vb[2] / N, w = (x1 - x0 + 1) * k, h = (y1 - y0 + 1) * k;
+          var side = Math.max(w, h) * 1.06, cx = vb[0] + (x0 + x1 + 1) / 2 * k, cy = vb[1] + (y0 + y1 + 1) / 2 * k;
+          svg.setAttribute('viewBox', [cx - side / 2, cy - side / 2, side, side].map(function (n) { return Math.round(n * 100) / 100; }).join(' '));
+          svg.removeAttribute('width');
+          svg.removeAttribute('height');
+          var out = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+          stPixCache[src] = out;
+          Array.prototype.forEach.call(root.querySelectorAll('img'), function (o) { if (o.getAttribute('src') === src) o.src = out; });
+        } catch (e) { stPixCache[src] = src; }
+      };
+      im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+    } catch (e) { stPixCache[src] = src; }
+  });
+}
 function stCopy(text, ok) {
   try { if (typeof GM_setClipboard === 'function') { GM_setClipboard(text, 'text'); ok(true); return; } } catch (e) { /* fall back */ }
   try { navigator.clipboard.writeText(text).then(function () { ok(true); }, function () { ok(false); }); } catch (e) { ok(false); }
@@ -128,7 +170,7 @@ var ST_CSS = ''
   + '#st-cfg .st-b:hover{background:var(--mbu-bg-hover)}#st-cfg .st-b:disabled{opacity:.6;cursor:default}'
   + '#st-cfg a{color:var(--mbu-accent-text)}'
   + '#st-cfg .st-upd{margin:4px 0 0;padding:6px 10px;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);font-size:12px}'
-  + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 64px;font-weight:600}'
+  + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 auto;min-width:64px;font-weight:600;white-space:nowrap}#st-cfg .st-upd span{white-space:nowrap}'
   + '#st-cfg .st-upd .st-mine{color:var(--mbu-text-weak)}#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
   + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-dim)}'
   + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
@@ -148,7 +190,8 @@ var ST_CSS = ''
   + '#st-cfg .st-links{flex-wrap:wrap;gap:4px 14px}'
   + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
   + '#st-cfg .st-si{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}#st-cfg .st-si>img,#st-cfg .st-si>svg{width:100%;height:100%;display:block}'
-  + '#st-cfg [hidden]{display:none!important}';
+  + '#st-cfg [hidden]{display:none!important}'
+  + '#st-cfg-ov{background:none;pointer-events:none}#st-cfg-ov>#st-cfg{pointer-events:auto}';
 function stSettings() {
   if (stCfgOv && stCfgOv.isConnected) { stCfgOv.querySelector('#st-cfg').focus(); return; }
   var U = stUI(), T = stTokens(), html = document.documentElement;
@@ -198,10 +241,11 @@ function stSettings() {
   (document.body || html).appendChild(ov);
   stCfgOv = ov;
   var panel = ov.querySelector('#st-cfg'), q = function (s) { return panel.querySelector(s); };
-  var close = function () { ov.remove(); document.removeEventListener('keydown', onKey, true); };
+  var close = function () { ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
   var onKey = function (e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } };
   document.addEventListener('keydown', onKey, true);
-  ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
+  var onOut = function (e) { if (!panel.contains(e.target) && !(e.target.closest && e.target.closest('#mbu-toast'))) close(); };
+  document.addEventListener('mousedown', onOut, true);
   q('#st-x').onclick = close;
   if (ST_ON_MB) q('.st-tabs').onclick = function (e) {
     var t = e.target.closest('[role=tab]');
@@ -222,7 +266,7 @@ function stSettings() {
     var el = live(name);
     if (!el) { try { U.mbuToast('⚠ ' + name + ' isn’t on this page'); } catch (err) { /* no toast */ } return; }
     close();
-    el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window }));
+    el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 }));
   };
   q('.st-scripts').addEventListener('contextmenu', function (e) {
     var r = e.target.closest('[data-name]');
@@ -363,6 +407,7 @@ function stSettings() {
   q('#st-copy').onclick = function () {
     stCopy(stVersionsText(), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });
   };
+  stFitPixels(panel);
   U.mbuControls(panel);
   U.mbuCfgDrag(panel);
   panel.focus();

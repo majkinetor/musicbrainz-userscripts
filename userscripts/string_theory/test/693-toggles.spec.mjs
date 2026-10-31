@@ -218,7 +218,9 @@ test.describe('Event Horizon turned off', () => {
 
     await page.locator('#st-order [data-name="Elsewhere"]').click({ button: 'right' });
     check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'a right-click on one not here keeps the settings open');
-    // every icon in the settings is cropped to what it draws, so all show the same size
+    check(await page.evaluate(() => getComputedStyle(document.getElementById('st-cfg-ov')).backgroundColor === 'rgba(0, 0, 0, 0)'), 'the page behind is not dimmed');
+    // every icon in the settings is cropped to what it draws (the pixel crop runs once drawn), so all show the same size
+    await page.waitForTimeout(600);
     const sizes = await page.evaluate(() => Promise.all([...document.querySelectorAll('#st-order .st-di img')].map(img => new Promise(ok => {
       const c = document.createElement('canvas'); c.width = c.height = 64;
       const im = new Image(); im.onload = () => {
