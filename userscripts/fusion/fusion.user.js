@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.220000
+// @version      2026.10.31.235000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -2160,15 +2160,15 @@ function mbuDock() {
             + '.mbu-dock-item,#mbu-dock{filter:none!important}'
             // folded, an entry with something to do peeks beside the button, smaller
             + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
             // nothing counted yet: three small dots lighting in turn, no badge
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
-            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
             + '#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}'
             + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
             + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
@@ -2270,7 +2270,8 @@ function mbuCornerRank(el, order) {
 }
 // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
 // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
-// paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+// paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
+// data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
 // with .status(text) to show a short state (a count) beside it.
 function mbuDockItem(o) {
     var b = document.getElementById(o.id);

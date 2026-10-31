@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.10.31.220000
+// @version      2026.10.31.235000
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -1093,15 +1093,15 @@
               + '.mbu-dock-item,#mbu-dock{filter:none!important}'
               // folded, an entry with something to do peeks beside the button, smaller
               + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
               + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
               // nothing counted yet: three small dots lighting in turn, no badge
-              + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
-              + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+              + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+              + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
               + '#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}'
               + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
               + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
@@ -1203,7 +1203,8 @@
   }
   // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
   // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
-  // paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+  // paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
+  // data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
   // with .status(text) to show a short state (a count) beside it.
   function mbuDockItem(o) {
       var b = document.getElementById(o.id);
@@ -5339,6 +5340,11 @@
           <div class="ii-set-row"><label data-tip="Repeat failed submits up to … minutes or … times&#10;When MusicBrainz is busy (503) or the connection drops, the ISRC and link submits are tried again by themselves, the attempts spread over the minutes."><input type="checkbox" id="ii-auto-repeat"><span>Repeat failed submits up to <input type="number" id="ii-ar-min" min="1" max="240"> minutes or <input type="number" id="ii-ar-times" min="1" max="100"> times</span></label></div>
 
           <div class="ii-cfg-sec">Display</div>
+          <div class="ii-set-row ii-set-inline" data-tip="Where ISRC Scout lives&#10;HUD: its button beside the release&#x27;s title&#10;Dock icon: an icon in the bottom-right corner (String Theory&#x27;s dock when it runs), as in Event Horizon"><span class="ii-set-k">Interface</span>
+            <select id="ii-iface">
+              <option value="hud">HUD</option>
+              <option value="dock">Dock icon</option>
+            </select></div>
         <div class="ii-set-row"><label data-tip="Show ISRCs in parts&#10;CC-XXX-YY-NNNNN: country, registrant, year, number. A copy is still the plain code, and Mission Control shows its ISRCs the same way. The ISRC you type stays plain."><input type="checkbox" id="ii-isrc-format"><span>Show ISRCs in parts</span></label></div>
 
         <div class="ii-set-row"><label data-tip="Add ISRC/Links columns to tracklist&#10;Show each track&#x27;s ISRCs and links, with controls above the tracklist to hide either column."><input type="checkbox" id="ii-track-toggles"><span>Add ISRC/Links columns to tracklist</span></label></div>
@@ -5726,6 +5732,17 @@
       cbAr.addEventListener('change', () => { store.set('auto_repeat', cbAr.checked); Log.info('Repeat failed submits: ' + (cbAr.checked ? 'on' : 'off')); });
       const num = (el, k, d, max) => el.addEventListener('change', () => { const v = parseInt(el.value, 10); const n = v >= 1 ? Math.min(v, max) : d; el.value = n; store.set(k, n); Log.info('Repeat failed submits: up to ' + repeatMinutes() + ' min or ' + repeatTimes() + ' times'); });
       num(arMin, 'auto_repeat_min', 10, 240); num(arTimes, 'auto_repeat_times', 10, 100);
+    }
+
+    // #851: Interface, HUD or Dock icon
+    const selIf = modal.querySelector('#ii-iface');
+    if (selIf) {
+      selIf.value = iiIface();
+      selIf.addEventListener('change', () => {
+        store.set('interface', selIf.value === 'dock' ? 'dock' : 'hud');
+        Log.info('Interface: ' + (iiIface() === 'dock' ? 'Dock icon' : 'HUD'));
+        iiApplyIface();
+      });
     }
 
     // #603: which service resolves Spotify ISRCs
@@ -9087,12 +9104,23 @@
   // #851: String Theory's settings open these settings on any page, whether this script runs here or not
   document.addEventListener('mbu-open-settings', e => { if (e.detail === 'isrc_scout' && !e.defaultPrevented) { e.preventDefault(); whenDomReady(() => openSetupAlone(SETTINGS_ONLY || !IS_OVERVIEW)); } });
   if (SETTINGS_ONLY) { whenDomReady(() => openSetupAlone(SETTINGS_ONLY || !IS_OVERVIEW)); return; }
+  // #851: Interface: 'hud', the button beside the title (the default), or 'dock', the dock's icon outside Event
+  // Horizon too: in String Theory's dock, or standing alone in the corner without it
+  let iiDockItem = null;
+  function iiIface() { return store.get('interface', 'hud') === 'dock' ? 'dock' : 'hud'; }
+  function iiApplyIface() {
+    const dock = iiIface() === 'dock';
+    if (iiDockItem) { if (dock) delete iiDockItem.dataset.mbCornerDock; else iiDockItem.dataset.mbCornerDock = 'only'; mbRestackCorner('br'); }
+    if (!IS_OVERVIEW) return;
+    if (dock) btn.remove(); else injectButton();
+  }
   // In Event Horizon, which replaces this page, the badge's state and the editor are in String Theory's dock (#847)
   whenDomReady(() => {
     if (!IS_OVERVIEW) return;
-    const item = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
+    const item = iiDockItem = mbuDockItem({ id: 'ii-dock', label: 'ISRC Scout', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=', order: 62,
       scale: 1.15, paths: '^/release/[0-9a-fA-F-]{36}/?$', click: () => { isFollow(); openModal(); } });
     item.oncontextmenu = e => { e.preventDefault(); isFollow(); openSetupAlone(); };   // #695: right-click opens the settings
+    if (iiIface() === 'dock') { delete item.dataset.mbCornerDock; mbRestackCorner('br'); }
     // the number is what's left to do: tracks without an ISRC, and with the background check, links to add
     const mirror = () => {
       if (!RELEASE) { item.status(''); item.busy(true); return; }   // loading: the dock's own "···", not the button's hourglass
@@ -9112,7 +9140,7 @@
     mirror();
   });
   whenDomReady(() => {
-    if (!IS_OVERVIEW) return;
+    if (!IS_OVERVIEW || iiIface() === 'dock') return;
     if (!injectButton()) {
       const obs = new MutationObserver(() => { if (injectButton()) obs.disconnect(); });
       obs.observe(document.documentElement, { childList: true, subtree: true });

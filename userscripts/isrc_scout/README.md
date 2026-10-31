@@ -146,6 +146,7 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 | --- | --- | --- |
 | Platforms | all on | the platforms ISRC Scout uses ([Platforms](#platforms)) |
 | Authorize |  | OAuth for submitting ISRCs |
+| Interface | HUD | the button beside the release's title, or *Dock icon*: an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon |
 | Import buttons | icons | icons, text, or both |
 | Add ISRC/Links columns to tracklist | on | columns and their controls on the release page ([Tracklist](#tracklist)) |
 | Show ISRCs in parts | on | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |

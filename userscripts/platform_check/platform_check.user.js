@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.10.31.220000
+// @version      2026.10.31.235000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -1744,15 +1744,15 @@ function mbuDock() {
             + '.mbu-dock-item,#mbu-dock{filter:none!important}'
             // folded, an entry with something to do peeks beside the button, smaller
             + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}'
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked])):hover::after{opacity:1}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="✓"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}'   // all done: a quiet dot, so a count beside it stands out
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}'   // "0,3": nothing to do, only held back
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}'
             + '@keyframes mbu-dock-fade{50%{opacity:.25}}'
             // nothing counted yet: three small dots lighting in turn, no badge
-            + ':is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
-            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
+            + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"]::after{content:none}'
+            + '.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mbu-busy][data-mb-corner-status="···"] .mbu-dock-dots{display:flex}'
             + '#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}'
             + '.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}'
             + '@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}'
@@ -1854,7 +1854,8 @@ function mbuCornerRank(el, order) {
 }
 // A script's entry that lives in the dock only (#847): for a script whose own controls sit in
 // MusicBrainz's page, which Event Horizon replaces. o: id, label, icon (an image URL), order,
-// paths (as data-mb-corner-paths), click. Outside the dock it is never shown. Returns the button,
+// paths (as data-mb-corner-paths), click. Outside the dock it is never shown, unless the script clears its
+// data-mb-corner-dock (the Interface setting's Dock icon, #851): then it is a launcher of its own. Returns the button,
 // with .status(text) to show a short state (a count) beside it.
 function mbuDockItem(o) {
     var b = document.getElementById(o.id);
@@ -3563,6 +3564,8 @@ providerModal.innerHTML = `
 
     <div class="pc-setup-sec">Appearance</div>
     <div class="pc-set-grid">
+      <div class="pc-set-k">Interface</div>
+      <div class="pc-set-v" data-tip="Where the panel lives\nHUD: in the release page's sidebar\nDock icon: behind an icon in the bottom-right corner (String Theory's dock when it runs), as in Event Horizon"><span class="pc-seg"><label><input type="radio" name="mb-iface" value="hud"><span>HUD</span></label><label><input type="radio" name="mb-iface" value="dock"><span>Dock icon</span></label></span></div>
       <div class="pc-set-k">Icon</div>
       <div class="pc-set-v"><label><input type="checkbox" id="mb-show-icons"> Show</label><span class="pc-set-lbl">size</span><input type="number" id="mb-icon-size" min="14" max="30" step="1"></div>
       <div class="pc-set-k">Name</div>
@@ -3644,7 +3647,16 @@ const coverArt = sidebar.querySelector('.cover-art');
 if (coverArt) sidebar.insertBefore(container, coverArt);
 else sidebar.prepend(container);
 // In Event Horizon, which replaces this page, the panel opens from String Theory's dock (#847)
-var pcDockItem = null;
+var pcDockItem = null, pcPark = null;
+// #851: Interface: 'hud', the panel in the sidebar (the default), or 'dock', the panel behind its own icon
+// in the corner, the way Event Horizon shows it: in String Theory's dock, or standing alone without it
+function pcIface() { return GM_getValue('pc:interface', 'hud') === 'dock' ? 'dock' : 'hud'; }
+function pcApplyIface() {
+    if (!pcDockItem) return;
+    if (pcIface() === 'dock') delete pcDockItem.dataset.mbCornerDock; else pcDockItem.dataset.mbCornerDock = 'only';
+    if (pcPark) pcPark();
+    mbRestackCorner('br');
+}
 // the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
 var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
 // "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
@@ -3659,7 +3671,8 @@ if (!PC_SEED) {
     const win = document.createElement('div'); win.className = 'mbu-dock-win'; win.hidden = true;
     let open = false;
     const park = () => {
-        const docked = document.documentElement.hasAttribute('data-mbu-dock');
+        // in Event Horizon, or with the Interface setting's Dock icon (#851)
+        const docked = document.documentElement.hasAttribute('data-mbu-dock') || pcIface() === 'dock';
         if (docked && container.parentNode !== win) { win.appendChild(container); document.documentElement.appendChild(win); }
         else if (!docked && container.parentNode === win) { home.insertBefore(container, next && next.parentNode === home ? next : null); win.remove(); open = false; win.hidden = true; }
     };
@@ -3674,6 +3687,8 @@ if (!PC_SEED) {
             if (open) { close(); return; }
             park(); open = true; win.hidden = false;
         } });
+    pcPark = park;
+    pcApplyIface();
     pcDockItem.oncontextmenu = e => { e.preventDefault(); if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); };   // into the body that shows (Event Horizon swaps it)   // #695: right-click opens the settings
 }
 // Belt-and-suspenders: pin the panel to the sidebar's natural width *now* — measured
@@ -3891,6 +3906,7 @@ document.getElementById('mb-token-setup-btn').addEventListener('click', () => {
     document.getElementById('mb-links-close-falcon').checked = GM_getValue('pc:links-close-falcon', true);
     const layout = GM_getValue('pc:layout', '1row');
     providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => { r.checked = r.value === layout; });
+    providerModal.querySelectorAll('input[name="mb-iface"]').forEach(r => { r.checked = r.value === pcIface(); });
     document.getElementById('mb-compact-unmatched').checked = GM_getValue('pc:compact-unmatched', true);
     document.getElementById('mb-compact-nonstrict').checked = GM_getValue('pc:compact-nonstrict', false);
     providerModal.querySelector('#mb-marker').value = pcMarker();
@@ -3968,6 +3984,12 @@ document.getElementById('mb-bg-audio').addEventListener('change', e => {
     // already turned it on.
     GM_setValue('pc:bg-audio', e.target.checked);          // #556 — WebRTC loopback (or a tone) so Firefox stops throttling the background-add tab
 });
+providerModal.querySelectorAll('input[name="mb-iface"]').forEach(r => r.addEventListener('change', () => {
+    const v = (providerModal.querySelector('input[name="mb-iface"]:checked') || {}).value === 'dock' ? 'dock' : 'hud';
+    GM_setValue('pc:interface', v);
+    appendLog('Settings', 'Interface: ' + (v === 'dock' ? 'Dock icon' : 'HUD'));
+    pcApplyIface();
+}));
 providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEventListener('change', () => {
     const layout = (providerModal.querySelector('input[name="mb-layout"]:checked') || {}).value || '1row';
     GM_setValue('pc:layout', layout);

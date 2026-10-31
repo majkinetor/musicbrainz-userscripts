@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-10-31 17:06 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-10-31 17:31 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1963,6 +1963,7 @@ The release page's tracklist gets **ISRC** and **Links** columns. An ISRC opens 
 | --- | --- | --- |
 | Platforms | all on | the platforms ISRC Scout uses ([Platforms](#platforms-1)) |
 | Authorize |  | OAuth for submitting ISRCs |
+| Interface | HUD | the button beside the release's title, or *Dock icon*: an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon |
 | Import buttons | icons | icons, text, or both |
 | Add ISRC/Links columns to tracklist | on | columns and their controls on the release page ([Tracklist](#tracklist-1)) |
 | Show ISRCs in parts | on | `CC-XXX-YY-NNNNN`, here and in [Mission Control](../mission_control/README.md) |
@@ -2509,22 +2510,23 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 <img width="400" src="../platform_check/screenshots/config.png" />
 
-| Setting                                | Default      |                                                                                      |
-| -------------------------------------- | ------------ | ------------------------------------------------------------------------------------ |
-| Platforms                              | all          | order them, or leave some out                                                        |
-| Logins                                 | none         | Beatport and Qobuz; see [Platforms](#platforms-2)                                      |
-| Use barcodes                           | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
-| Use formats                            | on, strictly | the same, for the format                                                             |
-| Open the editor in a new tab           | on           | off navigates this tab                                                               |
-| Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                    |
-| Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                 |
-| Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                        |
-| Icon, Name                             | icon only    | what each row shows, and its size                                                    |
-| Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                          |
-| In MusicBrainz                         | Ring         | how a platform already linked is marked                                              |
-| Format                                 | Circle       | the release's format as a circle or as text                                          |
-| Layout                                 | 1 row        | or 2 rows per platform                                                               |
-| Spacing                                | 5 px         | between rows, and between columns in the 1-row layout                                |
+| Setting                                | Default      |                                                                                                                                                    |
+| -------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platforms                              | all          | order them, or leave some out                                                                                                                      |
+| Logins                                 | none         | Beatport and Qobuz; see [Platforms](#platforms-2)                                                                                                    |
+| Use barcodes                           | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch                                                               |
+| Use formats                            | on, strictly | the same, for the format                                                                                                                           |
+| Open the editor in a new tab           | on           | off navigates this tab                                                                                                                             |
+| Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                                                                                  |
+| Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                                                                               |
+| Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                                                                                      |
+| Interface                              | HUD          | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon |
+| Icon, Name                             | icon only    | what each row shows, and its size                                                                                                                  |
+| Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                                                                                        |
+| In MusicBrainz                         | Ring         | how a platform already linked is marked                                                                                                            |
+| Format                                 | Circle       | the release's format as a circle or as text                                                                                                        |
+| Layout                                 | 1 row        | or 2 rows per platform                                                                                                                             |
+| Spacing                                | 5 px         | between rows, and between columns in the 1-row layout                                                                                              |
 
 ### Shortcuts
 

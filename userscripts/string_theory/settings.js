@@ -228,7 +228,7 @@ function stSettings() {
     h += '<div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Launchers</button>'
       + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>'
       + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l">'
-      + '<div class="st-row">' + seg('st-side', 'Side', [['right', 'Right'], ['left', 'Left']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
+      + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
       + '<div class="st-strip" id="st-order"></div>'
