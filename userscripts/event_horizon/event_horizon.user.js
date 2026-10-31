@@ -7718,8 +7718,10 @@ function secFab(on) {
 }
 function secRail(app) {
     const secs = [...app.querySelectorAll(':scope>section.sec')], id = x => x.id.slice(2);
+    // A release's Editions and a release group's Releases are separate sections for visibility.
+    const hideKey = k => k === 'ed' && data.kind === 'rg' ? 'rg-ed' : k;
     const at = x => { const i = S.secOrder.indexOf(id(x)); return i < 0 ? 100 + secs.indexOf(x) : i; };
-    secs.sort((a, b) => at(a) - at(b)).forEach(x => { x.hidden = S.secHide.includes(id(x)); app.appendChild(x); });
+    secs.sort((a, b) => at(a) - at(b)).forEach(x => { x.hidden = S.secHide.includes(hideKey(id(x))); app.appendChild(x); });
     let rail = document.getElementById('eh-rail');
     if (!rail) {
         rail = document.createElement('nav');
@@ -7745,8 +7747,8 @@ function secRail(app) {
             if (fa) { const ks = [...document.querySelectorAll('#app>section.sec:not([hidden])')].map(x => x.id.slice(2)); S.fold = fa.dataset.foldall === '1' ? [...new Set([...S.fold, ...ks])] : S.fold.filter(x => !ks.includes(x)); const y = scrollY; render(); scrollTo(0, y); return; }
             const row = ev.target.closest('[data-sec]'); if (!row) return;
             const k = row.dataset.sec;
-            if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, k); const y = scrollY; render(); scrollTo(0, y); return; }
-            S.secHide = S.secHide.filter(x => x !== k); S.fold = S.fold.filter(x => x !== k);
+            if (ev.target.closest('.eye')) { S.secHide = toggle(S.secHide, hideKey(k)); const y = scrollY; render(); scrollTo(0, y); return; }
+            S.secHide = S.secHide.filter(x => x !== hideKey(k)); S.fold = S.fold.filter(x => x !== k);
             rail.classList.remove('open'); render();
             const el = document.getElementById('s-' + k); if (el) el.scrollIntoView({ behavior: 'smooth' });
         });
@@ -7776,7 +7778,7 @@ function secRail(app) {
             S.secOrder = [...ks, ...S.secOrder.filter(x => !ks.includes(x))]; const y = scrollY; render(); scrollTo(0, y);   // other pages' sections keep their order
         });
     }
-    rail.hidden = secs.length < 2;
+    rail.hidden = secs.length < 2 && !secs.some(x => x.hidden);
     const acts = app.querySelector('.kicker .acts');
     if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
         acts.querySelector('.srch,[data-srch]') ? acts.querySelector('.srch,[data-srch]').insertAdjacentHTML('beforebegin', SEC_BTN) : acts.insertAdjacentHTML('beforeend', SEC_BTN);
@@ -7784,7 +7786,7 @@ function secRail(app) {
     secFab(!acts && !rail.hidden && !!app.querySelector('.hm-hero'));
     if (!acts && !document.getElementById('eh-secfab')) rail.classList.remove('open');
     rail.innerHTML = '<div class="rr top" data-top><button class="nm" type="button">Top</button></div>' + secs.map(x => { const k = id(x), off = x.hidden;
-        return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
+        return `<div class="rr${off ? ' off' : ''}" data-sec="${k}" draggable="true"><span class="gr" aria-hidden="true">⋮⋮</span><button class="nm" type="button">${k === 'ed' && data.kind === 'rg' ? 'Releases' : SEC_NAME[k] || esc(x.querySelector('h2').textContent)}</button><button class="eye" type="button" aria-label="${off ? 'Show' : 'Hide'} section">${SVG(off ? EYE_OFF : EYE)}</button><i></i></div>`; }).join('')
         + (() => { const shut = secs.filter(x => !x.hidden).every(x => S.fold.includes(id(x))); return `<button class="fa" type="button" data-foldall="${shut ? 0 : 1}">${SVG(shut ? '<path d="M12 9V3M9 6l3-3 3 3M12 15v6M9 18l3 3 3-3M4 12h16"/>' : '<path d="M12 3v6M9 6l3 3 3-3M12 21v-6M9 18l3-3 3 3M4 12h16"/>')}${shut ? 'Expand all' : 'Collapse all'}</button>`; })();
     railSpy();
     pinBar(app);
