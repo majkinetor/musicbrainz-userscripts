@@ -79,7 +79,7 @@ const state = page => page.evaluate(rel => ({
   submits: window.__submits,
   closeMarker: sessionStorage.getItem('pc:autocommit-close'),
   queued: JSON.parse(localStorage.getItem('pc:pending:' + rel) || 'null'),
-  banner: (document.body.innerText.match(/Platform Check:[^\n]*/) || [null])[0],
+  banner: (document.documentElement.innerText.match(/Platform Check:[^\n]*/) || [null])[0],
 }), REL);
 const said = (run, re) => run.console.find(l => re.test(l)) || null;
 

@@ -27,7 +27,7 @@ test('Apple: the album whose UPC it is, songs only, and a refused token replaced
     // Apple listed two albums for it, the other one first; since 2026-10 it lists only the right one,
     // so another album goes in front of it here, as Apple had it
     out.live = coll.map(a => a.attributes.upc);
-    if (coll.length === 1) coll = [{ ...coll[0], id: '1', attributes: { ...coll[0].attributes, upc: '808391067783' } }, ...coll];
+    if (coll.every(a => a.attributes.upc === '808391067776')) coll = [{ ...coll[0], id: '1', attributes: { ...coll[0].attributes, upc: '808391067783' } }, ...coll];
     out.collision = { listed: coll.map(a => a.attributes.upc), picked: (A.applePickByUpc(coll, '808391067776') || { attributes: {} }).attributes.upc };
 
     const deluxe = A.applePickByUpc(await byUpc('853435003333'), '853435003333');

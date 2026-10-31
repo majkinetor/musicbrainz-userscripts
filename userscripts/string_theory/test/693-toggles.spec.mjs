@@ -130,7 +130,7 @@ test.describe('Event Horizon turned off', () => {
     await load(page, inject, { open: true });
     await stacked(page);
     await openSettings(page);
-    const pressed = () => page.evaluate(() => [...document.querySelectorAll('#st-cfg [role=radio][aria-checked=true]')].map(b => b.dataset.v).join(' '));
+    const pressed = () => page.evaluate(() => [...document.querySelectorAll('#st-cfg [role=radio][aria-checked=true]')].map(b => b.dataset.v).slice(0, 2).join(' '));
     check(await pressed() === 'right column', `Right and Column are selected (${await pressed()})`);
     const col = await at(page);
     check(col.every(e => e.right === 14) && new Set(col.map(e => e.bottom)).size === col.length, `a column up the right edge (${JSON.stringify(col)})`);

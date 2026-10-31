@@ -15,7 +15,7 @@ test('Apple: tracks the storefront does not offer show beside the count', { tag:
     const m = window.__pcTest627.appleAlbumMeta(j.data[0]);
     window.__pcTest627.updateRow('apple', { url: m.url, mbTracks: 20, remoteTracks: m.tracks, unoffered: m.unoffered, source: 'test' });
     const v = document.getElementById('val-apple');
-    return { tracks: m.tracks, unoffered: m.unoffered, note: m.tracksNote, text: v.textContent, title: v.title, ico: document.getElementById('ico-apple').textContent };
+    return { tracks: m.tracks, unoffered: m.unoffered, note: m.tracksNote, text: v.textContent, title: v.dataset.tip, ico: document.getElementById('ico-apple').textContent };
   });
   console.log(JSON.stringify(r));
   check(r.tracks === 20 && r.unoffered === 4, `20 offered, 4 not (${r.tracks}, ${r.unoffered})`);
