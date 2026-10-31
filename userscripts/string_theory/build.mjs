@@ -148,14 +148,17 @@ const bodies = parts.map(p => {
   const gate = runAt === 'document-start' ? GATE_NOW : GATE_DOM;
   const shadow = scriptShadow(p.meta);
   return `// ===== ${p.n} (@run-at ${runAt}) ${'='.repeat(Math.max(0, 50 - p.n.length))}\n`
-    + `if (__stOff.indexOf(${JSON.stringify(p.n)}) < 0) (function(__stGM){ var __stGo = function(){\n`
+    // #851: every member, off ones too, can be started only to open its settings (MBU_SETTINGS_ONLY), see __stStarters
+    + `(function(__stGM){ var __stSO = 0; var __stGo = function(so){\n`
+    + `  var MBU_SETTINGS_ONLY = !!so; if (so) __stSO = 1;\n`
     + `  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, ${shadow}) }) : { script: ${shadow} };\n`
     // A member that throws while starting must not stop the members after it: ISRC Scout's
     // "Cannot access 'btnStatus' before initialization" kept Platform Check's panel away until
     // a reload (oblaka). The body stays in a function of its own, so its 'use strict' still counts.
     + `  ${gate}(function(){ try { (function(){\n${p.body}\n})(); } catch (e) { try { console.error('[String Theory] ${p.n} failed while starting — the other scripts carry on:', e); } catch (x) {} } });\n`
-    + `}; if (__stRuns(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))})) __stGo();`
-    + (FOLLOWS_EH.includes(p.n) ? ` else __stLater(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))}, __stGo);` : '')
+    + `}; __stStarters[${JSON.stringify(p.n)}] = { so: ${p.body.includes('MBU_SETTINGS_ONLY')}, soStarted: function(){ return __stSO; }, go: function(){ __stGo(true); } };\n`
+    + `if (__stOff.indexOf(${JSON.stringify(p.n)}) < 0) { if (__stRuns(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))})) __stGo();`
+    + (FOLLOWS_EH.includes(p.n) ? ` else __stLater(${JSON.stringify(p.n)}, ${JSON.stringify(urlRules(p.meta))}, __stGo);` : '') + ' }'
     + `\n})(typeof GM_info !== 'undefined' ? GM_info : undefined);`;
 }).join('\n\n');
 
@@ -201,6 +204,7 @@ const toggles = `var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
 function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function __stReadOff() { var on = __stList(${JSON.stringify(ON_KEY)}); return __stList(${JSON.stringify(OFF_KEY)}).concat(__stDefOff.filter(function (n) { return on.indexOf(n) < 0; })); }
 var __stOff = __stReadOff();
+var __stStarters = {};   // #851: per member folder, how String Theory's settings start it only to open its settings
 (function () {
   try { if (window.top !== window.self) return; } catch (e) { return; }
   var stMembers = ${JSON.stringify(parts.map(p => [p.n, metaVal(p.meta, 'name') || p.n, verOf(p.meta), metaVal(p.meta, 'icon')]))};
