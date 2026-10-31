@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.0250
+// @version      2026.11.01.0300
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2830,19 +2830,39 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 16px;border-radius:10px;font-weight:600;font-size:14px;z-index:40;box-shadow:0 10px 30px var(--shadow)}
 
-@media (max-width:600px){.detail .grp{grid-template-columns:fit-content(9em) minmax(0,1fr);gap:3px 10px}.detail .cols{padding-right:34px}.detail .gtools{right:4px}}
+@media (max-width:600px){.detail .grp{grid-template-columns:fit-content(9em) minmax(0,1fr);gap:3px 10px}}
 @media (max-width:700px){
-  .tr{flex-wrap:wrap;gap:6px 12px}
-  .tr .ti{flex:1 1 0;min-width:0}.tr .ln{margin-left:auto}.tr::before{content:"";order:4;flex-basis:100%;height:0}
-  .tr .is{order:5;width:auto;margin-left:40px}
-  .tr .ar{order:4;flex-basis:100%;margin-left:40px;margin-top:-4px}
-  .tr .lk{order:6;margin-left:auto}
-  .detail{padding-left:16px}
+  /* phone tracklist: the title line, then ISRC and platforms on a line of their own only when there are any */
+  .tr{flex-wrap:wrap;gap:0 10px;padding:9px 12px}
+  .tr .n{width:22px;font-size:13px}
+  .tr .ti a.t{font-size:15px}
+  .tr .ln{width:auto;margin-left:auto;font-size:13px}
+  .tr::before{content:"";order:4;flex-basis:100%;height:0}
+  .tr .ar{order:4;flex:0 0 calc(100% - 32px);margin:2px 0 0 32px;font-size:13px}
+  .tr .is{order:5;width:auto;margin:4px 0 0 32px;flex-direction:row;flex-wrap:wrap;gap:2px 10px}
+  .tr .is:empty,.hide-isrc .tr .is{display:none}
+  .tr .lk{order:6;margin:4px 0 0 auto}
+  .tr .lk .slot.off,.tr .lk .popwrap:has(>.more.ph),.hide-links .tr .lk,.tr .lk:not(:has(.slot:not(.off),.more:not(.ph))){display:none}
+  .detail{padding:8px 12px 14px 12px}
+  .detail .cols{grid-template-columns:minmax(0,1fr);gap:14px;padding-right:0}
+  .detail .gtools{flex-direction:row;top:4px;right:6px}
+  .detail .cols>.grp:first-child>h4{padding-right:64px}
+  .detail .grp h4{margin-bottom:4px}
+  .detail .grp h4 .fxc{margin:0 -4px 0 -2px}
+  .detail .tfx>span:nth-child(odd),.detail .grp dt{text-align:left;justify-self:start}
   .hero{gap:20px}
   .art{flex-basis:100%;display:grid;grid-template-columns:min(140px,40%) minmax(0,1fr);gap:10px 16px;align-items:start}
   .art .cover,.art .nocover{grid-row:span 2;border-radius:10px;box-shadow:0 8px 20px var(--shadow)}
   .art .thumbs{grid-template-columns:repeat(3,minmax(0,1fr))}
   .art .under{padding-top:0}
+  /* a cover with nothing under it: the title takes the space beside it */
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden]))){display:grid;grid-template-columns:min(140px,40%) minmax(0,1fr);grid-template-rows:auto 1fr 1fr;gap:6px 16px}
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden])))>.art{grid-column:1;grid-row:2/4;display:block}
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden])))>.facts-col{display:contents}
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden])))>.facts-col>*{grid-column:1/-1;min-width:0}
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden])))>.facts-col>.kicker{grid-row:1}
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden])))>.facts-col>h1{grid-column:2;grid-row:2;align-self:end;margin:0;overflow-wrap:anywhere}
+  .hero:has(>.facts-col):not(.u-hero):not(:has(>.art>.under,>.art>.thumbs:not([hidden])))>.facts-col>.by{grid-column:2;grid-row:3;align-self:start;margin:0}
   h1{font-size:24px}
   .ed-groups .g{grid-template-columns:1fr}
   .facts{gap:16px 24px}
