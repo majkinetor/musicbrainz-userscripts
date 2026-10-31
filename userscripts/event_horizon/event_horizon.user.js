@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170106.1.9
+// @version      2026.10.31.170106.1.10
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2286,6 +2286,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .secthead{cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
 .secthead .fold h2{font-size:19px}
 #app>section.sec>.secthead:has(>.fold[aria-expanded="true"]){position:sticky;top:var(--eh-pin-h,0px);z-index:20;margin:-6px -8px;padding:6px 8px;transition:top .18s}
+#app>section.sec>.secthead.stuck{background:var(--bg)}
 .secthead .tools{cursor:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .secthead .aside{font-size:14px;color:var(--soft)}
 .fold{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;cursor:pointer;text-align:left}
@@ -7645,6 +7646,7 @@ function pinBar(app) {
         if (pin) k.appendChild(acts); else if (home.isConnected) home.after(acts);
         pinFold(acts, pin);
         railPlace();
+        requestAnimationFrame(railSpy);
         LOG.debug('pinned header ' + (pin ? 'shown' : 'hidden'));
     });
     pinIo.observe(kick);   // the bar comes in as soon as the action row leaves the screen
@@ -7667,7 +7669,12 @@ PIN_NARROW.addEventListener('change', () => { const bar = document.getElementByI
 function railSpy() {
     const rail = document.getElementById('eh-rail'); if (!rail || !ehOn) return;
     let cur = null;
-    for (const x of document.querySelectorAll('#app>section.sec:not([hidden])')) if (x.getBoundingClientRect().top < innerHeight / 3) cur = x.id.slice(2);
+    const pinTop = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--eh-pin-h')) || 0;
+    for (const x of document.querySelectorAll('#app>section.sec:not([hidden])')) {
+        const top = x.getBoundingClientRect().top, head = x.querySelector(':scope>.secthead');
+        if (top < innerHeight / 3) cur = x.id.slice(2);
+        if (head) head.classList.toggle('stuck', !!head.querySelector(':scope>.fold[aria-expanded="true"]') && top - 6 < pinTop);
+    }
     rail.querySelectorAll('[data-sec]').forEach(r => r.classList.toggle('on', r.dataset.sec === cur));
 }
 // the release links stay on one row; what doesn't fit goes behind +N
