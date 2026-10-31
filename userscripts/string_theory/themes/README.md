@@ -9,4 +9,4 @@ To tweak a theme, change the values in its `:root`. To add one, copy `default.da
 - Keep plain-element rules inside `:where()`, so a script's own styles win.
 - A Default must exist for each variant.
 
-`default.dark.css` is based on [Dark Side of MusicBrainz](https://github.com/kellnerd/userstyles) by kellnerd (MIT).
+`default.dark.css` is based on [Dark Side of MusicBrainz](https://github.com/kellnerd/userstyles) by kellnerd (MIT). The `solarized.*.css` pair puts Ethan Schoonover's [Solarized](https://ethanschoonover.com/solarized/) palette (MIT) on its rules.

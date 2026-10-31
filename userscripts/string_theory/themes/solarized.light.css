@@ -1,0 +1,729 @@
+/* Theme: Solarized
+   Light: Ethan Schoonover's Solarized palette (MIT), https://ethanschoonover.com/solarized/,
+   base3 under base01 text, with its accents for links and highlights.
+   The rules are Default dark's (after "Dark Side of MusicBrainz" by kellnerd, MIT).
+   To change a colour, change the values in :root. See README.md here. */
+
+:root {
+	/* Solarized (Ethan Schoonover, MIT): base03 #002b36 base02 #073642 base01 #586e75 base00 #657b83
+	   base0 #839496 base1 #93a1a1 base2 #eee8d5 base3 #fdf6e3
+	   yellow #b58900 orange #cb4b16 red #dc322f magenta #d33682 violet #6c71c4 blue #268bd2 cyan #2aa198 green #859900 */
+	--background: #fdf6e3;
+	--background-accent: #eee8d5;
+	--background-emphasis: #dcdacb;
+	--background-dimmed: #fffcf3;
+	--text: #446068;
+	--text-dimmed: #586e75;
+	--text-weak: #657b83;
+	--border: #caccc0;
+	--border-accent: #bcc1b8;
+	--border-emphasis: #aab3ae;
+	--border-dimmed: #d7d6c8;
+	--border-weak: #e3dfcf;
+	--shadow: transparent;
+	/* MB's brand colours, in Solarized's orange and violet */
+	--mb-orange: #cb4b16;
+	--mb-purple: #6c71c4;
+	/* highlights: Solarized's accents mixed into the page */
+	--negative: #f8d7c6;
+	--negative-emphasis: #f3bbad;
+	--positive: #e7e5ba;
+	--positive-emphasis: #d4d696;
+	--attention: #ebdbaa;
+	--error: #f6cbbb;
+	--pending-edits: #e0dbdd;
+	/* links: blue, magenta, orange and red, darkened to read on the page and on the highlights */
+	--link: #1d73ab;
+	--link-visited: #5160a1;
+	--link-hover: var(--mb-orange);
+	--link-new: #bb3130;
+
+	/* specific elements */
+	--release-tabs-background: var(--background-emphasis);
+	--bubble-background: var(--background-emphasis);
+	--tag-count-background: #d3d3c5;
+	--edit-list-item-background: #f6efdc;
+	--edit-actions-background: #d3d3c5;
+	--wiki-tab: #6c71c4;
+	--table-head: #dcdacb;
+	--table-subhead: #eee8d5;
+	--selection: #c5c8be;
+	--selection-text: #073642;
+	/* edit headers */
+	--edit-add: #eaebd0;
+	--edit-add-open: #dde4c3;
+	--edit-edit: #f4e9c8;
+	--edit-edit-open: #efe0b6;
+	--edit-remove: #f9decd;
+	--edit-remove-open: #f6cfbf;
+	--edit-merge: #f8dfd7;
+	--edit-merge-open: #f5d0d0;
+	--edit-other: #e3e9e1;
+	--edit-other-open: #d2e1e0;
+	--edit-cancelled: #ddddcf;
+	/* wiki history and diffs */
+	--diff-plus: #6a830b;
+	--diff-minus: #dc322f;
+	--diff-added: #92c1db;
+	--diff-added-change: #cededf;
+	--diff-deleted: #d9c072;
+	--diff-deleted-change: #ebdbaa;
+
+	/* filter definitions: none, MusicBrainz's icons are made for a light page */
+	--invert: none;
+	--invert-value: none;
+
+	/* controls */
+	--control: #eee8d5;
+	--control-hover: #c7dac9;
+	--control-text: #446068;
+	--control-border: #bcc1b8;
+
+	color-scheme: light;
+	accent-color: #6c71c4;
+}
+
+body {
+	background: var(--background);
+	color: var(--text);
+}
+
+/* various emphasized boxes */
+.banner, /* banner messages */
+div.artwork-cont, /* cover art container */
+div.thumb-position, /* reorder cover art */
+.search-help, /* editing history help box */
+div.ar-descr, div.form-help, /* help boxes for relationship & attribute types */
+.add-edit-note .edit-note-help, /* edit notes help box */
+#drop-zone, /* add cover art */
+#filter /* artist discography filter */	{
+	background: var(--background-accent);
+	border-color: var(--border);
+}
+div.caa-warning, div.eaa-warning, div.warning {
+	background: var(--attention);
+	border-color: var(--border);
+}
+
+/* header menu & tabs */
+#footer-menu {
+	background: var(--background-accent);
+}
+.header .right ul.menu li ul li {
+	background-color: var(--background-accent);
+}
+.header .right ul.menu li ul li a, div.tabs, div.tabs ul li a {
+	color: inherit;
+	border-color: var(--border);
+}
+div.tabs ul li.disabled a {
+	color: var(--text);
+	background-color: var(--border);
+	border-color: var(--border);
+}
+
+/* table headers and stripes */
+table.tbl, table.tbl th, table.tbl tr.subh td, table.tbl tr.subh th,
+#release-editor .medium.tbl th {
+	border-color: var(--border-accent);
+	border-left-color: var(--border-weak);
+}
+table.tbl thead {
+	background-image: none;
+	background-color: var(--table-head);
+}
+table.tbl tr.subh td, table.tbl tr.subh th,
+#release-editor .medium.tbl th {
+	background-image: none;
+	background-color: var(--table-subhead);
+}
+table.tbl th a, table.tbl > thead th a { /* attach CD TOC RG links & medium titles */
+	color: var(--text);
+}
+table.tbl tr.even td, table.tbl tr.even th {
+	background: var(--background-accent);
+}
+
+/* entity pages */
+#sidebar, li.separator, .set-cover-art div.editimage {
+	border-color: var(--border);
+}
+.annotation-collapsed::after, .collapsed::after, .review-collapsed::after, .wikipedia-extract-collapsed::after {
+	background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%, var(--background) 100%) !important;
+}
+span.artwork-icon {
+	filter: var(--invert);
+}
+.set-cover-art div.editimage.selected {
+	background: var(--positive);
+	border-color: var(--border-accent);
+}
+/* ratings */
+.star-rating, .star-rating .current-rating, .star-rating .current-user-rating, .star-rating a:active, .star-rating a:focus, .star-rating a:hover {
+	background-image: url(data:image/gif;base64,R0lGODlhCgAoAIQXADsAn2REAE9PT15eXqVsALh1AH5+fiS5PpGRkf99ACS8P92IAP6AAOWIAP2DAKyM3uyLAPaKAKmpqdjK7Zn+mJn+msT/xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEKAB8ALAAAAAAKACgAAAWp4Cd+gjCen2GgoySdQ2y4Rhy7OD6QuWuKg9xuNMOtRgjJDXE6ipwjAoElgkCoHwbjVOhCEglIt8sAmxOMwofgODumosJZPVqcF6eIo+uInBoBIgENLAcHWBQUWBYWJwqPFIwUj4+MlpYKHwcVlxWHIgqXmSORloqkFY8VpyKToKwjAABYDw9YExMnsgAPuA+7ALjCwrO8w7+xw7MjvcK2zL+8zyLIH7wiIQA7);
+}
+
+/* release page */
+dl.ars dt {
+	color: var(--text-dimmed);
+}
+
+/* release editor & other entity edit pages */
+/* tabs */
+.ui-tabs .ui-tabs-nav {
+	background: var(--release-tabs-background);
+}
+.ui-tabs .ui-tabs-nav li {
+	background: var(--background);
+}
+.ui-tabs-nav .ui-state-default {
+	border-bottom-color: var(--release-tabs-background) !important;
+}
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+	border-color: var(--border);
+}
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active {
+	border-color: var(--border-emphasis);
+}
+.ui-state-hover a, .ui-state-hover a:hover, .ui-state-hover a:link, .ui-state-hover a:visited {
+	color: var(--text);
+}
+#release-editor .error-tab {
+	background-color: var(--error);
+}
+/* bubbles, tooltips & dialogs */
+.bubble, #artist-credit-bubble {
+	background: var(--bubble-background);
+}
+.dialog.popover#artist-credit-bubble > svg {
+	color: var(--bubble-background);
+}
+.bubble.left-tail::before, .bubble.right-tail::after {
+	border-right-color: var(--bubble-background);
+	border-left-color: var(--bubble-background);
+}
+/* .tooltip-wrapper is required for the React relationship editor but unwanted for the release editor */
+.tooltip-wrapper .tooltip-container .tooltip-content, .tooltip-container .tooltip-content {
+	background: var(--background);
+	border-color: var(--border-dimmed);
+	box-shadow: 0 2px 5px var(--border-dimmed);
+}
+.tooltip-wrapper .tooltip-container .tooltip-triangle:before, .tooltip-container .tooltip-triangle:before {
+	border-right-color: var(--border-dimmed);
+}
+.tooltip-wrapper .tooltip-container .tooltip-triangle:after, .tooltip-container .tooltip-triangle:after {
+	border-right-color: var(--background);
+}
+.dialog {
+	background: var(--background);
+	border-color: var(--border);
+}
+.dialog.popover > svg { /* arrows of the new dialogs */
+	color: var(--background);
+}
+.dialog.popover div[data-popper-arrow]::before { /* arrows of the old dialogs, unused? */
+	background: var(--background);
+}
+.dialog.popover[data-popper-placement^="right"] > div[data-popper-arrow]::before {
+	border-color: var(--border);
+}
+/* tracklist tab */
+#release-editor .medium.tbl tr.track td {
+	background: inherit;
+	border-color: var(--border-dimmed);
+}
+#release-editor #recordings fieldset, div.half-width fieldset {
+	border-color: var(--border);
+}
+#release-editor #recordings fieldset table tr.even td {
+	background: var(--background-accent);
+}
+/* icons */
+button.icon.guesscase-title, button.icon.guesscase-sortname, button.icon.guessfeat, img[src*=guesscase],
+button.icon[class*=down], button.icon[class*=up],
+button.icon.copy-date, button.icon.sortname-copy, button.icon.add-item,
+button.icon.collapse-medium, button.icon.expand-medium,
+.help, .loading-message {
+	filter: var(--invert-value);
+}
+.loading-message {
+	color: initial; /* make message visible again */
+}
+span.autocomplete img.search {
+	filter: invert(0.5); /* visible when empty and after lookup was performed */
+}
+.discogs-favicon, .genius-favicon, .home-favicon, .myspace-favicon, .offiziellecharts-favicon {
+	filter: drop-shadow(0 0 2px var(--shadow)); /* black icons become invisible otherwise */
+}
+/* popup dialog widget (autocomplete, cover art gallery) */
+.ui-menu .ui-menu-item a {
+	color: inherit;
+}
+.ui-menu .ui-menu-item a:hover,
+.ui-widget-content.ui-autocomplete .ui-state-focus {
+	background: var(--background-emphasis);
+	color: var(--text);
+}
+.ui-widget-content {
+	background: inherit;
+	border-color: var(--border);
+}
+.content-loading {
+	filter: var(--invert); /* no white placeholders for images, also inverts spinner animation */
+}
+/* React relationship editor */
+div.relationship-dialog h2 .heading-text {
+	background-color: var(--background);
+}
+div.relationship-dialog h2 .heading-line {
+	border-color: var(--border);
+}
+div.autocomplete2 ul {
+	background: var(--background);
+	border-color: var(--border);
+}
+div.autocomplete2 ul li {
+	background: var(--background);
+	border-color: var(--background);
+}
+div.autocomplete2 ul li.separator {
+	border-top-color: var(--border-weak);
+}
+div.autocomplete2 ul li.disabled {
+	color: var(--text-weak);
+}
+div.autocomplete2 ul li.highlighted, div.autocomplete2 ul li:hover:not(.disabled) {
+	background: linear-gradient(180deg, var(--background) 0, var(--background-accent) 50%, var(--background));
+	border-color: var(--border);
+}
+
+/* editor & database statistics */
+table.statistics th, table.statistics td {
+	border-color: var(--border-emphasis);
+}
+table.statistics th, table.database-statistics tr.thead th {
+	background: var(--background-emphasis);
+}
+
+/* tags and genres */
+.genre-list li.even, .tag-list li.even, /* https://musicbrainz.org/tags?show_list=1 */
+#all-tags .genre-list li.even, #all-tags .tag-list li.even, /* user tags */
+.all-tags .genre-list li.even, .all-tags .tag-list li.even { /* tags tab of entities */
+	background: var(--background-accent);
+}
+.tag-count {
+	background: var(--tag-count-background);
+}
+.tag-upvoted .tag-count, .tag-downvoted .tag-count {
+	color: initial;
+}
+
+/* form elements */
+input, textarea {
+	border-color: var(--border-accent);
+}
+input[disabled], textarea[disabled] {
+	color: var(--text-weak);
+	border-color: var(--border-dimmed);
+}
+/* darken normal inputs, but keep original colors for those with a specific background color */
+input[type=text]:not(.lookup-performed):not(.success):not(.error):not(.preview):not(.modified):not([style*=background]),
+input:not([type]):not(.lookup-performed):not(.required):not([style*=background]), textarea:not([style*=background]),
+input[type=url], input[type=search], input[type=password], input[type=email] {
+	background: var(--background-dimmed);
+	color: var(--text);
+}
+input[type=text].modified {
+	background: var(--background-accent);
+	color: var(--text);
+}
+/* Buttons and selects get real colours, never a filter: a filter also inverts whatever a
+   script puts on them, and every colour in it has to be written as its opposite.
+   :where() keeps these at no specificity, so any script's own rule wins. */
+:where(button:not(.icon, .tag-vote, .btn-link), select, input[type=button], input[type=submit], input[type=number]) {
+	background: var(--control);
+	color: var(--control-text);
+	border: 1px solid var(--control-border);
+}
+:where(button:not(.icon, .tag-vote, .btn-link), input[type=button], input[type=submit]):hover {
+	background: var(--control-hover);
+}
+.buttons a, .buttons a:visited, .buttons button, .styled-button {
+	background: var(--control);
+	color: var(--control-text);
+	border-color: var(--control-border);
+}
+.buttons a:focus, .buttons a:hover, .buttons button:focus, .buttons button:hover, .styled-button:focus, .styled-button:hover {
+	background: var(--control-hover);
+	border-color: var(--border-emphasis);
+	color: var(--control-text);
+}
+
+/* relationship editor */
+#content.rel-editor span.link-phrase {
+	color: inherit;
+}
+#content.rel-editor span.link-phrase:hover,
+#content.rel-editor span.link-phrase.rel-edit,
+#content.rel-editor span.link-phrase.rel-add,
+#content.rel-editor span.link-phrase.rel-remove,
+.rel-edit, .rel-add, .rel-remove {
+	color: initial;
+}
+#content.rel-editor .warning, div.rel-editor-dialog .warning {
+	color: initial;
+}
+/* relationship attribute multi-select (vocal type) */
+div.multiselect > div.menu, div.multiselect > div.items a {
+	background: var(--background-emphasis);
+	border-color: var(--border-accent);
+}
+div.multiselect > div.menu > a {
+	color: inherit;
+}
+/* external links editor tooltips */
+.rel-edit .tooltip-content, .rel-add .tooltip-content, .rel-remove .tooltip-content {
+	color: var(--text);
+}
+.tooltip-wrapper .tooltip-container .tooltip-content a {
+	color: var(--link) !important;
+}
+
+/* pagination */
+nav .pagination a {
+	background: inherit;
+	color: inherit;
+	border-color: var(--border-emphasis);
+}
+nav .pagination span { /* disabled previous/next button */
+	background: var(--border);
+	color: var(--text-weak);
+	border-color: var(--border-accent);
+}
+
+/* voting interface */
+.edit-list {
+	background: var(--edit-list-item-background);
+}
+.edit-notes .edit-note h3, .entered-from {
+	background: var(--background-emphasis);
+}
+.edit-note:target {
+	background: var(--attention);
+}
+.edit-notes .edit-note .date {
+	color: var(--text-dimmed);
+}
+.edit-notes .modbot {
+	color: var(--text-dimmed);
+}
+.edit-notes .modbot a {
+	color: var(--text-weak);
+}
+.edit-list .edit-actions {
+	color: initial;
+	background-color: var(--edit-actions-background);
+}
+/* edit headers: one Solarized accent per kind of edit, stronger while open */
+.edit-header {
+	color: var(--text);
+}
+.edit-header.edit-add {
+	background-color: var(--edit-add);
+}
+.edit-header.edit-add.open {
+	background-color: var(--edit-add-open);
+}
+.edit-header.edit-edit {
+	background-color: var(--edit-edit);
+}
+.edit-header.edit-edit.open {
+	background-color: var(--edit-edit-open);
+}
+.edit-header.edit-remove {
+	background-color: var(--edit-remove);
+}
+.edit-header.edit-remove.open {
+	background-color: var(--edit-remove-open);
+}
+.edit-header.edit-merge {
+	background-color: var(--edit-merge);
+}
+.edit-header.edit-merge.open {
+	background-color: var(--edit-merge-open);
+}
+.edit-header.edit-other {
+	background-color: var(--edit-other);
+}
+.edit-header.edit-other.open {
+	background-color: var(--edit-other-open);
+}
+.edit-header.cancelled {
+	background-color: var(--edit-cancelled);
+}
+/* reorder cover art edit: a moved image which has no history/thumbnail, only fallback text */
+div.thumb-position.moved {
+	color: initial;
+}
+
+/* hyperlinks */
+a, a.rel-add, a.rel-edit, #footer a, .btn-link, #content.rel-editor .btn {
+	color: var(--link);
+}
+a:visited {
+	color: var(--link-visited);
+}
+a:focus, a:hover { /* declare this again because it is overwritten by the above rules */
+	color: var(--link-hover);
+}
+h1 a {
+	color: var(--text) !important;
+}
+
+/* highlights */
+.annotation-details, .lastupdate, .small, #footer {
+	color: var(--text-dimmed);
+}
+table.details td span.new, table.details td span.old, table.details td.new, table.details td.old {
+	border-color: var(--border);
+}
+.negative, tr.diff-removal, table.details td span.old, table.details td.old {
+	background: var(--negative);
+}
+div.diff .diff-only-a, span.diff-only-a {
+	background: var(--negative-emphasis);
+}
+.positive, tr.diff-addition, table.details td span.new, table.details td.new {
+	background: var(--positive);
+}
+div.diff .diff-only-b, span.diff-only-b {
+	background: var(--positive-emphasis);
+}
+::selection {
+	color: var(--selection-text);
+	background: var(--selection);
+}
+/* pending edits highlight */
+div.mp,	span.mp, table.tbl tr.mp td, table.tbl tr.mp th, tr.diff-changes {
+	background: var(--pending-edits) !important;
+}
+/* automatic removal warning for unused entities */
+p.cleanup {
+	color: initial;
+}
+
+/* keep original text color for elements with inline CSS which affects the background */
+table[style*=background], td[style*=background], th[style*=background],
+div[style*=background], span[style*=background], label[style*=background] {
+	color: initial;
+}
+
+/* database statistics timeline */
+.flot-text {
+	color: var(--text-dimmed) !important;
+}
+#tooltip {
+	color: initial;
+}
+
+/* documentation & wiki pages */
+body.mediawiki {
+	background: var(--background-dimmed);
+}
+body.mediawiki div#globalWrapper {
+	background-image: none;
+}
+.mw-body, .portlet, .portlet .pBody, body.skin--responsive .pBody {
+	background: var(--background);
+	color: inherit;
+}
+.wikicontent #toc, .wikicontent .toc,
+.mw-body #toc, .mw-body .toc,
+.mw-body #filetoc, /* TOC on "File:" pages */
+.mw-body .catlinks,
+.mw-rcfilters-ui-changesListWrapperWidget .mw-changeslist-legend {
+	background: var(--background-accent);
+	border-color: var(--border);
+}
+.wikicontent code, .wikicontent pre,
+.mw-body code, .mw-body pre, .mw-code {
+	background: var(--background-emphasis);
+	color: inherit;
+}
+.wikicontent #toc h2, .mw-body #toc h2,
+.mw-body h1, .mw-body h3, .mw-body h4, .mw-body h5,
+.portlet h3 {
+	color: inherit;
+}
+.mw-body .tocnumber, #p-personal li a {
+	color: var(--text);
+}
+#contentSub { /* subtitles like "redirected from" */
+	color: var(--text-weak);
+}
+table.wikitable:not([style*=background]) { /* prioritize table[style*=background] */
+	color: inherit;
+	background: inherit;
+}
+.wikicontent table.wikitable th, .wikicontent table[border^="1"] th,
+.mw-body table.wikitable th, .mw-body table[border^="1"] th {
+	background-color: var(--background-accent);
+}
+table.jquery-tablesorter th {
+	background-color: var(--table-head) !important;
+	color: var(--text);
+}
+.wikicontent table.wikitable tr:nth-child(2n) td, .wikicontent table[border^="1"] tr:nth-child(2n) td,
+.mw-body table.wikitable tr:nth-child(2n+1) td, .mw-body table[border^="1"] tr:nth-child(2n+1) td {
+	background: var(--background-accent);
+}
+.mbwiki-navbox-rowtitle {
+	background-color: var(--background);
+}
+.wikicontent table.wikitable th, .wikicontent table[border^="1"] th,
+.wikicontent table.wikitable td, .wikicontent table[border^="1"] td,
+.mw-body table.wikitable th, .mw-body table[border^="1"] th,
+.mw-body table.wikitable td, .mw-body table[border^="1"] td {
+	border-color: var(--border-accent);
+}
+.mw-body fieldset {
+	border-color: var(--border-emphasis);
+}
+a.external, a.external:active, a.external:focus, a.extiw, a.extiw:active, a.extiw:focus, a:active, a:focus {
+	color: var(--link) !important;
+}
+a.new {
+	color: var(--link-new) !important;
+}
+#mw-indicator-mw-helplink a {
+	filter: var(--invert-value); /* invert icon */
+}
+
+/* wiki tabs */
+body.skin--responsive #p-cactions li {
+	border-color: var(--border-accent);
+}
+body.skin--responsive #p-cactions li a {
+	background: var(--wiki-tab);
+	color: var(--background);
+}
+body.skin--responsive #p-cactions li a:hover {
+	background: var(--background);
+	color: var(--wiki-tab);
+}
+body.skin--responsive #p-cactions li.selected {
+	border-color: var(--border-accent) !important;
+}
+body.skin--responsive #p-cactions li.selected a {
+	background: var(--background);
+	color: var(--wiki-tab);
+}
+#p-cactions .new a {
+	background: var(--background-dimmed);
+	color: var(--link-new);
+}
+
+/* wiki editing interface */
+.editOptions {
+	background: inherit;
+	color: inherit;
+	border-color: var(--border);
+}
+/* edit icons are black, impossible to make the background dark */
+.oo-ui-toolbar-bar {
+	color: initial;
+}
+
+/* wiki revision history */
+#pagehistory li {
+	border-color: var(--background); /* invisible */
+}
+#pagehistory li.selected {
+	background: var(--background-accent);
+	color: var(--text-dimmed);
+	border-color: var(--border-accent);
+}
+.mw-plusminus-neg {
+	color: var(--diff-minus);
+}
+.mw-plusminus-pos {
+	color: var(--diff-plus);
+}
+.diff-context {
+	background: var(--background-accent);
+	border-color: var(--border-dimmed);
+	color: var(--text-dimmed);
+}
+
+/* wiki revision differences */
+.diff-addedline {
+	border-color: var(--diff-added);
+}
+.diff-addedline .diffchange {
+	background: var(--diff-added-change);
+}
+.diff-deletedline {
+	border-color: var(--diff-deleted);
+}
+.diff-deletedline .diffchange {
+	background: var(--diff-deleted-change);
+}
+
+/* wiki date selector */
+.mw-widget-dateInputWidget-handle {
+	background: var(--background);
+	color: inherit;
+}
+.mw-widget-dateInputWidget-empty .mw-widget-dateInputWidget-handle {
+	color: var(--text-weak);
+}
+.mw-widget-dateInputWidget-calendar {
+	background: var(--background);
+}
+.mw-widget-calendarWidget-day-heading {
+	color: var(--text-weak);
+}
+.mw-widget-calendarWidget-day {
+	color: var(--text-dimmed);
+}
+.mw-widget-calendarWidget-day-additional {
+	color: var(--text-weak);
+}
+.mw-widget-calendarWidget-header {
+	filter: var(--invert);
+}
+
+/* MusicBrainz's dialogs: its own rules outrank the :where() above */
+.dialog button:not(.icon, .btn-link), .dialog input[type=number], input[type=number]:not([class]) {
+	background: var(--control) !important;
+	color: var(--control-text) !important;
+	border: 1px solid var(--control-border);
+}
+.dialog button.positive:not(:disabled) {
+	background: var(--positive) !important;
+}
+.dialog button.negative {
+	background: var(--negative) !important;
+}
+.dialog button:disabled {
+	color: var(--text-dimmed) !important;
+}
+
+/* Event Horizon paints its own page: the theme's greys under its rows stood out against its dark sticky headers */
+#app {
+	--background: transparent;
+	--background-accent: transparent;
+}
+
+/* Event Horizon's search pills: their fields have no box of their own */
+.kicker .srch input, .kicker .srch select, .hm-srch input {
+	background: none !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+
+/* the header search: MusicBrainz's own rule outranks the :where() above */
+#headerid-type, .header select, .header .search button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
+.header .search button img {
+	filter: var(--invert-value);
+}
