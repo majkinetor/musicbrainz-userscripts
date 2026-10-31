@@ -151,9 +151,12 @@ Most settings belong to one script and live in its GM storage, which no other sc
 
 | Key | Values | What reads it | Set by |
 | --- | --- | --- | --- |
-| `cornerFlow` | `"row"`; unset is a column | `mbRestackCorner`: the corner launchers' layout | String Theory's menu |
-| `cornerSide` | `"left"`; unset is the right | `mbRestackCorner` and Scribe's window: the corner launchers' side of the screen, every corner mirrored | String Theory's menu |
-| `dockOpen` | `true`; unset is folded | `mbuDock`: String Theory's dock unrolled in Event Horizon | a click on the dock |
+| `cornerFlow` | `"row"`; unset is a column | `mbRestackCorner`: the corner launchers' layout | String Theory's settings |
+| `cornerSide` | `"left"`; unset is the right | `mbRestackCorner` and Scribe's window: the corner launchers' side of the screen, every corner mirrored | String Theory's settings |
+| `cornerSize` | a scale, `0.6` to `1.6`; unset is `1` | `mbRestackCorner` and `mbuDock`: the corner launchers' size (not Scribe's) | String Theory's settings |
+| `cornerOffset` | `{"br": {"x": 200, "y": 100}}`: pixels in from each corner's edges; unset is in the corner | `mbRestackCorner` and `mbuDock`: where the stack sits (not Scribe's) | dragging a launcher; *Reset position and size* clears it |
+| `stDock` | `false`; unset is on | `mbuDock`: the launchers fold into String Theory's icon without Event Horizon (always, in it) | String Theory's settings |
+| `dockOpen` | `true`; unset is folded | `mbuDock`: String Theory's dock unrolled | a click on the dock |
 | `isrcFormat` | `false`; unset is on | ISRC Scout and Mission Control: ISRCs shown as `CC-XXX-YY-NNNNN` | ISRC Scout's *Show ISRCs in parts* |
 | `extLinksHeading.<lang>` | the release's "External links" heading in that language | `mbpReleaseLinkList`: tells the release's links from the release group's when the page shows one list | learnt by `mbpReleaseLinkList` on a release page that shows both |
 
