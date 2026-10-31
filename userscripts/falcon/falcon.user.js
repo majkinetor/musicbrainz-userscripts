@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.235000
+// @version      2026.10.31.235500
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -675,7 +675,11 @@
               + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
               // no names, only a short state (a count) as a badge on the entry's top-right corner
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
-              + '.mbu-dock-item,#mbu-dock{filter:none!important}'
+              + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf{filter:none!important}'
+              // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
+              + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
+              + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.85);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
+              + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
               // folded, an entry with something to do peeks beside the button, smaller
               + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
@@ -718,16 +722,36 @@
           });
           // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
           var leaveT = 0;
+          var dockBox = function () {
+              var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show],[data-mbu-docked=peek]'))
+                  .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+              if (!boxes.length) return null;
+              return { left: Math.min.apply(null, boxes.map(function (r) { return r.left; })), right: Math.max.apply(null, boxes.map(function (r) { return r.right; })),
+                  top: Math.min.apply(null, boxes.map(function (r) { return r.top; })), bottom: Math.max.apply(null, boxes.map(function (r) { return r.bottom; })) };
+          };
+          var inBox = function (e, b, pad) { return !!b && e.clientX >= b.left - pad && e.clientX <= b.right + pad && e.clientY >= b.top - pad && e.clientY <= b.bottom + pad; };
           var inDock = function (e) {
               if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
-              var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
-                  .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
-              if (!boxes.length) return false;
-              return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
-                  && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
-                  && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
-                  && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+              return inBox(e, dockBox(), 0);
           };
+          // the shelf: shown while the pointer is over the dock, dark on a dark page (a dark userstyle)
+          var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; root.appendChild(shelf);
+          var pageDark = function () {
+              var t = mbuThemeOf(document.body && getComputedStyle(document.body).backgroundColor) || mbuThemeOf(getComputedStyle(root).backgroundColor);
+              return t === 'dark';
+          };
+          var shelfOver = function (e) {
+              var b = dockBox(), over = inBox(e, b, 6);
+              if (over) {
+                  var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
+                  shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
+                  shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
+                  if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
+              }
+              root.toggleAttribute('data-mbu-dock-over', over);
+          };
+          document.addEventListener('mousemove', shelfOver, true);
+          root.addEventListener('mouseleave', function () { root.removeAttribute('data-mbu-dock-over'); });
           btn.addEventListener('mouseenter', function () {
               clearTimeout(leaveT);
               if (root.hasAttribute('data-mbu-dock-open')) return;

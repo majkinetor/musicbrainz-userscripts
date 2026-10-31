@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.235000
+// @version      2026.10.31.235500
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -993,7 +993,11 @@
               + '#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}'
               // no names, only a short state (a count) as a badge on the entry's top-right corner
               // No background, and no dark userstyle's inverting filter on it (kellnerd's inverts every button)
-              + '.mbu-dock-item,#mbu-dock{filter:none!important}'
+              + '.mbu-dock-item,#mbu-dock,#mbu-dock-shelf{filter:none!important}'
+              // while the pointer is over the dock, a frosted shelf behind its icons, so they read on any page
+              + '#mbu-dock-shelf{position:fixed;z-index:2147482989;pointer-events:none;box-sizing:border-box;background:rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.1);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .15s,visibility .15s}'
+              + '#mbu-dock-shelf[data-dark]{background:rgba(40,42,47,.85);box-shadow:0 2px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.12)}'
+              + ':root[data-mbu-dock-over] #mbu-dock-shelf{opacity:1;visibility:visible}'
               // folded, an entry with something to do peeks beside the button, smaller
               + '[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}'
               + ':is([data-mbu-docked=show],[data-mbu-docked=peek],.mbu-dock-item:not([data-mbu-docked]))[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}'
@@ -1036,16 +1040,36 @@
           });
           // hovering the folded button unrolls the dock until the pointer leaves it, not remembered
           var leaveT = 0;
+          var dockBox = function () {
+              var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show],[data-mbu-docked=peek]'))
+                  .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
+              if (!boxes.length) return null;
+              return { left: Math.min.apply(null, boxes.map(function (r) { return r.left; })), right: Math.max.apply(null, boxes.map(function (r) { return r.right; })),
+                  top: Math.min.apply(null, boxes.map(function (r) { return r.top; })), bottom: Math.max.apply(null, boxes.map(function (r) { return r.bottom; })) };
+          };
+          var inBox = function (e, b, pad) { return !!b && e.clientX >= b.left - pad && e.clientX <= b.right + pad && e.clientY >= b.top - pad && e.clientY <= b.bottom + pad; };
           var inDock = function (e) {
               if (e.target && e.target.closest && e.target.closest('#mbu-dock,[data-mbu-docked=show],.mbu-dock-win,#mbu-tip')) return true;
-              var boxes = Array.prototype.slice.call(document.querySelectorAll('#mbu-dock,[data-mbu-docked=show]'))
-                  .map(function (el) { return el.getBoundingClientRect(); }).filter(function (r) { return r.width && r.height; });
-              if (!boxes.length) return false;
-              return e.clientX >= Math.min.apply(null, boxes.map(function (r) { return r.left; }))
-                  && e.clientX <= Math.max.apply(null, boxes.map(function (r) { return r.right; }))
-                  && e.clientY >= Math.min.apply(null, boxes.map(function (r) { return r.top; }))
-                  && e.clientY <= Math.max.apply(null, boxes.map(function (r) { return r.bottom; }));
+              return inBox(e, dockBox(), 0);
           };
+          // the shelf: shown while the pointer is over the dock, dark on a dark page (a dark userstyle)
+          var shelf = document.createElement('div'); shelf.id = 'mbu-dock-shelf'; root.appendChild(shelf);
+          var pageDark = function () {
+              var t = mbuThemeOf(document.body && getComputedStyle(document.body).backgroundColor) || mbuThemeOf(getComputedStyle(root).backgroundColor);
+              return t === 'dark';
+          };
+          var shelfOver = function (e) {
+              var b = dockBox(), over = inBox(e, b, 6);
+              if (over) {
+                  var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
+                  shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
+                  shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
+                  if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
+              }
+              root.toggleAttribute('data-mbu-dock-over', over);
+          };
+          document.addEventListener('mousemove', shelfOver, true);
+          root.addEventListener('mouseleave', function () { root.removeAttribute('data-mbu-dock-over'); });
           btn.addEventListener('mouseenter', function () {
               clearTimeout(leaveT);
               if (root.hasAttribute('data-mbu-dock-open')) return;
