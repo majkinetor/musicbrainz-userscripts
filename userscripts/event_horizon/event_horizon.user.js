@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170103
+// @version      2026.10.31.170104
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2781,7 +2781,7 @@ const S = {
     fold: [], discFold: [], grpFold: [], // grpFold: the discography's and releases' folded groups, 'dg:Album' / 'ed:Bootleg' edView: 'grid', rgView: 'table', dgView: 'grid', dgSort: 'date', edSort: '', lmAuto: true, tabView: 'table', // edSort: the releases table's column, '' its own order, a leading '-' reversing it
     ed: { kinds: new Set(), official: false },
     open: new Set(),
-    fxOpen: [], // 'rec' / 'work': the track sides whose facts box is open, on every track
+    fxOpen: [], // keys of the recording and work facts boxes that are open
     imgOrder: ['discogs', 'wikipedia', 'deezer', 'spotify', 'tidal', 'apple', 'soundcloud'], // whose artist image or label logo comes first
     imgOff: [], // the image providers not used
     hgrp: 'burst', // the history page's grouping
@@ -8718,12 +8718,15 @@ function build() {
         const fx = detailGroup && (!inTrack || ev.target.closest('.grp > h4, .grp > .tfx, .grp > .fxsum')) && detailGroup.querySelector('[data-fx]');
         if (fx) {
             ev.preventDefault();
-            const keys = [...detailGroup.closest('.detail').querySelectorAll('.fxc[data-fx]')].map(x => x.dataset.fx);
+            const keys = inTrack && data.rel ? data.rel.media.flatMap((m, mi) => m.tracks.flatMap(t => {
+                const key = `${t.rid}:${mi + 1}-${t.n}`;
+                return [ ...(recFacts(t).length ? [`${key}:rec`] : []), ...(t.works || []).flatMap((w, i) => workFacts(w).length ? [`${key}:work:${w.id || i}`] : []) ];
+            })) : [...detailGroup.closest('.detail').querySelectorAll('.fxc[data-fx]')].map(x => x.dataset.fx);
             const open = !S.fxOpen.includes(fx.dataset.fx);
             S.fxOpen = S.fxOpen.filter(x => !keys.includes(x));
             if (open) S.fxOpen.push(...keys);
             const y = scrollY, part = detailGroup.closest('.tl > .detail'), row = part && part.previousElementSibling;
-            if (row && redrawTrack(row.dataset.row)) save(); else render();
+            if (row) { redrawTracks(); save(); } else render();
             scrollTo(0, y); return;
         }
         // A track's detail follows its row in the DOM, rather than being its child.
