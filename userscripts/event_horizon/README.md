@@ -51,7 +51,7 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 **Release credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
 
-Which platforms show, in which order, and how big, are set with the gear beside the tracklist's **Show** toggles. Click a platform to show or hide it, drag it to reorder.
+The gear beside the tracklist's **Show** toggles sets alternating track colors and which platforms show, in which order, and how big. Click a platform to show or hide it, drag it to reorder.
 
 Which facts the header shows (rating, aliases and tags among them), and whether other covers show, are set with the gear at the right end of the header's divider line. On an artist's or label's page that gear sets which facts show and where the picture comes from.
 
@@ -75,6 +75,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | ------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Release → Info            | released, labels, barcode, length, links                            | the facts shown beside the cover                                           |
 | Release → Under the cover | Other covers, Rating, Genres                                        | what shows under the cover                                                 |
+| Tracklist → Tracks        | Alternating colors                                                  | shade every other track                                                    |
 | Platforms → Show          | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
 | Platforms → Icon size     | 22px                                                                | the size of a platform icon                                                |
 | Platforms → Platforms     | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.170106.1.1
+// @version      2026.10.31.170106.1.2
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2576,8 +2576,10 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .disc .fi{color:var(--accent);display:flex}
 .disc .tot{margin-left:auto;font:500 13px 'JetBrains Mono',ui-monospace,monospace;color:var(--muted)}
 .tr{display:flex;align-items:center;gap:16px;padding:11px 16px;cursor:pointer}
+.tl.striped .tr.alt{background:var(--hover)}
 .tl>.disc+.tr{border-top:1px solid var(--line)}
 .tr:hover{background:var(--hover)}
+.tl.striped .tr.alt:hover{background:var(--bg)}
 .tr .n{width:28px;flex:none;color:var(--muted);font-size:14px}
 .tr .ti{flex:1 1 0;min-width:0;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px}
 .tr .ti a.t{font-weight:700;font-size:14px;color:var(--text)}
@@ -2773,13 +2775,13 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ── state ─────────────────────────────────────────── */
 // what the viewer shows is a setting, kept by the manager; what is open on this page is not
-const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
+const VIEW = ['on', 'cols', 'prov', 'facts', 'extras', 'thumbs', 'noAliases', 'factOff', 'crTracks', 'fold', 'edView', 'rgView', 'dgView', 'dgSort', 'byName', 'plNames', 'plHover', 'plSize', 'trackStripe', 'dis', 'plOrder', 'width', 'secOrder', 'secHide', 'tgxView', 'grpFold', 'edSort', 'lmAuto', 'tabView', 'fxOpen', 'imgOrder', 'imgOff', 'hgrp', 'bg', 'tagView', 'tgxView', 'etagView', 'tagSort', 'tagScope', 'releaseListView'];
 const S = {
     cols: { mk: true, isrc: true, links: true, len: true },
     prov: ['spotify', 'apple', 'tidal', 'qobuz', 'deezer', 'ytmusic'],
     plOrder: [], // the settings' platform order, shown or not; prov follows it
     crTracks: true,
-    byName: false, plNames: false, plHover: false, plSize: 22, dis: 'below', width: 1600, bg: 'aura',
+    byName: false, plNames: false, plHover: false, plSize: 22, trackStripe: true, dis: 'below', width: 1600, bg: 'aura',
     on: true, menuTitles: false,
     thumbs: true,
     factOff: { artist: [], label: [] }, // the artist's and label's header facts turned off
@@ -3585,9 +3587,9 @@ function tracklist(r) {
     // Show › Artist turns it on or off by hand, for this release only
     const vaAuto = r.ac.some(a => a.artist.id === '89ad4ac3-39f7-470e-963a-56509c546377') || tracks.filter(t => t.feat.length).length > tracks.length / 2;
     const va = arCol.has(r.id) ? arCol.get(r.id) : vaAuto;
-    const row = t => {
+    const row = (t, i) => {
         const sub = !va && t.feat.length ? 'with ' + t.feat.join(', ') : '';
-        return `<div class="tr" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
+        return `<div class="tr${i % 2 ? ' alt' : ''}" data-row="${esc(t.key)}" aria-expanded="${S.open.has(t.key)}"><span class="n mono">${esc(t.n)}</span>
             <div class="ti"><a class="t" href="${MB}/recording/${t.rid}">${esc(t.title)}</a>${marks(t)}${sub ? `<div class="sub">${esc(sub)}</div>` : ''}</div>${va ? `<span class="ar">${acHtml(t.ac)}</span>` : ''}
             <span class="is">${t.isrcs.length ? (t.isrcs.length <= 2 ? t.isrcs.map(isrcHtml).join('') : `<span class="isrow">${isrcHtml(t.isrcs[0])}<span class="popwrap"><button class="more" type="button" data-pop="is-${t.key}" aria-expanded="false" aria-label="${t.isrcs.length - 1} more ISRCs">+${t.isrcs.length - 1}</button><div class="pop" id="pop-is-${t.key}" hidden><div class="h label">ISRCs</div>${t.isrcs.slice(1).map(isrcHtml).join('')}</div></span></span>`) : ''}</span>
             <span class="lk">${trackLinks(t, ctx)}</span>
@@ -3601,10 +3603,10 @@ function tracklist(r) {
     });
     const toggles = `<button class="tx" type="button" data-arcol="${esc(r.id)}" data-va="${va}" aria-pressed="${va}" data-tip="Each track's artist in a column\n${vaAuto ? 'On by itself' : 'Off by itself'} for this release">Artist</button>` + [['mk', 'Markers'], ['isrc', 'ISRCs'], ['links', 'Platforms'], ['len', 'Lengths']].map(([k, n]) => `<button class="tx" type="button" data-col="${k}" aria-pressed="${S.cols[k] !== false}">${n}</button>`).join('');
     rowKeys = tracks.map(t => t.key);
-    const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Platform icons" data-tip="Platform icons\nWhich platforms the tracklist shows, their order and size">${MBU_CFG_ICON}</button>`;
+    const plB = `<button class="tx plcfg" type="button" data-plcfg="1" aria-label="Tracklist settings" data-tip="Tracklist settings\nTrack colors and platform icons">${MBU_CFG_ICON}</button>`;
     const tools = `<span class="label" style="margin-right:2px">Show</span>${toggles}${plB}`;
     const isrcs = [...new Set(tracks.flatMap(t => t.isrcs))];
-    const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}">${rows}
+    const body = `<div class="tl ${cls}${S.plHover ? ' pl-hov' : ''}${S.trackStripe ? ' striped' : ''}">${rows}
         <div class="tl-foot"><span>${tracks.length} recordings</span><span>${withIsrc === tracks.length ? 'all with ISRCs' : withIsrc + ' with ISRCs'}</span><span>${credits} credits</span><span>${unionMap.size} platforms</span>${isrcs.length ? copyB(isrcs.join('\n'), '', 'Copy ISRCs') : ''}</div></div>`;
     return sect('tl', 'Tracklist', tools, body, `<div class="folded-note">${tracks.length} tracks${total(tracks) ? ' · ' + total(tracks) : ''}</div>`);
 }
@@ -8900,7 +8902,9 @@ function plBody() {
     // count and number only the picks this release has; the rest stay saved for other releases
     const all = plSorted(ps), shown = all.map(p => p.key).filter(k => S.prov.includes(k));
     const pchip = p => { const i = shown.indexOf(p.key); return `<button type="button" class="chip p" data-g="prov" data-k="${p.key}" aria-pressed="${i >= 0}" draggable="true" data-tip="${i >= 0 ? 'Shown: column ' + (i + 1) : 'Hidden: behind +N'}\nClick to ${i >= 0 ? 'hide' : 'show'}, drag to reorder">${icon(p, 16)}${esc(p.name)}${i >= 0 ? `<span class="ord">${i + 1}</span>` : ''}</button>`; };
-    return row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
+    return row('Tracks', chip('trackStripe', 'trackStripe', S.trackStripe, 'Alternating colors'))
+            + '<h3 class="plh">Platforms</h3>'
+            + row('Show', chip('plNames', 'plNames', S.plNames, 'Names', 'Platform names beside the icons in an open track') + chip('plHover', 'plHover', S.plHover, 'Gray icons', 'Platform icons stay grey until you point at them'))
             + row('Icon size', [18, 22, 28].map(n => chip('plSize', n, S.plSize === n, n + 'px')).join(''))
             + row('Visible', all.map(pchip).join('') + chip('all', 'all', cfgAll, cfgAll ? 'This release only' : 'All platforms…', cfgAll ? 'List only the platforms this release links to' : 'List every platform Event Horizon knows, to pick them before a release has them'));
 }
@@ -8948,7 +8952,7 @@ function openCfg() {
 function openPlCfg(btn, hd) {
     const old = document.getElementById('eh-plcfg'); if (old) { old.remove(); if (old.dataset.hd === hd) return; }
     const pop = document.createElement('div'); pop.id = 'eh-plcfg'; pop.className = 'eh-cfg eh-plpop mbu-ui'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Platform icons');
-    const [title, body] = hd === 'hd' ? ['Header', hdBody] : KFACTS[hd] ? ['Header', kindBody(hd)] : ['Platforms', plBody];
+    const [title, body] = hd === 'hd' ? ['Header', hdBody] : KFACTS[hd] ? ['Header', kindBody(hd)] : ['Tracklist', plBody];
     pop.dataset.hd = hd; pop.setAttribute('aria-label', title + ' settings');
     pop.innerHTML = `<h3 class="plh">${title}</h3><div class="eh-cfg-b">${body()}</div>`;
     document.documentElement.append(pop);
@@ -9010,7 +9014,7 @@ function cfgWire(panel, b, body) {
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
             else if (g === 'prov') { S.prov = toggle(S.prov, k); plFollow(); }
-            else if (g === 'plNames' || g === 'plHover' || g === 'menuTitles') S[g] = !S[g];
+            else if (g === 'plNames' || g === 'plHover' || g === 'trackStripe' || g === 'menuTitles') S[g] = !S[g];
             else if (g === 'plSize') S.plSize = +k;
             else if (g === 'width') S.width = +k;
             else if (g === 'bg') S.bg = k;
