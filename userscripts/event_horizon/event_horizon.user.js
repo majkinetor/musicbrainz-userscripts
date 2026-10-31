@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.10.31.113200
+// @version      2026.10.31.121500
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2260,8 +2260,9 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:48px}
 #eh-rail .fa{display:none;align-items:center;gap:6px;height:28px;margin-top:4px;padding:0 10px;border:0;border-top:1px solid var(--border)!important;border-radius:0;background:none!important;color:var(--soft)!important;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0}#eh-rail.open .fa{display:flex}#eh-rail .fa:hover{color:var(--accent)!important}#eh-rail .fa svg{width:14px;height:14px}
 #eh-rail[hidden]{display:none}
 /* the home page has no header row for the Sections button: it floats in the corner, above the dock */
-#eh-secfab{position:fixed;right:16px;bottom:16px;z-index:31;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid var(--border)!important;background:var(--surface)!important;color:var(--chip-text)!important;box-shadow:0 4px 14px var(--shadow);cursor:pointer;filter:none!important;mix-blend-mode:normal!important;opacity:1!important;transition:border-color .12s,color .12s}
-#eh-secfab:hover,#eh-secfab[aria-expanded=true]{border-color:var(--accent)!important;color:var(--accent)!important}
+#eh-secfab{position:fixed;right:16px;bottom:16px;z-index:31;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border-radius:50%;border:0!important;background:transparent!important;color:var(--chip-text)!important;box-shadow:none!important;cursor:pointer;filter:none!important;mix-blend-mode:normal!important;opacity:1!important;transition:color .12s}
+#eh-secfab:hover,#eh-secfab[aria-expanded=true]{color:var(--accent)!important}
+#eh-secfab svg{width:26px;height:26px}
 #eh-secfab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #eh-secfab svg,#eh-secfab svg *{stroke:currentColor!important;fill:none!important;filter:none!important}
 #eh-secfab[hidden]{display:none}
