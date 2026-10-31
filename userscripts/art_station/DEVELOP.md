@@ -63,6 +63,16 @@ window.ArtStation?.registerProvider({
 - Each returned item is `{ types?, comment? }` plus one image: **`url`** or **`dataUrl`** (preferred: Art Station fetches it itself), or **`blob`** with its **`source`** URL.
 - If your manager isolates `window` between scripts, dispatch `artstation:register-provider` with the provider as `detail` instead.
 
+## Viewer for other scripts
+
+Outside an art page Art Station draws nothing and runs only as a read-only full-screen viewer. Another script opens it with a cancelable `mbu-gallery-open` event on `document`, whose `detail` is a JSON string, so it crosses managers' sandboxes:
+
+```js
+{ release: '<mbid>', start: <image id>, images: [{ id, types, comment, image }] }   // image: the original's URL
+```
+
+Art Station answers with `preventDefault()`. A caller that sees no answer shows the images its own way. On a cover-art page, the event opens the page's own full-screen view when it is for the same release, and goes unanswered otherwise.
+
 ## AI scan
 
 The ✦ menu prepares the image and the prompt as it opens, so a provider's click only has to write the clipboard and open the tab, inside the click's activation. The image goes on the clipboard as PNG (the one image type every browser's clipboard takes), at most 2400 px on its long side; the prompt goes in the chat's `?q=`, or with the image on the clipboard for Gemini, which has none. The release's title, artist credit and tracklist come from one ws/2 `release?inc=recordings+artist-credits` read per page, through the gate.

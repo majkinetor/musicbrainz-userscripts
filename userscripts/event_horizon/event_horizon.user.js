@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.001601.1
+// @version      2026.11.01.001700
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2423,7 +2423,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
 .art{flex:0 1 clamp(220px,30vw,380px);min-width:0;display:flex;flex-direction:column;gap:12px}
-.art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot{cursor:pointer}
+.art .picw{position:relative}.chip[data-g=imgP]{cursor:grab;touch-action:none;user-select:none}.art .cover.rot,.art .cover[data-relcover],.art .thumbs img{cursor:pointer}
 .art .imgsrc{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--surface);box-shadow:0 2px 8px var(--shadow);opacity:.92}.art .imgsrc:hover{opacity:1;outline:2px solid var(--accent)}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
@@ -7092,6 +7092,18 @@ function bgApply() {
 let data = null;
 const imgKey = new WeakMap();
 // a release's cover is the same picture whichever URL it came from (thumbnail or full size): a redraw keeps it
+// the release's covers in Art Station's viewer (see DEVELOP.md); without it, the Artwork section
+const openGallery = (r, im) => {
+    const images = (r.images || []).map(i => ({ id: i.id, types: i.types, comment: i.comment, image: i.image }));
+    if (!images.length) return;
+    const shown = im.dataset.relcover ? r.images.find(i => i.front) : r.images.find(i => i.image === im.dataset.full);
+    const ask = new CustomEvent('mbu-gallery-open', { cancelable: true, detail: JSON.stringify({ release: r.id, start: shown ? shown.id : images[0].id, images }) });
+    document.dispatchEvent(ask);
+    if (ask.defaultPrevented) return;
+    if (S.fold.includes('art')) { S.fold = toggle(S.fold, 'art'); render(); }
+    const a = $('#s-art');
+    if (a) a.scrollIntoView({ behavior: 'smooth' }); else if (shown) window.open(shown.image, '_blank', 'noopener');
+};
 const imgKeyOf = im => im.dataset.relcover ? 'relcover:' + im.dataset.relcover : im.outerHTML;
 // A release group's Edit still offers its cover selection; Annotation lives in More.
 function editMenu(app) {
@@ -7169,6 +7181,7 @@ function render(keepPop) {
     // an artwork image that won't load even at full size: a quiet tile with the picture mark, not a broken image
     for (const im of app.querySelectorAll('img[data-artimg]')) im.addEventListener('error', () => { LOG.debug('artwork image failed to load', im.src); im.outerHTML = `<span class="art-miss"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg></span>`; });
     const rc = app.querySelector('[data-relcover]');
+    for (const im of app.querySelectorAll('.art [data-relcover], .art .thumbs img')) im.addEventListener('click', () => openGallery(r, im));
     // A hero fallback must also reach its edition card without waiting for a redraw.
     if (rc) rc.onload = () => {
         if (!rc.isConnected) return;

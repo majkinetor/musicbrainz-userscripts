@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Art Station
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.001500
+// @version      2026.11.01.001700
 // @description  Cover/event-art editor for MusicBrainz — one gallery to view, group, sort, reorder, retype, comment, remove, download and source (MH Covers) a release's cover art (or an event's event art), staged and applied on Enter edit. PoC (discussion #230).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcnQgU3RhdGlvbjwvdGl0bGU+CjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjM4IiBmaWxsPSIjMWIwZjNiIiBzdHJva2U9IiNiOTY3ZmYiIHN0cm9rZS13aWR0aD0iMyIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIyOC44OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIwLjkwMDAwMDAwMDAwMDAwMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGEzNDgwIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8Y2lyY2xlIGN4PSI4NiIgY3k9IjY0IiByPSIxMS4wMiIgZmlsbD0iI2ZmNzFjZSIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNjQiIHI9IjIuNTA4IiBmaWxsPSIjMWIwZjNiIi8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1za3ljIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwLjAwIiBzdG9wLWNvbG9yPSIjN2ZlN2ZmIi8+PHN0b3Agb2Zmc2V0PSIwLjUwIiBzdG9wLWNvbG9yPSIjZDlhNmZmIi8+PHN0b3Agb2Zmc2V0PSIxLjAwIiBzdG9wLWNvbG9yPSIjZmY3MWNlIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9ImFzLWNjIj48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiLz48L2NsaXBQYXRoPjwvZGVmcz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2FzLWNjKSI+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iNzgiIGhlaWdodD0iODQiIGZpbGw9InVybCgjYXMtc2t5YykiLz4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhcy1nczIiIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNmZmY2YTgiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjhhNWMiLz48L2xpbmVhckdyYWRpZW50Pgo8bWFzayBpZD0iYXMtbXMyIj48cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI2ZmZiIvPjxyZWN0IHg9IjI1LjYiIHk9IjY3LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuMiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjY5LjgiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuNSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjczLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjEuOCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijc3LjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuMyIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9IjgyLjAiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjIuOSIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijg4LjMiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjMuNiIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjI1LjYiIHk9Ijk2LjIiIHdpZHRoPSI0Ni44IiBoZWlnaHQ9IjQuNSIgZmlsbD0iIzAwMCIvPjwvbWFzaz48L2RlZnM+CjxjaXJjbGUgY3g9IjQ5IiBjeT0iNzYuMDgiIHI9IjIzLjQiIGZpbGw9InVybCgjYXMtZ3MyKSIgbWFzaz0idXJsKCNhcy1tczIpIi8+PHJlY3QgeD0iMTAiIHk9Ijc0LjA4IiB3aWR0aD0iNzgiIGhlaWdodD0iMzEuOTIiIGZpbGw9IiNiOTY3ZmYiLz48cGF0aCBkPSJNMTAgNzQuMDhIODhNMTAgNzcuOUg4OE0xMCA4My4ySDg4TTEwIDkxLjRIODhNMTAgMTA0LjJIODhNMzQuOCA3NC4wOEwtNDguNSAxMDZNMzguNCA3NC4wOEwtMjQuMSAxMDZNNDEuOSA3NC4wOEwwLjMgMTA2TTQ1LjUgNzQuMDhMMjQuNiAxMDZNNDkuMCA3NC4wOEw0OS4wIDEwNk01Mi41IDc0LjA4TDczLjQgMTA2TTU2LjEgNzQuMDhMOTcuOCAxMDZNNTkuNiA3NC4wOEwxMjIuMSAxMDZNNjMuMiA3NC4wOEwxNDYuNSAxMDYiIHN0cm9rZT0iI2ZmZmI5NiIgc3Ryb2tlLXdpZHRoPSIxLjMiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSI3OCIgaGVpZ2h0PSI4NCIgcng9IjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJhMTQ1OCIgc3Ryb2tlLXdpZHRoPSIzIi8+Cjwvc3ZnPgo=
@@ -557,11 +557,12 @@
       else reply({ ok: false, sent: 0, retry: !m.cancelled && !!m.retry, note: m.cancelled ? 'cancelled' : 'the edit failed' + (m.error ? ': ' + m.error : '') + (m.gaveUp ? ' (repeated for ' + m.gaveUp + ')' : '') });
     });
     hello();
-    return;
   }
 
-  const M = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i) || (SETTINGS_ONLY ? ['', 'release', '', undefined] : null);   // #851: the settings alone, on any page
-  if (!M) return;
+  const ART_PAGE = location.pathname.match(/\/(release|event)\/([0-9a-f-]{36})\/(add-)?(?:cover|event)-art/i);
+  const VIEW_ONLY = !SETTINGS_ONLY && !ART_PAGE;   // no gallery of its own here: only the full-screen viewer, for another script's images
+  const QUIET = SETTINGS_ONLY || VIEW_ONLY;
+  const M = ART_PAGE || ['', 'release', '', undefined];   // #851: the settings alone, on any page
 
   // mbRestackCorner, the #468 corner slots, is in the ST-UI block (dev/ui/ui-components.mjs).
 
@@ -606,8 +607,8 @@
   // saved prefs read directly here (the SETTINGS object is built later) so the initial
   // Original/footer state is applied flash-free, before first paint.
   let _savedPrefs = {}; try { _savedPrefs = JSON.parse(gmLoad('artstation:settings') || '{}'); } catch (e) {}
-  earlyHide.disabled = !!_savedPrefs.showOrig || SETTINGS_ONLY;
-  footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false || SETTINGS_ONLY;
+  earlyHide.disabled = !!_savedPrefs.showOrig || QUIET;
+  footerStyle.disabled = !!_savedPrefs.showOrig || _savedPrefs.hideMbFooter === false || QUIET;
   // #248 the add page: take the whole thing over. Move the native uploader form
   // OFF-SCREEN (not display:none) so it stays functional — integrations still
   // seed it and we harvest the resulting preview rows — while every
@@ -631,7 +632,7 @@
     ? `${_gm.name} v${_gm.version} by ${_gm.author} - ${_gm.homepageURL || _gm.homepage || SCRIPT_URL}`
     : `Art Station by majkinetor - ${SCRIPT_URL}`;
 
-  const CAA = ENT.archive;                            // CAA for releases, EAA for events
+  let CAA = ENT.archive;                              // CAA for releases, EAA for events
   const imgUrl  = id => `${CAA}/${id}.jpg`;          // original
   // the public image URL we can hand to a reverse-image engine: CAA for a published
   // cover, or — for a sourced new cover — its provider direct-image URL (_provImageUrl,
@@ -2986,7 +2987,7 @@
   }
   // expose the registry on the page (and a CustomEvent fallback for managers that
   // isolate `window` from other userscripts). Either way is fine to call repeatedly.
-  if (!SETTINGS_ONLY) (function exposeApi() {
+  if (!QUIET) (function exposeApi() {
     // addImageUrl: bring an image in by URL — the bridge the reverse-image-search
     // picker companion (as_picker.user.js) calls when it lands on the MB page with
     // images the user picked elsewhere. Returns true so the companion knows AS is here.
@@ -3683,7 +3684,7 @@
   window.addEventListener('dragstart', () => { _internalDrag = true; }, true);
   window.addEventListener('dragend', () => { _internalDrag = false; }, true);
   // a drag we accept: local files, OR an image dragged from another tab/page (a URL — #331)
-  const isFileDrag = e => { if (SETTINGS_ONLY) return false; try { const t = [...((e.dataTransfer && e.dataTransfer.types) || [])]; return t.includes('Files') || t.includes('text/uri-list'); } catch (x) { return false; } };
+  const isFileDrag = e => { if (QUIET) return false; try { const t = [...((e.dataTransfer && e.dataTransfer.types) || [])]; return t.includes('Files') || t.includes('text/uri-list'); } catch (x) { return false; } };
   window.addEventListener('dragover', e => {
     if (_internalDrag || !isFileDrag(e)) return;
     e.preventDefault();
@@ -4864,7 +4865,7 @@
   // what full screen goes through: the gallery, or the row of the left-out image it shows (one store's More images)
   function lbSeq() {
     const it = byId(_lb), c = it && it._del && root && root.querySelector(`.as-card[data-id="${it.id}"], .as-drow[data-id="${it.id}"]`), row = c && c.parentElement;
-    const seq = row ? [...row.children].map(x => byId(x.dataset.id)).filter(Boolean) : visible();
+    const seq = row ? [...row.children].map(x => byId(x.dataset.id)).filter(Boolean) : VIEW_ONLY ? MODEL : visible();
     return seq.filter(x => !x._pdf);   // PDFs open in a tab, not the lightbox
   }
   let _lbScroll = null;
@@ -5029,8 +5030,8 @@
     // the store it came from, as on the card (#249)
     const prov = it._new && it._provIcon ? `<span class="as-lb-prov" data-tip="${esc(`Sourced from ${it._provider || 'provider'}` + (it._provUrl ? `
 ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ? esc(it._provider) : ''}</span>` : '';
-    cap.innerHTML = `${prov}<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}${rmOpenChip(it)}`;   // #787: its removal open for votes, as on the card
-    cap.querySelector('.as-lb-type').onclick = e => {
+    cap.innerHTML = `${prov}${VIEW_ONLY ? (it.types.length ? `<span class="as-lb-dim">${esc(it.types.join(', '))}</span>` : '') : `<button class="as-lb-type${it.types.length ? '' : ' as-type-add'}" data-tip="Set the ${ITEM} type">${it.types.length ? esc(it.types.join(', ')) : '＋ type'}</button>`}${dims ? `<span class="as-lb-dim">${esc(dims)}</span>` : ''}${rmOpenChip(it)}`;   // #787: its removal open for votes, as on the card
+    if (!VIEW_ONLY) cap.querySelector('.as-lb-type').onclick = e => {
       e.stopPropagation();
       openTypePopFor(byId(_lb), e.currentTarget, () => { _lbDirty = true; paintLightbox(); });
     };
@@ -5041,6 +5042,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   let _lbJustBlurred = false;   // bridges the mousedown-blur → click gap so defocusing the comment doesn't also close the viewer
   function paintCmtArea(ov, it) {
     const area = ov.querySelector('.as-lb-cmtarea'); if (!area) return;
+    if (VIEW_ONLY) { area.innerHTML = it.comment ? `<div class="as-lb-cmt-text" style="cursor:default">${esc(it.comment)}</div>` : ''; return; }
     if (_lbEditCmt) {
       area.innerHTML = `<input class="as-lb-cmt" placeholder="comment…" spellcheck="false" list="as-cmt-presets">`;
       const inp = area.querySelector('.as-lb-cmt'); inp.value = it.comment || '';
@@ -5092,6 +5094,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   // delete: _del moves it to "Marked for removal", undoable there), then advance to
   // the next cover — or close the lightbox if that was the last one.
   function deleteLbCover() {
+    if (VIEW_ONLY) return;
     const it = byId(_lb); if (!it) return;
     if (it._rmOpen) { toast(`Its removal is open for votes already (edit #${it._rmOpen.edit})`); return; }   // #787
     const seq = visible().filter(x => !x._pdf);
@@ -5128,6 +5131,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   }
   let _rotBusy = false;
   async function rotateLbCover(deg) {
+    if (VIEW_ONLY) return;
     if (_rotBusy) return;
     const it = byId(_lb); if (!it || it._pdf || it._sourcing) return;
     const ov = document.getElementById('as-lb');
@@ -5216,7 +5220,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
      page, so it can never eat a paste meant for a comment box or the URL input
      (which has its own handler). */
   document.addEventListener('paste', e => {
-    if (SETTINGS_ONLY) return;
+    if (QUIET) return;
     try {
       const t = e.target;
       if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
@@ -5233,7 +5237,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
     } catch (err) { asLog.debug('paste handler: ' + (err && err.message)); }
   });
   document.addEventListener('keydown', e => {
-    if (SETTINGS_ONLY) return;
+    if (SETTINGS_ONLY || (VIEW_ONLY && !_lb)) return;
     const t = e.target;
     // a popover (type picker / bulk pop) is open → Escape dismisses IT first
     // (wherever focus is), and other keys are swallowed so navigation/zoom/delete
@@ -5252,7 +5256,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
       else if (e.key === 'ArrowDown') { e.preventDefault(); zoomKey(-1); }  // ↓ zoom out
       else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); togglePlay(); }
       else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteLbCover(); }
-      else if (e.key === 'Enter') { e.preventDefault(); _lbEditCmt = true; paintCmtArea(document.getElementById('as-lb'), byId(_lb)); }   // start editing the comment
+      else if (e.key === 'Enter' && !VIEW_ONLY) { e.preventDefault(); _lbEditCmt = true; paintCmtArea(document.getElementById('as-lb'), byId(_lb)); }   // start editing the comment
       else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); const it = byId(_lb); if (it) dlOne(it); }   // download original
       return;
     }
@@ -7852,6 +7856,7 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
      its menu is open so the menu stays usable. */
   .as-lb-del{display:flex;align-items:center;justify-content:center;position:fixed;top:16px;left:20px;font-size:18px;line-height:1;color:var(--mbu-text-on-accent);background:transparent;border:none;border-radius:8px;height:42px;width:46px;cursor:pointer}
   .as-lb-del:hover{background:var(--as-warn)}
+  #as-lb.as-lb-ro .as-lb-del,#as-lb.as-lb-ro .as-lb-rotwrap{display:none}
   /* Download moved into the bottom bar (right of the resolution): at the top it
      was painted over by the image even at 0 zoom. In-flow now; its size menu
      opens UPWARD so it doesn't fall off the bottom edge. */
@@ -8046,6 +8051,19 @@ ${it._provUrl}` : ''))}"><img src="${esc(it._provIcon)}" alt="">${it._provider ?
   // #851: String Theory's settings open these settings on any page, whether this script runs here or not
   document.addEventListener('mbu-open-settings', e => { if (e.detail === 'art_station' && !e.defaultPrevented) { e.preventDefault(); const asS = document.getElementById('as-setup'); if (asS) asS.remove(); else openSetup(); } });
   if (SETTINGS_ONLY) { const asS = document.getElementById('as-setup'); if (asS) asS.remove(); else openSetup(); return; }
+  // another script's images in the full-screen viewer, see DEVELOP.md
+  document.addEventListener('mbu-gallery-open', e => {
+    if (e.defaultPrevented) return;
+    let d = null; try { d = JSON.parse(e.detail); } catch (x) { return; }
+    if (!d || !d.release || !Array.isArray(d.images) || !d.images.length) return;
+    if (!VIEW_ONLY) { if (!IS_EVENT && d.release === MBID && byId(d.start)) { e.preventDefault(); openLightbox(d.start); } return; }   // this release's own gallery, with all its tools
+    e.preventDefault();
+    CAA = 'https://coverartarchive.org/release/' + d.release;
+    MODEL = d.images.map((x, i) => ({ id: x.id, types: x.types || [], comment: x.comment || '', order: i, _img: x.image, _pdf: /\.pdf$/i.test(x.image || '') }));
+    openLightbox(byId(d.start) ? d.start : MODEL[0].id);
+    const ov = document.getElementById('as-lb'); if (ov) ov.classList.add('as-lb-ro');
+  });
+  if (VIEW_ONLY) return;
 
   // ── #248 add page: harvest images seeded into the native uploader ───────────────
   // Another integration may drop images into MB's add-cover-art uploader. We read each
