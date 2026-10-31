@@ -52,6 +52,23 @@ test.describe('Event Horizon', () => {
   });
 });
 
+test.describe('Time', () => {
+  test.use({ gm: { name: 'String Theory', values: {} } });
+  test('Event Horizon front page turns dark inside the hours, entered in 24h', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await page.goto(SANDBOX + '/', { waitUntil: 'load', timeout: 60000 });
+    await inject('string_theory');
+    await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
+    await page.locator('#st-tab-t').click();
+    await pick(page, 'time');
+    await page.locator('#st-th-from').fill('0:00');
+    await page.locator('#st-th-to').fill('23:59');
+    await page.locator('#st-th-to').blur();
+    await until(() => variant(page), v => v === 'dark', { timeout: 5000 });
+    check(await page.locator('#st-th-from').inputValue() === '00:00', 'tidied to 24h');
+    await until(() => page.evaluate(() => document.documentElement.getAttribute('data-mbu-theme')), v => v === 'dark', { timeout: 5000 });
+  });
+});
+
 test.describe('auto', () => {
   test.use({ colorScheme: 'dark', gm: { name: 'String Theory', values: { 'string_theory.theme': { mode: 'auto' } } } });
   test('follows the system', { tag: ['@sandbox'] }, async ({ page, inject }) => {
