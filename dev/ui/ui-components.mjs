@@ -848,31 +848,30 @@ function mbuDock() {
             if (over) {
                 var pad = 4, w = b.right - b.left + 2 * pad, h = b.bottom - b.top + 2 * pad;
                 shelf.style.left = (b.left - pad) + 'px'; shelf.style.top = (b.top - pad) + 'px';
-                shelf.style.width = w + 'px'; shelf.style.height = h + 'px'; shelf.style.borderRadius = (Math.min(w, h) / 2) + 'px';
-                if (!root.hasAttribute('data-mbu-dock-over')) {
-                    shelf.toggleAttribute('data-dark', pageDark());
-                    // a launcher inside its own stacking layer (a body with isolation:isolate, a z-indexed
-                    // container) paints within that layer, under a shelf on <html> whatever its z-index:
-                    // the shelf joins the outermost such layer, below every launcher in it
-                    var stacks = function (cs) {
-                        return (cs.zIndex !== 'auto' && cs.position !== 'static') || cs.isolation === 'isolate' || +cs.opacity < 1
-                            || cs.transform !== 'none' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || /paint|layout|strict|content/.test(cs.contain || '');
-                    };
-                    var items = Array.prototype.filter.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) { return el !== shelf; });
-                    var host = root;
-                    items.forEach(function (el) {
-                        for (var a = el.parentElement; a && a !== root; a = a.parentElement) if (stacks(getComputedStyle(a)) && (host === root || a.contains(host))) host = a;
-                    });
-                    if (shelf.parentNode !== host) host.insertBefore(shelf, host.firstChild);
-                    var z = 2147482989;
-                    items.forEach(function (el) {
-                        if (!host.contains(el)) return;
-                        var top = null;
-                        for (var a = el; a && a !== host; a = a.parentElement) { var cz = getComputedStyle(a).zIndex; if (cz !== 'auto' && getComputedStyle(a).position !== 'static') top = +cz; }
-                        if (top !== null && top <= z) z = top - 1;
-                    });
-                    shelf.style.zIndex = String(z);
-                }
+                shelf.style.width = w + 'px'; shelf.style.height = h + 'px';
+                if (!root.hasAttribute('data-mbu-dock-over')) shelf.toggleAttribute('data-dark', pageDark());
+                // a launcher inside its own stacking layer (MB's body is isolation:isolate) paints within that
+                // layer, under the shelf whatever its z-index, and launchers sit in different layers: the shelf
+                // stays on <html>, below the launchers there, and cuts a hole where each of the others is
+                var stacks = function (cs) {
+                    return (cs.zIndex !== 'auto' && cs.position !== 'static') || cs.isolation === 'isolate' || +cs.opacity < 1
+                        || cs.transform !== 'none' || cs.filter !== 'none' || cs.mixBlendMode !== 'normal' || /paint|layout|strict|content/.test(cs.contain || '');
+                };
+                var rr = function (x, y, rw, rh, r) {
+                    r = Math.max(0, Math.min(r, rw / 2, rh / 2));
+                    var a = function (dx, dy) { return 'a' + r + ' ' + r + ' 0 0 1 ' + dx + ' ' + dy; };
+                    return 'M' + (x + r) + ' ' + y + 'h' + (rw - 2 * r) + a(r, r) + 'v' + (rh - 2 * r) + a(-r, r)
+                        + 'h' + (2 * r - rw) + a(-r, -r) + 'v' + (2 * r - rh) + a(r, -r) + 'z';
+                };
+                var ox = b.left - pad, oy = b.top - pad, d = rr(0, 0, w, h, Math.min(w, h) / 2);
+                Array.prototype.forEach.call(document.querySelectorAll('[data-mbu-docked=show],[data-mbu-docked=peek]'), function (el) {
+                    var under = false;
+                    for (var p = el.parentElement; p && p !== root; p = p.parentElement) if (stacks(getComputedStyle(p))) { under = true; break; }
+                    if (!under) return;
+                    var r = el.getBoundingClientRect();
+                    if (r.width && r.height) d += rr(r.left - ox, r.top - oy, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0);
+                });
+                shelf.style.clipPath = 'path(evenodd, "' + d + '")';
             }
             root.toggleAttribute('data-mbu-dock-over', over);
         };

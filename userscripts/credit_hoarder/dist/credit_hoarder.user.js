@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.31.181749
+// @version      2026.10.31.183529
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -9798,32 +9798,29 @@ Its \u{1F517} chip adds the link.`;
             shelf.style.top = b.top - pad + "px";
             shelf.style.width = w + "px";
             shelf.style.height = h + "px";
-            shelf.style.borderRadius = Math.min(w, h) / 2 + "px";
-            if (!root.hasAttribute("data-mbu-dock-over")) {
-              shelf.toggleAttribute("data-dark", pageDark());
-              var stacks = function(cs) {
-                return cs.zIndex !== "auto" && cs.position !== "static" || cs.isolation === "isolate" || +cs.opacity < 1 || cs.transform !== "none" || cs.filter !== "none" || cs.mixBlendMode !== "normal" || /paint|layout|strict|content/.test(cs.contain || "");
+            if (!root.hasAttribute("data-mbu-dock-over")) shelf.toggleAttribute("data-dark", pageDark());
+            var stacks = function(cs) {
+              return cs.zIndex !== "auto" && cs.position !== "static" || cs.isolation === "isolate" || +cs.opacity < 1 || cs.transform !== "none" || cs.filter !== "none" || cs.mixBlendMode !== "normal" || /paint|layout|strict|content/.test(cs.contain || "");
+            };
+            var rr = function(x, y, rw, rh, r) {
+              r = Math.max(0, Math.min(r, rw / 2, rh / 2));
+              var a = function(dx, dy) {
+                return "a" + r + " " + r + " 0 0 1 " + dx + " " + dy;
               };
-              var items = Array.prototype.filter.call(document.querySelectorAll("[data-mbu-docked=show],[data-mbu-docked=peek]"), function(el) {
-                return el !== shelf;
-              });
-              var host = root;
-              items.forEach(function(el) {
-                for (var a = el.parentElement; a && a !== root; a = a.parentElement) if (stacks(getComputedStyle(a)) && (host === root || a.contains(host))) host = a;
-              });
-              if (shelf.parentNode !== host) host.insertBefore(shelf, host.firstChild);
-              var z = 2147482989;
-              items.forEach(function(el) {
-                if (!host.contains(el)) return;
-                var top = null;
-                for (var a = el; a && a !== host; a = a.parentElement) {
-                  var cz = getComputedStyle(a).zIndex;
-                  if (cz !== "auto" && getComputedStyle(a).position !== "static") top = +cz;
-                }
-                if (top !== null && top <= z) z = top - 1;
-              });
-              shelf.style.zIndex = String(z);
-            }
+              return "M" + (x + r) + " " + y + "h" + (rw - 2 * r) + a(r, r) + "v" + (rh - 2 * r) + a(-r, r) + "h" + (2 * r - rw) + a(-r, -r) + "v" + (2 * r - rh) + a(r, -r) + "z";
+            };
+            var ox = b.left - pad, oy = b.top - pad, d = rr(0, 0, w, h, Math.min(w, h) / 2);
+            Array.prototype.forEach.call(document.querySelectorAll("[data-mbu-docked=show],[data-mbu-docked=peek]"), function(el) {
+              var under = false;
+              for (var p = el.parentElement; p && p !== root; p = p.parentElement) if (stacks(getComputedStyle(p))) {
+                under = true;
+                break;
+              }
+              if (!under) return;
+              var r = el.getBoundingClientRect();
+              if (r.width && r.height) d += rr(r.left - ox, r.top - oy, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0);
+            });
+            shelf.style.clipPath = 'path(evenodd, "' + d + '")';
           }
           root.toggleAttribute("data-mbu-dock-over", over);
         };
