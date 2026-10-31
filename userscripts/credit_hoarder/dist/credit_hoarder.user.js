@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Credit Hoarder
 // @namespace    majkinetor
-// @version      2026.10.31.152555
+// @version      2026.10.31.152600
 // @description  Import per-track release credits from streaming/database providers (Discogs, Tidal, Qobuz, Deezer) into MusicBrainz relationships, with a review phase
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xNS41IC0xLjUgMTM2LjUgMTM2LjUiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij4KPHRpdGxlPkNyZWRpdCBIb2FyZGVyPC90aXRsZT4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJjaGMwNC1nIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZjlhODI2Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iI2YzNzIyYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2QwMDA3MCIvPjwvbGluZWFyR3JhZGllbnQ+PC9kZWZzPjxnIG9wYWNpdHk9Ii43Ij48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiA3MCkgcm90YXRlKDApIHNjYWxlKDEuNTUpIHRyYW5zbGF0ZSgtNjYgLTcwKSI+PGcgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuOTM1NDgzODcwOTY3NzQxOCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1LjE2MTI5MDMyMjU4MDY0NSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjYuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDcwKSByb3RhdGUoMCkgc2NhbGUoMS41NSkgdHJhbnNsYXRlKC02NiAtNzApIj48ZyBmaWxsPSIjMjIyMjNiIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCI+PGVsbGlwc2UgY3g9IjMwIiBjeT0iODAiIHJ4PSIxNCIgcnk9IjEwIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSI3NiIgcj0iOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNzAiIHI9IjEwIi8+PC9nPjxnIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzLjIyNTgwNjQ1MTYxMjkwMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNMjYgODYgbC02IDEyIE0zNCA4OCBsMiAxMiBNNDYgODIgbC00IDE2IE01MiA4NCBsOCAxNCIvPjwvZz48L2c+PGcgc3Ryb2tlPSIjMjIyMjNiIiBzdHJva2Utd2lkdGg9IjMuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBmaWxsPSJub25lIj48cGF0aCBkPSJNNzIgNjIgQzc4IDUyIDg2IDQ4IDkyIDQ4IE03MCA2MiBDNzIgNTIgNzAgNDQgNjQgNDAiLz48L2c+PHBhdGggZD0iTTExMy42IDQ1LjAgTDk4LjAgNTQuMCBMODIuNCA0NS4wIEw4Mi40IDI3LjAgTDk4LjAgMTguMCBMMTEzLjYgMjcuMFoiIGZpbGw9InVybCgjY2hjMDQtZykiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTAgOTggMzYpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTggMzcpIHNjYWxlKDAuOSkiIGZpbGw9IiNmZmYiPjxjaXJjbGUgY3g9IjAiIGN5PSItNSIgcj0iNSIvPjxwYXRoIGQ9Ik0tOSA5IEMtOSAwIDkgMCA5IDlaIi8+PC9nPgo8L3N2Zz4K
@@ -9718,7 +9718,7 @@ Its \u{1F517} chip adds the link.`;
       if (!document.getElementById("mbu-dock-css")) {
         var css = document.createElement("style");
         css.id = "mbu-dock-css";
-        css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1) + var(--mbu-ox,0px));--mbu-dw-y:calc(6px + var(--mbu-oy,0px));right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px - var(--mbu-oy,0px)));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:calc(6px + var(--mbu-ox,0px));--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1) + var(--mbu-oy,0px));max-height:min(75vh,calc(100vh - 80px - var(--mbu-oy,0px)))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}.mbu-dock-item,#mbu-dock{filter:none!important}[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="\u2713"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}@keyframes mbu-dock-fade{50%{opacity:.25}}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="\xB7\xB7\xB7"]::after{content:none}.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="\xB7\xB7\xB7"] .mbu-dock-dots{display:flex}#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
+        css.textContent = '[data-mbu-docked]{z-index:2147482990!important}[data-mbu-docked=hide],[data-mbu-docked=off],:root:not([data-mbu-dock]) [data-mb-corner-dock=only]{display:none!important}.mbu-dock-item{position:fixed;z-index:2147482990;width:40px;height:40px;box-sizing:border-box;border:0;border-radius:50%;padding:3px;background:none;box-shadow:none;cursor:pointer;opacity:.85;transition:transform .12s,opacity .12s}.mbu-dock-item:hover{opacity:1;transform:scale(1.08)}.mbu-dock-item img{width:34px;height:34px;display:block;pointer-events:none}.mbu-dock-win{position:fixed;z-index:2147482995;--mbu-dw-x:calc(22px + 40px*var(--mbu-cs,1));--mbu-dw-y:6px;right:var(--mbu-dw-x);bottom:var(--mbu-dw-y);width:max-content;max-width:calc(100vw - 90px);max-height:min(75vh,calc(100vh - 20px));overflow:auto;box-sizing:border-box;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35)}.mbu-dock-win>*{margin:0!important}:root[data-mbu-flow=row] .mbu-dock-win{--mbu-dw-x:6px;--mbu-dw-y:calc(20px + 40px*var(--mbu-cs,1));max-height:min(75vh,calc(100vh - 80px))}:root[data-mbu-side=left] .mbu-dock-win{right:auto;left:var(--mbu-dw-x)}#mbu-dock{position:fixed;z-index:2147482991;width:40px;height:40px;border-radius:50%;border:0;padding:0;cursor:pointer;background:none;box-shadow:none;opacity:.85;transition:transform .12s,opacity .12s}#mbu-dock svg{width:34px;height:34px;display:block;margin:auto;pointer-events:none}#mbu-dock:hover{opacity:1;transform:scale(1.08)}:root[data-mbu-dock-open] #mbu-dock{opacity:1}#mbu-dock:focus-visible{outline:2px solid #ba478f;outline-offset:2px}#mbu-dock b{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center}.mbu-dock-item,#mbu-dock{filter:none!important}[data-mbu-docked=peek]{transform:scale(.8)}[data-mbu-docked=peek]:hover{transform:scale(.9)}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status]::after{content:attr(data-mb-corner-status);position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;box-sizing:border-box;border:1.5px solid #e05aa5;border-radius:9px;background:#fde6f2;color:#c93d8c;font:700 11px/15px system-ui,sans-serif;text-align:center;white-space:nowrap;text-shadow:none;-webkit-font-smoothing:antialiased;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek]):hover::after{opacity:1}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="\u2713"]::after{content:"";top:0;right:0;min-width:0;width:10px;height:10px;padding:0;border:2px solid #fff;border-radius:50%;background:#4cbf7a}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mb-corner-status^="0,"]:not([data-mb-corner-status*="/"])::after{border:1.5px dashed #999;background:#f0f0f0;color:#888}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy]::after{background:#f3eff7;border-color:#d6cde2;color:#9a8fae;letter-spacing:1px;animation:mbu-dock-fade 1.2s ease-in-out infinite}@keyframes mbu-dock-fade{50%{opacity:.25}}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="\xB7\xB7\xB7"]::after{content:none}.mbu-dock-dots{display:none;position:absolute;top:0;right:-6px;gap:3px;pointer-events:none}:is([data-mbu-docked=show],[data-mbu-docked=peek])[data-mbu-busy][data-mb-corner-status="\xB7\xB7\xB7"] .mbu-dock-dots{display:flex}#mbu-dock[data-mbu-busy] .mbu-dock-dots{display:flex;top:-4px;right:auto;left:-5px}.mbu-dock-dots i{width:5px;height:5px;border-radius:50%;background:#e05aa5;animation:mbu-dock-dot 1.2s ease-in-out infinite}.mbu-dock-dots i:nth-child(2){animation-delay:.2s}.mbu-dock-dots i:nth-child(3){animation-delay:.4s}@keyframes mbu-dock-dot{0%,80%,100%{opacity:.25}40%{opacity:1}}@media (prefers-reduced-motion:reduce){[data-mbu-busy]::after,.mbu-dock-dots i{animation:none!important}}';
         root.appendChild(css);
       }
       if (!on) {
@@ -9786,6 +9786,7 @@ Its \u{1F517} chip adds the link.`;
         }, true);
         root.appendChild(btn);
         root.toggleAttribute("data-mbu-dock-open", !!mbuShared("dockOpen"));
+        if (mbuShared("cornerOffset") !== void 0) mbuShared("cornerOffset", null);
       }
       var open = root.hasAttribute("data-mbu-dock-open"), n = 0, busy = false;
       if (mbuShared("cornerFlow") === "row") root.setAttribute("data-mbu-flow", "row");
@@ -9807,8 +9808,27 @@ Its \u{1F517} chip adds the link.`;
         el.setAttribute("data-mbu-docked", !shown ? "hide" : open ? "show" : /^[+]?[1-9]/.test(el.dataset.mbCornerStatus || "") ? "peek" : "hide");
         if (was !== "peek" && el.getAttribute("data-mbu-docked") === "peek" && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 350, easing: "ease-out" });
       });
+      mbuDockKnow(els);
       btn.toggleAttribute("data-mbu-busy", busy);
       btn.innerHTML = MBU_DOCK_ICON + (n ? "<b>" + n + "</b>" : "") + '<span class="mbu-dock-dots"><i></i><i></i><i></i></span>';
+    }
+    function mbuDockKnow(els) {
+      var known = mbuShared("dockKnown") || {}, changed = false, seen = {};
+      els.forEach(function(el) {
+        var name = el.dataset.mbCornerLabel, ic = name && !seen[name] && el.querySelector("img,svg");
+        if (!ic) return;
+        seen[name] = true;
+        var icon = ic.tagName.toLowerCase() === "img" ? '<img src="' + String(ic.getAttribute("src") || "").replace(/"/g, "&quot;") + '" alt="">' : ic.outerHTML;
+        if (icon.length > 4e4 || known[name] === icon) return;
+        known[name] = icon;
+        changed = true;
+      });
+      if (changed) mbuShared("dockKnown", known);
+    }
+    function mbuCornerRank(el, order) {
+      if (el.id === "mbu-dock") return -1e6;
+      var i = order ? order.indexOf(el.dataset.mbCornerLabel) : -1;
+      return i >= 0 ? i - 1e5 : Number(el.dataset.mbCornerOrder) || 0;
     }
     function mbuDockItem(o) {
       var b = document.getElementById(o.id);
@@ -9869,14 +9889,7 @@ Its \u{1F517} chip adds the link.`;
         return el.offsetHeight <= 64 && el.offsetWidth <= 240;
       };
       var size = Math.min(1.6, Math.max(0.6, Number(mbuShared("cornerSize")) || 1));
-      var off = (mbuShared("cornerOffset") || {})[corner] || {};
-      var ox = Math.min(Math.max(0, Number(off.x) || 0), Math.max(0, html.clientWidth - 60));
-      var oy = Math.min(Math.max(0, Number(off.y) || 0), Math.max(0, window.innerHeight - 60));
-      if (corner === "br") {
-        html.style.setProperty("--mbu-ox", ox + "px");
-        html.style.setProperty("--mbu-oy", oy + "px");
-        html.style.setProperty("--mbu-cs", String(size));
-      }
+      if (corner === "br") html.style.setProperty("--mbu-cs", String(size));
       var fit = function(el) {
         var on = size !== 1 && small(el);
         if (on) {
@@ -9888,65 +9901,6 @@ Its \u{1F517} chip adds the link.`;
           el.removeAttribute("data-mb-corner-scaled");
         }
       };
-      if (!html.hasAttribute("data-mb-corner-drag")) {
-        html.setAttribute("data-mb-corner-drag", "");
-        document.addEventListener("pointerdown", function(e) {
-          if (e.button !== 0 || !e.isPrimary || !e.target || !e.target.closest) return;
-          var el = e.target.closest("[data-mb-corner]");
-          if (!el || e.target.closest("input,textarea,select,[contenteditable]") || !(el.offsetHeight <= 64 && el.offsetWidth <= 240)) return;
-          var c = el.dataset.mbCorner;
-          if (!/^[bt][lr]$/.test(c)) return;
-          var b = c[0] === "b", r = c[1] === "r" !== (mbuShared("cornerSide") === "left");
-          var o0 = (mbuShared("cornerOffset") || {})[c] || {}, x0 = Number(o0.x) || 0, y0 = Number(o0.y) || 0;
-          var sx = e.clientX, sy = e.clientY, moved = false, raf = 0, nx = x0, ny = y0;
-          var save = function() {
-            var all = mbuShared("cornerOffset") || {};
-            nx = Math.min(Math.max(0, nx), Math.max(0, html.clientWidth - 60));
-            ny = Math.min(Math.max(0, ny), Math.max(0, window.innerHeight - 60));
-            all[c] = { x: Math.round(nx), y: Math.round(ny) };
-            mbuShared("cornerOffset", all);
-            mbRestackCorner(c);
-          };
-          var move = function(ev) {
-            var dx = ev.clientX - sx, dy = ev.clientY - sy;
-            if (!moved && Math.abs(dx) + Math.abs(dy) < 6) return;
-            if (!moved) {
-              moved = true;
-              html.style.userSelect = "none";
-              html.setAttribute("data-mb-corner-dragging", "");
-            }
-            ev.preventDefault();
-            nx = x0 + (r ? -dx : dx);
-            ny = y0 + (b ? -dy : dy);
-            if (!raf) raf = requestAnimationFrame(function() {
-              raf = 0;
-              save();
-            });
-          };
-          var up = function() {
-            document.removeEventListener("pointermove", move, true);
-            document.removeEventListener("pointerup", up, true);
-            document.removeEventListener("pointercancel", up, true);
-            if (!moved) return;
-            if (raf) cancelAnimationFrame(raf);
-            raf = 0;
-            save();
-            html.style.userSelect = "";
-            html.removeAttribute("data-mb-corner-dragging");
-            var swallow = function(ce) {
-              ce.preventDefault();
-              ce.stopImmediatePropagation();
-            };
-            window.addEventListener("click", swallow, true);
-            setTimeout(function() {
-              window.removeEventListener("click", swallow, true);
-            }, 300);
-          };
-          document.addEventListener("pointermove", move, true);
-          document.addEventListener("pointerup", up, true);
-          document.addEventListener("pointercancel", up, true);
-        }, true);
-      }
       if (vv) {
         gapX = Math.max(0, right ? document.documentElement.clientWidth - vv.offsetLeft - vv.width : vv.offsetLeft);
         gapY = Math.max(0, bottom ? window.innerHeight - vv.offsetTop - vv.height : vv.offsetTop);
@@ -9970,19 +9924,19 @@ Its \u{1F517} chip adds the link.`;
           if (window.ResizeObserver && document.body) new window.ResizeObserver(again).observe(document.body);
         }
       }
-      gapX += ox;
-      gapY += oy;
       var edge = document.documentElement.hasAttribute("data-mbu-dock") ? 6 : 14;
-      var peeks = [];
+      var peeks = [], order = corner === "br" && mbuShared("dockOrder");
+      order = Array.isArray(order) ? order : null;
+      var byRank = function(a, b) {
+        return mbuCornerRank(a, order) - mbuCornerRank(b, order);
+      };
       var els = Array.prototype.slice.call(document.querySelectorAll('[data-mb-corner="' + corner + '"]')).filter(function(el) {
         return !el.hidden && getComputedStyle(el).display !== "none";
       }).filter(function(el) {
         if (el.getAttribute("data-mbu-docked") !== "peek") return true;
         peeks.push(el);
         return false;
-      }).sort(function(a, b) {
-        return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
-      });
+      }).sort(byRank);
       var pos = edge;
       els.forEach(function(el) {
         fit(el);
@@ -9992,9 +9946,7 @@ Its \u{1F517} chip adds the link.`;
         pos += (row ? el.offsetWidth : el.offsetHeight) * (el.hasAttribute("data-mb-corner-scaled") ? size : 1) + 8;
       });
       var side = edge + 44 * size;
-      peeks.sort(function(a, b) {
-        return (Number(a.dataset.mbCornerOrder) || 0) - (Number(b.dataset.mbCornerOrder) || 0);
-      }).forEach(function(el) {
+      peeks.sort(byRank).forEach(function(el) {
         fit(el);
         el.style[bottom ? "bottom" : "top"] = gapY + (row ? edge : side) + "px";
         el.style[right ? "right" : "left"] = gapX + (row ? side : edge) + "px";

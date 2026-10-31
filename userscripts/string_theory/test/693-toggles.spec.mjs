@@ -1,10 +1,10 @@
 // #693, #851: String Theory's settings window. The manager's menu has one entry, ⚙ Settings, and a
 // right-click on the dock's button opens the same window. In it each bundled script can be turned off
 // (the GM value 'string_theory.off', folder names; an off member doesn't start, the others do), and the
-// corner launchers get their side, layout, size (the shared localStorage settings mbu.cornerSide /
-// cornerFlow / cornerSize). They fold into String Theory's icon until a click unrolls them (remembered,
-// mbu.dockOpen). Dragging a launcher
-// moves its corner's stack (mbu.cornerOffset); Reset clears place and size.
+// corner launchers get their side, orientation, size and order (the shared localStorage settings
+// mbu.cornerSide / cornerFlow / cornerSize / dockOrder). They fold into String Theory's icon until a click
+// unrolls them (remembered, mbu.dockOpen). A right-click on a launcher's icon in the settings opens its
+// script's settings.
 //
 // test.musicbrainz.org, a release page (ISRC Scout's button and Platform Check's panel both show there).
 import { readFileSync } from 'node:fs';
@@ -12,7 +12,7 @@ import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 const RELEASE = 'ec116461-5b0d-4c98-bb44-a4de5de63076';
 const MEMBERS = readFileSync(new URL('../members.txt', import.meta.url), 'utf8').split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean).length;
-const SHARED = ['cornerSide', 'cornerFlow', 'cornerSize', 'cornerOffset', 'dockOpen'];
+const SHARED = ['cornerSide', 'cornerFlow', 'cornerSize', 'dockOrder', 'dockKnown', 'dockOpen'];
 
 // a manager's menu like Violentmonkey's: an options.id names the entry
 const fakeMenu = () => {
@@ -116,22 +116,25 @@ test.describe('Event Horizon turned off', () => {
     check(await until(async () => (await at(page)).length, n => n === 0, { timeout: 5000 }) === 0, 'the launchers fold');
   });
 
-  // The layout: a column (the default) or a row along the page's edge; the side: right (the default) or left.
-  test('side and layout move the launchers, and a fresh load keeps them', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+  // The orientation: a column (the default) or a row along the page's edge; the side: right (the default) or left.
+  test('side and orientation move the launchers, and a fresh load keeps them', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await load(page, inject, { open: true });
     await stacked(page);
     await openSettings(page);
+    const pressed = () => page.evaluate(() => [...document.querySelectorAll('#st-cfg [role=radio][aria-checked=true]')].map(b => b.dataset.v).join(' '));
+    check(await pressed() === 'right column', `Right and Column are selected (${await pressed()})`);
     const col = await at(page);
     check(col.every(e => e.right === 14) && new Set(col.map(e => e.bottom)).size === col.length, `a column up the right edge (${JSON.stringify(col)})`);
 
-    await page.selectOption('#st-flow', 'row');
+    await page.locator('#st-flow [data-v="row"]').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerFlow')) === '"row"', 'the row is stored as the shared setting');
     const row = await at(page);
     check(row.every(e => e.bottom === 14) && new Set(row.map(e => e.right)).size === row.length, `in a row along the bottom (${JSON.stringify(row)})`);
 
-    await page.selectOption('#st-side', 'left');
+    await page.locator('#st-side [data-v="left"]').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSide')) === '"left"', 'the side too');
+    check(await pressed() === 'left row', `Left and Row are selected (${await pressed()})`);
     const left = await at(page, true);
     check(Math.min(...left.map(e => e.left)) === 14 && new Set(left.map(e => e.left)).size === left.length, `a row from the bottom-left corner (${JSON.stringify(left)})`);
     await page.screenshot({ path: info.outputPath('left-row.png'), clip: { x: 0, y: 900 - 80, width: 260, height: 80 } });
@@ -151,42 +154,77 @@ test.describe('Event Horizon turned off', () => {
     await page.evaluate(keys => keys.forEach(k => localStorage.removeItem('mbu.' + k)), SHARED);
   });
 
-  // Size scales every launcher; dragging one moves the whole stack; Reset puts both back.
-  test('size, drag and reset', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+  // The size stepper scales every launcher and the icons in the settings, 60 to 160 % by 10.
+  test('the size stepper', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await load(page, inject, { open: true });
     await stacked(page);
     const base = await at(page);
     await openSettings(page);
-    await page.fill('#st-size', '140');
-    await page.locator('#st-size').dispatchEvent('change');
+    const icon = () => page.evaluate(() => Math.round(document.querySelector('#st-order .st-di').getBoundingClientRect().width));
+    const i0 = await icon();
+    for (let i = 0; i < 4; i++) await page.locator('#st-size-up').click();
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSize')) === '1.4', `stored as 1.4 (${await page.evaluate(() => localStorage.getItem('mbu.cornerSize'))})`);
+    check(await page.locator('#st-size').textContent() === '140 %', 'the stepper shows 140 %');
     const big = await at(page);
-    const one = id => [base.find(e => e.id === id), big.find(e => e.id === id)];
-    const [b0, b1] = one(base[0].id);
-    check(Math.abs(b1.w - b0.w * 1.4) <= 2 && b1.right === 14, `${base[0].id} scaled in its place (${b0.w} → ${b1.w}, right ${b1.right})`);
-    check(new Set(big.map(e => e.bottom)).size === big.length, 'still one above another');
-    await page.keyboard.press('Escape');
+    const [b0, b1] = [base[0], big.find(e => e.id === base[0].id)];
+    check(Math.abs(b1.w - b0.w * 1.4) <= 2 && b1.right === 14, `${b0.id} scaled in its place (${b0.w} → ${b1.w}, right ${b1.right})`);
+    check(Math.abs(await icon() - i0 * 1.4) <= 2, `the settings' icons scale too (${i0} → ${await icon()})`);
+    await page.screenshot({ path: info.outputPath('size-140.png') });
+    for (let i = 0; i < 3; i++) await page.locator('#st-size-up').click();
+    check(await page.locator('#st-size').textContent() === '160 %' && await page.locator('#st-size-up').isDisabled(), 'it stops at 160 %');
+    for (let i = 0; i < 6; i++) await page.locator('#st-size-dn').click();
+    check(await page.evaluate(() => localStorage.getItem('mbu.cornerSize')) === null, '100 % clears the setting');
+    check(JSON.stringify(await at(page)) === JSON.stringify(base), 'the launchers are back as they were');
+  });
 
-    // drag the topmost launcher 200px left and 100px up
-    const top = big.reduce((a, e) => (e.bottom > a.bottom ? e : a));
-    const box = await page.locator('#' + top.id).boundingBox();
-    const x = box.x + box.width / 2, y = box.y + box.height / 2;
-    await page.mouse.move(x, y); await page.mouse.down();
-    for (let i = 1; i <= 10; i++) await page.mouse.move(x - 20 * i, y - 10 * i);
-    await page.mouse.up();
-    await page.waitForTimeout(300);
-    const off = JSON.parse(await page.evaluate(() => localStorage.getItem('mbu.cornerOffset')) || 'null');
-    check(off && off.br && Math.abs(off.br.x - 200) <= 2 && Math.abs(off.br.y - 100) <= 2, `the drag is stored (${JSON.stringify(off)})`);
-    const moved = await at(page);
-    check(moved.every(e => Math.abs(e.right - (14 + off.br.x)) <= 2), `the whole stack moved (${JSON.stringify(moved)})`);
-    await page.screenshot({ path: info.outputPath('dragged.png') });
-
+  // The settings list every launcher a page has shown (mbu.dockKnown); dragging one first puts it nearest
+  // the corner (mbu.dockOrder); a right-click opens that script's settings.
+  test('launcher order and right-click', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await load(page, inject, { open: true });
+    await stacked(page);
+    await page.evaluate(() => {   // a launcher another page showed
+      const k = JSON.parse(localStorage.getItem('mbu.dockKnown') || '{}');
+      k.Elsewhere = '<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="5"/></svg>';
+      localStorage.setItem('mbu.dockKnown', JSON.stringify(k));
+    });
+    // the visible launchers' names, the one nearest the corner first
+    const stack = () => page.evaluate(() => [...document.querySelectorAll('[data-mb-corner="br"]:not(#mbu-dock)')]
+      .filter(e => getComputedStyle(e).display !== 'none' && e.dataset.mbCornerLabel)
+      .sort((a, b) => b.getBoundingClientRect().bottom - a.getBoundingClientRect().bottom).map(e => e.dataset.mbCornerLabel)
+      .filter((n, i, a) => a.indexOf(n) === i));
     await openSettings(page);
-    await page.locator('#st-reset').click();
-    check(await page.evaluate(() => localStorage.getItem('mbu.cornerOffset') === null && localStorage.getItem('mbu.cornerSize') === null), 'Reset clears place and size');
-    check(await page.evaluate(() => document.getElementById('st-size').value) === '100', 'the size field shows 100%');
-    const back = await at(page);
-    check(JSON.stringify(back) === JSON.stringify(base), `the launchers are back as they were (${JSON.stringify(back)})`);
+    const strip = () => page.evaluate(() => [...document.querySelectorAll('#st-order .st-di')].map(d => d.dataset.name));
+    const names = await strip(), on = await stack();
+    check(['Fusion', 'Mission Control', 'Elsewhere'].every(n => names.includes(n)), `the launchers are listed (${names.join(', ')})`);
+    check(JSON.stringify(names.filter(n => on.includes(n))) === JSON.stringify(on), `in the page's order (${on.join(', ')})`);
+    check(await page.evaluate(() => document.querySelector('#st-order [data-name="Elsewhere"]').classList.contains('st-away')), 'one not on this page is dimmed');
+    await page.screenshot({ path: info.outputPath('order.png') });
+
+    // drag the last launcher on the page to the front
+    const last = on[on.length - 1];
+    const from = await page.locator(`#st-order [data-name="${last}"]`).boundingBox();
+    const to = await page.locator('#st-order .st-di').first().boundingBox();
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2); await page.mouse.down();
+    for (let i = 1; i <= 8; i++) await page.mouse.move(from.x + (to.x + 3 - from.x) * i / 8, to.y + to.height / 2);
+    await page.mouse.up();
+    const order = JSON.parse(await page.evaluate(() => localStorage.getItem('mbu.dockOrder')) || 'null');
+    check(order && order[0] === last, `stored with ${last} first (${JSON.stringify(order)})`);
+    check((await stack())[0] === last, `${last} moved nearest the corner (${(await stack()).join(', ')})`);
+
+    await page.locator('#st-order [data-name="Elsewhere"]').click({ button: 'right' });
+    check(await page.evaluate(() => !!document.getElementById('st-cfg-ov')), 'a right-click on one not here keeps the settings open');
+    await page.locator('#st-order [data-name="Fusion"]').click({ button: 'right' });
+    check(await until(() => page.evaluate(() => !!document.getElementById('fs-settings')), Boolean, { timeout: 5000 }), 'a right-click on Fusion opens Fusion\'s settings');
+    check(!(await page.evaluate(() => !!document.getElementById('st-cfg-ov'))), 'and closes String Theory\'s');
+
+    // a fresh load keeps the order
+    await page.reload({ waitUntil: 'load' });
+    await inject('string_theory');
+    await stacked(page);
+    await page.waitForTimeout(2000);
+    check((await stack())[0] === last, `a fresh load keeps it (${(await stack()).join(', ')})`);
+    await page.evaluate(keys => keys.forEach(k => localStorage.removeItem('mbu.' + k)), SHARED);
   });
 });

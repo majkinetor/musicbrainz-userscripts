@@ -16,7 +16,17 @@ function stCmpVer(a, b) {
 // channels): main is latest, stable the releases, a 40-hex commit a pinned copy, anything else a branch.
 function stChannel() {
   var u = '';
-  try { var s = GM_info.script || {}; u = s.downloadURL || s.updateURL || GM_info.scriptUpdateURL || ''; } catch (e) { /* no GM_info */ }
+  try {
+    var s = GM_info.script || {};
+    u = s.downloadURL || s.updateURL || GM_info.scriptUpdateURL || '';
+    // Managers keep the install URL in different fields when the script has no @downloadURL:
+    // take any URL in GM_info that points at the bundle.
+    if (!u) JSON.stringify(GM_info, function (k, v) {
+      if (!u && typeof v === 'string' && /^https?:[/][/].*string_theory\.user\.js/.test(v)) u = v;
+      return v;
+    });
+  } catch (e) { /* no GM_info */ }
+  try { console.debug('[String Theory] install URL: ' + (u || '(none)')); } catch (e) { /* no console */ }
   var m = /musicbrainz-userscripts[/](?:raw[/])?(?:refs[/]heads[/])?(.+?)[/]userscripts[/]string_theory[/]/.exec(u);
   if (!m) return { kind: 'unknown', url: u };
   var ref = decodeURIComponent(m[1]);
@@ -30,7 +40,7 @@ function stChannelText(ch) {
   if (ch.kind === 'stable') return 'Stable: updates with each release';
   if (ch.kind === 'branch') return 'Branch ' + ch.ref + ': a test build';
   if (ch.kind === 'pinned') return 'Pinned to ' + ch.ref.slice(0, 7) + ': never updates';
-  return 'Unknown: not installed from GitHub';
+  return ch.url ? 'Installed from ' : 'Installed from an unknown source';
 }
 var ST_REPO = 'majkinetor/musicbrainz-userscripts';
 function stInstallUrl(ref) { return 'https://github.com/' + ST_REPO + '/raw/refs/heads/' + ref + '/userscripts/string_theory/string_theory.user.js'; }
@@ -75,6 +85,23 @@ var ST_CSS = ''
   + '#st-cfg .st-upd{margin:4px 0 0;padding:6px 10px;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);font-size:12px}'
   + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 64px;font-weight:600}'
   + '#st-cfg .st-upd .st-mine{color:var(--mbu-text-weak)}#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
+  + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-dim)}'
+  + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
+  + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:4px 12px;min-height:26px;cursor:pointer}'
+  + '#st-cfg .st-seg button+button{border-left:1px solid var(--mbu-border)}#st-cfg .st-seg button:hover{background:var(--mbu-bg-hover)}'
+  + '#st-cfg .st-seg button[aria-checked=true]{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}'
+  + '#st-cfg .st-step{display:inline-flex;align-items:center;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
+  + '#st-cfg .st-step button{font:inherit;font-size:15px;line-height:1;border:0;margin:0;border-radius:0;background:none;color:inherit;width:32px;height:26px;cursor:pointer}'
+  + '#st-cfg .st-step button:hover:not(:disabled){background:var(--mbu-bg-hover)}#st-cfg .st-step button:disabled{opacity:.4;cursor:default}'
+  + '#st-cfg .st-step output{min-width:50px;text-align:center;font-variant-numeric:tabular-nums}'
+  + '#st-cfg .st-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px;margin:4px 0 2px;border:1px dashed var(--mbu-border);border-radius:var(--mbu-radius);touch-action:none;min-height:24px}'
+  + '#st-cfg .st-di{display:grid;place-items:center;flex:0 0 auto;border-radius:50%;cursor:grab;user-select:none}'
+  + '#st-cfg .st-di>img,#st-cfg .st-di>svg{width:100%;height:100%;display:block;pointer-events:none}'
+  + '#st-cfg .st-di.st-drag{outline:2px solid var(--mbu-accent);outline-offset:2px;cursor:grabbing}'
+  + '#st-cfg .st-di.st-away{opacity:.45}'
+  + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
+  + '#st-cfg .st-links{flex-wrap:wrap;gap:4px 14px}'
+  + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px}'
   + '#st-cfg [hidden]{display:none!important}';
 function stSettings() {
   if (stCfgOv && stCfgOv.isConnected) { stCfgOv.querySelector('#st-cfg').focus(); return; }
@@ -88,24 +115,29 @@ function stSettings() {
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' })
     .replace(/<[/]div>$/, '<button type="button" class="mbu-ov-x" id="st-x" aria-label="Close">×</button></div>');
   if (ST_ON_MB) {
+    var seg = function (id, label, opts) {
+      return '<span class="st-lbl" id="' + id + '-l">' + label + '</span><span class="st-seg" role="radiogroup" id="' + id + '" aria-labelledby="' + id + '-l">'
+        + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
+    };
     h += '<section class="st-sec"><h3>Launchers</h3>'
-      + '<div class="st-row"><label for="st-side">Side</label><select id="st-side"><option value="right">Right</option><option value="left">Left</option></select></div>'
-      + '<div class="st-row"><label for="st-flow">Layout</label><select id="st-flow"><option value="column">Column</option><option value="row">Row</option></select></div>'
-      + '<div class="st-row"><label for="st-size">Size</label><input type="number" id="st-size" min="60" max="160" step="10"><span>%</span></div>'
-      + '<div class="st-row"><span class="st-note">Drag a launcher to move them.</span><button type="button" class="st-b" id="st-reset">Reset position and size</button></div>'
+      + '<div class="st-row">' + seg('st-side', 'Side', [['right', 'Right'], ['left', 'Left']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']]) + '</div>'
+      + '<div class="st-row"><span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
+      + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
+      + '<div class="st-strip" id="st-order"></div>'
+      + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
       + '</section>';
   }
   var off = __stReadOff();
   h += '<section class="st-sec"><h3>About</h3>'
     + '<div class="st-row"><span class="st-note" id="st-chan"></span><button type="button" class="st-b" id="st-check">Check for updates</button></div>'
     + '<div class="st-upd" id="st-upd" hidden></div>'
-    + '<div class="st-row"><a href="' + stEsc(ST_HOME) + '" target="_blank" rel="noopener">String Theory on GitHub</a></div>'
-    + '</section>'
-    + '<section class="st-sec"><h3>Scripts</h3>'
-    + stMembers.map(function (m) {
+    + '<div class="st-row st-links"><a href="' + stEsc(ST_HOME) + '" target="_blank" rel="noopener">GitHub</a>'
+    + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a>'
+    + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a></div>'
+    + '<div class="st-scripts">' + stMembers.map(function (m) {
       return '<label class="st-row"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '> '
         + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
-    }).join('')
+    }).join('') + '</div>'
     + '<div class="st-row"><span class="st-note" id="st-apply">A change applies from the next page load.</span>'
     + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy">Copy versions</button></div>'
     + '</section>';
@@ -125,26 +157,109 @@ function stSettings() {
 
   if (ST_ON_MB) {
     var restack = function () { ['br', 'bl', 'tr', 'tl'].forEach(function (c) { try { mbRestackCorner(c); } catch (e) { /* a corner's script broke */ } }); };
-    var sizeIn = q('#st-size');
-    var showSize = function () { sizeIn.value = String(Math.round((Number(mbuShared('cornerSize')) || 1) * 100)); };
-    q('#st-side').value = mbuShared('cornerSide') === 'left' ? 'left' : 'right';
-    q('#st-flow').value = mbuShared('cornerFlow') === 'row' ? 'row' : 'column';
-    showSize();
-    q('#st-side').onchange = function () { mbuShared('cornerSide', this.value === 'left' ? 'left' : null); restack(); };
-    q('#st-flow').onchange = function () { mbuShared('cornerFlow', this.value === 'row' ? 'row' : null); restack(); };
-    var setSize = function () {
-      var v = Math.round(Number(sizeIn.value));
-      if (!isFinite(v) || v < 60 || v > 160) return;
+    var size = function () { return Math.round((Number(mbuShared('cornerSize')) || 1) * 10) * 10; };
+    var show = function () {
+      var pick = function (id, v) { Array.prototype.forEach.call(q(id).children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === v)); }); };
+      pick('#st-side', mbuShared('cornerSide') === 'left' ? 'left' : 'right');
+      pick('#st-flow', mbuShared('cornerFlow') === 'row' ? 'row' : 'column');
+      var v = size(), px = Math.round(34 * v / 100) + 'px';
+      q('#st-size').textContent = v + ' %';
+      q('#st-size-dn').disabled = v <= 60;
+      q('#st-size-up').disabled = v >= 160;
+      Array.prototype.forEach.call(strip.children, function (d) { d.style.width = d.style.height = px; });
+    };
+    var segSet = function (key, alt) {
+      return function (e) {
+        var b = e.target.closest('button');
+        if (!b) return;
+        mbuShared(key, b.dataset.v === alt ? alt : null);
+        restack(); show();
+      };
+    };
+    q('#st-side').onclick = segSet('cornerSide', 'left');
+    q('#st-flow').onclick = segSet('cornerFlow', 'row');
+    var step = function (d) {
+      var v = Math.min(160, Math.max(60, size() + d));
       mbuShared('cornerSize', v === 100 ? null : v / 100);
+      restack(); show();
+    };
+    q('#st-size-dn').onclick = function () { step(-10); };
+    q('#st-size-up').onclick = function () { step(10); };
+
+    // Every launcher any page has shown (dockKnown), in dockOrder, then as the page stacks them.
+    var strip = q('#st-order');
+    var live = function (name) {
+      var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
+        return el.id !== 'mbu-dock' && el.dataset.mbCornerLabel === name;
+      });
+      return els.filter(function (el) { return el.dataset.mbuDocked !== 'off'; })[0] || els[0] || null;
+    };
+    var known = mbuShared('dockKnown') || {}, order = mbuShared('dockOrder');
+    order = Array.isArray(order) ? order : [];
+    var rank = function (n) {
+      var i = order.indexOf(n), el = i < 0 && live(n);
+      return i >= 0 ? i - 1e5 : el ? Number(el.dataset.mbCornerOrder) || 0 : 1e5;
+    };
+    Object.keys(known).sort(function (a, b) { return rank(a) - rank(b) || (a < b ? -1 : 1); }).forEach(function (n) {
+      var d = document.createElement('div');
+      d.className = 'st-di' + (live(n) ? '' : ' st-away');
+      d.dataset.name = n;
+      d.title = n + (live(n) ? '' : ' (not on this page)');
+      d.innerHTML = known[n];
+      strip.appendChild(d);
+    });
+    if (!strip.children.length) strip.innerHTML = '<span class="st-cap">The launchers show here once a page has them.</span>';
+    var drag = null;
+    strip.addEventListener('pointerdown', function (e) {
+      var d = e.button === 0 && e.target.closest('.st-di');
+      if (!d) return;
+      e.preventDefault();
+      drag = d;
+      d.classList.add('st-drag');
+      try { strip.setPointerCapture(e.pointerId); } catch (err) { /* old browser */ }
+    });
+    strip.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var over = Array.prototype.filter.call(strip.children, function (c) {
+        var r = c.getBoundingClientRect();
+        return c !== drag && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top - 3 && e.clientY <= r.bottom + 3;
+      })[0];
+      if (!over) return;
+      var r = over.getBoundingClientRect();
+      strip.insertBefore(drag, e.clientX < r.left + r.width / 2 ? over : over.nextSibling);
+    });
+    var drop = function () {
+      if (!drag) return;
+      drag.classList.remove('st-drag');
+      drag = null;
+      var names = Array.prototype.map.call(strip.querySelectorAll('.st-di'), function (c) { return c.dataset.name; });
+      if (names.join('\n') === order.join('\n')) return;
+      order = names;
+      mbuShared('dockOrder', names);
       restack();
     };
-    sizeIn.addEventListener('input', setSize);
-    sizeIn.addEventListener('change', function () { setSize(); showSize(); });
-    q('#st-reset').onclick = function () { mbuShared('cornerOffset', null); mbuShared('cornerSize', null); showSize(); restack(); };
+    strip.addEventListener('pointerup', drop);
+    strip.addEventListener('pointercancel', drop);
+    // a launcher opens its script's settings on right-click: pass the click on to the live one
+    strip.addEventListener('contextmenu', function (e) {
+      var d = e.target.closest('.st-di');
+      if (!d) return;
+      e.preventDefault();
+      var el = live(d.dataset.name);
+      if (!el) { try { U.mbuToast('⚠ ' + d.dataset.name + ' isn’t on this page'); } catch (err) { /* no toast */ } return; }
+      close();
+      el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window }));
+    });
+    show();
   }
 
   var ch = stChannel();
   q('#st-chan').textContent = stChannelText(ch);
+  if (ch.kind === 'unknown' && ch.url) {
+    var link = document.createElement('a');
+    link.href = ch.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = ch.url;
+    q('#st-chan').appendChild(link);
+  }
   q('#st-check').onclick = function () {
     var btn = this, box = q('#st-upd');
     var refs = ['main', 'stable'];

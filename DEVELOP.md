@@ -154,7 +154,8 @@ Most settings belong to one script and live in its GM storage, which no other sc
 | `cornerFlow` | `"row"`; unset is a column | `mbRestackCorner`: the corner launchers' layout | String Theory's settings |
 | `cornerSide` | `"left"`; unset is the right | `mbRestackCorner` and Scribe's window: the corner launchers' side of the screen, every corner mirrored | String Theory's settings |
 | `cornerSize` | a scale, `0.6` to `1.6`; unset is `1` | `mbRestackCorner` and `mbuDock`: the corner launchers' size (not Scribe's) | String Theory's settings |
-| `cornerOffset` | `{"br": {"x": 200, "y": 100}}`: pixels in from each corner's edges; unset is in the corner | `mbRestackCorner` and `mbuDock`: where the stack sits (not Scribe's) | dragging a launcher; *Reset position and size* clears it |
+| `dockOrder` | `["Mission Control", "Fusion"]`: launcher names, the first nearest the corner; unset is each script's own order | `mbRestackCorner`: the bottom-right launchers' order | String Theory's settings |
+| `dockKnown` | `{"Fusion": "<svg…>"}`: each launcher's icon by name | String Theory's settings: lists every launcher, also those not on the page | `mbuDock`, from the launchers it folds |
 | `dockOpen` | `true`; unset is folded | `mbuDock`: String Theory's dock unrolled | a click on the dock |
 | `isrcFormat` | `false`; unset is on | ISRC Scout and Mission Control: ISRCs shown as `CC-XXX-YY-NNNNN` | ISRC Scout's *Show ISRCs in parts* |
 | `extLinksHeading.<lang>` | the release's "External links" heading in that language | `mbpReleaseLinkList`: tells the release's links from the release group's when the page shows one list | learnt by `mbpReleaseLinkList` on a release page that shows both |
