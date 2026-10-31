@@ -182,7 +182,7 @@ var ST_CSS = ''
   + '#st-cfg h3{margin:0 0 4px;padding:0;border:0;background:none;font:600 11px/1.4 var(--mbu-font);text-transform:uppercase;letter-spacing:.06em;color:var(--mbu-text-weak)}'
   + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:30px;margin:0;font-weight:400}'
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
-  + '#st-cfg #st-p-t .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-t select{flex:0 0 180px;width:180px;height:30px}#st-cfg .st-time{box-sizing:border-box;width:72px;height:30px;padding:0 8px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
+  + '#st-cfg #st-p-t .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-t .st-lbl{white-space:nowrap}#st-cfg #st-p-t select{flex:0 1 150px;width:150px;min-width:0;height:30px}#st-cfg .st-time{box-sizing:border-box;width:72px;height:30px;padding:0 8px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
@@ -238,10 +238,10 @@ function stSettings() {
       + '</section>'
       + '<section class="st-sec" id="st-p-t" role="tabpanel" aria-labelledby="st-tab-t" hidden>'
       + '<div class="st-row">' + seg('st-th-mode', 'Theme', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']]) + '</div>'
-      + ['dark', 'light'].map(function (v) {
-        return '<div class="st-row"><label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
-          + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select></div>';
-      }).join('')
+      + '<div class="st-row">' + ['light', 'dark'].map(function (v) {
+        return '<label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
+          + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>';
+      }).join('') + '</div>'
       + '<div class="st-row" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark from</label><input type="text" id="st-th-from" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"><label for="st-th-to">to</label><input type="text" id="st-th-to" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"></div>'
       + '<div class="st-cap" id="st-th-sun">Sun follows sunrise and sunset where you are: the browser asks for your location once, and your system setting is used if you refuse.</div>'
       + '</section>';
