@@ -223,6 +223,12 @@ button.icon.collapse-medium, button.icon.expand-medium,
 .help, .loading-message {
 	filter: var(--invert-value);
 }
+/* Apollo redraws these as chips in its own colours, which inverting turns light */
+body.tc-ri-on #information :is(button.guesscase-title, button.guessfeat),
+body.tc-ri-on form.tc-ent-plain button.guesscase-sortname,
+body.tc-tl-on fieldset.advanced-medium button.icon.guesscase-title {
+	filter: none;
+}
 .loading-message {
 	color: initial; /* make message visible again */
 }
