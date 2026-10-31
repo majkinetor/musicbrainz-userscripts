@@ -76,3 +76,24 @@ test('dropping over Top moves a section to the first position', { tag: '@sandbox
   check(result.line, 'the insertion line appears above the first section');
   check(result.first === result.moved && result.pageFirst === result.moved, 'the rail and page put the section first');
 });
+
+test('dropping over Collapse all moves a section to the last position', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await page.goto('https://test.musicbrainz.org/artist/b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d');
+  await inject('event_horizon');
+  const btn = page.locator('#app .kicker .acts [data-ehsec]');
+  check(await until(() => btn.count(), n => n > 0, 20000) === 1, 'the page drew');
+  await btn.click();
+  const result = await page.evaluate(() => {
+    const rail = document.querySelector('#eh-rail'), rows = [...rail.querySelectorAll('[data-sec]')];
+    const bottom = rail.querySelector('[data-foldall]'), transfer = new DataTransfer();
+    const fire = (el, type, y) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, clientY: y, dataTransfer: transfer }));
+    const moved = rows[0].dataset.sec, y = bottom.getBoundingClientRect().bottom - 2;
+    fire(rows[0], 'dragstart', y);
+    fire(bottom, 'dragover', y);
+    const line = rows[rows.length - 1].classList.contains('da');
+    fire(bottom, 'drop', y);
+    return { moved, line, last: [...rail.querySelectorAll('[data-sec]')].at(-1).dataset.sec, pageLast: [...document.querySelectorAll('#app>section.sec')].at(-1).id.slice(2) };
+  });
+  check(result.line, 'the insertion line appears below the last section');
+  check(result.last === result.moved && result.pageLast === result.moved, 'the rail and page put the section last');
+});
