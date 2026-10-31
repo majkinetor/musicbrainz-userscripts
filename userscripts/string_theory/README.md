@@ -26,22 +26,21 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
-- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them.
+- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again.
 - **Settings**: open them from **⚙ Settings** in the userscript manager's menu, or by right-clicking String Theory's icon.
 - In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
 
 ## Settings
 
-| Setting                             | Default | What it does                                                                                               |
-| ----------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| Side                                | Right   | The launchers' side of the page                                                                            |
-| Layout                              | Column  | A column, or a row along the bottom edge                                                                   |
-| Size                                | 100 %   | The launchers' size, 60 to 160 %                                                                           |
-| Fold them into String Theory's icon | On      | Off shows every launcher on its own; they always fold while [Event Horizon](../event_horizon)'s view shows |
-| Reset position and size             |         | Puts the launchers back in the corner at their normal size                                                 |
-| Check for updates                   |         | Whether a newer String Theory is out on your channel: stable, latest or a branch                           |
-| Scripts                             | All on  | Turns each bundled script on or off, from the next page load                                               |
-| Copy versions                       |         | Copies String Theory's version and each bundled script's, for a bug report                                 |
+| Setting                 | Default | What it does                                                                     |
+| ----------------------- | ------- | -------------------------------------------------------------------------------- |
+| Side                    | Right   | The launchers' side of the page                                                  |
+| Layout                  | Column  | A column, or a row along the bottom edge                                         |
+| Size                    | 100 %   | The launchers' size, 60 to 160 %                                                 |
+| Reset position and size |         | Puts the launchers back in the corner at their normal size                       |
+| Check for updates       |         | Whether a newer String Theory is out on your channel: stable, latest or a branch |
+| Scripts                 | All on  | Turns each bundled script on or off, from the next page load                     |
+| Copy versions           |         | Copies String Theory's version and each bundled script's, for a bug report       |
 
 - **Move the launchers** by dragging any of them; they move together. **Reset position and size** brings them back.
 - **A script that is off** doesn't run, so its standalone copy can run instead.

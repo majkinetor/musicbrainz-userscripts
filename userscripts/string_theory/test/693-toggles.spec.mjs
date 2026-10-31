@@ -1,8 +1,9 @@
 // #693, #851: String Theory's settings window. The manager's menu has one entry, ⚙ Settings, and a
 // right-click on the dock's button opens the same window. In it each bundled script can be turned off
 // (the GM value 'string_theory.off', folder names; an off member doesn't start, the others do), and the
-// corner launchers get their side, layout, size and whether they fold into String Theory's icon (the
-// shared localStorage settings mbu.cornerSide / cornerFlow / cornerSize / stDock). Dragging a launcher
+// corner launchers get their side, layout, size (the shared localStorage settings mbu.cornerSide /
+// cornerFlow / cornerSize). They fold into String Theory's icon until a click unrolls them (remembered,
+// mbu.dockOpen). Dragging a launcher
 // moves its corner's stack (mbu.cornerOffset); Reset clears place and size.
 //
 // test.musicbrainz.org, a release page (ISRC Scout's button and Platform Check's panel both show there).
@@ -11,7 +12,7 @@ import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 const RELEASE = 'ec116461-5b0d-4c98-bb44-a4de5de63076';
 const MEMBERS = readFileSync(new URL('../members.txt', import.meta.url), 'utf8').split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean).length;
-const SHARED = ['cornerSide', 'cornerFlow', 'cornerSize', 'cornerOffset', 'stDock', 'dockOpen'];
+const SHARED = ['cornerSide', 'cornerFlow', 'cornerSize', 'cornerOffset', 'dockOpen'];
 
 // a manager's menu like Violentmonkey's: an options.id names the entry
 const fakeMenu = () => {
@@ -19,13 +20,13 @@ const fakeMenu = () => {
   window.GM_registerMenuCommand = (caption, fn, o) => { const id = (o && o.id) || next++; menu.set(id, { caption, fn }); return id; };
   window.GM_unregisterMenuCommand = id => menu.delete(id);
 };
-// a clean slate, and optionally the launchers left out of the dock (stDock = false), as before #851
-async function load(page, inject, { dock = true } = {}) {
+// a clean slate: the dock folded, or unrolled (dockOpen) to measure the launchers
+async function load(page, inject, { open = false } = {}) {
   await page.goto(`${SANDBOX}/release/${RELEASE}`, { waitUntil: 'load', timeout: 60000 });
-  await page.evaluate(([keys, dock]) => {
+  await page.evaluate(([keys, open]) => {
     keys.forEach(k => localStorage.removeItem('mbu.' + k));
-    if (!dock) localStorage.setItem('mbu.stDock', 'false');
-  }, [SHARED, dock]);
+    if (open) localStorage.setItem('mbu.dockOpen', 'true');
+  }, [SHARED, open]);
   await page.evaluate(fakeMenu);
   await inject('string_theory');
 }
@@ -33,10 +34,10 @@ const openSettings = async page => {
   await page.evaluate(() => [...window.__menu.values()].find(e => /Settings/.test(e.caption)).fn());
   await page.waitForSelector('#st-cfg', { timeout: 10000 });
 };
-// the visible corner launchers, the dock's button left out
-const at = page => page.evaluate(() => [...document.querySelectorAll('[data-mb-corner="br"]')]
-  .filter(e => e.id !== 'mbu-dock' && getComputedStyle(e).display !== 'none')
-  .map(e => { const r = e.getBoundingClientRect(); return { id: e.id, bottom: Math.round(innerHeight - r.bottom), left: Math.round(r.left), right: Math.round(document.documentElement.clientWidth - r.right), w: Math.round(r.width) }; }));
+// the visible corner launchers, the dock's button left out unless asked for
+const at = (page, dock = false) => page.evaluate(dock => [...document.querySelectorAll('[data-mb-corner="br"]')]
+  .filter(e => (dock || e.id !== 'mbu-dock') && getComputedStyle(e).display !== 'none')
+  .map(e => { const r = e.getBoundingClientRect(); return { id: e.id, bottom: Math.round(innerHeight - r.bottom), left: Math.round(r.left), right: Math.round(document.documentElement.clientWidth - r.right), w: Math.round(r.width) }; }), dock);
 const stacked = page => until(() => page.evaluate(() => document.querySelectorAll('[data-mb-corner="br"]:not(#mbu-dock)').length), n => n >= 2, { timeout: 30000 });
 
 test.describe('Platform Check turned off', () => {
@@ -77,12 +78,12 @@ test('one menu entry opens the settings, which turn a script off and on', { tag:
   check(!(await page.evaluate(() => !!document.getElementById('st-cfg-ov'))), 'Esc closes it');
 });
 
-// Event Horizon is a member too, and under it the dock is always on: the corner's own tests turn it off.
+// Event Horizon is a member too; these run without it, where the dock works the same.
 test.describe('Event Horizon turned off', () => {
   test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'] } } });
 
-  // Without Event Horizon the launchers fold into String Theory's icon too; a right-click on it opens the
-  // settings, and the setting puts the launchers back in the corner.
+  // Without Event Horizon the launchers fold into String Theory's icon too, folded at first; a click
+  // unrolls them and the next page keeps that; a right-click opens the settings, which have no setting for it.
   test('the dock shows without Event Horizon, and its right-click opens the settings', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await load(page, inject);
@@ -94,20 +95,31 @@ test.describe('Event Horizon turned off', () => {
 
     await page.locator('#mbu-dock').click({ button: 'right' });
     await page.waitForSelector('#st-cfg', { timeout: 10000 });
-    check(await page.evaluate(() => document.getElementById('st-dock').checked), 'the dock setting is on');
-    await page.locator('#st-dock').click();
-    check(await page.evaluate(() => localStorage.getItem('mbu.stDock')) === 'false', 'stored as the shared setting');
-    check(!(await page.evaluate(() => !!document.getElementById('mbu-dock'))), 'the dock\'s button goes');
-    const out = await at(page);
-    check(out.length >= 2 && out.every(e => e.right === 14), `the launchers are back up the right edge (${JSON.stringify(out)})`);
-    await page.locator('#st-dock').click();
-    check(await page.evaluate(() => localStorage.getItem('mbu.stDock') === null && !!document.getElementById('mbu-dock')), 'and back in the dock');
+    check(!(await page.evaluate(() => !!document.getElementById('st-dock'))), 'no setting for the folding');
+    await page.keyboard.press('Escape');
+
+    await page.mouse.move(10, 10);
+    await page.locator('#mbu-dock').click();
+    await page.mouse.move(10, 10);
+    check(await page.evaluate(() => localStorage.getItem('mbu.dockOpen')) === 'true', 'a click unrolls it, remembered');
+    check((await at(page)).length >= 2, 'the launchers show');
+    await page.reload({ waitUntil: 'load' });
+    await page.evaluate(fakeMenu);
+    await inject('string_theory');
+    await stacked(page);
+    await page.waitForSelector('#mbu-dock', { timeout: 15000 });
+    await page.mouse.move(10, 10);
+    check(await until(async () => (await at(page)).length, n => n >= 2, { timeout: 10000 }) >= 2, 'the next page keeps it unrolled');
+    await page.locator('#mbu-dock').click();
+    await page.mouse.move(10, 10);
+    check(await page.evaluate(() => localStorage.getItem('mbu.dockOpen')) === null, 'a second click folds it, remembered');
+    check(await until(async () => (await at(page)).length, n => n === 0, { timeout: 5000 }) === 0, 'the launchers fold');
   });
 
   // The layout: a column (the default) or a row along the page's edge; the side: right (the default) or left.
   test('side and layout move the launchers, and a fresh load keeps them', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
-    await load(page, inject, { dock: false });
+    await load(page, inject, { open: true });
     await stacked(page);
     await openSettings(page);
     const col = await at(page);
@@ -120,7 +132,7 @@ test.describe('Event Horizon turned off', () => {
 
     await page.selectOption('#st-side', 'left');
     check(await page.evaluate(() => localStorage.getItem('mbu.cornerSide')) === '"left"', 'the side too');
-    const left = await at(page);
+    const left = await at(page, true);
     check(Math.min(...left.map(e => e.left)) === 14 && new Set(left.map(e => e.left)).size === left.length, `a row from the bottom-left corner (${JSON.stringify(left)})`);
     await page.screenshot({ path: info.outputPath('left-row.png'), clip: { x: 0, y: 900 - 80, width: 260, height: 80 } });
 
@@ -128,7 +140,7 @@ test.describe('Event Horizon turned off', () => {
     await inject('string_theory');
     await stacked(page);
     await page.waitForTimeout(2000);
-    const loaded = await at(page);
+    const loaded = await at(page, true);
     check(loaded.every(e => e.bottom === 14) && Math.min(...loaded.map(e => e.left)) === 14, `a fresh load keeps them (${JSON.stringify(loaded)})`);
     // a standalone launcher follows the shared settings with no String Theory on the page
     await page.reload({ waitUntil: 'load' });
@@ -142,7 +154,7 @@ test.describe('Event Horizon turned off', () => {
   // Size scales every launcher; dragging one moves the whole stack; Reset puts both back.
   test('size, drag and reset', { tag: ['@sandbox'] }, async ({ page, inject }, info) => {
     await page.setViewportSize({ width: 1400, height: 900 });
-    await load(page, inject, { dock: false });
+    await load(page, inject, { open: true });
     await stacked(page);
     const base = await at(page);
     await openSettings(page);
