@@ -106,7 +106,7 @@ const mbuAliasEditor = (() => {
       box.innerHTML = '<div class="tc-al-bar"><b>Aliases</b><span class="tc-al-sum"></span></div>'
         + '<div class="tc-al-head"><span>Alias</span><span>Sort name</span><span>Locale</span><span>Type</span><span>Dates</span><span></span></div><div class="tc-al-list"></div><div class="tc-al-pop" hidden></div>'
         + '<div class="tc-al-nw" hidden><b>Edit note</b> <span class="tc-al-nh">Added to every edit this makes: say why, so a voter can see it.</span><textarea class="tc-al-note" rows="3" placeholder="e.g. Aliases from the artist\'s official site"></textarea></div>'
-        + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-nb" title="Add an edit note">' + (typeof MBU_EDIT_ICON === 'string' ? MBU_EDIT_ICON : '') + ' Note</button><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
+        + '<div class="tc-al-foot"><span class="tc-al-msg"></span><span style="flex:1"></span><button type="button" class="tc-al-nb" data-tip="Add an edit note">' + (typeof MBU_EDIT_ICON === 'string' ? MBU_EDIT_ICON : '') + ' Note</button><button type="button" class="tc-al-go" id="tc-al-enter" disabled></button></div>';
       if (o.onCount) box.querySelector('.tc-al-bar').hidden = true;
       o.mount(box);
       const tb = box.querySelector('.tc-al-list'), go = box.querySelector('.tc-al-go'), msg = box.querySelector('.tc-al-msg');
@@ -114,7 +114,6 @@ const mbuAliasEditor = (() => {
       const noteMark = () => nb.classList.toggle('tc-al-on', !nw.hidden || !!noteIn.value.trim());
       nb.onclick = () => { nw.hidden = !nw.hidden; noteMark(); if (!nw.hidden) noteIn.focus(); };
       noteIn.addEventListener('input', noteMark);
-      const optHtml = (list, v, none) => list.map(o => '<option value="' + esc(o.v) + '"' + (o.v === v ? ' selected' : '') + '>' + esc(o.v ? o.t : none) + '</option>').join('');
       const typeName = v => (types.find(o => o.v === v) || {}).t || '';
       // a search hint has only a name, as on MusicBrainz's form: its id is in the form's props, else found by name, else MusicBrainz's own
       const hintType = (() => {
@@ -184,7 +183,7 @@ const mbuAliasEditor = (() => {
         for (const r of rows) {
           const s = state(r); r.tr.className = 'tc-al-row' + (s ? ' tc-al-' + s : '') + (r.type && r.type === hintType ? ' tc-al-hint' : '') + (r.tr.classList.contains('tc-al-dopen') ? ' tc-al-dopen' : '');
           if (s && (s === 'del' || r.name.trim())) n++;
-          const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.title = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
+          const x = r.tr.querySelector('.tc-al-x'); const back = r.removed || s === 'chg'; x.textContent = back ? '↺' : '✕'; x.dataset.tip = r.removed ? 'Keep this alias' : s === 'chg' ? 'Undo the changes to this alias' : r.id ? 'Remove this alias' : 'Drop this row';
           mbuProp(x.style, 'visibility', !r.id && !r.name.trim() ? 'hidden' : '');
           // primary needs a locale, and an ended alias or a search hint can't be one, as on MusicBrainz's form
           const p = r.tr.querySelector('.tc-al-p'); p.disabled = !r.locale || !!r.end || !!r.ended || (!!r.type && r.type === hintType); if (p.disabled) r.primary = false; p.hidden = p.disabled; r.tr.querySelector('.tc-al-l').classList.toggle('tc-al-lp', !p.disabled);
@@ -193,7 +192,7 @@ const mbuAliasEditor = (() => {
         const invalid = rows.some(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad'));
         if (invalid) n = 0;
         // the footer says what is wrong, not only where
-        const why = invalid ? (rows.map(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad')).find(Boolean)?.title || 'Fix the fields marked in red') : '';
+        const why = invalid ? (rows.map(r => state(r) && state(r) !== 'del' && r.tr.querySelector('.tc-al-bad')).find(Boolean)?.dataset.tip || 'Fix the fields marked in red') : '';
         if (invalid || msg.classList.contains('tc-al-err')) msg.textContent = why;
         msg.classList.toggle('tc-al-err', invalid);
         go.textContent = '\u2713 Enter ' + (n > 1 ? n + ' edits' : 'edit'); go.disabled = !n;
@@ -204,11 +203,11 @@ const mbuAliasEditor = (() => {
       const ghost = () => rows.find(r => !r.id && !r.name.trim() && r.tr === tb.lastElementChild);
       const addRow = r => {
         const tr = document.createElement('div'); r.tr = tr;
-        tr.innerHTML = '<input class="tc-al-n" placeholder="Alias"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" title="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
-          + '<span class="tc-al-lw"><input class="tc-al-l" placeholder="Locale" title="Type to filter the locales"><button type="button" class="tc-al-p" title="Primary for its locale"></button></span>'
-          + '<input class="tc-al-t" placeholder="Type" title="Type to filter the types">'
-          + '<button type="button" class="tc-al-c" title="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
-          + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label><button type="button" class="tc-al-cp" title="Copy the begin date to the end">\u2192</button><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" title="YYYY, YYYY-MM or YYYY-MM-DD"></label>'
+        tr.innerHTML = '<input class="tc-al-n" placeholder="Alias"><span class="tc-al-sw"><input class="tc-al-s" placeholder="Sort name"><button type="button" class="tc-al-g" data-tip="Guess the sort name">' + (typeof MBU_SORT_ICON === 'string' ? MBU_SORT_ICON : 'Aa') + '</button></span>'
+          + '<span class="tc-al-lw"><input class="tc-al-l" placeholder="Locale" data-tip="Type to filter the locales"><button type="button" class="tc-al-p" data-tip="Primary for its locale"></button></span>'
+          + '<input class="tc-al-t" placeholder="Type" data-tip="Type to filter the types">'
+          + '<button type="button" class="tc-al-c" data-tip="Begin and end dates"></button><button type="button" class="tc-al-x"></button>'
+          + '<span class="tc-al-dt"><label>Begin <input class="tc-al-b" maxlength="10" inputmode="numeric" data-tip="YYYY, YYYY-MM or YYYY-MM-DD"></label><button type="button" class="tc-al-cp" data-tip="Copy the begin date to the end">\u2192</button><label>End <input class="tc-al-e" maxlength="10" inputmode="numeric" data-tip="YYYY, YYYY-MM or YYYY-MM-DD"></label>'
           + '<label class="tc-al-ew"><input type="checkbox" class="tc-al-ed"> This alias is no longer current</label></span>';
         const $ = c => tr.querySelector(c);
         const HINT_OFF = ['.tc-al-s', '.tc-al-g', '.tc-al-l', '.tc-al-b', '.tc-al-e', '.tc-al-c', '.tc-al-cp', '.tc-al-ed'];
@@ -233,7 +232,7 @@ const mbuAliasEditor = (() => {
           if (on) {
             Object.assign(r, { sort: r.name, locale: '', primary: false, begin: '', end: '', ended: false });
             $('.tc-al-s').value = r.name; locIn.value = ''; locIn.dataset.v = ''; $('.tc-al-b').value = ''; $('.tc-al-e').value = '';
-            for (const c of ['.tc-al-l', '.tc-al-b', '.tc-al-e']) { $(c).classList.remove('tc-al-bad'); $(c).title = ''; }
+            for (const c of ['.tc-al-l', '.tc-al-b', '.tc-al-e']) { $(c).classList.remove('tc-al-bad'); delete $(c).dataset.tip; }
           }
           for (const c of HINT_OFF) { $(c).disabled = on; }
           tr.classList.toggle('tc-al-hint', on);
@@ -261,13 +260,13 @@ const mbuAliasEditor = (() => {
             // a date half typed isn't flagged until the field is left; a bad one clears as soon as it is right
             const d = normDate(inp.value), typing = ev && ev.type === 'input' && ev.target === inp;
             if (d !== null || !typing) inp.classList.toggle('tc-al-bad', d === null);
-            inp.title = d === null && !typing ? 'Not a date: type a year, year-month or a full date, e.g. 1998, 1998-05 or 1998-05-21' : '';
+            inp.dataset.tip = d === null && !typing ? 'Not a date: type a year, year-month or a full date, e.g. 1998, 1998-05 or 1998-05-21' : '';
             if (d !== null) { r[k] = d; if (ev && ev.type === 'change' && ev.target === inp) inp.value = d; } else r[k] = inp.value.trim();
           }
           { // the end can't come before the begin
             const b = $('.tc-al-b'), e = $('.tc-al-e');
             if (r.begin && r.end && !b.classList.contains('tc-al-bad') && !e.classList.contains('tc-al-bad') && r.end < r.begin.slice(0, r.end.length)) {
-              e.classList.add('tc-al-bad'); e.title = 'The end comes before the begin';
+              e.classList.add('tc-al-bad'); e.dataset.tip = 'The end comes before the begin';
             }
           }
           if (ev && ev.target === $('.tc-al-ed')) r.ended = $('.tc-al-ed').checked;
@@ -311,9 +310,9 @@ const mbuAliasEditor = (() => {
             else err = await aliasPost(s === 'new' ? base + '/add-alias' : base + '/alias/' + r.id + '/edit', aliasForm(r, note));
           } catch (e) { err = e.message; }
           Log[err ? 'warn' : 'info']((s === 'del' ? 'remove' : s === 'new' ? 'add' : 'edit') + ' "' + r.name + '"', err || 'ok');
-          if (err) { bad++; r.tr.title = err; r.tr.classList.add('tc-al-err'); continue; }
+          if (err) { bad++; r.tr.dataset.tip = err; r.tr.classList.add('tc-al-err'); continue; }
           ok++;
-          if (s === 'del') { r.tr.remove(); rows.splice(rows.indexOf(r), 1); } else { r.orig = key(r); r.tr.title = ''; if (s === 'new') r.id = 'done'; }
+          if (s === 'del') { r.tr.remove(); rows.splice(rows.indexOf(r), 1); } else { r.orig = key(r); delete r.tr.dataset.tip; if (s === 'new') r.id = 'done'; }
           sync();
         }
         msg.textContent = ok + ' edit' + (ok === 1 ? '' : 's') + ' entered' + (bad ? ', ' + bad + ' failed (hover the red rows)' : '');

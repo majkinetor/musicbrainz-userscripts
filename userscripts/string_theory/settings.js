@@ -253,7 +253,7 @@ function stSettings() {
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span></div>'
     + '<div class="st-upd" id="st-upd" hidden></div>'
-    + '<div class="st-scripts" title="Right-click a script for its settings">' + stMembers.map(function (m) {
+    + '<div class="st-scripts" data-tip="Right-click a script for its settings">' + stMembers.map(function (m) {
       var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';
       return '<label class="st-row" data-name="' + stEsc(m[1]) + '"><input type="checkbox" data-st-m="' + stEsc(m[0]) + '"' + (off.indexOf(m[0]) < 0 ? ' checked' : '') + '>'
         + '<span class="st-si">' + stFitIcon(icon) + '</span>' + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
@@ -396,7 +396,7 @@ function stSettings() {
       var d = document.createElement('div');
       d.className = 'st-di';
       d.dataset.name = n;
-      d.title = n;
+      d.dataset.tip = n;
       d.innerHTML = stFitIcon(known[n]);
       strip.appendChild(d);
     });
