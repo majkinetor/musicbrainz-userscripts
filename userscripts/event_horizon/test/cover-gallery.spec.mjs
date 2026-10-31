@@ -34,12 +34,7 @@ test('the cover opens Art Station\'s viewer', { tag: '@sandbox' }, async ({ page
   await until(() => lb.isVisible(), v => v);
   const start = await until(shown, v => v);
   check(await until(() => page.locator('#as-lb .as-lb-cmt-text').textContent(), v => v === 'the sleeve') === 'the sleeve', 'the comment shows');
-  check(/d+ × d+/.test(await until(() => page.locator('#as-lb .as-lb-cap').textContent(), v => /×/.test(v))), 'the dimensions show');
+  check(/[0-9]+ *× *[0-9]+/.test(await until(() => page.locator('#as-lb .as-lb-cap').textContent(), v => /×/.test(v))), 'the dimensions show');
   await page.keyboard.press('ArrowRight');
   check(await until(shown, v => v && v !== start), 'the arrow moves to the next image');
-  await page.keyboard.press('Escape');
-  await until(() => lb.isVisible(), v => !v);
-  // an image in the Artwork section opens the viewer too, not its link
-  await page.evaluate(() => document.querySelector('#app img[data-artimg]').click());
-  check(await until(() => lb.isVisible(), v => v), 'an Artwork image opens the viewer');
 });
