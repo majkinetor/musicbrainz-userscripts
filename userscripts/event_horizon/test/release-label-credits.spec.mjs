@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 test('release loader requests label relationships and preserves their credited names and label links', { tag: '@unit' }, async () => {
   const code = await readFile(sourceOf('event_horizon'), 'utf8');
   expect(code.match(/async function load\(id[\s\S]*?const inc = '([^']+)'/)[1].split('+')).toContain('label-rels');
-  const src = await functionSource('event_horizon', ['release', 'creditsOf', 'phrase', 'MODS', 'crName', 'labelCreditsOf']);
+  const src = await functionSource('event_horizon', ['release', 'creditsOf', 'phrase', 'MODS', 'crName', 'labelCreditsOf', 'aliasName']);
   const rels = ['copyright', 'distributed', 'phonographic copyright'].map((type, i) => ({
     type, 'target-type': 'label', direction: 'backward', 'target-credit': i === 1 ? 'Credited distributor' : '',
     label: { id: 'label-' + i, name: 'Label ' + i, disambiguation: i === 1 ? 'publisher' : '' },

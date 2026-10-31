@@ -4,7 +4,7 @@
 // hover, and full screen goes through the row of the image it shows. Setup as in 772-mc-extras: drawn stripe patterns, given a store by the test
 // hook; every POST is aborted at the network.
 import { test, check, until, requireLogin, idle, SANDBOX } from '../../../dev/test/harness.mjs';
-import { RELEASE, blockPosts } from './as.mjs';
+import { RELEASE, blockPosts, artLoaded } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
@@ -27,6 +27,7 @@ test('#784: the stores with one image each share a row of the other images', { t
   await idle(frame);
   await inject('art_station', { target: frame });
   await frame.waitForSelector('#as-root', { timeout: 20000 });
+  await artLoaded(frame);
 
   // Amazon's is the best front; Tidal and Qobuz give one image each, Discogs two: all pictures of their own
   await frame.evaluate(async () => {

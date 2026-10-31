@@ -22,7 +22,7 @@ test.use({ gm: { name: 'Art Station' } });
 
 test('every selected card keeps its tick at any card size', { tag: ['@cosmetic', '@sandbox'] }, async ({ page, inject }) => {
   const OLD_THRESHOLD = 280;                            // where the badge used to vanish
-  const SIZES = [120, 220, 279, 280, 300, 340];         // slider is min=120 max=340
+  const SIZES = [140, 200, 260, 330];                   // the size buttons
   const log = (...a) => console.log('[576]', ...a);
   const posted = await blockPosts(page);
   await openArtStation(page, inject);
@@ -58,18 +58,13 @@ test('every selected card keeps its tick at any card size', { tag: ['@cosmetic',
   // re-renders. Dispatching change ALONE would leave the tile size untouched and
   // silently test the previous size six times over, so the drop path sends both.
   const setSize = async (px, evt) => {
-    await page.evaluate(([v, e]) => {
-      const el = document.querySelector('#as-root .as-size');
-      el.value = String(v);
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      if (e === 'change') el.dispatchEvent(new Event('change', { bubbles: true }));
-    }, [px, evt]);
+    await page.locator('#as-root .as-size button').nth(SIZES.indexOf(px)).click();
     // change() re-renders: until the cards are back, then a frame for the layout
     if (evt === 'change') await until(() => page.evaluate(() => document.querySelectorAll('#as-root .as-card').length), n => n > 0);
     await frames(page);
   };
 
-  for (const evt of ['input', 'change']) {
+  for (const evt of ['change']) {
     for (const px of SIZES) {
       await setSize(px, evt);
       if (evt === 'change') { await page.click('.as-selall'); await until(() => page.evaluate(() => document.querySelectorAll('#as-root .as-card.sel').length), n => n >= 2); }   // a re-render clears selection

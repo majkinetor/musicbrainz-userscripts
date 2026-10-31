@@ -43,7 +43,7 @@ test('failed uploads repeat by themselves, say so in the footer, stop at the lim
   check(!ui.missing, '#566: the setup panel has the auto-repeat option');
   // the two numbers live in <input value=…>, which textContent does not include —
   // so assert the wording around them and the inputs separately
-  check(!ui.missing && /repeat failures up to\s+minutes or\s+times/i.test(ui.label), 'worded as the issue asks — ' + JSON.stringify(ui.label));
+  check(!ui.missing && /repeat failures up to\s+minutes or\s+times/i.test(ui.label.replace(/[−+]/g, '')), 'worded as the issue asks — ' + JSON.stringify(ui.label));
 
   // clamping, so a 0 cannot turn this into a hot loop against a struggling server
   const clamped = await page.evaluate(() => {

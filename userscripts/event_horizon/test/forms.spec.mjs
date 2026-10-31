@@ -56,7 +56,7 @@ test('an artist\'s Releases sits in the action row', { tag: ['@sandbox'] }, asyn
   check(await until(() => row.locator(`> a.ab[href$="/artist/${AR}/releases"]`).count(), n => n === 1) === 1, 'Releases is in the row');
   check(await row.locator(`.eh-more a[href$="/releases"]`).count() === 0, 'and not in More');
   const order = await row.locator('> a.ab').evaluateAll(as => as.map(a => a.getAttribute('href').split('/').pop()));
-  check(order.indexOf('releases') === order.indexOf('edits') - 1, `Releases comes just before History (${order.join(', ')})`);
+  check(order.indexOf('releases') === 1 && order.indexOf('releases') < order.indexOf('edits'), `Releases comes right after Edit, before History (${order.join(', ')})`);
   check(await row.locator(`> a.ab[href$="/releases"] svg rect`).count() === 1, 'its icon is the case');
   await attachShot(testInfo, row, 'artist-row');
 });

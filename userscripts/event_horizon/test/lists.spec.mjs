@@ -36,7 +36,7 @@ test('an area list loads its next page with Load more, and Auto keeps the page s
   }
   const rows = () => page.locator('#s-aa tbody tr').count();
   const n0 = await rows();
-  await page.locator('#s-aa [data-lmgo]').click();
+  await page.locator('#s-aa [data-lmgo]:not([data-lmgo*="+"])').first().click();
   check(await until(rows, n => n > n0) > n0, 'Load more adds rows');
   await attachShot(testInfo, page, 'area-more');
 });
@@ -51,7 +51,7 @@ test('an instrument tab past its first page loads more, and a sort lasts', { tag
   check(await page.locator('#s-ir thead th[aria-sort="ascending"]').count() === 1, 'a heading sorts');
   const rows = () => page.locator('#s-ir tbody tr').count();
   const n0 = await rows();
-  await page.locator('#s-ir [data-lmgo]').click();
+  await page.locator('#s-ir [data-lmgo]:not([data-lmgo*="+"])').first().click();
   check(await until(rows, n => n > n0) > n0, 'Load more adds rows');
   check(await page.locator('#s-ir thead th[aria-sort="ascending"]').count() === 1, 'the sort stays after more rows come in');
   await page.locator('#s-ir thead button[data-tsort]').first().click();

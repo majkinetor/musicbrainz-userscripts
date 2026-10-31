@@ -24,7 +24,7 @@ test('the dock stands in a column beside the page', { tag: ['@sandbox', '@cosmet
   console.log(JSON.stringify(m));
   check(m.right <= m.left, `the page's content (to ${m.right}px) ends before the launchers (from ${m.left}px)`);
   check(m.vw - m.maxRight <= 8, `the launchers sit near the edge (${m.vw - m.maxRight}px)`);
-  // in the middle of the column: as much room on their left as to the window's edge, the scrollbar's gutter included
-  check(Math.abs((m.left - m.right) - (m.inner - m.maxRight)) <= 2, `the launchers sit in the column's middle (${m.left - m.right}px on their left, ${m.inner - m.maxRight}px on their right)`);
+  // in the middle of the column: as much room on their left as to where the scrollbar starts
+  check(Math.abs((m.left - m.right) - (m.vw - m.maxRight)) <= 2, `the launchers sit in the column's middle (${m.left - m.right}px on their left, ${m.vw - m.maxRight}px on their right)`);
   await attachShot(testInfo, page, 'dock-column');
 });

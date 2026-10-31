@@ -36,8 +36,8 @@ test('the home page floats a Sections button above the dock', { tag: '@sandbox' 
   const fab = page.locator('#eh-secfab');
   check(await until(() => fab.count(), n => n === 1) === 1, 'the Sections button shows');
   const at = () => page.evaluate(() => { const f = document.getElementById('eh-secfab').getBoundingClientRect(), d = document.getElementById('mbu-dock'), r = d && d.getBoundingClientRect(); return { f: [f.left, f.right, f.bottom], d: r && [r.left, r.right, r.top] }; });
-  const p = await until(at, v => !v.d || Math.abs(v.f[0] - v.d[0]) < 2);
-  if (p.d) check(Math.abs(p.f[0] - p.d[0]) < 2 && p.f[2] <= p.d[2] - 4, 'it stands over the dock, not on it: ' + JSON.stringify(p));
+  const p = await until(at, v => !v.d || Math.abs(v.f[0] + v.f[1] - v.d[0] - v.d[1]) < 2);
+  if (p.d) check(Math.abs(p.f[0] + p.f[1] - p.d[0] - p.d[1]) < 2 && p.f[2] <= p.d[2] - 4, 'it stands over the dock, not on it: ' + JSON.stringify(p));
   await fab.click();
   const rail = page.locator('#eh-rail.open');
   check(await until(() => rail.count(), n => n === 1) === 1, 'clicking it opens the sections menu');

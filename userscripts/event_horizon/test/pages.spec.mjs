@@ -27,7 +27,7 @@ test('an instrument page shows its Commons picture, what it is a subtype of, and
   await page.goto('https://test.musicbrainz.org/instrument/46ec6044-6c57-4ebe-8c1e-762f19b66340');
   await inject('event_horizon');
   check(await until(() => page.locator('#app .hero h1').count(), n => n === 1) === 1, 'the hero shows');
-  check(/percussion/i.test(await page.locator('#app .kicker').innerText()), 'the kicker names its type');
+  check(/percussion/i.test(await until(() => page.locator('#app .kicker').innerText(), t => /percussion/i.test(t))), 'the kicker names its type');
   check(await until(() => page.locator('#app img.ipic').evaluate(i => i.complete && i.naturalWidth).catch(() => 0), n => n > 0) > 0, 'the Commons picture loads');
   check(/barrel drum/i.test(await page.locator('#app .facts').innerText()), 'it is a subtype of barrel drum');
   check(await until(() => page.locator('#app .sec.pend').count(), n => n === 0) === 0, 'every section has loaded');

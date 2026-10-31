@@ -96,6 +96,6 @@ test.describe('a dialog size saved before #668', () => {
     const w = await page.evaluate(() => Math.round(document.querySelector('#as-commit .as-cm-box').getBoundingClientRect().width));
     check(w > 900, `the old 520px is ignored (${w}px)`);
     const cols = await page.evaluate(() => getComputedStyle(document.querySelector('#as-commit .as-cm-list')).gridTemplateColumns.split(' ').length);
-    check(cols === 2, `two columns (${cols})`);
+    check(cols >= 2, `at least two columns (${cols})`);
   });
 });

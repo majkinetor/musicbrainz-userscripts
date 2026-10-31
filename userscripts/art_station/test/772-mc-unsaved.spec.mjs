@@ -7,7 +7,7 @@
 // store by the test hook, as in 772-mc-extras. The upload (the sandbox's goes to its own /ssssss/) is answered 200, the add with
 // the form again; every other POST is aborted (nothing is uploaded or edited).
 import { test, check, until, requireLogin, idle, SANDBOX } from '../../../dev/test/harness.mjs';
-import { RELEASE } from './as.mjs';
+import { RELEASE, artLoaded } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
@@ -42,6 +42,7 @@ test('#772: extras alone: nothing found is not ok, an add MusicBrainz didn\'t sa
   await idle(frame);
   await inject('art_station', { target: frame, transform: quick });
   await frame.waitForSelector('#as-root', { timeout: 20000 });
+  await artLoaded(frame);
 
   // Discogs 1 (the best front) and Discogs 2, as a store gives them
   const offered = await frame.evaluate(async () => {

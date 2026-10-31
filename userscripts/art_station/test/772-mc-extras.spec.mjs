@@ -8,7 +8,7 @@
 // patterns, dropped in and given a store by the test hook; the same pattern at another size is the same picture.
 // Every POST is aborted at the network (nothing is uploaded).
 import { test, check, until, requireLogin, idle, SANDBOX } from '../../../dev/test/harness.mjs';
-import { RELEASE, blockPosts } from './as.mjs';
+import { RELEASE, blockPosts, artLoaded } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
@@ -34,6 +34,7 @@ test('#784: the stores\' other images wait left out in the gallery, and the ones
   await idle(frame);
   await inject('art_station', { target: frame, transform: quick });
   await frame.waitForSelector('#as-root', { timeout: 20000 });
+  await artLoaded(frame);
 
   // five images, in the order the stores gave them: Amazon 1 (the best front), Amazon 2; Discogs 1 (Amazon 1's
   // picture, smaller), Discogs 2 (Amazon 2's, smaller), Discogs 3 (a picture of its own)

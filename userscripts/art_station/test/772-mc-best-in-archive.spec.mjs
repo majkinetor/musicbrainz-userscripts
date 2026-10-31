@@ -6,7 +6,7 @@
 // given a store by the test hook, and every archive cover's thumbnail is made to be the best front's picture.
 // Read-only: nothing is entered.
 import { test, check, until, requireLogin, idle, SANDBOX } from '../../../dev/test/harness.mjs';
-import { RELEASE, blockPosts } from './as.mjs';
+import { RELEASE, blockPosts, artLoaded } from './as.mjs';
 
 test.use({ gm: { name: 'Art Station' } });
 
@@ -28,6 +28,7 @@ test('#772: a best front that is already in the archive is marked so and not tak
   await idle(frame);
   await inject('art_station', { target: frame, transform: archIsBest });
   await frame.waitForSelector('#as-root', { timeout: 20000 });
+  await artLoaded(frame);
 
   // Discogs 1 (the best front, the archive's picture), Discogs 2 (a picture of its own)
   const res = await frame.evaluate(async () => {

@@ -17,6 +17,8 @@ test('the settings panel covers the corner launchers, and its header has padding
   await page.click('#as-switch', { button: 'right' });
   await page.waitForSelector('#as-setup', { timeout: 5000 });
   const r = await page.evaluate(() => {
+    const f = document.getElementById('fake-launcher'), c = document.getElementById('as-setup').getBoundingClientRect();
+    f.style.right = f.style.bottom = 'auto'; f.style.left = c.left + 40 + 'px'; f.style.top = c.top + 40 + 'px';   // the panel is centred: put it underneath
     const l = document.getElementById('fake-launcher').getBoundingClientRect();
     const top = document.elementFromPoint(l.left + l.width / 2, l.top + l.height / 2);
     const p = document.getElementById('as-setup').getBoundingClientRect();
