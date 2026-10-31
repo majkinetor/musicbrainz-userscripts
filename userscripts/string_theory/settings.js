@@ -146,10 +146,30 @@ function stCopy(text, ok) {
   try { if (typeof GM_setClipboard === 'function') { GM_setClipboard(text, 'text'); ok(true); return; } } catch (e) { /* fall back */ }
   try { navigator.clipboard.writeText(text).then(function () { ok(true); }, function () { ok(false); }); } catch (e) { ok(false); }
 }
-function stVersionsText() {
-  var off = __stReadOff(), ch = stChannel(), lines = ['String Theory v' + ST_VERSION + ' (' + (ch.kind === 'branch' || ch.kind === 'pinned' ? ch.kind + ' ' + ch.ref : ch.kind) + ')'];
-  stMembers.forEach(function (m) { lines.push('  ' + m[1] + ' v' + m[2] + (off.indexOf(m[0]) < 0 ? '' : ' (off)')); });
-  try { if (GM_info.scriptHandler) lines.push('Manager: ' + GM_info.scriptHandler + (GM_info.version ? ' ' + GM_info.version : '')); } catch (e) { /* no GM_info */ }
+// What runs the bundle, the same facts a script's log starts with (mbuStartupInfo): manager, browser, site
+function stEnvLines() {
+  var out = [], g = null;
+  try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+  var p = (g && g.platform) || {};
+  if (g && g.scriptHandler) out.push(['Manager', g.scriptHandler + (g.version ? ' ' + g.version : '')]);
+  if (p.browserName) out.push(['Browser', p.browserName + (p.browserVersion ? ' ' + p.browserVersion : '') + (p.os ? ' (' + p.os + ')' : '')]);
+  else { try { out.push(['Browser', navigator.userAgent]); } catch (e) { /* no navigator */ } }
+  try {
+    var site = location.hostname;
+    if (/(^|\.)musicbrainz\.(org|eu)$/i.test(site)) site += ', in ' + ((document.documentElement && document.documentElement.lang) || ((document.cookie.match(/(?:^|;\s*)lang=([^;]+)/) || [])[1]) || 'en');
+    out.push(['Site', site]);
+  } catch (e) { /* no location */ }
+  return out;
+}
+// The versions to paste into an issue; md: as Markdown
+function stVersionsText(md) {
+  var off = __stReadOff(), ch = stChannel(), chan = ch.kind === 'branch' || ch.kind === 'pinned' ? ch.kind + ' ' + ch.ref : ch.kind;
+  var mark = function (t) { return md ? '`' + t + '`' : t; };
+  var lines = [(md ? '**String Theory** ' : 'String Theory ') + mark('v' + ST_VERSION) + ' (' + chan + ')' + (md ? '\n' : '')];
+  stMembers.forEach(function (m) { lines.push((md ? '- ' : '  ') + m[1] + ' ' + mark('v' + m[2]) + (off.indexOf(m[0]) < 0 ? '' : ' (off)')); });
+  if (md) lines.push('');
+  stEnvLines().forEach(function (e) { lines.push(md ? '**' + e[0] + ':** ' + e[1] + '  ' : e[0] + ': ' + e[1]); });
+  if (md) lines[lines.length - 1] = lines[lines.length - 1].replace(/ {2}$/, '');
   return lines.join('\n');
 }
 var ST_CSS = ''
@@ -230,7 +250,7 @@ function stSettings() {
         + '<span class="st-si">' + stFitIcon(icon) + '</span>' + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
     }).join('') + '</div>'
     + '<div class="st-row"><span class="st-note" id="st-apply">A change applies from the next page load.</span>'
-    + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy">Copy versions</button></div>'
+    + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy">Copy versions</button><button type="button" class="st-b" id="st-copy-md">Copy as Markdown</button></div>'
     + '</section>';
 
   var ov = document.createElement('div');
@@ -425,6 +445,9 @@ function stSettings() {
     };
   });
   q('#st-reload').onclick = function () { location.reload(); };
+  q('#st-copy-md').onclick = function () {
+    stCopy(stVersionsText(true), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });
+  };
   q('#st-copy').onclick = function () {
     stCopy(stVersionsText(), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });
   };
