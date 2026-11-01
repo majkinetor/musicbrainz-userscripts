@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0300.00
+// @version      2026.11.02.0300.01
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2978,7 +2978,9 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named');
+VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup');
+S.stars = []; // starred entities travel with the manager's settings
+S.starGroup = 'type';
 S.annoHover = true;
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
@@ -7707,6 +7709,23 @@ const HM_ME = [
     ['tags', 'Tags', CI_TAG],
 ];
 const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT], collection: ['Collection', MK_COL] };
+const STAR = '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>';
+function starButton(app) {
+    const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event|collection)\/([0-9a-f-]{36})(?:\/|$)/i);
+    const acts = app.querySelector('.kicker .acts'), r = data && (data.rel || data.g || data.t);
+    if (!m || !acts || !r || acts.querySelector('[data-star]')) return;
+    const key = m[1] + '/' + m[2], name = r.title || r.name || r.en;
+    if (!name) return;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ab'; btn.dataset.star = key;
+    btn.innerHTML = SVG(STAR);
+    const paint = () => { const on = S.stars.some(x => x.key === key); btn.setAttribute('aria-pressed', String(on)); btn.setAttribute('aria-label', on ? 'Remove star' : 'Star entity'); btn.dataset.tip = on ? 'Remove from starred entities' : 'Star this entity'; btn.querySelector('svg').style.fill = on ? 'currentColor' : 'none'; };
+    paint();
+    const search = acts.querySelector('.srch,[data-srch]'); if (search) search.before(btn); else acts.append(btn);
+    btn.addEventListener('click', () => {
+        S.stars = S.stars.some(x => x.key === key) ? S.stars.filter(x => x.key !== key) : [{ key, title: name, by: r.ac && r.ac.length ? acText(r.ac) : '' }, ...S.stars];
+        save(); paint();
+    });
+}
 const hmChip = (href, name, ic) => `<a class="hm-chip" href="${href}">${SVG(ic)}<span>${name}</span></a>`;
 // the pages last opened here, newest first
 const visits = () => { try { return GM_getValue('visits', []) || []; } catch (e) { return []; } };
@@ -7852,6 +7871,7 @@ function hmWire(app) {
     if (!srchWire(app)) return;
     for (const im of app.querySelectorAll('[data-hmimg]')) hmImg(im);
     app.addEventListener('click', e => { if (e.target.closest('button.hm-av')) gravForm(app); });
+    app.querySelector('[data-star-group]')?.addEventListener('change', e => { S.starGroup = e.target.value; save(); render(); });
     visitFill(app);
     if (ME) profLoad(app);
 }
@@ -7878,11 +7898,13 @@ function homeHtml() {
     const me = ME ? sect('hme', esc(ME), '', `<div class="hm-you"><div class="hm-pf"><div class="hm-pid"><span class="hm-av">${esc(ME[0]).toUpperCase()}</span><div><b>${esc(ME)}</b><small>Loading your profile…</small></div></div></div><div class="hm-me">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div></div>`, '')
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
+    const groups = S.starGroup === 'type' ? Object.entries(HM_KIND).map(([k, v]) => [v[0], S.stars.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length) : [['', S.stars]];
+    const starred = sect('hstar', 'Starred entities', `<label>Group <select data-star-group aria-label="Group starred entities"><option value="type"${S.starGroup === 'type' ? ' selected' : ''}>Entity type</option><option value="none"${S.starGroup === 'none' ? ' selected' : ''}>None</option></select></label>`, S.stars.length ? groups.map(([name, items]) => `${name ? `<h3>${esc(name)}</h3>` : ''}<div class="hm-rec">${items.map(v => { const [k] = v.key.split('/'), ic = (HM_KIND[k] || ['', MK_REC])[1]; return `<a class="hm-r" href="${MB}/${esc(v.key)}"><span class="hm-rk">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`; }).join('')}</div>`).join('') : '<p class="hm-none">Star an entity to keep it here.</p>', '');
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
         return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : k === 'instrument' ? ' fit' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(v))}${SVG(ic)}</span><span class="hm-rk" data-tip="${kn}" aria-label="${kn}">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
-    return hero + me + nrel + rec + news + nev;
+    return hero + starred + me + nrel + rec + news + nev;
 }
 /* ── editor profile ────────────────────────────────── */
 // An editor's /user page, read off MusicBrainz's own markup (no API has it): this tab's page as loaded, another editor's fetched.
@@ -8126,6 +8148,7 @@ function secRail(app) {
         });
     }
     rail.hidden = secs.length < 2 && !secs.some(x => x.hidden);
+    starButton(app);
     const acts = app.querySelector('.kicker .acts');
     if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
         acts.querySelector('.srch,[data-srch]') ? acts.querySelector('.srch,[data-srch]').insertAdjacentHTML('beforebegin', SEC_BTN) : acts.insertAdjacentHTML('beforeend', SEC_BTN);

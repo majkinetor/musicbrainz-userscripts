@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 16:11 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 16:20 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -774,6 +774,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
+- **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
 - **[Tracklist](#tracklist-1)**: each track's credits and its streaming links, with platforms deduplicated.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Pending changes](#pending-changes)** marks what has edits open.
@@ -796,6 +797,10 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 All data is arranged in sections that can be collapsed, hidden or reordered using main menu item. Card state is remembered for given entity. Specific cards have additional options at the right side.
 
 Click a card header, group or row to open or fold it. Right-click it, or its contents, to open or fold its siblings together. In the tracklist, tracks are siblings within a disc; right-click a card header to fold all cards into a contents list.
+
+### Starred entities
+
+Select the star in an entity's header to keep it on the homepage; select it again to remove it. Group the list by entity type or show it as one list. Stars and the grouping choice travel with your userscript manager's settings.
 
 ### Tracklist
 
