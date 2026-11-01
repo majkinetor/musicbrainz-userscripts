@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.002956
+// @version      2026.11.01.225411
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13597,6 +13597,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     #tc-nav-title.tc-nav-title-pending .tc-nav-title-name a{color:var(--mbu-warn)}
     #tc-nav-title .tc-nav-title-artist{font:12px Arial;color:var(--mbu-text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #tc-nav-title .tc-nav-title-ver{color:var(--mbu-text-weak)}
+    body.tc-ent-new :is(#content, #page) > h1{display:none!important}
     body.tc-zen-on .header,body.tc-zen-on .releaseheader,body.tc-zen-on #page > .tabs,body.tc-zen-on #footer{display:none!important}
     /* zen: drop the page's top spacing so the sticky nav bar pins flush to the top and doesn't drift on scroll (#141) */
     body.tc-zen-on #page{padding-top:0!important;margin-top:0!important}
@@ -13653,10 +13654,12 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   }
   // Zen editing (#141): hide the site header, release header, entity tabs + footer,
   // leaving just the Apollo nav bar (which gains the release title) and the editor.
+  const REL_ADD = /^\/release\/add/.test(location.pathname);
   function applyZen() {
     if (ALIAS_PAGE_RE.test(location.pathname)) { mbuCls(document.body, 'tc-zen-on', false); return; }   // #849 the alias editor keeps MusicBrainz's page as it is
     const on = !!(SETTINGS.zenMode && navOn() && editorEl());
     document.body.classList.toggle('tc-zen-on', on);
+    if (REL_ADD) mbuCls(document.body, 'tc-ent-new', on);   // the bar's New pill replaces MB's "Add release", as on the other Add pages
     if (on) fillNavTitle();
   }
   // populate the nav-bar title: "<album> by <artist> (N versions)", all links —
@@ -13666,12 +13669,17 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     let rel; try { rel = release(); } catch (e) { return; }
     if (!rel) return;
     const gid = u(rel.gid), name = u(rel.name) || '';
-    if (!name) return;
+    if (!name && !REL_ADD) return;
     const artist = acLinks(u(rel.artistCredit)) || '';
     // live-update: rebuild only when the title or artist actually changed (not every tick) (#141)
     const sig = name + '\x01' + artist;
     if (el.dataset.sig === sig) return;
     el.dataset.sig = sig;
+    if (REL_ADD) {   // laid out as the other Add pages' bar: New, the type, then the name and artist
+      el.innerHTML = '<div class="tc-nav-split">' + entKindHtml('release', true) + '<div class="tc-nav-split-b"><div class="tc-nav-title-album"><span class="tc-nav-title-name' + (name ? '' : ' tc-nav-ph') + '">' + (esc(name) || 'Untitled') + '</span></div><div class="tc-nav-title-artist">' + artist + '</div></div></div>';
+      el.querySelectorAll('.tc-nav-title-album, .tc-nav-title-artist').forEach(d => { d.dataset.tip = d.textContent.trim(); });
+      return;
+    }
     const album = gid ? '<a href="' + ORIGIN + '/release/' + esc(gid) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name);
     // version count — reuse the native release header's "see all versions" link
     let ver = '';
@@ -15378,11 +15386,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     ['input', 'change', 'click', 'keydown', 'paste'].forEach(ev => form.addEventListener(ev, () => setTimeout(() => rgNav(form), 50), true));
   }
   // the entity the form edits, as an icon and its type before the name: an artist's edit page and a label's looked alike
-  function entKindHtml() {
-    if (!ENT_KIND) return '';
-    const ic = MBU_ENT_ICONS[ENT_KIND] || '', lbl = ENT_KIND.replace('-', ' ');
+  function entKindHtml(kind = ENT_KIND, isNew = !rgGid()) {
+    if (!kind) return '';
+    const ic = MBU_ENT_ICONS[kind] || '', lbl = kind.replace('-', ' ');
     // an Add page: a New pill before the type (majkinetor, from a mock)
-    return '<span class="tc-nav-kind">' + (rgGid() ? '' : '<span class="tc-nav-new">New</span>') + (ic ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ic + '</svg>' : '') + lbl + '</span>';
+    return '<span class="tc-nav-kind">' + (isNew ? '<span class="tc-nav-new">New</span>' : '') + (ic ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ic + '</svg>' : '') + lbl + '</span>';
   }
   function rgNav(form) {
     navStyle();
@@ -15454,7 +15462,6 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.tc-ent-plain .date-range-fieldset > fieldset > p{display:none}
     body.tc-ri-on form.tc-ent-plain :is(.partial-date-month,.partial-date-day){width:3.2em!important;box-sizing:border-box}
     body.tc-zen-on :is(.rgheader,.artistheader,.labelheader,.placeheader,.workheader,.recordingheader,.eventheader,.seriesheader,#content .tabs),body.tc-zen-on #content > p:has(> a[href*="/doc/"]){display:none!important}
-    body.tc-ent-new :is(#content, #page) > h1{display:none!important}
     body:has(#tc-nav-bar) form.tc-ent-form{margin-top:4px}
     body.tc-ri-on form.tc-ent-form input[id$=".comment"]{box-sizing:border-box;width:calc(100% - 170px)!important}
     body.tc-ri-on form.tc-ent-form .row:has(input[name*="make_votable"]){padding-left:0!important;margin-left:0!important}
