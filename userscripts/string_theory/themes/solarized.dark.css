@@ -718,7 +718,7 @@ body.skin--responsive #p-cactions li.selected a {
 }
 
 /* MusicBrainz's dialogs: its own rules outrank the :where() above */
-.dialog button:not(.icon, .btn-link), .dialog input[type=number], input[type=number]:not([class]) {
+.dialog button:not(.icon, .btn-link, .search), .dialog input[type=number], input[type=number]:not([class]) {
 	background: var(--control) !important;
 	color: var(--control-text) !important;
 	border: 1px solid var(--control-border);
@@ -749,5 +749,10 @@ body.skin--responsive #p-cactions li.selected a {
 /* the header search: MusicBrainz's own rule outranks the :where() above */
 #headerid-type, .header select, .header .search button, .header .search-container form button {	background: var(--control) !important;	color: var(--control-text) !important;}#headerid-type option {	background: var(--control);	color: var(--control-text);}
 .header .search button img, .header .search-container form button img {
+	filter: var(--invert-value);
+}
+
+/* the autocomplete's search button: its icon is its background */
+div.autocomplete2 button.search {
 	filter: var(--invert-value);
 }
