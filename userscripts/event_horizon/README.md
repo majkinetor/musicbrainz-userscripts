@@ -70,7 +70,7 @@ The arrow at the end of the filter box does the same for a filter: name it and s
 
 ## Pending changes
 
-Titles, tracks, credits and links with edits open are marked in grey, as on MusicBrainz. A person with two credits, one of them pending, has both marked.
+With *Show pending changes* on in settings, titles, tracks, credits and links with edits open are marked in grey, as on MusicBrainz. A person with two credits, one of them pending, has both marked.
 
 ## Settings
 
@@ -88,7 +88,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                       |
 | General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                           |
 | General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                            |
-| General → Pending changes             | on                                                                  | mark what has edits open; takes one extra MusicBrainz request per page, sent last |
+| General → Pending changes             | off                                                                 | mark what has edits open; takes one extra MusicBrainz request per page, sent last |
 
 ## Shortcuts
 
