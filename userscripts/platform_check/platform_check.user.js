@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.01.203400
+// @version      2026.11.01.214500
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3605,7 +3605,7 @@ Open while the mouse is on the dock icon, in place of its tooltip">Dock hover</b
 </div>
 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid var(--mbu-border);">
   <div style="display: flex; align-items: center; gap: 6px;">
-    <span id="mb-inject-btn"      class="pc-icon-btn" data-tip="Add the found URLs\nClick: open the release editor with them queued\nRight-click: add them silently in the background\nMiddle-click / Alt+click: add them all, the ones the strict barcode and format settings withhold too\nCtrl+middle-click / Ctrl+Alt+click: the same, in the background" style="${iconBtn}">+</span>
+    <span id="mb-inject-btn"      class="pc-icon-btn" data-tip="Add the found URLs\nClick: open the release editor with them queued\nRight-click: add them silently in the background\nMiddle-click / Alt+click: add them all, the ones the strict barcode and format settings withhold too; with Ctrl, in the background" style="${iconBtn}">+</span>
     <span id="mb-openall-btn"     class="pc-icon-btn" data-tip="Open the found pages not on MusicBrainz yet\nThe ones not circled, each in a new tab" style="${iconBtn}">↗</span>
     <span id="mb-links-btn"       class="pc-icon-btn" data-tip="Artists &amp; labels\nThe artist and label pages the matched platforms name, for the release's artists and labels on MusicBrainz" style="${iconBtn} font-size: 11px; white-space: nowrap;">Artists &amp; labels</span>
   </div>
@@ -3766,6 +3766,7 @@ function pcApplyIface() {
 }
 // the dock's number: the platforms to link, after a comma the withheld of both, after a slash the Artists & labels links to add (null: not counted)
 var pcDockFound = 0, pcDockHeld = 0, pcDockArtists = null, pcDockArtistsHeld = 0;
+var pcSummaryRows = null;   // fn → the finished scan's rows (on MusicBrainz, to link, withheld, not found), for the dock's card and the + button's tooltip
 // "2,4/44": 2 platforms to link, 4 withheld (platforms and Artists & labels), 44 Artists & labels links to add
 function pcDockStatus() {
     const a = pcDockArtists || 0, h = pcDockHeld + pcDockArtistsHeld;
@@ -8733,8 +8734,9 @@ async function runScansInner() {
     if (providerEnabled('sevendigital')) tasks.push(scanSevendigital({ ...ctx, existingUrl: existing.sevendigital }));
     await Promise.allSettled(tasks);
     appendLog('System', 'All scans completed', 'ok');
-    // the dock entry's state (#847): the platforms to link, and a card with on MusicBrainz · to link · not found
-    if (pcDockItem) {
+    // the dock entry's state (#847): the platforms to link, and a card with on MusicBrainz · to link · not found;
+    // the + button's tooltip shows the same rows
+    {
         const on = [], found = [], held = [], none = [];
         for (const p of ALL_PROVIDERS) {
             if (!providerEnabled(p)) continue;
@@ -8745,10 +8747,11 @@ async function runScansInner() {
         pcDockFound = found.length; pcDockHeld = held.length;
         pcDockStatus();
         const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
-        pcDockItem.card(() => pcDockMode() === 'hover' ? null : mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
+        pcSummaryRows = () => '<div class="mbu-tip-rows">'
             + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + (held.length ? line('#a0a0a0', 'Withheld', held) : '') + line('#e06060', 'Not found', none)
             + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add${pcDockArtistsHeld ? ` · <b>${pcDockArtistsHeld}</b> withheld` : ''}</span>`)
-            + '</div>' }));
+            + '</div>';
+        if (pcDockItem) pcDockItem.card(() => pcDockMode() === 'hover' ? null : mbuTipCard({ title: 'Platform Check', body: pcSummaryRows() }));
     }
     pcCountLinks();   // #671
 }
@@ -9903,6 +9906,11 @@ async function runInjectBtn(e, background, force) {
         openRgEditTab(rgMbid, { background, sameTabAllowed: releaseCount === 0 });
     }
 }
+// its data-tip, with the finished scan's summary of what it would add above the keys
+mbuTip(document.getElementById('mb-inject-btn'), (el) => {
+    const [title, ...keys] = el.dataset.tip.split('\n');
+    return mbuTipCard({ title, body: (pcSummaryRows ? pcSummaryRows() : '') + mbuTipText(keys.join('\n')) });
+}, { card: true });
 document.getElementById('mb-inject-btn').addEventListener('click', (e) => runInjectBtn(e, e.altKey && pcBgKey(e), e.altKey));   // #653/#641: Alt+click = middle click; Ctrl+Alt: in the background
 document.getElementById('mb-inject-btn').addEventListener('contextmenu', (e) => { e.preventDefault(); runInjectBtn(e, true); });
 document.getElementById('mb-inject-btn').addEventListener('mousedown', (e) => { if (e.button === 1) e.preventDefault(); });
@@ -10346,7 +10354,7 @@ function pcFollow(r) {
     if (PC_SCAN.busy) pcCancelScan();
     mbid = r; PC_FOLLOW = true;
     MB_BARCODE = null; MB_OWN_BARCODE = null; PC_FOUND_BC.clear(); _pcMcCons = null; _pcLinked = null;
-    pcDockFound = 0; pcDockHeld = 0; pcDockArtists = null; pcDockArtistsHeld = 0; pcDockStatus();
+    pcDockFound = 0; pcDockHeld = 0; pcDockArtists = null; pcDockArtistsHeld = 0; pcSummaryRows = null; pcDockStatus();
     pcShowLinksCount(null);
     resetRows();
     pcScan();
