@@ -47,3 +47,17 @@ test('a failed release load stops the dock loading without opening Scout', { tag
   check(result.status === '?' && !result.busy, `failed release loading is reported (${JSON.stringify(result)})`);
   check(await page.locator('#ii-modal.open').count() === 0, 'Scout was never opened');
 });
+
+test('release loading retries once and reports only the final result', { tag: '@unit' }, async () => {
+  const src = await functionSource('isrc_scout', ['fetchRelease']);
+  let calls = 0, notifications = 0, failures = 1;
+  const api = new Function('attempt', 'notify', `let RELEASE = null, _relInFlight = null, _relFailed = false, mbid = 'release';
+    const fetchReleaseNow = attempt, notifyMatchCounts = notify, updateBtnStatus = () => {}, Log = { warn() {} }, errText = e => e.message;
+    ${src}
+    return { fetchRelease, failed: () => _relFailed };`)(() => { calls++; return calls <= failures ? Promise.reject(Error('offline')) : Promise.resolve({}); }, () => { notifications++; });
+  await api.fetchRelease();
+  check(calls === 2 && !api.failed() && notifications === 1, 'a successful retry completes normally');
+  await Promise.resolve(); calls = 0; failures = 2; notifications = 0;
+  await api.fetchRelease().catch(() => {});
+  check(calls === 2 && api.failed() && notifications === 1, 'two failures stop and report the error');
+});
