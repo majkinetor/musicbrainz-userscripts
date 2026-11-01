@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 13:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 14:28 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -775,7 +775,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Tracklist](#tracklist-1)**: each track's credits and its streaming links, with platforms deduplicated.
-- **[Releases and discography](#releases-and-discography)** as a grid or a table you choose and order the columns of, grouped by type, with a filter.
+- **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 
 Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, infinite scroll, advanced filtering and grouped edit history.
@@ -809,7 +809,7 @@ Expanded track contains info about associated recording and works.
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
 
-**Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters.
+**Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters. Drag the edge of a column's heading to resize it, and double-click the edge to fit that column to its content; **Auto fit the widths** in the menu lets the table size itself again. **Saved**, at the bottom of the menu, keeps the current columns and their widths under a name; pick the name to bring them back.
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 
@@ -824,6 +824,8 @@ Every table's filter also takes `column:value`, such as `artist:elvis` (put the 
 | `-(label:x OR label:y)`                      | exclude a group                                |
 
 Write AND and OR in capitals: lowercase they are ordinary words.
+
+**Saved**, beside the funnel, does the same for a filter: name it and save it, then pick it on any artist or release group. Saving under a name already there replaces it, and × deletes one. Releases and discographies keep their own lists.
 
 ### Pending changes
 

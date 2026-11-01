@@ -106,3 +106,38 @@ test('the Columns menu works on a list of releases that stays MusicBrainz\'s pag
   await until(shown, h => h.endsWith('status,barcode'));
   check(await page.locator('#pop-cols-ed').isVisible(), 'the menu stays open');
 });
+
+test('a column resizes by its edge, fits its content and goes back to fitting itself', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await open(page, inject);
+  await page.keyboard.press('Escape');
+  const width = k => page.$eval(`#s-dg table.ed-t thead th[data-c="${k}"]`, h => h.getBoundingClientRect().width);
+  const table = () => page.$eval('#s-dg table.ed-t', t => t.getBoundingClientRect().width);
+  const edge = page.locator('[data-colrs="dg\tdate"]');
+  check(await page.locator('[data-colrs="dg\treleases"]').isHidden(), 'the last column has no edge to drag');
+  const [t0, d0, r0] = [await table(), await width('date'), await width('rating')];
+  await edge.scrollIntoViewIfNeeded();
+  const b = await edge.boundingBox(), x = b.x + b.width / 2, y = b.y + b.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  for (let i = 1; i <= 6; i++) await page.mouse.move(x + 5 * i, y);
+  await until(() => width('date'), w => Math.abs(w - d0 - 30) < 3);
+  await page.mouse.up();
+  check(Math.abs(await width('rating') - r0 + 30) < 3, 'the next column gives the room');
+  check(Math.abs(await table() - t0) < 2, 'the table keeps its width');
+  await page.locator('#s-dg [data-dgsort="date"]').click();
+  await until(() => page.locator('#s-dg [data-dgsort="date"].on').count(), n => n === 1);
+  check(Math.abs(await width('date') - d0 - 30) < 3, 'a redraw keeps the width');
+  await edge.dblclick();
+  await until(() => width('date'), w => w < d0 + 25);
+  check(await page.$eval('#s-dg table.ed-t', t => t.classList.contains('fix')), 'the others stay as they were');
+  await page.locator('[data-pop="cols-dg"]').click();
+  await page.locator('[data-colfit="dg"]').click();
+  await until(() => page.$eval('#s-dg table.ed-t', t => t.classList.contains('fix')), v => !v);
+  check(await page.locator('#pop-cols-dg').isVisible(), 'the menu stays open');
+});
+
+test('the filter\'s tooltip shows how to write one', { tag: '@sandbox' }, async ({ page, inject }) => {
+  await open(page, inject);
+  const tip = await page.locator('[data-fopen="dg"]').getAttribute('data-tip');
+  for (const x of ['-artist:', 'year:2020-2024', 'AND', 'OR', '(a OR b)', 'Columns: title, artist']) check(tip.includes(x), x);
+});
