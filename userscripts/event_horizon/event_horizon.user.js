@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0330.03
+// @version      2026.11.02.0330.04
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2284,7 +2284,7 @@ const CSS = `
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{flex:none;display:flex;color:var(--muted);margin-right:-4px}.hm-rk svg{width:16px;height:16px}
 .hm-star-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}.hm-star-group h3{margin:16px 0 6px;color:var(--muted);font-size:14px}.hm-star-group:first-child h3{margin-top:0}.hm-star-grid .dn{position:relative}.hm-star-grid .dn svg{width:44%;height:44%}.hm-star-grid .dn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hm-star-line{display:flex;align-items:center;min-width:0}.hm-star-line>.hm-r{flex:1;min-width:0}.ed-views .hm-star-remove{opacity:0}.hm-star-line:hover .hm-star-remove,.hm-star-line:focus-within .hm-star-remove,.hm-star-tile:hover .hm-star-remove,.hm-star-tile:focus-within .hm-star-remove,.ed-t tr:hover .hm-star-remove,.ed-t tr:focus-within .hm-star-remove{opacity:1}.hm-star-actions{width:38px;text-align:right}.hm-star-tile{position:relative;min-width:0}.hm-star-tile>.ed-views{position:absolute;right:6px;top:6px}.hm-star-tile .hm-star-remove{background:var(--surface)}
+.hm-star-line{display:flex;align-items:center;min-width:0}.hm-star-line>.hm-r{flex:1;min-width:0}.ed-views .hm-star-remove{opacity:0}.hm-star-line:hover .hm-star-remove,.hm-star-line:focus-within .hm-star-remove,.hm-star-tile:hover .hm-star-remove,.hm-star-tile:focus-within .hm-star-remove,.ed-t tr:hover .hm-star-remove,.ed-t tr:focus-within .hm-star-remove{opacity:1}.hm-star-actions{width:38px;text-align:right}.hm-star-tile{position:relative;min-width:0}.hm-star-tile>.ed-views{position:absolute;right:6px;top:6px}
 .hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 16px;font-size:13px}
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
