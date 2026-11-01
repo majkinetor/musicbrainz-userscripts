@@ -7,7 +7,7 @@ test.use({ gm: { name: 'Platform Check', persist: true } });
 test('a pinned dock panel stays open on the side it was dragged to', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const release = 'b84ee12a-09ef-421b-82de-0441a926375b';
   await openPc(page, inject, { release, settle: false, storage: { 'pc:interface': 'dock' } });
-  await page.evaluate(() => { GM_setValue('pc:interface', 'dock'); GM_setValue('pc:dock-pin', true); GM_setValue('pc:dock-side', 'left'); });
+  await page.evaluate(() => { GM_setValue('pc:interface', 'dock'); GM_setValue('pc:dock-pin', true); GM_setValue('pc:dock-side', 'left'); GM_setValue('pc:dock-v', { edge: 'top', gap: 0 }); });
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#sidebar');
   await inject('platform_check');
@@ -19,15 +19,27 @@ test('a pinned dock panel stays open on the side it was dragged to', { tag: ['@s
   await page.mouse.click(5, 300);
   check(await win.isVisible(), 'Escape and a click outside leave it open');
 
-  const full = () => page.evaluate(() => { const b = document.querySelector('.mbu-dock-win').getBoundingClientRect(); return b.top === 0 && b.bottom <= innerHeight; });
-  check(await full(), 'it sits at the top of that side');
+  const box = () => page.evaluate(() => { const b = document.querySelector('.mbu-dock-win').getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; });
+  const grow = () => page.evaluate(() => { const d = document.createElement('div'); d.style.height = '100px'; document.querySelector('.mbu-dock-win').firstElementChild.append(d); });
 
-  const h = await page.locator('#pc-head h3').boundingBox(), vw = page.viewportSize().width;
+  const h = await page.locator('#pc-head h3').boundingBox(), vw = page.viewportSize().width, vh = page.viewportSize().height;
   await page.mouse.move(h.x + 5, h.y + 5); await page.mouse.down();
   await page.mouse.move(vw - 100, h.y + 45); await page.mouse.up();
-  check(await win.boundingBox().then(b => Math.round(b.x + b.width) === vw && b.y === 0), 'the title drags it to the other side');
+  check(await win.boundingBox().then(b => Math.round(b.x + b.width) === vw && b.y === 40), 'the title drags it to the other side and down');
   check(await page.evaluate(() => GM_getValue('pc:dock-side')) === 'right', 'the new side is saved');
-  check(await full(), 'it stays at the top');
+  const near = await box();
+  await grow(); await page.waitForTimeout(100);
+  const grown = await box();
+  check(grown.top === near.top && grown.bottom > near.bottom, 'near the top, it keeps its top and grows down');
+
+  const h2 = await page.locator('#pc-head h3').boundingBox();
+  await page.mouse.move(h2.x + 5, h2.y + 5); await page.mouse.down();
+  await page.mouse.move(h2.x + 5, vh - 200); await page.mouse.up();
+  check(await page.evaluate(() => GM_getValue('pc:dock-v').edge) === 'bottom', 'near the bottom, it holds its bottom');
+  const low = await box();
+  await grow(); await page.waitForTimeout(100);
+  const up = await box();
+  check(up.bottom === low.bottom && up.top < low.top, 'and grows up');
   await page.screenshot({ path: process.env.PIN_SHOT || 'test-results/pin.png' });
 
   await page.locator('#mb-pin-btn').click();
