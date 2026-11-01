@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0515.02
+// @version      2026.11.02.0515.03
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -8760,7 +8760,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] body{background:var(--bg)!important}
 :root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
-:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *,.eh-release-views *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
+:root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *,.eh-release-views *,.srch *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
 :root[data-eh-rel] body>.header,:root[data-eh-rel] body>.banner,:root[data-eh-rel] #footer,:root[data-eh-rel] #content>.releaseheader>:not(.discogs-bar),:root[data-eh-rel] #content>.tabs{display:none!important}
 :root[data-eh-rel] #page{max-width:var(--eh-w,1600px);margin:0 auto;padding:24px 16px 64px;background:none;color:var(--text)}
 :root[data-mbu-dock]:not([data-mbu-flow=row]):not([data-mbu-side=left]) #page{padding-right:max(16px,calc((min(var(--eh-wn,1600px),100%) - 100%) / 2 + 52px))}
@@ -8777,7 +8777,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] :is(#tracklist,#page .ars) table :is(td,th){background:transparent!important}
 :root[data-eh-rel] #page .ars,:root[data-eh-rel] #content>.releaseheader{background:none!important;padding:0!important;margin:0!important;min-height:0!important}
 :root[data-eh-rel] #relationship-editor-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
-:root[data-eh-rel] :is(#page,#content) :is(input[type=text],input[type=email],input[type=url],input[type=password],input[type=date],input:not([type]),textarea,select){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
+:root[data-eh-rel] :is(#page,#content) :is(input[type=text],input[type=email],input[type=url],input[type=password],input[type=date],input:not([type]),textarea,select):not(.srch *){background:var(--bg)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px}
 :root[data-eh-rel] #page button.submit,:root[data-eh-rel] #page .buttons button[type=submit]{background:var(--accent)!important;color:#fff!important;border:0!important;border-radius:9px;padding:6px 16px;font-weight:700}
 :root[data-eh-rel] #content>[class*=header]:not(.releaseheader):not(#eh-relhd){display:none!important}
 :root[data-eh-rel] #page .buttons button:not(.submit){background:transparent!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:9px;padding:6px 16px;font-weight:600}
@@ -8815,7 +8815,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #page table.tbl th{background:var(--bg)!important;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
 :root[data-eh-rel] #page table.tbl td{background:transparent!important;padding:7px 12px;border-top:1px solid var(--line)}:root[data-eh-rel] #page table.tbl tr:first-child td{border-top:0}:root[data-eh-rel] #page table.tbl tbody tr:hover td{background:var(--hover)!important}
 :root[data-eh-rel] #page :is(input[type=checkbox],input[type=radio]){accent-color:var(--accent)}
-:root[data-eh-rel] #page form :is(input[type=text],input[type=url],input[type=email],input:not([type]),select){min-height:32px;padding:4px 10px;box-sizing:border-box}
+:root[data-eh-rel] #page form :is(input[type=text],input[type=url],input[type=email],input:not([type]),select):not(.srch *){min-height:32px;padding:4px 10px;box-sizing:border-box}
 :root[data-eh-rel] #page form .row{margin:8px 0}:root[data-eh-rel] #page form .row>label:first-child{color:var(--muted);font-weight:600}
 :root[data-eh-rel] #page .pagination a,:root[data-eh-rel] #page ul.pagination li>*{border-radius:8px}
 :root[data-eh-rel] #page table.details th{color:var(--muted);text-align:left;padding-right:12px}
