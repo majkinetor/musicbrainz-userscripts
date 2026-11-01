@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.02.000003
+// @version      2026.11.02.000004
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3383,6 +3383,8 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-pc-panel.pc-icons-mode:is(.pc-mark-badge, .pc-mark-dot) .pc-inmb .pc-plat-ico::after { content: ""; position: absolute; pointer-events: none; background: var(--mbu-info); }
   #mb-pc-panel.pc-icons-mode.pc-mark-badge .pc-inmb .pc-plat-ico::after { content: "✓"; right: -5px; bottom: -4px; width: 12px; height: 12px; border-radius: 50%; color: #fff; font: bold 9px/12px sans-serif; text-align: center; box-shadow: 0 0 0 1.5px var(--mbu-bg); }
   #mb-pc-panel.pc-icons-mode.pc-mark-dot .pc-inmb .pc-plat-ico::after { right: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--mbu-bg); }
+  /* a faint tint of the whole row, the quietest marker; it needs no icon, so it also shows with icons off */
+  #mb-pc-panel.pc-mark-row .pc-row.pc-inmb { background: color-mix(in srgb, var(--mbu-info) 10%, transparent); border-radius: 4px; }
   /* presence — fades/grays the icon + name regardless of in-MB */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch .pc-plat-ico svg { filter: grayscale(1); opacity: .6; }  /* found but wrong */
   #mb-pc-panel.pc-icons-mode .pc-st-mismatch a[id^="mb-online"] { color: var(--mbu-text-weak) !important; }
@@ -3680,12 +3682,13 @@ providerModal.innerHTML = `
       <div class="pc-set-k">Compact</div>
       <div class="pc-set-v"><label data-tip="Shrink platforms that found nothing\nOne that found nothing (or is still searching) shrinks to a dim icon in a strip under the rows, and becomes a full row once it finds something. Discogs and Bandcamp always keep full rows.\nClick: a strip icon searches its platform, as its row does"><input type="checkbox" id="mb-compact-unmatched"> Unmatched</label><label data-tip="Shrink platforms with an uncertain match too\nOne whose release isn't a clean match (another barcode or format, or withheld by the strict settings) shrinks to an icon in the strip, with an amber ring.\nOff: it keeps its full row, with its tracks, year and label."><input type="checkbox" id="mb-compact-nonstrict"> Low-confidence</label></div>
       <div class="pc-set-k">In MusicBrainz</div>
-      <div class="pc-set-v"><select id="mb-marker" data-tip="How an icon shows that its link is already on the release (icons mode)">
+      <div class="pc-set-v"><select id="mb-marker" data-tip="How a platform shows that its link is already on the release">
           <option value="circle">Ring</option>
           <option value="bold">Bold ring</option>
           <option value="badge">✓ badge</option>
           <option value="dot">Dot</option>
           <option value="square">Rounded square</option>
+          <option value="row">Row highlight</option>
         </select></div>
       <div class="pc-set-k">Format</div>
       <div class="pc-set-v" data-tip="How each release's format shows\nA small circle in four parts (Vinyl · Cassette · CD · Digital), or text"><span class="pc-seg"><label><input type="radio" name="format-marker" value="circle"><span>◔ Circle</span></label><label><input type="radio" name="format-marker" value="text"><span>Text</span></label></span></div>
@@ -3929,7 +3932,7 @@ container.classList.toggle('pc-no-names', !GM_getValue('pc:show-names', false));
 container.classList.add(GM_getValue('pc:layout', '1row') === '2row' ? 'pc-layout-2row' : 'pc-layout-1row');
 // How the in-MB marker is drawn (#642). The glow is retired: a stored 'glow' becomes the ring;
 // 'gap' was the bold ring's first name, and anything else (the dropped underline) is the ring.
-const PC_MARKERS = ['circle', 'bold', 'badge', 'dot', 'square'];
+const PC_MARKERS = ['circle', 'bold', 'badge', 'dot', 'square', 'row'];
 function pcMarker() { const v = GM_getValue('pc:mb-marker', 'circle'); return v === 'gap' ? 'bold' : PC_MARKERS.includes(v) ? v : 'circle'; }
 if (GM_getValue('pc:mb-marker', 'circle') === 'glow') GM_setValue('pc:mb-marker', 'circle');
 function pcApplyMarker(m) { for (const x of PC_MARKERS) container.classList.toggle('pc-mark-' + x, x === m); }
