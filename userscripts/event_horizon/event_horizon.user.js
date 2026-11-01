@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0005.02
+// @version      2026.11.02.0130.00
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2672,6 +2672,17 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ed-xt td.n{width:36px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px}
 .ed-xt td.num{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
 .ed-t .num{text-align:right}
+.ed-t.cmt td[data-c=title] .sub{display:none}
+.col-b{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.col-b:hover{color:var(--text)}.col-b i{font-style:normal;font-size:12px;color:var(--soft)}
+.pop.col-pop{min-width:250px;max-height:min(600px,calc(100vh - 150px))}.col-pop hr{border:0;border-top:1px solid var(--line);margin:6px 0}
+.col-list{position:relative}
+.col-row{position:relative;display:flex;align-items:center;gap:2px;height:32px;border-radius:8px;background:var(--surface);transition:transform .16s cubic-bezier(.2,.8,.2,1)}
+.col-row:hover{background:var(--hover)}.col-list.still .col-row{transition:none}
+.col-row.drag{z-index:2;transition:box-shadow .12s;background:var(--surface);box-shadow:0 8px 22px var(--shadow)}
+.col-h{flex:none;display:grid;place-items:center;width:26px;height:30px;border-radius:6px;color:var(--muted);cursor:grab;touch-action:none}.col-h:hover{color:var(--text)}.col-row.drag .col-h{cursor:grabbing}
+.col-row label{flex:1;min-width:0;display:flex;align-items:center;gap:8px;height:100%;padding-right:10px;font-size:14px;font-weight:600;cursor:pointer}.col-row input{margin:0;accent-color:var(--accent,currentColor)}.col-row input:disabled+span{color:var(--muted)}.col-row label:has(input:disabled){cursor:default}
+body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none}
+@media (prefers-reduced-motion:reduce){.col-row{transition:none}}
 .ed-t .mono{font-size:13px;color:var(--soft);white-space:nowrap}
 .ed-t .sub{color:var(--muted)}
 .ed-t .ev{display:flex!important;flex-wrap:nowrap;align-items:center;gap:8px;white-space:nowrap;line-height:1.3}.ed-t .ev+.ev{margin-top:4px}.ed-t .iso{flex:none;min-width:2.8em;text-align:center;font-weight:700;color:var(--soft)}
@@ -2956,8 +2967,9 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover', 'pending');
+VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick');
 S.annoHover = true;
+S.colPick = {}; // the tables' column choice, by section: { order, off }; none is the usual table
 S.pending = true; // MusicBrainz's grey mark on what has edits open; takes one more request per page
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
@@ -3564,7 +3576,48 @@ async function edToggle(id) {
 // the releases table's sortable columns: key, heading, the value it sorts by
 const ED_COLS = [['title', 'Release', e => e.title || ''], ['artist', 'Artist', e => (e.ac || []).map(c => (c.name || '') + (c.joinphrase || '')).join('')], ['format', 'Format', e => fmtSummary(e.formats)],
     ['tracks', 'Tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0)).padStart(5, '0')], ['date', 'Country / date', e => e.date || '9'], ['label', 'Label', e => (e.li[0] || {}).name || '\uffff'],
-    ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff']];
+    ['catno', 'Catalog#', e => (e.li[0] || {}).catno || '\uffff'], ['barcode', 'Barcode', e => e.barcode || '\uffff'],
+    ['status', 'Status', e => e.status || '\uffff'], ['packaging', 'Packaging', e => e.packaging || '\uffff'], ['lang', 'Language / script', e => (e.lang || []).join(' ') || '\uffff'], ['comment', 'Comment', e => e.disambig || '\uffff']];
+// the columns a table's Columns menu offers: the first stays on, and the ones in off start hidden
+const COLS = {
+    ed: { keys: ED_COLS.map(c => c[0]), names: Object.fromEntries(ED_COLS.map(c => [c[0], c[1]])), off: ['status', 'packaging', 'lang', 'comment'] },
+    dg: { keys: ['title', 'artist', 'date', 'rating', 'releases'], names: { title: 'Title', artist: 'Artist', date: 'First released', rating: 'Rating', releases: 'Releases' }, off: [] },
+};
+// a section's columns as they stand; a column the saved choice doesn't know is one added later: it takes its usual place, on or off as usual
+function colState(sc) {
+    const { keys, off } = COLS[sc], saved = S.colPick[sc] || {}, known = (saved.order || []).filter(k => keys.includes(k)), order = [...known];
+    keys.forEach((k, i) => { if (!order.includes(k)) order.splice(i ? order.indexOf(keys[i - 1]) + 1 : 0, 0, k); });
+    return { order, off: new Set(keys.slice(1).filter(k => known.includes(k) ? (saved.off || []).includes(k) : off.includes(k))) };
+}
+const colKeep = (sc, order, off) => { S.colPick = { ...S.colPick, [sc]: { order, off: [...off] } }; };
+const colAttr = (st, k) => ` data-c="${k}"${st.off.has(k) ? ' hidden' : ''}`;
+const colTd = (st, k, html, cls) => `<td${cls ? ` class="${cls}"` : ''}${colAttr(st, k)}>${html}</td>`;
+const colsOf = st => st.order.length - st.off.size;
+const colTds = (st, cells) => st.order.map(k => colTd(st, k, ...cells[k])).join('');
+const colRows = sc => { const st = colState(sc); return st.order.map(k => { const lock = k === COLS[sc].keys[0], n = esc(COLS[sc].names[k]); return `<div class="col-row" data-colk="${k}"><span class="col-h" role="button" tabindex="0" aria-label="Move ${n}"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg></span><label><input type="checkbox" data-colon="${sc}"${st.off.has(k) ? '' : ' checked'}${lock ? ' disabled' : ''}><span>${n}</span></label></div>`; }).join(''); };
+function colBtn(sc) {
+    const n = colState(sc).off.size;
+    return `<span class="popwrap"><button type="button" class="fbtn col-b" data-pop="cols-${sc}" aria-expanded="false" data-tip="Choose and order the table's columns"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>Columns<i${n ? '' : ' hidden'}>+${n}</i></button><div class="pop r col-pop" id="pop-cols-${sc}" hidden><div class="h label">Columns</div><div class="col-list" data-collist="${sc}">${colRows(sc)}</div><hr><button class="opt" type="button" data-colreset="${sc}">Back to the usual columns</button></div></span>`;
+}
+// the shown table takes the choice in place: a redraw would close the menu and lose the scroll and the open rows
+function colApply(sc) {
+    const st = colState(sc), t = $(`#s-${sc} table.ed-t`) || $('.eh-release-views table.ed-t'), n = colsOf(st);
+    const b = $(`[data-pop="cols-${sc}"] i`);
+    if (b) { b.hidden = !st.off.size; b.textContent = '+' + st.off.size; }
+    if (!t) return;
+    const place = (box, first) => {
+        const m = {};
+        for (const c of box.children) if (c.dataset.c) m[c.dataset.c] = c;
+        let at = first;
+        for (const k of st.order) { const c = m[k]; if (!c) continue; if (c === at) at = at.nextElementSibling; else box.insertBefore(c, at); c.hidden = st.off.has(k); }
+    };
+    const cg = t.querySelector(':scope > colgroup');
+    if (cg) place(cg, cg.children[1]);
+    for (const tr of t.querySelectorAll(':scope > thead > tr, :scope > tbody > tr:not(.gh):not(.ed-x)')) place(tr, tr.children[1]);
+    for (const c of t.querySelectorAll(':scope > tbody > tr.gh > th')) c.colSpan = n + 2;
+    for (const c of t.querySelectorAll(':scope > tbody > tr.ed-x > td:last-child')) c.colSpan = n + 1;
+    t.classList.toggle('cmt', !st.off.has('comment') && COLS[sc].keys.includes('comment'));
+}
 // a release's events: the first, and the rest behind +N on its line, by date with their countries
 const evOne = (v, more = '') => `<div class="ev">${v.iso ? `<span class="iso"${v.area && v.area !== v.iso ? ` data-tip="${esc(v.area)}"` : ''}>${esc(v.iso)}</span> ` : '<span class="iso nc" aria-hidden="true"></span> '}${v.date ? fdate(v.date) : ''}${more}</div>`;
 function evCell(e) {
@@ -3577,7 +3630,8 @@ function evCell(e) {
 function edTable(es, curId, flat, part) {
     const sk = (S.edSort || '').replace(/^-/, ''), desc = (S.edSort || '').startsWith('-'), col = ED_COLS.find(c => c[0] === sk);
     if (col) es = [...es].sort((a, b) => (desc ? -1 : 1) * col[2](a).localeCompare(col[2](b), undefined, { sensitivity: 'base', numeric: true }) || (a.date || '9').localeCompare(b.date || '9'));
-    const th = ([k, n]) => `<th${k === 'tracks' ? ' class="num"' : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('ed', ED_FUN[k], n.toLowerCase())}</th>`;
+    const st = colState('ed');
+    const th = k => { const n = COLS.ed.names[k]; return `<th${k === 'tracks' ? ' class="num"' : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-edsort="${k}" data-tip="${sk === k && desc ? 'Back to the list\'s own order' : 'Sort by ' + n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('ed', ED_FUN[k], n.toLowerCase())}</th>`; };
     const ST = ['Official', 'Promotion', 'Bootleg', 'Pseudo-Release', 'Withdrawn', 'Expunged', 'Cancelled'];
     const groups = [...new Set(es.map(e => e.status || ''))].sort((a, b) => (ST.indexOf(a) + 1 || 99) - (ST.indexOf(b) + 1 || 99));
     const row = e => {
@@ -3585,18 +3639,24 @@ function edTable(es, curId, flat, part) {
         const k = fmtKind(e.formats[0]);
         return `<tr class="ed-r${e.id === curId ? ' cur' : ''}" data-edhref="${esc(relUrl(e.id))}">
             <td class="tc"><a href="${esc(relUrl(e.id))}" data-ed="${e.id}" class="tt">${e.thumb ? `<img src="${e.thumb}" alt="" loading="lazy">` : fmtSvg(k, 20, 2)}</a></td>
-            <td><a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}</td>
-            <td>${acHtml(e.ac)}</td>
-            <td>${esc(fmtSummary(e.formats))}</td>
-            <td class="num"><button class="ed-tr" type="button" data-edtr="${e.id}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button></td>
-            <td>${evCell(e)}</td>
-            <td>${e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')}</td>
-            <td class="mono">${e.li.map(l => `<div>${esc(l.catno)}</div>`).join('')}</td>
-            <td class="mono">${esc(e.barcode)}</td>
+            ${colTds(st, {
+                title: [`<a href="${esc(relUrl(e.id))}">${esc(e.title)}</a>${e.disambig ? ` <span class="sub">(${esc(e.disambig)})</span>` : ''}`],
+                artist: [acHtml(e.ac)],
+                format: [esc(fmtSummary(e.formats))],
+                tracks: [`<button class="ed-tr" type="button" data-edtr="${e.id}" aria-expanded="${edOpen.has(e.id)}" data-tip="${edOpen.has(e.id) ? 'Hide' : 'Show'} the tracklist&#10;Right-click: ${edOpen.has(e.id) ? 'hide' : 'show'} every row's tracklist">${e.counts.join(' + ')}<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>`, 'num'],
+                date: [evCell(e)],
+                label: [e.li.map(l => `<div>${l.name ? entA('label', l.id, l.name) : ''}</div>`).join('')],
+                catno: [e.li.map(l => `<div>${esc(l.catno)}</div>`).join(''), 'mono'],
+                barcode: [esc(e.barcode), 'mono'],
+                status: [esc(e.status)],
+                packaging: [esc(e.packaging)],
+                lang: [esc((e.lang || []).join(' / '))],
+                comment: [esc(e.disambig)],
+            })}
             <td class="lk">${sortP(e.links).map(p => plA(p, 18, 'ti')).join('')}</td>
-        </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="9">${edTracksHtml(e)}</td></tr>` : ''}`;
+        </tr>${edOpen.has(e.id) ? `<tr class="ed-x"><td></td><td colspan="${colsOf(st) + 1}">${edTracksHtml(e)}</td></tr>` : ''}`;
     };
-    return `<div class="ed-tw"><table class="ed-t"><colgroup><col>${ED_COLS.map(c => `<col${c[0] === sk ? ' class="sc"' : ''}>`).join('')}<col></colgroup><thead><tr><th></th>${ED_COLS.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="10">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
+    return `<div class="ed-tw"><table class="ed-t${st.off.has('comment') ? '' : ' cmt'}"><colgroup><col>${st.order.map(k => `<col${k === sk ? ' class="sc"' : ''}${colAttr(st, k)}>`).join('')}<col></colgroup><thead><tr><th></th>${st.order.map(th).join('')}<th>Links</th></tr></thead>${flat ? `<tbody>${es.map(row).join('')}</tbody>` : groups.map(g => { const l = es.filter(e => (e.status || '') === g), [shut, h] = grpHead('ed:' + (g || '-'), g || 'No status', l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 2}">${h}</th></tr>${shut ? '' : l.map(row).join('')}</tbody>`; }).join('')}</table></div>`;
 }
 const EDV = [['grid', 'Grid', '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'], ['row', 'Row', '<path d="M4 6h16M4 12h16M4 18h16"/>'], ['format', 'By format', '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 9h6M14 15h6M14 19h6"/>'], ['table', 'Table', '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>']];
 const viewBs = (views, cur, attr, label) => `<span class="ed-views" role="group" aria-label="${label}">${EDV.filter(([v]) => views.includes(v)).map(([v, n, d]) => `<button type="button" data-${attr}="${v}" aria-pressed="${cur === v}" aria-label="${n}" data-tip="${n}">${SVG(d)}</button>`).join('')}</span>`;
@@ -3627,7 +3687,7 @@ function edHtml(r, eds, count) {
         <span style="display:flex;flex-wrap:wrap;gap:8px">${kindList.map(([k, n]) => `<button class="chip" type="button" data-edjump="${k}" data-tip="Show the ${KIND_NAME[k]} editions">${fmtSvg(k, 14)}${KIND_NAME[k]} ${n}</button>`).join('')}</span>
         <span style="font-size:13px;color:var(--muted)">${covers} with covers · ${unofficial} unofficial</span></div>`;
     let filters = `<div class="ed-filter"><div class="ed-seg" role="group" aria-label="Format"><button type="button" data-edkind="" aria-pressed="${!S.ed.kinds.size}">All <span class="n">${all.length}</span></button>${kindList.map(([k, n]) => `<button type="button" data-edkind="${k}" aria-pressed="${S.ed.kinds.size === 1 && S.ed.kinds.has(k)}">${fmtSvg(k, 14)}${KIND_NAME[k]} <span class="n">${n}</span></button>`).join('')}</div><button class="ed-sw" type="button" role="switch" data-edoff aria-checked="${S.ed.official}" data-tip="Show only official releases, hiding bootlegs, promotions and other unofficial ones"><i></i>Official</button><span class="ed-div"></span>${fltBtn('ed', all)}${views.replace('<span class="ed-div"></span>', '')}</div>` + fltBar('ed', all);
-    const tools = fltBtn('ed', all) + views;
+    const tools = fltBtn('ed', all) + (view === 'table' ? colBtn('ed') : '') + views;
     filters = filters.replace(fltBtn('ed', all), '').replace(views.replace('<span class="ed-div"></span>', ''), '');
     if (r.native) filters = filters.replace(/<button class="ed-sw"[\s\S]*?<\/button>/, '');
     let body;
@@ -7057,7 +7117,7 @@ const FLT_COLS = {
         ['date', g => g['first-release-date']], ['year', g => yearOf(g['first-release-date'])], ['rating', g => String(starsShown('release_group', g.id, g.rating))]],
     ed: [['release', e => e.title], ['title', e => e.title], ['artist', e => acText(e.ac)], ['format', e => e.formats.join(' ')], ['tracks', e => String(e.counts.reduce((a, b) => a + (+b || 0), 0))],
         ['country', e => e.where.join(' ')], ['date', e => e.date], ['year', e => yearOf(e.date)], ['label', e => e.labels.join(' ')], ['catno', e => e.li.map(l => l.catno).join(' ')],
-        ['barcode', e => e.barcode], ['status', e => e.status]],
+        ['barcode', e => e.barcode], ['status', e => e.status], ['packaging', e => e.packaging], ['language', e => (e.lang || []).join(' ')], ['comment', e => e.disambig]],
 };
 function fltPass(sc, x, skip) {
     const f = FLT[sc], cols = FLT_COLS[sc];
@@ -7128,7 +7188,7 @@ const fltBtn = (sc, xs) => { const f = FLT[sc], on = f.open || f.q || Object.key
 const total0 = x => x['release-group-count'] || (x['release-groups'] || []).length;
 // a heading's funnel in the discography and the releases: "column:" added to the filter box, ready for the value
 const fFun = (sc, k, n) => k ? `<button type="button" class="tq-col" data-ffun="${sc}\t${k}" aria-label="Filter by ${n}" data-tip="Filter by ${n}"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></button>` : '';
-const DG_FUN = { title: 'title', artist: 'artist', date: 'date', rating: 'rating' }, ED_FUN = { title: 'release', artist: 'artist', format: 'format', tracks: 'tracks', date: 'date', label: 'label', catno: 'catno', barcode: 'barcode' };
+const DG_FUN = { title: 'title', artist: 'artist', date: 'date', rating: 'rating' }, ED_FUN = { title: 'release', artist: 'artist', format: 'format', tracks: 'tracks', date: 'date', label: 'label', catno: 'catno', barcode: 'barcode', status: 'status', packaging: 'packaging', lang: 'language', comment: 'comment' };
 const DG_ORDER = ['Album', 'EP', 'Single', 'Broadcast', 'Other'];
 function discoHtml(d) {
     const x = d.discX;
@@ -7145,16 +7205,17 @@ function discoHtml(d) {
         rating: g => rv(g) == null ? '' : String(rv(g)), releases: g => rc(g) == null ? '' : String(rc(g)) }[sk] || (g => g['first-release-date'] || '9');
     const bySort = l => l.sort((a, b) => (desc ? -1 : 1) * kv(a).localeCompare(kv(b), undefined, { sensitivity: 'base', numeric: true }) || (a['first-release-date'] || '9').localeCompare(b['first-release-date'] || '9'));
     const gs = [...m].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([k, l]) => [k, bySort(l)]);
-    const th = (k, n, c) => `<th${c ? ` class="${c}"` : ''} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}</th>`;
-    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td><td><a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}</td><td>${acHtml(g['artist-credit'] || [])}</td><td class="mono">${g['first-release-date'] ? fdate(g['first-release-date']) : '—'}</td><td>${rateStars('release_group', g.id, g.rating, true)}</td><td class="num">${rc(g) != null ? rc(g) : '—'}</td><td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
+    const st = colState('dg');
+    const th = (k, c) => { const n = COLS.dg.names[k]; return `<th${c ? ` class="${c}"` : ''}${colAttr(st, k)} aria-sort="${sk === k ? (desc ? 'descending' : 'ascending') : 'none'}"><button type="button" class="dg-sort${sk === k ? ' on' : ''}" data-dgsort="${k}" data-tip="Sort by ${n.toLowerCase()}">${n}<i>${sk === k ? (desc ? '↓' : '↑') : '↕'}</i></button>${fFun('dg', DG_FUN[k], n.toLowerCase())}</th>`; };
+    const trow = g => `<tr><td class="tc"><a href="${MB}/release-group/${g.id}" class="tt"><img src="https://coverartarchive.org/release-group/${g.id}/front-250" alt="" loading="lazy" data-dgcover></a></td>${colTds(st, { title: [`<a href="${MB}/release-group/${g.id}">${esc(g.title)}</a>${g.disambiguation ? ` <span class="sub">(${esc(g.disambiguation)})</span>` : ''}`], artist: [acHtml(g['artist-credit'] || [])], date: [g['first-release-date'] ? fdate(g['first-release-date']) : '—', 'mono'], rating: [rateStars('release_group', g.id, g.rating, true)], releases: [rc(g) != null ? rc(g) : '—', 'num'] })}<td class="lk">${sortP(urlsOf(g.relations || [])).map(p => plA(p, 18, 'ti')).join('')}</td></tr>`;
     const head = (k, l) => `<h3 class="disco-h">${grpHead('dg:' + k, k, l.length)[1]}</h3>`;
-    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${th('title', 'Title')}${th('artist', 'Artist')}${th('date', 'First released')}${th('rating', 'Rating')}${th('releases', 'Releases', 'num')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="7">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
+    const body = (S.dgView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th></th>${st.order.map(k => th(k, k === 'releases' ? 'num' : '')).join('')}<th>Links</th></tr></thead>${gs.map(([k, l]) => { const [shut, h] = grpHead('dg:' + k, k, l.length); return `<tbody><tr class="gh"><th colspan="${colsOf(st) + 2}">${h}</th></tr>${shut ? '' : l.map(trow).join('')}</tbody>`; }).join('')}</table></div>`
         : gs.map(([k, l]) => head(k, l) + (S.grpFold.includes('dg:' + k) ? '' : `<div class="${S.dgView === 'row' ? 'ed-row disco' : 'disco'}">${l.map(tile).join('')}</div>`)).join(''));
     // past the first 100, the rest page in by Load more or Auto, as the other ws/2 lists
     const paged = x.q && total0(x) > allRgs.length;
     if (paged) WSX.dg = { x, key: 'release-groups', q: x.q };
     const total = x['release-group-count'] || allRgs.length, n = `${total} release group${total === 1 ? '' : 's'}${total > allRgs.length ? ` · first ${allRgs.length} shown` : ''}`;
-    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg', allRgs) + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
+    return sect('dg', `Discography <span class="count">${total}</span>`, (x.va ? `<span class="aside">for various artists</span>` : '') + (total > allRgs.length && !paged ? `<span class="aside">first ${allRgs.length} shown</span>` : '') + fltBtn('dg', allRgs) + (S.dgView === 'table' ? colBtn('dg') : '') + viewBs(['grid', 'row', 'table'], S.dgView, 'dgview', 'Discography view'), fltBar('dg', allRgs) + body + (paged ? lmFoot('ws:dg', allRgs.length, total) : ''), `<div class="folded-note">${n}</div>`);
 }
 
 /* ── artwork ───────────────────────────────────────── */
@@ -7223,7 +7284,7 @@ function editMenu(app) {
     e.removeAttribute("data-tip"); e.removeAttribute("title");    // the menu opening under it says enough; a tip would cover it
     w.insertAdjacentHTML('beforeend', `<span class="abm">${it.map(([p, n, ic]) => `<a class="ab" href="${base}/${p}">${SVG(ic)}<span>${n}</span></a>`).join('')}</span>`);
 }
-var releasePageDraw, secDrag = null, secRedraw = false;
+var releasePageDraw, secDrag = null, secRedraw = false, colDrag = false;
 // Pending edits, MusicBrainz's grey mark: ws/2 doesn't carry them, /ws/js does. This is the page's last request: it starts
 // once everything else is in, after a pause, waits for the tab to be in view and idle, and takes the gate's next free slot
 // behind whatever is queued, giving way to any page being drawn. A reader who moves on cancels it.
@@ -7270,10 +7331,89 @@ function pdPaint(app) {
         else if (a.classList.contains('t') && [...p.rids].some(x => h.endsWith('/recording/' + x))) a.classList.add('eh-mp');
     }
 }
+// The Columns menu. While a row is dragged the others slide aside by transform, and the table follows at every new slot; the rows change places in the DOM, and the choice is saved, on the drop.
+function colWire(root) {
+    const orderOf = list => [...list.children].map(r => r.dataset.colk);
+    const offOf = list => [...list.children].filter(r => !r.querySelector('input').checked).map(r => r.dataset.colk);
+    root.addEventListener('change', ev => {
+        const sc = ev.target.dataset && ev.target.dataset.colon; if (!sc) return;
+        const list = ev.target.closest('.col-list');
+        colKeep(sc, orderOf(list), offOf(list)); save(); colApply(sc);
+    });
+    root.addEventListener('keydown', ev => {
+        const h = ev.target.closest && ev.target.closest('.col-h'), up = ev.key === 'ArrowUp';
+        if (!h || (!up && ev.key !== 'ArrowDown')) return;
+        ev.preventDefault();
+        const row = h.parentNode, list = row.parentNode, to = up ? row.previousElementSibling : row.nextElementSibling;
+        if (!to) return;
+        list.insertBefore(row, up ? to : to.nextElementSibling); h.focus();
+        const sc = list.dataset.collist; colKeep(sc, orderOf(list), offOf(list)); save(); colApply(sc);
+    });
+    root.addEventListener('pointerdown', ev => {
+        const h = ev.target.closest && ev.target.closest('.col-h');
+        if (!h || ev.button || colDrag) return;
+        ev.preventDefault();
+        const row = h.parentNode, list = row.parentNode, pop = list.closest('.pop'), sc = list.dataset.collist, rows = [...list.children], from = rows.indexOf(row);
+        if (rows.length < 2) return;
+        const was = S.colPick[sc], order = orderOf(list), off = offOf(list), step = rows[1].offsetTop - rows[0].offsetTop, y0 = ev.clientY, top0 = pop.scrollTop;
+        let y = y0, slot = from, raf = 0, done = false;
+        const place = () => {
+            const dy = Math.max(-from * step, Math.min((rows.length - 1 - from) * step, y - y0 + pop.scrollTop - top0));
+            row.style.transform = `translateY(${dy}px)`;
+            const to = Math.max(0, Math.min(rows.length - 1, from + Math.round(dy / step)));
+            if (to === slot) return;
+            slot = to;
+            rows.forEach((r, i) => { if (r !== row) r.style.transform = i > from && i <= slot ? `translateY(${-step}px)` : i < from && i >= slot ? `translateY(${step}px)` : ''; });
+            const next = order.filter(k => k !== row.dataset.colk); next.splice(slot, 0, row.dataset.colk);
+            colKeep(sc, next, off); colApply(sc);
+        };
+        const tick = () => { // near the menu's edge a long list scrolls under the row
+            const b = pop.getBoundingClientRect(), by = y < b.top + 28 ? -6 : y > b.bottom - 28 ? 6 : 0;
+            if (by) { pop.scrollTop += by; place(); }
+            raf = requestAnimationFrame(tick);
+        };
+        const move = e => { y = e.clientY; place(); };
+        const end = keep => {
+            if (done) return; done = true;
+            cancelAnimationFrame(raf);
+            h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); h.removeEventListener('pointercancel', cancel);
+            removeEventListener('keydown', key, true);
+            document.body.classList.remove('col-dragging');
+            if (!keep) { slot = from; S.colPick = was ? { ...S.colPick, [sc]: was } : Object.fromEntries(Object.entries(S.colPick).filter(([k]) => k !== sc)); colApply(sc); }
+            row.classList.remove('drag');
+            rows.forEach((r, i) => { r.style.transform = r === row ? `translateY(${(slot - from) * step}px)` : keep && i > from && i <= slot ? `translateY(${-step}px)` : keep && i < from && i >= slot ? `translateY(${step}px)` : ''; });
+            setTimeout(() => {
+                list.classList.add('still');
+                if (keep && slot !== from) list.insertBefore(row, rows.filter(r => r !== row)[slot] || null);
+                rows.forEach(r => { r.style.transform = ''; });
+                void list.offsetHeight;
+                list.classList.remove('still');
+                colDrag = false;
+                if (keep && slot !== from) save();
+                if (secRedraw) { secRedraw = false; render(); }
+            }, matchMedia('(prefers-reduced-motion:reduce)').matches ? 0 : 170);
+        };
+        const up = () => end(true), cancel = () => end(false);
+        const key = e => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); end(false); } };
+        colDrag = true;
+        row.classList.add('drag');
+        document.body.classList.add('col-dragging');
+        h.setPointerCapture(ev.pointerId);
+        h.addEventListener('pointermove', move); h.addEventListener('pointerup', up); h.addEventListener('pointercancel', cancel);
+        addEventListener('keydown', key, true);
+        raf = requestAnimationFrame(tick);
+    });
+}
 function render(keepPop) {
-    if (secDrag) { secRedraw = true; return; } // keep the dragged rail row attached until the drag ends
+    if (secDrag || colDrag) { secRedraw = true; return; } // keep the dragged row attached until the drag ends
+    if (!keepPop) { const p = $('.col-pop:not([hidden])'); if (p) keepPop = p.id.slice(4); } // a background redraw leaves the Columns menu open
     if (!data || data.kind !== 'home') secFab(false);
-    if (releasePageDraw) { releasePageDraw(); pdPaint($('#app')); save(); return; }
+    if (releasePageDraw) {
+        releasePageDraw(); pdPaint($('#app')); save();
+        const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`);
+        if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); }
+        return;
+    }
     const app = $('#app') || (ehBody && ehBody.querySelector('#app'));   // a fetch can land after the switch to MusicBrainz's page, which takes ours out of the document
     bgApply();
     ehWidth();
@@ -8053,6 +8193,7 @@ function onClick(ev) {
     let keep;
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
     if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); return; }
+    if (d.colreset) { const sc = d.colreset, { [sc]: _, ...rest } = S.colPick; S.colPick = rest; save(); colApply(sc); $(`[data-collist="${sc}"]`).innerHTML = colRows(sc); return; }
     if (d.copy) {
         const label = b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, '');
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
@@ -8600,6 +8741,7 @@ function releasesDress(c) {
     };
     host.addEventListener('click', ev => { if (!ehOn || !ev.target.closest('button,.secthead')) return; ev.preventDefault(); onClick(ev); });
     listFilters(host);
+    colWire(host);
     host.addEventListener('contextmenu', ev => { const b = ev.target.closest('[data-fold],[data-gfold]'); if (!ehOn || !b) return; ev.preventDefault(); b.click(); });
     releasePageDraw();
 }
@@ -8990,6 +9132,7 @@ const HIDE = 'body{visibility:hidden!important}';
 const mbSheets = on => { for (const n of document.querySelectorAll('link[rel~="stylesheet"]')) if (!/^(eh-|mbu)/.test(n.id) && /(^|\.)(meta|music)brainz\.org$/.test(new URL(n.href, location.href).hostname)) n.disabled = !on; };
 function listFilters(root) {
     // the filter bar: a chosen value sets its field; the title box filters as it is typed in, and keeps its caret
+    colWire(root);
     root.addEventListener('change', ev => {
         if (ev.target.matches && ev.target.matches('[data-lmauto]')) { S.lmAuto = ev.target.checked; save(); for (const c of document.querySelectorAll('[data-lmauto]')) c.checked = S.lmAuto; lmWatch($('#app')); return; }
         const t = ev.target, sc = t.dataset && (t.dataset.fset || t.dataset.fadd);

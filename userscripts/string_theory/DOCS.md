@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 13:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 13:35 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -775,7 +775,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Tracklist](#tracklist-1)**: each track's credits and its streaming links, with platforms deduplicated.
-- **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
+- **[Releases and discography](#releases-and-discography)** as a grid or a table you choose and order the columns of, grouped by type, with a filter.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 
 Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, infinite scroll, advanced filtering and grouped edit history.
@@ -808,6 +808,8 @@ Expanded track contains info about associated recording and works.
 ### Releases and discography
 
 A release group lists its releases, and an artist or label its discography, grouped by type, albums first. Switch between a grid of covers and a table; click a table's column to sort it.
+
+**Columns**, beside the view buttons of a table, chooses what the table shows and in what order, and is remembered for all releases or all discographies. Tick a column to show it, drag its handle or press the arrow keys on it to move it, and Esc during a drag takes the move back. Releases also offer Status, Packaging, Language / script and Comment; +N on the button counts the columns left out. A hidden column still sorts and filters.
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 
