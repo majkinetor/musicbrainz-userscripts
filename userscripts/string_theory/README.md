@@ -17,6 +17,7 @@
 | [Apollo Editor](../apollo_editor)     | A faster release editor: artists and recordings auto-matched; attach disc IDs from CD rip logs |
 | [Art Station](../art_station)         | Edit cover art and find it online with parallel edits, retried on errors                       |
 | [Credit Hoarder](../credit_hoarder)   | Import credits from several providers with a review phase                                      |
+| [Event Horizon](../event_horizon)     | A redesigned, modern MusicBrainz interface with light and dark themes                          |
 | [Falcon](../falcon)                   | Batch import entity fields from Harmony or by hand                                             |
 | [First Contact](../first_contact)     | Import a release from a platform's album page                                                  |
 | [Fusion](../fusion)                   | Find and merge duplicate recordings from one window                                            |
