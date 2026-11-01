@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.01.001504
+// @version      2026.11.01.182239
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3327,6 +3327,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-picked-cat { font-family: var(--mbu-font-mono); }
   :is(#pc-bc-pop, #pc-cat-pop) { position: fixed; overflow-y: auto; box-sizing: border-box; z-index: var(--mbu-z-pop); width: 250px; padding: 6px; background: var(--mbu-bg); color: var(--mbu-text); border: 1px solid var(--mbu-border); border-radius: var(--mbu-radius); box-shadow: var(--mbu-shadow-lg); font: 12px var(--mbu-font); }
   /* EH's dock window sits above modal panels; its pickers must clear it. */
+  #mb-pin-btn { display: none !important; }
+  .mbu-dock-win #mb-pin-btn { display: inline-flex !important; }
+  .mbu-dock-win.pc-pinned #mb-pin-btn { color: var(--mbu-accent, #ba478f); }
+  .mbu-dock-win.pc-pinned #pc-head { cursor: move; touch-action: none; }
   :root[data-mbu-dock] :is(#pc-bc-pop, #pc-cat-pop) { z-index: calc(var(--mbu-z-modal-panel) + 2); }
   :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
   :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-opt { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 6px; border-radius: var(--mbu-radius); cursor: pointer; }
@@ -3531,11 +3535,13 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   #mb-pc-panel .pc-row-mb .pc-plat-ico { display: inline-flex; }
 </style>
 <div style="margin-bottom: 6px;">
-  <div style="display: flex; align-items: center; justify-content: space-between;">
+  <div id="pc-head" style="display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 4px;">
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" data-tip="Refresh\nClear the cache and scan again" style="${iconBtn}">↻</span>
     </div>
+    <span id="mb-pin-btn" class="pc-icon-btn" role="button" aria-pressed="false" aria-label="Pin the panel" data-tip="Pin
+Keep the panel open on every release page. While pinned, drag it by its title" style="${iconBtn}"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M15 3l6 6-2 1-1.5-.5-3.6 3.6.6 4.4-1.5 1.5-4-4-5 5-1-1 5-5-4-4L5.500 8.500l4.400.6 3.600-3.600L13 4z"/></svg></span>
   </div>
   <!-- #740: what the platforms offer (barcodes, catalog numbers) on a line of their own, so the title line never moves;
        shown only while one of them is (pcSyncOffers) -->
@@ -3750,12 +3756,41 @@ if (!PC_SEED) {
         const docked = document.documentElement.hasAttribute('data-mbu-dock') || pcIface() === 'dock';
         if (docked && container.parentNode !== win) { win.appendChild(container); document.documentElement.appendChild(win); }
         else if (!docked && container.parentNode === win) { home.insertBefore(container, next && next.parentNode === home ? next : null); win.remove(); open = false; win.hidden = true; }
+        pcPlace();
+        if (pcPinned() && docked && !SETTINGS_ONLY) { open = true; win.hidden = false; pcPlace(); }
     };
+    // Pinned (only while the panel is in its dock window): open on every page, at the spot it was dragged to
+    const pcPinned = () => GM_getValue('pc:dock-pin', false) === true;
+    const pcPlace = () => {
+        const pin = pcPinned() && container.parentNode === win, st = win.style, pos = GM_getValue('pc:dock-pos', null);
+        win.classList.toggle('pc-pinned', pin);
+        const pinBtn = container.querySelector('#mb-pin-btn');
+        if (pinBtn) pinBtn.setAttribute('aria-pressed', String(pin));
+        if (!pin || !pos) { st.left = st.top = st.right = st.bottom = st.maxHeight = ''; return; }
+        const x = Math.max(0, Math.min(window.innerWidth - win.offsetWidth, pos.x)), y = Math.max(0, Math.min(window.innerHeight - 120, pos.y));
+        st.left = x + 'px'; st.top = y + 'px'; st.right = st.bottom = 'auto'; st.maxHeight = `calc(100vh - ${y + 8}px)`;
+    };
+    container.querySelector('#mb-pin-btn').addEventListener('click', () => {
+        if (pcPinned()) GM_setValue('pc:dock-pin', false);
+        else { const r = win.getBoundingClientRect(); GM_setValue('pc:dock-pos', { x: Math.round(r.left), y: Math.round(r.top) }); GM_setValue('pc:dock-pin', true); }
+        pcPlace();
+    });
+    container.querySelector('#pc-head').addEventListener('pointerdown', e => {
+        if (e.button || !win.classList.contains('pc-pinned') || e.target.closest('.pc-icon-btn')) return;
+        e.preventDefault();
+        const r = win.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+        let pos = { x: Math.round(r.left), y: Math.round(r.top) };
+        const mv = ev => { pos = { x: Math.round(ev.clientX - dx), y: Math.round(ev.clientY - dy) }; GM_setValue('pc:dock-pos', pos); pcPlace(); };
+        const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    });
+    window.addEventListener('resize', pcPlace);
+    new ResizeObserver(pcPlace).observe(win);   // scans change its width
     new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock'] });
     park();
     const close = () => { open = false; win.hidden = true; };
-    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') close(); });
-    document.addEventListener('pointerdown', ev => { if (open && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop')) close(); }, true);
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !pcPinned()) close(); });
+    document.addEventListener('pointerdown', ev => { if (open && !pcPinned() && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop')) close(); }, true);
     pcDockItem = mbuDockItem({ id: 'mb-pc-dock', label: 'Platform Check', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=', order: 61,
         paths: '^/release/[0-9a-fA-F-]{36}/?$',
         click: () => {
