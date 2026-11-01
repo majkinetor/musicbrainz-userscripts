@@ -822,6 +822,10 @@ html:root[data-eh-theme] .tr .ti .mk > .on,
 html:root[data-eh-theme] .ed-views button[aria-pressed=true],
 html:root[data-eh-theme] .stars:not(.mine),
 html:root[data-eh-theme] .stars:not(.mine):not(:hover) .st.on { color: var(--link); }
+/* Entity glyphs and sorted-column text need ink contrast, independently of filled buttons. */
+html:root[data-eh-theme] .kicker > svg,
+html:root[data-eh-theme] #app .ed-t th[aria-sort=ascending],
+html:root[data-eh-theme] #app .ed-t th[aria-sort=descending] { color: var(--link); }
 /* Small heading tags use the ink colour, independently of filled-button contrast. */
 html:root[data-eh-theme] .detail .grp h4 .tag {
 	color: var(--link);
