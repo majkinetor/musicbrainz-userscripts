@@ -1,11 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-<<<<<<< HEAD
-// @version      2026.11.01.190717
-=======
-// @version      2026.11.01.191141
->>>>>>> f7003751 (Platform Check: a pinned panel is see-through until hovered)
+// @version      2026.11.01.203000
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3333,9 +3329,17 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   /* EH's dock window sits above modal panels; its pickers must clear it. */
   #mb-pin-btn { display: none !important; }
   .mbu-dock-win #mb-pin-btn { display: inline-flex !important; }
-  .mbu-dock-win.pc-pinned #mb-pin-btn { color: var(--mbu-accent, #ba478f); }
-  .mbu-dock-win.pc-pinned { overflow-x: hidden; opacity: .4; transition: opacity .15s; }
-  .mbu-dock-win.pc-pinned:hover, .mbu-dock-win.pc-pinned:focus-within { opacity: 1; }
+  .mbu-dock-win[data-pc-mode] #mb-pin-btn { color: var(--mbu-accent, #ba478f); }
+  .mbu-dock-win.pc-pinned { overflow-x: hidden; }
+  .mbu-dock-win[data-pc-mode="ghost"] { opacity: .4; transition: opacity .15s; }
+  .mbu-dock-win[data-pc-mode="ghost"]:hover, .mbu-dock-win[data-pc-mode="ghost"]:focus-within { opacity: 1; }
+  #pc-head { position: relative; }
+  #pc-pos-menu { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; min-width: 170px; padding: 4px; background: var(--mbu-bg, #fff); border: 1px solid var(--mbu-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: default; }
+  #pc-pos-menu[hidden] { display: none; }
+  #pc-pos-menu button { display: flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 10px 4px 6px; background: none; border: 0; border-radius: 4px; color: var(--mbu-text); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+  #pc-pos-menu button:hover { background: var(--mbu-bg-sunken); }
+  #pc-pos-menu button::before { content: ""; width: 14px; flex: none; }
+  #pc-pos-menu button[aria-checked="true"]::before { content: "✓"; color: var(--mbu-accent, #ba478f); }
   .mbu-dock-win.pc-pinned #pc-head { cursor: move; touch-action: none; }
   :root[data-mbu-dock] :is(#pc-bc-pop, #pc-cat-pop) { z-index: calc(var(--mbu-z-modal-panel) + 2); }
   :is(#pc-bc-pop, #pc-cat-pop) .pc-bc-h { margin: 0 4px 4px; font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--mbu-text-dim); }
@@ -3546,8 +3550,16 @@ ${MBU_TOKENS}${MBU_UI_CSS}
       <h3 style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: var(--mbu-text-dim); white-space: nowrap;">Platform Check</h3>
       <span id="mb-refresh-btn" class="pc-icon-btn" data-tip="Refresh\nClear the cache and scan again" style="${iconBtn}">↻</span>
     </div>
-    <span id="mb-pin-btn" class="pc-icon-btn" role="button" aria-pressed="false" aria-label="Pin the panel" data-tip="Pin
-Keep the panel open on every release page. While pinned, drag it by its title" style="${iconBtn}"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M15 3l6 6-2 1-1.5-.5-3.6 3.6.6 4.4-1.5 1.5-4-4-5 5-1-1 5-5-4-4L5.500 8.500l4.400.6 3.600-3.600L13 4z"/></svg></span>
+    <span id="mb-pin-btn" class="pc-icon-btn" role="button" aria-haspopup="menu" aria-expanded="false" aria-label="Position" data-tip="Position
+Where the panel stays: pinned, or opening from the dock icon" style="${iconBtn}"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M15 3l6 6-2 1-1.5-.5-3.6 3.6.6 4.4-1.5 1.5-4-4-5 5-1-1 5-5-4-4L5.500 8.500l4.400.6 3.600-3.600L13 4z"/></svg></span>
+    <div id="pc-pos-menu" role="menu" hidden>
+      <button type="button" role="menuitemradio" data-mode="pin" data-tip="Pin
+Open on every release page. Drag it by its title">Pin</button>
+      <button type="button" role="menuitemradio" data-mode="ghost" data-tip="Pin transparent
+Pinned, and see-through until you hover it">Pin transparent</button>
+      <button type="button" role="menuitemradio" data-mode="hover" data-tip="Dock hover
+Open while the mouse is on the dock icon, in place of its tooltip">Dock hover</button>
+    </div>
   </div>
   <!-- #740: what the platforms offer (barcodes, catalog numbers) on a line of their own, so the title line never moves;
        shown only while one of them is (pcSyncOffers) -->
@@ -3737,6 +3749,11 @@ else sidebar.prepend(container);
 var pcDockItem = null, pcPark = null;
 // #851: Interface: 'hud', the panel in the sidebar (the default), or 'dock', the panel behind its own icon
 // in the corner, the way Event Horizon shows it: in String Theory's dock, or standing alone without it
+// How the dock panel stays (Position menu): 'pin', 'ghost' (pinned, see-through until hovered), 'hover' (opens from the dock icon's hover), '' (by click)
+function pcDockMode() {
+    const m = GM_getValue('pc:dock-mode', null);
+    return m === null ? (GM_getValue('pc:dock-pin', false) === true ? 'ghost' : '') : m;   // a pin from before the menu was see-through
+}
 function pcIface() { return GM_getValue('pc:interface', 'hud') === 'dock' ? 'dock' : 'hud'; }
 function pcApplyIface() {
     if (!pcDockItem) return;
@@ -3752,7 +3769,7 @@ function pcDockStatus() {
     if (pcDockItem) pcDockItem.status(pcDockFound || h || a ? pcDockFound + (h ? ',' + h : '') + (a ? '/' + a : '') : '✓');
 }
 if (!PC_SEED) {
-    const home = container.parentNode, next = container.nextSibling;
+    const home = container.parentNode, next = container.nextSibling, posMenu = container.querySelector('#pc-pos-menu');
     // While Event Horizon shows, the panel waits in a hidden window outside the body EH swapped out:
     // the scans find their rows by id in the document, so in the detached body they'd fill nothing
     const win = document.createElement('div'); win.className = 'mbu-dock-win'; win.hidden = true;
@@ -3766,7 +3783,7 @@ if (!PC_SEED) {
         if (pcPinned() && docked && !SETTINGS_ONLY) { open = true; win.hidden = false; pcPlace(); }
     };
     // Pinned (only while the panel is in its dock window): open on every page, where it was dragged, holding whichever of its own edges is nearer the screen's on each axis
-    const pcPinned = () => GM_getValue('pc:dock-pin', false) === true;
+    const pcPinned = () => ['pin', 'ghost'].includes(pcDockMode());
     const pcAnchor = (top, height) => {
         const below = window.innerHeight - top - height;
         GM_setValue('pc:dock-v', top <= below ? { edge: 'top', gap: Math.max(0, Math.round(top)) } : { edge: 'bottom', gap: Math.max(0, Math.round(below)) });
@@ -3778,8 +3795,9 @@ if (!PC_SEED) {
     const pcPlace = () => {
         const pin = pcPinned() && container.parentNode === win, st = win.style;
         win.classList.toggle('pc-pinned', pin);
-        const pinBtn = container.querySelector('#mb-pin-btn');
-        if (pinBtn) pinBtn.setAttribute('aria-pressed', String(pin));
+        const mode = container.parentNode === win ? pcDockMode() : '';
+        if (mode) win.dataset.pcMode = mode; else delete win.dataset.pcMode;
+        posMenu.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
         if (!pin) { st.left = st.top = st.right = st.bottom = st.maxHeight = ''; return; }
         const h = GM_getValue('pc:dock-h', { edge: 'right', gap: 0 }), hGap = Math.min(h.gap, Math.max(0, window.innerWidth - 200));
         st.left = h.edge === 'left' ? hGap + 'px' : 'auto'; st.right = h.edge === 'left' ? 'auto' : hGap + 'px';
@@ -3787,13 +3805,19 @@ if (!PC_SEED) {
         st.top = v.edge === 'top' ? gap + 'px' : 'auto'; st.bottom = v.edge === 'top' ? 'auto' : gap + 'px';
         st.maxHeight = `calc(100vh - ${gap}px)`;
     };
-    container.querySelector('#mb-pin-btn').addEventListener('click', () => {
-        if (pcPinned()) GM_setValue('pc:dock-pin', false);
-        else { const r = win.getBoundingClientRect(); pcAnchorH(r.left, r.width); pcAnchor(r.top, r.height); GM_setValue('pc:dock-pin', true); }
-        pcPlace();
+    const posBtn = container.querySelector('#mb-pin-btn');
+    const posShow = on => { posMenu.hidden = !on; posBtn.setAttribute('aria-expanded', String(on)); };
+    posBtn.addEventListener('click', () => posShow(posMenu.hidden));
+    posMenu.addEventListener('click', e => {
+        const item = e.target.closest('button');
+        if (!item) return;
+        const mode = item.dataset.mode === pcDockMode() ? '' : item.dataset.mode;   // the ticked one turns off
+        if (['pin', 'ghost'].includes(mode) && !pcPinned()) { const r = win.getBoundingClientRect(); pcAnchorH(r.left, r.width); pcAnchor(r.top, r.height); }
+        GM_setValue('pc:dock-mode', mode);
+        posShow(false); pcPlace();
     });
     container.querySelector('#pc-head').addEventListener('pointerdown', e => {
-        if (e.button || !win.classList.contains('pc-pinned') || e.target.closest('.pc-icon-btn')) return;
+        if (e.button || !win.classList.contains('pc-pinned') || e.target.closest('.pc-icon-btn, #pc-pos-menu')) return;
         e.preventDefault();
         const r = win.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
         const mv = ev => { pcAnchorH(ev.clientX - dx, win.offsetWidth); pcAnchor(ev.clientY - dy, win.offsetHeight); pcPlace(); };
@@ -3803,15 +3827,30 @@ if (!PC_SEED) {
     window.addEventListener('resize', pcPlace);
     new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock'] });
     park();
-    const close = () => { open = false; win.hidden = true; };
-    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !pcPinned()) close(); });
+    const close = () => { open = false; win.hidden = true; posShow(false); };
+    document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; if (!posMenu.hidden) posShow(false); else if (!pcPinned()) close(); });
+    document.addEventListener('pointerdown', ev => { if (!posMenu.hidden && !ev.target.closest('#pc-pos-menu, #mb-pin-btn')) posShow(false); }, true);
     document.addEventListener('pointerdown', ev => { if (open && !pcPinned() && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop')) close(); }, true);
     pcDockItem = mbuDockItem({ id: 'mb-pc-dock', label: 'Platform Check', icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=', order: 61,
         paths: '^/release/[0-9a-fA-F-]{36}/?$',
         click: () => {
+            if (open && pcDockMode() === 'hover') return;   // the hover already opened it
             if (open) { close(); return; }
             park(); open = true; win.hidden = false;
         } });
+    // Dock hover: open with the mouse on the icon; close once it has left the icon, the panel and whatever the panel opened
+    let hoverT = 0;
+    const hoverOut = () => {
+        clearTimeout(hoverT);
+        hoverT = setTimeout(() => {
+            if (!open || pcDockMode() !== 'hover') return;
+            if (win.matches(':hover') || pcDockItem.matches(':hover') || document.querySelector('.mbu-logpop:hover, .mbu-ov:hover, #mb-provider-modal-overlay:hover, #mbu-tip:hover')) hoverOut();
+            else close();
+        }, 250);
+    };
+    pcDockItem.addEventListener('mouseenter', () => { if (pcDockMode() === 'hover' && !SETTINGS_ONLY) { clearTimeout(hoverT); park(); open = true; win.hidden = false; } });
+    pcDockItem.addEventListener('mouseleave', hoverOut);
+    win.addEventListener('mouseleave', hoverOut);
     pcPark = park;
     pcApplyIface();
     pcDockItem.oncontextmenu = e => { e.preventDefault(); if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); };   // into the body that shows (Event Horizon swaps it)   // #695: right-click opens the settings
@@ -8693,7 +8732,7 @@ async function runScansInner() {
         pcDockFound = found.length; pcDockHeld = held.length;
         pcDockStatus();
         const line = (dot, k, ps) => `<span class="mbu-tip-dl"><i style="background:${dot}"></i>${k}</span><span class="mbu-tip-dt"><b>${ps.length}</b> ${ps.map(p => `<span title="${PROVIDER_NAME[p]}" style="display:inline-block;vertical-align:-3px;margin-left:3px">${stIcon(p, 15)}</span>`).join('')}</span>`;
-        pcDockItem.card(() => mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
+        pcDockItem.card(() => pcDockMode() === 'hover' ? null : mbuTipCard({ title: 'Platform Check', body: '<div class="mbu-tip-rows">'
             + line('#4cbf7a', 'On MusicBrainz', on) + line('#e0a640', 'To link', found) + (held.length ? line('#a0a0a0', 'Withheld', held) : '') + line('#e06060', 'Not found', none)
             + (pcDockArtists === null ? '' : `<span class="mbu-tip-dl"><i style="background:${pcDockArtists ? '#e0a640' : '#4cbf7a'}"></i>Artists &amp; labels</span><span class="mbu-tip-dt"><b>${pcDockArtists}</b> link${pcDockArtists === 1 ? '' : 's'} to add${pcDockArtistsHeld ? ` · <b>${pcDockArtistsHeld}</b> withheld` : ''}</span>`)
             + '</div>' }));

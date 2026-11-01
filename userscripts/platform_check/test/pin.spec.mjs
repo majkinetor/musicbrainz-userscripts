@@ -46,8 +46,23 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   check(await win.boundingBox().then(b => Math.round(b.x + b.width) === vw - 60), 'it stops anywhere, not only at a side');
   await page.screenshot({ path: process.env.PIN_SHOT || 'test-results/pin.png' });
 
-  await page.locator('#mb-pin-btn').click();
-  check(await page.evaluate(() => GM_getValue('pc:dock-pin')) === false, 'the pin button unpins it');
+  const pick = async mode => { await page.locator('#mb-pin-btn').click(); await page.locator(`#pc-pos-menu [data-mode="${mode}"]`).click(); };
+  check(await page.locator('.mbu-dock-win').getAttribute('data-pc-mode') === 'ghost', 'an old pin comes back as Pin transparent');
+  await pick('pin');
+  check(await page.locator('.mbu-dock-win').getAttribute('data-pc-mode') === 'pin', 'the menu switches to a plain pin');
+  await pick('pin');
+  check(await page.evaluate(() => GM_getValue('pc:dock-mode')) === '', 'picking the ticked one turns it off');
   await page.mouse.click(5, 300);
   check(!await page.locator('.mbu-dock-win').isVisible(), 'unpinned, a click outside closes it again');
+
+  await page.evaluate(() => GM_setValue('pc:dock-mode', 'hover'));
+  const dock = page.locator('#mb-pc-dock'), panel = page.locator('.mbu-dock-win');
+  await dock.hover();
+  await panel.waitFor({ state: 'visible' });
+  check(!await page.locator('#mbu-tip.mbu-tip-card').isVisible(), 'dock hover opens the panel in place of the tooltip');
+  await panel.locator('#pc-head h3').hover();
+  await page.waitForTimeout(500);
+  check(await panel.isVisible(), 'it stays while the mouse is on it');
+  await page.mouse.move(5, 300);
+  await panel.waitFor({ state: 'hidden' });
 });
