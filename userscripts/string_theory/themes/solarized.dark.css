@@ -756,3 +756,9 @@ body.skin--responsive #p-cactions li.selected a {
 div.autocomplete2 button.search {
 	filter: var(--invert-value);
 }
+html #ii-btn.has-missing {
+	background: #cb4b16;
+}
+html #ii-btn.has-missing:hover {
+	background: #a93d10;
+}
