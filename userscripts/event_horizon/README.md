@@ -50,6 +50,8 @@ Open a track to see its recording and work credits. The platforms it is on (Spot
 
 Click a card header, group or row to open or fold it. Right-click it, or its contents, to open or fold its siblings together. In the tracklist, tracks are siblings within a disc; right-click a card header to fold all cards into a contents list.
 
+In a table, click a release or release group's row, anywhere outside its links and buttons, to open it; Ctrl-click or middle-click opens it in a new tab. A release's track count opens its tracklist in place.
+
 **Credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
 
 The gear beside the tracklist's **Show** toggles sets alternating track colors and which platforms show, in which order, and how big. Click a platform to show or hide it, drag it to reorder.
