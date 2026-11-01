@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0005.00
+// @version      2026.11.02.0005.01
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -263,6 +263,21 @@ var MBU_HELP_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 // the sort-name guess, A over Z with a down arrow, for every button that guesses a sort name
 var MBU_SORT_ICON = '<svg viewBox="0 0 28 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3v18M1 17l4 4 4-4"/><path d="M13 11l3-8 3 8M14.1 8h3.8M13 14h6l-6 7h6"/></svg>';
 // the edit pencil, for every button that opens an editor (#849)
+// one icon per entity type, for every script: the inside of a 24×24 stroked <svg>, keyed by MB's entity name
+var MBU_ENT_ICONS = {
+    'release': '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    'release-group': '<path d="m12 3 9 4.5-9 4.5-9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/>',
+    'artist': '<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>',
+    'label': '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    'recording': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>',
+    'work': '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    'area': '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3.5 3 14.5 0 18"/><path d="M12 3c-3 3.5-3 14.5 0 18"/>',
+    'instrument': '<path d="M9 3v7a3 3 0 0 0 6 0V3"/><path d="M12 13v8"/><path d="M5 6l-1.5-1M5 9H3M19 6l1.5-1M19 9h2"/>',
+    'place': '<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+    'series': '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+    'event': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    'collection': '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M6 5h12M8 2h8"/>',
+};
 var MBU_EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 function mbuHelpHtml(name, label) {
     return '<a class="mbu-help" href="' + mbuHelpHref(name) + '" target="_blank" rel="noopener" aria-label="Help"'
@@ -3282,7 +3297,7 @@ function greyLift(k) {
 const plA = (p, size, cls, st = '') => `<a class="${cls}"${greyLift(p.key) + st ? ` style="${greyLift(p.key) + st}"` : ''} href="${esc(p.urls[0].url)}" target="_blank" rel="noopener" data-tip="${esc(tipOf(p))}" aria-label="${esc(p.name)}">${icon(p, size)}</a>`;
 const popRows = ps => ps.map(p => `<a class="row" href="${esc(p.urls[0].url)}" target="_blank" rel="noopener">${icon(p, 22)}<span>${esc(p.name)}</span><span class="r">${regions(p).map(r => `<span class="iso">${esc(r.toUpperCase())}</span>`).join('') || (p.urls.length > 1 ? `<span class="iso">×${p.urls.length}</span>` : '')}</span></a>`).join('');
 const LAYERS = (size, sw = 1.5) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 6 3-6 3-6-3z"/><path d="m2 8 6 3 6-3"/><path d="m2 11 6 3 6-3"/></svg>`;
-const CI_TAG = '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>';
+const CI_TAG = MBU_ENT_ICONS['label'];
 const SVG = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 // MusicBrainz search, sent as MB's own search form; a bare magnifier that, clicked, swaps the header's actions for its field until a search, × or Escape
 const SRCH_T = ['artist', 'event', 'recording', 'release', 'release_group', 'series', 'work', 'area', 'instrument', 'label', 'place', 'annotation', 'tag', 'cdstub', 'editor', 'doc'];
@@ -3715,11 +3730,11 @@ function workFacts(w) {
     return out;
 }
 // a track's markers after its title: its recording (lit when it has relationships of its own), its works, its credits
-const MK_REC = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/>';
+const MK_REC = MBU_ENT_ICONS['recording'];
 // a disc in its case: the recording's disc, packaged
-const MK_RELEASE = '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>';
-const MK_WORK = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>';
-const MK_CR = '<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>';
+const MK_RELEASE = MBU_ENT_ICONS['release'];
+const MK_WORK = MBU_ENT_ICONS['work'];
+const MK_CR = MBU_ENT_ICONS['artist'];
 const mkSvg = d => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const marks = t => `<span class="mk"><a class="${t.cr.length ? 'on' : ''}" href="${MB}/recording/${t.rid}" data-tip="Recording${t.cr.length ? ' · ' + t.cr.length + ' relationship' + (t.cr.length === 1 ? '' : 's') : ', no relationships'}" aria-label="Recording">${mkSvg(MK_REC)}</a>`
     + t.works.map(w => `<a class="on" href="${MB}/work/${w.id}" data-tip="Work: ${esc(w.title)}" aria-label="Work: ${esc(w.title)}">${mkSvg(MK_WORK)}</a>`).join('')
@@ -5885,7 +5900,7 @@ function recsHtml(d) {
 }
 /* ── area ──────────────────────────────────────── */
 // a country (or any area): its codes, what it's part of and its parts, then the artists, labels and places in it
-const MK_AREA = '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3.500 3 14.500 0 18"/><path d="M12 3c-3 3.500-3 14.500 0 18"/>';
+const MK_AREA = MBU_ENT_ICONS['area'];
 function area(a) {
     const genres = (a.genres || []).sort((x, y) => y.count - x.count), gn = new Set(genres.map(x => x.name)), ls = a['life-span'] || {};
     const ar = (a.relations || []).filter(x => x['target-type'] === 'area' && x.type === 'part of' && x.area);
@@ -5983,7 +5998,7 @@ function descHtml(h) {
 }
 // an instrument: its description, picture (its own Commons "image" link), the instruments it's tied to, then who plays it;
 // ws/2 can't list artists, releases or recordings by instrument, so those are read from MusicBrainz's own subpages
-const MK_INS = '<path d="M9 3v7a3 3 0 0 0 6 0V3"/><path d="M12 13v8"/><path d="M5 6l-1.500-1M5 9H3M19 6l1.500-1M19 9h2"/>'; // a tuning fork
+const MK_INS = MBU_ENT_ICONS['instrument']; // a tuning fork
 // [link type, forward label, backward label]
 const INS_RELS = [['subtype', 'Subtypes', 'Subtype of'], ['parts', 'Parts', 'Part of'], ['children', "Children's versions", "Children's version of"],
     ['derivation', 'Derived instruments', 'Derived from'], ['hybrid of', 'Hybrids', 'Hybrid of'], ['related to', 'Related', 'Related']];
@@ -6131,7 +6146,7 @@ function insList(d, i) {
 // a place (a studio, a venue, …): where it is, its picture (its Commons "image" link, else its Wikidata image or logo),
 // the places, artists and labels tied to it, then its events and the recordings made there; ws/2 can't list a place's
 // recordings, and its own relationships to them run to thousands for a big studio, so those are read from its Performances tab
-const MK_PLACE = '<path d="M12 21s-7-6.200-7-11.500a7 7 0 0 1 14 0C19 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/>';
+const MK_PLACE = MBU_ENT_ICONS['place'];
 const PLACE_PROPS = [['P18', 'Image'], ['P154', 'Logo']];
 // [link type, forward label, backward label]; any other type is named after itself
 const PL_RELS = { parts: ['Parts', 'Part of'] };
@@ -6186,7 +6201,7 @@ function placeHero(d) {
 /* ── event ───────────────────────────────────────── */
 // an event (a concert, a festival, …): when and where, who performed, its series and what was recorded there, its Event Art Archive
 // front as its picture; its setlist as its own section
-const MK_EVENT = '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>';
+const MK_EVENT = MBU_ENT_ICONS['event'];
 // a relationship type → its label, [forward, backward]; any other type is named after itself
 const EV_RELS = { 'held at': ['Place', 'Place'], 'held in': ['Area', 'Area'], presented: ['Presented by', 'Presented by'], 'part of': ['Part of', 'Parts'] };
 function event(a) {
@@ -6241,7 +6256,7 @@ function setlist(d) {
 /* ── series ──────────────────────────────────────── */
 // a series of release groups, releases, recordings, works, artists or events (awards, catalogues, tours, podcasts, … are
 // their subtypes): its facts from ws/2, its parts from MusicBrainz's own page, whose table has the right columns for each type
-const MK_SER = '<path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h1M4 12h1M4 18h1"/>';
+const MK_SER = MBU_ENT_ICONS['series'];
 // a type → what its parts are called
 const SER_PARTS = { 'Release group series': 'Release groups', 'Release group award': 'Release groups', Podcast: 'Episodes', 'Release series': 'Releases', 'Recording series': 'Recordings', 'Recording award': 'Recordings',
     'Work series': 'Works', Catalogue: 'Works', 'Work award': 'Works', 'Artist series': 'Artists', 'Artist award': 'Artists', 'Event series': 'Events', Tour: 'Events', Festival: 'Events', Run: 'Events' };
@@ -6287,7 +6302,7 @@ const serParts = d => tabSect('sp', serPartsName(d), d.listsX && d.listsX[0], `$
 /* ── collection ──────────────────────────────────── */
 // an editor's collection: one read of MusicBrainz's own page gives both its facts (header, description, sidebar) and its
 // items, as ws/2 has no private collections and no description. Neither says when an item was added
-const MK_COL = '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M6 5h12M8 2h8"/>';
+const MK_COL = MBU_ENT_ICONS['collection'];
 const COL_ENT = ['release-group', 'release', 'recording', 'artist', 'label', 'work', 'event', 'place', 'area', 'instrument', 'series'];
 const COL_NAME = { 'release-group': 'Release groups', release: 'Releases', recording: 'Recordings', artist: 'Artists', label: 'Labels', work: 'Works', event: 'Events', place: 'Places', area: 'Areas', instrument: 'Instruments', series: 'Series' };
 const COL_ACTS = [['own_collection/edit', 'Edit', 'Edit collection', ACTS[0][3]], ['edits', 'History', 'Edit history', ACTS[3][3]]];
@@ -7379,7 +7394,7 @@ async function wsMore(d, sid) {
 // MusicBrainz's front page as a launch pad: search, adding things, your own pages and the pages you last opened.
 // Nothing here asks MusicBrainz for anything: it is all links, and the visits this script keeps itself.
 let ME = '';
-const MK_RG ='<path d="m12 3 9 4.500-9 4.500-9-4.500z"/><path d="m3 12 9 4.500 9-4.500"/><path d="m3 16.500 9 4.500 9-4.500"/>';
+const MK_RG = MBU_ENT_ICONS['release-group'];
 const HM_ADD = [
     ['release/add', 'Release', MK_RELEASE],
     ['artist/create', 'Artist', MK_CR],
@@ -7387,9 +7402,9 @@ const HM_ADD = [
     ['work/create', 'Work', MK_WORK],
     ['recording/create', 'Recording', MK_REC],
     ['release-group/create', 'Release group', MK_RG],
-    ['event/create', 'Event', '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
-    ['place/create', 'Place', '<path d="M12 21s-7-6.500-7-12a7 7 0 0 1 14 0c0 5.500-7 12-7 12z"/><circle cx="12" cy="9" r="2.500"/>'],
-    ['series/create', 'Series', '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>'],
+    ['event/create', 'Event', MBU_ENT_ICONS['event']],
+    ['place/create', 'Place', MBU_ENT_ICONS['place']],
+    ['series/create', 'Series', MBU_ENT_ICONS['series']],
 ];
 const HM_ME = [
     ['edits/open', 'Open edits', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'],
@@ -8712,25 +8727,25 @@ function histParse(html) {
 // an edit type's icon: what it changes, coloured by what it does (add green, edit blue, remove red, the rest violet)
 const H_ICO = {
     'cover art': '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
-    release: '<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>',
-    'release group': '<rect x="7" y="7" width="14" height="14" rx="2"/><path d="M3 17V5a2 2 0 0 1 2-2h12"/><circle cx="14" cy="14" r="3"/>',
+    release: MBU_ENT_ICONS['release'],
+    'release group': MBU_ENT_ICONS['release-group'],
     medium: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
     track: '<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>',
-    recording: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/>',
-    work: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><circle cx="10" cy="16" r="2"/><path d="M12 16v-5l3 1"/>',
-    artist: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-    label: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+    recording: MBU_ENT_ICONS['recording'],
+    work: MBU_ENT_ICONS['work'],
+    artist: MBU_ENT_ICONS['artist'],
+    label: MBU_ENT_ICONS['label'],
     relationship: '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>',
     annotation: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
     url: '<path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
     barcode: '<path d="M4 5v14M7 5v14M11 5v14M14 5v14M18 5v14M20 5v14"/>',
     isrc: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
     'disc id': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3v4"/>',
-    place: '<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
-    event: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
-    series: '<path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h1M4 12h1M4 18h1"/>',
-    area: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
-    instrument: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    place: MBU_ENT_ICONS['place'],
+    event: MBU_ENT_ICONS['event'],
+    series: MBU_ENT_ICONS['series'],
+    area: MBU_ENT_ICONS['area'],
+    instrument: MBU_ENT_ICONS['instrument'],
     other: '<circle cx="12" cy="12" r="9"/><path d="M8 12h.01M12 12h.01M16 12h.01"/>',
 };
 const histIco = tk => {
