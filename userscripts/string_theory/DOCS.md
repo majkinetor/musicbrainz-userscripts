@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 14:36 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 14:42 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1558,13 +1558,17 @@ Titles tolerate small typos, and a mix or edit written another way (*Song (Radio
 Match never groups:
 
 - a video with an audio recording (not even with a shared ISRC; manual grouping refuses it too);
-- a recording that has an open edit;
+- a recording that has an open edit (unless you choose **Include pending edits**);
 - a live recording with a studio one, or two recordings made at different places, or at one place on different dates (not even with a shared ISRC or AcoustID);
 - lengths further apart than the setting (30 s);
 - two recordings with ISRCs from one batch (the same registrant and year) but none in common, such as *QZTRX2699407* and *QZTRX2699409*: those are different tracks;
 - two recordings that share only an AcoustID when their titles differ, such as *Feel What You Feel* and *Suspended Space*: AcoustIDs are submitted by users and sometimes land on the wrong recording.
 
 A group's chips show the signals that hold for **every** member; one that holds for some is partial.
+
+#### Include pending edits
+
+**Include pending edits**, in the menu beside Match, uses the selected cutoff but also groups recordings marked as having open edits and allows those groups to merge. Check the edits before merging: the flag can indicate a real pending edit, though MusicBrainz can also show it incorrectly.
 
 #### Match by position
 

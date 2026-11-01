@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.001502
+// @version      2026.11.01.120000
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -906,7 +906,7 @@ async function enrichPendingEdits(recs, concurrency, onProgress) {
         }
     }
     await Promise.all(Array.from({ length: Math.min(concurrency, todo.length) }, worker));
-    if (flagged) Log.warn(flagged + ' recording(s) have pending edits — excluded from matching and blocked from merging');
+    if (flagged) Log.warn(flagged + ' recording(s) are marked as having pending edits');
 }
 const _idCache = new Map();
 async function resolveInternalId(gid) {
@@ -1268,7 +1268,7 @@ function positionUnion(sig, a, b) {
     if (!sig.artist || !sig.length) return false;
     return samePosition(a, b) != null;
 }
-function autoMatch(pool, tolMs, cutoff) {
+function autoMatch(pool, tolMs, cutoff, includePending) {
     cutoff = cutoff || 'normal';
     const byPos = cutoff === 'position';
     if (pool.length < 2) return [];
@@ -1277,6 +1277,7 @@ function autoMatch(pool, tolMs, cutoff) {
     for (let i = 0; i < pool.length; i++) {
         for (let j = i + 1; j < pool.length; j++) {
             const sig = pairSignals(pool[i], pool[j], tolMs);
+            if (includePending) sig.pendingEdit = false;
             /* #594: say so when the MBID path is what carried the artist signal
                and the credit strings would have refused it. This is the whole
                behaviour change, and without a line for it the only evidence is a
@@ -1623,7 +1624,7 @@ async function mergeGroup(group) {
     const members = group.memberGids.map(g => STATE.recordings.get(g)).filter(Boolean);
     if (members.some(r => r.editsPending == null)) await enrichPendingEdits(members, 2);
     const pending = members.filter(r => r.editsPending);
-    if (pending.length) {
+    if (pending.some(r => !(group.allowedPendingGids || []).includes(r.gid))) {
         group.state = 'error';
         group.error = 'Has pending edit(s): ' + pending.map(r => r.title).join(', ') + ' — resolve them in MB first';
         Log.warn('merge blocked for group ' + group.id + ' — ' + pending.length + ' member(s) have pending edits');
@@ -4137,7 +4138,7 @@ const VIDEO_MARK = '<span class="fs-rec-video" data-tip="This recording is a vid
 // linked recordings when erroneous": an AcoustID opens its page on acoustid.org
 const acidUrl = id => 'https://acoustid.org/track/' + encodeURIComponent(id);
 function videoBadge(rec) { return rec.video === true ? VIDEO_MARK + ' ' : ''; }
-function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" data-tip="This recording has open edits in MusicBrainz\nLeft out of Match, and not merged until they are applied.">⏳ pending</span> ' : ''; }
+function pendingBadge(rec) { return rec.editsPending ? '<span class="fs-pending" data-tip="This recording has open edits in MusicBrainz\nNormally left out of Match and blocked from merging.">⏳ pending</span> ' : ''; }
 // #529 follow-up: "we should see isrc and accousticid in the card too" — the
 // pool card only showed presence dots; show the actual values (AcoustID
 // truncated, it's a 36-char UUID — full value is in the tooltip).
@@ -4873,8 +4874,9 @@ function seedPageProgress(page, totalPages, loaded, total) {
 }
 function setScopeSuffix(suffix) { const e = document.getElementById('fs-scope'); if (e) e.textContent = _scopeBaseLabel + suffix; }
 
-async function onAutoMatch(byPosition) {
+async function onAutoMatch(byPosition, includePending) {
     byPosition = byPosition === true;
+    includePending = includePending === true;
     const btn = document.getElementById('fs-automatch'); if (!btn) return;
     const cutoff = byPosition ? 'position' : SETTINGS.matchCutoff;
     const how = byPosition ? 'by position' : 'at the "' + SETTINGS.matchCutoff + '" cutoff';
@@ -4898,7 +4900,7 @@ async function onAutoMatch(byPosition) {
             } else Log.warn('Skipping AcoustID lookup — ' + allRecs.length + ' recordings exceeds the cap (' + SETTINGS.acoustidPoolCap + ')');
         }
         btn.textContent = 'Matching… (comparing)';
-        let groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, cutoff);
+        let groupings = autoMatch(poolRecs, SETTINGS.lengthToleranceMs, cutoff, includePending);
         // Only now, for the few recordings actually grouped, is a pending-edit
         // lookup worth a request each. A group containing one is dissolved: its
         // members go back to the pool rather than being silently merged.
@@ -4907,13 +4909,15 @@ async function onAutoMatch(byPosition) {
             btn.textContent = 'Matching… (pending edits)';
             await enrichPendingEdits(grouped, 2, (done, total) => { btn.textContent = 'Matching… (pending ' + done + '/' + total + ')'; });
             const before = groupings.length;
-            groupings = groupings.filter(g => {
+            if (includePending) groupings.forEach(g => { g.allowedPendingGids = g.memberGids.filter(id => STATE.recordings.get(id)?.editsPending); });
+            else groupings = groupings.filter(g => {
                 const bad = g.memberGids.map(x => STATE.recordings.get(x)).filter(r => r && r.editsPending);
                 if (bad.length) Log.warn('Dropped a proposed group — pending edit(s) on: ' + bad.map(r => r.title).join(', '));
                 return !bad.length;
             });
             if (before !== groupings.length) Log.warn((before - groupings.length) + ' proposed group(s) dropped because a member has pending edits');
         }
+        if (includePending) Log.warn('Match included recordings marked as having pending edits; review their edits before merging');
         Log.info('Match formed ' + groupings.length + ' group(s) from ' + poolRecs.length + ' pool recording(s)');
         groupings.forEach(g => {
             Log.info('  formed group ' + g.id + ' — confidence=' + g.confidence + ' signals=[' + g.signals.join(',') + ']');
@@ -5366,10 +5370,11 @@ function buildShell() {
             if (document.querySelector('.fs-match-menu')) { document.querySelectorAll('.fs-match-menu').forEach(m => m.remove()); return; }
             const m = document.createElement('div'); m.className = 'fs-cutoff-menu fs-match-menu';
             m.innerHTML = '<div class="mi" data-v="position" data-tip="Match by position\nGroups tracks at the same track number on different releases, whatever their titles.\nMeant for localised or translated titles. Artists and lengths must still agree,\nand the video, live, pending-edit and ISRC checks still apply.">Match by position</div>';
+            m.insertAdjacentHTML('beforeend', '<div class="mi" data-v="pending" data-tip="Include pending edits\nMatch and allow merging recordings marked as having open edits.\nReview their edits first: the flag may indicate a real pending edit.">Include pending edits</div>');
             document.body.appendChild(m);
             const r = more.getBoundingClientRect(); m.style.left = Math.max(4, r.right - 160) + 'px'; m.style.top = (r.bottom + 3) + 'px';
             const off = e => { if (!m.contains(e.target) && !more.contains(e.target)) { m.remove(); document.removeEventListener('mousedown', off, true); } };
-            m.querySelector('.mi').onmousedown = e => { e.preventDefault(); m.remove(); document.removeEventListener('mousedown', off, true); onAutoMatch(true); };
+            m.querySelectorAll('.mi').forEach(item => item.onmousedown = e => { e.preventDefault(); m.remove(); document.removeEventListener('mousedown', off, true); onAutoMatch(item.dataset.v === 'position', item.dataset.v === 'pending'); });
             setTimeout(() => document.addEventListener('mousedown', off, true), 0);
         };
     }
@@ -5437,6 +5442,7 @@ function buildShell() {
 }
 function closeFusion() {
     FUSION_OPEN = false;
+    document.querySelectorAll('.fs-cutoff-menu').forEach(m => m.remove());
     document.getElementById('fs-overlay')?.remove();
     document.removeEventListener('keydown', _fsEscHandler);
 }
