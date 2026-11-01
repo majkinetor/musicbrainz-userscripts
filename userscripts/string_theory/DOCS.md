@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 18:54 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 18:55 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2538,7 +2538,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 | Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                                                                                  |
 | Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                                                                               |
 | Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                                                                                      |
-| Interface                              | HUD          | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon. There the title line's pin keeps the panel open on every release page; drag it by the title |
+| Interface                              | HUD          | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon. There the title line's pin keeps the panel open on every release page, at the top of a side of the screen; drag its title to change sides |
 | Icon, Name                             | icon only    | what each row shows, and its size                                                                                                                  |
 | Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                                                                                        |
 | In MusicBrainz                         | Ring         | how a platform already linked is marked                                                                                                            |
