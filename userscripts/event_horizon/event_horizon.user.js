@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0300.08
+// @version      2026.11.02.0330.00
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2355,6 +2355,7 @@ button{font:inherit;color:inherit}
 @media (max-width:700px){:root[data-mbu-dock] .wrap{padding-left:max(16px,env(safe-area-inset-left,0px))!important;padding-right:max(16px,env(safe-area-inset-right,0px))!important}}
 .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 h1,h2{text-wrap:balance}
+#app .eh-mp{background:color-mix(in srgb,currentColor 14%,transparent);border-radius:3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 h2,.fold h2{margin:0;font-size:24px;color:var(--text)!important}
 .chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;background:var(--chip);color:var(--chip-text);font-size:13px;font-weight:600;border:1px solid transparent;cursor:default}
 button.chip{cursor:pointer}
@@ -7345,9 +7346,10 @@ var releasePageDraw, secDrag = null, secRedraw = false, colDrag = false;
 // once everything else is in, after a pause, waits for the tab to be in view and idle, and takes the gate's next free slot
 // behind whatever is queued, giving way to any page being drawn. A reader who moves on cancels it.
 let pdKey = '';
-const PD = new Map(), PD_KINDS = /^(release|release-group|artist|label|recording|work|area|instrument|place|series|event)$/, PD_TTL = 300000;
+const PD = new Map(), PD_KINDS = /^(release|release-group|artist|label|recording|work|area|instrument|place|series|event)$/, PD_TTL = 300000, PD_ENT = /\/(?:release|release-group|recording|work)\/([0-9a-f-]{36})$/;
 function pdRead(j) {
-    const p = { at: Date.now(), own: !!j.editsPending, ids: new Set(), rids: new Set() };
+    const p = { at: Date.now(), own: !!j.editsPending, ids: new Set(), rids: new Set(), ents: new Set() };
+    if (j.releaseGroup && j.releaseGroup.editsPending) p.ents.add(j.releaseGroup.gid);
     const rels = e => { for (const r of e.relationships || []) if (r.editsPending && r.target) p.ids.add(r.target.href_url || r.target.gid); };
     rels(j);
     for (const m of j.mediums || []) for (const t of m.tracks || []) {
@@ -7373,17 +7375,27 @@ async function pdAsk(kind, id, live) {
         fetchLog('pending edits ' + k, t0, r);
         if (!r || !r.ok) return;
         const p = pdRead(await r.json());
+        // ws/js has no list of an entity's releases; MusicBrainz's own page marks them, for one more request.
+        if (/^(artist|label|release-group)$/.test(kind)) {
+            const s2 = await mbnSlot({ label: 'pending edits list', cancelled: () => !live(), log: (l, m) => LOG.debug(m) });
+            const r2 = s2.ok && live() && await mbnFetch(`${MB}/${kind}/${id}`, { headers: { Accept: 'text/html' } });
+            if (r2 && r2.ok) for (const a of new DOMParser().parseFromString(await r2.text(), 'text/html').querySelectorAll('.mp a[href]')) {
+                const m = PD_ENT.exec(a.getAttribute('href')); if (m && m[1] !== id) p.ents.add(m[1]);
+            }
+        }
         PD.set(k, p);
-        if (live() && (p.own || p.ids.size || p.rids.size)) pdPaint($('#app'));
+        if (live() && (p.own || p.ids.size || p.rids.size || p.ents.size)) pdPaint($('#app'));
     } catch (e) { LOG.debug('pending edits not read: ' + (e && e.message || e)); }
 }
 function pdPaint(app) {
     const o = S.pending && data && (data.rel || data.g), p = app && o && pdKey.endsWith('/' + o.id) && PD.get(pdKey);   // a release's data has no kind
     if (!p) return;
-    const h = app.querySelector('h1'); if (h && p.own) h.classList.add('eh-mp');
+    const h = app.querySelector('h1');
+    if (h && p.own && h.firstChild && !h.querySelector('.eh-mp')) { const w = document.createElement('span'); w.className = 'eh-mp'; h.prepend(w); w.append(w.nextSibling); }   // the title alone, as a heading is a full-width block
     for (const a of app.querySelectorAll('a[href]')) {
         const h = a.getAttribute('href');
         if (p.ids.has(h) || (a.closest('#s-cr') && [...p.ids].some(x => h.endsWith('/' + x)))) a.classList.add('eh-mp');
+        else if (p.ents.has((PD_ENT.exec(h) || [])[1])) { const e = a.querySelector('.dt,.t1') || !a.querySelector('img') && a; if (e) e.classList.add('eh-mp'); }
         else if (a.classList.contains('t') && [...p.rids].some(x => h.endsWith('/recording/' + x))) a.classList.add('eh-mp');
     }
 }
@@ -8698,7 +8710,6 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
     // the theme's band and bar colours, which the stuck section header and the pinned bar take
     + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
 :root[data-eh-rel] body{background:var(--bg)!important}
-#app .eh-mp{background:color-mix(in srgb,currentColor 14%,transparent);border-radius:3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 :root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *,.eh-release-views *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}

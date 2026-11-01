@@ -67,7 +67,7 @@ While a page loads, its tab leads the shared request gate (`mbnLead`, [#847](htt
 
 ## Pending edits
 
-ws/2 says nothing about open edits, so *Show pending changes* reads `editsPending` from `/ws/js/release/<id>?inc=rels+recordings` or `/ws/js/entity/<gid>?inc=rels`: one request per page, repeated after `PD_TTL`. `pdPaint` repaints the marks on every `render`, since a render rebuilds the page.
+ws/2 says nothing about open edits, so *Show pending changes* reads `editsPending` from `/ws/js/release/<id>?inc=rels+recordings` or `/ws/js/entity/<gid>?inc=rels`: one request per page, repeated after `PD_TTL`. An artist, label or release group takes a second: `/ws/js` has no list of its releases, so `pdAsk` reads the `.mp` links off MusicBrainz's own page for it. `pdPaint` repaints the marks on every `render`, since a render rebuilds the page.
 
 The gate has no priority levels, so `pdAsk` gets last place by waiting. It starts once the page's parts are in, waits 2 seconds, for the tab to be in view and for an idle moment, then takes a background slot with `mbnSlot`, which waits out any lead. Leaving the page cancels it. Later requests can pass it during these waits; a booked slot isn't given up.
 
