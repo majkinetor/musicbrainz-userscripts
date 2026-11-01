@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 19:25 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 19:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -2543,7 +2543,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 | Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                                                                                  |
 | Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                                                                               |
 | Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                                                                                      |
-| Interface                              | HUD          | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon. There the title line's pin opens the Position menu: *Pin* keeps the panel open on every release page, where you drag it by the title, and it holds whichever of its edges is nearer the screen's and grows the other way; *Pin transparent* does the same, see-through until you hover it; *Dock hover* opens the panel while the mouse is on the dock icon, in place of its tooltip |
+| Interface                              | HUD          | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon. There the title line's pin opens the Position menu: *Pin* keeps the panel open on every release page, where you drag it by the title, and it holds whichever of its edges is nearer the screen's and grows the other way (in Event Horizon it fades out on any other page and back on the next release); *Pin transparent* does the same, see-through until you hover it; *Dock hover* opens the panel while the mouse is on the dock icon, in place of its tooltip |
 | Icon, Name                             | icon only    | what each row shows, and its size                                                                                                                  |
 | Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                                                                                        |
 | In MusicBrainz                         | Ring         | how a platform already linked is marked                                                                                                            |

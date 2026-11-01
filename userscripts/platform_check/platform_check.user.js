@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.01.203000
+// @version      2026.11.01.203100
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3331,8 +3331,10 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .mbu-dock-win #mb-pin-btn { display: inline-flex !important; }
   .mbu-dock-win[data-pc-mode] #mb-pin-btn { color: var(--mbu-accent, #ba478f); }
   .mbu-dock-win.pc-pinned { overflow-x: hidden; }
-  .mbu-dock-win[data-pc-mode="ghost"] { opacity: .4; transition: opacity .15s; }
+  .mbu-dock-win.pc-win { transition: opacity .2s, visibility .2s; }
+  .mbu-dock-win[data-pc-mode="ghost"] { opacity: .4; }
   .mbu-dock-win[data-pc-mode="ghost"]:hover, .mbu-dock-win[data-pc-mode="ghost"]:focus-within { opacity: 1; }
+  .mbu-dock-win.pc-win.pc-away { opacity: 0; visibility: hidden; pointer-events: none; }
   #pc-head { position: relative; }
   #pc-pos-menu { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; min-width: 170px; padding: 4px; background: var(--mbu-bg, #fff); border: 1px solid var(--mbu-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: default; }
   #pc-pos-menu[hidden] { display: none; }
@@ -3772,7 +3774,7 @@ if (!PC_SEED) {
     const home = container.parentNode, next = container.nextSibling, posMenu = container.querySelector('#pc-pos-menu');
     // While Event Horizon shows, the panel waits in a hidden window outside the body EH swapped out:
     // the scans find their rows by id in the document, so in the detached body they'd fill nothing
-    const win = document.createElement('div'); win.className = 'mbu-dock-win'; win.hidden = true;
+    const win = document.createElement('div'); win.className = 'mbu-dock-win pc-win'; win.hidden = true;
     let open = false;
     const park = () => {
         // in Event Horizon, or with the Interface setting's Dock icon (#851)
@@ -3784,6 +3786,8 @@ if (!PC_SEED) {
     };
     // Pinned (only while the panel is in its dock window): open on every page, where it was dragged, holding whichever of its own edges is nearer the screen's on each axis
     const pcPinned = () => ['pin', 'ghost'].includes(pcDockMode());
+    // Event Horizon moves off a release without loading a page: the panel fades out there and back on the next release
+    const pcOnRelease = () => !!pcEhRelease() || (!document.documentElement.hasAttribute('data-mbu-dock') && /^\/release\/[0-9a-f-]{36}/i.test(location.pathname));
     const pcAnchor = (top, height) => {
         const below = window.innerHeight - top - height;
         GM_setValue('pc:dock-v', top <= below ? { edge: 'top', gap: Math.max(0, Math.round(top)) } : { edge: 'bottom', gap: Math.max(0, Math.round(below)) });
@@ -3795,6 +3799,7 @@ if (!PC_SEED) {
     const pcPlace = () => {
         const pin = pcPinned() && container.parentNode === win, st = win.style;
         win.classList.toggle('pc-pinned', pin);
+        win.classList.toggle('pc-away', !SETTINGS_ONLY && !pcOnRelease());
         const mode = container.parentNode === win ? pcDockMode() : '';
         if (mode) win.dataset.pcMode = mode; else delete win.dataset.pcMode;
         posMenu.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.mode === mode)));
@@ -3825,7 +3830,7 @@ if (!PC_SEED) {
         window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
     });
     window.addEventListener('resize', pcPlace);
-    new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock'] });
+    new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock', 'data-mbu-release'] });
     park();
     const close = () => { open = false; win.hidden = true; posShow(false); };
     document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; if (!posMenu.hidden) posShow(false); else if (!pcPinned()) close(); });

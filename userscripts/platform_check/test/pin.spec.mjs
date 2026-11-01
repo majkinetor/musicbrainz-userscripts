@@ -46,6 +46,15 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   check(await win.boundingBox().then(b => Math.round(b.x + b.width) === vw - 60), 'it stops anywhere, not only at a side');
   await page.screenshot({ path: process.env.PIN_SHOT || 'test-results/pin.png' });
 
+  await page.evaluate(() => document.documentElement.setAttribute('data-mbu-dock', ''));
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.mbu-dock-win')).visibility === 'hidden');
+  check(await page.locator('.mbu-dock-win').evaluate(w => !w.hidden), 'on a page of Event Horizon that is no release, it hides, still pinned');
+  await page.evaluate(r => document.documentElement.setAttribute('data-mbu-release', r), release);
+  await win.waitFor({ state: 'visible' });
+  await page.evaluate(() => { document.documentElement.removeAttribute('data-mbu-dock'); document.documentElement.removeAttribute('data-mbu-release'); });
+  await page.waitForTimeout(300);
+  check(await win.isVisible(), 'it is back on a release, and stays there with Event Horizon off');
+
   const pick = async mode => { await page.locator('#mb-pin-btn').click(); await page.locator(`#pc-pos-menu [data-mode="${mode}"]`).click(); };
   check(await page.locator('.mbu-dock-win').getAttribute('data-pc-mode') === 'ghost', 'an old pin comes back as Pin transparent');
   await pick('pin');
