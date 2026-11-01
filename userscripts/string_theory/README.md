@@ -26,7 +26,7 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
-In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
+In edit notes, all userscripts that run within bundle (instead standalone) are marked with `*` (e.g. `Apollo Editor*`).
 
 ## Interface
 
