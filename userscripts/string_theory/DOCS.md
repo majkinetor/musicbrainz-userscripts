@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 12:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 13:08 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -811,7 +811,17 @@ A release group lists its releases, and an artist or label its discography, grou
 
 The funnel icon opens a filter: type part of a title, or add a filter by artist, year and so on. Esc clears it.
 
-Every table's filter also takes `column:value`, such as `artist:elvis` (put the value in quotes when it has spaces). The funnel next to a column's heading starts filtering for that column.
+Every table's filter also takes `column:value`, such as `artist:elvis` (put the value in quotes when it has spaces). The funnel next to a column's heading starts filtering for that column. A filter can combine terms:
+
+| Filter                                       |                                                |
+| -------------------------------------------- | ---------------------------------------------- |
+| `-label:x -label:y`, `-live`                 | exclude what matches                           |
+| `year:2022-2024`, `year:2022-`, `year:-2024` | a range of years, or of dates in a date column |
+| `label:x OR label:y`                         | either; side by side, terms must all match     |
+| `(label:x OR label:y) AND year:2022-2024`    | group with brackets; AND is optional           |
+| `-(label:x OR label:y)`                      | exclude a group                                |
+
+Write AND and OR in capitals: lowercase they are ordinary words.
 
 ### Pending changes
 

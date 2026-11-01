@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0005.01
+// @version      2026.11.02.0005.02
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -6097,16 +6097,63 @@ const tsSet = (sid, v) => { TSORT[sid] = v; try { v.length ? sessionStorage.setI
 const dgWire = app => { for (const im of app.querySelectorAll('[data-dgcover]')) { const fb = () => { if (!im.parentNode) return; const look = im.dataset.dgcover === 'artist' && !im.getAttribute('src') && ARTIMG.cached(im.dataset.aid) === undefined && TGX_ART[im.dataset.aid] === undefined; im.outerHTML = `<span class="dn"${look ? ` data-tgxart="artist:${im.dataset.aid}"` : ''}>${im.dataset.dgcover === 'artist' ? mkSvg(MK_CR).replace(/width="15" height="15"/, im.closest('.tt') ? 'width="18" height="18"' : 'width="36" height="36"') : im.closest('.tt') ? LAYERS(18) : LAYERS(36, 1)}</span>`; }; im.onerror = fb; if (!im.getAttribute('src')) fb(); } if (app.querySelector('[data-tgxart]')) tagxArt(app); };    // TQ: a table's filter text, absent while its box is shut
 // a column's key in the filter box: its heading, folded, without spaces ("artist:elvis"; a prefix will do)
 const tqKey = h => fltFold((h || '').replace(/<[^>]*>/g, '')).replace(/[^a-z0-9#]+/g, '');
-// the box's text, split into column terms (key:value, the value in quotes when it has spaces) and the rest, searched in the whole row
+// a year or date column's value as a range (2022-2024, 2022-, -2024), or null; a year's end still being typed leaves that end open,
+// and a date's 2022-01 stays plain text
+const tqRange = (k, v) => {
+    if (!/year|date/.test(k)) return null;
+    const m = (/year/.test(k) ? /^(\d{4})?-(\d{0,4})$/ : /^(\d{4})?-(\d{4})?$/).exec(v);
+    return m && [m[1] || '', (m[2] || '').length === 4 ? m[2] : ''];
+};
+// the box's language: words and column:value terms (the value in quotes when it has spaces), side by side or with AND, and OR,
+// which binds last; - before a term or a bracket excludes it. Neighbouring words are one phrase, "quotes" keep one apart.
+// AND and OR count in capitals only, so "rock and roll" stays a phrase. Text still being typed never fails: a bracket left open
+// shuts at the end, one that opens nothing goes, and a column with no value counts for nothing and is listed in `blank`.
 function tqParse(q, keys) {
-    const terms = [];
-    const rest = q.replace(/(\S+?):("[^"]*"?|\S*)/g, (m, k, v) => {
-        const c = keys.findIndex(x => x && x.startsWith(fltFold(k)));
-        if (c < 0) return m;
-        terms.push([c, fltFold(v.replace(/"/g, '').trim())]); return ' ';
-    });
-    return { terms, rest: fltFold(rest.replace(/\s+/g, ' ').trim()) };
+    const toks = [...q.matchAll(/(-(?=\S))|([()])|"([^"]*)"?|([^\s()":]+):("[^"]*"?|[^\s()]*)|([^\s()]+)/g)], blank = [];
+    const col = k => keys.findIndex(x => x && x.startsWith(fltFold(k)));
+    const isWord = t => t[6] != null || (t[4] != null && col(t[4]) < 0);
+    const join = (k, xs) => { xs = xs.filter(Boolean); return xs.length > 1 ? { [k]: xs } : xs[0] || null; };
+    let i = 0;
+    const atom = () => {
+        const [t, neg, br, qt, k, val] = toks[i++];
+        if (neg) { const n = atom(); return n && { not: n }; }
+        if (br === ')') { i--; return null; }
+        if (br) { const n = or(); if (toks[i]?.[0] === ')') i++; return n; }
+        const c = k == null ? -1 : col(k);
+        if (c >= 0) {
+            const v = fltFold(val.replace(/"/g, '').trim());
+            if (!v) { blank.push(c); return null; }
+            return { c, v, r: tqRange(keys[c], v) };
+        }
+        const v = fltFold(qt ?? t);
+        return v ? { v } : null;
+    };
+    const and = () => {
+        const xs = [];
+        let word = false;
+        while (i < toks.length && toks[i][0] !== ')' && toks[i][0] !== 'OR') {
+            if (toks[i][0] === 'AND') { i++; word = false; continue; }
+            const w = isWord(toks[i]), n = atom();
+            if (w && word) xs[xs.length - 1].v += ' ' + n.v; else if (n) xs.push(n);
+            word = w;
+        }
+        return join('and', xs);
+    };
+    const or = () => {
+        const xs = [and()];
+        while (toks[i]?.[0] === 'OR') { i++; xs.push(and()); }
+        return join('or', xs);
+    };
+    let tree = null;
+    while (i < toks.length) { tree = join('and', [tree, or()]); i++; }    // or() stops only at the end, or at a bracket that opens nothing
+    return { tree, blank };
 }
+// tqTest asks `leaf` about each term; tqHit is a leaf's plain answer, for a value or range in a text
+const tqTest = (n, leaf) => !n || (n.and ? n.and.every(x => tqTest(x, leaf)) : n.or ? n.or.some(x => tqTest(x, leaf)) : n.not ? !tqTest(n.not, leaf) : leaf(n));
+const tqHit = (n, t) => {
+    const s = fltFold(t || '');
+    return n.r ? (s.match(/\b\d{4}\b/g) || []).some(y => (!n.r[0] || y >= n.r[0]) && (!n.r[1] || y <= n.r[1])) : s.includes(n.v);
+};
 function tabSect(sid, name, x, href, cv) {
     const rs = x ? x.rows.filter(r => Array.isArray(r)) : [];
     if (!rs.length) return '';
@@ -6124,8 +6171,8 @@ function tabSect(sid, name, x, href, cv) {
     const rows = si == null ? x.rows : [...x.rows].sort((a, z) => (!v(a) - !v(z)) || sd * v(a).localeCompare(v(z), undefined, { sensitivity: 'base', numeric: true }));
     // the filter keeps the rows whose text holds what is typed, and every group row
     // and "column:value" keeps those whose column holds the value
-    const q = fltFold((TQ[sid] || '').trim()), tqp = q && tqParse(q, x.head.map(tqKey));
-    const shown = q ? rows.filter(r => !Array.isArray(r) || (tqp.terms.every(([c, v]) => fltFold(txt(r[c])).includes(v)) && fltFold(r.map(txt).join(' ')).includes(tqp.rest))) : rows;
+    const q = (TQ[sid] || '').trim(), tqp = q && tqParse(q, x.head.map(tqKey));
+    const shown = q ? rows.filter(r => !Array.isArray(r) || tqTest(tqp.tree, n => tqHit(n, n.c == null ? r.map(txt).join(' ') : txt(r[n.c])))) : rows;
     const view = cv ? S.tabView || 'table' : 'table', yc = cols.find(i => /date|year/i.test(txt(x.head[i])));
     const tlRe = cv && new RegExp('<a href="[^"]*/' + cv + '/(' + MBID.source + ')">([\\s\\S]*?)</a>', 'i');
     const tile = r => { const m = Array.isArray(r) && r.join(' ').match(tlRe); return m ? `<a href="${MB}/${cv}/${m[1]}"><img src="${esc(tabArt(cv, m[1]))}" alt="" loading="lazy" data-dgcover="${cv}" data-aid="${m[1]}" referrerpolicy="no-referrer"><span class="dt">${m[2]}</span><span class="dy">${yc != null ? esc(txt(r[yc]).slice(0, 4)) : ''}</span></a>` : ''; };
@@ -7013,9 +7060,9 @@ const FLT_COLS = {
         ['barcode', e => e.barcode], ['status', e => e.status]],
 };
 function fltPass(sc, x, skip) {
-    const f = FLT[sc], cols = FLT_COLS[sc], p = tqParse(f.q.trim(), cols.map(c => c[0])), q = p.rest;
-    if (!p.terms.every(([c, v]) => !v || (cols[c][0] === 'rating' ? cols[c][1](x) === v : fltFold(cols[c][1](x) || '').includes(v)))) return false;
-    if (q && !FLT_TEXT[sc](x).some(t => fltFold(t).includes(q))) return false;
+    const f = FLT[sc], cols = FLT_COLS[sc];
+    const leaf = n => n.c == null ? FLT_TEXT[sc](x).some(t => tqHit(n, t)) : cols[n.c][0] === 'rating' ? cols[n.c][1](x) === n.v : tqHit(n, cols[n.c][1](x));
+    if (!tqTest(tqParse(f.q.trim(), cols.map(c => c[0])).tree, leaf)) return false;
     return FLT_FIELDS[sc].every(([k, , get]) => k === skip || !(k in f.f) || get(x).includes(f.f[k]));
 }
 const fltApply = (sc, xs) => xs.filter(x => fltPass(sc, x));
@@ -7043,8 +7090,18 @@ function fltSug(sc, inp) {
     const hi = v => { const t = fltFold(v), i = t.indexOf(q); return i < 0 ? esc(v) : esc(v.slice(0, i)) + '<mark>' + esc(v.slice(i, i + q.length)) + '</mark>' + esc(v.slice(i + q.length)); };
     // column:value terms are named as what they do, what's left is the title
     const cols = FLT_COLS[sc], p = tqParse(inp.value.trim(), cols.map(c => c[0])), cap = w => w.charAt(0).toUpperCase() + w.slice(1);
-    const what = p.terms.map(([c, v]) => v ? `${cap(cols[c][0])} ${cols[c][0] === 'rating' ? 'is' : 'contains'} <b>“${esc(v)}”</b>` : `${cap(cols[c][0])}: type a value`);
-    if (p.rest) what.push(`Title contains <b>“${esc(p.rest)}”</b>`);
+    const term = n => {
+        const name = cap(n.c == null ? 'title' : cols[n.c][0]), r = n.r;
+        if (r) return `${name} <b>${r[0] && r[1] ? `${r[0]}–${r[1]}` : r[0] ? `from ${r[0]}` : r[1] ? `to ${r[1]}` : 'any'}</b>`;
+        return `${name} ${n.c != null && cols[n.c][0] === 'rating' ? 'is' : 'contains'} <b>“${esc(n.v)}”</b>`;
+    };
+    const say = (n, inner) => {
+        if (n.not) return `Not ${say(n.not, true)}`;
+        if (!n.and && !n.or) return term(n);
+        const s = (n.and || n.or).map(x => say(x, true)).join(n.and ? ' · ' : ' or ');
+        return inner ? `(${s})` : s;
+    };
+    const what = [...(p.tree ? [say(p.tree)] : []), ...p.blank.map(c => `${cap(cols[c][0])}: type a value`)];
     let h = `<div class="fs-row on" data-fsv="">${what.join(' · ')}</div>`, n = 0;
     for (const [k, name, get] of FLT_FIELDS[sc]) {
         if (k in f.f) continue;
