@@ -26,35 +26,40 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
-In edit notes, all userscripts that run within bundle (instead standalone) are marked with `*` (e.g. `Apollo Editor*`).
+In edit notes, a script running inside the bundle (not standalone) is marked with `*` (e.g. `Apollo Editor*`).
 
 ## Interface
 
 String Theory adds dock and setting management for all included scripts:
 
-- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded dock shows only actionable items (for this to work, script must have enabled background fetch).
-- **Settings**: open them from by right-clicking String Theory's icon. Right click any dock icon for its own settings. All possible icons are visible in the ST settings about box.
-- **Update**: in settings About tab, toggle individual scripts, see their versions and check for updates.
+- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
+- **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About.
+- **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
 ## Theme
 
-ST supports set of light and dark themes and can be configured to automatically switch them based on system, location or time. This feature doesn't require any other userscripts or browser extensions.
+String Theory themes MusicBrainz and every bundled script, light or dark, with no other userscript or browser extension.
 
-In the ST settings, **Theme** picks light (default), dark, by your system, by sunrise and sunset where you are (the browser asks for your location once, and your system setting is used if you refuse), or by the hours you enter for dark. **Dark theme** and **Light theme** are individualy set.
+In String Theory's settings, **Theme** picks one of:
 
-To add or tweak a theme, see [themes](themes/README.md).
+- **Light** (default) or **Dark**
+- **System**: follows your system's setting
+- **Sun**: dark between sunset and sunrise where you are. The browser asks for your location once; if you refuse, your system setting is used.
+- **Time**: dark between the hours you enter in **Dark from** and **to**
+
+**Light theme** and **Dark theme** pick which theme each one uses. To add or tweak a theme, see [themes](themes/README.md).
 
 ## Settings
 
-| Setting        | Default           | What it does                                                                                                                                                                |
-| -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Side           | Right             | The launchers' side of the page                                                                                                                                             |
-| Orientation    | Column            | A column, or a row along the bottom edge                                                                                                                                    |
-| Size           | 100 %             | The launchers' size, 60 to 160 %                                                                                                                                            |
-| Hover          | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                                                                        |
-| Launcher order | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                                                                  |
-| Scripts        | All on            | Turns each bundled script on or off, from the next page load                                                                                                                |
-| Copy versions  |                   | Copies String Theory's version, each bundled script's, the manager, the browser and the site, for a bug report; *Copy as Markdown* copies them ready to paste into an issue |
+| Setting        | Default           | What it does                                                                          |
+| -------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| Side           | Right             | The launchers' side of the page                                                       |
+| Orientation    | Column            | A column, or a row along the bottom edge                                              |
+| Size           | 100 %             | The launchers' size, 60 to 160 %                                                      |
+| Hover          | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons  |
+| Launcher order | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner            |
+| Scripts        | All on            | Turns each bundled script on or off, from the next page load                          |
+| Copy versions  |                   | Copies the versions of everything a bug report needs; *Copy as Markdown* for an issue |
 
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
