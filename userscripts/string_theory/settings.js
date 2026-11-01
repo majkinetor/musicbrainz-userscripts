@@ -143,7 +143,8 @@ function stVersionsText() {
 var ST_CSS = ''
   + '#st-cfg{width:min(620px,94vw);padding:14px 16px;box-sizing:border-box;overflow:auto;font:13px/1.4 var(--mbu-font);outline:none}'
   + '#st-cfg .st-sec{margin:0 0 14px}#st-cfg .st-sec:last-child{margin:0}'
-  + '#st-cfg .st-tabs{display:flex;gap:2px;margin:0 0 10px;border-bottom:1px solid var(--mbu-border)}'
+  + '#st-cfg .st-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;border-bottom:1px solid var(--mbu-border)}'
+  + '#st-cfg .st-tabs{display:flex;gap:2px}'
   + '#st-cfg .st-tabs button{font:inherit;font-size:12px;font-weight:600;margin:0 0 -1px;padding:5px 12px;border:1px solid transparent;border-bottom:0;border-radius:var(--mbu-radius) var(--mbu-radius) 0 0;background:none;color:var(--mbu-text-dim);cursor:pointer}'
   + '#st-cfg .st-tabs button:hover{color:inherit}'
   + '#st-cfg .st-tabs button[aria-selected=true]{color:inherit;background:var(--mbu-bg);border-color:var(--mbu-border)}'
@@ -189,14 +190,17 @@ function stSettings() {
     (document.head || html).appendChild(css);
   }
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
+  var links = '<span class="st-links">'
+    + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
+    + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span>';
   if (ST_ON_MB) {
     var seg = function (id, label, opts) {
       return '<span class="st-lbl" id="' + id + '-l">' + label + '</span><span class="st-seg" role="radiogroup" id="' + id + '" aria-labelledby="' + id + '-l">'
         + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
     };
-    h += '<div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Dock</button>'
+    h += '<div class="st-nav"><div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Dock</button>'
       + '<button type="button" role="tab" id="st-tab-t" aria-controls="st-p-t" aria-selected="false">Theme</button>'
-      + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>'
+      + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>' + links + '</div>'
       + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l">'
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
@@ -217,9 +221,7 @@ function stSettings() {
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
-    + '<div class="st-row"><span class="st-links">'
-    + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
-    + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span></div>'
+    + (ST_ON_MB ? '' : '<div class="st-row">' + links + '</div>')
     + '<div class="st-upd" id="st-upd" hidden></div>'
     + '<div class="st-scripts" data-tip="Right-click a script for its settings">' + stMembers.map(function (m) {
       var icon = m[3] ? '<img alt="" src="' + stEsc(m[3]) + '">' : known[m[1]] || '';

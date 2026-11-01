@@ -34,7 +34,7 @@ In edit notes, a script running inside the bundle (not standalone) is marked wit
 String Theory adds dock and setting management for all included scripts:
 
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
-- **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About.
+- **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
 ## Theme
@@ -65,7 +65,7 @@ In String Theory's settings, **Theme** picks one of:
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
 - Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
-- About checks for updates each time you open it and links to the website and issues.
+- About checks for updates each time you open it.
 - The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts
