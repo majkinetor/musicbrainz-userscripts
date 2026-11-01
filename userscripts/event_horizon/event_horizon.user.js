@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0515.01
+// @version      2026.11.02.0515.02
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2792,6 +2792,7 @@ body.col-dragging,body.col-dragging *{cursor:grabbing!important;user-select:none
 .tr .ti .mk>*{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:12px;font-weight:700}
 .tr .ti .mk>.on{color:var(--accent)}
 .tr .ti .mk>a:hover{color:var(--text);text-decoration:none}
+.tr .ti .mk>a[data-mbid]{cursor:copy}
 .tr .ti .sub{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap}
 .tr .is .isrow{display:flex;align-items:center;gap:8px}
 .tr .is .pop .isrc{display:block;padding:4px 10px}
@@ -3884,8 +3885,8 @@ const MK_RELEASE = MBU_ENT_ICONS['release'];
 const MK_WORK = MBU_ENT_ICONS['work'];
 const MK_CR = MBU_ENT_ICONS['artist'];
 const mkSvg = d => `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-const marks = t => `<span class="mk"><a class="${t.cr.length ? 'on' : ''}" href="${MB}/recording/${t.rid}" data-tip="Recording${t.cr.length ? ' · ' + t.cr.length + ' relationship' + (t.cr.length === 1 ? '' : 's') : ', no relationships'}" aria-label="Recording">${mkSvg(MK_REC)}</a>`
-    + t.works.map(w => `<a class="on" href="${MB}/work/${w.id}" data-tip="Work: ${esc(w.title)}" aria-label="Work: ${esc(w.title)}">${mkSvg(MK_WORK)}</a>`).join('')
+const marks = t => `<span class="mk"><a class="${t.cr.length ? 'on' : ''}" href="${MB}/recording/${t.rid}" data-mbid="${t.rid}" data-tip="Copy the recording's MBID&#10;${t.cr.length ? t.cr.length + ' relationship' + (t.cr.length === 1 ? '' : 's') : 'No relationships'}&#10;Ctrl-click: open it" aria-label="Copy the recording's MBID">${mkSvg(MK_REC)}</a>`
+    + t.works.map(w => `<a class="on" href="${MB}/work/${w.id}" data-mbid="${w.id}" data-tip="Copy the work's MBID&#10;${esc(w.title)}&#10;Ctrl-click: open it" aria-label="Copy the MBID of the work ${esc(w.title)}">${mkSvg(MK_WORK)}</a>`).join('')
     + (t.credits ? `<span class="on" data-tip="${t.credits} credit${t.credits === 1 ? '' : 's'}">${mkSvg(MK_CR)}${t.credits}</span>` : '') + '</span>';
 // a release whose Artist column was turned on or off by hand → that choice
 const arCol = new Map();
@@ -8404,6 +8405,13 @@ function redrawTracks() {
 }
 function onClick(ev) {
     if (!ehOn) return;
+    // a track's recording and work marks copy on a plain click; Ctrl or the middle button still opens them
+    const mbid = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[data-mbid]');
+    if (mbid) {
+        ev.preventDefault();
+        try { navigator.clipboard.writeText(mbid.dataset.mbid).then(() => toast('Copied the MBID'), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
+        return;
+    }
     const nav = !ev.defaultPrevented && ev.button === 0 && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && !ev.altKey && ev.target.closest('a[href]');
     const navId = nav && !nav.target && (navTo(nav.href) || histKey(nav.href));
     if (navId) { ev.preventDefault(); ehPush(nav.href); show(navId); return; }

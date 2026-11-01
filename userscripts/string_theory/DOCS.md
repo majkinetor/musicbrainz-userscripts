@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 23:00 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 23:04 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -804,7 +804,7 @@ Select the star in an entity's header to keep it on the homepage; select it agai
 
 ### Tracklist
 
-Open a track to see its recording and work credits. The platforms it is on (Spotify, Apple Music, Tidal, …) show as icons. Icons in collapsed track follow tracklist section configuration - select favorite platforms to show and let others be hidden in a submenu (all are shown in expanded track). Multiple links from the same platform are deduplicated to reduce noise; such platform icons contain a dot and can be right clicked to show the link list for that platform.
+Open a track to see its recording and work credits. The recording and work icons after a track's title copy its MBID; Ctrl-click or middle-click opens it. The platforms it is on (Spotify, Apple Music, Tidal, …) show as icons. Icons in collapsed track follow tracklist section configuration - select favorite platforms to show and let others be hidden in a submenu (all are shown in expanded track). Multiple links from the same platform are deduplicated to reduce noise; such platform icons contain a dot and can be right clicked to show the link list for that platform.
 
 The tracklist has convenient options in header to toggle visibility of its columns. **Credits display** can be configured in expanded track regarding disambiguation and role/name grouping (choice is remembered).
 
