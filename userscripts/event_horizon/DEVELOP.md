@@ -30,6 +30,14 @@ That body is always the page the tab loaded. After moving inside Event Horizon, 
 
 While Event Horizon shows, `<html>` carries `data-mbu-dock`, and the other scripts' corner launchers fold into String Theory's `#mbu-dock` (`mbuDockItem`, a shared block). An entry's `paths` is a regular expression on the path; on a page it doesn't match, the entry is hidden (`data-mbu-docked=off`). Event Horizon calls `mbRestackCorner('br')` on every `show`, so the dock follows the page shown.
 
+### Actionable entries in the minimized dock
+
+Each script owns its findings and its badge text. `mbuDockItem` returns the entry button: call `item.status(text)` for the badge, `item.busy(on)` for loading, and `item.card(fn)` for its hover card. For a composite count, set `item.toggleAttribute('data-mbu-actionable', hasAction)` **before** `item.status(text)`; the status call restacks the dock. Clear the attribute when no action remains, and call `status` or `mbRestackCorner('br')` to update visibility.
+
+With the dock minimized, `mbuDock` shows an eligible entry as `data-mbu-docked="peek"` when that attribute is present. It also peeks at a badge beginning with a nonzero digit (optionally prefixed by `+`) for existing scripts that do not set the flag. An absent or false flag therefore does not override a positive-leading badge. The dock does not parse composite counts to decide what their parts mean: the script must set the flag when a later part is actionable.
+
+ISRC Scout sets the flag for either new ISRCs or links, so `0,7` peeks. Platform Check sets it for platforms to link or artist and label links, so `0/1` and `0,3/2` peek; withheld platforms alone (`0,3`) do not. A script must update its flag and badge together as its results change. These dock signals do not define Mission Control's findings, which Mission Control handles separately.
+
 A dock entry whose script didn't start on the loaded page isn't there at all. Platform Check now starts everywhere it may be needed and builds its panel in a hidden host (`#mb-pc-eh-host`) until the dock opens it.
 
 ## Network usage
