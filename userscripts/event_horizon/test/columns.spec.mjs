@@ -130,14 +130,16 @@ test('a column resizes by its edge, fits its content and goes back to fitting it
   await edge.dblclick();
   await until(() => width('date'), w => w < d0 + 25);
   check(await page.$eval('#s-dg table.ed-t', t => t.classList.contains('fix')), 'the others stay as they were');
-  await page.locator('[data-pop="cols-dg"]').click();
   await page.locator('[data-colfit="dg"]').click();
   await until(() => page.$eval('#s-dg table.ed-t', t => t.classList.contains('fix')), v => !v);
-  check(await page.locator('#pop-cols-dg').isVisible(), 'the menu stays open');
 });
 
 test('the filter\'s tooltip shows how to write one', { tag: '@sandbox' }, async ({ page, inject }) => {
   await open(page, inject);
-  const tip = await page.locator('[data-fopen="dg"]').getAttribute('data-tip');
-  for (const x of ['-artist:', 'year:2020-2024', 'AND', 'OR', '(a OR b)', 'Columns: title, artist']) check(tip.includes(x), x);
+  await page.locator('[data-fopen="dg"]').click();
+  await page.locator('[data-fhelp="dg"]').hover();
+  await until(() => page.locator('#mbu-tip .flt-tip tr').count(), n => n === 6);
+  const tip = await page.locator('#mbu-tip').textContent();
+  for (const x of ['Filter by title', '-artist:', 'year:2020-2024', 'a AND b', 'a OR b', '(a OR b)']) check(tip.includes(x), x);
+  check((await page.locator('#mbu-tip .flt-tip-cols code').allTextContents()).slice(0, 2).join() === 'title,artist', 'the section\'s columns');
 });
