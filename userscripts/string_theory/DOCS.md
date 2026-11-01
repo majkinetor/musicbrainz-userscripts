@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 19:09 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -885,7 +885,7 @@ An importer like [Harmony](https://harmony.pulsewidth.org.uk) hands you 20–50 
 
 ### Features
 
-- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), a [JSON file](#json-model) or [another script](#from-another-script).
+- **[Queue from anywhere](#filling-the-queue)**: a [Harmony](#from-harmony) import, [the page you're on](#from-the-current-page), [a series](#from-a-series), [a label](#from-a-label), a [JSON file](#json-model) or [another script](#from-another-script).
 - **[Editing the queue](#editing-the-queue)** as a list of forms or a spreadsheet-like grid.
 - **[Failures you can inspect](#the-run)**: MusicBrainz's own error on the row, the worker left where it stopped, retry in place.
 - **[Attributes](#attributes)**: links, names, disambiguations, aliases, ISRCs, the video flag, cover art.
@@ -897,7 +897,7 @@ Untouched rows, and aliases and links the entity already has, are skipped. A lin
 
 ### Filling the queue
 
-Open Falcon with **Ctrl+Alt+F** on any page, or with its corner icon (right-click: **Options**). The icon shows on release, release group and series pages, and on other pages while a run goes.
+Open Falcon with **Ctrl+Alt+F** on any page, or with its corner icon (right-click: **Options**). The icon shows on release, release group, series and label pages, and on other pages while a run goes.
 
 #### From Harmony
 
@@ -922,6 +922,10 @@ Ticking the *Video* camera on a selected recording ticks it on every selected re
 #### From a series
 
 On a series page, **+ Add from series** queues its release groups (optionally every release in them), or its releases (optionally their release groups), in the series' own order. Together with [renaming](#attributes), this is how a series gets its titles conformed.
+
+#### From a label
+
+On a label page, **+ Add from label** queues its releases and their release groups. Choose either or both, then use [renaming](#attributes) to edit their titles together.
 
 ### Editing the queue
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.001502
+// @version      2026.11.01.190951
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -3011,6 +3011,7 @@
   const RELEASE_PATH_RE = /\/release\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
   const RG_PATH_RE = /\/release-group\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
   const SERIES_PATH_RE = /\/series\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+  const LABEL_PATH_RE = /\/label\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
   // What can this page offer? release-group pages have no tracklist of their own.
   function pageEntityContext() {
     if (ON_HARMONY) return null;
@@ -3023,6 +3024,8 @@
     // whole point of the issue is conforming the names of everything in one.
     const ser = location.pathname.match(SERIES_PATH_RE);
     if (ser) return { kind: 'series', mbid: ser[1] };
+    const label = location.pathname.match(LABEL_PATH_RE);
+    if (label) return { kind: 'label', mbid: label[1] };
     return null;
   }
   // #572: a series' contents are RELATIONSHIPS, not a browsable collection —
@@ -3090,6 +3093,28 @@
       }
       const total = j && j['release-count'];
       if (!batch.length || (total != null && out.length >= total)) break;
+    }
+    return out;
+  }
+  // Browse the label's releases, including their groups in the same response.
+  async function fetchLabelReleases(mbid, want) {
+    const out = [], seen = new Set();
+    const push = (entityType, entity) => {
+      if (!entity || !entity.id || seen.has(entityType + ':' + entity.id)) return;
+      seen.add(entityType + ':' + entity.id);
+      out.push({ entityType, mbid: entity.id, name: entity.title || null, note: '' });
+    };
+    for (let offset = 0; ; offset += 100) {
+      const url = `${MB_ORIGIN}/ws/2/release?label=${mbid}&inc=release-groups&limit=100&offset=${offset}&fmt=json`;
+      const j = await mbThrottle.fetchJson(url, undefined, true);
+      if (!j || !Array.isArray(j.releases)) throw new Error('MusicBrainz did not return the release list');
+      const batch = j.releases;
+      for (const release of batch) {
+        if (want.release) push('release', release);
+        if (want.release_group) push('release_group', release['release-group']);
+      }
+      if (offset || batch.length === 100) log('info', `…read ${offset + batch.length} release(s) from this label`);
+      if (!batch.length || (j['release-count'] != null ? offset + batch.length >= j['release-count'] : batch.length < 100)) break;
     }
     return out;
   }
@@ -7129,7 +7154,7 @@
   // overview of a release, a release group or a series (its "Add from …" menu), never an edit
   // page. Elsewhere only while a run goes or just ended clean in this tab, the way back to it.
   // The specs open the panel from the icon on any page, so under the test hooks only #675 holds.
-  const LAUNCHER_PATHS = '^/(release|release-group|series)/[0-9a-fA-F-]{36}/?$';
+  const LAUNCHER_PATHS = '^/(release|release-group|series|label)/[0-9a-fA-F-]{36}/?$';
   function launcherPage(path) { return new RegExp(LAUNCHER_PATHS).test(path); }
   function launcherWanted() {
     if (onReleaseEditorPage()) return false;
@@ -7551,7 +7576,7 @@
       if (!ctx) { btn.onclick = null; return; }
       const bt = btn.querySelector('.falcon-bt');
       if (bt) bt.textContent = ctx.kind === 'release-group' ? 'Add from group'
-        : ctx.kind === 'series' ? 'Add from series' : 'Add from release';
+        : ctx.kind === 'series' ? 'Add from series' : ctx.kind === 'label' ? 'Add from label' : 'Add from release';
       // #572: a series page cannot label its own menu until we know whether it
       // holds release groups or releases, so read it once on first open and
       // cache — the menu then names what is actually in there, with counts.
@@ -7594,7 +7619,14 @@
             + '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">'
             + '<button type="button" data-a="cancel" style="padding:2px 8px;cursor:pointer">Cancel</button>'
             + '<button type="button" data-a="ok" style="padding:2px 10px;cursor:pointer;font-weight:600">Add</button></div>';
-        } else menu.innerHTML =
+        } else if (ctx.kind === 'label') menu.innerHTML =
+          '<div style="font-weight:600;margin-bottom:6px">Add from label</div>'
+          + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release" checked> Releases</label>'
+          + '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="release_group" checked> Release groups</label>'
+          + '<div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">'
+          + '<button type="button" data-a="cancel" style="padding:2px 8px;cursor:pointer">Cancel</button>'
+          + '<button type="button" data-a="ok" style="padding:2px 10px;cursor:pointer;font-weight:600">Add</button></div>';
+        else menu.innerHTML =
           '<div style="font-weight:600;margin-bottom:6px">Add to queue</div>'
           + (rgOnly ? '' : '<label style="display:block;margin:3px 0"><input type="checkbox" data-w="recording" checked> Recordings <span style="color:var(--mbu-text-weak)">(tracklist)</span></label>')
           + (rgOnly
@@ -7615,6 +7647,21 @@
           const want = {};
           menu.querySelectorAll('input[data-w]').forEach(cb => { want[cb.dataset.w] = cb.checked; });
           close();
+          if (ctx.kind === 'label') {
+            if (!want.release && !want.release_group) { log('warn', 'nothing selected — tick at least one box'); return; }
+            log('info', 'reading this label’s releases from MusicBrainz…');
+            setBtnBusy(btn, true, { label: 'Reading…' });
+            const waiting = beginWait('this label');
+            try {
+              const tuples = await fetchLabelReleases(ctx.mbid, want);
+              if (!tuples.length) { log('warn', 'this label lists no releases'); return; }
+              const res = addToQueue(tuples);
+              log('info', `added ${res.added} row(s) from this label` + (res.merged ? ` — ${res.merged} merged into rows already queued` : ''));
+              renderQueue();
+            } catch (e) { log('error', `could not read this label — ${e.message || e}`); }
+            finally { waiting.done(); setBtnBusy(btn, false); }
+            return;
+          }
           // #546 (majkinetor): "The only way to tell is that Add from release
           // button is grayed - nothing else happens, including log." Measured
           // on his own release (e70b4221, 47 tracks): the ONE

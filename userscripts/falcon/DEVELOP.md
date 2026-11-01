@@ -37,6 +37,10 @@ As soon as a release item is queued, the Cover Art Archive is checked, and the r
 
 A series' contents are relationships, not a browsable collection (there is no `/ws/2/release-group?series=…`), so its membership is one request. The two expansions aren't: *every release in those groups* is a browse per group, and *the release groups of those releases* a lookup per release, which is why both are off by default.
 
+## Labels
+
+The label import browses releases in pages of 100 with `inc=release-groups`, collecting each release and its group without per-release lookups. Groups are deduplicated; a failed page leaves the queue untouched.
+
 ## Aliases
 
 Each alias is its own MusicBrainz edit, submitted through `/<entity>/<mbid>/add-alias`; localising a 20-track release is 40 edits, which is why the bulk path is a JSON file. Before each item Falcon reads the entity's aliases and skips any whose name, locale and type already match: MusicBrainz accepts exact duplicates without complaint. When that read fails, the aliases are held back rather than risking duplicates, and **Retry failed** picks them up later. `type` is matched against the form's own list, as MusicBrainz names it for that entity (`Recording name`, `Search hint`, `Legal name` on artists).
