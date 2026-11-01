@@ -32,6 +32,26 @@ While Event Horizon shows, `<html>` carries `data-mbu-dock`, and the other scrip
 
 A dock entry whose script didn't start on the loaded page isn't there at all. Platform Check now starts everywhere it may be needed and builds its panel in a hidden host (`#mb-pc-eh-host`) until the dock opens it.
 
+## Network usage
+
+All scripts share one gate for MusicBrainz, across tabs: about one ws/2 request a second, and everyone holds when MusicBrainz asks for a wait. Event Horizon adds these rules:
+
+| Request                          | Place                                                                |
+| -------------------------------- | -------------------------------------------------------------------- |
+| The page being opened            | first: its tab leads, and every other background request waits       |
+| Other scripts' scans (PC, IS, …) | wait for a lead to end, then first come, first served                |
+| Rechecking a kept answer         | after the page, one at a time, no lead                               |
+| Pending edits                    | last: joins the queue after a pause, and only in a visible, idle tab |
+
+For example, open a release while Platform Check is scanning. Requests it has booked still go; the rest wait. The release's parts load, and the lead ends. Platform Check carries on, kept answers are rechecked in between, and the pending edits request joins about 2 seconds later. Move to another page and whatever hasn't started is dropped.
+
+What saves requests:
+
+- **Kept answers**: a page seen before draws from IndexedDB, and only answers over a minute old are asked again ([Kept answers](#kept-answers)). A write voids them.
+- **Cover images**: the newest 60 are kept, so CAA's two redirects aren't repeated.
+- **Pending edits**: an answer is reused for 5 minutes, and the option turns the request off ([Pending edits](#pending-edits)).
+- **A hidden tab** takes no lead and sends no pending edits request.
+
 ## Kept answers
 
 A page loader's requests go through `kept` ([#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)): `wsk` for ws/2, `mbTabK` for a MusicBrainz table, and the Wikipedia extract and cover art. Each answer is kept in IndexedDB (`eh-kept`, the 800 last used), and a page seen before draws from it without asking. Once all of a page's parts are in, `kpCheck` asks again, one at a time, for each kept answer it drew from that is over a minute old or older than the tab's last return to view. If one changed, the page redraws whole (`show(key, { quiet: true })`), unless a box in it is being typed in.

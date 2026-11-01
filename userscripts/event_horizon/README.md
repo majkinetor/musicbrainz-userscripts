@@ -1,6 +1,6 @@
 # Event Horizon <img src="icon.svg" align="left" width="48">
 
-MusicBrainz web pages redesigned to produce clean modern interface with theming support, authomatic light/dark theme switch and String Theory members seamless integration.
+MusicBrainz web pages redesigned to produce clean modern interface with theming support, automatic light/dark theme switch and String Theory members seamless integration.
 
 - Install: [stable](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/stable/userscripts/event_horizon/event_horizon.user.js) or [latest](https://raw.githubusercontent.com/majkinetor/musicbrainz-userscripts/refs/heads/main/userscripts/event_horizon/event_horizon.user.js)
   - Or via bundle: [String Theory](../string_theory/README.md)
@@ -8,13 +8,13 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 
 ## Features
 
-- **[The viewer](#the-viewer)** takes over a page, and moves between them without reloading.
-- **[Pinned header](#pinned-header)** keeps the page's identity and actions in reach while scrolling.
-- **[Sections](#sections)**: all data categories presented in cards that can be reordered, hidden and configured.
-- **[Details](#details)** shows an entity's facts and external links in a way that suits you the best.
-- **[Tracks and platforms](#tracks-and-platforms)**: each track's credits and its streaming links with platform deduplication and reduced noise.
+- **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
+- **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
+- **[Tracklist](#tracklist)**: each track's credits and its streaming links, with platforms deduplicated.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table, grouped by type, with a filter.
-- **Long requested features**: Artist/label/release/RG/area images, configurable homepage, tag/alias inline editor, infinite scroll, advanced filtering, edit history grouping ...
+- **[Pending changes](#pending-changes)** marks what has edits open.
+
+Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, infinite scroll, advanced filtering and grouped edit history.
 
 ## The viewer
 
@@ -29,7 +29,7 @@ When MB page has Event Horizon redesign available, EH dock button shows on the n
 
 ## Sections
 
-All data is aranged in sections that can be collapsed, hidden or reordered using main menu item. Card state is remembered for given entity. Specific cards have additional options at the right side.
+All data is arranged in sections that can be collapsed, hidden or reordered using main menu item. Card state is remembered for given entity. Specific cards have additional options at the right side.
 
 Click a card header, group or row to open or fold it. Right-click it, or its contents, to open or fold its siblings together. In the tracklist, tracks are siblings within a disc; right-click a card header to fold all cards into a contents list.
 
@@ -37,7 +37,7 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 Open a track to see its recording and work credits. The platforms it is on (Spotify, Apple Music, Tidal, …) show as icons. Icons in collapsed track follow tracklist section configuration - select favorite platforms to show and let others be hidden in a submenu (all are shown in expanded track). Multiple links from the same platform are deduplicated to reduce noise; such platform icons contain a dot and can be right clicked to show the link list for that platform.
 
-The tracklist has convenient options in header to toggle visibility of its columns. **Credits display** can be configured in expanded track regarding disambiguation and role/name grouping (choice is remembered). r hide it, drag it to reorder.
+The tracklist has convenient options in header to toggle visibility of its columns. **Credits display** can be configured in expanded track regarding disambiguation and role/name grouping (choice is remembered).
 
 Expanded track contains info about associated recording and works.
 
@@ -49,22 +49,27 @@ The funnel icon opens a filter: type part of a title, or add a filter by artist,
 
 Every table's filter also takes `column:value`, such as `artist:elvis` (put the value in quotes when it has spaces). The funnel next to a column's heading starts filtering for that column.
 
+## Pending changes
+
+Titles, tracks, credits and links with edits open are marked in grey, as on MusicBrainz. A person with two credits, one of them pending, has both marked.
+
 ## Settings
 
 Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes them all.
 
-| Setting                               | Default                                                             |                                                                            |
-| ------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                           |
-| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                 |
-| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                    |
-| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                |
-| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                |
-| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N              |
-| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown |
-| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                |
-| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                    |
-| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                     |
+| Setting                               | Default                                                             |                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Release → Info                        | released, labels, barcode, length, links                            | the facts shown beside the cover                                                  |
+| Release → Under the cover             | Other covers, Rating, Genres                                        | what shows under the cover                                                        |
+| Tracklist → Tracks                    | Alternating colors                                                  | shade every other track                                                           |
+| Platforms → Show                      | off                                                                 | **Names** beside the icons; **Gray icons** until pointed at                       |
+| Platforms → Icon size                 | 22px                                                                | the size of a platform icon                                                       |
+| Platforms → Platforms                 | Spotify, Apple Music, Tidal, Qobuz, Deezer, YouTube Music           | click to show or hide, drag to reorder; the rest go behind +N                     |
+| Artist → Artist images                | Discogs, Wikipedia, Deezer, Spotify, Tidal, Apple Music, SoundCloud | click to turn one off or on, drag to reorder; the first one found is shown        |
+| Annotation → Show annotation on hover | on                                                                  | preview a folded annotation                                                       |
+| General → Page width                  | Wide                                                                | how wide the page grows on a big screen                                           |
+| General → Menu titles                 | off                                                                 | text beside menu icons in page headers and pinned bars                            |
+| General → Pending changes             | on                                                                  | mark what has edits open; takes one extra MusicBrainz request per page, sent last |
 
 ## Shortcuts
 
@@ -75,3 +80,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Right-click | corner icon                     | open the settings   |
 | Right-click | a card, group or row            | toggle its siblings |
 | Right-click | a platform icon with more links | open its links      |
+
+## Notes
+
+- How Event Horizon uses the network, and how it shares MusicBrainz with the other scripts: [Network usage](DEVELOP.md#network-usage).
