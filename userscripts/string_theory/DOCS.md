@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 11:59 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 12:30 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -816,7 +816,7 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 In a table, click a release or release group's row, anywhere outside its links and buttons, to open it; Ctrl-click or middle-click opens it in a new tab. A release's track count opens its tracklist in place.
 
-**Show pending changes** (in the header's settings) marks in grey what has edits open, as MusicBrainz does: titles, tracks, credits and links. It takes one extra MusicBrainz request per page, sent after everything else.
+**Show pending changes** (in the settings) marks in grey what has edits open, as MusicBrainz does: titles, tracks, credits and links. It takes one extra MusicBrainz request per page, sent after everything else.
 
 **Credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
 
