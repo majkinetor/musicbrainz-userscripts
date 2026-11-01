@@ -29,6 +29,11 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await page.evaluate(() => { GM_setValue('pc:dock-pos', { x: 160, y: 5000 }); window.dispatchEvent(new Event('resize')); });
   check(await page.evaluate(() => { const w = document.querySelector('.mbu-dock-win'), b = w.getBoundingClientRect(); return w.scrollHeight <= w.clientHeight && b.bottom <= innerHeight; }), 'near the bottom it moves up, with no scrollbars');
 
+  await page.evaluate(() => { const d = document.createElement('div'); d.id = 'pc-grow'; d.style.height = '150px'; document.querySelector('.mbu-dock-win').firstElementChild.append(d); });
+  await page.waitForTimeout(200);
+  check(await page.evaluate(() => { const w = document.querySelector('.mbu-dock-win'), b = w.getBoundingClientRect(); return w.scrollHeight <= w.clientHeight && b.bottom <= innerHeight; }), 'when it grows it moves up, with no scrollbars');
+  await page.evaluate(() => document.getElementById('pc-grow').remove());
+
   await page.locator('#mb-pin-btn').click();
   check(await page.evaluate(() => GM_getValue('pc:dock-pin')) === false, 'the pin button unpins it');
   await page.mouse.click(5, 300);
