@@ -10,10 +10,13 @@ String Theory's themes for MusicBrainz. Each is one CSS file, `<name>.dark.css` 
 | Solarized   | Cream and blue                                  | Deep teal and blue                          |
 | Letterpress | Pale paper, oxblood links and evergreen accents | Warm charcoal, coral links and sage accents |
 | Blueprint   | Ice white, cobalt ink and olive-lime accents    | Midnight blue, sky-blue ink and signal lime |
+| Orchid      | Pale lavender, plum ink and apricot accents     | Deep aubergine, lilac ink and soft peach    |
 
 **Letterpress** adds serif headings, fine rules and square controls, including Event Horizon and the bundled script windows. In String Theory's **Theme** settings, choose it for both **Light theme** and **Dark theme**.
 
 **Blueprint** pairs technical, monospaced section headings with rounded panels and cool blue surfaces. Hover highlights stay subtle. In String Theory's **Theme** settings, choose it for both **Light theme** and **Dark theme**.
+
+**Orchid** uses soft typography, pill-shaped controls and petal-shaped cards. In String Theory's **Theme** settings, choose it for both **Light theme** and **Dark theme**.
 
 ## Customizing
 
