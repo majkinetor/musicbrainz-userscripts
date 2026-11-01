@@ -26,10 +26,23 @@
 | [Mission Control](../mission_control) | One dashboard to find and fix all a release lacks, and consolidate new ones                    |
 | [Platform Check](../platform_check)   | Find and verify a release's links on the online platforms                                      |
 
-- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again.
-- **Settings**: open them from **⚙ Settings** in the userscript manager's menu, or by right-clicking String Theory's icon.
-- **Dark mode and themes**, with no userstyle needed: in the settings, **Theme** picks light (default), dark, by your system, by sunrise and sunset where you are (the browser asks for your location once, and your system setting is used if you refuse), or by the hours you enter for dark. **Dark theme** and **Light theme** pick the theme for each: Default or Solarized. Turn off any dark userstyle you used before. To add or tweak a theme, see [themes](themes/README.md).
-- In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
+In edit notes, all userscripts are marked with `*` (e.g. `Apollo Editor*`).
+
+## Interface
+
+String Theory adds dock and setting management for all included scripts:
+
+- **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded dock shows only actionable items (for this to work, script must have enabled background fetch).
+- **Settings**: open them from by right-clicking String Theory's icon. Right click any dock icon for its own settings. All possible icons are visible in the ST settings about box.
+- **Update**: in settings About tab, toggle individual scripts, see their versions and check for updates.
+
+## Theme
+
+ST supports set of light and dark themes and can be configured to automatically switch them based on system, location or time. This feature doesn't require any other userscripts or browser extensions.
+
+In the ST settings, **Theme** picks light (default), dark, by your system, by sunrise and sunset where you are (the browser asks for your location once, and your system setting is used if you refuse), or by the hours you enter for dark. **Dark theme** and **Light theme** are individualy set.
+
+To add or tweak a theme, see [themes](themes/README.md).
 
 ## Settings
 
