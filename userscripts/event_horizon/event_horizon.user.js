@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.14
+// @version      2026.11.01.2359.00
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2941,8 +2941,9 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover');
+VIEW.push('menuTitles', 'annoHover', 'pending');
 S.annoHover = true;
+S.pending = true; // MusicBrainz's grey mark on what has edits open; takes one more request per page
 // the page's width; --eh-wn is the same as a length (the screen's for Full), for the launchers' column
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
@@ -7151,10 +7152,56 @@ function editMenu(app) {
     w.insertAdjacentHTML('beforeend', `<span class="abm">${it.map(([p, n, ic]) => `<a class="ab" href="${base}/${p}">${SVG(ic)}<span>${n}</span></a>`).join('')}</span>`);
 }
 var releasePageDraw, secDrag = null, secRedraw = false;
+// Pending edits, MusicBrainz's grey mark: ws/2 doesn't carry them, /ws/js does. This is the page's last request: it starts
+// once everything else is in, after a pause, waits for the tab to be in view and idle, and takes the gate's next free slot
+// behind whatever is queued, giving way to any page being drawn. A reader who moves on cancels it.
+let pdKey = '';
+const PD = new Map(), PD_KINDS = /^(release|release-group|artist|label|recording|work|area|instrument|place|series|event)$/, PD_TTL = 300000;
+function pdRead(j) {
+    const p = { at: Date.now(), own: !!j.editsPending, ids: new Set(), rids: new Set() };
+    const rels = e => { for (const r of e.relationships || []) if (r.editsPending && r.target) p.ids.add(r.target.href_url || r.target.gid); };
+    rels(j);
+    for (const m of j.mediums || []) for (const t of m.tracks || []) {
+        if (t.editsPending || (t.recording && t.recording.editsPending)) p.rids.add(t.recording && t.recording.gid);
+        if (t.recording) rels(t.recording);
+    }
+    return p;
+}
+async function pdAsk(kind, id, live) {
+    if (!S.pending || !PD_KINDS.test(kind)) return;
+    const k = pdKey = kind + '/' + id, had = PD.get(k);
+    if (had) pdPaint($('#app'));
+    if (had && Date.now() - had.at < PD_TTL) return;
+    try {
+        await new Promise(r => setTimeout(r, 2000));
+        while (live() && document.visibilityState !== 'visible') await new Promise(r => setTimeout(r, 1000));
+        if (!live()) return;
+        await new Promise(r => (window.requestIdleCallback || setTimeout)(r, { timeout: 5000 }));
+        const slot = await mbnSlot({ label: 'pending edits', cancelled: () => !live(), log: (l, m) => LOG.debug(m) });
+        if (!slot.ok || !live()) return;
+        const t0 = performance.now(), u = kind === 'release' ? `${MB}/ws/js/release/${id}?inc=rels+recordings` : `${MB}/ws/js/entity/${id}?inc=rels`;
+        const r = await mbnFetch(u, { headers: { Accept: 'application/json' } });
+        fetchLog('pending edits ' + k, t0, r);
+        if (!r || !r.ok) return;
+        const p = pdRead(await r.json());
+        PD.set(k, p);
+        if (live() && (p.own || p.ids.size || p.rids.size)) pdPaint($('#app'));
+    } catch (e) { LOG.debug('pending edits not read: ' + (e && e.message || e)); }
+}
+function pdPaint(app) {
+    const o = S.pending && data && (data.rel || data.g), p = app && o && pdKey.endsWith('/' + o.id) && PD.get(pdKey);   // a release's data has no kind
+    if (!p) return;
+    const h = app.querySelector('h1'); if (h && p.own) h.classList.add('eh-mp');
+    for (const a of app.querySelectorAll('a[href]')) {
+        const h = a.getAttribute('href');
+        if (p.ids.has(h) || (a.closest('#s-cr') && [...p.ids].some(x => h.endsWith('/' + x)))) a.classList.add('eh-mp');
+        else if (a.classList.contains('t') && [...p.rids].some(x => h.endsWith('/recording/' + x))) a.classList.add('eh-mp');
+    }
+}
 function render(keepPop) {
     if (secDrag) { secRedraw = true; return; } // keep the dragged rail row attached until the drag ends
     if (!data || data.kind !== 'home') secFab(false);
-    if (releasePageDraw) { releasePageDraw(); save(); return; }
+    if (releasePageDraw) { releasePageDraw(); pdPaint($('#app')); save(); return; }
     const app = $('#app') || (ehBody && ehBody.querySelector('#app'));   // a fetch can land after the switch to MusicBrainz's page, which takes ours out of the document
     bgApply();
     ehWidth();
@@ -7245,6 +7292,7 @@ function render(keepPop) {
     fitQuiet();
     lmWatch(app);
     shWatch(app);
+    pdPaint(app);
     save();
 }
 // a table's header pins under its section's pinned header (sticky), so it needs that header's height, kept as it changes
@@ -8243,6 +8291,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
     // the theme's band and bar colours, which the stuck section header and the pinned bar take
     + '\n' + (CSS.match(/^:root\{--eh-page:[^\n]*/m) || [''])[0].replace(/:root/g, ':root[data-eh-rel]') + `
 :root[data-eh-rel] body{background:var(--bg)!important}
+#app .eh-mp{background:color-mix(in srgb,currentColor 14%,transparent);border-radius:3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 :root[data-eh-rel]:is([data-eh-bg=glow],[data-eh-bg=aura]) body{background:radial-gradient(900px 520px at 100% 0,color-mix(in srgb,var(--accent2) 18%,transparent),transparent 70%) no-repeat,radial-gradient(800px 480px at 72% 0,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%) no-repeat,var(--bg)!important}
 :root[data-eh-rel] :is(#page,#content,#container){background:none!important}
 :root[data-eh-rel] body{color:var(--text);font-family:Manrope,system-ui,sans-serif;font-size:15px}:root[data-eh-rel] #page :is(table,td,th,p,label,input,select,textarea,button,td.works>h3):not(.discogs-bar *,.eh-release-views *){font-size:inherit}:root[data-eh-rel] #page .discogs-bar :is(label,button,select,span,input){font-size:13px}
@@ -9138,6 +9187,7 @@ function hdBody() {
     const fc = ([k, n]) => cfgChip('fact', k, S.facts.includes(k), n), ex = k => cfgChip('extra', k, S.extras.includes(k), k === 'tags' ? 'Tags' : 'Rating');
     return cfgRow('Info', FACTS.filter(x => x[0] !== 'links').map(fc).join('') + ex('rating') + cfgChip('noAliases', 'aliases', !S.noAliases, 'Aliases') + ex('tags') + fc(FACTS.find(x => x[0] === 'links')))
         + `<h3 class="plh">Cover image</h3><div class="cr ckr"><button type="button" class="ck" data-g="thumbs" data-k="thumbs" role="checkbox" aria-checked="${S.thumbs}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.thumbs ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show other covers</button></div>`
+        + `<h3 class="plh">Edits</h3><div class="cr ckr"><button type="button" class="ck" data-g="pending" data-k="pending" role="checkbox" aria-checked="${S.pending}" data-tip="Mark what has edits open, as MusicBrainz does&#10;Takes one extra MusicBrainz request per page, sent last"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>${S.pending ? '<path d="M7.5 12.5l3 3 6-7"/>' : ''}</svg>Show pending changes</button></div>`
         + imgBody();   // the artists' pictures, as the artist page's gear sets them
 }
 function imgBody() {
@@ -9229,6 +9279,7 @@ function cfgWire(panel, b, body) {
             if (g === 'all') { cfgAll = !cfgAll; b.innerHTML = body(); return; }
             else if (g === 'fact') S.facts = toggle(S.facts, k);
             else if (g === 'thumbs') S.thumbs = !S.thumbs;
+            else if (g === 'pending') S.pending = !S.pending;
             else if (g === 'noAliases') S.noAliases = !S.noAliases;
             else if (g === 'factOff') { const [kd, fk] = k.split(':'); S.factOff = { ...S.factOff, [kd]: toggle(S.factOff[kd] || [], fk) }; }
             else if (g === 'extra') S.extras = toggle(S.extras, k);
@@ -9428,7 +9479,7 @@ async function show(key, o = {}) {
             LOG.info('Redrawing ' + kind.replace('-', ' ') + ' ' + id + ': MusicBrainz has changed it since it was kept');
             show(key, { quiet: true, y: scrollY });
             } finally {
-                if (n === showing) document.documentElement.removeAttribute('data-eh-checking');
+                if (n === showing) { document.documentElement.removeAttribute('data-eh-checking'); pdAsk(kind, id, () => n === showing && data === d); }
             }
         });
     }

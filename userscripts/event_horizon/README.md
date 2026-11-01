@@ -52,6 +52,8 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 In a table, click a release or release group's row, anywhere outside its links and buttons, to open it; Ctrl-click or middle-click opens it in a new tab. A release's track count opens its tracklist in place.
 
+**Show pending changes** (in the header's settings) marks in grey what has edits open, as MusicBrainz does: titles, tracks, credits and links. It takes one extra MusicBrainz request per page, sent after everything else.
+
 **Credits** include artists and labels, with track credits alongside. The **Release group** section shows its external links as provider icons too; click a provider's dot or right-click its icon to see multiple links.
 
 The gear beside the tracklist's **Show** toggles sets alternating track colors and which platforms show, in which order, and how big. Click a platform to show or hide it, drag it to reorder.

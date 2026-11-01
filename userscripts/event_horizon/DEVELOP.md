@@ -45,6 +45,14 @@ A page loader's requests go through `kept` ([#847](https://github.com/majkinetor
 
 While a page loads, its tab leads the shared request gate (`mbnLead`, [#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)): every other background ws/2 request, in any script or tab, waits until the lead ends, so the page the reader asked for isn't queued behind Platform Check's or ISRC Scout's scans. The page's own requests pass `{ lead }` to `mbnFetch` and renew it; it ends once all the page's parts are in, or when the page fails. A lead not renewed lapses after 8 seconds (the gate caps one at 10), so a tab closed mid-load holds no one for long. A hidden tab doesn't lead, and `kpCheck`'s requests don't carry the lead.
 
+## Pending edits
+
+ws/2 says nothing about open edits, so *Show pending changes* reads `editsPending` from `/ws/js/release/<id>?inc=rels+recordings` or `/ws/js/entity/<gid>?inc=rels`: one request per page, repeated after `PD_TTL`. `pdPaint` repaints the marks on every `render`, since a render rebuilds the page.
+
+The gate has no priority levels, so `pdAsk` gets last place by waiting. It starts once the page's parts are in, waits 2 seconds, for the tab to be in view and for an idle moment, then takes a background slot with `mbnSlot`, which waits out any lead. Leaving the page cancels it. Later requests can pass it during these waits; a booked slot isn't given up.
+
+Credit marks match by person, so someone with two credits, one pending, has both marked.
+
 ## Declarations setOn can reach
 
 `setOn` runs while the script starts, before the rest of the file has run, so whatever it calls must exist by then. A `let`, `const` or arrow function declared below the call is in its temporal dead zone and throws. Declare such things with `var` and a `function` declaration (as `ehRel` and `ehRelMark` are).
