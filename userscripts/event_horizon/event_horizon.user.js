@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0415.01
+// @version      2026.11.02.0430.01
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2205,6 +2205,23 @@ const FORMAT_ICONS = {
     other: '<rect x="4" y="4" width="24" height="24" rx="5"/><path d="M11 16h0M16 16h0M21 16h0" stroke-width="3"/>',
     disc: '<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3.5"/><path d="M16 7a9 9 0 0 1 9 9" opacity=".55"/>',
 };
+// The home logo's ring now and then turns back for a few seconds. The speed is ramped through zero, so the turn stays smooth.
+const hmRingRamp = (anims, to, done) => {
+    const from = anims[0].playbackRate, t0 = performance.now(), ms = 1500;
+    const step = now => {
+        const k = Math.min((now - t0) / ms, 1), e = k * k * (3 - 2 * k);
+        anims.forEach(a => a.updatePlaybackRate(from + (to - from) * e));
+        if (k < 1) requestAnimationFrame(step); else done?.();
+    };
+    requestAnimationFrame(step);
+};
+const hmRingTurn = () => {
+    setTimeout(hmRingTurn, 40000 + Math.random() * 80000);
+    const anims = [...document.querySelectorAll('.hm-orb path')].flatMap(p => p.getAnimations()).filter(a => a.animationName === 'hm-ring' && a.playState === 'running' && a.currentTime > 53000 && a.playbackRate === 1);
+    if (!anims.length || document.hidden) return;
+    hmRingRamp(anims, -1, () => setTimeout(() => hmRingRamp(anims, 1), 4000 + Math.random() * 6000));
+};
+setTimeout(hmRingTurn, 60000);
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
