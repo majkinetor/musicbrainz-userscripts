@@ -72,6 +72,10 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await panel.locator('#pc-head h3').hover();
   await page.waitForTimeout(500);
   check(await panel.isVisible(), 'it stays while the mouse is on it');
+  const p = await panel.boundingBox();
+  await page.mouse.move(p.x - 25, p.y + p.height / 2);
+  await page.waitForTimeout(500);
+  check(await panel.isVisible(), 'and just outside its border');
   await page.mouse.move(5, 300);
   await panel.waitFor({ state: 'hidden' });
 });
