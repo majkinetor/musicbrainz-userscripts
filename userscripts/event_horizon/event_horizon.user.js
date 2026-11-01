@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0300.01
+// @version      2026.11.02.0300.02
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2283,6 +2283,7 @@ const CSS = `
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{flex:none;display:flex;color:var(--muted);margin-right:-4px}.hm-rk svg{width:16px;height:16px}
+.hm-star-list{display:grid;gap:4px}.hm-star-group h3{margin:16px 0 6px;color:var(--muted);font-size:14px}.hm-star-group:first-child h3{margin-top:0}.hm-star-grid .dn svg{width:44%;height:44%}
 .hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 16px;font-size:13px}
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
@@ -2479,7 +2480,8 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .srch .x:hover{color:var(--accent)}
 .kicker .ab svg{width:15px;height:15px;color:inherit}
 .kicker .srch{margin-left:10px}
-.kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec]{color:var(--chip-text)!important}
+.kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec],.kicker .ab[data-star]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec],.kicker .ab[data-star]{color:var(--chip-text)!important}
+.kicker .ab[data-star][aria-pressed="true"] svg{color:var(--mbu-warn)!important}
 .kicker.pin-home{min-height:30px}.kicker.pin-home>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis}.kicker.pin-home .acts,#eh-pin .acts{flex:none}
 #eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--eh-bar) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:contain;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}@media (max-width:700px){#eh-pin .pkk,#eh-pin .pby{display:none}#eh-pin .abm .abt{display:inline}}
 #eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -2978,9 +2980,10 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup');
+VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView');
 S.stars = []; // starred entities travel with the manager's settings
 S.starGroup = 'type';
+S.starView = '';
 S.annoHover = true;
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
@@ -2990,6 +2993,7 @@ S.pending = true; // MusicBrainz's grey mark on what has edits open; takes one m
 const ehWidth = () => { const s = document.documentElement.style; s.setProperty('--eh-w', S.width ? S.width + 'px' : 'none'); s.setProperty('--eh-wn', S.width ? S.width + 'px' : '100vw'); };
 const DEFAULTS = JSON.stringify(Object.fromEntries(VIEW.map(k => [k, S[k]])));
 try { const v = GM_getValue('view', {}); for (const k of VIEW) if (v[k] != null) S[k] = v[k]; } catch (e) {}
+if (!S.starView) S.starView = S.starGroup === 'none' ? 'row' : 'group';
 const menuTitlesApply = () => document.documentElement.style.setProperty('--eh-menu-titles', S.menuTitles ? 'inline' : 'none');
 menuTitlesApply();
 const save = () => { menuTitlesApply(); try { GM_setValue('view', Object.fromEntries(VIEW.map(k => [k, S[k]]))); } catch (e) {} };
@@ -7871,7 +7875,7 @@ function hmWire(app) {
     if (!srchWire(app)) return;
     for (const im of app.querySelectorAll('[data-hmimg]')) hmImg(im);
     app.addEventListener('click', e => { if (e.target.closest('button.hm-av')) gravForm(app); });
-    app.querySelector('[data-star-group]')?.addEventListener('change', e => { S.starGroup = e.target.value; save(); render(); });
+    app.querySelectorAll('[data-star-view]').forEach(b => b.addEventListener('click', () => { S.starView = b.dataset.starView; save(); render(); }));
     visitFill(app);
     if (ME) profLoad(app);
 }
@@ -7898,8 +7902,17 @@ function homeHtml() {
     const me = ME ? sect('hme', esc(ME), '', `<div class="hm-you"><div class="hm-pf"><div class="hm-pid"><span class="hm-av">${esc(ME[0]).toUpperCase()}</span><div><b>${esc(ME)}</b><small>Loading your profile…</small></div></div></div><div class="hm-me">${HM_ME.map(([p, n, ic]) => hmChip(p[0] === '/' ? MB + p : u + p, n, ic)).join('')}</div></div>`, '')
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
-    const groups = S.starGroup === 'type' ? Object.entries(HM_KIND).map(([k, v]) => [v[0], S.stars.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length) : [['', S.stars]];
-    const starred = sect('hstar', 'Starred entities', `<label>Group <select data-star-group aria-label="Group starred entities"><option value="type"${S.starGroup === 'type' ? ' selected' : ''}>Entity type</option><option value="none"${S.starGroup === 'none' ? ' selected' : ''}>None</option></select></label>`, S.stars.length ? groups.map(([name, items]) => `${name ? `<h3>${esc(name)}</h3>` : ''}<div class="hm-rec">${items.map(v => { const [k] = v.key.split('/'), ic = (HM_KIND[k] || ['', MK_REC])[1]; return `<a class="hm-r" href="${MB}/${esc(v.key)}"><span class="hm-rk">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`; }).join('')}</div>`).join('') : '<p class="hm-none">Star an entity to keep it here.</p>', '');
+    const groups = Object.entries(HM_KIND).map(([k, v]) => [v[0], S.stars.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length);
+    const kind = v => HM_KIND[v.key.split('/')[0]] || ['', MK_REC];
+    const row = v => `<a class="hm-r" href="${MB}/${esc(v.key)}"><span class="hm-rk">${SVG(kind(v)[1])}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`;
+    const groupButton = `<span class="ed-views" role="group" aria-label="Views"><button type="button" data-star-view="group" aria-pressed="${S.starView === 'group'}" aria-label="Grouped by entity type" data-tip="Grouped by entity type">${SVG('<path d="M4 5h7M4 9h16M4 15h7M4 19h16"/>')}</button></span>`;
+    const views = groupButton + viewBs(['grid', 'row', 'table'], S.starView, 'star-view', 'Views').replaceAll('"Row"', '"List"');
+    const body = !S.stars.length ? '<p class="hm-none">Star an entity to keep it here.</p>'
+        : S.starView === 'group' ? groups.map(([name, items]) => `<div class="hm-star-group"><h3>${esc(name)}</h3><div class="hm-star-list">${items.map(row).join('')}</div></div>`).join('')
+        : S.starView === 'grid' ? `<div class="disco hm-star-grid">${S.stars.map(v => `<a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>`).join('')}</div>`
+        : S.starView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th>Entity</th><th>Type</th><th>Artist</th></tr></thead><tbody>${S.stars.map(v => `<tr><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td></tr>`).join('')}</tbody></table></div>`
+        : `<div class="hm-star-list">${S.stars.map(row).join('')}</div>`;
+    const starred = sect('hstar', `Starred entities <span class="count">${S.stars.length}</span>`, views, body, '');
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
         return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : k === 'instrument' ? ' fit' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(v))}${SVG(ic)}</span><span class="hm-rk" data-tip="${kn}" aria-label="${kn}">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`; }).join('')}</div>`
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');

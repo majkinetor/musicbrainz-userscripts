@@ -36,7 +36,7 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 ## Starred entities
 
-Select the star in an entity's header to keep it on the homepage; select it again to remove it. Group the list by entity type or show it as one list. Stars and the grouping choice travel with your userscript manager's settings.
+Select the star in an entity's header to keep it on the homepage; select it again to remove it. Show stars grouped by entity type, as a list, a grid or a table. Stars and the chosen view travel with your userscript manager's settings.
 
 ## Tracklist
 
