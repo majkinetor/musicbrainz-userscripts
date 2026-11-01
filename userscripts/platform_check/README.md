@@ -155,23 +155,23 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 <img width="400" src="./screenshots/config.png" />
 
-| Setting                                | Default      |                                                                                                                                                    |
-| -------------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platforms                              | all          | order them, or leave some out                                                                                                                      |
-| Logins                                 | none         | Beatport and Qobuz; see [Platforms](#platforms)                                                                                                    |
-| Use barcodes                           | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch                                                               |
-| Use formats                            | on, strictly | the same, for the format                                                                                                                           |
-| Open the editor in a new tab           | on           | off navigates this tab                                                                                                                             |
-| Keep background tabs awake             | off          | see [Adding links](#adding-links)                                                                                                                  |
-| Count the links to add                 | on           | the badge on [Artists & labels](#artists-and-labels)                                                                                               |
-| Close Falcon after a successful import | on           | see [Artists and labels](#artists-and-labels)                                                                                                      |
-| Interface                              | HUD          | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon. There the title line's pin opens the Position menu: *Pin* keeps the panel open on every release page, where you drag it by the title and set its width by a side edge, and it holds whichever of its edges is nearer the screen's and grows the other way (in Event Horizon it fades out on any other page and back on the next release); *Pin transparent* does the same, see-through until you hover it; *Dock hover* opens the panel while the mouse is on the dock icon, in place of its tooltip, keeps it open while the mouse is on or near the panel, and fades it out 3 seconds after the mouse leaves |
-| Icon, Name                             | icon only    | what each row shows, and its size                                                                                                                  |
-| Compact: Unmatched, Low-confidence     | on, off      | see [Dashboard](#dashboard)                                                                                                                        |
-| In MusicBrainz                         | Ring         | how a platform already linked is marked                                                                                                            |
-| Format                                 | Circle       | the release's format as a circle or as text                                                                                                        |
-| Layout                                 | 1 row        | or 2 rows per platform                                                                                                                             |
-| Spacing                                | 5 px         | between rows, and between columns in the 1-row layout                                                                                              |
+| Setting | Default |  |
+| --- | --- | --- |
+| Platforms | all | order them, or leave some out |
+| Logins | none | Beatport and Qobuz; see [Platforms](#platforms) |
+| Use barcodes | on, strictly | [link confidence](#link-confidence); *if they exist* withholds only a known mismatch |
+| Use formats | on, strictly | the same, for the format |
+| Open the editor in a new tab | on | off navigates this tab |
+| Keep background tabs awake | off | see [Adding links](#adding-links) |
+| Count the links to add | on | the badge on [Artists & labels](#artists-and-labels) |
+| Close Falcon after a successful import | on | see [Artists and labels](#artists-and-labels) |
+| Interface | HUD | the dashboard in the sidebar, or *Dock icon*: behind an icon in the bottom-right corner, in String Theory's dock when it runs, as in Event Horizon. There the title line's pin opens the Position menu: *Pin* keeps the panel open on every release page, where you drag it by the title and set its width by a side edge, and it holds whichever of its edges is nearer the screen's and grows the other way (in Event Horizon it fades out on any other page and back on the next release); *Pin transparent* does the same, see-through until you hover it; *Dock hover* opens the panel while the mouse is on the dock icon, in place of its tooltip, keeps it open while the mouse is on or near the panel, and fades it out 3 seconds after the mouse leaves. The panel steps aside while another script's window, such as Mission Control, is open |
+| Icon, Name | icon only | what each row shows, and its size |
+| Compact: Unmatched, Low-confidence | on, off | see [Dashboard](#dashboard) |
+| In MusicBrainz | Ring | how a platform already linked is marked |
+| Format | Circle | the release's format as a circle or as text |
+| Layout | 1 row | or 2 rows per platform |
+| Spacing | 5 px | between rows, and between columns in the 1-row layout |
 
 ## Shortcuts
 

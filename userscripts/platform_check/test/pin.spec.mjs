@@ -4,6 +4,24 @@ import { openPc } from './pc.mjs';
 
 test.use({ gm: { name: 'Platform Check', persist: true } });
 
+test('a pinned panel steps aside for a window of another script', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+  await openPc(page, inject, { release: 'b84ee12a-09ef-421b-82de-0441a926375b', settle: false, storage: { 'pc:interface': 'dock' } });
+  await page.evaluate(() => { GM_setValue('pc:interface', 'dock'); GM_setValue('pc:dock-mode', 'pin'); });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#sidebar');
+  await inject('platform_check');
+  const win = page.locator('.mbu-dock-win.pc-pinned');
+  await win.waitFor({ state: 'visible', timeout: 30000 });
+  await inject('mission_control');
+  await page.locator('.mc-launch').click();
+  await page.locator('#mc-root').waitFor({ state: 'visible' });
+  await win.waitFor({ state: 'hidden', timeout: 3000 });
+  check(true, 'Mission Control hides it');
+  await page.evaluate(() => document.querySelector('#mc-root').remove());
+  await win.waitFor({ state: 'visible', timeout: 3000 });
+  check(true, 'it comes back when the window closes');
+});
+
 test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const release = 'b84ee12a-09ef-421b-82de-0441a926375b';
   await openPc(page, inject, { release, settle: false, storage: { 'pc:interface': 'dock' } });
