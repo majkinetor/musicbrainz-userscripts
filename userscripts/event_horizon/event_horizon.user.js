@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0300.05
+// @version      2026.11.02.0300.06
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2284,6 +2284,7 @@ const CSS = `
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{flex:none;display:flex;color:var(--muted);margin-right:-4px}.hm-rk svg{width:16px;height:16px}
 .hm-star-list{display:grid;gap:4px}.hm-star-group h3{margin:16px 0 6px;color:var(--muted);font-size:14px}.hm-star-group:first-child h3{margin-top:0}.hm-star-grid .dn{position:relative}.hm-star-grid .dn svg{width:44%;height:44%}.hm-star-grid .dn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hm-star-line{display:flex;align-items:center}.hm-star-line>.hm-r{flex:1;min-width:0}.hm-star-remove{opacity:0}.hm-star-line:hover .hm-star-remove,.hm-star-line:focus-within .hm-star-remove,.hm-star-tile:hover .hm-star-remove,.hm-star-tile:focus-within .hm-star-remove,.ed-t tr:hover .hm-star-remove,.ed-t tr:focus-within .hm-star-remove{opacity:1}.hm-star-actions{width:38px;text-align:right}.hm-star-tile{position:relative;min-width:0}.hm-star-tile>.ed-views{position:absolute;right:6px;top:6px}.hm-star-tile .hm-star-remove{background:var(--surface)}
 .hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 16px;font-size:13px}
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
@@ -7773,6 +7774,7 @@ async function visitFill(app) {
             const img = await visitPic(k, d); visitSet(v.key, img);
             const ri = img && app.querySelector(`.hm-r[href$="/${k}/${id}"] .hm-ri`);
             if (ri && !ri.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; ri.prepend(im); hmImg(im); }
+            app.querySelectorAll(`[data-star-pic="${k}/${id}"]`).forEach(pic => { if (img && !pic.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; pic.prepend(im); hmImg(im); } });
             const tile = img && app.querySelector(`.hm-star-grid a[href$="/${k}/${id}"] .dn`);
             if (tile && !tile.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; im.onerror = () => im.remove(); tile.append(im); }
         } catch (e) { LOG.debug('Visit picture for ' + v.key + ' failed: ' + e.message); }
@@ -7888,6 +7890,7 @@ function hmWire(app) {
     app.addEventListener('click', e => { if (e.target.closest('button.hm-av')) gravForm(app); });
     app.querySelectorAll('[data-star-view]').forEach(b => b.addEventListener('click', () => { S.starView = b.dataset.starView; save(); render(); }));
     app.querySelectorAll('[data-star-sort]').forEach(b => b.addEventListener('click', () => { const key = b.dataset.starSort; S.starSort = S.starSort === key ? '-' + key : key; save(); render(); }));
+    app.querySelectorAll('[data-star-remove]').forEach(b => b.addEventListener('click', () => { S.stars = S.stars.filter(x => x.key !== b.dataset.starRemove); save(); render(); }));
     app.querySelector('[data-star-export]')?.addEventListener('click', () => {
         const url = URL.createObjectURL(new Blob([JSON.stringify({ version: 1, stars: S.stars }, null, 2)], { type: 'application/json' }));
         const a = document.createElement('a'); a.href = url; a.download = 'event-horizon-stars.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -7908,7 +7911,7 @@ function hmWire(app) {
     visitFill(app);
     if (ME) profLoad(app);
 }
-function hmImg(im) { im.nextElementSibling.style.display = 'none'; im.onerror = () => { im.nextElementSibling.style.display = ''; im.remove(); }; }
+function hmImg(im) { const fallback = im.nextElementSibling; if (fallback) fallback.style.display = 'none'; im.onerror = () => { if (fallback) fallback.style.display = ''; im.remove(); }; }
 // the home page's hero: the logo, a heading, the search form (filled in on the search page) and the recent searches
 function srchHero(hi, sub, q = '', ty = 'artist', meth = 'indexed', lim = '50', add = '') {
     const kinds = SRCH_T.map(t => `<option value="${t}"${t === ty ? ' selected' : ''}>${srchName(t)}</option>`).join('');
@@ -7937,14 +7940,16 @@ function homeHtml() {
     const sortKey = S.starSort.replace(/^-/, ''), sortedStars = [...S.stars];
     if (sortKey) sortedStars.sort((a, b) => (sortKey === 'type' ? kind(a)[0] : sortKey === 'artist' ? a.by || '' : a.title).localeCompare(sortKey === 'type' ? kind(b)[0] : sortKey === 'artist' ? b.by || '' : b.title, undefined, { sensitivity: 'base', numeric: true }) * (S.starSort.startsWith('-') ? -1 : 1));
     const starHeading = (key, label) => `<th aria-sort="${sortKey === key ? S.starSort.startsWith('-') ? 'descending' : 'ascending' : 'none'}"><button type="button" class="tg-th" data-star-sort="${key}" data-tip="Sort by ${label.toLowerCase()}">${label}${sortKey === key ? S.starSort.startsWith('-') ? ' ↓' : ' ↑' : ''}</button></th>`;
-    const row = v => `<a class="hm-r" href="${MB}/${esc(v.key)}"><span class="hm-rk">${SVG(kind(v)[1])}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`;
+    const starPic = v => { const k = v.key.split('/')[0], im = visitImg(v); return `<span class="hm-ri${k === 'artist' ? ' ar' : k === 'instrument' ? ' fit' : ''}" data-star-pic="${esc(v.key)}">${im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : ''}${SVG(kind(v)[1])}</span>`; };
+    const removeStar = v => `<span class="ed-views"><button type="button" class="hm-star-remove" data-star-remove="${esc(v.key)}" aria-label="Remove ${esc(v.title)} from starred entities" data-tip="Remove star">${SVG(STAR)}</button></span>`;
+    const row = v => `<div class="hm-star-line"><a class="hm-r" href="${MB}/${esc(v.key)}">${starPic(v)}<span class="hm-rk">${SVG(kind(v)[1])}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>${removeStar(v)}</div>`;
     const groupButton = `<span class="ed-views" role="group" aria-label="Views"><button type="button" data-star-view="group" aria-pressed="${S.starView === 'group'}" aria-label="Grouped by entity type" data-tip="Grouped by entity type">${SVG('<path d="M4 5h7M4 9h16M4 15h7M4 19h16"/>')}</button></span>`;
     const transfer = `<span class="popwrap"><span class="ed-views"><button type="button" data-pop="star-transfer" aria-label="Export or import stars" aria-expanded="false" data-tip="Export or import stars">${SVG('<path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/>')}</button></span><div class="pop r" id="pop-star-transfer" hidden><button class="opt" type="button" data-star-export>Export stars</button><button class="opt" type="button" data-star-import>Import stars</button><input type="file" accept="application/json,.json" data-star-file hidden></div></span>`;
     const views = transfer + '<span class="ed-div"></span>' + groupButton + viewBs(['grid', 'row', 'table'], S.starView, 'star-view', 'Views').replaceAll('"Row"', '"List"');
     const body = !S.stars.length ? '<p class="hm-none">Star an entity to keep it here.</p>'
         : S.starView === 'group' ? groups.map(([name, items]) => `<div class="hm-star-group"><h3>${esc(name)}</h3><div class="hm-star-list">${items.map(row).join('')}</div></div>`).join('')
-        : S.starView === 'grid' ? `<div class="disco hm-star-grid">${S.stars.map(v => { const recent = visits().find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>`; }).join('')}</div>`
-        : S.starView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr>${starHeading('title', 'Entity')}${starHeading('type', 'Type')}${starHeading('artist', 'Artist')}</tr></thead><tbody>${sortedStars.map(v => `<tr><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td></tr>`).join('')}</tbody></table></div>`
+        : S.starView === 'grid' ? `<div class="disco hm-star-grid">${S.stars.map(v => { const recent = visits().find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<div class="hm-star-tile"><a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>${removeStar(v)}</div>`; }).join('')}</div>`
+        : S.starView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th class="tc"></th>${starHeading('title', 'Entity')}${starHeading('type', 'Type')}${starHeading('artist', 'Artist')}<th class="hm-star-actions"></th></tr></thead><tbody>${sortedStars.map(v => `<tr><td class="tc"><a class="tt" href="${MB}/${esc(v.key)}">${starPic(v)}</a></td><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td><td class="hm-star-actions">${removeStar(v)}</td></tr>`).join('')}</tbody></table></div>`
         : `<div class="hm-star-list">${S.stars.map(row).join('')}</div>`;
     const starred = sect('hstar', `Starred entities <span class="count">${S.stars.length}</span>`, views, body, '');
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];

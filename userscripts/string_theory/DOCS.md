@@ -800,7 +800,7 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 
 ### Starred entities
 
-Select the star in an entity's header to keep it on the homepage; select it again to remove it. Show stars grouped by entity type, as a list, a grid or a table; click a table heading to sort it. Stars and the chosen view travel with your userscript manager's settings. Use the header's export/import button to save stars to a file or add stars from one.
+Select the star in an entity's header to keep it on the homepage; select it again to remove it. On the homepage, point at an entry and select its star to remove it. Show stars grouped by entity type, as a list, a grid or a table; click a table heading to sort it. Stars and the chosen view travel with your userscript manager's settings. Use the header's export/import button to save stars to a file or add stars from one.
 
 ### Tracklist
 

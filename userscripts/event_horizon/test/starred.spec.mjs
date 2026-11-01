@@ -14,13 +14,14 @@ test('stars survive navigation and reload and can be removed', { tag: '@sandbox'
   for (const view of ['row', 'grid', 'table', 'group']) {
     await page.locator(`[data-star-view="${view}"]`).click();
     await expect(page.locator(`[data-star-view="${view}"]`)).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('#s-hstar a[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
+    await expect(page.locator('#s-hstar a:not(.tt)[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
+    await expect(page.locator('[data-star-remove]')).toHaveCount(1);
   }
   await page.locator('[data-star-view="table"]').click();
   await page.reload();
   await inject('event_horizon');
   await expect(page.locator('[data-star-view="table"]')).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('#s-hstar a').click();
+  await page.locator('#s-hstar a:not(.tt)').click();
   await expect(page.locator('[data-star]')).toHaveAttribute('aria-pressed', 'true');
   await page.locator('[data-star]').click();
   await page.locator('.kicker a.eh-home').click();
@@ -35,7 +36,7 @@ test('star export and import merge without duplicates', { tag: '@sandbox' }, asy
   expect(download.suggestedFilename()).toBe('event-horizon-stars.json');
   const imported = { version: 1, stars: [{ key: 'artist/89ad4ac3-39f7-470e-963a-56509c546377', title: 'Various Artists', by: 'Alpha' }, { key: 'label/6e0e2d94-4d49-4e98-a917-b7b8f2087348', title: 'Alpha Label', by: 'Zulu', img: 'https://example.com/picture.png' }] };
   await page.locator('[data-star-file]').setInputFiles({ name: 'stars.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(imported)) });
-  await expect(page.locator('#s-hstar a[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
+  await expect(page.locator('#s-hstar a:not(.tt)[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
   await page.locator('[data-star-view="table"]').click();
   for (const key of ['title', 'type', 'artist']) {
     const heading = page.locator(`[data-star-sort="${key}"]`);
@@ -47,8 +48,8 @@ test('star export and import merge without duplicates', { tag: '@sandbox' }, asy
     expect(await page.locator('#s-hstar tbody tr').first().innerText()).not.toBe(first);
   }
   await page.locator('[data-star-file]').setInputFiles({ name: 'stars.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(imported)) });
-  await expect(page.locator('#s-hstar a[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
+  await expect(page.locator('#s-hstar a:not(.tt)[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
   await page.reload();
   await inject('event_horizon');
-  await expect(page.locator('#s-hstar a[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
+  await expect(page.locator('#s-hstar a:not(.tt)[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
 });
