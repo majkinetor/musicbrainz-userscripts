@@ -775,3 +775,17 @@ body.skin--responsive #p-cactions li.selected a {
 .header .search button img, .header .search-container form button img {
 	filter: var(--invert-value);
 }
+
+/* Event Horizon: its own surfaces in this palette, or they stay its lilac greys */
+html:root[data-eh-theme] {
+	--bg: #fdf6e3;
+	--surface: #fffcf3;
+	--text: #446068;
+	--muted: #657b83;
+	--soft: #586e75;
+	--border: #caccc0;
+	--line: #e3dfcf;
+	--chip: #eee8d5;
+	--chip-text: #586e75;
+	--hover: #f6efdc;
+}
