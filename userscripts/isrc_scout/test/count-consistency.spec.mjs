@@ -1,5 +1,5 @@
 import { test, check, until, functionSource } from '../../../dev/test/harness.mjs';
-import { openScout } from './is.mjs';
+import { openScout, openStub } from './is.mjs';
 test.use({ gm: { name: 'ISRC Scout' } });
 
 test('the open editor and dock show the same pending ISRC counts', { tag: '@sandbox' }, async ({ page, inject }) => {
@@ -36,4 +36,14 @@ test('cache controls and successful edit invalidate the saved snapshot', { tag: 
   check(state.generation === 1 && !Object.keys(state.running).length && updates.length === 1, 'old scans cannot remain active');
   values.match_cache_enabled = false; api.bgSave(api.bgCache());
   check(!values.bg_links_cache.r, 'disabled cache does not persist findings');
+});
+
+test('a failed release load stops the dock loading without opening Scout', { tag: '@sandbox' }, async ({ page, context, inject }) => {
+  await openStub(page, context, inject);
+  const dock = page.locator('#ii-dock');
+  await dock.waitFor({ state: 'attached' });
+  const state = () => dock.evaluate(el => ({ status: el.dataset.mbCornerStatus, busy: el.hasAttribute('data-mbu-busy') }));
+  const result = await until(state, s => s.status === '?' && !s.busy);
+  check(result.status === '?' && !result.busy, `failed release loading is reported (${JSON.stringify(result)})`);
+  check(await page.locator('#ii-modal.open').count() === 0, 'Scout was never opened');
 });
