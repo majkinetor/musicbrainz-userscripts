@@ -482,11 +482,12 @@ function stSettings() {
     };
   });
   q('#st-reload').onclick = function () { location.reload(); };
+  var copied = function (text, done) { stCopy(text, function (ok) { try { U.mbuToast(ok ? done : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } }); };
   q('#st-copy-md').onclick = function () {
-    stCopy(stVersionsText(true), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });
+    copied(stVersionsText(true), '✓ Versions copied as Markdown');
   };
   q('#st-copy').onclick = function () {
-    stCopy(stVersionsText(), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });
+    copied(stVersionsText(), '✓ Versions copied');
   };
   stFitPixels(panel);
   U.mbuControls(panel);

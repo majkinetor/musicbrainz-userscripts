@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mission Control
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.001503
+// @version      2026.11.01.001504
 // @description  One window on the release page that asks the other scripts (Platform Check, ISRC Scout, Art Station, Fusion, Credit Hoarder) what is missing, shows it all in one review, and applies the selected changes in order.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NaXNzaW9uIENvbnRyb2w8L3RpdGxlPgo8ZGVmcz48ZmlsdGVyIGlkPSJtY28xMy1oIiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTIwJSIgaGVpZ2h0PSIxMjAlIj48ZmVNb3JwaG9sb2d5IGluPSJTb3VyY2VBbHBoYSIgb3BlcmF0b3I9ImRpbGF0ZSIgcmFkaXVzPSIxLjUiIHJlc3VsdD0iZCIvPjxmZUZsb29kIGZsb29kLWNvbG9yPSIjZmZmIiBmbG9vZC1vcGFjaXR5PSIuNyIvPjxmZUNvbXBvc2l0ZSBpbjI9ImQiIG9wZXJhdG9yPSJpbiIvPjxmZU1lcmdlPjxmZU1lcmdlTm9kZS8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPjwvZGVmcz48ZyBmaWx0ZXI9InVybCgjbWNvMTMtaCkiPjxwYXRoIGQ9Ik03NyAzNS41IEw2NCA0MyBMNTEgMzUuNSBMNTEgMjAuNSBMNjQgMTMgTDc3IDIwLjVaIiBmaWxsPSIjN2E1N2U4IiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OS43IDc3LjUgTDQ2LjcgODUgTDMzLjcgNzcuNSBMMzMuNyA2Mi41IEw0Ni43IDU1IEw1OS43IDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NC4zIDc3LjUgTDgxLjMgODUgTDY4LjMgNzcuNSBMNjguMyA2Mi41IEw4MS4zIDU1IEw5NC4zIDYyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00Mi4zIDEwNy41IEwyOS40IDExNSBMMTYuNCAxMDcuNSBMMTYuNCA5Mi41IEwyOS40IDg1IEw0Mi4zIDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03NyAxMDcuNSBMNjQgMTE1IEw1MSAxMDcuNSBMNTEgOTIuNSBMNjQgODUgTDc3IDkyLjVaIiBmaWxsPSIjZmZjOTRhIiBzdHJva2U9IiMyMjIyM2IiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTEuNiAxMDcuNSBMOTguNiAxMTUgTDg1LjcgMTA3LjUgTDg1LjcgOTIuNSBMOTguNiA4NSBMMTExLjYgOTIuNVoiIGZpbGw9IiNmZmM5NGEiIHN0cm9rZT0iIzIyMjIzYiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9nPgo8L3N2Zz4K
@@ -4707,15 +4707,20 @@ function ccClose() {
     ccLauncher();
     Log.cat('Consolidation').info('consolidation closed (the launcher opens it again)');
 }
-function ccLauncher() {
+// #695: the launcher, the same in both modes: only its tip and what a click does differ; right-click opens the settings in both
+function launchButton(tip, click) {
     if (document.getElementById('mc-launch')) return;
     mcStyle();
     const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control — the consolidation';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match
-    b.onclick = () => mcFollow().then(ok => { if (!ok) return; b.remove(); mbRestackCorner('br'); ccOpen(); });
+    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = tip;
+    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match   // highest priority: closest to the corner
+    b.onclick = () => click(b);
+    b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };
     document.body.appendChild(b);
     mbRestackCorner('br');
+}
+function ccLauncher() {
+    launchButton('Mission Control — the consolidation\nRight-click: settings', b => mcFollow().then(ok => { if (!ok) return; b.remove(); mbRestackCorner('br'); ccOpen(); }));
 }
 let ccClock = 0;
 // majkinetor: the browser asked "leave page?" with nothing changed. MB's release editor under the review warns on
@@ -5145,15 +5150,7 @@ const isrcsNow = () => afterIsrcs() || CMP.isrcs || undefined;
 /* ── launcher ──────────────────────────────────────────────────────────────── */
 
 function launcher() {
-    if (document.getElementById('mc-launch')) return;
-    mcStyle();
-    const b = el('button', 'mc-launch'); b.id = 'mc-launch'; b.type = 'button';
-    const img = document.createElement('img'); img.src = ICON_URL; img.alt = ''; b.appendChild(img); b.dataset.tip = 'Mission Control\nRight-click: settings';
-    b.dataset.mbCorner = 'br'; b.dataset.mbCornerOrder = '5'; b.dataset.mbCornerLabel = 'Mission Control'; b.dataset.mbCornerPaths = '^/release/';   // its @match   // highest priority: closest to the corner
-    b.onclick = () => mcFollow().then(ok => { if (ok) open(); });
-    b.oncontextmenu = e => { e.preventDefault(); settingsWindow(); };   // #695: right-click on every corner launcher opens its settings
-    document.body.appendChild(b);
-    mbRestackCorner('br');
+    launchButton('Mission Control\nRight-click: settings', () => mcFollow().then(ok => { if (ok) open(); }));
 }
 
 if (mbuTestHooks()) window.__mcTest = { open, close, execute, results: () => results, cmp: () => ({ cons: CMP.cons, isrcs: CMP.isrcs, title: CMP.title, picks: CMP.picks, changes: pfChanges(), sources: CC.sources.map(s => ({ key: s.key, take: s.take, read: s.read.state })) }), withCons: c => { CMP.cons = c; probeOne('pc'); }, compare: () => probeOne('fc'), after: () => AFTER, picked: () => Object.fromEntries(Object.entries(picked).map(([k, v]) => [k, Array.from(v)])), settings: () => Object.assign({}, S), off: () => [...OFF], found: () => Object.assign({}, found), release: () => rel, bestHtml, coverList, setStall: ms => { STALL_MS = ms; }, setApplyWait: (silent, max) => { APPLY_SILENT = silent; APPLY_MAX = max; }, fxChecking: () => fxBusy.size };

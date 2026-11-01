@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.13
+// @version      2026.11.01.2308.14
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -3454,7 +3454,7 @@ async function rateSet(t, ref, i) {
         if (!/^\d+$/.test(ref)) { const r = await mbnFetch(`${MB}/ws/js/entity/${ref}`, { headers: { Accept: 'application/json' } }); id = r && r.ok && (await r.json()).id; if (!id) throw new Error('no row id'); }
         kpWrote(); const r = await mbnFetch(`${MB}/rating/rate/?entity_type=${t}&entity_id=${id}&rating=${v * 20}&json=1`, { credentials: 'include', headers: { Accept: 'application/json' } });
         if (!r || !r.ok || /\/login/.test(r.url)) throw new Error('HTTP ' + (r && r.status) + ' ' + (r && r.url));
-        m[key] = RATED[key] = v; localStorage.setItem(MYR_KEY, JSON.stringify(m));
+        m[key] = RATED[key] = v; try { localStorage.setItem(MYR_KEY, JSON.stringify(m)); } catch (e) { /* storage blocked: the rating is in, only the kept copy isn't */ }
         toast(v ? `Rated ${v} of 5` : 'Your rating is cleared');
         const y = scrollY; render(); scrollTo(0, y);
     } catch (e) { LOG.debug('Rating failed: ' + key, e); toast('MusicBrainz didn\'t take the rating'); }
@@ -7159,23 +7159,23 @@ function render(keepPop) {
     bgApply();
     ehWidth();
     if (!data) return;
-    if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
-    if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove(); return; }
-    if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
-    if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
-    if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
-    if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
-    if (data.kind === 'search') { document.title = titleOf(data); app.innerHTML = searchHtml(data); srchWire(app); secRail(app); lmWatch(app); save(); return; }
-    if (data.kind === 'art') { document.title = titleOf(data); artPage(app, data); pinBar(app); return; }
+    document.title = titleOf(data);
+    if (data.kind === 'user') { app.innerHTML = userHtml(data); secRail(app); save(); return; }
+    if (data.kind === 'tags') { app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove(); return; }
+    if (data.kind === 'rels') { app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
+    if (data.kind === 'tagx') { app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'rates') { app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'colls') { app.innerHTML = collsHtml(data); secRail(app); save(); return; }
+    if (data.kind === 'search') { app.innerHTML = searchHtml(data); srchWire(app); secRail(app); lmWatch(app); save(); return; }
+    if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
-    if (data.kind === 'hist') { document.title = titleOf(data); histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
-    if (data.kind === 'home') { document.title = titleOf(data); app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
+    if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
+    if (data.kind === 'home') { app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
     if (FLT.of !== r.id) { FLT.of = r.id; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; for (const k in TQ) delete TQ[k]; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
     // the menu is drawn anew: it keeps where it was scrolled to
     const popTop = keepPop && (document.getElementById('pop-' + keepPop) || {}).scrollTop;
-    document.title = titleOf(data);
     // a section still loading shows its header, and one that came back empty goes
     const w = (id, title, html) => html || (data.wait && data.wait.has(id) ? pend(id, title) : id === 'ed' && data.edErr ? lost(id, title) : '');
     const wikipedia = x => w('wp', 'Wikipedia', wikiHtml(x)), discography = x => w('dg', 'Discography', discoHtml(x)), artwork = x => w('art', 'Artwork', artHtml(x));
@@ -7482,11 +7482,12 @@ Click to use another email" aria-label="Set your Gravatar email">${esc(ME[0] || 
 }
 const HM_CLR = ['#ba478f', '#8c5bd6', '#d6833e', '#3f8f7a', '#c4466a', '#6b6fd6', '#2f8bbf', '#7a9a3a', '#8a6a55'];
 const searches = () => { try { return GM_getValue('searches', []) || []; } catch (e) { return []; } };
+const searchKeep = (q, t) => { try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) { /* storage blocked: not remembered */ } };
 function srchWire(app) {
     const f = app.querySelector('.hm-srch'); if (!f) return false;
     f.addEventListener('submit', () => {
         const q = f.query.value.trim(), t = f.type.value; if (!q) return;
-        try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) {}
+        searchKeep(q, t);
     });
     const adv = app.querySelector('.hm-tg');
     adv.addEventListener('click', () => { S.hmAdv = !S.hmAdv; app.querySelector('.hm-adv').hidden = !S.hmAdv; adv.classList.toggle('on', S.hmAdv); save(); });
@@ -9356,7 +9357,7 @@ async function show(key, o = {}) {
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }
     if (kind === 'search') {
         const p = new URLSearchParams(key.slice(7)), q = p.get('query') || '', t = p.get('type') || 'artist';
-        try { GM_setValue('searches', [{ q, t }, ...searches().filter(x => x.q !== q || x.t !== t)].slice(0, 8)); } catch (e) {}
+        searchKeep(q, t);
         data = { kind: 'search', qs: key.slice(7), q, t }; scrollTo(0, 0); render(); searchLoad(n, key); return;
     }
     if (!id) { data = null; app.innerHTML = '<p class="msg">Paste a release link or MBID above to view it.</p>'; return; }
