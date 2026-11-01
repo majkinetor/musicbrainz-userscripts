@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.02.000000
+// @version      2026.11.02.000001
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3331,6 +3331,8 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .mbu-dock-win #mb-pin-btn { display: inline-flex !important; }
   .mbu-dock-win[data-pc-mode] #mb-pin-btn { color: var(--mbu-accent, #ba478f); }
   .mbu-dock-win.pc-pinned { overflow-x: hidden; }
+  .mbu-dock-win.pc-sized #mb-pc-panel { width: var(--pc-w) !important; max-width: var(--pc-w) !important; }
+  .mbu-dock-win.pc-edge, .mbu-dock-win.pc-edge * { cursor: ew-resize !important; }
   .mbu-dock-win.pc-win { transition: opacity .2s, visibility .2s; }
   .mbu-dock-win[data-pc-mode="ghost"] { opacity: .4; }
   .mbu-dock-win[data-pc-mode="ghost"]:hover, .mbu-dock-win[data-pc-mode="ghost"]:focus-within { opacity: 1; }
@@ -3804,6 +3806,9 @@ if (!PC_SEED) {
     const pcPlace = () => {
         const pin = pcPinned() && container.parentNode === win, st = win.style;
         win.classList.toggle('pc-pinned', pin);
+        const sized = GM_getValue('pc:dock-w', 0);
+        win.classList.toggle('pc-sized', pin && !!sized);
+        if (sized) win.style.setProperty('--pc-w', sized + 'px');
         win.classList.toggle('pc-away', !SETTINGS_ONLY && !pcOnRelease());
         const mode = container.parentNode === win ? pcDockMode() : '';
         if (mode) win.dataset.pcMode = mode; else delete win.dataset.pcMode;
@@ -3834,6 +3839,29 @@ if (!PC_SEED) {
         const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
         window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
     });
+    // Pinned, either side edge sets the width while the other stays put; the panel's own scrollbar keeps the right edge while it shows
+    const pcEdge = e => {
+        if (!win.classList.contains('pc-pinned')) return '';
+        const r = win.getBoundingClientRect(), zone = 6;
+        if (e.clientX - r.left <= zone) return 'left';
+        return r.right - e.clientX <= zone && win.offsetWidth === win.clientWidth ? 'right' : '';
+    };
+    win.addEventListener('pointermove', e => { if (!e.buttons) win.classList.toggle('pc-edge', !!pcEdge(e)); });
+    win.addEventListener('pointerleave', e => { if (!e.buttons) win.classList.remove('pc-edge'); });
+    win.addEventListener('pointerdown', e => {
+        const edge = e.button ? '' : pcEdge(e);
+        if (!edge) return;
+        e.preventDefault(); e.stopPropagation();   // not the title's drag
+        const r = win.getBoundingClientRect();
+        const mv = ev => {
+            const w = Math.round(Math.min(window.innerWidth - 90, Math.max(220, edge === 'left' ? r.width + e.clientX - ev.clientX : r.width + ev.clientX - e.clientX)));
+            GM_setValue('pc:dock-w', w);
+            pcAnchorH(edge === 'left' ? r.right - w : r.left, w);
+            pcPlace();
+        };
+        const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+    }, true);
     window.addEventListener('resize', pcPlace);
     new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock', 'data-mbu-release'] });
     park();
