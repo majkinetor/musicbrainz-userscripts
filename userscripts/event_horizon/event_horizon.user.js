@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0330.04
+// @version      2026.11.02.0345.01
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2210,6 +2210,10 @@ const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="tru
 const CSS = `
 .hm-hero{position:relative;margin:0 0 8px;padding:6px 400px 18px 4px;color:var(--text)}
 .hm-orb{position:absolute;right:4px;top:20px;width:150px!important;height:150px!important;pointer-events:none}
+.hm-orb path{transform-origin:64px 64px;animation:hm-ring-in 3s ease-in-out 30s forwards,hm-ring 6s ease-in-out 33s infinite alternate}
+@keyframes hm-ring-in{from{transform:rotate(-15deg)}to{transform:rotate(-30deg)}}
+@keyframes hm-ring{from{transform:rotate(-30deg)}to{transform:rotate(0deg)}}
+@media (prefers-reduced-motion:reduce){.hm-orb path{animation:none}}
 .hm-wm{position:absolute;right:178px;top:95px;transform:translateY(-50%);text-align:right;pointer-events:none}.hm-wm b{display:block;font-size:26px;font-weight:300;letter-spacing:.35em;line-height:1.25;text-transform:uppercase;color:var(--text)}.hm-wm small{display:block;margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.3em;color:var(--accent)}
 @media (max-width:1100px){.hm-hero{padding-right:190px}.hm-wm{display:none}}
 @media (max-width:700px){.hm-hero{padding-right:4px}.hm-orb{display:none}}
