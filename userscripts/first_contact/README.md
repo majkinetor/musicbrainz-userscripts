@@ -30,7 +30,7 @@ On a platform's album page, click **Import to MusicBrainz**: once the release is
 | Title, artist credit | the album, with any *feat.* artists split off the title into the credit                           |
 | Type                 | the platform's album / EP / single / compilation, or a [guess](#release-type) when it doesn't say |
 | Status, packaging    | Official, None                                                                                    |
-| Release event        | the platform's release date, Worldwide                                                            |
+| Release event        | the platform's release date and country; usually Worldwide                                        |
 | Label                | the platform's label; *A / B* becomes two labels, *AC/DC Records* stays one                       |
 | Barcode              | the platform's UPC                                                                                |
 | Script               | Latin, when every title is in Latin letters; otherwise left for you                               |
@@ -160,7 +160,7 @@ Pages: `discogs.com/release/<id>`
 - A work listed over its movements becomes one track per movement, *Concerto…, RV 531: I. Allegro*, when each movement has its own track number; movements that share one (*3a*, *3b*) stay one track, *Concerto…: I. Allegro / II. Largo*.
 - Status *Promotion* or *Bootleg* and the *Compilation* type come from the format's descriptions, packaging from its free text.
 - Artists keep their credited name (*DJ Fresh* for *Fresh*) and lose Discogs's *(2)* numbering; *Featuring* track credits go after *feat.*
-- Country when it is one country (not *UK, Europe & US*).
+- Digital releases get Worldwide by default; otherwise the country when it is one country (not *UK, Europe & US*).
 - A label listed twice with its catalog number written two ways is kept once; *Not On Label* becomes *[no label]*.
 - Every artist and label carries its Discogs link for Apollo.
 
@@ -369,15 +369,16 @@ Drag the buttons anywhere; each platform remembers its place, and **⚙︎ → R
 
 ### Import
 
-| Setting                            | Default                   |                                                                                                                     |
-| ---------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| MusicBrainz server                 | musicbrainz.org           | where the release editor opens and the album is [looked up](#already-in-musicbrainz): musicbrainz.org, beta or test |
-| Check MusicBrainz                  | On import                 | when the album is [looked up](#already-in-musicbrainz) in MusicBrainz                                               |
-| Annotation from *platform*'s notes | on                        | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*                        |
-| Close this page after the import   | off                       | the tab closes once the album is sent on; not on a failure                                                          |
-| Consolidate button                 | on                        | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                                             |
-| Send to Harmony button             | on                        | the [Harmony button](#send-to-harmony) before **⚙︎**                                                                |
-| Harmony                            | harmony.pulsewidth.org.uk | which Harmony the [Harmony button](#send-to-harmony) opens: this one or harmony.mybrainz.dev                        |
+| Setting                                       | Default                   |                                                                                                                     |
+| --------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| MusicBrainz server                            | musicbrainz.org           | where the release editor opens and the album is [looked up](#already-in-musicbrainz): musicbrainz.org, beta or test |
+| Check MusicBrainz                             | On import                 | when the album is [looked up](#already-in-musicbrainz) in MusicBrainz                                               |
+| Annotation from *platform*'s notes            | on                        | the album's [notes](#platforms) go into the annotation, with *From <platform>: <album page>*                        |
+| Set Country as Worldwide for digital releases | on                        | on Discogs, use Worldwide for digital releases instead of its country                                               |
+| Close this page after the import              | off                       | the tab closes once the album is sent on; not on a failure                                                          |
+| Consolidate button                            | on                        | the [Consolidate button](#consolidate) beside **Import to MusicBrainz**                                             |
+| Send to Harmony button                        | on                        | the [Harmony button](#send-to-harmony) before **⚙︎**                                                                |
+| Harmony                                       | harmony.pulsewidth.org.uk | which Harmony the [Harmony button](#send-to-harmony) opens: this one or harmony.mybrainz.dev                        |
 
 A review in the notes is the critic's text (Qobuz's and Apple's are usually AllMusic's): check you may copy it before you submit.
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         First Contact
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.1505
+// @version      2026.11.01.1600
 // @description  Import a release into MusicBrainz from the platform's album page with one click: the release editor opens with the title, tracklist, artists, date, label, barcode and link filled in. Each artist's platform link is handed to Apollo Editor for matching. A second button sends the album to Harmony instead. By default the album page is also saved on the Internet Archive (it sends each imported URL to archive.org; off in the settings), and the edit note links the snapshot. Platforms: Deezer, Bandcamp, Discogs, Apple Music, Tidal, Qobuz, Beatport, Spotify, YouTube Music, Volumo, HDtracks, SoundCloud, Amazon Music, Audiomack, 7digital, Ototoy, mora, Melon, Bugs, Presto Music.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GaXJzdCBDb250YWN0PC90aXRsZT4KPGxpbmVhckdyYWRpZW50IGlkPSJmYy1kIiB4MT0iMCIgeTE9IjAiIHgyPSIwIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmFlNmZkIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMzhiZGY4Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImZjLWIiIGN4PSIuMzUiIGN5PSIuMyIgcj0iLjgiPjxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmZjdjYyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2Y2YzQzMSIvPjwvcmFkaWFsR3JhZGllbnQ+PHBhdGggZD0iTTUwIDQyIEw3OCA0MiBMMTA0IDExMiBMMjQgMTEyIFoiIGZpbGw9IiNmNmM0MzEiIG9wYWNpdHk9Ii45Ii8+PHBhdGggZD0iTTU2IDQyIEw3MiA0MiBMODggMTEyIEw0MCAxMTIgWiIgZmlsbD0iI2ZkZTY4YSIgb3BhY2l0eT0iLjciLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSIxMTQiIHJ4PSI0MiIgcnk9IjgiIGZpbGw9IiMxZTIzNDYiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PGVsbGlwc2UgY3g9IjY0IiBjeT0iMTEzIiByeD0iMjYiIHJ5PSI0LjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Y2YzQzMSIgc3Ryb2tlLXdpZHRoPSIyLjQiLz48cGF0aCBkPSJNNDIgMjggQTIyIDE4IDAgMCAxIDg2IDI4IFoiIGZpbGw9InVybCgjZmMtZCkiIHN0cm9rZT0iI2M5Y2RmMiIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTUwLjM2IDE5LjkgQTE1LjM5OTk5OTk5OTk5OTk5OSAxMy41IDAgMCAxIDYxLjggMTEuOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuOSIvPjxlbGxpcHNlIGN4PSI2NCIgY3k9IjMyIiByeD0iNTYiIHJ5PSIxMiIgZmlsbD0iIzFlMjM0NiIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjMiLz48ZWxsaXBzZSBjeD0iNjQiIGN5PSI0MCIgcng9IjIyIiByeT0iNiIgZmlsbD0idXJsKCNmYy1iKSIgc3Ryb2tlPSIjYzljZGYyIiBzdHJva2Utd2lkdGg9IjIuNCIvPjxjaXJjbGUgY3g9IjIyIiBjeT0iMzEiIHI9IjQiIGZpbGw9IiNmNmM0MzEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PGNpcmNsZSBjeD0iODgiIGN5PSIzMSIgcj0iNCIgZmlsbD0iI2Y2YzQzMSIvPjxjaXJjbGUgY3g9IjEwNiIgY3k9IjMxIiByPSI0IiBmaWxsPSIjZjZjNDMxIi8+PHBhdGggZD0iTTY0IDU4IEw4NCA2OS41IEw4NCA5Mi41IEw2NCAxMDQgTDQ0IDkyLjUgTDQ0IDY5LjUgWiIgZmlsbD0iIzdiNGZkNiIvPjxwYXRoIGQ9Ik02NCA1OCBMODQgNjkuNSBMNjQgODEgTDQ0IDY5LjUgWiIgZmlsbD0iIzliNzJlYSIvPjxwYXRoIGQ9Ik02MCA3MiBMNzQgNjkgTDc0IDg5IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMy40IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTYwIDcyIEw2MCA5MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjMuNCIvPjxlbGxpcHNlIGN4PSI1NiIgY3k9IjkyIiByeD0iNC42IiByeT0iMy42IiBmaWxsPSIjZmZmIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iODkiIHJ4PSI0LjYiIHJ5PSIzLjYiIGZpbGw9IiNmZmYiLz4KPC9zdmc+Cg==
@@ -138,7 +138,7 @@ function settings() {
         delete stored.iaKey; delete stored.iaSecret;
         GM_setValue('fc.settings', stored);
     }
-    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, harmonyHost: HARMONY_HOSTS[0], consolidate: true, archive: true, check: 'import' }, stored);
+    const s = Object.assign({ server: 'musicbrainz.org', iconOnly: false, gearHidden: false, closeAfter: false, harmony: true, harmonyHost: HARMONY_HOSTS[0], consolidate: true, archive: true, check: 'import', discogsWorldwide: true }, stored);
     if (!SERVERS.includes(s.server)) s.server = 'musicbrainz.org';
     if (!HARMONY_HOSTS.includes(s.harmonyHost)) s.harmonyHost = HARMONY_HOSTS[0];
     // the option that showed ⚙︎ only on hover became Hide the settings button: who had it on keeps ⚙︎ out of sight
@@ -757,8 +757,10 @@ const DISCOGS = {
         }
         const barcode = ((r.identifiers || []).find(i => i.type === 'Barcode' && i.value) || {}).value;
         const [y, mo, d] = String(r.released || '').split(/\D+/).map(n => parseInt(n, 10));
-        const country = DISCOGS_COUNTRIES[r.country] || null;
-        if (r.country && !country) Log.info(`Discogs country "${r.country}" is no single MusicBrainz country; left for you`);
+        const media = (r.formats || []).filter(f => f.name !== 'All Media' && f.name !== 'Box Set');
+        const worldwide = settings().discogsWorldwide && media.length > 0 && media.every(f => f.name === 'File');
+        const country = worldwide ? 'XW' : DISCOGS_COUNTRIES[r.country] || null;
+        if (!worldwide && r.country && !country) Log.info(`Discogs country "${r.country}" is no single MusicBrainz country; left for you`);
         const url = `https://www.discogs.com/release/${id}`;
         return {
             source: this.id,
@@ -3575,6 +3577,7 @@ function togglePanel(anchor) {
         + CHECK_MODES.map(([v, t]) => `<option value="${v}"${v === checkMode() ? ' selected' : ''}>${t}</option>`).join('')
         + '</select></label>'
         + `<label class="fc-check" data-tip="The album's notes on ${here}, as the annotation\n- Bandcamp: about and credits\n- Discogs: notes\n- Qobuz, Apple Music: reviews\n- Beatport, YouTube Music: description\n- Amazon Music: the ℗ line\nA line says where they come from. For ${here} only.\n⚠ A review is the critic's text: check you may copy it before you submit"><input type="checkbox" class="fc-annotation"${here ? '' : ' disabled'}${annotationOn(here) ? ' checked' : ''}> Annotation from ${here}'s notes</label>`
+        + (here === 'Discogs' ? `<label class="fc-check"><input type="checkbox" class="fc-discogs-worldwide"${s.discogsWorldwide ? ' checked' : ''}> Set Country as Worldwide for digital releases</label>` : '')
         + `<label class="fc-check" data-tip="Close the platform's tab once the release editor has the release\nOr once the album is sent to Harmony. It stays open when the import fails, or when the browser blocked the new tab and the editor or Harmony opened here."><input type="checkbox" class="fc-close-after"${s.closeAfter ? ' checked' : ''}> Close this page after the import</label>`
         + `<label class="fc-check" data-tip="A Consolidate button beside Import\nIt reads this album and opens Mission Control on MusicBrainz, which finds it on the other platforms and lets you take the best of each into the release editor."><input type="checkbox" class="fc-cons-opt"${s.consolidate ? ' checked' : ''}> Consolidate button</label>`
         + `<label class="fc-check" data-tip="A Send to Harmony button between Import and ⚙︎\nIt looks this album up on Harmony instead, with every platform that has its barcode. Falcon carries on from there."><input type="checkbox" class="fc-harmony-opt"${s.harmony ? ' checked' : ''}> Send to Harmony button</label>`
@@ -3672,6 +3675,14 @@ function togglePanel(anchor) {
     panel.querySelector('.fc-annotation').addEventListener('change', e => {
         setAnnotationOn(here, e.target.checked);
         Log.info(`annotation from ${here}'s notes: ${e.target.checked ? 'on' : 'off'}`);
+    });
+    const discogsWorldwide = panel.querySelector('.fc-discogs-worldwide');
+    if (discogsWorldwide) discogsWorldwide.addEventListener('change', e => {
+        const next = Object.assign(settings(), { discogsWorldwide: e.target.checked });
+        saveSettings(next);
+        for (const key of checks.keys()) if (key.startsWith('discogs ')) checks.delete(key);
+        if (current) { showLight(null); if (checkMode() === 'load') checkOnLoad(current.provider, current.id); }
+        Log.info(`Discogs digital releases worldwide: ${next.discogsWorldwide ? 'on' : 'off'}`);
     });
     panel.querySelector('.fc-close-after').addEventListener('change', e => {
         const next = Object.assign(settings(), { closeAfter: e.target.checked });
