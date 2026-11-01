@@ -13,37 +13,6 @@ function stCmpVer(a, b) {
   for (var i = 0; i < Math.max(pa.length, pb.length); i++) { var d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; }
   return 0;
 }
-// Where String Theory was installed from says which channel it follows (DEVELOP.md → Branches and
-// channels): main is latest, stable the releases, a 40-hex commit a pinned copy, anything else a branch.
-function stChannel() {
-  var u = '';
-  try {
-    var s = GM_info.script || {};
-    u = s.downloadURL || s.updateURL || GM_info.scriptUpdateURL || '';
-    // Managers keep the install URL in different fields when the script has no @downloadURL:
-    // take any URL in GM_info that points at the bundle.
-    if (!u) JSON.stringify(GM_info, function (k, v) {
-      if (!u && typeof v === 'string' && /^https?:[/][/].*string_theory\.user\.js/.test(v)) u = v;
-      return v;
-    });
-  } catch (e) { /* no GM_info */ }
-  try { console.debug('[String Theory] install URL: ' + (u || '(none)')); } catch (e) { /* no console */ }
-  var m = /musicbrainz-userscripts[/](?:raw[/])?(?:refs[/]heads[/])?(.+?)[/]userscripts[/]string_theory[/]/.exec(u);
-  // a manager that doesn't say where the script came from: a test build still knows its branch
-  if (!m) return ST_BRANCH && !/github/i.test(u) ? { kind: 'branch', ref: ST_BRANCH } : { kind: 'unknown', url: u };
-  var ref = decodeURIComponent(m[1]);
-  if (/^[0-9a-f]{40}$/.test(ref)) return { kind: 'pinned', ref: ref };
-  if (ref === 'main') return { kind: 'latest', ref: ref };
-  if (ref === 'stable') return { kind: 'stable', ref: ref };
-  return { kind: 'branch', ref: ref };
-}
-function stChannelText(ch) {
-  if (ch.kind === 'latest') return 'Latest: updates with every change';
-  if (ch.kind === 'stable') return 'Stable: updates with each release';
-  if (ch.kind === 'branch') return 'Branch ' + ch.ref + ': a test build';
-  if (ch.kind === 'pinned') return 'Pinned to ' + ch.ref.slice(0, 7) + ': never updates';
-  return ch.url ? 'Installed from ' : 'Installed from an unknown source';
-}
 var ST_REPO = 'majkinetor/musicbrainz-userscripts';
 function stInstallUrl(ref) { return 'https://github.com/' + ST_REPO + '/raw/refs/heads/' + ref + '/userscripts/string_theory/string_theory.user.js'; }
 // only the first few KB: @version is on the metadata block's third line
@@ -161,15 +130,14 @@ function stEnvLines() {
   } catch (e) { /* no location */ }
   return out;
 }
-// The versions to paste into an issue; md: as Markdown
-function stVersionsText(md) {
-  var off = __stReadOff(), ch = stChannel(), chan = ch.kind === 'branch' || ch.kind === 'pinned' ? ch.kind + ' ' + ch.ref : ch.kind;
-  var mark = function (t) { return md ? '`' + t + '`' : t; };
-  var lines = [(md ? '**String Theory** ' : 'String Theory ') + mark('v' + ST_VERSION) + ' (' + chan + ')' + (md ? '\n' : '')];
-  stMembers.forEach(function (m) { lines.push((md ? '- ' : '  ') + m[1] + ' ' + mark('v' + m[2]) + (off.indexOf(m[0]) < 0 ? '' : ' (off)')); });
-  if (md) lines.push('');
-  stEnvLines().forEach(function (e) { lines.push(md ? '**' + e[0] + ':** ' + e[1] + '  ' : e[0] + ': ' + e[1]); });
-  if (md) lines[lines.length - 1] = lines[lines.length - 1].replace(/ {2}$/, '');
+// The versions to paste into an issue as Markdown.
+function stVersionsText() {
+  var off = __stReadOff();
+  var lines = ['**String Theory** `v' + ST_VERSION + '`\n'];
+  stMembers.forEach(function (m) { lines.push('- ' + m[1] + ' `v' + m[2] + '`' + (off.indexOf(m[0]) < 0 ? '' : ' (off)')); });
+  lines.push('');
+  stEnvLines().forEach(function (e) { lines.push('**' + e[0] + ':** ' + e[1] + '  '); });
+  lines[lines.length - 1] = lines[lines.length - 1].replace(/ {2}$/, '');
   return lines.join('\n');
 }
 var ST_CSS = ''
@@ -191,7 +159,7 @@ var ST_CSS = ''
   + '#st-cfg a{color:var(--mbu-accent-text)}'
   + '#st-cfg .st-upd{margin:4px 0 0;padding:6px 10px;border-radius:var(--mbu-radius);background:var(--mbu-bg-sunken);font-size:12px}'
   + '#st-cfg .st-upd>div{display:flex;align-items:center;gap:8px;min-height:24px}#st-cfg .st-upd b{flex:0 0 auto;min-width:64px;font-weight:600;white-space:nowrap}#st-cfg .st-upd span{white-space:nowrap}'
-  + '#st-cfg .st-upd .st-mine{color:var(--mbu-text-weak)}#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
+  + '#st-cfg .st-upd .st-newer{color:var(--mbu-ok);font-weight:600}'
   + '#st-cfg .st-lbl{flex:0 0 auto;color:var(--mbu-text-weak)!important;font:600 11px/1.4 var(--mbu-font, system-ui, sans-serif);text-transform:uppercase;letter-spacing:.06em}'
   + '#st-cfg .st-seg{display:inline-flex;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;margin-right:10px}'
   + '#st-cfg .st-seg button{font:inherit;font-size:12px;border:0;margin:0;border-radius:0;background:none;color:inherit;padding:2px 10px;min-height:22px;line-height:18px;cursor:pointer}'
@@ -226,7 +194,7 @@ function stSettings() {
       return '<span class="st-lbl" id="' + id + '-l">' + label + '</span><span class="st-seg" role="radiogroup" id="' + id + '" aria-labelledby="' + id + '-l">'
         + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
     };
-    h += '<div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Launchers</button>'
+    h += '<div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Dock</button>'
       + '<button type="button" role="tab" id="st-tab-t" aria-controls="st-p-t" aria-selected="false">Theme</button>'
       + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>'
       + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l">'
@@ -249,7 +217,7 @@ function stSettings() {
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
-    + '<div class="st-row"><span class="st-note" id="st-chan"></span><span class="st-links">'
+    + '<div class="st-row"><span class="st-links">'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span></div>'
     + '<div class="st-upd" id="st-upd" hidden></div>'
@@ -259,7 +227,7 @@ function stSettings() {
         + '<span class="st-si">' + stFitIcon(icon) + '</span>' + stEsc(m[1]) + '<span class="st-ver">v' + stEsc(m[2]) + '</span></label>';
     }).join('') + '</div>'
     + '<div class="st-row"><span class="st-note" id="st-apply">A change applies from the next page load.</span>'
-    + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy">Copy versions</button><button type="button" class="st-b" id="st-copy-md">Copy as Markdown</button></div>'
+    + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy-md">Copy as Markdown</button></div>'
     + '</section>';
 
   var ov = document.createElement('div');
@@ -441,18 +409,11 @@ function stSettings() {
     show();
   }
 
-  var ch = stChannel();
-  q('#st-chan').textContent = stChannelText(ch);
-  if (ch.kind === 'unknown' && ch.url) {
-    var link = document.createElement('a');
-    link.href = ch.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = ch.url;
-    q('#st-chan').appendChild(link);
-  }
   var updateCheck = 0;
   function checkUpdates() {
     var check = ++updateCheck, box = q('#st-upd');
     var refs = ['main', 'stable'];
-    if (ch.kind === 'branch') refs.push(ch.ref);
+    if (ST_BRANCH) refs.push(ST_BRANCH);
     box.hidden = false;
     box.textContent = 'Checking for updates…';
     var got = {}, left = refs.length;
@@ -462,12 +423,11 @@ function stSettings() {
         if (--left || check !== updateCheck) return;
         box.innerHTML = refs.map(function (r) {
           var v2 = got[r], name = r === 'main' ? 'Latest' : r === 'stable' ? 'Stable' : r;
-          var mine = (ch.kind === 'latest' && r === 'main') || ch.kind === r || (ch.kind === 'branch' && r === ch.ref);
           var state = !v2 ? 'couldn’t be read'
             : stCmpVer(v2, ST_VERSION) === 0 ? 'the one you have'
             : stCmpVer(v2, ST_VERSION) > 0 ? '<span class="st-newer">newer</span>' : 'older';
-          return '<div><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span' + (mine ? ' class="st-mine"' : '') + '>' + state
-            + (mine ? ' · your channel' : '') + '</span><span class="mbu-sp" style="flex:1"></span>'
+          return '<div><b>' + stEsc(name) + '</b><span>' + (v2 ? 'v' + stEsc(v2) : '') + '</span><span>' + state
+            + '</span><span class="mbu-sp" style="flex:1"></span>'
             + (v2 && stCmpVer(v2, ST_VERSION) !== 0 ? '<a href="' + stEsc(stInstallUrl(r)) + '" target="_blank" rel="noopener">Install</a>' : '') + '</div>';
         }).join('');
       });
@@ -482,12 +442,8 @@ function stSettings() {
     };
   });
   q('#st-reload').onclick = function () { location.reload(); };
-  var copied = function (text, done) { stCopy(text, function (ok) { try { U.mbuToast(ok ? done : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } }); };
   q('#st-copy-md').onclick = function () {
-    copied(stVersionsText(true), '✓ Versions copied as Markdown');
-  };
-  q('#st-copy').onclick = function () {
-    copied(stVersionsText(), '✓ Versions copied');
+    stCopy(stVersionsText(), function (ok) { try { U.mbuToast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); } catch (e) { /* no toast */ } });
   };
   stFitPixels(panel);
   U.mbuControls(panel);

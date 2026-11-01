@@ -52,20 +52,20 @@ In String Theory's settings, **Theme** picks one of:
 
 ## Settings
 
-| Setting        | Default           | What it does                                                                          |
-| -------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| Side           | Right             | The launchers' side of the page                                                       |
-| Orientation    | Column            | A column, or a row along the bottom edge                                              |
-| Size           | 100 %             | The launchers' size, 60 to 160 %                                                      |
-| Hover          | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons  |
-| Launcher order | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner            |
-| Scripts        | All on            | Turns each bundled script on or off, from the next page load                          |
-| Copy versions  |                   | Copies the versions of everything a bug report needs; *Copy as Markdown* for an issue |
+| Setting          | Default           | What it does                                                                         |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------ |
+| Side             | Right             | The launchers' side of the page                                                      |
+| Orientation      | Column            | A column, or a row along the bottom edge                                             |
+| Size             | 100 %             | The launchers' size, 60 to 160 %                                                     |
+| Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons |
+| Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner           |
+| Scripts          | All on            | Turns each bundled script on or off, from the next page load                         |
+| Copy as Markdown |                   | Copies versions and environment details, ready to paste into an issue                |
 
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
 - Every script follows the launcher settings, standalone ones too. [Scribe](../scribe/README.md) follows only the side.
-- About checks for updates each time you open it, shows the install channel, and links to the website and issues.
+- About checks for updates each time you open it and links to the website and issues.
 - The browser console (F12) lists String Theory's version and each bundled script's.
 
 ## Other recommended userscripts
