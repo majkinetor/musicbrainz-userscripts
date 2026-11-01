@@ -816,3 +816,9 @@ html:root[data-eh-theme] .hm-srch :where(button, select) { border-radius: 2px; }
 html:root[data-eh-theme] .hm-srch button[type=submit],
 html:root[data-eh-theme] .hm-seg input:checked + span { background: var(--accent); }
 html:root[data-eh-theme] .hm-hi em { background: none; color: var(--link); }
+
+/* Detail headings use the readable ink accent, rather than the darker button fill. */
+html:root[data-eh-theme] .detail .grp h4 .tag {
+	color: var(--link);
+	background: color-mix(in srgb, var(--link) 12%, transparent);
+}
