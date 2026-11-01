@@ -77,5 +77,13 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await page.waitForTimeout(500);
   check(await panel.isVisible(), 'and just outside its border');
   await page.mouse.move(5, 300);
+  await page.waitForTimeout(2000);
+  check(await panel.isVisible() && !await panel.evaluate(w => w.classList.contains('pc-fading')), 'away from it, it waits');
+  await panel.locator('#pc-head h3').hover();
+  await page.waitForTimeout(2000);
+  check(await panel.isVisible() && !await panel.evaluate(w => w.classList.contains('pc-fading')), 'coming back starts the wait over');
+  await page.mouse.move(5, 300);
+  await page.waitForFunction(() => document.querySelector('.mbu-dock-win').classList.contains('pc-fading'));
+  check(await panel.isVisible(), 'then it fades, still there');
   await panel.waitFor({ state: 'hidden' });
 });

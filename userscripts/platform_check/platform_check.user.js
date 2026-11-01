@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.01.203300
+// @version      2026.11.01.203400
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -3335,6 +3335,7 @@ ${MBU_TOKENS}${MBU_UI_CSS}
   .mbu-dock-win[data-pc-mode="ghost"] { opacity: .4; }
   .mbu-dock-win[data-pc-mode="ghost"]:hover, .mbu-dock-win[data-pc-mode="ghost"]:focus-within { opacity: 1; }
   .mbu-dock-win.pc-win.pc-away { opacity: 0; visibility: hidden; pointer-events: none; }
+  .mbu-dock-win.pc-win.pc-fading { opacity: 0; transition: opacity .4s; }
   #pc-head { position: relative; }
   #pc-pos-menu { position: absolute; top: 100%; right: 0; z-index: 5; display: flex; flex-direction: column; min-width: 170px; padding: 4px; background: var(--mbu-bg, #fff); border: 1px solid var(--mbu-border); border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3); cursor: default; }
   #pc-pos-menu[hidden] { display: none; }
@@ -3832,7 +3833,7 @@ if (!PC_SEED) {
     window.addEventListener('resize', pcPlace);
     new MutationObserver(park).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mbu-dock', 'data-mbu-release'] });
     park();
-    const close = () => { open = false; win.hidden = true; posShow(false); };
+    const close = () => { open = false; win.hidden = true; win.classList.remove('pc-fading'); posShow(false); };
     document.addEventListener('keydown', ev => { if (ev.key !== 'Escape') return; if (!posMenu.hidden) posShow(false); else if (!pcPinned()) close(); });
     document.addEventListener('pointerdown', ev => { if (!posMenu.hidden && !ev.target.closest('#pc-pos-menu, #mb-pin-btn')) posShow(false); }, true);
     document.addEventListener('pointerdown', ev => { if (open && !pcPinned() && !win.contains(ev.target) && !ev.target.closest('#mb-pc-dock, #mb-provider-modal-overlay, .mbu-ov, .mbu-logpop')) close(); }, true);
@@ -3843,8 +3844,9 @@ if (!PC_SEED) {
             if (open) { close(); return; }
             park(); open = true; win.hidden = false;
         } });
-    // Dock hover: open with the mouse on the icon; close once it has left the icon, the panel with a margin around it, and whatever the panel opened
-    let hoverT = 0, mouseAt = null;
+    // Dock hover: open with the mouse on the icon; once it has been away for 3 s from the icon, the panel with a margin around it, and whatever the panel opened, fade out and close
+    let hoverT = 0, awayFor = 0, mouseAt = null;
+    const hoverStay = () => { awayFor = 0; win.classList.remove('pc-fading'); };
     const nearWin = () => { if (!mouseAt) return false; const r = win.getBoundingClientRect(), m = 40; return mouseAt.x >= r.left - m && mouseAt.x <= r.right + m && mouseAt.y >= r.top - m && mouseAt.y <= r.bottom + m; };
     window.addEventListener('pointermove', e => { mouseAt = { x: e.clientX, y: e.clientY }; }, { passive: true });
     document.documentElement.addEventListener('mouseleave', () => { mouseAt = null; });
@@ -3852,11 +3854,13 @@ if (!PC_SEED) {
         clearTimeout(hoverT);
         hoverT = setTimeout(() => {
             if (!open || pcDockMode() !== 'hover') return;
-            if (win.matches(':hover') || nearWin() || pcDockItem.matches(':hover') || document.querySelector('.mbu-logpop:hover, .mbu-ov:hover, #mb-provider-modal-overlay:hover, #mbu-tip:hover')) hoverOut();
-            else close();
+            if (win.matches(':hover') || nearWin() || pcDockItem.matches(':hover') || document.querySelector('.mbu-logpop:hover, .mbu-ov:hover, #mb-provider-modal-overlay:hover, #mbu-tip:hover')) { hoverStay(); hoverOut(); return; }
+            awayFor += 250;
+            if (awayFor >= 3000) win.classList.add('pc-fading');
+            if (awayFor >= 3500) { awayFor = 0; close(); } else hoverOut();
         }, 250);
     };
-    pcDockItem.addEventListener('mouseenter', () => { if (pcDockMode() === 'hover' && !SETTINGS_ONLY) { clearTimeout(hoverT); park(); open = true; win.hidden = false; } });
+    pcDockItem.addEventListener('mouseenter', () => { if (pcDockMode() === 'hover' && !SETTINGS_ONLY) { clearTimeout(hoverT); hoverStay(); park(); open = true; win.hidden = false; } });
     pcDockItem.addEventListener('mouseleave', hoverOut);
     win.addEventListener('mouseleave', hoverOut);
     pcPark = park;
