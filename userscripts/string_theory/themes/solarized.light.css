@@ -779,7 +779,7 @@ body.skin--responsive #p-cactions li.selected a {
 /* Event Horizon: its own surfaces in this palette, or they stay its lilac greys */
 html:root[data-eh-theme] {
 	--bg: #fdf6e3;
-	--surface: #fffcf3;
+	--surface: #f8f1dd;
 	--text: #446068;
 	--muted: #657b83;
 	--soft: #586e75;
@@ -787,10 +787,13 @@ html:root[data-eh-theme] {
 	--line: #e3dfcf;
 	--chip: #eee8d5;
 	--chip-text: #586e75;
-	--hover: #f6efdc;
+	--hover: #f3ecd7;
 }
 
 /* the autocomplete's search button: its icon is its background */
 div.autocomplete2 button.search {
 	filter: var(--invert-value);
+}
+html:root[data-eh-theme] .fbox input {
+	background: transparent !important;
 }
