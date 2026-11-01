@@ -4,10 +4,10 @@ import { openPc } from './pc.mjs';
 
 test.use({ gm: { name: 'Platform Check', persist: true } });
 
-test('a pinned dock panel stays open on the side it was dragged to', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
+test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', '@login'] }, async ({ page, inject }) => {
   const release = 'b84ee12a-09ef-421b-82de-0441a926375b';
   await openPc(page, inject, { release, settle: false, storage: { 'pc:interface': 'dock' } });
-  await page.evaluate(() => { GM_setValue('pc:interface', 'dock'); GM_setValue('pc:dock-pin', true); GM_setValue('pc:dock-side', 'left'); GM_setValue('pc:dock-v', { edge: 'top', gap: 0 }); });
+  await page.evaluate(() => { GM_setValue('pc:interface', 'dock'); GM_setValue('pc:dock-pin', true); GM_setValue('pc:dock-h', { edge: 'left', gap: 0 }); GM_setValue('pc:dock-v', { edge: 'top', gap: 0 }); });
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForSelector('#sidebar');
   await inject('platform_check');
@@ -26,7 +26,7 @@ test('a pinned dock panel stays open on the side it was dragged to', { tag: ['@s
   await page.mouse.move(h.x + 5, h.y + 5); await page.mouse.down();
   await page.mouse.move(vw - 100, h.y + 45); await page.mouse.up();
   check(await win.boundingBox().then(b => Math.round(b.x + b.width) === vw && b.y === 40), 'the title drags it to the other side and down');
-  check(await page.evaluate(() => GM_getValue('pc:dock-side')) === 'right', 'the new side is saved');
+  check(await page.evaluate(() => GM_getValue('pc:dock-h').edge) === 'right', 'the nearer side is saved');
   const near = await box();
   await grow(); await page.waitForTimeout(100);
   const grown = await box();
@@ -40,6 +40,10 @@ test('a pinned dock panel stays open on the side it was dragged to', { tag: ['@s
   await grow(); await page.waitForTimeout(100);
   const up = await box();
   check(up.bottom === low.bottom && up.top < low.top, 'and grows up');
+  const h3 = await page.locator('#pc-head h3').boundingBox();
+  await page.mouse.move(h3.x + 5, h3.y + 5); await page.mouse.down();
+  await page.mouse.move(h3.x - 55, h3.y + 5); await page.mouse.up();
+  check(await win.boundingBox().then(b => Math.round(b.x + b.width) === vw - 60), 'it stops anywhere, not only at a side');
   await page.screenshot({ path: process.env.PIN_SHOT || 'test-results/pin.png' });
 
   await page.locator('#mb-pin-btn').click();
