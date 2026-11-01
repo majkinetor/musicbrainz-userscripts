@@ -14,6 +14,7 @@ test('a saved star fills its missing picture in the background and keeps it', { 
   for (const view of ['group', 'grid', 'table', 'row']) {
     await page.locator(`[data-star-view="${view}"]`).click();
     await expect(image).toHaveAttribute('src', `https://coverartarchive.org/release/${release}/front-250`);
+    if (view === 'table') await expect(page.locator('[data-star-added]')).toHaveText('—');
   }
   await page.reload();
   await inject('event_horizon');

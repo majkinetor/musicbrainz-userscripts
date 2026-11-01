@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0300.06
+// @version      2026.11.02.0300.07
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2283,8 +2283,8 @@ const CSS = `
 .hm-rt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .hm-by{font-weight:400;color:var(--muted);margin-left:6px}
 .hm-rk{flex:none;display:flex;color:var(--muted);margin-right:-4px}.hm-rk svg{width:16px;height:16px}
-.hm-star-list{display:grid;gap:4px}.hm-star-group h3{margin:16px 0 6px;color:var(--muted);font-size:14px}.hm-star-group:first-child h3{margin-top:0}.hm-star-grid .dn{position:relative}.hm-star-grid .dn svg{width:44%;height:44%}.hm-star-grid .dn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hm-star-line{display:flex;align-items:center}.hm-star-line>.hm-r{flex:1;min-width:0}.hm-star-remove{opacity:0}.hm-star-line:hover .hm-star-remove,.hm-star-line:focus-within .hm-star-remove,.hm-star-tile:hover .hm-star-remove,.hm-star-tile:focus-within .hm-star-remove,.ed-t tr:hover .hm-star-remove,.ed-t tr:focus-within .hm-star-remove{opacity:1}.hm-star-actions{width:38px;text-align:right}.hm-star-tile{position:relative;min-width:0}.hm-star-tile>.ed-views{position:absolute;right:6px;top:6px}.hm-star-tile .hm-star-remove{background:var(--surface)}
+.hm-star-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}.hm-star-group h3{margin:16px 0 6px;color:var(--muted);font-size:14px}.hm-star-group:first-child h3{margin-top:0}.hm-star-grid .dn{position:relative}.hm-star-grid .dn svg{width:44%;height:44%}.hm-star-grid .dn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hm-star-line{display:flex;align-items:center;min-width:0}.hm-star-line>.hm-r{flex:1;min-width:0}.ed-views .hm-star-remove{opacity:0}.hm-star-line:hover .hm-star-remove,.hm-star-line:focus-within .hm-star-remove,.hm-star-tile:hover .hm-star-remove,.hm-star-tile:focus-within .hm-star-remove,.ed-t tr:hover .hm-star-remove,.ed-t tr:focus-within .hm-star-remove{opacity:1}.hm-star-actions{width:38px;text-align:right}.hm-star-tile{position:relative;min-width:0}.hm-star-tile>.ed-views{position:absolute;right:6px;top:6px}.hm-star-tile .hm-star-remove{background:var(--surface)}
 .hm-news{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 16px;font-size:13px}
 .hm-news a{padding:3px 8px;border-radius:6px;color:var(--text)!important;text-decoration:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hm-news a:hover{background:var(--hover)}
 .hm-news .hm-more{color:var(--accent)!important}
@@ -7718,6 +7718,7 @@ const HM_ME = [
     ['tags', 'Tags', CI_TAG],
 ];
 const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT], collection: ['Collection', MK_COL] };
+const starDateValid = n => Number.isSafeInteger(n) && n > 0 && n <= 8640000000000000;
 const STAR = '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>';
 function starButton(app) {
     const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event|collection)\/([0-9a-f-]{36})(?:\/|$)/i);
@@ -7732,7 +7733,7 @@ function starButton(app) {
     const search = acts.querySelector('.srch,[data-srch]'); if (search) search.before(btn); else acts.append(btn);
     btn.addEventListener('click', () => {
         const old = visits().find(x => x.key === key);
-        S.stars = S.stars.some(x => x.key === key) ? S.stars.filter(x => x.key !== key) : [{ key, title: name, by: r.ac && r.ac.length ? acText(r.ac) : '', img: old && old.img }, ...S.stars];
+        S.stars = S.stars.some(x => x.key === key) ? S.stars.filter(x => x.key !== key) : [{ key, title: name, by: r.ac && r.ac.length ? acText(r.ac) : '', img: old && old.img, added: Date.now() }, ...S.stars];
         save(); paint();
     });
 }
@@ -7901,9 +7902,9 @@ function hmWire(app) {
         try {
             if (!file.files.length) return;
             const doc = JSON.parse(await file.files[0].text()), valid = new RegExp('^(' + Object.keys(HM_KIND).join('|') + ')/' + MBID.source + '$', 'i');
-            if (!doc || doc.version !== 1 || !Array.isArray(doc.stars) || !doc.stars.every(x => x && valid.test(x.key) && typeof x.title === 'string' && (!x.by || typeof x.by === 'string') && (!x.img || typeof x.img === 'string' && /^https:\/\//i.test(x.img)))) throw new Error('Invalid file');
+            if (!doc || doc.version !== 1 || !Array.isArray(doc.stars) || !doc.stars.every(x => x && valid.test(x.key) && typeof x.title === 'string' && (!x.by || typeof x.by === 'string') && (!x.img || typeof x.img === 'string' && /^https:\/\//i.test(x.img)) && (x.added == null || starDateValid(x.added)))) throw new Error('Invalid file');
             const keys = new Set(S.stars.map(x => x.key)); let added = 0;
-            for (const x of doc.stars) if (!keys.has(x.key)) { S.stars.push({ key: x.key, title: x.title, by: x.by || '', ...(x.img ? { img: x.img } : {}) }); keys.add(x.key); added++; }
+            for (const x of doc.stars) if (!keys.has(x.key)) { S.stars.push({ key: x.key, title: x.title, by: x.by || '', ...(x.img ? { img: x.img } : {}), ...(starDateValid(x.added) ? { added: x.added } : {}) }); keys.add(x.key); added++; }
             save(); render(); mbuToast(`Imported ${added} starred ${added === 1 ? 'entity' : 'entities'}`);
         } catch (e) { mbuToast('Could not import starred entities: invalid file', { kind: 'error' }); }
         finally { file.value = ''; }
@@ -7938,7 +7939,11 @@ function homeHtml() {
     const groups = Object.entries(HM_KIND).map(([k, v]) => [v[0], S.stars.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length);
     const kind = v => HM_KIND[v.key.split('/')[0]] || ['', MK_REC];
     const sortKey = S.starSort.replace(/^-/, ''), sortedStars = [...S.stars];
-    if (sortKey) sortedStars.sort((a, b) => (sortKey === 'type' ? kind(a)[0] : sortKey === 'artist' ? a.by || '' : a.title).localeCompare(sortKey === 'type' ? kind(b)[0] : sortKey === 'artist' ? b.by || '' : b.title, undefined, { sensitivity: 'base', numeric: true }) * (S.starSort.startsWith('-') ? -1 : 1));
+    if (sortKey) sortedStars.sort((a, b) => {
+        const dir = S.starSort.startsWith('-') ? -1 : 1;
+        if (sortKey === 'added') { const av = starDateValid(a.added), bv = starDateValid(b.added); return av && bv ? (a.added - b.added) * dir : av ? -1 : bv ? 1 : 0; }
+        return (sortKey === 'type' ? kind(a)[0] : sortKey === 'artist' ? a.by || '' : a.title).localeCompare(sortKey === 'type' ? kind(b)[0] : sortKey === 'artist' ? b.by || '' : b.title, undefined, { sensitivity: 'base', numeric: true }) * dir;
+    });
     const starHeading = (key, label) => `<th aria-sort="${sortKey === key ? S.starSort.startsWith('-') ? 'descending' : 'ascending' : 'none'}"><button type="button" class="tg-th" data-star-sort="${key}" data-tip="Sort by ${label.toLowerCase()}">${label}${sortKey === key ? S.starSort.startsWith('-') ? ' ↓' : ' ↑' : ''}</button></th>`;
     const starPic = v => { const k = v.key.split('/')[0], im = visitImg(v); return `<span class="hm-ri${k === 'artist' ? ' ar' : k === 'instrument' ? ' fit' : ''}" data-star-pic="${esc(v.key)}">${im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : ''}${SVG(kind(v)[1])}</span>`; };
     const removeStar = v => `<span class="ed-views"><button type="button" class="hm-star-remove" data-star-remove="${esc(v.key)}" aria-label="Remove ${esc(v.title)} from starred entities" data-tip="Remove star">${SVG(STAR)}</button></span>`;
@@ -7949,7 +7954,7 @@ function homeHtml() {
     const body = !S.stars.length ? '<p class="hm-none">Star an entity to keep it here.</p>'
         : S.starView === 'group' ? groups.map(([name, items]) => `<div class="hm-star-group"><h3>${esc(name)}</h3><div class="hm-star-list">${items.map(row).join('')}</div></div>`).join('')
         : S.starView === 'grid' ? `<div class="disco hm-star-grid">${S.stars.map(v => { const recent = visits().find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<div class="hm-star-tile"><a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>${removeStar(v)}</div>`; }).join('')}</div>`
-        : S.starView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th class="tc"></th>${starHeading('title', 'Entity')}${starHeading('type', 'Type')}${starHeading('artist', 'Artist')}<th class="hm-star-actions"></th></tr></thead><tbody>${sortedStars.map(v => `<tr><td class="tc"><a class="tt" href="${MB}/${esc(v.key)}">${starPic(v)}</a></td><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td><td class="hm-star-actions">${removeStar(v)}</td></tr>`).join('')}</tbody></table></div>`
+        : S.starView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th class="tc"></th>${starHeading('title', 'Entity')}${starHeading('type', 'Type')}${starHeading('artist', 'Artist')}${starHeading('added', 'Date added')}<th class="hm-star-actions"></th></tr></thead><tbody>${sortedStars.map(v => `<tr><td class="tc"><a class="tt" href="${MB}/${esc(v.key)}">${starPic(v)}</a></td><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td><td data-star-added>${starDateValid(v.added) ? `<time datetime="${new Date(v.added).toISOString()}">${esc(new Date(v.added).toLocaleDateString())}</time>` : '—'}</td><td class="hm-star-actions">${removeStar(v)}</td></tr>`).join('')}</tbody></table></div>`
         : `<div class="hm-star-list">${S.stars.map(row).join('')}</div>`;
     const starred = sect('hstar', `Starred entities <span class="count">${S.stars.length}</span>`, views, body, '');
     const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];

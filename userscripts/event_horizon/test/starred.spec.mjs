@@ -1,4 +1,5 @@
 import { test, expect } from '../../../dev/test/harness.mjs';
+import { readFile } from 'node:fs/promises';
 
 test.use({ gm: { name: 'Event Horizon', persist: true } });
 
@@ -7,6 +8,7 @@ test('stars survive navigation and reload and can be removed', { tag: '@sandbox'
   await inject('event_horizon');
   const star = page.locator('[data-star]');
   await expect(star).toHaveAttribute('aria-pressed', 'false');
+  const started = Date.now();
   await star.click();
   await expect(star).toHaveAttribute('aria-pressed', 'true');
   await page.locator('.kicker a.eh-home').click();
@@ -18,9 +20,14 @@ test('stars survive navigation and reload and can be removed', { tag: '@sandbox'
     await expect(page.locator('[data-star-remove]')).toHaveCount(1);
   }
   await page.locator('[data-star-view="table"]').click();
+  await expect(page.locator('#s-hstar [data-star-added] time')).toHaveCount(1);
+  const added = await page.locator('#s-hstar [data-star-added] time').getAttribute('datetime');
+  expect(Date.parse(added)).toBeGreaterThanOrEqual(started);
+  expect(Date.parse(added)).toBeLessThanOrEqual(Date.now());
   await page.reload();
   await inject('event_horizon');
   await expect(page.locator('[data-star-view="table"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#s-hstar [data-star-added] time')).toHaveAttribute('datetime', added);
   await page.locator('#s-hstar a:not(.tt)').click();
   await expect(page.locator('[data-star]')).toHaveAttribute('aria-pressed', 'true');
   await page.locator('[data-star]').click();
@@ -34,11 +41,11 @@ test('star export and import merge without duplicates', { tag: '@sandbox' }, asy
   await page.locator('[data-pop="star-transfer"]').click();
   const [download] = await Promise.all([page.waitForEvent('download'), page.locator('[data-star-export]').click()]);
   expect(download.suggestedFilename()).toBe('event-horizon-stars.json');
-  const imported = { version: 1, stars: [{ key: 'artist/89ad4ac3-39f7-470e-963a-56509c546377', title: 'Various Artists', by: 'Alpha' }, { key: 'label/6e0e2d94-4d49-4e98-a917-b7b8f2087348', title: 'Alpha Label', by: 'Zulu', img: 'https://example.com/picture.png' }] };
+  const imported = { version: 1, stars: [{ key: 'artist/89ad4ac3-39f7-470e-963a-56509c546377', title: 'Various Artists', by: 'Alpha', added: 1704067200000 }, { key: 'label/6e0e2d94-4d49-4e98-a917-b7b8f2087348', title: 'Alpha Label', by: 'Zulu', added: 1735689600000, img: 'https://example.com/picture.png' }] };
   await page.locator('[data-star-file]').setInputFiles({ name: 'stars.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(imported)) });
   await expect(page.locator('#s-hstar a:not(.tt)[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
   await page.locator('[data-star-view="table"]').click();
-  for (const key of ['title', 'type', 'artist']) {
+  for (const key of ['title', 'type', 'artist', 'added']) {
     const heading = page.locator(`[data-star-sort="${key}"]`);
     await heading.click();
     await expect(heading.locator('..')).toHaveAttribute('aria-sort', 'ascending');
@@ -52,4 +59,9 @@ test('star export and import merge without duplicates', { tag: '@sandbox' }, asy
   await page.reload();
   await inject('event_horizon');
   await expect(page.locator('#s-hstar a:not(.tt)[href$="/artist/89ad4ac3-39f7-470e-963a-56509c546377"]')).toHaveCount(1);
+  await expect(page.locator('#s-hstar time')).toHaveCount(2);
+  await page.locator('[data-pop="star-transfer"]').click();
+  const [again] = await Promise.all([page.waitForEvent('download'), page.locator('[data-star-export]').click()]);
+  const exported = JSON.parse(await readFile(await again.path(), 'utf8'));
+  expect(exported.stars.map(x => x.added).sort()).toEqual(imported.stars.map(x => x.added).sort());
 });
