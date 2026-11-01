@@ -783,7 +783,7 @@ html:root[data-eh-theme] {
 	--line: #e4ddd3;
 	--chip: #e9e4db;
 	--chip-text: #625951;
-	--hover: #ddd5c9;
+	--hover: #f0ede7;
 	--accent: #8b283c;
 	--accent2: #455c55;
 	--link: #8b283c;
@@ -843,3 +843,10 @@ html:root[data-eh-theme] .hm-srch :where(button, select) { border-radius: 2px; }
 html:root[data-eh-theme] .hm-srch button[type=submit],
 html:root[data-eh-theme] .hm-seg input:checked + span { background: var(--accent); }
 html:root[data-eh-theme] .hm-hi em { background: none; color: var(--link); }
+
+/* Large rows need a paper tint, rather than the solid fill used by small controls. */
+html:root[data-eh-theme] .ed-t .ed-tr:hover { background: var(--hover); }
+html:root[data-eh-theme] .tl .tr:hover,
+html:root[data-eh-theme] .tl.striped .tr.alt:hover {
+	background: color-mix(in srgb, var(--accent) 4%, var(--surface));
+}
