@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 15:48 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 15:52 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -825,7 +825,7 @@ Every table's filter also takes `column:value`, such as `artist:elvis` (put the 
 
 Write AND and OR in capitals: lowercase they are ordinary words. The **?** at the end of the box shows all this, with the section's columns.
 
-**Saved**, beside the funnel, does the same for a filter: name it and save it, then pick it on any artist or release group. Saving under a name already there replaces it, and × deletes one. Releases and discographies keep their own lists.
+The arrow at the end of the filter box does the same for a filter: name it and save it, then pick it on any artist or release group. Saving under a name already there replaces it, and × deletes one. Releases and discographies keep their own lists.
 
 ### Pending changes
 

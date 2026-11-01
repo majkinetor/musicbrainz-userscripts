@@ -40,10 +40,11 @@ test('a filter is saved by name, brought back, replaced and deleted', { tag: '@s
   check(await page.locator('#pop-nm-flt-dg').isHidden(), 'picking one closes the menu');
   await page.reload();
   await inject('event_horizon');
-  await until(() => page.locator('[data-pop="nm-flt-dg"] i').textContent(), t => t === '1');
+  await until(() => page.locator('[data-fopen="dg"]').count(), n => n === 1);
+  await page.locator('[data-fopen="dg"]').click();
   await page.locator('[data-pop="nm-flt-dg"]').click();
   await page.locator('#pop-nm-flt-dg [data-nmdel]').click();
-  await until(() => page.locator('[data-pop="nm-flt-dg"]').count(), n => n === 0);
+  await until(() => page.locator('#pop-nm-flt-dg [data-nmuse]').count(), n => n === 0);
 });
 
 test('a table\'s columns are saved by name and brought back', { tag: '@sandbox' }, async ({ page, inject }) => {
