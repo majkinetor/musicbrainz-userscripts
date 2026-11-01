@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.0430.01
+// @version      2026.11.02.0445.01
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2222,6 +2222,23 @@ const hmRingTurn = () => {
     hmRingRamp(anims, -1, () => setTimeout(() => hmRingRamp(anims, 1), 4000 + Math.random() * 6000));
 };
 setTimeout(hmRingTurn, 60000);
+// The header logo's ring eases back to rest when a background check ends, from wherever the animation had it.
+const ehCheckDone = () => {
+    const root = document.documentElement;
+    if (!root.hasAttribute('data-eh-checking')) return;
+    const angles = [...document.querySelectorAll('.eh-home svg path')].map(p => {
+        const t = getComputedStyle(p).transform;
+        if (t === 'none') return null;
+        const m = new DOMMatrix(t);
+        return [p, Math.atan2(m.b, m.a) * 180 / Math.PI];
+    }).filter(Boolean);
+    root.removeAttribute('data-eh-checking');
+    if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    angles.forEach(([p, a]) => p.animate([
+        { transformOrigin: '64px 64px', transform: `rotate(${a}deg)` },
+        { transformOrigin: '64px 64px', transform: 'rotate(-15deg)' },
+    ], { duration: 700, easing: 'ease-out' }));
+};
 const LOGO = '<svg width="30" height="30" viewBox="0 0 128 128" aria-hidden="true"><path d="M4 64 A60 16 0 0 1 124 64" fill="none" stroke="#eb743b" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path><polygon points="62.3,16.4 21.5,40.2 21.5,87.8 62.3,111.6" fill="#ba478f"></polygon><polygon points="65.7,16.4 106.5,40.2 106.5,87.8 65.7,111.6" fill="#eb743b"></polygon><path d="M4 64 A60 16 0 0 0 124 64" fill="none" stroke="#ffc94a" stroke-width="7" stroke-linecap="round" transform="rotate(-15 64 64)"></path></svg>';
 
 const CSS = `
@@ -9822,7 +9839,7 @@ function ehPageMark() { const r = document.documentElement; if (ehOn) r.setAttri
 // what MusicBrainz changed since it was kept: no skeleton, drawn once whole, and the page stays where it was on a failure
 async function show(key, o = {}) {
     const app = $('#app'), n = ++showing;
-    document.documentElement.removeAttribute('data-eh-checking');
+    ehCheckDone();
     const kind = key && key.split('/')[0], isRg = kind === 'release-group', isAr = kind === 'artist', isLb = kind === 'label', id = key && key.split('/')[1];
     ehRel = kind === 'release' && id || null; ehRelMark(); ehPageMark();
     mbRestackCorner('br');   // the dock drops the launchers that don't belong on this page (#847)
@@ -9924,12 +9941,12 @@ async function show(key, o = {}) {
             LOG.info('Redrawing ' + kind.replace('-', ' ') + ' ' + id + ': MusicBrainz has changed it since it was kept');
             show(key, { quiet: true, y: scrollY });
             } finally {
-                if (n === showing) { document.documentElement.removeAttribute('data-eh-checking'); pdAsk(kind, id, () => n === showing && data === d); }
+                if (n === showing) { ehCheckDone(); pdAsk(kind, id, () => n === showing && data === d); }
             }
         });
     }
     catch (e) {
-        if (n === showing) document.documentElement.removeAttribute('data-eh-checking');
+        if (n === showing) ehCheckDone();
         LOG.err('Loading ' + id + ' failed: ' + e.message);
         if (n === showing) leadOff(ehLead);   // the page failed: it no longer holds anyone back
         if (n !== showing || o.quiet) return;
