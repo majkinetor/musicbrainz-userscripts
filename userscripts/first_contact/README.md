@@ -143,9 +143,10 @@ Featured artists come from the title's *feat.* clause: Deezer lists them as main
 
 ### Bandcamp
 
-Pages: `<name>.bandcamp.com/album/<slug>`
+Pages: `<name>.bandcamp.com/album/<slug>` or `/track/<slug>`
 
 - A comma list of artists (*Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method*) is split into separate artists, except the account's own name.
+- A standalone track is imported as a one-track release. A track that belongs to an album is refused; import the album instead.
 - On a label's page the label is filled in; on an artist's own page it is left empty.
 - A compilation's *Artist - Title* track titles are split into artist and title.
 - The album link gets both *purchase for download* and, when it streams, *stream for free*.

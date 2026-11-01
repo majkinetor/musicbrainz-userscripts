@@ -30,7 +30,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)  |
 | Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links) |
 | Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify); links from the album, by position + title |
-| Bandcamp                        |             |      ✓      | the album page, by position + title                                                   |
+| Bandcamp                        |             |      ✓      | the album or standalone track page, by position + title                               |
 | [YouTube Music](#youtube-music) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
 | [Amazon Music](#amazon-music)   |             |      ✓      | the album, when linked (by position + title)                                          |
 | HDtracks                        |      ✓      |             | the album                                                                             |

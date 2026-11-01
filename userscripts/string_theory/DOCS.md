@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-01 19:05 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-01 19:07 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -1231,9 +1231,10 @@ Featured artists come from the title's *feat.* clause: Deezer lists them as main
 
 #### Bandcamp
 
-Pages: `<name>.bandcamp.com/album/<slug>`
+Pages: `<name>.bandcamp.com/album/<slug>` or `/track/<slug>`
 
 - A comma list of artists (*Future Funk Squad, Omega Sparx, Stu Brootal, The Crystal Method*) is split into separate artists, except the account's own name.
+- A standalone track is imported as a one-track release. A track that belongs to an album is refused; import the album instead.
 - On a label's page the label is filled in; on an artist's own page it is left empty.
 - A compilation's *Artist - Title* track titles are split into artist and title.
 - The album link gets both *purchase for download* and, when it streams, *stream for free*.
@@ -1865,7 +1866,7 @@ Shows a release's ISRCs, fills in the missing ones from several providers, and f
 | SoundCloud                      |      ✓      |      ✓      | the set (a track URL counts as a one-track release); by position (+ title for links)  |
 | Audiomack                       |      ✓      |      ✓      | the album (a song URL counts as a one-track release); by position (+ title for links) |
 | Spotify                         |      ✓      |      ✓      | ISRCs through [a lookup service](#spotify-1); links from the album, by position + title |
-| Bandcamp                        |             |      ✓      | the album page, by position + title                                                   |
+| Bandcamp                        |             |      ✓      | the album or standalone track page, by position + title                               |
 | [YouTube Music](#youtube-music-1) |             |      ✓      | the album, when linked (by position + title); else ISRC, on any release               |
 | [Amazon Music](#amazon-music-1)   |             |      ✓      | the album, when linked (by position + title)                                          |
 | HDtracks                        |      ✓      |             | the album                                                                             |
@@ -2514,7 +2515,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 - **Qobuz**: signed in, matches are verified (track count and barcode); otherwise its store page is read, slower and throttled. ISRC Scout and Credit Hoarder share the login; only its token is kept.
 - **Beatport** is behind Cloudflare: without a login, a match found by web search can't be verified, shows `?`, and isn't added. Signed in, it is verified, and ISRC Scout can import its ISRCs.
-- **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
+- **Bandcamp**: standalone tracks count as one-track releases; tracks belonging to an album are not offered as releases. Bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
 - **Apple Music** needs no login. The track count leaves out music videos. A release is looked for in several countries' stores, and the link keeps the one it was found in.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
 - **YouTube Music** needs no login. It finds most albums by barcode, the rest by artist and title, but shows no barcode and may return another edition: every hit must match on track count and title, and strict barcode mode withholds it. The *other versions* it lists are named in the tooltip, for you to check. The label comes from a song's credits, when the label sends them. Links are added as *stream for free*.

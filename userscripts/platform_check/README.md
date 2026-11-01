@@ -141,7 +141,7 @@ Click a mark to open its page; right-click to take it in or leave it out. **Run 
 
 - **Qobuz**: signed in, matches are verified (track count and barcode); otherwise its store page is read, slower and throttled. ISRC Scout and Credit Hoarder share the login; only its token is kept.
 - **Beatport** is behind Cloudflare: without a login, a match found by web search can't be verified, shows `?`, and isn't added. Signed in, it is verified, and ISRC Scout can import its ISRCs.
-- **Bandcamp**: bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
+- **Bandcamp**: standalone tracks count as one-track releases; tracks belonging to an album are not offered as releases. Bonus tracks that are download-only are counted and marked ⁿ. A Bandcamp barcode that is really a physical package's is ignored.
 - **Apple Music** needs no login. The track count leaves out music videos. A release is looked for in several countries' stores, and the link keeps the one it was found in.
 - **Discogs**: on a CD release, a CD edition is searched first. The release group's Discogs master is checked too.
 - **YouTube Music** needs no login. It finds most albums by barcode, the rest by artist and title, but shows no barcode and may return another edition: every hit must match on track count and title, and strict barcode mode withholds it. The *other versions* it lists are named in the tooltip, for you to check. The label comes from a song's credits, when the label sends them. Links are added as *stream for free*.

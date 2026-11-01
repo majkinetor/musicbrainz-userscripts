@@ -37,6 +37,7 @@ Each provider is resolved by a **method** chain, tried in order: the existing **
 - **Login:** —
 - **Method:** LS → GS
 - **Notes:**
+    - **Standalone tracks (#850)** — one-track releases also search track pages. A candidate track is accepted only when `data-tralbum.current.album_id` is present and null; a track on an album or a page without readable track data is rejected.
     - **Hidden tracks (#183)** — bonus tracks can be *download-only* (not in the streaming player). JSON-LD `numTracks` counts only the streamable ones; the `og:description` "N track album" carries the real total. PC reports that true total, logs how many are hidden, and marks the count with a small superscript **ⁿ** (hover for "N download-only track(s) hidden from streaming").
     - **Barcode (#194)** — hand-entered and **often absent** (withheld only in *strict* mode). Per [Harmony](https://github.com/kellnerd/harmony/issues/42) the digital `current.upc` can coincide with a **physical package's** barcode — when it does it's **ignored** (logged), not used.
     - Exposes a real **format** and always keeps its full row.

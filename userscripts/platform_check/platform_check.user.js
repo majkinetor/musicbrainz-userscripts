@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.01.190521
+// @version      2026.11.01.190717
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -6237,11 +6237,12 @@ async function fetchBandcampMeta(albumUrl) {
     // Often null (Bandcamp barcodes are hand-entered). Per Harmony (kellnerd/harmony#42)
     // the digital `current.upc` can coincide with a physical package's barcode —
     // when it does, it's the package's, not the digital release's, so we drop it.
-    let barcode = null, barcodeIsPackage = false;
+    let barcode = null, barcodeIsPackage = false, tralbum = null;
     const trm = html.match(/data-tralbum="([^"]*)"/);
     if (trm) {
         try {
             const tr = JSON.parse(trm[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<'));
+            tralbum = tr;
             const upc = tr && tr.current && tr.current.upc;
             if (upc) {
                 const pkgUpcs = (tr.packages || []).map(pp => normBarcode(pp && pp.upc)).filter(Boolean);
@@ -6250,13 +6251,16 @@ async function fetchBandcampMeta(albumUrl) {
             }
         } catch (e) { /* malformed data-tralbum — no barcode */ }
     }
+    // A track page is a release only when it isn't a track on an album.
+    // Refuse unreadable track pages too: guessing could add an album track as a release.
+    if (/\/track\//i.test(albumUrl) && (!tralbum || tralbum.current?.type !== 'track' || tralbum.current.album_id !== null)) return null;
     return {
         // report the true total (incl. hidden) as the track count — that's what the
         // Bandcamp release actually contains, and what MB compares against.
         tracks: total != null ? total : streaming,
         streamingTracks: streaming,
         hiddenTracks,
-        title:  titleMatch?.[1] || null,
+        title:  tralbum?.current?.title || titleMatch?.[1] || null,
         year:   yMatch?.[1]     || null,
         label:  lMatch?.[1]     || null,
         format: formats.length ? formats.join(', ') : null,
@@ -6267,14 +6271,14 @@ async function fetchBandcampMeta(albumUrl) {
     };
 }
 
-// Bandcamp's own search at /search?item_type=a returns a server-rendered HTML
-// list of album results — works without any token in a real browser (the
+// Bandcamp's own search returns a server-rendered HTML list — works without
+// any token in a real browser (the
 // browser carries Bandcamp's CF clearance cookie). Try this BEFORE the generic
 // web-search engines: when both are available it's faster, lower-noise (only
-// album results), and not subject to Brave/DDG rate-limits. Falls through to
+// relevant results), and not subject to Brave/DDG rate-limits. Falls through to
 // `searchWeb` if Cloudflare's bot challenge fires from a cookie-less context.
-async function searchBandcampNative(query, label) {
-    const url = `https://bandcamp.com/search?q=${encodeURIComponent(query)}&item_type=a`;
+async function searchBandcampNative(query, label, includeTracks = false) {
+    const url = `https://bandcamp.com/search?q=${encodeURIComponent(query)}${includeTracks ? '' : '&item_type=a'}`;
     appendLog(label, `Native: ${url}`);
     const res = await gmGet(url, { headers: { 'Accept': 'text/html,application/xhtml+xml' } });
     appendLog(label, `Native: status=${res.status} ${res.responseText.length}b in ${res.ms}ms`);
@@ -6288,9 +6292,9 @@ async function searchBandcampNative(query, label) {
     }
     // Bandcamp's search-result anchors point at full *.bandcamp.com/album/<slug>
     // URLs. Strip query strings and dedupe.
-    const urls = [...res.responseText.matchAll(/href="(https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\/[^"?#]+)/gi)].map(m => m[1]);
+    const urls = [...res.responseText.matchAll(/href="(https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\/[^"?#]+)/gi)].map(m => m[1]).filter(u => includeTracks || /\/album\//i.test(u));
     const unique = [...new Set(urls)];
-    appendLog(label, `Native: ${unique.length} unique album link(s)`, unique.length ? 'ok' : 'warn');
+    appendLog(label, `Native: ${unique.length} unique release link(s)`, unique.length ? 'ok' : 'warn');
     return unique.slice(0, 5);
 }
 
@@ -6323,17 +6327,16 @@ async function scanBandcamp({ artist, album, mbTracks, existingUrl, mbid, isVari
         const albumT  = searchTerms(album);
         const artistT = searchTerms(artist);
         const nativeQ = isVariousArtists ? albumT : `${artistT} ${albumT}`;
-        let candidates = await searchBandcampNative(nativeQ, label);
+        let candidates = await searchBandcampNative(nativeQ, label, mbTracks === 1);
         let candidateSource = 'native';
         if (!candidates.length) {
             // Priority 2: generic web search. Punctuation-stripped tokens, no
             // exact-phrase quotes — MB's "Foo: Bar!" and Bandcamp's
             // "Foo - Bar" still hit each other this way; the verifier handles
             // the rest. Bandcamp candidate pages are ~300 KB so cap at 3.
-            const q = isVariousArtists
-                ? `site:bandcamp.com/album/ ${albumT}`
-                : `site:bandcamp.com/album/ ${artistT} ${albumT}`;
-            candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u), label, 3);
+            const site = mbTracks === 1 ? 'site:bandcamp.com' : 'site:bandcamp.com/album/';
+            const q = isVariousArtists ? `${site} ${albumT}` : `${site} ${artistT} ${albumT}`;
+            candidates = await searchWeb(q, u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u) && (mbTracks === 1 || /\/album\//i.test(u)), label, 3);
             candidateSource = 'search';
         }
         if (!candidates.length) {
@@ -8129,7 +8132,7 @@ function parseMbFromDom() {
         const existing = {
             spotify:  externalHrefs.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
             discogs:  externalHrefs.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
-            bandcamp:      externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+            bandcamp:      externalHrefs.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u)) || null,
             deezer:        externalHrefs.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
             apple:         externalHrefs.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
             tidal:         externalHrefs.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
@@ -8368,7 +8371,7 @@ function parseMbData(data) {
     const existing = {
         spotify:  relUrls.find(u => /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?album\//i.test(u)) || null,
         discogs:  relUrls.find(u => /^https?:\/\/www\.discogs\.com\/(?:[a-z-]+\/)?release\/\d+/i.test(u)) || null,
-        bandcamp:      relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/album\//i.test(u)) || null,
+        bandcamp:      relUrls.find(u => /^https?:\/\/[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(u)) || null,
         deezer:        relUrls.find(u => /^https?:\/\/(?:www\.)?deezer\.com\/(?:[a-z]+\/)?album\/\d+/i.test(u)) || null,
         apple:         relUrls.find(u => /^https?:\/\/music\.apple\.com\/(?:[a-z]{2}\/)?album\/(?:[^/]+\/)?\d+/i.test(u)) || null,
         tidal:         relUrls.find(u => /^https?:\/\/(?:listen\.)?tidal\.com\/(?:browse\/)?album\/\d+/i.test(u)) || null,
@@ -10212,7 +10215,7 @@ function pcMcReleaseLinkTypes(url) {
 // A hoisted declaration: injectInto's early path calls it.
 function pcExtraType(url, firstId, relMbid) {
     if (!relMbid) return null;
-    if (firstId === '85' && /[a-z0-9-]+\.bandcamp\.com\/album\//i.test(url)) return /\b(digital|file)\b/i.test(cacheGet(relMbid, 'bandcamp')?.format || '') ? '74' : null;
+    if (firstId === '85' && /[a-z0-9-]+\.bandcamp\.com\/(?:album|track)\//i.test(url)) return /\b(digital|file)\b/i.test(cacheGet(relMbid, 'bandcamp')?.format || '') ? '74' : null;
     if (firstId === '980' && /music\.apple\.com\/.*\/album\//i.test(url)) return cacheGet(relMbid, 'apple')?.forSale ? '74' : null;
     return null;
 }

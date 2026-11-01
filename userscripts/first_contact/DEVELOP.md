@@ -51,7 +51,7 @@ On a release page (`/release/<mbid>`) First Contact runs as a reader only (`mbRe
 | Platform | Source |
 | --- | --- |
 | Deezer | Deezer's public API |
-| Bandcamp | the album page's own data (`data-tralbum` and the ld+json); the lengths an album not out yet hides (`duration` 0 on an `unreleased_track`) from the app API, `bandcamp.com/api/mobile/24/tralbum_details?band_id&tralbum_id&tralbum_type=a` |
+| Bandcamp | the album or standalone track page's own data (`data-tralbum` and the ld+json); a track with `current.album_id` belongs to an album and is refused; the lengths an album not out yet hides (`duration` 0 on an `unreleased_track`) from the app API, `bandcamp.com/api/mobile/24/tralbum_details?band_id&tralbum_id&tralbum_type=a` |
 | Discogs | Discogs's public API |
 | Apple Music | Apple's catalogue API (`amp-api.music.apple.com`), with the bearer token in the web player's public JS, in the page's country store |
 | Tidal | the official catalogue API (`openapi.tidal.com/v2`) with an app token from the client-credentials grant; US store, then GB, DE |
