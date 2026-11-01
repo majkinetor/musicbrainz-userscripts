@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.2308.12
+// @version      2026.11.01.2308.13
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2425,7 +2425,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .rgc .rga{color:var(--muted)}
 .rls dd>.rq{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.rls dd>.rq>svg{flex:none;align-self:center;color:var(--muted)}.rls dd .uchips{display:flex;flex-wrap:wrap;gap:6px}
 .wka .wkr{display:grid;grid-template-columns:auto auto;gap:14px;justify-content:start;font-size:14px;line-height:1.5}.wka .wkr>span{color:var(--muted);min-width:64px}.wka .wkr .mono,.wka .wkr code{font-size:14px}.hero:has(.pop:not([hidden])){position:relative;z-index:30}.wkl{display:inline;font-size:14px;line-height:1.5}.wkl .wki{white-space:nowrap}.wki-l .cp{display:inline;white-space:nowrap}.wkl .wki>span{color:var(--muted)}.wkl .popwrap{display:inline-block;margin-left:8px;vertical-align:middle}.pop.wka{width:max-content;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.pop.wka .wkr{padding:2px 12px}.pop.wka .wkx{padding:2px 12px;font-size:13px;line-height:1.4;max-width:420px}
-.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls-bar{margin:0 0 14px}.rls .qk>.popwrap{right:auto;left:14px;bottom:-4px}.rls .qk>.uchip>span{margin-left:5px}.sec:has(.pop:not([hidden])){position:relative;z-index:21}.rls .pop{z-index:40;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.rls .pop .row{align-items:center}.rls .pop .row>:first-child{flex:none}.rls .pop .row>span{min-width:0}.rls .pop .row small{display:block;font-size:10.5px;line-height:1.35;word-break:break-all;color:var(--muted)}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
+.rls [hidden],.rls-t tr[hidden]{display:none!important}.rls .qk>.popwrap{right:auto;left:14px;bottom:-4px}.rls .qk>.uchip>span{margin-left:5px}.sec:has(.pop:not([hidden])){position:relative;z-index:21}.rls .pop{z-index:40;scrollbar-width:thin;scrollbar-color:var(--mbu-border) transparent}.rls .pop .row{align-items:center}.rls .pop .row>:first-child{flex:none}.rls .pop .row>span{min-width:0}.rls .pop .row small{display:block;font-size:10.5px;line-height:1.35;word-break:break-all;color:var(--muted)}.rls-t td>svg{vertical-align:-2px;margin-right:6px;color:var(--muted)}.rls-t .rls-ph{color:var(--muted);white-space:nowrap}
 .secthead .rgt{font-weight:600}
 
 .hero{display:flex;flex-wrap:wrap;gap:24px 44px;align-items:flex-start}.hero .label{font-size:10.5px}
@@ -6633,27 +6633,8 @@ function relsHtml(d) {
     const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
     const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
     if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
-    const n = relsN(t);
-    if (!n) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
-    const bar = `<div class="tg-bar rls-bar"><span class="fbox"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="rls-q" value="${esc(d.q || '')}" placeholder="Filter ${fmtN(n)} ${d.mode || 'relationships'}" aria-label="Filter ${d.mode || 'relationships'}" autocomplete="off"></span><span class="fn aside"></span></div>`;
-    return head + (d.mode ? relsApps(t, d) : bar + t.cards.map(relsCard).join('') + relsApps(t));
-}
-// the filter hides what doesn't hold it, in place: a phrase with nothing left goes, a section with nothing left folds away
-function relsFilter(app) {
-    const q = ((data && data.q) || '').trim().toLowerCase(); let shown = 0, all = 0;
-    for (const s of app.querySelectorAll('section.sec')) {
-        let any = 0;
-        for (const r of s.querySelectorAll('.rq, .ed-t tbody tr')) { const ph = (r.closest('dd') && r.closest('dd').previousElementSibling || {}).textContent || ''; const on = !q || (r.textContent + ' ' + ph).toLowerCase().includes(q); r.hidden = !on; all++; if (on) { shown++; any++; } }
-        for (const dd of s.querySelectorAll('dd.rqg')) { const on = !!dd.querySelector('.rq:not([hidden])'); dd.hidden = !on; dd.previousElementSibling.hidden = !on; }
-        s.style.display = q && !any ? 'none' : '';
-    }
-    const fn = app.querySelector('.rls-bar .fn'); if (fn) fn.textContent = q ? `${fmtN(shown)} of ${fmtN(all)}` : '';
-}
-let rlsWired = false;
-function relsWire(app) {
-    relsFilter(app);
-    if (rlsWired) return; rlsWired = true;
-    document.addEventListener('input', ev => { if (ehOn && data && data.kind === 'rels' && ev.target.id === 'rls-q') { data.q = ev.target.value; relsFilter($('#app')); } });
+    if (!relsN(t)) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
+    return head + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
 }
 function entHead({ type, id, img, kick, title, disamb, acts }) {
     const mk = (HM_KIND[type] || ['', CI_TAG])[1];
@@ -7180,7 +7161,7 @@ function render(keepPop) {
     if (!data) return;
     if (data.kind === 'user') { document.title = titleOf(data); app.innerHTML = userHtml(data); secRail(app); save(); return; }
     if (data.kind === 'tags') { document.title = titleOf(data); app.innerHTML = tagsHtml(data); tagsWire(); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); pinBar(app); document.getElementById('eh-rail')?.remove(); return; }
-    if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); relsWire(app); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
+    if (data.kind === 'rels') { document.title = titleOf(data); app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
     if (data.kind === 'tagx') { document.title = titleOf(data); app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'rates') { document.title = titleOf(data); app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'colls') { document.title = titleOf(data); app.innerHTML = collsHtml(data); secRail(app); save(); return; }
@@ -9368,8 +9349,8 @@ async function show(key, o = {}) {
         data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: !ent && key === PAGE_ID && /[?&]show_downvoted=1/.test(location.search), ao: !!ent && location.hash === '#add' };
         scrollTo(0, 0); render(); tagsLoad(n, key); if (data.dn) tagsLoad(n, key, true); return;
     }
-    if (kind === 'erels') { data = { kind: 'rels', key, ent: id, q: '' }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
-    if (['erecs', 'ewrks', 'eevts', 'earts', 'elabs'].includes(kind)) { data = { kind: 'rels', mode: { erecs: 'recordings', ewrks: 'works', eevts: 'events', earts: 'artists', elabs: 'labels' }[kind], key, ent: id, q: '', page: 1 }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
+    if (kind === 'erels') { data = { kind: 'rels', key, ent: id }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
+    if (['erecs', 'ewrks', 'eevts', 'earts', 'elabs'].includes(kind)) { data = { kind: 'rels', mode: { erecs: 'recordings', ewrks: 'works', eevts: 'events', earts: 'artists', elabs: 'labels' }[kind], key, ent: id, page: 1 }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }
     if (kind === 'colls') { data = { kind: 'colls', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); collsLoad(n, key); return; }
     if (kind === 'user') { data = { kind: 'user', name: decodeURIComponent(id) }; scrollTo(0, 0); render(); userLoad(n, key); return; }

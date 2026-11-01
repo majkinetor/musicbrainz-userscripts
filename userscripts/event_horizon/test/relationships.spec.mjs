@@ -26,9 +26,7 @@ test('an artist\'s relationships show as cards and tables', { tag: ['@sandbox', 
   check(await page.locator('#app #s-rlartist dt').count() > 0, 'the Artists card has phrases');
   check(await page.locator('#app #s-rarecording tbody tr').count() > 10, 'the recordings appear in a table');
   await attachShot(testInfo, page, 'relationships');
-  await page.locator('#rls-q').fill('supporting');
-  check(await until(() => page.locator('#app .rq:not([hidden])').count(), n => n > 0 && n < 40) < 40, 'the filter narrows to a phrase');
-  check(await page.locator('#s-rarecording').isHidden(), 'a section with nothing left hides');
+  check(await page.locator('#rls-q').count() === 0, 'the page has no filter');
 });
 
 test('Recordings routes cover the artist, area and instrument', { tag: '@unit' }, async () => {
