@@ -135,6 +135,7 @@ test('Catalog numbers without links: right-click, its chip, and with a Discogs m
   await page.waitForSelector('#content table.medium');
   await page.evaluate(r => { localStorage.removeItem('pc:picked-catno:' + r); localStorage.removeItem('pc:pending-catno:' + r); }, RELEASE);
   await inject('platform_check', { waitFor: '__pcTest680' });
+  await page.evaluate(() => window.__pcTest680.scanDone());
   await page.evaluate(() => {
     window.__opened = []; window.GM_openInTab = u => { window.__opened.push(u); return null; };
     window.__pcTest680.pcNoteFoundCatnos('beatport', [{ label: 'Artoffact', catno: 'AOF 146' }]);
