@@ -6,6 +6,8 @@ var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions?discussions_q=
 var ST_NEWS_LOG = 'https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/CHANGELOG.md';
 var stNewsOv = null;
 var ST_NEWS_CSS = ''
+  + '#st-news-view abbr{text-decoration:underline dotted;text-underline-offset:2px;cursor:help}'
+  + '#st-news.full{position:fixed;inset:0;width:auto!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0;border-radius:0}'
   + '#st-news{width:min(880px,94vw);height:min(78vh,640px);display:flex;flex-direction:column;font:13px/1.45 var(--mbu-font);color:var(--mbu-text);outline:none}'
   + '#st-news-all{min-height:30px;padding:0 10px;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-accent-text);font:inherit;cursor:pointer}#st-news-all:hover{background:var(--mbu-bg-hover)}'
   + '#st-news-body{flex:1 1 auto;min-height:0;display:flex}'
@@ -129,6 +131,26 @@ function stNewsSignal() {
     b.removeAttribute('data-st-label');
   }
 }
+var ST_NEWS_ABBR = { AS: 'Art Station', BP: 'Bandcamp Player Enhanced', CH: 'Credit Hoarder', DC: 'Discogs Credits', EH: 'Event Horizon',
+  FC: 'First Contact', GT: 'Group Therapy', IS: 'ISRC Scout', MB: 'MusicBrainz', MC: 'Mission Control', MM: 'Mammoth', PC: 'Platform Check',
+  RG: 'Release group', ST: 'String Theory' };
+// A short name in a post gets its dotted underline and the full name as a tip; code and links stay as written.
+function stNewsAbbr(d) {
+  var w = d.createTreeWalker(d.body, 4), nodes = [], n, re = /\b(?:AS|BP|CH|DC|EH|FC|GT|IS|MB|MC|MM|PC|RG|ST)\b/g;
+  while ((n = w.nextNode())) if (!n.parentNode.closest('a,code,pre')) nodes.push(n);
+  nodes.forEach(function (t) {
+    var txt = t.nodeValue, last = 0, m, frag = d.createDocumentFragment();
+    re.lastIndex = 0;
+    while ((m = re.exec(txt))) {
+      frag.appendChild(d.createTextNode(txt.slice(last, m.index)));
+      var a = d.createElement('abbr'); a.textContent = m[0]; a.setAttribute('data-tip', ST_NEWS_ABBR[m[0]]);
+      frag.appendChild(a); last = m.index + m[0].length;
+    }
+    if (!last) return;
+    frag.appendChild(d.createTextNode(txt.slice(last)));
+    t.parentNode.replaceChild(frag, t);
+  });
+}
 function stNewsClean(html) {
   var d = new DOMParser().parseFromString(html, 'text/html');
   d.querySelectorAll('script,style,iframe,object,embed,form').forEach(function (e) { e.remove(); });
@@ -139,6 +161,7 @@ function stNewsClean(html) {
     if (e.tagName === 'A') { e.target = '_blank'; e.rel = 'noopener'; }
   });
   d.querySelectorAll('sub').forEach(function (e) { if (/^\s*Issue:/i.test(e.textContent)) e.remove(); });
+  stNewsAbbr(d);
   return d.body.innerHTML;
 }
 function stNewsDate(at) { try { return new Date(at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return ''; } }
@@ -156,7 +179,7 @@ function stNewsOpen() {
   var ov = document.createElement('div');
   ov.className = 'mbu-ov'; ov.id = 'st-news-ov';
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-news" role="dialog" aria-label="What\'s new" tabindex="-1">'
-    + '<div class="mbu-ov-h"><span class="mbu-ov-title">What\'s new</span><button type="button" id="st-news-all">Mark all read</button><button type="button" class="mbu-ov-x" id="st-news-x" aria-label="Close">\u2715</button></div>'
+    + '<div class="mbu-ov-h"><span class="mbu-ov-title">What\'s new</span><button type="button" id="st-news-all">Mark all read</button><button type="button" class="mbu-ov-x" id="st-news-full" data-tip="Full screen" aria-label="Full screen">⛶</button><button type="button" class="mbu-ov-x" id="st-news-x" aria-label="Close">\u2715</button></div>'
     + '<div id="st-news-body"><ul id="st-news-list" role="listbox"></ul><div id="st-news-view"></div></div>'
     + '<div id="st-news-foot"><span>Latest ' + ST_NEWS_MAX + ' · checked ' + (checked < 1 ? 'today' : checked + ' d ago') + '</span>'
     + '<span><a href="' + ST_NEWS_ALL + '" target="_blank" rel="noopener">All announcements</a> · <a href="' + ST_NEWS_LOG + '" target="_blank" rel="noopener">Changelog</a></span></div></div>';
@@ -195,6 +218,20 @@ function stNewsOpen() {
   document.addEventListener('keydown', key, true);
   list.onclick = function (e) { var li = e.target.closest('li'); if (li) show(+li.dataset.n); };
   ov.querySelector('#st-news-x').onclick = close;
+  var fullBtn = ov.querySelector('#st-news-full'), panel = ov.querySelector('#st-news');
+  var setFull = function (on) {
+    panel.classList.toggle('full', on);
+    fullBtn.textContent = on ? '❐' : '⛶';
+    fullBtn.dataset.tip = on ? 'Restore the size' : 'Full screen';
+    fullBtn.setAttribute('aria-label', fullBtn.dataset.tip);
+  };
+  var fullOn = false;
+  try { fullOn = localStorage.getItem('st:news:full') === '1'; } catch (e) {}
+  setFull(fullOn);
+  fullBtn.onclick = function () {
+    fullOn = !fullOn; setFull(fullOn);
+    try { localStorage.setItem('st:news:full', fullOn ? '1' : '0'); } catch (e) {}
+  };
   ov.querySelector('#st-news-all').onclick = function () { items.forEach(function (i) { if (v.seen.indexOf(i.id) < 0) v.seen.push(i.id); }); persist(); draw(); };
   ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
   // open on the newest unread post
