@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Platform Check
 // @namespace    http://tampermonkey.net/
-// @version      2026.11.02.000009
+// @version      2026.11.02.000010
 // @description  Find a MusicBrainz release on online platforms like Spotify, Discogs, Bandcamp, HDtracks etc.. Uses existing URL relationships when present, otherwise searches for release online using several methods.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5NQiBQbGF0Zm9ybSBDaGVjazwvdGl0bGU+CjxnIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik02NCA2NCBMODggMjIuNCIvPjxwYXRoIGQ9Ik02NCA2NCBMMTEyIDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw4OCAxMDUuNiIvPjxwYXRoIGQ9Ik02NCA2NCBMNDAgMTA1LjYiLz48cGF0aCBkPSJNNjQgNjQgTDE2IDY0Ii8+PHBhdGggZD0iTTY0IDY0IEw0MCAyMi40Ii8+PC9nPjxjaXJjbGUgY3g9Ijg4IiBjeT0iMjIuNCIgcj0iMTIiIGZpbGw9IiNmNDcyYjYiLz48Y2lyY2xlIGN4PSIxMTIiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNmYWNjMTUiLz48Y2lyY2xlIGN4PSI4OCIgY3k9IjEwNS42IiByPSIxMiIgZmlsbD0iIzRhZGU4MCIvPjxjaXJjbGUgY3g9IjQwIiBjeT0iMTA1LjYiIHI9IjEyIiBmaWxsPSIjMzhiZGY4Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSI2NCIgcj0iMTIiIGZpbGw9IiNhNzhiZmEiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjIyLjQiIHI9IjEyIiBmaWxsPSIjZmI5MjNjIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMjQiIGZpbGw9IiMwZjE3MmEiLz48cGF0aCBkPSJNNTQuMjIyMjIyMjIyMjIyMjIgNjQgTDYxLjMzMzMzMzMzMzMzMzMzNiA3MS4xMTExMTExMTExMTExMSBMNzQuNjY2NjY2NjY2NjY2NjcgNTYuODg4ODg4ODg4ODg4ODg2IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=
@@ -4302,9 +4302,6 @@ providerModal.querySelectorAll('input[name="mb-layout"]').forEach(r => r.addEven
     });
     el.addEventListener('change', () => { el.value = GM_getValue(key, def); });   // a typed value out of range snaps back
 });
-// #851: String Theory's settings open these settings on any page, whether this script runs here or not
-document.addEventListener('mbu-open-settings', e => { if (e.detail === 'platform_check' && !e.defaultPrevented) { e.preventDefault(); if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); } });
-if (SETTINGS_ONLY) { if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); return; }
 // Every line goes through here, its platform as the line's category (#697).
 function appendLog(platform, msg, kind = 'info') {
     PC_LOG.cat(platform).add(kind, msg);
@@ -4563,6 +4560,10 @@ const QOBUZ = {
 const qbRead     = () => { try { return JSON.parse(localStorage.getItem(QOBUZ.store) || 'null'); } catch { return null; } };
 const qbWrite    = t  => { try { t ? localStorage.setItem(QOBUZ.store, JSON.stringify(t)) : localStorage.removeItem(QOBUZ.store); } catch {} };
 const qbLoggedIn = () => { const t = qbRead(); return !!(t && t.token); };
+// Below the helpers its settings call: a click any higher dies on them, uninitialized, and no window opens
+// #851: String Theory's settings open these settings on any page, whether this script runs here or not
+document.addEventListener('mbu-open-settings', e => { if (e.detail === 'platform_check' && !e.defaultPrevented) { e.preventDefault(); if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); } });
+if (SETTINGS_ONLY) { if (providerModal.parentNode !== document.documentElement) document.documentElement.appendChild(providerModal); document.getElementById('mb-token-setup-btn').click(); return; }
 // Compact MD5 (public-domain, Joseph Myers) — Qobuz's user/login wants the password as an MD5 hex
 // digest, which SubtleCrypto can't produce. Only used to sign the login request; nothing is stored.
 function md5(str) {
