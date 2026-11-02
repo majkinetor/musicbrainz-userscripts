@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.200000
+// @version      2026.11.02.200100
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2539,6 +2539,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .art .cover{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;box-shadow:0 18px 40px var(--shadow);display:block;color:transparent;background:var(--chip)}
 .art .cover.ipic{object-fit:contain;padding:8px;box-sizing:border-box;background:#fff}
 .art .nocover{width:100%;aspect-ratio:1;border-radius:14px;background:var(--chip);color:var(--muted);display:grid;place-items:center}
+.art .nocover{position:relative}.imgretry{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);height:30px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--soft);font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;filter:none!important}.imgretry:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}.imgretry:disabled{cursor:default}
 @media (min-width:701px){.art:has(>.nocover.pg){flex-basis:clamp(150px,13vw,190px)}}
 .art .rnc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.rnc svg{opacity:.55}.rnc small{font-size:13px}
 .rnc-add{font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text)!important;text-decoration:none!important}.rnc-add:hover{background:var(--hover)}
@@ -5939,6 +5940,17 @@ function picHtml(g, cls, none) {
     return `<div class="picw"><img class="cover ${cls}${more ? ' rot' : ''}" src="${esc(x.src)}" alt="${esc(g.title)}" referrerpolicy="no-referrer"${more ? ` data-rot data-tip="${i + 1} of ${xs.length}: click for ${esc(xs[(i + 1) % xs.length].from)}"` : ''}>${x.badge ? `<img class="imgflag" src="${esc(x.badge)}" alt="" referrerpolicy="no-referrer">` : ''}<a class="imgsrc" href="${esc(x.url)}" target="_blank" rel="noopener" data-tip="From ${esc(x.from)}">${stIcon(x.key, 18)}</a></div>`;
 }
 const artistImage = (mbid, rels) => ARTIMG.findAll(mbid, rels.filter(x => x['target-type'] === 'url').map(x => x.url.resource));
+// an artist or label left without a picture asks its linked sites again, over the cached miss; nothing linked, nothing to ask
+const imgRetryBtn = g => g.imgs && !g.imgs.length && g.rels.some(x => x['target-type'] === 'url') ? `<button type="button" class="imgretry" data-imgretry${g.imgBusy ? ' disabled' : ''}>${g.imgBusy ? 'Looking…' : 'Retry image'}</button>` : '';
+async function imgRetry() {
+    const d = data, g = d.g, draw = () => { if (data === d) { const y = scrollY; render(); scrollTo(0, y); } };
+    g.imgBusy = true; draw();
+    ARTIMG.forget(g.id);
+    const x = await artistImage(g.id, g.rels).catch(() => []);
+    g.imgBusy = false; g.imgsAll = ARTIMG.cachedAll(g.id) || x; g.imgs = x; g.imgI = 0;
+    draw();
+    if (!x.length && data === d) toast('No image on its linked sites');
+}
 const AR_ACTS = [
     ['edit', 'Edit', 'Edit artist', ACTS[0][3]],
     ['tags', 'Tags', 'Tags', CI_TAG],
@@ -6009,7 +6021,7 @@ function lbHero(d) {
         ['MBID', `<span>${copyB(g.id)}</span>`, 'wide', 'mbid'],
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
-    const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}</div>`);
+    const pic = picHtml(g, 'lpic', `<div class="nocover">${SVG(CI_TAG).replace(/width="18" height="18"/, 'width="96" height="96"').replace('stroke-width="2"', 'stroke-width=".8"')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
@@ -6036,7 +6048,7 @@ function arHero(d) {
         ['', g.links.length && rlQuiet(g), 'wide', 'links'],
     ];
     const tags = on('tags') ? tagsMore(g.tags) : '';
-    const pic = picHtml(g, 'apic', `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}</div>`);
+    const pic = picHtml(g, 'apic', `<div class="nocover">${IC_NAME.replace('width="16" height="16"', 'width="96" height="96"').replace('stroke-width="1.6"', 'stroke-width=".6"')}${imgRetryBtn(g)}</div>`);
     return `<section class="hero">
         <div class="art">${pic}${under(g, tags)}</div>
         <div class="facts-col">
@@ -8600,6 +8612,7 @@ function onClick(ev) {
     if ('lmmenu' in d) { const m = b.nextElementSibling, o = !m.classList.contains('open'); document.querySelectorAll('.dmenu.open').forEach(x => x.classList.remove('open')); m.classList.toggle('open', o); return; }
     if (d.lmgo) { lmMore(d.lmgo); return; }
     if (d.aliases) { openAliases(); return; }
+    if ('imgretry' in d) { imgRetry(); return; }
     if (d.tsort) { const sid = b.closest('section').id.slice(2), i = +d.tsort, t = tsGet(sid) || []; tsSet(sid, t[0] !== i ? [i, 1] : t[1] > 0 ? [i, -1] : []); const y = scrollY; render(); scrollTo(0, y); return; }
     if (d.plcfg) { openPlCfg(b, d.plcfg === '1' ? '' : d.plcfg); return; }
     if (d.arcol) arCol.set(d.arcol, d.va !== 'true');
@@ -10081,7 +10094,7 @@ async function show(key, o = {}) {
         if (d.wk) d.wk.then(() => { if (n === showing && data === d) render(); });
         if (d.disc) d.disc.then(x => { if (n === showing && data === d && x) { d.discX = x; render(); } });
         if (d.rcount) d.rcount.then(x => { if (n === showing && data === d && x) { d.rcX = x; if (d.discX && S.dgView === 'table') render(); } });
-        if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length) render(); } });
+        if (d.img) d.img.then(x => { if (n === showing && data === d) { d.g.imgsAll = ARTIMG.cachedAll(d.g.id) || x; d.g.imgs = x; if (x.length || imgRetryBtn(d.g)) render(); } });
         if (d.wiki) d.wiki.then(x => { if (n === showing && data === d && x) { d.wikiX = x; render(); } });
         d.covers.then(x => { if (n === showing && data === d && x.length) { d.rel.images = x; if (x.some(i => i.front)) d.rel.front = true; render(); } });
         // a cover kept before draws from the kept image; a new one is only kept, as the page already shows it
