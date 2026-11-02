@@ -32,6 +32,7 @@ Who you post as depends on where you run:
 - **In the cloud** there is no bot token, and that's intended: run as the environment's own GitHub identity (the maintainer's). The activity is already labelled "with Claude", so it stays distinguishable without the extra account — don't try to source a bot token or any secret.
 The rest applies whoever you post as:
 
+- **When a link to a GitHub issue is the first thing dropped into a new session**, rename the session after the issue (its number and title), read the issue and every comment in full, and carry out the instructions in it and in the chat. The issue is the task; the chat message that came with the link adds to it or overrides it.
 - Before creating or renaming an issue, or touching a `CHANGELOG.md`, read [Standard 1](STANDARDS.general.md#standard-1) (titles, changelog) and [Standard 2](STANDARDS.general.md#standard-2) (labels).
 - Post comments via `gh … --body-file <real .md>`, never an inline `--body` built from a JS/template string (it posts literal `` \` `` / `\n`); don't backslash-escape markdown.
 - Don't write `#1` / `#2` for "list point N" — GitHub links `#N` to issue/PR N.
