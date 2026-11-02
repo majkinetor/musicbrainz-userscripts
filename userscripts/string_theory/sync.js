@@ -1,5 +1,6 @@
 // External storage (#885). Providers are bundled locally; no remotely loaded code.
 var ST_DROPBOX_KEY = 'g73mzw3yp0xqgtd';
+var ST_DROPBOX_REDIRECT = 'https://musicbrainz.org/?st-dropbox=callback';
 var ST_SYNC_PATH = '/string-theory.json';
 var stSyncBusy = false, stSyncTimer = null;
 function stSyncFetch(url, options) {
@@ -42,7 +43,7 @@ function stSyncAuthorizer(persist) {
   var auth = GM_getValue('string_theory.sync.auth', {}) || {};
   var tokens = Object.assign({}, auth);
   function save(k, v) { if (v) tokens[k] = v; else delete tokens[k]; if (persist !== false) GM_setValue('string_theory.sync.auth', Object.assign({}, tokens)); }
-  var a = new stSyncProviders.DropboxAuthorizer({ clientId: ST_DROPBOX_KEY, redirectUrl: undefined,
+  var a = new stSyncProviders.DropboxAuthorizer({ clientId: ST_DROPBOX_KEY, redirectUrl: ST_DROPBOX_REDIRECT,
     scope: 'account_info.read files.metadata.read files.content.read files.content.write',
     onSetAccessToken: function (v) { save('accessToken', v); }, onSetRefreshToken: function (v) { save('refreshToken', v); },
   }, auth);
@@ -71,7 +72,8 @@ function stSyncDropbox(authorizer) {
       var blob = await request('https://content.dropboxapi.com/2/files/download', {
         method: 'POST', headers: { 'Dropbox-API-Arg': JSON.stringify({ path: ST_SYNC_PATH, rev: meta.rev }) }, responseType: 'blob',
       });
-      return { rev: meta.rev, data: stSyncStorage.read(await blob.text()) };
+      var info = {}, data = stSyncStorage.read(await blob.text(), info);
+      return { rev: meta.rev, data: data, filtered: info.filtered };
     },
     write: async function (data, rev) {
       var text = JSON.stringify(stSyncStorage.document(data));
@@ -95,27 +97,71 @@ async function stSyncConnect() {
   if (stSyncBusy) return;
   var authorizer = stSyncAuthorizer(false);
   var url = await authorizer.buildAuthUrl();
-  // No redirect: Dropbox displays a code. The verifier remains in this tab and is never exported.
-  stSyncAuthPending = { authorizer: authorizer, at: Date.now() };
-  window.open(url, '_blank', 'noopener');
+  // The callback runs in the same userscript namespace, including when this tab was reloaded.
+  var pending = { state: authorizer.session.state, codeVerifier: authorizer.session.codeVerifier, at: Date.now() };
+  GM_setValue('string_theory.sync.oauth', pending);
+  stSyncAuthPending = { state: pending.state, at: pending.at };
+  if (typeof GM_openInTab === 'function') GM_openInTab(url, { active: true, insert: true });
+  else window.open(url, '_blank', 'noopener');
   stSyncPaint();
 }
 var stSyncAuthPending = null;
-async function stSyncFinish(code) {
-  if (!stSyncAuthPending || Date.now() - stSyncAuthPending.at > 10 * 60e3) throw new Error('Authorization expired. Connect again.');
-  var a = stSyncAuthPending.authorizer;
-  var callback = new URL('https://musicbrainz.org/');
-  callback.searchParams.set('code', code.trim()); callback.searchParams.set('state', a.session.state);
+async function stSyncFinish(callback) {
+  callback = new URL(String(callback));
+  var pending = GM_getValue('string_theory.sync.oauth');
+  if (!pending || Date.now() - pending.at > 10 * 60e3) throw new Error('Authorization expired. Connect again.');
+  if (callback.origin !== 'https://musicbrainz.org' || callback.pathname !== '/' || callback.searchParams.get('st-dropbox') !== 'callback' || callback.searchParams.get('state') !== pending.state) throw new Error('Authorization callback did not match this connection');
+  if (callback.searchParams.has('error')) throw new Error(callback.searchParams.get('error') === 'access_denied' ? 'Dropbox authorization cancelled' : 'Dropbox authorization failed');
+  var a = stSyncAuthorizer(false);
+  a.session = { state: pending.state, codeVerifier: pending.codeVerifier };
   // Keep the old credentials until the replacement has completed successfully.
   await a.finishAuth(callback);
   var account = await stSyncDropbox(a).account();
+  if ((GM_getValue('string_theory.sync.oauth') || {}).state !== pending.state) throw new Error('A newer Dropbox connection was started');
   GM_setValue('string_theory.sync.auth', a.stSyncTokens);
   var previous = stSyncState();
   if (previous.account && previous.account !== account.id) {
     GM_deleteValue('string_theory.sync.base'); GM_deleteValue('string_theory.sync.stage');
   }
-  stSyncState({ account: account.id, name: account.name, error: '', at: 0, next: 0, failures: 0 });
+  stSyncState({ account: account.id, name: account.name, error: '', notice: '', at: 0, next: 0, failures: 0 });
+  GM_deleteValue('string_theory.sync.oauth');
+  GM_setValue('string_theory.sync.oauth.result', { state: pending.state, ok: true, at: Date.now() });
   stSyncAuthPending = null; stSyncSchedule(); stSyncPaint();
+}
+function stSyncListenAuth() {
+  var pending = GM_getValue('string_theory.sync.oauth');
+  if (pending && Date.now() - pending.at <= 10 * 60e3) stSyncAuthPending = { state: pending.state, at: pending.at };
+  if (typeof GM_addValueChangeListener !== 'function') return;
+  GM_addValueChangeListener('string_theory.sync.oauth.result', function (key, old, result) {
+    if (!result || !stSyncAuthPending || result.state !== stSyncAuthPending.state) return;
+    stSyncAuthPending = null;
+    stSyncSchedule(); stSyncPaint();
+    stUI().mbuToast(result.ok ? 'Connected to Dropbox' : result.error || 'Dropbox authorization failed', result.ok ? {} : { kind: 'error' });
+  });
+}
+async function stSyncCallback() {
+  // Scrub the single-use authorization code before the rest of MusicBrainz draws its links.
+  var url = location.href, state = new URL(url).searchParams.get('state');
+  history.replaceState(null, '', ST_DROPBOX_REDIRECT);
+  var message;
+  try { await stSyncFinish(url); message = 'Connected to Dropbox. You can close this tab.'; }
+  catch (e) {
+    message = stSyncError(e);
+    var pending = GM_getValue('string_theory.sync.oauth');
+    if (pending && pending.state === state) {
+      GM_deleteValue('string_theory.sync.oauth');
+      GM_setValue('string_theory.sync.oauth.result', { state: state, ok: false, error: message, at: Date.now() });
+    }
+  }
+  function show() {
+    var box = document.createElement('div');
+    box.style.cssText = 'max-width:560px;margin:48px auto;padding:20px;font:16px/1.5 system-ui,sans-serif';
+    var h = document.createElement('h1'); h.textContent = 'String Theory';
+    var p = document.createElement('p'); p.textContent = message;
+    box.append(h, p); document.body.replaceChildren(box);
+    if (message.indexOf('Connected') === 0) window.close();
+  }
+  if (document.body) show(); else document.addEventListener('DOMContentLoaded', show, { once: true });
 }
 function stSyncDisconnect() {
   var old = stSyncState(), stage = GM_getValue('string_theory.sync.stage');
@@ -125,11 +171,15 @@ function stSyncDisconnect() {
   }
   GM_deleteValue('string_theory.sync.auth'); GM_deleteValue('string_theory.sync.base');
   stSyncAuthPending = null;
+  GM_deleteValue('string_theory.sync.oauth');
+  GM_deleteValue('string_theory.sync.oauth.result');
   GM_setValue('string_theory.sync.settings', Object.assign(stSyncSettings(), { automatic: false }));
   GM_setValue('string_theory.sync.state', old.account ? { account: old.account } : {});
   stSyncSchedule(); stSyncPaint();
 }
-async function stSyncRun(manual) {
+async function stSyncRun(manual, mode) {
+  mode = mode || 'sync';
+  if (['sync', 'push', 'pull'].indexOf(mode) < 0) throw new Error('Unknown sync action');
   if (stSyncBusy) return;
   async function run() {
     var state = stSyncState(), settings = stSyncSettings();
@@ -141,9 +191,17 @@ async function stSyncRun(manual) {
       for (var attempt = 0; attempt < 4; attempt++) {
         var remote = await drive.read(), local = stSyncStorage.effective();
         var base = GM_getValue('string_theory.sync.base');
-        var conflicts = [], merged = remote.data ? stSyncStorage.merge(base, local, remote.data, settings.conflict, conflicts) : local;
+        if (mode === 'pull' && !remote.data) {
+          stSyncState({ notice: 'No Dropbox backup yet. Local data unchanged.', error: '' });
+          if (manual) stUI().mbuToast('No Dropbox backup yet. Local data unchanged.');
+          return;
+        }
+        var conflicts = [], merged;
+        if (mode === 'pull') merged = remote.data;
+        else if (mode === 'push') merged = { gm: local.gm, local: Object.assign({}, remote.data && remote.data.local || {}, local.local) };
+        else merged = remote.data ? stSyncStorage.merge(base, local, remote.data, settings.conflict, conflicts) : local;
         try {
-          if (stSyncData.stable(merged) !== stSyncData.stable(remote.data)) await drive.write(merged, remote.rev);
+          if (mode !== 'pull' && (remote.filtered || stSyncData.stable(merged) !== stSyncData.stable(remote.data))) await drive.write(merged, remote.rev);
         } catch (e) {
           if (e.response && e.response.status === 409 && /conflict/.test(e.cause && e.cause.error_summary || '') && attempt < 3) continue;
           throw e;
@@ -151,10 +209,10 @@ async function stSyncRun(manual) {
         // A user may have changed settings during the request; keep those edits for the next run.
         var after = stSyncStorage.effective();
         var pending = stSyncStorage.merge(local, after, merged, 'local');
-        if (stSyncData.stable(pending) !== stSyncData.stable(after)) stSyncStorage.stage(pending);
+        if (mode !== 'push' && stSyncData.stable(pending) !== stSyncData.stable(after)) stSyncStorage.stage(pending);
         GM_setValue('string_theory.sync.base', merged);
-        stSyncState({ at: Date.now(), next: Date.now() + settings.minutes * 60e3, error: '', failures: 0, conflicts: conflicts.length });
-        if (manual) stUI().mbuToast(stSyncStorage.pending() ? 'Synced. Reload to apply downloaded changes.' : 'Synced with Dropbox');
+        stSyncState({ at: Date.now(), next: Date.now() + settings.minutes * 60e3, error: '', notice: '', failures: 0, conflicts: conflicts.length });
+        if (manual) stUI().mbuToast(stSyncStorage.pending() ? (mode === 'pull' ? 'Pulled from Dropbox.' : 'Synced.') + ' Reload to apply downloaded changes.' : mode === 'push' ? 'Pushed to Dropbox' : mode === 'pull' ? 'Pulled from Dropbox' : remote.data ? 'Synced with Dropbox' : 'Created the first Dropbox backup');
         return;
       }
     } catch (e) {
@@ -186,7 +244,7 @@ async function stSyncRun(manual) {
 function stSyncSchedule() {
   if (stSyncTimer) clearInterval(stSyncTimer);
   stSyncTimer = null;
-  if (!ST_ON_MB || !stSyncSettings().automatic || !GM_getValue('string_theory.sync.auth', {}).refreshToken) return;
+  if ((typeof __stSyncCallbackOnly !== 'undefined' && __stSyncCallbackOnly) || !ST_ON_MB || !stSyncSettings().automatic || !GM_getValue('string_theory.sync.auth', {}).refreshToken) return;
   stSyncTimer = setInterval(function () { stSyncRun(false).catch(function () {}); }, 60000);
   stSyncRun(false).catch(function () {});
 }
@@ -197,10 +255,9 @@ function stSyncDownload(doc, name) {
 function stSyncMarkup() {
   return '<p class="st-cap">Settings, saved data and credentials travel between devices. Caches, logs, recent activity, temporary work and device layout stay here.</p>'
     + '<div class="st-row"><span class="st-lbl">Provider</span><span>Dropbox</span><button class="st-b" type="button" id="st-sync-connect">Connect Dropbox</button><button class="st-b" type="button" id="st-sync-disconnect" hidden>Disconnect</button></div>'
-    + '<div class="st-row" id="st-sync-auth" hidden><label for="st-sync-code">Authorization code</label><input id="st-sync-code" type="password" autocomplete="off"><button class="st-b" type="button" id="st-sync-finish">Connect</button></div>'
     + '<div class="st-row"><label><input id="st-sync-auto" type="checkbox"> Automatic sync</label><label for="st-sync-minutes">Every</label><select id="st-sync-minutes"><option value="5">5 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">1 hour</option><option value="360">6 hours</option><option value="1440">1 day</option></select></div>'
     + '<div class="st-row"><label for="st-sync-conflict">Conflicting changes</label><select id="st-sync-conflict"><option value="remote">Use Dropbox’s value</option><option value="local">Use this device’s value</option></select></div>'
-    + '<div class="st-row"><button class="st-b" type="button" id="st-sync-now">Sync now</button><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-status" role="status"></span></div>'
+    + '<div class="st-row"><button class="st-b" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-status" role="status"></span></div>'
     + '<h3 class="st-h">Backup</h3><div class="st-row"><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden><button class="st-b" type="button" id="st-sync-recovery" hidden>Export recovery copy</button></div>'
     + '<p class="st-cap">Backups include credentials. Downloaded changes apply on the next page load. Automatic sync runs while MusicBrainz is open.</p>';
 }
@@ -209,22 +266,24 @@ function stSyncPaint() {
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
   var auth = GM_getValue('string_theory.sync.auth', {}) || {}, state = stSyncState(), settings = stSyncSettings(), connected = !!auth.refreshToken;
   q('connect').textContent = connected ? 'Reconnect Dropbox' : 'Connect Dropbox';
-  q('disconnect').hidden = !connected; q('auth').hidden = !stSyncAuthPending;
+  q('disconnect').hidden = !connected;
   q('auto').checked = settings.automatic; q('minutes').value = String(settings.minutes); q('conflict').value = settings.conflict;
   q('now').disabled = stSyncBusy || !connected; q('connect').disabled = stSyncBusy; q('disconnect').disabled = stSyncBusy;
+  q('push').disabled = stSyncBusy || !connected; q('pull').disabled = stSyncBusy || !connected;
   q('reload').hidden = !stSyncStorage.pending(); q('recovery').hidden = !GM_getValue('string_theory.sync.recovery');
-  q('status').textContent = stSyncBusy ? 'Syncing…' : state.error || (state.at ? 'Last sync: ' + new Date(state.at).toLocaleString() : connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected');
+  q('status').textContent = stSyncBusy ? 'Syncing…' : state.error || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (state.at ? 'Last sync: ' + new Date(state.at).toLocaleString() : connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected'));
 }
 function stSyncBind(panel) {
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
   var action = function (fn) { return function () { Promise.resolve().then(fn).catch(function (e) { stUI().mbuToast(stSyncError(e), { kind: 'error' }); }).finally(stSyncPaint); }; };
   q('connect').onclick = action(stSyncConnect);
-  q('finish').onclick = action(async function () { q('finish').disabled = true; try { await stSyncFinish(q('code').value); q('code').value = ''; } finally { q('finish').disabled = false; } });
   q('disconnect').onclick = stSyncDisconnect;
   q('auto').onchange = function () { stSyncSaveSettings({ automatic: q('auto').checked }); };
   q('minutes').onchange = function () { stSyncSaveSettings({ minutes: +q('minutes').value }); };
   q('conflict').onchange = function () { stSyncSaveSettings({ conflict: q('conflict').value }); };
   q('now').onclick = action(function () { return stSyncRun(true); });
+  q('push').onclick = action(function () { return stSyncRun(true, 'push'); });
+  q('pull').onclick = action(function () { return stSyncRun(true, 'pull'); });
   q('reload').onclick = function () { location.reload(); };
   q('export').onclick = action(function () { stSyncDownload(stSyncStorage.document(stSyncStorage.effective()), 'string-theory-backup.json'); });
   q('recovery').onclick = action(function () { stSyncDownload(GM_getValue('string_theory.sync.recovery'), 'string-theory-recovery.json'); });

@@ -112,7 +112,7 @@ for (const p of parts) for (const [k, v] of p.meta) {
   out.push([k, v]);
 }
 // the bundle's own grants: the on/off list and the settings window below (#693, #851)
-for (const g of ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
+for (const g of ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'GM_openInTab', 'GM_addValueChangeListener', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
   if (!seen.has(`grant\t${g}`)) { seen.add(`grant\t${g}`); out.push(['grant', g]); }
 }
 for (const host of ['api.dropbox.com', 'api.dropboxapi.com', 'content.dropboxapi.com']) {
@@ -223,7 +223,8 @@ const PALETTE = readFileSync(resolve(HERE, 'palette.js'), 'utf8').replace(/\r\n/
 const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
 const SYNC_DATA = ['sync-data.js', 'sync-policy.js', 'sync-storage.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
 const SYNC = ['providers.js', 'sync.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
-const toggles = `${SYNC_DATA}
+const toggles = `var __stSyncCallbackOnly = location.origin === 'https://musicbrainz.org' && location.pathname === '/' && /[?&]st-dropbox=callback(?:&|$)/.test(location.search);
+${SYNC_DATA}
 stSyncStorageInit();
 ${themeRuntime}
 var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
@@ -252,6 +253,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   function stUI() { return stUIBlock || (stUIBlock = ${UI_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
   function stTokens() { return stTokensBlock || (stTokensBlock = ${TOKENS_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
   ${SYNC.replace(/\n/g, '\n  ').replace(/^[ \t]+$/gm, '').trimEnd()}
+  if (__stSyncCallbackOnly) { stSyncCallback(); return; }
   ${SETTINGS.replace(/\n/g, '\n  ').trimEnd()}
   ${PALETTE.replace(/\n/g, '\n  ').trimEnd()}
   ${NEWS.replace(/\n/g, '\n  ').trimEnd()}
@@ -263,6 +265,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   document.addEventListener('mbu-st-palette', palette);
   // String Theory's icon shows even on a page none of its scripts puts a launcher on
   if (ST_ON_MB) {
+    stSyncListenAuth();
     try { stSyncSchedule(); } catch (e) {}
     try { stNewsStart(); } catch (e) {}
     var first = function () { try { mbRestackCorner('br'); } catch (e) {} };
@@ -274,6 +277,7 @@ var __stInFrame = (function () { try { return window.top !== window.self; } catc
 var __stSkipped = [];
 var __stRunsHere = ${runsHere.toString()};
 function __stRuns(name, rules) {
+  if (__stSyncCallbackOnly) return false;
   var yes; try { yes = __stRunsHere(rules, location.href, __stInFrame); } catch (e) { yes = true; }
   if (!yes) __stSkipped.push(name);
   return yes;
@@ -283,6 +287,7 @@ function __stRuns(name, rules) {
 // Horizon's page (FOLLOWS_EH) starts there, once, the first time it shows such a page.
 var __stWaiting = [];
 function __stLater(name, rules, go) {
+  if (__stSyncCallbackOnly) return;
   if (__stInFrame) return;
   __stWaiting.push({ name: name, rules: rules, go: go });
   if (__stWaiting.length > 1) return;

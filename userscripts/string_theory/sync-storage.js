@@ -84,9 +84,11 @@ function stSyncStore(io) {
     return D.stable(actual.gm) !== D.stable(target.gm) || origin && D.stable(actual.local[origin]) !== D.stable(target.local[origin]);
   }
   function document(data) { return { format: 'string-theory-sync', version: 1, at: Date.now(), data: data }; }
-  function read(text) {
+  function read(text, info) {
     if (text.length > 10 * 1024 * 1024) throw new Error('Backup exceeds 10 MB');
-    return filter(D.validate(JSON.parse(text)).data);
+    var data = D.validate(JSON.parse(text)).data, filtered = filter(data);
+    if (info) info.filtered = D.stable(filtered) !== D.stable(data);
+    return filtered;
   }
   return { capture: capture, effective: effective, merge: merge, stage: stage, apply: apply, applyPending: applyPending, pending: pending, document: document, read: read, filter: filter };
 }
@@ -98,7 +100,7 @@ function stSyncStorageInit() {
     gm: { keys: function () { return GM_listValues(); }, get: function (k) { return GM_getValue(k); }, set: function (k, v) { GM_setValue(k, v); }, del: function (k) { GM_deleteValue(k); } },
     local: { keys: function () { return Object.keys(localStorage); }, get: function (k) { var v = localStorage.getItem(k); return v === null ? undefined : v; }, set: function (k, v) { localStorage.setItem(k, String(v)); }, del: function (k) { localStorage.removeItem(k); } },
   });
-  if (origin) try { stSyncStorage.applyPending(); } catch (e) { console.error('[String Theory] sync could not apply saved changes; recovery retained'); }
+  if (origin && !/[?&]st-dropbox=callback(?:&|$)/.test(location.search || '')) try { stSyncStorage.applyPending(); } catch (e) { console.error('[String Theory] sync could not apply saved changes; recovery retained'); }
 }
 // A member may keep a settings object alive in a second tab. Preserve remote changes to fields
 // that member hasn't edited, rather than saving its stale whole object over a newly synced value.

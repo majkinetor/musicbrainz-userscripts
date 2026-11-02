@@ -5,9 +5,11 @@ function stSyncAllow(kind, key, path) {
   if (kind === 'local' && !/^(?:mbu[.:]|mbtools:|apollo(?:Editor[.:]|:)|artstation:|ch[.:]|eh[.:]|falcon:|fc[.:]|fusion[.:]|gt[.:-]|ii:|mc[.:]|pc:|mammoth[.:-]|string_theory[.:]|st:)/.test(key)) return false;
   // Retained data and state which is never authoritative on another device.
   if (/^string_theory\.sync\.(?:state|base|stage|recovery|lease|origins)$/.test(key)) return false;
+  if (/^string_theory\.sync\.oauth(?:\.|$)/.test(key)) return false;
   if (/^(?:areaImg|avatars|collections|profile|visits|searches|ae-tp-recent|gt-txp-recent|gt-role-history|aiScanLast)$/.test(key)) return false;
   if (/(?:logwin|log-window|:session:|:log(?:$|:)|:bg-log$|(?:^|[.:-])winstate$|dialogSize$|:col_widths$|^gt-tp-ecol$)/i.test(key)) return false;
-  if (/(?:cache(?:$|[.:])|^mbu[.:]artimg|^mbu:mb-gate|^mbu[.:]claim|^mbu[.:]owner|extLinksHeading|^eh\.(?:kept|ratings|relhd)|^pc:apple-storefronts)/i.test(key)) return false;
+  if (/(?:cache(?:$|[.:-])|^mbu[.:]artimg|^mbu:mb-gate|^mbu[.:]claim|^mbu[.:]owner|extLinksHeading|^eh\.(?:kept|ratings|relhd)|^pc:(?:mbdata:|apple-storefronts)|^ch:ls-pruned$)/i.test(key)) return false;
+  if (key === 'discogs-importer-log-open') return false;
   if (/^apollo\.picks\..*\.open$/.test(key)) return false;
   if (/^artstation:typeNames:/.test(key)) return false;
   if (/(?:pending|handoff|harvest|oauth_oob_code|beatport_close|reloadedAfterImport|:match-changed|:bg-barcode|:pasted-barcode|:picked-catno|:forced:|^gt:createTab|^mc\.after)/i.test(key)) return false;

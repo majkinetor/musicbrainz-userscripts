@@ -85,9 +85,17 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 ## Sync and backup
 
-Open String Theory's settings → **Sync** → **Connect Dropbox**. Authorize the app in Dropbox, copy the code it displays, then paste it into **Authorization code** and press **Connect**. Connect each device to the same Dropbox account.
+Open String Theory's settings → **Sync** → **Connect Dropbox** and authorize the app. The new tab returns to MusicBrainz and finishes the connection automatically. Connect each device to the same Dropbox account.
 
-**Sync now** merges your settings and saved data with Dropbox. **Automatic sync** repeats this while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **Conflicting changes** chooses which one wins. Star additions and removals are merged separately.
+| Action | What it does                                                               |
+| ------ | -------------------------------------------------------------------------- |
+| Sync   | Merges this device with Dropbox                                            |
+| Push   | Replaces Dropbox's portable data with this device's                        |
+| Pull   | Replaces this device's portable data with Dropbox's, on the next page load |
+
+**Automatic sync** runs **Sync** while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **Conflicting changes** chooses which one wins. Star additions and removals are merged separately.
+
+With no Dropbox backup yet, **Sync** and **Push** create one; **Pull** leaves local data unchanged. On the first sync with an existing backup, stars from both sides are combined and conflicting settings use **Conflicting changes**. An absent star only counts as a removal after a previous sync. **Push** keeps Dropbox's saved data for other MusicBrainz servers.
 
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 

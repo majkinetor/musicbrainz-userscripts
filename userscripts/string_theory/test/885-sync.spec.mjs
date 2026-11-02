@@ -88,6 +88,23 @@ test('malformed, unsafe and newer backup formats fail before touching storage', 
   expect(allow('gm', 'ii:oauth_access_token', [])).toBe(true);
 });
 
+test('cache namespaces are excluded from export and from older imported backups', { tag: '@unit' }, () => {
+  const cached = {
+    'pc:mbdata:44e85631-d6b2-44a9-bd72-e270b80b578d': '{"title":"cached"}',
+    'pc:cache:v2:spotify:release': '{"url":"cached"}',
+    'apollo:discogs-link-cache-v1': '{"resolve":{}}',
+    'ch:ls-pruned': '2026-11-02', 'eh.relhd': '{}', 'mbu:artimg': '{}',
+  };
+  const a = device({ 'ii:match_cache_days': 30, 'ii:oauth_refresh_token': 'keep-credential' }, cached);
+  expect(a.s.capture().local[a.io.origin]).toEqual({});
+  expect(a.s.capture().gm['ii:match_cache_days'].value).toBe(30);
+  const old = a.s.document({ gm: {}, local: { [a.io.origin]: Object.fromEntries(Object.entries(cached).map(([k, v]) => [k, value(v)])) } });
+  const filtered = a.s.read(JSON.stringify(old));
+  expect(filtered.local[a.io.origin]).toEqual({});
+  a.s.apply(filtered);
+  for (const [k, v] of Object.entries(cached)) expect(a.io.local.get(k)).toBe(v);
+});
+
 function runtime(gmSeed, backend) {
   const gm = memory({ 'string_theory.sync.auth': { accessToken: { token: 'test-access', expiresAt: Date.now() + 3600000 }, refreshToken: { token: 'test-refresh' } }, ...gmSeed });
   const ls = memory(), messages = [];
@@ -168,7 +185,7 @@ test('OAuth uses PKCE and never replaces working credentials after a failed reco
     expect(opts.url).toBe('https://api.dropbox.com/oauth2/token');
     expect(form.get('client_id')).toBe('g73mzw3yp0xqgtd');
     expect(form.get('code')).toBe('test-code'); expect(form.get('code_verifier').length).toBeGreaterThanOrEqual(43);
-    expect(form.has('client_secret')).toBe(false); expect(form.has('redirect_uri')).toBe(false);
+    expect(form.has('client_secret')).toBe(false); expect(form.get('redirect_uri')).toBe('https://musicbrainz.org/?st-dropbox=callback');
     return { status: 400, text: '{"error":"invalid_grant"}' };
   });
   const before = structuredClone(a.gm.get('string_theory.sync.auth'));
@@ -177,9 +194,71 @@ test('OAuth uses PKCE and never replaces working credentials after a failed reco
   expect(url.searchParams.get('code_challenge_method')).toBe('S256');
   expect(url.searchParams.get('code_challenge')).toMatch(/^[\w-]{43}$/);
   expect(url.searchParams.get('token_access_type')).toBe('offline');
-  expect(url.searchParams.has('redirect_uri')).toBe(false);
-  await expect(a.finish('test-code')).rejects.toMatchObject({ status: 400 });
+  expect(url.searchParams.get('redirect_uri')).toBe('https://musicbrainz.org/?st-dropbox=callback');
+  const callback = new URL(url.searchParams.get('redirect_uri'));
+  callback.searchParams.set('state', url.searchParams.get('state')); callback.searchParams.set('code', 'test-code');
+  const backup = a.store.capture();
+  expect(backup.gm['string_theory.sync.oauth']).toBeUndefined();
+  await expect(a.finish(callback.href)).rejects.toMatchObject({ status: 400 });
   expect(a.gm.get('string_theory.sync.auth')).toEqual(before);
+});
+
+test('OAuth rejects wrong state and expired callbacks before making a request', { tag: '@unit' }, async () => {
+  let requests = 0;
+  const a = runtime({}, async () => { requests++; throw new Error('No network expected'); });
+  await a.connect();
+  const pending = a.gm.get('string_theory.sync.oauth');
+  const callback = new URL('https://musicbrainz.org/?st-dropbox=callback&code=bad&state=wrong');
+  await expect(a.finish(callback.href)).rejects.toThrow('did not match');
+  expect(a.gm.get('string_theory.sync.oauth')).toEqual(pending);
+  callback.searchParams.set('state', pending.state); pending.at = Date.now() - 11 * 60e3;
+  await expect(a.finish(callback.href)).rejects.toThrow('expired'); expect(requests).toBe(0);
+});
+
+test('first sync on an empty Dropbox creates the initial backup without deleting local data', { tag: '@unit' }, async () => {
+  const server = cloud(null), a = runtime({ saved: { local: true }, view: { stars: [{ key: 'artist/a' }], width: 700 } }, server.request);
+  await a.run(true);
+  expect(server.uploads).toBe(1); expect(server.data.gm.saved.value).toEqual({ local: true });
+  expect(a.gm.get('view').stars).toHaveLength(1); expect(a.store.pending()).toBe(false);
+  expect(a.messages).toContain('Created the first Dropbox backup');
+});
+
+test('Push replaces remote portable values and retains other origins; Pull never uploads', { tag: '@unit' }, async () => {
+  const remote = device({ saved: { remoteOnly: true }, remoteOnly: 'remove', view: { stars: [{ key: 'artist/b' }] } }).s.capture();
+  remote.local['https://musicbrainz.org'] = { 'mbtools:qobuz': value('other-origin') };
+  const server = cloud(remote), a = runtime({ saved: { local: true }, localOnly: 'push', view: { stars: [{ key: 'artist/a' }], width: 700 } }, server.request);
+  await a.run(true, 'push');
+  expect(server.data.gm.saved.value).toEqual({ local: true }); expect(server.data.gm.remoteOnly).toBeUndefined();
+  expect(server.data.gm.view.value.stars).toEqual([{ key: 'artist/a' }]);
+  expect(server.data.local['https://musicbrainz.org']).toEqual(remote.local['https://musicbrainz.org']);
+  expect(a.gm.get('remoteOnly')).toBeUndefined();
+  server.data.gm.saved = value({ fromDropbox: true }); delete server.data.gm.localOnly;
+  server.data.gm.view.value.stars = [{ key: 'artist/c' }]; server.rev++;
+  const uploads = server.uploads;
+  await a.run(true, 'pull'); expect(server.uploads).toBe(uploads);
+  expect(a.gm.get('localOnly')).toBe('push'); // staged until reload
+  a.store.applyPending();
+  expect(a.gm.get('saved')).toEqual({ fromDropbox: true }); expect(a.gm.get('localOnly')).toBeUndefined();
+  expect(a.gm.get('view')).toEqual({ stars: [{ key: 'artist/c' }], width: 700 });
+});
+
+test('Pull from a missing Dropbox backup changes neither side nor the previous baseline', { tag: '@unit' }, async () => {
+  const server = cloud(null), a = runtime({ saved: 'keep', 'string_theory.sync.base': { sentinel: true } }, server.request);
+  await a.run(true, 'pull');
+  expect(server.uploads).toBe(0); expect(server.data).toBeNull(); expect(a.gm.get('saved')).toBe('keep');
+  expect(a.gm.get('string_theory.sync.base')).toEqual({ sentinel: true }); expect(a.store.pending()).toBe(false);
+  expect(a.messages).toContain('No Dropbox backup yet. Local data unchanged.');
+});
+
+test('Sync cleans excluded cache entries out of an older remote snapshot', { tag: '@unit' }, async () => {
+  const server = cloud(null), a = runtime({ saved: 'keep' }, server.request);
+  await a.run(true);
+  server.data.local['https://test.musicbrainz.org']['pc:mbdata:fixture'] = value('old cache'); server.rev++;
+  const before = server.uploads;
+  await a.run(true);
+  expect(server.uploads).toBe(before + 1);
+  expect(server.data.local['https://test.musicbrainz.org']['pc:mbdata:fixture']).toBeUndefined();
+  expect(server.data.gm.saved.value).toBe('keep');
 });
 test('disconnect cannot be undone by a previously staged credential download', { tag: '@unit' }, () => {
   const a = runtime({ view: { stars: [] } }, async () => { throw new Error('No network expected'); });
