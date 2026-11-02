@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.03.004500
+// @version      2026.11.02.203439
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5851,7 +5851,7 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
       #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
       #tc-alias .tc-al-opt:hover{background:var(--mbu-border)}
-      #tc-alias .tc-al-opt.on{background:var(--mbu-accent);color:#fff}
+      #tc-alias .tc-al-opt.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
       #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x,#tc-alias .tc-al-c{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
       #tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
       #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p,.tc-al-c):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}

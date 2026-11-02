@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.02.180000
+// @version      2026.11.02.203439
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -6988,7 +6988,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-toolbtns{display:contents}   /* #280: its buttons/groups are direct flex items of .tc-tools so they wrap to the left edge */
     .tc-toolbtn{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:4px 9px;font:13px Arial;color:var(--mbu-text-dim);cursor:pointer;white-space:nowrap;flex:none}
     .tc-toolbtn:hover{border-color:var(--mbu-accent);background:var(--mbu-bg-hover)}
-    .tc-toolbtn.active{background:var(--mbu-accent);border-color:var(--mbu-accent);color:var(--mbu-text-on-accent);font-weight:600}
+    .tc-toolbtn.active{background:var(--mbu-accent-soft);border-color:var(--mbu-accent-soft);color:var(--mbu-accent-text);font-weight:600}
     .tc-toolbtn .tc-tbic{font-size:13px;line-height:1}
     .tc-icimg{height:14px;width:auto;vertical-align:-2px;display:inline-block}   /* image-based tool icon (bridged tools can ship their own) */
     .tc-mi-ic .tc-icimg{height:15px}
@@ -7127,7 +7127,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     /* #152/#375: Search & Replace — RE toggle, search caret, invalid-regex flag, Saved & History popup */
     .tc-srbtn{cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);font:bold 11px Arial;border-radius:4px;padding:3px 8px;white-space:nowrap}
     .tc-srbtn:hover{background:var(--mbu-bg-hover);border-color:var(--mbu-accent)}
-    .tc-srbtn.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);border-color:var(--mbu-accent)}
+    .tc-srbtn.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-text);border-color:var(--mbu-accent-soft)}
     .tc-sr-find.tc-sr-bad{border-color:var(--mbu-error)!important;background:var(--mbu-bg-raised)}
     /* #409 chain mode — the read-only chain chip replaces the search/replace inputs */
     .tc-sro-chain .tc-sr-find,.tc-sro-chain .tc-sr-rep,.tc-sro-chain .tc-sr-re{display:none}
@@ -7226,8 +7226,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-tc-seg{flex:none;width:30px;box-sizing:border-box;border:none;border-left:1px solid var(--mbu-accent);background:var(--mbu-bg);color:var(--mbu-accent-text);font:bold 12px Arial;height:22px;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}   /* #280: fixed width → the [icon|T] groups line up across rows */
     .tc-tc-seg:first-child{border-left:none}
     .tc-tc-seg:hover{background:var(--mbu-bg-hover)}
-    .tc-tc-seg.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent)}
-    .tc-tc-seg.on:hover{background:var(--mbu-accent)}
+    .tc-tc-seg.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
+    .tc-tc-seg.on:hover{background:var(--mbu-accent-soft)}
     .tc-tc-pin{flex:none;box-sizing:border-box;width:22px;text-align:center;border:none;background:none;cursor:pointer;font-size:13px;line-height:1;filter:grayscale(1);opacity:.35;padding:1px 0;display:inline-flex;align-items:center;justify-content:center}   /* fixed width so the column aligns even when a tool has no pin */
     .tc-tc-pin.on{filter:none;opacity:1}
     .tc-tc-pin.none{visibility:hidden}
@@ -13961,13 +13961,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     .tc-rg-seg.fit{display:flex;width:100%;box-sizing:border-box}
     .tc-rg-seg.fit > button{flex:1 1 auto;justify-content:center;padding:1px 4px}
     .tc-rg-seg > button:hover{background:var(--mbu-bg-hover)}
-    .tc-rg-seg > button.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-weight:600}
+    .tc-rg-seg > button.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-text);font-weight:600}
     .tc-rg-seg > button:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px}
     .tc-rg-seg > button{position:relative}
     .tc-rg-seg > button.def::after{content:"";position:absolute;right:2px;top:2px;width:5px;height:5px;border-radius:50%;background:currentColor}
     .tc-rg-seg.off{opacity:.6}
     .tc-rg-seg.off > button{cursor:default;background:none}
-    .tc-rg-seg.off > button.on{background:var(--mbu-accent)}
+    .tc-rg-seg.off > button.on{background:var(--mbu-accent-soft)}
     body.tc-ri-on #release-editor #information td:has(> #primary-type){position:relative}
     body.tc-ri-on #release-editor #information #primary-type{position:absolute!important;inset:0;width:100%!important;height:100%!important;opacity:0;pointer-events:none}   /* kept in place: Mammoth's pin sits on it, right of the bar */
     body.tc-ri-on #release-editor #information #secondary-types,body.tc-ri-on #release-editor #information #status{display:none!important}
@@ -16710,7 +16710,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
         #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
         #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
         #tc-alias .tc-al-opt:hover{background:var(--mbu-border)}
-        #tc-alias .tc-al-opt.on{background:var(--mbu-accent);color:#fff}
+        #tc-alias .tc-al-opt.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
         #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x,#tc-alias .tc-al-c{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
         #tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
         #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p,.tc-al-c):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}

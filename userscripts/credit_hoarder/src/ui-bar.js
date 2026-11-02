@@ -2164,7 +2164,7 @@ export function insertDiscogsBar(discogsUrl, sources = {}, meta = {}) {
         .discogs-log-filterbtn { font-size: 0.75rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: none; border-right: 1px solid var(--mbu-divider); padding: 0.15rem 0.55rem; cursor: pointer; }
         .discogs-log-filterbtn:last-child { border-right: none; }
         .discogs-log-filterbtn:hover { background: var(--mbu-bg-raised); }
-        .discogs-log-filterbtn.active { background: var(--mbu-accent); color: var(--mbu-text-on-accent); }
+        .discogs-log-filterbtn.active { background: var(--mbu-accent-soft); color: var(--mbu-accent-text); }
         .discogs-log-copyslot { display: inline-flex; gap: 0.4rem; margin-left: auto; }
         .discogs-log-copybtn { font-size: 0.78rem; color: var(--mbu-text-dim); background: var(--mbu-bg); border: 1px solid var(--mbu-border); border-radius: 0.25rem; padding: 0.15rem 0.5rem; cursor: pointer; white-space: nowrap; }
         .discogs-log-copybtn:hover { border-color: var(--mbu-border); }
