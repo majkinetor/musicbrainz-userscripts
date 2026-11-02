@@ -68,7 +68,8 @@ function scriptDisplayName(path) { const m = path && readFileSync(resolve(ROOT, 
 
 function todayTag() {
   const d = new Date();
-  let base = `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`, tag = base, n = 1;
+  const two = n => String(n).padStart(2, '0');
+  let base = `${d.getFullYear()}.${two(d.getMonth() + 1)}.${two(d.getDate())}`, tag = base, n = 1;
   while (tryRun(() => gh('release', 'view', tag, '--repo', REPO))) { n++; tag = `${base}.${n}`; }   // avoid collision on same-day re-publish
   return tag;
 }

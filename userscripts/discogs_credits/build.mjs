@@ -11,7 +11,7 @@
 //         node build.mjs --watch          # rebuild on every save under src/
 //         node build.mjs --watch --serve  # also serve dist/ over HTTP for live dev install
 //
-// `@version` is auto-stamped on every build (`YYYY.M.D.HHMMSS`). VM/TM
+// `@version` is auto-stamped on every build (`YYYY.MM.DD.HHMMSS`). VM/TM
 // detect each rebuild as a new version → users on the GreasyFork copy
 // auto-update on every merge to main without anyone manually bumping
 // `meta.txt`. The version stamp lives only in `dist/`; `meta.txt`'s
@@ -62,11 +62,11 @@ function currentBranch() {
     }
 }
 
-/** `YYYY.M.D.HHMMSS` — monotonic, parses as a date for humans. */
+/** `YYYY.MM.DD.HHMMSS` — monotonic, parses as a date for humans. */
 function timestampVersion() {
     const d = new Date();
     const pad = n => String(n).padStart(2, '0');
-    return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}.${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}.${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 }
 
 /** Replace `@version` in the meta block with the current build timestamp. */
