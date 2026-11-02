@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-02 09:49 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-02 09:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -453,6 +453,10 @@ Right-click Apollo's corner icon.
 
 ### Notes
 
+#### Log history
+
+The log of a page where you entered edits, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Apollo's.
+
 #### Archiving requests
 
 [DEVELOP.md](../apollo_editor/DEVELOP.md#archive) lists the requests sent to the Internet Archive, and which links are left out.
@@ -867,6 +871,7 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 
 ### Notes
 
+- The log of a page where you voted or added an edit note, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Event Horizon's.
 - How Event Horizon uses the network, and how it shares MusicBrainz with the other scripts: [Network usage](../event_horizon/DEVELOP.md#network-usage).
 
 ---
@@ -1494,6 +1499,10 @@ A review in the notes is the critic's text (Qobuz's and Apple's are usually AllM
 
 ### Notes
 
+#### Log history
+
+The log of a page where a release was imported, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes First Contact's.
+
 #### Handoff
 
 Other scripts on the release editor page can read what First Contact sent: the release and every track with each artist's name and platform link. [DEVELOP.md](../first_contact/DEVELOP.md#handoff) says how, and how each platform is read.
@@ -1607,6 +1616,10 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 | Preload group release details                     | off     | fetch every grouped recording's releases in the background |
 | Length tolerance                                  | 5 s     | lengths this close count as the same                       |
 | Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |
+
+### Notes
+
+- The log of a page where recordings were merged, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Fusion's.
 
 ---
 
@@ -1837,6 +1850,10 @@ Group Therapy adds its signature and a line per action to the edit note (*Copied
 | right-click a credit in the copy list        | keep only that role (Shift adds it)       |
 | hover an entity or role                      | highlight it                              |
 
+### Notes
+
+- The log of a page where relationships were added, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Group Therapy's.
+
 ---
 
 ## ISRC Scout
@@ -2013,6 +2030,10 @@ A platform switched off loses its import button and lookup, Match, Find links an
 The mouse gestures on links are in the [Links](#links) table.
 
 ### Notes
+
+#### Log history
+
+The log of a page where ISRCs or links were submitted, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes ISRC Scout's.
 
 #### YouTube Music
 

@@ -944,7 +944,8 @@
   // o.load / o.save     that storage (default GM_getValue / GM_setValue)
   // o.before            called before the window opens (e.g. to inject the script's CSS)
   // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
-  // o.history           opt-in history of past sessions (#705), below
+  // o.history           opt-in history of past sessions (#705), below; history.auto (#890) also keeps a
+  //                     session at its first warning or error, and names a kept one after the page
   //
   // A long run keeps only the last o.max lines, and the Markdown says how many went
   // before them; the copies this replaced grew for the whole session. An open
@@ -1087,6 +1088,13 @@
           } catch (e) { /* not stored */ }
       }
       var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+      function keepNow() {
+          if (!H || !sid || kept) return;
+          kept = true;
+          // H.auto (#890): a kept session the script didn't name is named after the page
+          if (H.auto && !sname) { try { var t = String(document.title || '').split(' - MusicBrainz')[0].trim(); if (t) sname = t; } catch (e) { /* no title */ } }
+          store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); });
+      }
       function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
       function prune() {
           var all = ids().filter(function (id) { return id !== sid; });
@@ -1145,6 +1153,7 @@
           if (pre) e.pre = true;
           push(e);
           persist();
+          if (H && H.auto && !kept && (e.sev === 'warn' || e.sev === 'error')) keepNow();   // H.auto: a session with a problem is kept
       }
       function title(bare) {
           var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
@@ -1489,7 +1498,7 @@
           // history (#705); harmless without o.history
           session: function () { if (H) startSession(); return sid; },
           resume: function (id) { return H ? resume(id) : false; },
-          keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+          keep: keepNow,
           name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
           sessionId: function () { return sid; },
           last: function () { return H ? store.get(hp + 'current') : null; },

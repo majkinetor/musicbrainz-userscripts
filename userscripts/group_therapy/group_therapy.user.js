@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.01.001602
+// @version      2026.11.2.105535
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -1302,7 +1302,8 @@
   // o.load / o.save     that storage (default GM_getValue / GM_setValue)
   // o.before            called before the window opens (e.g. to inject the script's CSS)
   // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
-  // o.history           opt-in history of past sessions (#705), below
+  // o.history           opt-in history of past sessions (#705), below; history.auto (#890) also keeps a
+  //                     session at its first warning or error, and names a kept one after the page
   //
   // A long run keeps only the last o.max lines, and the Markdown says how many went
   // before them; the copies this replaced grew for the whole session. An open
@@ -1445,6 +1446,13 @@
           } catch (e) { /* not stored */ }
       }
       var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+      function keepNow() {
+          if (!H || !sid || kept) return;
+          kept = true;
+          // H.auto (#890): a kept session the script didn't name is named after the page
+          if (H.auto && !sname) { try { var t = String(document.title || '').split(' - MusicBrainz')[0].trim(); if (t) sname = t; } catch (e) { /* no title */ } }
+          store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); });
+      }
       function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
       function prune() {
           var all = ids().filter(function (id) { return id !== sid; });
@@ -1503,6 +1511,7 @@
           if (pre) e.pre = true;
           push(e);
           persist();
+          if (H && H.auto && !kept && (e.sev === 'warn' || e.sev === 'error')) keepNow();   // H.auto: a session with a problem is kept
       }
       function title(bare) {
           var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
@@ -1847,7 +1856,7 @@
           // history (#705); harmless without o.history
           session: function () { if (H) startSession(); return sid; },
           resume: function (id) { return H ? resume(id) : false; },
-          keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+          keep: keepNow,
           name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
           sessionId: function () { return sid; },
           last: function () { return H ? store.get(hp + 'current') : null; },
@@ -2802,7 +2811,7 @@
   const RE = () => (W.MB && W.MB.relationshipEditor) || null;
   // the activity log (Log in the settings header). Made on first use: mbuLog's own state is declared below.
   let _gtLog = null;
-  const LOG = () => _gtLog || (_gtLog = mbuLog({ name: 'Group Therapy', version: VERSION, key: 'gt.logwin' }));
+  const LOG = () => _gtLog || (_gtLog = mbuLog({ name: 'Group Therapy', version: VERSION, key: 'gt.logwin', history: { prefix: 'gt:session:', auto: true } }));   // #890: sessions with edits, a warning or an error
   // a short "type id/gid 'name'" for log lines
   const entLabel = e => !e ? '(none)' : `${e.entityType || '?'} ${e.id}${e.gid ? '/' + e.gid : ' (new)'} "${val(e.name) || ''}"`;
   const val = v => (typeof v === 'function' ? v() : v);
@@ -3885,6 +3894,7 @@
       // #737: no list of the credits: MB copies the note onto each relationship's edit, which shows its own
       const note = `Consolidated ${edits.length} release-level credit${edits.length > 1 ? 's' : ''} across the release group onto this release\n\n${sig}`;
       try {
+        LOG().keep();
         const res = await mbnFetch('/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note, makeVotable: 0 }) });
         const txt = await res.text().catch(() => ''); let j = null; try { j = JSON.parse(txt); } catch (e) {}
         if (!res.ok || (j && j.error)) throw new Error((((j && (j.error.message || j.error)) || ('HTTP ' + res.status)) + '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160));

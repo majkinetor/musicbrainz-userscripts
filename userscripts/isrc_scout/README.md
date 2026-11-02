@@ -173,6 +173,10 @@ The mouse gestures on links are in the [Links](#links) table.
 
 ## Notes
 
+### Log history
+
+The log of a page where ISRCs or links were submitted, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes ISRC Scout's.
+
 ### YouTube Music
 
 YouTube Music shows no ISRCs. With the release's album linked, each track comes from its tracklist by position and title, as official audio. A song a free listener can't play is left out, as the links are *free streaming*. Without the album, the ISRC is searched; a result counts only as official audio with the track's title, within 3 s of its length, from this release's album. The log says what it skipped and why.

@@ -224,3 +224,7 @@ Group Therapy adds its signature and a line per action to the edit note (*Copied
 | right-click a credit's pencil                | replace role, or set dates                |
 | right-click a credit in the copy list        | keep only that role (Shift adds it)       |
 | hover an entity or role                      | highlight it                              |
+
+## Notes
+
+- The log of a page where relationships were added, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Group Therapy's.

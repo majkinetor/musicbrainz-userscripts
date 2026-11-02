@@ -401,6 +401,10 @@ A review in the notes is the critic's text (Qobuz's and Apple's are usually AllM
 
 ## Notes
 
+### Log history
+
+The log of a page where a release was imported, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes First Contact's.
+
 ### Handoff
 
 Other scripts on the release editor page can read what First Contact sent: the release and every track with each artist's name and platform link. [DEVELOP.md](DEVELOP.md#handoff) says how, and how each platform is read.

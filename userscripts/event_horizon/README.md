@@ -102,4 +102,5 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 
 ## Notes
 
+- The log of a page where you voted or added an edit note, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Event Horizon's.
 - How Event Horizon uses the network, and how it shares MusicBrainz with the other scripts: [Network usage](DEVELOP.md#network-usage).

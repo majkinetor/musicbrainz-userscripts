@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Fusion
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.120000
+// @version      2026.11.2.105535
 // @description  Merge-recordings assistant for MusicBrainz: gather a pool of candidate recordings from a release / release group / recording page (or paste any MBID/URL), auto-match them into merge groups by ISRC / AcoustID / length / title+artist, review and adjust the groups, then submit the merges directly in the background — no MB merge page involved.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPkZ1c2lvbjwvdGl0bGU+CiAgPGcgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYTE4NGY4IiBzdHJva2Utd2lkdGg9IjUuNSI+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiLz4KICAgIDxlbGxpcHNlIGN4PSI2NCIgY3k9IjY0IiByeD0iNTIiIHJ5PSIyMiIgdHJhbnNmb3JtPSJyb3RhdGUoNjAgNjQgNjQpIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSI2NCIgcng9IjUyIiByeT0iMjIiIHRyYW5zZm9ybT0icm90YXRlKDEyMCA2NCA2NCkiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI2NCIgcj0iMTEiIGZpbGw9IiM3YzRkZmYiLz4KPC9zdmc+Cg==
@@ -49,7 +49,7 @@ const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '
 /* ── activity log: the shared window and buffer (mbuLog, in the ST-UI block below;
    #283 / #529, shared since X12 of #623). Every Log.* line lands there, and the
    Log button opens it, copy/pastable as a Markdown <details> block. ── */
-const Log = mbuLog({ name: 'Fusion', version: VERSION, header: 'Fusion — activity log', key: 'fusion.logwin', before: () => fsStyle() });
+const Log = mbuLog({ name: 'Fusion', version: VERSION, header: 'Fusion — activity log', key: 'fusion.logwin', before: () => fsStyle(), history: { prefix: 'fusion:session:', auto: true } });   // #890: sessions with a merge, a warning or an error
 Log.info(mbuStartupInfo('Fusion'));
 const openLog = () => Log.open();
 
@@ -1641,6 +1641,7 @@ async function mergeGroup(group) {
         const targetId = ids[targetIdx === -1 ? 0 : targetIdx];
         Log.info('  merging [' + ids.join(', ') + '] → keeping target ' + targetId);
         const addQs = ids.map(id => 'add-to-merge=' + id).join('&');
+        Log.keep();
         const finalUrl = await withMergeLock(async () => {
           // #822: a POST MB bounces elsewhere (its browser check, a queue taken from another tab) created
           // nothing: unless the kept recording now shows the merge pending, pass the check and try once more
@@ -2467,7 +2468,8 @@ function mbRestackCorner(corner) {
 // o.load / o.save     that storage (default GM_getValue / GM_setValue)
 // o.before            called before the window opens (e.g. to inject the script's CSS)
 // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
-// o.history           opt-in history of past sessions (#705), below
+// o.history           opt-in history of past sessions (#705), below; history.auto (#890) also keeps a
+//                     session at its first warning or error, and names a kept one after the page
 //
 // A long run keeps only the last o.max lines, and the Markdown says how many went
 // before them; the copies this replaced grew for the whole session. An open
@@ -2610,6 +2612,13 @@ function mbuLog(o) {
         } catch (e) { /* not stored */ }
     }
     var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+    function keepNow() {
+        if (!H || !sid || kept) return;
+        kept = true;
+        // H.auto (#890): a kept session the script didn't name is named after the page
+        if (H.auto && !sname) { try { var t = String(document.title || '').split(' - MusicBrainz')[0].trim(); if (t) sname = t; } catch (e) { /* no title */ } }
+        store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); });
+    }
     function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
     function prune() {
         var all = ids().filter(function (id) { return id !== sid; });
@@ -2668,6 +2677,7 @@ function mbuLog(o) {
         if (pre) e.pre = true;
         push(e);
         persist();
+        if (H && H.auto && !kept && (e.sev === 'warn' || e.sev === 'error')) keepNow();   // H.auto: a session with a problem is kept
     }
     function title(bare) {
         var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
@@ -3012,7 +3022,7 @@ function mbuLog(o) {
         // history (#705); harmless without o.history
         session: function () { if (H) startSession(); return sid; },
         resume: function (id) { return H ? resume(id) : false; },
-        keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+        keep: keepNow,
         name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
         sessionId: function () { return sid; },
         last: function () { return H ? store.get(hp + 'current') : null; },

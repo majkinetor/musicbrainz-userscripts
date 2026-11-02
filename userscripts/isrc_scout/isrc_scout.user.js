@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ISRC Scout
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.02.000002
+// @version      2026.11.2.105535
 // @description  Scout ISRCs for a MusicBrainz release: reads existing ISRCs, finds missing ones on SoundExchange / Deezer / Spotify / Beatport / Tidal / Volumo / HDtracks / Presto Music / Qobuz, bulk paste & import/export, submits directly to MB (one-time OAuth, never depends on MagicISRC).
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+CiAgPHRpdGxlPklTUkMgU2NvdXQ8L3RpdGxlPgogICAgPHBhdGggZD0iTTY0IDY0IEw2NCAyNCBBNDAgNDAgMCAwIDEgOTkgODQgWiIgZmlsbD0iI2UzZDhmNyIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2Ij4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjQwIi8+CiAgICA8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIyNiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2U9IiNiOWEzZTgiLz4KICAgIDxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjEzIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZT0iI2I5YTNlOCIvPgogIDwvZz4KICA8bGluZSB4MT0iNjQiIHkxPSI2NCIgeDI9IjY0IiB5Mj0iMjQiIHN0cm9rZT0iIzZmNDJjMSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI4NiIgY3k9IjUwIiByPSI3IiBmaWxsPSIjNGIyZTgzIi8+Cjwvc3ZnPgo=
@@ -668,7 +668,7 @@
   /* ═══════════════════════════════════════════════════════════════════════
      LOG — the shared activity log (mbuLog, ST-UI block), for troubleshooting (#701)
   ═══════════════════════════════════════════════════════════════════════ */
-  const LogAll = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin' });
+  const LogAll = mbuLog({ name: 'ISRC Scout', version: () => SCRIPT_VERSION, key: 'isrcScout.logwin', history: { prefix: 'isrc:session:', auto: true } });   // #890: sessions with edits, a warning or an error
   // #758: a category per source, a filter chip each in the Log window. A line names its source
   // first ("Spotify: importing album …", "SX lookup …", "Tidal 429 …"), so the category is read
   // from that; Harmony, molla and ISRC Hunt are where Spotify's ISRCs come from. The edits on MusicBrainz
@@ -1399,7 +1399,8 @@
   // o.load / o.save     that storage (default GM_getValue / GM_setValue)
   // o.before            called before the window opens (e.g. to inject the script's CSS)
   // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
-  // o.history           opt-in history of past sessions (#705), below
+  // o.history           opt-in history of past sessions (#705), below; history.auto (#890) also keeps a
+  //                     session at its first warning or error, and names a kept one after the page
   //
   // A long run keeps only the last o.max lines, and the Markdown says how many went
   // before them; the copies this replaced grew for the whole session. An open
@@ -1542,6 +1543,13 @@
           } catch (e) { /* not stored */ }
       }
       var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+      function keepNow() {
+          if (!H || !sid || kept) return;
+          kept = true;
+          // H.auto (#890): a kept session the script didn't name is named after the page
+          if (H.auto && !sname) { try { var t = String(document.title || '').split(' - MusicBrainz')[0].trim(); if (t) sname = t; } catch (e) { /* no title */ } }
+          store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); });
+      }
       function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
       function prune() {
           var all = ids().filter(function (id) { return id !== sid; });
@@ -1600,6 +1608,7 @@
           if (pre) e.pre = true;
           push(e);
           persist();
+          if (H && H.auto && !kept && (e.sev === 'warn' || e.sev === 'error')) keepNow();   // H.auto: a session with a problem is kept
       }
       function title(bare) {
           var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
@@ -1944,7 +1953,7 @@
           // history (#705); harmless without o.history
           session: function () { if (H) startSession(); return sid; },
           resume: function (id) { return H ? resume(id) : false; },
-          keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+          keep: keepNow,
           name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
           sessionId: function () { return sid; },
           last: function () { return H ? store.get(hp + 'current') : null; },
@@ -7009,6 +7018,7 @@
         })),
         editNote: note || '', makeVotable: 0,
       };
+      LogAll.keep();
       const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -7111,6 +7121,7 @@
         'Removed ' + provs.length + ' streaming link' + (provs.length === 1 ? '' : 's') + (breakdown ? ': ' + breakdown : '')].join('\n');
     }
     async function postEdits(edits, note) {
+      LogAll.keep();
       const r = await mbnFetch(MB_ROOT + '/ws/js/edit/create', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ edits, editNote: note || '', makeVotable: 0 }) });
       const text = await r.text().catch(() => ''); let j = null; try { j = JSON.parse(text); } catch (e) {}
       if (!r.ok || (j && j.error)) { const m = (j && (j.error.message || j.error)) || ('HTTP ' + r.status); throw new Error((typeof m === 'string' ? m : JSON.stringify(m)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200)); }

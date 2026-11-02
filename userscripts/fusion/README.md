@@ -101,3 +101,7 @@ The ⚙ window (or right-click Fusion's corner icon), which also holds the activ
 | Preload group release details                     | off     | fetch every grouped recording's releases in the background |
 | Length tolerance                                  | 5 s     | lengths this close count as the same                       |
 | Match never groups if lengths differ by more than | 30 s    | whatever else matches; grouping by hand still can          |
+
+## Notes
+
+- The log of a page where recordings were merged, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Fusion's.

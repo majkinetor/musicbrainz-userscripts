@@ -432,6 +432,10 @@ Right-click Apollo's corner icon.
 
 ## Notes
 
+### Log history
+
+The log of a page where you entered edits, or where something went wrong, is kept in this browser, so it can still be read after the page reloads: the log window lists the last 10, by date and page. **Clear history** deletes Apollo's.
+
 ### Archiving requests
 
 [DEVELOP.md](DEVELOP.md#archive) lists the requests sent to the Internet Archive, and which links are left out.

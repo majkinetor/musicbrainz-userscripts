@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.2.140000
+// @version      2026.11.2.140001
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -266,6 +266,7 @@
   const Log = mbuLog({
     name: 'Apollo Editor', version: () => scriptVersion(), key: 'apolloEditor.logwin',
     load: k => gmLoad(k), save: (k, v) => gmSave(k, v), before: () => style(),
+    history: { prefix: 'apollo:session:', auto: true },   // #890: the last 10 sessions with a submit, a warning or an error
   });
   const logMarkdown = () => Log.markdown();
   const openLog = () => Log.open();
@@ -5206,7 +5207,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // o.load / o.save     that storage (default GM_getValue / GM_setValue)
   // o.before            called before the window opens (e.g. to inject the script's CSS)
   // o.max               lines kept (default 20000: about 4 MB; 2000 dropped a long session's start)
-  // o.history           opt-in history of past sessions (#705), below
+  // o.history           opt-in history of past sessions (#705), below; history.auto (#890) also keeps a
+  //                     session at its first warning or error, and names a kept one after the page
   //
   // A long run keeps only the last o.max lines, and the Markdown says how many went
   // before them; the copies this replaced grew for the whole session. An open
@@ -5349,6 +5351,13 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           } catch (e) { /* not stored */ }
       }
       var persist = function () { if (H && kept && !pTimer) pTimer = setTimeout(flush, 100); };
+      function keepNow() {
+          if (!H || !sid || kept) return;
+          kept = true;
+          // H.auto (#890): a kept session the script didn't name is named after the page
+          if (H.auto && !sname) { try { var t = String(document.title || '').split(' - MusicBrainz')[0].trim(); if (t) sname = t; } catch (e) { /* no title */ } }
+          store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); });
+      }
       function forget(id) { if (H && id) { store.del(hp + id); store.del(hp + id + ':name'); delete names[id]; } }
       function prune() {
           var all = ids().filter(function (id) { return id !== sid; });
@@ -5407,6 +5416,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           if (pre) e.pre = true;
           push(e);
           persist();
+          if (H && H.auto && !kept && (e.sev === 'warn' || e.sev === 'error')) keepNow();   // H.auto: a session with a problem is kept
       }
       function title(bare) {
           var v = typeof o.version === 'function' ? (function () { try { return o.version(); } catch (e) { return ''; } })() : o.version;
@@ -5751,7 +5761,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
           // history (#705); harmless without o.history
           session: function () { if (H) startSession(); return sid; },
           resume: function (id) { return H ? resume(id) : false; },
-          keep: function () { if (H && sid && !kept) { kept = true; store.set(hp + 'current', sid); flush(); prune(); views.forEach(function (v) { v.sessions(); }); } },
+          keep: keepNow,
           name: function (text) { if (H && text && !sname) { sname = String(text); if (kept) store.set(hp + sid + ':name', sname); } },
           sessionId: function () { return sid; },
           last: function () { return H ? store.get(hp + 'current') : null; },
@@ -13838,7 +13848,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
       const b = e.target && e.target.closest && e.target.closest('button'); if (!b) return;
       // #722 Finish / Enter edit by their data-click, as MB translates the labels
       const f = navFooterEl(); if (f && f.contains(b) && (b.matches('[data-click="lastTab"], [data-click="submitEdits"]') || /^\s*(finish|enter edit)\s*$/i.test(b.textContent || ''))) {
-        if (b.matches('[data-click="submitEdits"]')) { try { archiveOnSubmit(); } catch (x) { Log.cat('Archive').warn('archive: skipped, it failed:', x && x.message || x); } }   // #736
+        if (b.matches('[data-click="submitEdits"]')) { Log.keep(); try { archiveOnSubmit(); } catch (x) { Log.cat('Archive').warn('archive: skipped, it failed:', x && x.message || x); } }   // #736
         ensureApolloEditNote();
       }
     }, true);   // capture phase: runs before MB reads the textarea for submission
