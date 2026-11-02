@@ -841,6 +841,7 @@ html:root[data-eh-theme] :where(h1, h2, h3, .hero-title, .hm-hi) {
 	font-weight: 400;
 	letter-spacing: -.025em;
 }
+html:root[data-eh-theme] :where(h2) { border-bottom: 0; padding-bottom: 0; }
 html:root[data-eh-theme] :where(.card, .panel, .seg, .fbox, .hm-srch, .hm-pf, .hm-links a) { border-radius: 3px; }
 html:root[data-eh-theme] .hm-srch :where(button, select) { border-radius: 2px; }
 html:root[data-eh-theme] .hm-srch button[type=submit],
