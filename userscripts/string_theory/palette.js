@@ -189,7 +189,6 @@ function stPalCommands() {
   };
   newIssue('st:newissue', 'String Theory');
   stMembers.forEach(function (sm) { newIssue('newissue:' + sm[0], sm[1]); });
-  add({ id: 'st:issue', cat: 'String Theory', label: 'Issues', run: function () { window.open('https://github.com/' + ST_REPO + '/issues', '_blank', 'noopener'); } });
   add({ id: 'st:reload', cat: 'String Theory', label: 'Reload the page', run: function () { location.reload(); } });
   return out;
 }

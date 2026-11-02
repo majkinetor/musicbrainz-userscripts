@@ -68,7 +68,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | Scripts                   | turn a script on or off                                                                             |
 | Search                    | what you typed, searched on MusicBrainz as an artist, a release and the rest                        |
 | New issue                 | a new issue about String Theory or one script, its name in the title and the versions in the report |
-| String Theory             | copy versions, docs, issues, reload                                                                 |
+| String Theory             | copy versions, docs, reload                                                                         |
 
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
