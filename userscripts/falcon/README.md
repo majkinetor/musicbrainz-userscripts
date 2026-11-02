@@ -195,10 +195,10 @@ Another script can hand Falcon a queue in the [JSON model](#json-model), by a `?
 | Harmony: Auto start import after … seconds               | on, 10    | see [Hands-free import](#hands-free-import)                                                                 |
 | Harmony: Reload release page after import without errors | on        | see [Hands-free import](#hands-free-import)                                                                 |
 | Harmony: Open in new tab                                 | on        | off navigates the Harmony tab                                                                               |
-| Harmony: Automatically send to Picard using port         | off, 8000 | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration*) |
+| Harmony: Automatically send to Picard                    | off       | hand the release to [Picard](https://picard.musicbrainz.org/) after a run (needs its *Browser integration* on port 8000) |
 | Workers                                                  | 5         | entities processed at once                                                                                  |
 
-The Picard port also sets MusicBrainz's own tagger button, whether *Automatically send to Picard* is ticked or not.
+MusicBrainz's own tagger button points at port 8000 too, whether *Automatically send to Picard* is ticked or not.
 
 > [!TIP]
 > To report a problem: turn **debug** on in the **Log** tab, reproduce it, then **⧉ Copy** the log into the issue.

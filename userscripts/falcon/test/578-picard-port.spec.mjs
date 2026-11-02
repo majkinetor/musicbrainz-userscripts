@@ -8,10 +8,7 @@
 // the release to Picard listening on that port — so the feature is one query
 // parameter on the URL "Send to Falcon" already opens.
 //
-// Three things are worth asserting and they are separable, so they are separate:
-// the parameter itself, the stored setting (a port is user input and ends up in
-// a URL, so garbage must not survive the round trip), and the options UI that
-// majkinetor spelled out.
+// The parameter and the options UI are separable, so they are asserted apart.
 //
 // Not covered here: the concatenation inside sendToFalcon, which needs a real
 // Harmony actions page. That is one line, it uses the same helper asserted
@@ -54,36 +51,16 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   const params = await page.evaluate(() => {
     const { cfg, picardParam } = window.__falconTest;
     const out = {};
-    cfg.sendToPicard = false; cfg.picardPort = 8000; out.autoOff = picardParam();
+    cfg.sendToPicard = false; out.autoOff = picardParam();
     cfg.sendToPicard = true; out.autoOn = picardParam();
-    cfg.picardPort = 8123; out.onCustom = picardParam();
     return out;
   });
   log('parameter:', JSON.stringify(params));
   ck(params.autoOff === '&tport=8000', `tport is added even with auto-send OFF, so the button is always there to click (got ${JSON.stringify(params.autoOff)})`);
   ck(params.autoOn === '&tport=8000', `and with it on (got ${JSON.stringify(params.autoOn)})`);
-  ck(params.onCustom === '&tport=8123', `a custom port is what ends up in the URL (got ${JSON.stringify(params.onCustom)})`);
   // it is appended to a url that ALREADY has ?falcon=, so it must lead with & and
   // never with ? — the whole thing is inert if the query string is malformed
-  ck(/^&/.test(params.onCustom), 'it joins an existing query string with & rather than starting a new one');
-
-  // 2. the stored port. It is user input that ends up in a URL, so nonsense must
-  // not survive being stored — checked through the getter, which is what callers
-  // see, rather than through whatever landed in storage.
-  const clamp = await page.evaluate(() => {
-    const { cfg } = window.__falconTest;
-    const out = {};
-    for (const v of [8000, 1, 65535, 0, -5, 70000, 8000.7, 'abc', '', null]) {
-      cfg.picardPort = v;
-      out[JSON.stringify(v)] = cfg.picardPort;
-    }
-    return out;
-  });
-  log('port round-trip:', JSON.stringify(clamp));
-  ck(clamp['8000'] === 8000 && clamp['1'] === 1 && clamp['65535'] === 65535, 'a legal port is stored as given');
-  ck(clamp['0'] === 8000 && clamp['-5'] === 8000 && clamp['70000'] === 8000, `out-of-range values fall back to 8000 rather than reaching a URL (got ${JSON.stringify([clamp['0'], clamp['-5'], clamp['70000']])})`);
-  ck(clamp['"abc"'] === 8000 && clamp['""'] === 8000 && clamp['null'] === 8000, `non-numbers fall back to 8000 (got ${JSON.stringify([clamp['"abc"'], clamp['""'], clamp['null']])})`);
-  ck(clamp['8000.7'] === 8000, `a fractional port is floored, not put in the URL with a decimal point (got ${clamp['8000.7']})`);
+  ck(/^&/.test(params.autoOn), 'it joins an existing query string with & rather than starting a new one');
 
   // 3. the options UI, in the words majkinetor asked for and in the section he
   // asked for. The panel is built lazily on first use, so it has to be opened —
@@ -94,46 +71,32 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await frames(page);
   const ui = await page.evaluate(() => {
     const cb = document.getElementById('falcon-opt-picard');
-    const port = document.getElementById('falcon-opt-picard-port');
-    if (!cb || !port) return { missing: !cb ? 'checkbox' : 'port input' };
+    if (!cb) return { missing: 'checkbox' };
     const label = cb.closest('label');
     const fieldset = cb.closest('fieldset');
     return {
       label: label ? label.textContent.replace(/\s+/g, ' ').trim() : null,
       legend: fieldset ? fieldset.querySelector('legend').textContent.trim() : null,
-      type: port.type, min: port.min, max: port.max,
+      port: !!document.getElementById('falcon-opt-picard-port'),
     };
   });
   log('options UI:', JSON.stringify(ui));
-  ck(!ui.missing, `both controls exist (${ui.missing || 'ok'})`);
-  ck(ui.legend === 'Harmony', `they sit in the Harmony section, as asked (got ${JSON.stringify(ui.legend)})`);
-  ck(/Automatically send to Picard using port/i.test(ui.label || ''), `labelled "Automatically send to Picard using port" (got ${JSON.stringify(ui.label)})`);
-  ck(ui.type === 'number' && ui.min === '1' && ui.max === '65535', `the port is a bounded number input (${ui.type} ${ui.min}-${ui.max})`);
+  ck(!ui.missing, `the checkbox exists (${ui.missing || 'ok'})`);
+  ck(ui.legend === 'Harmony', `it sits in the Harmony section, as asked (got ${JSON.stringify(ui.legend)})`);
+  ck(ui.label === 'Automatically send to Picard', `labelled "Automatically send to Picard" (got ${JSON.stringify(ui.label)})`);
+  ck(ui.port === false, 'there is no port to set');
 
-  // 4. the UI actually drives the setting, and the port greys out when the box is
-  // off — a live control that does nothing is worse than a disabled one
+  // 4. the UI actually drives the setting
   const wiring = await page.evaluate(async () => {
     const { cfg } = window.__falconTest;
     const cb = document.getElementById('falcon-opt-picard');
-    const port = document.getElementById('falcon-opt-picard-port');
-    cfg.sendToPicard = false; cfg.picardPort = 8000;
     cb.checked = false; cb.onchange();
-    const offState = { disabled: port.disabled, cfg: cfg.sendToPicard };
+    const off = cfg.sendToPicard;
     cb.checked = true; cb.onchange();
-    const onState = { disabled: port.disabled, cfg: cfg.sendToPicard };
-    // the port drives ?tport= whether or not the box is ticked, so it must stay
-    // editable — it used to grey out with the checkbox, which is now wrong
-    port.value = '9000'; port.onchange();
-    const after = { cfgPort: cfg.picardPort, shown: port.value };
-    port.value = '99999'; port.onchange();
-    const clamped = { cfgPort: cfg.picardPort, shown: port.value };
-    return { offState, onState, after, clamped };
+    return { off, on: cfg.sendToPicard };
   });
   log('wiring:', JSON.stringify(wiring));
-  ck(wiring.offState.cfg === false && wiring.onState.cfg === true, 'ticking the box turns the setting on and off');
-  ck(wiring.offState.disabled === false && wiring.onState.disabled === false, `the port stays editable with the box unticked — it still feeds ?tport= (got ${JSON.stringify([wiring.offState.disabled, wiring.onState.disabled])})`);
-  ck(wiring.after.cfgPort === 9000 && wiring.after.shown === '9000', `typing a port stores it (got ${JSON.stringify(wiring.after)})`);
-  ck(wiring.clamped.cfgPort === 8000 && wiring.clamped.shown === '8000', `an impossible port is corrected in the box too, not silently ignored (got ${JSON.stringify(wiring.clamped)})`);
+  ck(wiring.off === false && wiring.on === true, 'ticking the box turns the setting on and off');
 
   // 5. off by default — it is only useful when Picard is running
   const fresh = await context.newPage();
@@ -141,10 +104,9 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
   await fresh.goto('https://test.musicbrainz.org/', { waitUntil: 'load' });
   await fresh.addScriptTag({ content: code });
   await fresh.waitForFunction(() => !!window.__falconTest, { timeout: 15000 });
-  const defaults = await fresh.evaluate(() => ({ on: window.__falconTest.cfg.sendToPicard, port: window.__falconTest.cfg.picardPort, param: window.__falconTest.picardParam() }));
+  const defaults = await fresh.evaluate(() => ({ on: window.__falconTest.cfg.sendToPicard, param: window.__falconTest.picardParam() }));
   log('defaults:', JSON.stringify(defaults));
   ck(defaults.on === false, 'the automatic hand-over is off by default');
-  ck(defaults.port === 8000, 'default port is 8000');
   ck(defaults.param === '&tport=8000', `but a default install still gets the tagger button (got ${JSON.stringify(defaults.param)})`);
 
   // ── 6. the actual hand-over ────────────────────────────────────────────────
@@ -165,7 +127,7 @@ test("#578: picard port", { tag: ['@sandbox', '@login'] }, async ({ context, pag
     sendReleaseToPicard(); const notHarmony = calls.length;
     setHarmonySeeded(true);
 
-    cfg.sendToPicard = false; cfg.picardPort = 8000;
+    cfg.sendToPicard = false;
     sendReleaseToPicard(); const whenOff = calls.length;
 
     cfg.sendToPicard = true;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Falcon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.120000
+// @version      2026.11.02.130000
 // @description  Edit a BATCH of MusicBrainz artists/labels/recordings at once — add external links, ISRCs, names, aliases, disambiguations and cover art — no popup-per-entity, no tab churn. A small pool of persistent worker iframes churns through a queue, each submitting its own edit and moving straight to the next entity. Paste a list, hand it a queue via a `?falcon=` URL param, or click "Send to Falcon" on a Harmony actions page to import its suggestions directly.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5GYWxjb248L3RpdGxlPgo8Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI1OCIgZmlsbD0iI2Y2ZWZlMiIgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2Utd2lkdGg9IjYiLz48cGF0aCBkPSJNMTA1LjYgNDAuMCBBNDggNDggMCAwIDEgMTA1LjYgODguMCIgc3Ryb2tlPSIjZDYyODI4IiBzdHJva2Utd2lkdGg9IjciIGZpbGw9Im5vbmUiLz4KPGcgc3Ryb2tlPSIjMWIyYTRhIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0yMC43IDg5LjAgTDI5LjQgODQuMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE0LjMgNjkuMiBMMjQuMiA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTYuNCA0OC41IEwyNi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0yNi44IDMwLjUgTDM0LjMgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQzLjcgMTguMyBMNDcuNyAyNy41IiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNNjQuMCAxNC4wIEw2NC4wIDI0LjAiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik04NC4zIDE4LjMgTDgwLjMgMjcuNSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTEwMS4yIDMwLjUgTDkzLjcgMzcuMiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTExMS42IDQ4LjUgTDEwMi4wIDUxLjYiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik0xMTMuNyA2OS4yIEwxMDMuOCA2OC4yIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTA3LjMgODkuMCBMOTguNiA4NC4wIiBzdHJva2Utd2lkdGg9IjMiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgOTQpIHJvdGF0ZSgwKSBzY2FsZSgwLjE2KSB0cmFuc2xhdGUoLTY0IC02NCkiPjxwYXRoIGQ9Ik02NCAyNiBDNjcgMjYgNzAgMzAgNzAgMzYgQzcyIDQwIDc0IDQyIDc2IDQ0IEM5MiA0MiAxMDggMzYgMTI0IDM0IEMxMTIgNDQgOTYgNTQgNzggNjIgQzc2IDY4IDc0IDc0IDc0IDgwIEw4MCAxMDAgQzc0IDEwNCA2OCAxMDQgNjQgMTA0IFoiIGZpbGw9IiM0YTVhNzgiLz48cGF0aCBkPSJNNjQgMjYgQzY3IDI2IDcwIDMwIDcwIDM2IEM3MiA0MCA3NCA0MiA3NiA0NCBDOTIgNDIgMTA4IDM2IDEyNCAzNCBDMTEyIDQ0IDk2IDU0IDc4IDYyIEM3NiA2OCA3NCA3NCA3NCA4MCBMODAgMTAwIEM3NCAxMDQgNjggMTA0IDY0IDEwNCBaIiBmaWxsPSIjNGE1YTc4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjggMCkgc2NhbGUoLTEgMSkiLz48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNjQgNjQpIHJvdGF0ZSgxMTIpIj48cGF0aCBkPSJNMCAtNDYgTDQgMCBMLTQgMFoiIGZpbGw9IiMxYjJhNGEiLz48L2c+CjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjciIGZpbGw9IiMxYjJhNGEiLz4KPC9zdmc+Cg==
@@ -2398,10 +2398,6 @@
     // it would silently reset it for anyone who has already ticked the box.
     get sendToPicard() { return GM_getValue('falcon:sendToPicard', false) === true; },
     set sendToPicard(v) { GM_setValue('falcon:sendToPicard', !!v); },
-    // Clamped on the way in AND on the way out, so a hand-edited stored value
-    // can't put something that isn't a port into a URL.
-    get picardPort() { const n = Math.floor(Number(GM_getValue('falcon:picardPort', 8000))); return (isFinite(n) && n >= 1 && n <= 65535) ? n : 8000; },
-    set picardPort(v) { const n = Math.floor(Number(v)); GM_setValue('falcon:picardPort', (isFinite(n) && n >= 1 && n <= 65535) ? n : 8000); },
   };
 
   /* ── the log: the shared activity log (#705), mounted in the panel's Log tab ── */
@@ -4241,7 +4237,9 @@
   // whether Falcon ALSO hands the release over by itself when a run finishes.
   // That is what lets Jormangeud turn the automatic send off and still import by
   // hand, from the same one control.
-  function picardParam() { return `&tport=${cfg.picardPort}`; }
+  // Picard's default browser-integration port
+  const PICARD_PORT = 8000;
+  function picardParam() { return `&tport=${PICARD_PORT}`; }
   function harmonyReleaseMbid() {
     const v = new URLSearchParams(location.search).get('release_mbid');
     if (!v) return null;
@@ -4321,7 +4319,7 @@
     // working" and there was no way to tell from the log whether the option had
     // reached this page at all — which is most of the diagnosis.
     harmonyLog(`${auto ? 'auto ' : ''}send: ${payload.length} item(s) → ${target}`
-      + ` · Picard: tport=${cfg.picardPort}, auto-send ${cfg.sendToPicard ? 'on' : 'off'}`
+      + ` · Picard: tport=${PICARD_PORT}, auto-send ${cfg.sendToPicard ? 'on' : 'off'}`
       + (relMbid ? '' : ' (no release mbid on this page, so MusicBrainz has nothing to tag)'));
     if (cfg.openHarmonyInNewTab) openMbTab(target, auto);
     else location.href = target;
@@ -6734,7 +6732,7 @@
     // should not be poked repeatedly for the same release
     if (_picardSent.has(mbid)) { log('debug', `Picard: already sent ${mbid} from this tab`); return; }
     _picardSent.add(mbid);
-    const url = `http://127.0.0.1:${cfg.picardPort}/openalbum?id=${mbid}`;
+    const url = `http://127.0.0.1:${PICARD_PORT}/openalbum?id=${mbid}`;
     // GM_xmlhttpRequest rather than fetch: the page is https and this is plain
     // http, and rather than rely on every browser treating 127.0.0.1 as a
     // trustworthy origin, go around it. No tab is opened either way — Picard
@@ -6747,8 +6745,8 @@
           onload: r => log(r.status >= 200 && r.status < 400 ? 'ok' : 'warn', `Picard: responded ${r.status}`),
           // by far the most likely cause, and worth saying rather than leaving a
           // bare "error" for someone to interpret
-          onerror: () => log('warn', `Picard: could not be reached on port ${cfg.picardPort} — is Picard running with "Browser integration" enabled?`),
-          ontimeout: () => log('warn', `Picard: timed out on port ${cfg.picardPort}`),
+          onerror: () => log('warn', `Picard: could not be reached on port ${PICARD_PORT} — is Picard running with "Browser integration" enabled?`),
+          ontimeout: () => log('warn', `Picard: timed out on port ${PICARD_PORT}`),
         });
       } catch (e) { log('warn', `Picard: send failed — ${e.message}`); }
       return;
@@ -7155,7 +7153,7 @@
     // Add covers only when there aren't any enabled here") — a log dump
     // alone doesn't say which toggles were active, which matters for
     // reading a run's behavior back later (this exact bug report needed it).
-    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-send-harmony=${cfg.autoSendFromHarmony ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? `on (${cfg.autoStartDelayS} s)` : 'off'}, picard=tport ${cfg.picardPort}, auto-send ${cfg.sendToPicard ? 'on' : 'off'}`);
+    log('info', `options: hide-icon=${cfg.hideLauncher ? 'on' : 'off'}, cover-only-if-none=${cfg.coverOnlyIfNone ? 'on' : 'off'}, skip-harmony-covers=${cfg.skipHarmonyCovers ? 'on' : 'off'}, auto-send-harmony=${cfg.autoSendFromHarmony ? 'on' : 'off'}, auto-start-harmony=${cfg.autoStartHarmonyImport ? `on (${cfg.autoStartDelayS} s)` : 'off'}, picard=tport ${PICARD_PORT}, auto-send ${cfg.sendToPicard ? 'on' : 'off'}`);
     suspendNameLookups();   // cosmetic lookups must not eat the workers' rate-limit budget
     startHeartbeat();
     const need = Math.min(cfg.workers, queue.filter(i => i.status === 'queued').length);
@@ -7523,9 +7521,8 @@
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Where Send to Falcon opens MusicBrainz\nOn: in a new tab\nOff: in this Harmony tab">
             <input type="checkbox" id="falcon-opt-open-new-tab" /> <span>Open in new tab</span>
           </label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Hand the release to Picard when a run finishes\nMusicBrainz's own green tagger button is there either way (the URL carries ?tport= with this port): turn this off to load only the releases you choose.\n⚠ Picard must run with Browser integration on, listening on this port (8000 by default)">
-            <input type="checkbox" id="falcon-opt-picard" /> <span>Automatically send to Picard using port</span>
-            <input type="number" id="falcon-opt-picard-port" min="1" max="65535" />
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer" data-tip="Hand the release to Picard when a run finishes\nMusicBrainz's own green tagger button is there either way (the URL carries ?tport=8000): turn this off to load only the releases you choose.\n⚠ Picard must run with Browser integration on, listening on port 8000">
+            <input type="checkbox" id="falcon-opt-picard" /> <span>Automatically send to Picard</span>
           </label>
         </fieldset>
         <label style="display:flex;align-items:center;gap:7px" data-tip="How many entities are worked on at once\nEach worker is its own frame, submitting on its own.">
@@ -8125,11 +8122,8 @@
     // checkbox, which was right when the checkbox meant "use tport at all" and is
     // wrong now that it only means "and send automatically".
     const picardCb = document.getElementById('falcon-opt-picard');
-    const picardPortIn = document.getElementById('falcon-opt-picard-port');
     picardCb.checked = cfg.sendToPicard;
-    picardPortIn.value = cfg.picardPort;
     picardCb.onchange = () => { cfg.sendToPicard = picardCb.checked; };
-    picardPortIn.onchange = () => { cfg.picardPort = picardPortIn.value; picardPortIn.value = cfg.picardPort; };
     // #705: the shared log viewer (filters, a chip per worker, the debug switch, past runs,
     // Copy as Markdown)
     Log.mount(document.getElementById('falcon-body-log'));

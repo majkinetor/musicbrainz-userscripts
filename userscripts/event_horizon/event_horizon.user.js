@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.141432
+// @version      2026.11.02.181000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -39,6 +39,7 @@
 // @connect      wikipedia.org
 // @connect      soundcloud.com
 // @connect      open.spotify.com
+// @connect      127.0.0.1
 // ==/UserScript==
 
 // Event Horizon takes over MusicBrainz's own release, release group, artist, label, recording, work, series and event pages, and an event's event-art pages, /release/<mbid>, /release-group/<mbid>, /artist/<mbid>, /label/<mbid>, /recording/<mbid> and /work/<mbid>
@@ -2585,7 +2586,7 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .gear>button:hover,.gear>button[aria-expanded="true"]{border-color:var(--accent);color:var(--text)}
 .gear>button svg{color:inherit}
 .art .under{display:flex;flex-direction:column;gap:14px;padding-top:6px}.gtags{display:flex;flex-wrap:wrap;gap:8px}.gtags.wide{margin:18px 0 0}
-.kmk{all:unset;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
+.kmk{all:unset;flex:none;cursor:pointer;display:inline-flex;border-radius:6px}.kmk:hover{color:var(--accent);background:var(--chip)}
 .tgi{display:inline-flex;align-items:center;gap:8px}.tgi.mine{color:var(--accent)}.tgi-n{opacity:.6;font-size:.85em;font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}.tgi button{border:0;background:none;color:inherit;opacity:.6;cursor:pointer;padding:0 2px;font:inherit}.tgi button>svg{display:block}.tgi button,.tgi .tgi-ph:not(.tgi-n){min-width:18px;display:inline-grid;place-items:center;padding:0 2px}.tgi-ph{visibility:hidden}.tgi.mine button{padding:4px 2px;margin:-4px 0;border-radius:50%}.tgi button:hover{opacity:1;color:var(--accent)}.tgi-in{border:1px dashed var(--muted, currentColor);background:transparent;color:inherit;border-radius:999px;padding:6px 14px;font:inherit;width:150px;outline:none}.tgi-row{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.tgi-w{position:relative;display:inline-flex}.tgi-spin{position:absolute;right:12px;top:50%;width:12px;height:12px;margin-top:-6px;border:2px solid var(--muted, currentColor);border-top-color:var(--accent);border-radius:50%;animation:ldspin .8s linear infinite;pointer-events:none}.tgi-w .tg-ac{text-align:left}.tgi-in:focus{border-style:solid;border-color:var(--accent)}
 .gtags a.chip{color:inherit;text-decoration:none;cursor:pointer;border:1px solid transparent}.gtags a.chip:hover{color:var(--accent);border-color:var(--accent)}.facts .gtags{align-items:center}
 .meta{display:flex;flex-wrap:wrap;gap:20px;font-size:14px;color:var(--soft);align-items:center}
@@ -3545,13 +3546,20 @@ function facts(r) {
     if (F.aliases[1] && !S.noAliases) ks.splice(li < 0 ? ks.length : li, 0, 'aliases');
     return `<div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="hd" aria-label="Header settings" data-tip="Header settings\nWhich facts the header shows, and the other covers">${MBU_CFG_ICON}</button>${ks.map(k => `<div${k === 'links' || k === 'aliases' && r.aliases.length ? ' class="wide"' : ''}>${k === 'links' ? '' : `<div class="label">${F[k][0]}</div>`}<div class="v">${F[k][1]}</div></div>`).join('')}</div>`;
 }
+// what Picard's browser integration opens for an entity; it loads nothing else
+const PICARD_OPEN = { release: 'openalbum', recording: 'opennat' };
+const picardSend = q => GM_xmlhttpRequest({ method: 'GET', url: `http://127.0.0.1:8000/${q}`, timeout: 5000,
+    onload: x => toast(x.status < 400 ? 'Sent to Picard' : `Picard answered ${x.status}`), onerror: () => toast('Picard is not reachable on port 8000'), ontimeout: () => toast('Picard is not reachable on port 8000') });
 function heroFacts(app) {
     const h = app.querySelector('section.hero'), f = h && h.querySelector('.facts'); if (!f) return;
     const mb = [...f.children].find(c => { const l = c.querySelector('.label'); return l && l.textContent.trim() === 'MBID'; }) || null;
     // no MBID row: the kind's mark by the kicker copies it
-    const k = h.querySelector('.kicker>svg'), id = mb && (mb.querySelector('.v').textContent.match(/[0-9a-f-]{36}/) || [])[0];
+    const k = h.querySelector('.kicker>svg'), pm = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})(?:\/|$)/i), id = pm && pm[2];
     if (mb) mb.remove();
-    if (k && id) k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-tip="Copy the MBID&#10;${id}" aria-label="Copy the MBID">${k.outerHTML}</button>`;
+    if (k && id) {
+        const pc = PICARD_OPEN[pm[1]];
+        k.outerHTML = `<button type="button" class="kmk" data-copy="${id}" data-copylabel="the MBID"${pc ? ` data-picard="${pc}?id=${id}"` : ''} data-tip="Copy the MBID&#10;${id}${pc ? '&#10;Right-click: send to Picard' : ''}" aria-label="Copy the MBID">${k.outerHTML}</button>`;
+    }
     const u = h.querySelector('.art .under'); if (!u) return;
     // the rating is one more fact, before the aliases and the full-width rows; the tags go last, before the links
     const add = (lbl, node, wide) => { const c = document.createElement('div'); if (wide) c.className = 'wide'; c.innerHTML = `<div class="label">${lbl}</div><div class="v"></div>`; c.lastChild.append(node); f.insertBefore(c, f.querySelector((wide ? '' : ':scope>div.wide, :scope>div:has(>.v>.als), ') + ':scope>div:has(>.label:empty), :scope>div:not(:has(>.label))')); return c; };
@@ -8375,6 +8383,8 @@ function pinBar(app) {
     kick.classList.add('pin-home');
     const details = [...kick.children].filter(el => el !== acts && !el.hidden).map(el => el.outerHTML).join('');
     k.innerHTML = `<span class="pident">${photo ? `<img class="pcv" alt="" src="${esc(photo.src)}">` : ''}<span class="pnm" data-tip="Back to the top">${title ? title.innerHTML : esc(document.title)}</span>${artist ? `<span class="pby">${artist.innerHTML}</span>` : ''}${rg ? rg.outerHTML : ''}${details ? `<span class="pkk">${details}</span>` : ''}</span>`;
+    // the bar's copy of the entity icon only copies: the menu stays with the hero's
+    k.querySelectorAll('.pkk .pop, .pkk [data-pop]').forEach(x => x.remove());
     const thumb = k.querySelector('.pcv'); if (thumb) thumb.onerror = () => thumb.remove();
     // The page width is configurable; follow its real edges instead of centring a separate fixed-width bar.
     const align = () => { const left = hd.getBoundingClientRect().left, right = kick.getBoundingClientRect().right; k.style.marginLeft = left + 'px'; k.style.width = Math.max(0, right - left) + 'px'; };
@@ -8528,7 +8538,7 @@ function onClick(ev) {
     if (d.colfit) { colWSet(d.colfit); save(); colSize(d.colfit); return; }
     if (d.colreset) { const sc = d.colreset, { [sc]: _, ...rest } = S.colPick; S.colPick = rest; colWSet(sc); save(); colApply(sc); $(`[data-collist="${sc}"]`).innerHTML = colRows(sc); return; }
     if (d.copy) {
-        const label = b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, '');
+        const label = d.copylabel || (b.textContent === d.copy ? d.copy : b.textContent.replace(/^Copy /, ''));
         try { navigator.clipboard.writeText(d.copy).then(() => toast('Copied ' + label), () => toast('Copy failed')); } catch (e) { toast('Copy failed'); }
         return;
     }
@@ -9522,6 +9532,9 @@ function build() {
     // right-click on a section's chevron: fold every section, or open them all when that one is folded
     document.addEventListener('contextmenu', ev => {
         if (!ehOn || ev.defaultPrevented || !ev.target.closest) return;
+        // the entity icon sends to Picard
+        const km = ev.target.closest('.kmk[data-picard]');
+        if (km) { ev.preventDefault(); picardSend(km.dataset.picard); return; }
         // a release row's tracks chevron: every row's tracklist, shown one after another, or all hidden
         const er = ev.target.closest('tr.ed-r, tr.ed-x');
         const erow = er && (er.matches('.ed-r') ? er : er.previousElementSibling);

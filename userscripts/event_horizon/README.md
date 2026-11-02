@@ -104,6 +104,8 @@ Right-click the corner icon. Changes apply at once; **Reset to defaults** undoes
 | Right-click | corner icon                     | open the settings   |
 | Right-click | a card, group or row            | toggle its siblings |
 | Right-click | a platform icon with more links | open its links      |
+| Click       | the entity icon in the header   | copy the MBID       |
+| Right-click | a release or recording's icon   | send it to Picard   |
 
 ## Notes
 

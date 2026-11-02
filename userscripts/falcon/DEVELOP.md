@@ -58,7 +58,7 @@ Each alias is its own MusicBrainz edit, submitted through `/<entity>/<mbid>/add-
 
 ## Picard
 
-*Automatically send to Picard* calls Picard's `http://127.0.0.1:<port>/openalbum?id=<mbid>` once a run finishes (#578), so Picard reads the release with Falcon's links, ISRCs and cover already on it, once per release per tab. Picard needs *Browser integration* on that port; when it isn't reachable, the log says so. The MusicBrainz URL *Send to Falcon* opens always carries `&tport=<port>`, ticked or not, which is what makes MusicBrainz draw its own tagger button.
+*Automatically send to Picard* calls Picard's `http://127.0.0.1:8000/openalbum?id=<mbid>` once a run finishes (#578), so Picard reads the release with Falcon's links, ISRCs and cover already on it, once per release per tab. Picard needs *Browser integration* on port 8000; when it isn't reachable, the log says so. The MusicBrainz URL *Send to Falcon* opens always carries `&tport=8000`, ticked or not, which is what makes MusicBrainz draw its own tagger button.
 
 ## Handoff
 

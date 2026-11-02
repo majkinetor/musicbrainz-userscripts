@@ -55,10 +55,10 @@ test("live 578 picard harmony proof", { tag: ['@sandbox', '@login'] }, async ({ 
   ck(mbid === R, `Falcon finds the release mbid on the actions page (got ${mbid})`);
 
   // a port this session has not seen: a logged-in session remembers the last tport it was given
-  const PORT = 8001 + (Date.now() % 900);
+  const PORT = 8000;
   const send = enable => page.evaluate(async ([on, port]) => {
     const { cfg, sendToFalcon } = window.__falconTest;
-    cfg.sendToPicard = on; cfg.picardPort = port;
+    cfg.sendToPicard = on;
     window.__opened.length = 0;
     await sendToFalcon(false);
     return window.__opened[0] || null;
