@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.01.225411
+// @version      2026.11.2.120000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -13903,6 +13903,24 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (_riStyled) return; _riStyled = true;
     const css = MBU_TOKENS + MBU_UI_CSS + `
     body.tc-ri-on .tc-ri-helphidden{display:none!important}
+    body:not(.tc-ri-on) .tc-rg-seg{display:none!important}
+    .tc-rg-seg{display:inline-flex;flex-wrap:wrap;max-width:100%;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;background:var(--mbu-bg);vertical-align:middle}
+    form.tc-ent-form .tc-rg-seg{max-width:calc(100% - 170px)}
+    .tc-rg-seg > button{all:unset;box-sizing:border-box;padding:1px 8px;min-height:23px;display:inline-flex;align-items:center;font:12px var(--mbu-font);color:var(--mbu-text-dim);cursor:pointer;border-left:1px solid var(--mbu-border);border-top:1px solid var(--mbu-border);margin:-1px 0 0 -1px}
+    .tc-rg-seg.multi{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));width:100%;box-sizing:border-box}
+    form.tc-ent-form .tc-rg-seg.multi{width:calc(100% - 170px)}
+    .tc-rg-seg.multi > button{border:0;margin:0;padding:1px 4px;box-shadow:1px 0 0 var(--mbu-border),0 1px 0 var(--mbu-border);justify-content:center}
+    #release-editor #information div.half-width .tc-rg-seg > button{margin:-1px 0 0 -1px}
+    #release-editor #information div.half-width .tc-rg-seg.multi > button{margin:0}
+    .tc-rg-seg > button:hover{background:var(--mbu-bg-hover)}
+    .tc-rg-seg > button.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-weight:600}
+    .tc-rg-seg > button:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px}
+    .tc-rg-seg.off{opacity:.6}
+    .tc-rg-seg.off > button{cursor:default;background:none}
+    .tc-rg-seg.off > button.on{background:var(--mbu-accent)}
+    body.tc-ri-on #release-editor #information td:has(> #primary-type){position:relative}
+    body.tc-ri-on #release-editor #information #primary-type{position:absolute!important;inset:0;width:100%!important;height:100%!important;opacity:0;pointer-events:none}   /* kept in place: Mammoth's pin sits on it, right of the bar */
+    body.tc-ri-on #release-editor #information #secondary-types{display:none!important}
     /* #652: the release artist's and labels' badges and offers, by their fields (the Tracklist's colours) */
     .tc-ri-am{display:flex;flex-wrap:wrap;gap:4px 10px;margin:4px 0 0;font:12px var(--mbu-font)}
     /* #652: credited-as in the label column, a row per artist line, lined up with it */
@@ -15284,24 +15302,35 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     tr.appendChild(document.createElement('td')).className = 'release-artist';
     ace.before(tbl);
   }
-  // Primary and secondary type as segmented bars; the selects stay the form's fields, the bars only set them
+  // Primary and secondary type as segmented bars; the selects stay the form's fields, the bars only set them.
+  // Called again it repaints: Knockout sets the release editor's selects without a change event, and disables them under an existing release group
   function rgTypeBar(sel, multi) {
-    if (!sel || sel._tcBar) return;
+    if (!sel) return;
+    if (sel._tcBar) { sel._tcBar._paint(); return; }
+    if (sel.options.length < 2) return;   // Knockout hasn't filled it yet
+    const old = sel.parentNode.querySelector(':scope > .tc-rg-seg'); if (old) old.remove();   // Knockout replaced the select
     const bar = document.createElement('div'); bar.className = 'tc-rg-seg mbu-ui' + (multi ? ' multi' : '');
-    const paint = () => bar.querySelectorAll('button').forEach(b => mbuCls(b, 'on', sel.options[+b.dataset.i].selected));
-    [...sel.options].forEach((o, i) => {
+    const opt = b => [...sel.options].find(x => x.value === b.dataset.v);
+    const paint = () => {
+      mbuCls(bar, 'off', sel.disabled);
+      bar.querySelectorAll('button').forEach(b => { const o = opt(b); mbuCls(b, 'on', !!(o && o.selected)); if (b.disabled !== sel.disabled) b.disabled = sel.disabled; });
+    };
+    [...sel.options].forEach(o => {
       if (!o.value.trim()) return;   // the blank (&nbsp;) "none" option: clicking the chosen type again clears it
-      const b = document.createElement('button'); b.type = 'button'; b.dataset.i = i; b.textContent = o.textContent.trim();
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.v = o.value; b.textContent = o.textContent.trim();
       b.onclick = () => {
-        if (multi) o.selected = !o.selected;
-        else if (o.selected) sel.selectedIndex = [...sel.options].findIndex(x => !x.value.trim());
-        else o.selected = true;
+        const x = opt(b); if (!x) return;
+        if (multi) x.selected = !x.selected;
+        else if (x.selected) sel.selectedIndex = [...sel.options].findIndex(y => !y.value.trim());
+        else x.selected = true;
         sel.dispatchEvent(new Event('change', { bubbles: true }));
         paint();
       };
       bar.appendChild(b);
     });
     sel.addEventListener('change', paint);
+    sel.tabIndex = -1;
+    bar._paint = paint;
     sel.after(bar); sel._tcBar = bar; paint();
   }
   // a linked artist without its row id (a pick's entity can lack it): the form posts the id
@@ -15430,7 +15459,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     if (_rgStyled) return; _rgStyled = true;
     const s = document.createElement('style'); s.id = 'tc-rg-style';
     s.textContent = `
-    body:not(.tc-ri-on) form.tc-ent-form .tc-rg-arttbl,body:not(.tc-ri-on) form.tc-ent-form .tc-rg-seg{display:none!important}
+    body:not(.tc-ri-on) form.tc-ent-form .tc-rg-arttbl{display:none!important}
     body.tc-ri-on form.tc-ent-form:not(.tc-ent-plain) #artist-credit-editor{display:none!important}
     body.tc-ri-on p:has(> a[href*="/doc/"]):has(~ form.tc-ent-plain){display:none!important}
     body.tc-ri-on form.tc-ent-form > div.half-width{order:0}
@@ -15470,14 +15499,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on form.tc-ent-form .tc-rg-artlbl{width:150px;text-align:right;vertical-align:top!important;padding-top:7px!important;font-weight:600;color:var(--mbu-text-dim);font-size:12px}
     body.tc-ri-on form.tc-ent-form .row > label{font-size:12px;color:var(--mbu-text-dim);font-weight:normal}
     body.tc-ri-on form.tc-ent-form label[for$=".name"]{font-weight:600}
-    body.tc-ri-on form.tc-ent-form :is(#id-edit-release-group\\.primary_type_id,#id-edit-release-group\\.secondary_type_ids){display:none!important}
-    .tc-rg-seg{display:inline-flex;flex-wrap:wrap;max-width:calc(100% - 170px);border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);overflow:hidden;background:var(--mbu-bg);vertical-align:middle}
-    .tc-rg-seg > button{all:unset;box-sizing:border-box;padding:4px 10px;min-height:28px;display:inline-flex;align-items:center;font:12.5px var(--mbu-font);color:var(--mbu-text-dim);cursor:pointer;border-left:1px solid var(--mbu-border);border-top:1px solid var(--mbu-border);margin:-1px 0 0 -1px}
-    .tc-rg-seg.multi{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));width:calc(100% - 170px)}
-    .tc-rg-seg.multi > button{border:0;margin:0;box-shadow:1px 0 0 var(--mbu-border),0 1px 0 var(--mbu-border);justify-content:center}
-    .tc-rg-seg > button:hover{background:var(--mbu-bg-hover)}
-    .tc-rg-seg > button.on{background:var(--mbu-accent);color:var(--mbu-text-on-accent);font-weight:600}
-    .tc-rg-seg > button:focus-visible{outline:2px solid var(--mbu-accent);outline-offset:-2px}`;
+    body.tc-ri-on form.tc-ent-form :is(#id-edit-release-group\\.primary_type_id,#id-edit-release-group\\.secondary_type_ids){display:none!important}`;
     document.head.appendChild(s);
   }
 
@@ -15644,6 +15666,8 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     wireLinkClicks();
     wireReleaseInfoBatch();
     autoSelectReleaseGroup();   // #716
+    rgTypeBar(document.getElementById('primary-type'), false);
+    rgTypeBar(document.getElementById('secondary-types'), true);
     // #652 (majkinetor): "no bubbles anywhere" — the #143 selection popover is retired; the badges say what was picked
     if (riWant()) {
       _apolloUsed = true;
