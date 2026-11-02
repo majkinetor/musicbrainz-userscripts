@@ -72,6 +72,10 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await page.mouse.move(w1.x + 2, w1.y + 30); await page.mouse.down();
   await page.mouse.move(w1.x + 150, w1.y + 30); await page.mouse.up();
   check(await win.boundingBox().then(b => Math.round(w1.width - b.width) === 148), 'dragging it in narrows it, below the sidebar width');
+  const w2 = await win.boundingBox();
+  await page.mouse.move(w2.x + w2.width - 2, w2.y + 30); await page.mouse.down();
+  await page.mouse.move(w2.x + w2.width + 38, w2.y + 30); await page.mouse.up();
+  check(await win.boundingBox().then(b => Math.round(b.width - w2.width) === 40 && Math.round(b.x - w2.x) === 0), 'the right edge widens it too, the left stays put');
   await page.screenshot({ path: process.env.PIN_SHOT || 'test-results/pin.png' });
 
   await page.evaluate(() => document.documentElement.setAttribute('data-mbu-dock', ''));
