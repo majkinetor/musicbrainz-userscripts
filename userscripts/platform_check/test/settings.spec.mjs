@@ -50,4 +50,8 @@ test('main view, sub-views, sizes, and the new-tab setting', { tag: ['@sandbox']
   check(await page.isChecked('#mb-open-new-tab'), '#464: "Add links in a new tab" is on by default');
   await page.click('#mb-open-new-tab');
   check(await page.evaluate(() => GM_getValue('pc:open-new-tab', true)) === false, '#464: unticking it is saved');
+
+  await page.click('#pc-cfg-log');
+  check(await page.evaluate(() => window.__pcLog.isOpen()), 'the header\'s Log button opens the log');
+  check(!await page.isVisible('#mb-setup-main'), 'and closes the settings, which would cover it');
 });
