@@ -72,15 +72,17 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 
 ## Settings
 
+The **General** tab holds the theme, the dock and the command palette; **About** holds the scripts and updates.
+
 | Setting          | Default           | What it does                                                                         |
 | ---------------- | ----------------- | ------------------------------------------------------------------------------------ |
-| Palette          | On                | The command palette's hotkey works                                                   |
-| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one             |
 | Side             | Right             | The launchers' side of the page                                                      |
 | Orientation      | Column            | A column, or a row along the bottom edge                                             |
 | Size             | 100 %             | The launchers' size, 60 to 160 %                                                     |
 | Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons |
 | Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner           |
+| Palette          | On                | The command palette's hotkey works                                                   |
+| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one             |
 | Scripts          | All on            | Turns each bundled script on or off, from the next page load                         |
 | Copy as Markdown |                   | Copies versions and environment details, ready to paste into an issue                |
 

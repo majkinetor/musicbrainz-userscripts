@@ -18,7 +18,7 @@ test('About checks on each entry and keeps the newest response', { tag: '@sandbo
   await page.locator('#st-tab-a').click();
   await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(2);
   await expect(page.locator('#st-check')).toHaveCount(0);
-  await page.locator('#st-tab-l').click();
+  await page.locator('#st-tab-g').click();
   await page.locator('#st-tab-a').click();
   await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(4);
   await page.evaluate(() => window.__updates.slice(2).forEach(o => o.onload({ status: 200, responseText: '// @version 9999.1' })));

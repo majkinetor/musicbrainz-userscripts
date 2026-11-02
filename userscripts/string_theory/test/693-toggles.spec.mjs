@@ -68,7 +68,7 @@ test('one menu entry opens the settings, which turn a script off and on', { tag:
   await openSettings(page);
   check(await page.evaluate(() => document.getElementById('st-p-a').hidden), 'About is its own tab, closed at first');
   await page.locator('#st-tab-a').click();
-  check(await page.evaluate(() => document.getElementById('st-p-l').hidden), 'opening it closes Launchers');
+  check(await page.evaluate(() => document.getElementById('st-p-g').hidden), 'opening it closes General');
   const boxes = await page.evaluate(() => [...document.querySelectorAll('#st-cfg [data-st-m]')].map(b => [b.dataset.stM, b.checked, b.closest('label').textContent]));
   check(boxes.length === MEMBERS && boxes.every(b => b[1]), `${MEMBERS} scripts, all on (${boxes.map(b => b[0]).join(' ')})`);
   check(boxes.some(b => b[0] === 'platform_check' && /Platform Check.*\d{4}\.\d+\.\d+/.test(b[2])), 'with the script\'s name and version');

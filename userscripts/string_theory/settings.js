@@ -181,6 +181,9 @@ var ST_CSS = ''
   + '#st-cfg h3.st-h{margin:14px 0 2px}#st-cfg h3.st-h:first-child{margin-top:0}'
   + '#st-cfg .st-key{min-width:96px;font-variant-numeric:tabular-nums}#st-cfg .st-key[data-rec]{border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
   + '#st-cfg [hidden]{display:none!important}'
+  // one size for the window: the tabs share a cell, and the one not shown keeps its room, as do Time's and Sun's extras
+  + '#st-cfg .st-panes,#st-cfg .st-th-x{display:grid}#st-cfg .st-panes>.st-sec,#st-cfg .st-th-x>*{grid-area:1/1;margin:0}#st-cfg .st-th-x{align-items:center;min-height:30px}'
+  + '#st-cfg .st-panes>.st-sec[hidden]{display:block!important;visibility:hidden}'
   + '#st-cfg-ov{background:none;pointer-events:none}#st-cfg-ov>#st-cfg{pointer-events:auto}';
 // a launcher opens its script's settings on right-click: pass the click on to the live one
 function stLive(name) {
@@ -204,11 +207,15 @@ function stOpenFor(name, toFront) {
   try { stUI().mbuToast('⚠ ' + name + ' has no settings'); } catch (err) { /* no toast */ }
   return false;
 }
-// tab: 'g' General, 'l' Dock, 'a' About (MusicBrainz only; elsewhere there is only About)
+// tab: 'g' General, 'a' About (MusicBrainz only; elsewhere there is only About); 'l' is General's Dock section
 function stSettings(tab) {
+  var dock = tab === 'l';
+  if (dock) tab = 'g';
+  var toDock = function () { var d = ST_ON_MB && stCfgOv && stCfgOv.querySelector('#st-dock'); if (dock && d) d.scrollIntoView({ block: 'start' }); };
   if (stCfgOv && stCfgOv.isConnected) {
     if (tab && stCfgOv.querySelector('#st-tab-' + tab)) stCfgOv.querySelector('#st-tab-' + tab).click();
     stCfgOv.querySelector('#st-cfg').focus();
+    toDock();
     return;
   }
   var U = stUI(), T = stTokens(), html = document.documentElement;
@@ -228,8 +235,7 @@ function stSettings(tab) {
         + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
     };
     h += '<div class="st-nav"><div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-g" aria-controls="st-p-g" aria-selected="true">General</button>'
-      + '<button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="false">Dock</button>'
-      + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>' + links + '</div>'
+      + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>' + links + '</div><div class="st-panes">'
       + '<section class="st-sec" id="st-p-g" role="tabpanel" aria-labelledby="st-tab-g">'
       + '<h3 class="st-h">Theme</h3>'
       + '<div class="st-row">' + seg('st-th-mode', 'Mode', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']]) + '</div>'
@@ -237,20 +243,19 @@ function stSettings(tab) {
         return '<label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
           + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>';
       }).join('') + '</div>'
-      + '<div class="st-row" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark from</label><input type="text" id="st-th-from" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"><label for="st-th-to">to</label><input type="text" id="st-th-to" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"></div>'
-      + '<div class="st-cap" id="st-th-sun">Sun follows sunrise and sunset where you are: the browser asks for your location once, and your system setting is used if you refuse.</div>'
-      + '<h3 class="st-h">Command palette</h3>'
-      + '<div class="st-row">' + seg('st-pal-on', 'Palette', [['on', 'On'], ['off', 'Off']])
-      + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l"></button></div>'
-      + '<div class="st-cap">The hotkey opens a list of commands: settings, themes, pages, launchers. Click the hotkey, then press the new one.</div>'
-      + '</section>'
-      + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l" hidden>'
+      + '<div class="st-th-x"><div class="st-row" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark from</label><input type="text" id="st-th-from" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"><label for="st-th-to">to</label><input type="text" id="st-th-to" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"></div>'
+      + '<div class="st-cap" id="st-th-sun">Sun asks for your location once; if you refuse, it follows your system.</div></div>'
+      + '<h3 class="st-h" id="st-dock">Dock</h3>'
       + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
       + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
       + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
       + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + '</div>'
       + '<div class="st-strip" id="st-order"></div>'
       + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
+      + '<h3 class="st-h">Command palette</h3>'
+      + '<div class="st-row">' + seg('st-pal-on', 'Palette', [['on', 'On'], ['off', 'Off']])
+      + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l"></button></div>'
+      + '<div class="st-cap">The hotkey opens a list of commands: settings, themes, pages, launchers. Click the hotkey, then press the new one.</div>'
       + '</section>';
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
@@ -264,7 +269,7 @@ function stSettings(tab) {
     }).join('') + '</div>'
     + '<div class="st-row"><span class="st-note" id="st-apply">A change applies from the next page load.</span>'
     + '<button type="button" class="st-b" id="st-reload" hidden>Reload</button><button type="button" class="st-b" id="st-copy-md">Copy as Markdown</button></div>'
-    + '</section>';
+    + '</section>' + (ST_ON_MB ? '</div>' : '');
 
   var ov = document.createElement('div');
   ov.className = 'mbu-ov';
@@ -338,8 +343,8 @@ function stSettings(tab) {
       Array.prototype.forEach.call(q('#st-th-mode').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === th.mode)); });
       q('#st-th-dark').value = th.dark; q('#st-th-light').value = th.light;
       q('#st-th-from').value = th.from; q('#st-th-to').value = th.to;
-      q('#st-th-time').style.display = th.mode === 'time' ? '' : 'none';
-      q('#st-th-sun').style.display = th.mode === 'sun' ? '' : 'none';
+      q('#st-th-time').style.visibility = th.mode === 'time' ? '' : 'hidden';
+      q('#st-th-sun').style.visibility = th.mode === 'sun' ? '' : 'hidden';
     };
     q('#st-th-mode').onclick = function (e) {
       var b = e.target.closest('button');
@@ -501,4 +506,5 @@ function stSettings(tab) {
   U.mbuControls(panel);
   U.mbuCfgDrag(panel);
   panel.focus();
+  toDock();
 }
