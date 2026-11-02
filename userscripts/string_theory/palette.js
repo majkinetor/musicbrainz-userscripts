@@ -195,12 +195,34 @@ function stPalCommands() {
 // Typed text that isn't a command can still be a search: one per entity type, last in the list
 var ST_SEARCHES = [['artist', 'Artist'], ['release', 'Release'], ['release_group', 'Release group'], ['recording', 'Recording'], ['work', 'Work'], ['label', 'Label'],
   ['area', 'Area'], ['place', 'Place'], ['series', 'Series'], ['event', 'Event'], ['instrument', 'Instrument'], ['tag', 'Tag'], ['editor', 'Editor']];
+// "search work blue" or "work blue" searches works for "blue"; "search" alone, or with the start of a type
+// ("search rel"), offers the types, and Enter on one fills the box with it. first: these lead the list.
 function stPalSearches(q) {
-  if (!ST_ON_MB || !q) return [];
-  return ST_SEARCHES.map(function (s) {
-    return { id: 'search:' + s[0], cat: 'Search', label: s[1] + ' “' + q + '”', recentless: true, pinless: true,
-      run: stGo('/search?type=' + s[0] + '&method=indexed&query=' + encodeURIComponent(q)) };
+  if (!ST_ON_MB || !q) return { first: false, items: [] };
+  var item = function (s, text) {
+    return { id: 'search:' + s[0], cat: 'Search ' + s[1], label: text, recentless: true, pinless: true,
+      run: stGo('/search?type=' + s[0] + '&method=indexed&query=' + encodeURIComponent(text)) };
+  };
+  var ask = function (s) { return { id: 'search:' + s[0], cat: 'Search ' + s[1], label: '…', recentless: true, pinless: true, fill: 'search ' + s[1].toLowerCase() + ' ' }; };
+  var ex = /^search(?:\s+|$)([\s\S]*)$/i.exec(q), rest = (ex ? ex[1] : q).replace(/^([^:]*?)\s*:\s*/, '$1 '), low = rest.toLowerCase();
+  // the longest type name the text starts with ("release group" before "release")
+  var typed = null;
+  ST_SEARCHES.forEach(function (s) {
+    var n = s[1].toLowerCase();
+    if ((low === n || low.indexOf(n + ' ') === 0) && (!typed || n.length > typed[1].length)) typed = s;
   });
+  var text = typed ? rest.slice(typed[1].length).trim() : rest.trim();
+  if (typed && text) {
+    var others = ex ? [] : ST_SEARCHES.filter(function (s) { return s !== typed; }).map(function (s) { return item(s, q); });
+    return { first: true, items: [item(typed, text)].concat(others) };
+  }
+  if (ex) {
+    if (typed) return { first: true, items: [ask(typed)] };
+    var starts = ST_SEARCHES.filter(function (s) { return s[1].toLowerCase().indexOf(low.trim()) === 0; });
+    if (!text || starts.length) return { first: true, items: (text ? starts : ST_SEARCHES).map(ask) };
+    return { first: true, items: ST_SEARCHES.map(function (s) { return item(s, text); }) };
+  }
+  return { first: false, items: ST_SEARCHES.map(function (s) { return item(s, q); }) };
 }
 
 // Every word typed is found in "Category: label", at a word's start ranking first; failing that, the
@@ -307,8 +329,9 @@ function stPalette() {
         hits.push({ c: c, hits: mm.hits, s: mm.score - bonus, i: i });
       });
       hits.sort(function (a, b) { return a.s - b.s || a.i - b.i; });
-      group('', hits);
-      group(hits.length ? 'Search MusicBrainz' : '', stPalSearches(q).map(function (c) { return { c: c }; }));
+      var se = stPalSearches(q), found = se.items.map(function (c) { return { c: c }; });
+      if (se.first) { group(hits.length ? 'Search MusicBrainz' : '', found); group('Commands', hits); }
+      else { group('', hits); group(hits.length ? 'Search MusicBrainz' : '', found); }
     }
     list.innerHTML = h || '<li class="st-pal-none">No command matches</li>';
     var at = keepId ? shown.map(function (c) { return c.id; }).indexOf(keepId) : -1;
@@ -332,6 +355,7 @@ function stPalette() {
   };
   var run = function (c) {
     if (!c) return;
+    if (c.fill) { input.value = c.fill; render(false); input.focus(); return; }   // a step, not a command
     if (!c.recentless) {
       var r = stPalRead().recent.filter(function (id) { return id !== c.id; });
       r.unshift(c.id);
