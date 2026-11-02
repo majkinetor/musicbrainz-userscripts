@@ -69,6 +69,14 @@ A page loader's requests go through `kept` ([#847](https://github.com/majkinetor
 - **The release's front cover is kept as an image** (`keptCover`, the 60 newest), keyed by the image's id. CAA's address redirects twice (to archive.org, then to a mirror) and neither redirect carries a cache header, so the browser repeats both on every draw, about a second, even with the image itself in its cache. Keeping the answer listing the images isn't enough.
 - **Not kept**: edits, paging, and anything a write reads back. They go through `ws`, uncached.
 
+## Collections
+
+The entity-type label opens the collection menu. `collectionParse` reads `#sidebar h2.collections` and the following lists up to the next h2: MusicBrainz supplies the translated action labels, collection IDs, numeric entity IDs and type-filtered own/private/collaborative collections. It accepts only same-origin collection add/remove links and the creation link with this entity type's query parameter (`release_group`, not `release-group`).
+
+The native body supplies the initial page's list without a request. Navigation inside Event Horizon reads the entity's native page through `mbnFetch`; a cached list paints first and is refreshed after a minute. GM `collections` keeps the last 80 lists, keyed by origin, signed-in editor and entity path. It never reuses the hidden native body's sidebar for another entity.
+
+Changes POST the native collaborator action with its numeric entity ID and a return path to the entity. The redirected page must show the opposite action before success is reported or the cache is changed. Writes are serialized per entity; navigation does not cancel an in-flight write. Refresh remains available after an error. [`902-collections.spec.mjs`](test/902-collections.spec.mjs) creates private collections on the sandbox and reads their actual contents after adding and removing artists, including one reached without reloading.
+
 ## Leading the gate
 
 While a page loads, its tab leads the shared request gate (`mbnLead`, [#847](https://github.com/majkinetor/musicbrainz-userscripts/issues/847)): every other background ws/2 request, in any script or tab, waits until the lead ends, so the page the reader asked for isn't queued behind Platform Check's or ISRC Scout's scans. The page's own requests pass `{ lead }` to `mbnFetch` and renew it; it ends once all the page's parts are in, or when the page fails. A lead not renewed lapses after 8 seconds (the gate caps one at 10), so a tab closed mid-load holds no one for long. A hidden tab doesn't lead, and `kpCheck`'s requests don't carry the lead.

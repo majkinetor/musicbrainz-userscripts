@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.200100
+// @version      2026.11.02.210000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2571,10 +2571,13 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .kicker .srch{margin-left:10px}
 .kicker .srch>.ab,.kicker .ab.eh-home,.kicker .ab[data-ehsec],.kicker .ab[data-star]{background:none!important;border-color:transparent;filter:none!important}.kicker .srch>.ab,.kicker .ab[data-ehsec],.kicker .ab[data-star]{color:var(--chip-text)!important}
 .kicker .ab[data-star]{cursor:pointer}
+.eh-collections{position:relative;display:inline-flex;min-width:0}.eh-collections>button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}.eh-collections>button:hover{color:var(--accent)}.eh-collections>button::after{content:'▾';margin-left:5px;font-size:10px}.eh-collections .pop{letter-spacing:normal;text-transform:none;font-weight:400;font-size:13px;max-width:min(380px,calc(100vw - 32px));max-height:65vh;overflow:auto;white-space:normal}.eh-collections .row{width:100%;text-align:left;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}.eh-collections .row:hover{background:var(--chip)}.eh-collections .row[aria-pressed=true]{color:var(--accent)}.eh-collections .row:disabled{opacity:.5;cursor:wait}.eh-collections .h{padding:8px 12px}.eh-collections .row svg{flex:none}
+
 .kicker .ab[data-star]:hover{border-color:var(--accent)}
 .kicker .acts > * + .ab[data-star]{margin-left:10px}
 .kicker .ab[data-star][aria-pressed="true"] svg{color:var(--mbu-warn)!important}
 .kicker.pin-home{min-height:30px}.kicker.pin-home>span:not(.acts){min-width:0;overflow:hidden;text-overflow:ellipsis}.kicker.pin-home .acts,#eh-pin .acts{flex:none}
+.kicker.pin-home>span.eh-collections{overflow:visible}.eh-collections>button{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #eh-pin{position:fixed;top:0;left:0;right:0;z-index:9990;background:color-mix(in srgb,var(--eh-bar) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .18s}#eh-pin.on{transform:none}#eh-pin>.kicker{box-sizing:border-box;padding:6px 0;display:flex;align-items:center;gap:10px;font-size:13px}#eh-pin .pident{display:flex;align-items:center;gap:10px;flex:1;min-width:0}#eh-pin .pnm .disamb{display:none}#eh-pin .pby{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:35%;text-transform:none;letter-spacing:0;font-size:13px}#eh-pin .pcv{width:30px;height:30px;border-radius:6px;object-fit:contain;flex:none}#eh-pin .pnm{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;text-transform:none;letter-spacing:0;cursor:pointer}#eh-pin .rg-l{flex:none;margin:0;font-size:13px}#eh-pin .rg-l svg{width:17px;height:17px}@media (prefers-reduced-motion:reduce){#eh-pin{transition:none}}@media (max-width:700px){#eh-pin .pkk,#eh-pin .pby{display:none}#eh-pin .abm .abt{display:inline}}
 #eh-pin .pkk{display:flex;align-items:center;gap:6px;min-width:0;max-width:40%;color:var(--muted);font-size:10.5px;white-space:nowrap}#eh-pin .pkk svg{width:18px;height:18px;flex:none}#eh-pin .pkk>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .kicker .ab[data-ehsec]:hover,.kicker .srch>.ab:hover,.kicker .ab.eh-home:hover{background:var(--surface)!important;border-color:var(--accent)}
@@ -7693,6 +7696,7 @@ function colWire(root) {
 }
 function render(keepPop) {
     if (secDrag || colDrag) { secRedraw = true; return; } // keep the dragged row attached until the drag ends
+    if (!keepPop && $('#pop-collections:not([hidden])')) keepPop = 'collections';
     if (!keepPop) { const p = $('.col-pop:not([hidden])'); if (p) keepPop = p.id.slice(4); } // a background redraw leaves the Columns menu open
     if (!data || data.kind !== 'home') secFab(false);
     if (releasePageDraw) {
@@ -7802,6 +7806,7 @@ function render(keepPop) {
     }
     if (keepPop) { const p = document.getElementById('pop-' + keepPop); if (p) { p.hidden = false; p.scrollTop = popTop || 0; const t = $(`[data-pop="${keepPop}"]`); if (t) t.setAttribute('aria-expanded', 'true'); } }
     secRail(app);
+    if (keepPop === 'collections') { const p = $('#pop-collections'); if (p) { p.hidden = false; $('[data-pop="collections"]').setAttribute('aria-expanded', 'true'); } }
     fitQuiet();
     lmWatch(app);
     shWatch(app);
@@ -7915,6 +7920,91 @@ const HM_ME = [
 const HM_KIND = { release: ['Release', MK_RELEASE], 'release-group': ['Release group', MK_RG], artist: ['Artist', MK_CR], label: ['Label', CI_TAG], recording: ['Recording', MK_REC], work: ['Work', MK_WORK], area: ['Area', MK_AREA], instrument: ['Instrument', MK_INS], place: ['Place', MK_PLACE], series: ['Series', MK_SER], event: ['Event', MK_EVENT], collection: ['Collection', MK_COL] };
 const starDateValid = n => Number.isSafeInteger(n) && n > 0 && n <= 8640000000000000;
 const STAR = '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>';
+/* ── the entity's collections ────────────────────── */
+// Read the native sidebar: it already filters by entity type and includes private and collaborative collections.
+// Keep its translated action labels and numeric entity IDs; never guess a type from a translated heading.
+const COLLECTIONS = new Map();
+function collectionParse(doc, key) {
+    const h = doc.querySelector('#sidebar h2.collections'); if (!h) return null;
+    const type = key.split('/')[0].replace('-', '_'), rows = [];
+    let group = '';
+    for (let e = h.nextElementSibling; e && e.tagName !== 'H2'; e = e.nextElementSibling) {
+        if (e.tagName === 'H3') group = e.textContent.trim();
+        for (const a of e.querySelectorAll('a[href]')) {
+            const u = new URL(a.getAttribute('href'), MB), m = u.pathname.match(/^\/collection\/([0-9a-f-]{36})\/collection_collaborator\/(add|remove)$/);
+            if (u.origin !== MB || !u.searchParams.has(type)) continue;
+            if (m || u.pathname === '/collection/create') rows.push({ group, label: a.textContent.trim(), path: u.pathname + u.search, id: m ? m[1] : '', on: !!m && m[2] === 'remove' });
+        }
+    }
+    return { at: Date.now(), rows };
+}
+const collectionStoreKey = key => location.origin + '/' + ME + '/' + key;
+function collectionKeep(key, x) {
+    try {
+        const all = GM_getValue('collections', {}), k = collectionStoreKey(key);
+        all[k] = { at: x.at, rows: x.rows };
+        const newest = Object.entries(all).sort((a, b) => b[1].at - a[1].at).slice(0, 80);
+        GM_setValue('collections', Object.fromEntries(newest));
+    } catch (e) { LOG.debug('Collections cache: ' + e.message); }
+}
+function collectionPaint(key) {
+    const p = $('#pop-collections'); if (!p || p.dataset.key !== key) return;
+    const x = COLLECTIONS.get(key); if (!x) return;
+    let group = '';
+    p.innerHTML = '<div class="h label">Collections</div>' + (x.rows || []).map(r => {
+        const h = r.group !== group ? '<div class="h label">' + esc(r.group) + '</div>' : ''; group = r.group;
+        return h + (r.id ? '<button type="button" class="row opt" data-collkey="' + key + '" data-collchange="' + r.id + '" aria-pressed="' + r.on + '"' + (x.busy || x.loading ? ' disabled' : '') + '>' + SVG(r.on ? '<path d="m5 12 4 4L19 6"/>' : '<path d="M12 5v14M5 12h14"/>') + '<span>' + esc(r.label) + '</span></button>' : '<a class="row" href="' + esc(MB + r.path) + '">' + esc(r.label) + '</a>');
+    }).join('') + (!x.rows ? '<div class="h">Loading collections…</div>' : !x.rows.some(r => r.id) ? '<div class="h">No collections of this type</div>' : '')
+        + (x.error ? '<div class="h" role="alert">' + esc(x.error) + '</div>' : '')
+        + '<button type="button" class="row opt" data-collrefresh="' + key + '"' + (x.loading || x.busy ? ' disabled' : '') + '>Refresh collections</button>';
+}
+async function collectionLoad(key, force = false) {
+    let x = COLLECTIONS.get(key);
+    if (!x) {
+        try { x = GM_getValue('collections', {})[collectionStoreKey(key)]; } catch (e) {}
+        // The hidden native body always belongs to the page the tab loaded, never the page navigated to inside EH.
+        if (PAGE_ID === key && mbBody) { const native = collectionParse(mbBody, key); if (native) { x = native; collectionKeep(key, x); } }
+        x = x || { at: 0 }; COLLECTIONS.set(key, x);
+    }
+    collectionPaint(key);
+    if (x.loading || x.busy || !force && Date.now() - x.at < 60000) return;
+    x.loading = true; x.error = ''; collectionPaint(key);
+    try {
+        const r = await mbnFetch(MB + '/' + key, { credentials: 'include' });
+        if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'Request cancelled');
+        const fresh = collectionParse(new DOMParser().parseFromString(await r.text(), 'text/html'), key);
+        if (!fresh) throw new Error('Could not read collections. Check that you are signed in.');
+        Object.assign(x, fresh); collectionKeep(key, x);
+    } catch (e) { x.error = e.message; LOG.warn('Collections: ' + e.message); }
+    finally { x.loading = false; collectionPaint(key); }
+}
+async function collectionChange(key, id) {
+    const x = COLLECTIONS.get(key), row = x && x.rows && x.rows.find(r => r.id === id);
+    if (!row || x.busy || x.loading) return;
+    x.busy = true; x.error = ''; collectionPaint(key);
+    try {
+        const u = new URL(row.path, MB);
+        u.searchParams.set('returnto', '/' + key);
+        const r = await mbnFetch(u.origin + u.pathname, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: u.searchParams });
+        if (!r || !r.ok) throw new Error(r ? 'HTTP ' + r.status : 'Request cancelled');
+        const fresh = collectionParse(new DOMParser().parseFromString(await r.text(), 'text/html'), key), changed = fresh && fresh.rows.find(v => v.id === id);
+        if (!changed || changed.on === row.on) throw new Error('Collection change could not be verified. Refresh to try again.');
+        Object.assign(x, fresh); collectionKeep(key, x); kpWrote();
+        LOG.info('Collections: ' + row.label); toast(row.on ? 'Removed from collection' : 'Added to collection');
+    } catch (e) { x.error = e.message; LOG.warn('Collections: ' + e.message); toast('Collection change failed'); }
+    finally { x.busy = false; collectionPaint(key); }
+}
+function collectionButton(app) {
+    if (!ME || !app) return;
+    const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event)\/([0-9a-f-]{36})(?:\/|$)/i);
+    const label = app.querySelector('.kicker > span:not([class])');
+    if (!m || !label || label.closest('.eh-collections')) return;
+    const key = m[1] + '/' + m[2], w = document.createElement('span'); w.className = 'eh-collections';
+    label.replaceWith(w);
+    w.innerHTML = '<button type="button" data-pop="collections" aria-expanded="false" aria-label="Collections">' + label.innerHTML + '</button><span class="pop" id="pop-collections" data-key="' + key + '" hidden></span>';
+    collectionLoad(key);
+}
+
 function starButton(app) {
     const m = location.pathname.match(/^\/(release-group|release|artist|label|recording|work|area|instrument|place|series|event|collection)\/([0-9a-f-]{36})(?:\/|$)/i);
     const acts = app.querySelector('.kicker .acts'), r = data && (data.rel || data.g || data.t);
@@ -8408,6 +8498,7 @@ function secRail(app) {
     }
     rail.hidden = secs.length < 2 && !secs.some(x => x.hidden);
     starButton(app);
+    collectionButton(app);
     const acts = app.querySelector('.kicker .acts');
     if (acts && !rail.hidden && !acts.querySelector('[data-ehsec]')) {
         acts.querySelector('.srch,[data-srch]') ? acts.querySelector('.srch,[data-srch]').insertAdjacentHTML('beforebegin', SEC_BTN) : acts.insertAdjacentHTML('beforeend', SEC_BTN);
@@ -8578,6 +8669,8 @@ function onClick(ev) {
     const d = b.dataset;
     let keep;
     if ('srch' in d) { const fm = b.form; if (fm.classList.toggle('open')) fm.query.focus(); return; }
+    if (d.collchange) { collectionChange(d.collkey, d.collchange); return; }
+    if (d.collrefresh) { collectionLoad(d.collrefresh, true); return; }
     if (d.pop) { const p = document.getElementById('pop-' + d.pop); p.hidden = !p.hidden; b.setAttribute('aria-expanded', String(!p.hidden)); return; }
     if (d.nmuse) {
         const [key, i] = d.nmuse.split('\t'), [kind, sc] = key.split('-'), x = nmList(key)[i]; if (!x) return;
@@ -8775,6 +8868,7 @@ function subHead(r, id, tab, name, none) {
 const cvGone = new Set();
 const cvPending = new Map();
 const cvWire = el => {
+    collectionButton(el);
     const c = el.querySelector('.rhcv'); if (!c) return;
     const src = c.dataset.cover || c.getAttribute('src');
     const fail = () => { cvGone.add(src); c.hidden = true; const i = el.querySelector('.rhic'); if (i) i.hidden = false; LOG.debug('Header: no front cover'); };
