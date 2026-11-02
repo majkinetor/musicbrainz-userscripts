@@ -1,6 +1,6 @@
 // String Theory's command palette (#890): a hotkey (Ctrl+K by default) opens a list of commands, filtered as
 // you type, as in VS Code. build.mjs writes this file into the bundle after settings.js, in the same scope.
-// Its setting is the GM value 'string_theory.palette': { on, key: { ctrl, alt, shift, meta, key }, pins, recent }.
+// Its setting is the GM value 'string_theory.palette': { on, key: { ctrl, alt, shift, meta, key }, pins, recent, last }.
 // Plain ES5, as the rest of the bundle's own code.
 var ST_PAL_KEY = 'string_theory.palette';
 var ST_PAL_HOTKEY = { ctrl: true, alt: false, shift: false, meta: false, key: 'k' };
@@ -10,7 +10,7 @@ function stPalRead() {
   var v; try { v = GM_getValue(ST_PAL_KEY, null); } catch (e) { v = null; }
   v = v && typeof v === 'object' ? v : {};
   var list = function (a) { return Array.isArray(a) ? a.filter(function (x) { return typeof x === 'string'; }) : []; };
-  stPal = { on: v.on !== false, key: v.key && v.key.key ? v.key : ST_PAL_HOTKEY, pins: list(v.pins), recent: list(v.recent) };
+  stPal = { on: v.on !== false, key: v.key && v.key.key ? v.key : ST_PAL_HOTKEY, pins: list(v.pins), recent: list(v.recent), last: typeof v.last === 'string' ? v.last : '' };
   return stPal;
 }
 function stPalSet(patch) {
@@ -314,6 +314,7 @@ function stPalette() {
   var close = function () {
     if (done) return;
     done = true;
+    stPalSet({ last: input.value });   // back in the box, selected, the next time
     unpreview();
     ov.remove();
     window.removeEventListener('keydown', onKey, true);
@@ -428,8 +429,10 @@ function stPalette() {
     if (i !== active) select(i, false);   // the pointer only points: no preview
   });
   ov.addEventListener('mousedown', function (e) { if (e.target === ov) { e.preventDefault(); close(); } });
-  render(false);
+  input.value = stPalRead().last;
+  render(!!input.value);   // the text left from last time previews nothing until it changes
   input.focus();
+  input.select();
 }
 // the hotkey, in the top frame only; not while the settings window records a new one
 function stPalListen() {

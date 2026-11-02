@@ -77,6 +77,7 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | New issue, New issue with log | a new issue about String Theory or one script, its name in the title and the versions in the report; *with log* adds that script's log of this page, or one of its last 10 kept logs |
 | String Theory | copy versions, docs, reload |
 
+- **Your last input comes back** selected when you open the palette again: type to replace it.
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - The words you type can be in any order and abbreviated: `rel cov` finds *This release: Cover art*.

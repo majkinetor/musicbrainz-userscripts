@@ -43,6 +43,18 @@ test.describe('palette', () => {
     await page.waitForSelector('#st-cfg', { timeout: 5000 });
     check(await page.locator('#st-tab-g').getAttribute('aria-selected') === 'true', 'the settings open on General');
   });
+  test('the last input comes back selected', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+    await open(page, inject);
+    await page.keyboard.type('theme: dark');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Control+k');
+    const sel = await page.$eval('#st-pal-q', i => i.value.slice(i.selectionStart, i.selectionEnd));
+    check(sel === 'theme: dark', `selected (${sel})`);
+    check((await rows(page))[0] === 'Theme: Dark', 'and filtering');
+    check(await variant(page) === 'light', 'previewing nothing');
+    await page.keyboard.type('x');
+    check(await page.inputValue('#st-pal-q') === 'x', 'typing replaces it');
+  });
   test('the hotkey can be changed and turned off', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await open(page, inject);
     await page.keyboard.press('Escape');
