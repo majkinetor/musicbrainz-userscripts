@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.213000
+// @version      2026.11.02.223000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2600,6 +2600,12 @@ main.wrap{padding-block:40px 64px;display:flex;flex-direction:column;gap:24px}
 .stars.rt .st{all:unset;cursor:pointer;color:color-mix(in srgb,var(--muted) 45%,transparent);filter:none!important}.stars.rt .st.on{color:var(--accent)}.stars.rt.mine .st.on{color:var(--gold,#e0a800)}.stars.rt:hover .st{color:var(--gold,#e0a800)}.stars.rt .st:hover~.st{color:color-mix(in srgb,var(--muted) 45%,transparent)}.stars.rt .st:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .stars.sm{font-size:14px;letter-spacing:1px;white-space:nowrap}
 h1{margin:0;font-size:clamp(24px,3vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.02em}
+h1.eh-l2{font-size:24px;line-height:1.15}h1.eh-l3{font-size:19px;line-height:1.2}
+.eh-ts{display:block;flex-basis:100%;order:1;font-size:.55em;font-weight:600;letter-spacing:0;line-height:1.25;color:var(--muted);margin-top:4px}
+h1.eh-tc:not(.open) .eh-tm{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+.eh-tx{all:unset;display:block;flex-basis:100%;order:2;margin-top:4px;color:var(--accent);font-size:13px;font-weight:600;letter-spacing:0;cursor:pointer}.eh-tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hm-star-tile .dt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+#eh-pin .pnm .eh-ts,#eh-pin .pnm .eh-tx{display:none}
 .disamb{font-size:.5em;color:var(--muted);font-weight:500;opacity:.75;letter-spacing:0;white-space:normal}
 h1:has(>.disamb){display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.25em}
 .by{font-size:16px;font-weight:600}
@@ -3105,6 +3111,13 @@ const toggle = (arr, v) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr,
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const MB = location.origin;
+// a page's h1: a subtitle after ": " or " - " (any dash) goes small on its own line, a long title shrinks, a very long one clamps to four lines
+const heroH1 = (title, disambig) => {
+    const t = String(title == null ? '' : title), m = /^(.+?)(?::\s+|\s+[-\u2010-\u2015\u2212]\s+)(.+)$/s.exec(t), main = m ? m[1] : t, n = main.length;
+    const cls = [n > 120 ? 'eh-l3' : n > 60 ? 'eh-l2' : '', n > 200 ? 'eh-tc' : ''].filter(Boolean).join(' ');
+    return `<h1${cls ? ` class="${cls}"` : ''}><span class="eh-tm">${esc(main)}</span>${m ? `<span class="eh-ts">${esc(m[2])}</span>` : ''}${disambig ? `<span class="disamb">(${esc(disambig)})</span>` : ''}${n > 200 ? '<button type="button" class="eh-tx">Show full title</button>' : ''}</h1>`;
+};
+document.addEventListener('click', ev => { const b = ev.target.closest && ev.target.closest('.eh-tx'); if (b) b.textContent = b.closest('h1').classList.toggle('open') ? 'Show less' : 'Show full title'; });
 const MBID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 
 /* ── data ──────────────────────────────────────────── */
@@ -3644,7 +3657,7 @@ function hero(r) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${fmtSvg(fk, 26)}<span>${esc([fmtSummary(r.media.map(m => m.format)), r.type, r.status].filter(Boolean).join(' · '))}</span><span class="acts">${actionRow(relActs(r), 'release', r.id)}${SRCH()}</span></div>
-            <h1>${esc(r.title)}${r.disambig ? `<span class="disamb">(${esc(r.disambig)})</span>` : ''}</h1>
+            ${heroH1(r.title, r.disambig)}
             <div class="by">by ${acHtml(r.ac)}${rgLink(r)}</div>
             ${facts(r)}
         </div>
@@ -4188,7 +4201,7 @@ function rgHero(d) {
         </div>
         <div class="facts-col">
             <div class="kicker label">${LAYERS(18)}<span>${esc(['Release group', ...g.types].join(' · '))}</span><span class="acts">${actionRow(RG_ACTS, 'release-group', g.id)}${SRCH()}</span></div>
-            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
+            ${heroH1(g.title, g.disambig)}
             <div class="by">by ${acHtml(g.ac)}</div>
             <div class="facts">${F.filter(x => x[1]).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -6029,7 +6042,7 @@ function lbHero(d) {
         <div class="art">${pic}${under(g, on('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${SVG(CI_TAG)}<span>${esc(g.type || 'Label')}</span><span class="acts">${actionRow(LB_ACTS, 'label', g.id)}${SRCH()}</span></div>
-            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
+            ${heroH1(g.title, g.disambig)}
             <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="label" aria-label="Header settings" data-tip="Header settings
 Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1] && !S.factOff.label.includes(x[3])).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
         </div>
@@ -6056,7 +6069,7 @@ function arHero(d) {
         <div class="art">${pic}${under(g, tags)}</div>
         <div class="facts-col">
             <div class="kicker label">${IC_NAME}<span>${esc(g.type || 'Artist')}</span><span class="acts">${actionRow(AR_ACTS, 'artist', g.id)}${SRCH()}</span></div>
-            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
+            ${heroH1(g.title, g.disambig)}
             ${g.sort && g.sort !== g.title ? `<div class="by">${esc(g.sort)}</div>` : ''}
             <div class="facts"><button class="tx plcfg hdcfg" type="button" data-plcfg="artist" aria-label="Header settings" data-tip="Header settings
 Which facts the header shows, and where the picture comes from">${MBU_CFG_ICON}</button>${F.filter(x => x[1] && !S.factOff.artist.includes(x[3])).map(([l, v, w]) => `<div${w ? ' class="wide"' : ''}>${l ? `<div class="label">${l}</div>` : ''}<div class="v">${v}</div></div>`).join('')}</div>
@@ -6109,7 +6122,7 @@ function pgHero(g, type, icon, kind, F, by, pic) {
         <div class="art">${pic || picHtml(g, 'mpic', `<div class="nocover pg">${bigMk(icon)}</div>`)}${under(g, S.extras.includes('tags') ? tagsMore(g.tags) : '')}</div>
         <div class="facts-col">
             <div class="kicker label">${mkSvg(icon)}<span>${esc(kind)}</span><span class="acts">${pgActs(type, g.id)}</span></div>
-            <h1>${esc(g.title)}${g.disambig ? `<span class="disamb">(${esc(g.disambig)})</span>` : ''}</h1>
+            ${heroH1(g.title, g.disambig)}
             ${by ? `<div class="by">${by}</div>` : ''}
             ${factsHtml(F)}
         </div>
