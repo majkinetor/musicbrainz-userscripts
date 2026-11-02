@@ -793,7 +793,7 @@ html:root:root:root {
 	--mbu-radius: 2px;
 	--mbu-radius-lg: 3px;
 	--mbu-shadow: 2px 2px 0 #37312c;
-	--mbu-shadow-lg: 6px 6px 0 #00000030;
+	--mbu-shadow-lg: 0 0 0 1px #84766a, 0 14px 36px #00000080;
 }
 
 /* Serif display type and fine rules, like a printed catalogue. Forms keep their UI font. */
