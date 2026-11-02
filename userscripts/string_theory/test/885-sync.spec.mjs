@@ -1,7 +1,8 @@
+import { backupCloud } from './support/dropbox-backups.mjs';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '../../../dev/test/harness.mjs';
 
-const source = name => readFileSync(new URL('../' + name, import.meta.url), 'utf8');
+const source = name => readFileSync(name === 'sync.js' && process.env.ST_SYNC_SRC ? process.env.ST_SYNC_SRC : new URL('../' + name, import.meta.url), 'utf8');
 const { D, store, allow } = new Function(source('sync-data.js') + source('sync-policy.js') + source('sync-storage.js') + ';return {D:stSyncData,store:stSyncStore,allow:stSyncAllow};')();
 const value = x => ({ encoding: 'value', value: x });
 function memory(seed = {}) {
@@ -116,7 +117,7 @@ function runtime(gmSeed, backend) {
   let opened;
   const names = ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'location', 'localStorage', 'document', 'navigator', 'stUI', 'ST_ON_MB', 'window'];
   const body = ['sync-data.js', 'sync-policy.js', 'sync-storage.js', 'providers.js', 'sync.js'].map(source).join('\n')
-    + ';stSyncStorageInit(); return {run:stSyncRun,store:stSyncStorage,guard:__stSyncGuard,state:stSyncState,finish:stSyncFinish,connect:stSyncConnect,disconnect:stSyncDisconnect};';
+    + ';stSyncStorageInit(); return {run:stSyncRun,store:stSyncStorage,guard:__stSyncGuard,state:stSyncState,finish:stSyncFinish,connect:stSyncConnect,disconnect:stSyncDisconnect,backups:typeof stBackupRun === "undefined" ? undefined : stBackupRun,drive:()=>stSyncDropbox(stSyncAuthorizer())};';
   const api = new Function(...names, body)(
     (k, d) => gm.get(k) ?? d, gm.set, gm.del, gm.keys, xhr,
     { origin: 'https://test.musicbrainz.org' }, locals, { getElementById: () => null },
@@ -268,4 +269,69 @@ test('disconnect cannot be undone by a previously staged credential download', {
   expect(a.gm.get('string_theory.sync.auth')).toBeUndefined();
   expect(a.gm.get('string_theory.sync.settings').automatic).toBe(false);
   expect(a.gm.get('view').stars).toHaveLength(1);
+});
+
+test('remote backups are distinct snapshots, list all pages and leave sync state untouched', { tag: '@unit' }, async () => {
+  const server = backupCloud(), a = runtime({ saved: 'first', view: { width: 800, stars: [] }, 'pc:cache:fixture': 'omit', 'string_theory.sync.base': { untouched: true } }, server.request);
+  expect(await a.drive().listBackups()).toEqual([]);
+  await a.backups('save'); a.gm.set('saved', 'second'); await a.backups('save');
+  expect(server.files.size).toBe(2);
+  const snapshots = [...server.files.values()].map(f => JSON.parse(f.text));
+  expect(snapshots.map(d => d.data.gm.saved.value)).toEqual(['first', 'second']);
+  for (const snapshot of snapshots) {
+    expect(snapshot.data.gm['pc:cache:fixture']).toBeUndefined(); expect(snapshot.data.gm.view.value.width).toBeUndefined();
+    expect(snapshot.data.gm['string_theory.sync.auth'].value.refreshToken.token).toBe('test-refresh');
+  }
+  const entries = await a.drive().listBackups();
+  expect(entries).toHaveLength(2); expect(entries[0].id).toBe('id:2');
+  expect(server.calls.some(c => c.endpoint.endsWith('/list_folder/continue'))).toBe(true);
+  expect(a.gm.get('string_theory.sync.base')).toEqual({ untouched: true }); expect(a.store.pending()).toBe(false);
+  expect(server.calls.every(c => c.args.path !== '/string-theory.json')).toBe(true);
+});
+
+test('remote import validates and stages a filtered merge with recovery before reload', { tag: '@unit' }, async () => {
+  const server = backupCloud(), a = runtime({ saved: 'old', localOnly: 'keep', view: { width: 800, stars: [{ key: 'artist/a' }] } }, server.request);
+  await a.backups('save');
+  const file = [...server.files.values()][0], doc = JSON.parse(file.text);
+  doc.data.gm.saved.value = 'restored'; doc.data.gm.view.value.width = 1600;
+  doc.data.gm.view.value.stars = [{ key: 'artist/b' }]; doc.data.gm['pc:cache:fixture'] = value('excluded');
+  file.text = JSON.stringify(doc);
+  const entry = (await a.drive().listBackups())[0];
+  await a.backups('apply', entry);
+  expect(a.gm.get('saved')).toBe('old');
+  expect(a.gm.get('string_theory.sync.recovery').data.gm.saved.value).toBe('old');
+  a.gm.set('editedAfterImport', 'keep'); a.store.applyPending();
+  expect(a.gm.get('saved')).toBe('restored'); expect(a.gm.get('localOnly')).toBe('keep'); expect(a.gm.get('editedAfterImport')).toBe('keep');
+  expect(a.gm.get('view').width).toBe(800); expect(a.gm.get('view').stars.map(s => s.key).sort()).toEqual(['artist/a', 'artist/b']);
+  expect(a.gm.get('pc:cache:fixture')).toBeUndefined();
+  expect(server.files.size).toBe(1); expect(a.gm.get('string_theory.sync.base')).toBeUndefined();
+});
+
+test('remote deletion rejects stale revisions and cannot target the live sync file', { tag: '@unit' }, async () => {
+  const server = backupCloud(), a = runtime({ saved: 'keep' }, server.request);
+  await a.backups('save');
+  const entry = (await a.drive().listBackups())[0], file = [...server.files.values()][0];
+  file.metadata.rev = 'changed';
+  await expect(a.backups('delete', entry)).rejects.toThrow('Refresh the list');
+  expect(server.files.size).toBe(1); expect(a.gm.get('saved')).toBe('keep');
+  const before = server.calls.length;
+  await expect(a.drive().deleteBackup({ ...entry, path_lower: '/string-theory.json' })).rejects.toThrow('Invalid remote backup');
+  expect(server.calls).toHaveLength(before);
+  await a.backups('delete', (await a.drive().listBackups())[0]); expect(server.files.size).toBe(0);
+});
+
+test('invalid and failed remote imports never change local data or recovery', { tag: '@unit' }, async () => {
+  const server = backupCloud(), a = runtime({ saved: 'keep' }, server.request);
+  await a.backups('save');
+  const file = [...server.files.values()][0], entry = (await a.drive().listBackups())[0];
+  for (const text of ['{', '{"format":"string-theory-sync","version":99,"data":{"gm":{},"local":{}}}']) {
+    file.text = text;
+    await expect(a.backups('apply', entry)).rejects.toThrow();
+    expect(a.gm.get('saved')).toBe('keep'); expect(a.gm.get('string_theory.sync.stage')).toBeUndefined(); expect(a.gm.get('string_theory.sync.recovery')).toBeUndefined();
+  }
+  const before = server.calls.length;
+  await expect(a.backups('apply', { ...entry, size: 11 * 1024 * 1024 })).rejects.toThrow('10 MB');
+  expect(server.calls).toHaveLength(before);
+  server.denied = true; await expect(a.backups('list')).rejects.toMatchObject({ response: { status: 403 } });
+  expect(a.gm.get('saved')).toBe('keep');
 });

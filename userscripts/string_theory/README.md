@@ -36,7 +36,7 @@ String Theory adds dock and setting management for all included scripts:
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
-- **[Sync and backup](#sync-and-backup)**: carry settings and saved data between devices with Dropbox, or export a backup.
+- **[Sync and backup](#sync-and-backup)**: sync devices with Dropbox, save remote backups or export a file.
 - **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
@@ -100,6 +100,8 @@ With no Dropbox backup yet, **Sync** and **Push** create one; **Pull** leaves lo
 Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
 
 Downloaded changes apply on the next page load; **Reload** applies them immediately. **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and the Dropbox file contain credentials.
+
+**Remote backup** saves a separate, dated snapshot in Dropbox. **Remote import** lists those backups, newest first, with their date and size. **Apply** merges a backup into your settings, keeping a recovery copy and applying on reload, just like **Import**. Backup values win shared settings; stars are combined. **Delete** asks for a second click before removing that snapshot. **Refresh** updates the list. Remote backups stay separate from Sync, Push and Pull.
 
 **Disconnect** stops automatic sync and removes this device's Dropbox connection; the Dropbox file remains.
 

@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { backupCloud } from './support/dropbox-backups.mjs';
 import { test, expect, SANDBOX, answerGm } from '../../../dev/test/harness.mjs';
 const members = readFileSync(new URL('../members.txt', import.meta.url), 'utf8').split(/\r?\n/).map(x => x.replace(/#.*/, '').trim()).filter(Boolean);
 test.use({ gm: { name: 'String Theory', persist: true, values: {
@@ -30,6 +31,66 @@ test('backup download and import use the bundle’s real settings and apply on r
   const stored = await page.evaluate(() => GM_getValue('view'));
   expect(stored.width).toBe(800); expect(stored.stars).toHaveLength(1);
   expect(await page.evaluate(() => GM_getValue('string_theory.sync.stage'))).toBeUndefined();
+});
+
+test.describe('remote backup manager', () => {
+  test.use({ gm: { name: 'String Theory', persist: true, values: {
+    'string_theory.off': members,
+    'string_theory.sync.auth': { accessToken: { token: 'test-access', expiresAt: Date.now() + 3600000 }, refreshToken: { token: 'test-refresh' } },
+    'string_theory.sync.state': { account: 'fixture-account', name: 'Fixture' },
+    saved: 'snapshot value', view: { width: 800, stars: [] }, 'pc:cache:fixture': 'excluded',
+  } } });
+  test('save, list, apply on reload and confirmed deletion work through the settings', { tag: '@sandbox' }, async ({ page, context, inject }, info) => {
+    const server = backupCloud();
+    await answerGm(context, async opts => {
+      if (!/\.dropboxapi\.com\//.test(opts.url)) return null;
+      const reply = await server.request(opts); return { status: reply.status, body: reply.text };
+    });
+    await page.goto(SANDBOX + '/search/edits');
+    // The harness uses page fetch for binary bodies. Decode this JSON payload so its Node
+    // GM responder can retain a server-side store across reload, just as Dropbox does.
+    const prepare = () => {
+      const xhr = window.GM_xmlhttpRequest;
+      window.GM_xmlhttpRequest = opts => xhr({ ...opts, data: opts.data instanceof ArrayBuffer ? new TextDecoder().decode(opts.data) : opts.data });
+    };
+    await page.evaluate(prepare); await inject('string_theory');
+    const open = async () => {
+      await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
+      await page.locator('#st-tab-s').click();
+    };
+    await open();
+    await page.locator('#st-sync-remote-import').click();
+    await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
+    await page.locator('#st-sync-remote-backup').click();
+    await expect(page.locator('#st-sync-backup-status')).toHaveText('Backup saved to Dropbox.');
+    expect(server.files.size).toBe(1);
+    const snapshot = JSON.parse([...server.files.values()][0].text);
+    expect(snapshot.data.gm['pc:cache:fixture']).toBeUndefined();
+    expect(snapshot.data.gm.view.value.width).toBeUndefined();
+    await page.locator('#st-sync-backup-refresh').click();
+    await expect(page.locator('#st-sync-now')).toBeEnabled();
+    await expect(page.locator('#st-sync-backups [data-backup-action=apply]')).toHaveCount(1);
+    await page.screenshot({ path: 'dev/_885-remote-backups.png' });
+    await info.attach('Remote backup list', { path: 'dev/_885-remote-backups.png', contentType: 'image/png' });
+    await page.evaluate(() => GM_setValue('saved', 'local edit'));
+    await page.locator('#st-sync-backups [data-backup-action=apply]').click();
+    await expect(page.locator('#st-sync-reload')).toBeVisible();
+    expect(await page.evaluate(() => GM_getValue('saved'))).toBe('local edit');
+    expect(await page.evaluate(() => GM_getValue('string_theory.sync.recovery').data.gm.saved.value)).toBe('local edit');
+    await page.locator('#st-sync-reload').click(); await page.waitForLoadState();
+    await page.evaluate(prepare); await inject('string_theory');
+    expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
+    expect(await page.evaluate(() => GM_getValue('view').width)).toBe(800);
+    await open(); await page.locator('#st-sync-remote-import').click();
+    const remove = page.locator('#st-sync-backups [data-backup-action=delete]');
+    await remove.click(); await expect(remove).toHaveText('Confirm delete');
+    expect(server.files.size).toBe(1);
+    await page.locator('#st-sync-backups [data-backup-action=cancel]').click(); await expect(remove).toHaveText('Delete');
+    await remove.click(); await remove.click();
+    await expect(page.locator('#st-sync-backups')).toHaveText('No remote backups yet.');
+    expect(server.files.size).toBe(0); expect(await page.evaluate(() => GM_getValue('saved'))).toBe('snapshot value');
+    expect(server.calls.some(c => c.args.path === '/string-theory.json')).toBe(false);
+  });
 });
 
 test.describe('automatic Dropbox authorization', () => {

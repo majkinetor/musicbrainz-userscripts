@@ -2,7 +2,9 @@
 var ST_DROPBOX_KEY = 'g73mzw3yp0xqgtd';
 var ST_DROPBOX_REDIRECT = 'https://musicbrainz.org/?st-dropbox=callback';
 var ST_SYNC_PATH = '/string-theory.json';
+var ST_BACKUP_FOLDER = '/backups';
 var stSyncBusy = false, stSyncTimer = null;
+var stBackupEntries = null, stBackupNotice = '', stBackupDelete = null, stBackupAccount = null;
 function stSyncFetch(url, options) {
   options = options || {};
   var target = new URL(String(url));
@@ -61,29 +63,127 @@ function stSyncDropbox(authorizer) {
       return drive.request(url, options);
     }
   }
+  function missing(e) { return e.response && e.response.status === 409 && /^path\/not_found(?:\/|$)/.test(e.cause && e.cause.error_summary || ''); }
+  function backupEntry(entry) {
+    if (!entry || entry['.tag'] !== 'file' || typeof entry.name !== 'string' || typeof entry.id !== 'string' || !entry.id || typeof entry.rev !== 'string' || !entry.rev
+      || !/^\/backups\/string-theory-[\w.-]+\.json$/.test(entry.path_lower || '') || !Number.isFinite(entry.size) || entry.size < 0) throw new Error('Invalid remote backup');
+    return entry;
+  }
+  async function download(path, rev, size) {
+    if (size > 10 * 1024 * 1024) throw new Error('Dropbox backup exceeds 10 MB');
+    var blob = await request('https://content.dropboxapi.com/2/files/download', {
+      method: 'POST', headers: { 'Dropbox-API-Arg': JSON.stringify({ path: path, rev: rev }) }, responseType: 'blob',
+    });
+    var info = {}, data = stSyncStorage.read(await blob.text(), info);
+    return { rev: rev, data: data, filtered: info.filtered };
+  }
+  function upload(data, path, rev) {
+    var text = JSON.stringify(stSyncStorage.document(data));
+    if (new Blob([text]).size > 10 * 1024 * 1024) throw new Error('Backup exceeds 10 MB');
+    return request('https://content.dropboxapi.com/2/files/upload', { method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream', 'Dropbox-API-Arg': JSON.stringify({ path: path, mode: rev ? { '.tag': 'update', update: rev } : { '.tag': 'add' }, autorename: false, strict_conflict: true, mute: true }) },
+      body: new Blob([text], { type: 'application/octet-stream' }), responseType: 'json',
+    });
+  }
   return {
     account: function () { return drive.getAccount(); },
     read: async function () {
       var meta;
       try { meta = await request('https://api.dropboxapi.com/2/files/get_metadata', { method: 'POST', json: { path: ST_SYNC_PATH }, responseType: 'json' }); }
-      catch (e) { if (e.response && e.response.status === 409 && /^path\/not_found(?:\/|$)/.test(e.cause && e.cause.error_summary || '')) return { rev: null, data: null }; throw e; }
+      catch (e) { if (missing(e)) return { rev: null, data: null }; throw e; }
       if (typeof meta.rev !== 'string' || !meta.rev) throw new Error('Dropbox returned no file revision');
-      if (meta.size > 10 * 1024 * 1024) throw new Error('Dropbox backup exceeds 10 MB');
-      var blob = await request('https://content.dropboxapi.com/2/files/download', {
-        method: 'POST', headers: { 'Dropbox-API-Arg': JSON.stringify({ path: ST_SYNC_PATH, rev: meta.rev }) }, responseType: 'blob',
-      });
-      var info = {}, data = stSyncStorage.read(await blob.text(), info);
-      return { rev: meta.rev, data: data, filtered: info.filtered };
+      return download(ST_SYNC_PATH, meta.rev, meta.size);
     },
-    write: async function (data, rev) {
-      var text = JSON.stringify(stSyncStorage.document(data));
-      if (new Blob([text]).size > 10 * 1024 * 1024) throw new Error('Backup exceeds 10 MB');
-      return request('https://content.dropboxapi.com/2/files/upload', { method: 'POST',
-        headers: { 'Content-Type': 'application/octet-stream', 'Dropbox-API-Arg': JSON.stringify({ path: ST_SYNC_PATH, mode: rev ? { '.tag': 'update', update: rev } : { '.tag': 'add' }, autorename: false, strict_conflict: true, mute: true }) },
-        body: new Blob([text], { type: 'application/octet-stream' }), responseType: 'json',
-      });
+    write: function (data, rev) { return upload(data, ST_SYNC_PATH, rev); },
+    backup: async function (data) {
+      try { await request('https://api.dropboxapi.com/2/files/create_folder_v2', { method: 'POST', json: { path: ST_BACKUP_FOLDER, autorename: false }, responseType: 'json' }); }
+      catch (e) {
+        if (!(e.response && e.response.status === 409 && /^path\/conflict\/folder(?:\/|$)/.test(e.cause && e.cause.error_summary || ''))) throw e;
+      }
+      // Each save is a new immutable snapshot, independent of the live sync file.
+      var path = ST_BACKUP_FOLDER + '/string-theory-' + new Date().toISOString().replace(/:/g, '-') + '-' + crypto.randomUUID() + '.json';
+      return backupEntry(Object.assign({ '.tag': 'file' }, await upload(data, path, null)));
+    },
+    listBackups: async function () {
+      var page;
+      try { page = await request('https://api.dropboxapi.com/2/files/list_folder', { method: 'POST', json: { path: ST_BACKUP_FOLDER, recursive: false, include_deleted: false, limit: 1000 }, responseType: 'json' }); }
+      catch (e) { if (missing(e)) return []; throw e; }
+      var entries = [], cursors = Object.create(null);
+      for (;;) {
+        if (!page || !Array.isArray(page.entries)) throw new Error('Invalid Dropbox backup list');
+        page.entries.forEach(function (entry) { try { entries.push(backupEntry(entry)); } catch (e) { /* unrelated files and folders */ } });
+        if (!page.has_more) break;
+        if (!page.cursor || cursors[page.cursor]) throw new Error('Invalid Dropbox backup cursor');
+        cursors[page.cursor] = true;
+        page = await request('https://api.dropboxapi.com/2/files/list_folder/continue', { method: 'POST', json: { cursor: page.cursor }, responseType: 'json' });
+      }
+      return entries.sort(function (a, b) { return String(b.server_modified).localeCompare(String(a.server_modified)) || b.name.localeCompare(a.name); });
+    },
+    readBackup: async function (entry) {
+      backupEntry(entry);
+      try { return await download(entry.id, entry.rev, entry.size); }
+      catch (e) { if (e.response && e.response.status === 409) throw new Error('Backup is unavailable. Refresh the list.'); throw e; }
+    },
+    deleteBackup: async function (entry) {
+      backupEntry(entry);
+      try { return await request('https://api.dropboxapi.com/2/files/delete_v2', { method: 'POST', json: { path: entry.id, parent_rev: entry.rev }, responseType: 'json' }); }
+      catch (e) { if (e.response && e.response.status === 409) throw new Error('Backup changed or is unavailable. Refresh the list.'); throw e; }
     },
   };
+}
+async function stBackupRun(mode, entry) {
+  if (stSyncBusy) return;
+  if (!GM_getValue('string_theory.sync.auth', {}).refreshToken) throw new Error('Connect Dropbox first');
+  stSyncBusy = true; stBackupNotice = ''; stBackupDelete = null; stSyncPaint();
+  try {
+    var drive = stSyncDropbox(stSyncAuthorizer());
+    if (mode === 'save') {
+      var saved = await drive.backup(stSyncStorage.effective());
+      if (stBackupEntries !== null) stBackupEntries.unshift(saved);
+      stBackupNotice = 'Backup saved to Dropbox.';
+    } else if (mode === 'list') {
+      stBackupEntries = await drive.listBackups();
+    } else if (mode === 'apply') {
+      var incoming = (await drive.readBackup(entry)).data;
+      stSyncImport(incoming);
+      stBackupNotice = 'Imported. Reload to apply the changes.';
+    } else if (mode === 'delete') {
+      await drive.deleteBackup(entry);
+      stBackupEntries = (stBackupEntries || []).filter(function (item) { return item.id !== entry.id; });
+      stBackupNotice = 'Backup deleted from Dropbox.';
+    } else throw new Error('Unknown backup action');
+    if (mode !== 'list') stUI().mbuToast(stBackupNotice);
+  } catch (e) {
+    stBackupNotice = stSyncError(e);
+    throw e;
+  } finally { stSyncBusy = false; stSyncPaint(); }
+}
+function stSyncImport(incoming) {
+  // Partial imports preserve data absent from the file; incoming values win shared fields.
+  stSyncStorage.stage(stSyncStorage.merge(undefined, stSyncStorage.effective(), incoming, 'remote'));
+}
+function stBackupPaint(panel, connected) {
+  var list = panel.querySelector('#st-sync-backups');
+  if (!list) return;
+  list.hidden = stBackupEntries === null;
+  panel.querySelector('#st-sync-backup-status').textContent = stBackupNotice;
+  list.replaceChildren();
+  if (stBackupEntries === null) return;
+  if (!stBackupEntries.length) { list.textContent = 'No remote backups yet.'; return; }
+  stBackupEntries.forEach(function (entry, i) {
+    var row = document.createElement('div'); row.className = 'st-row';
+    var label = document.createElement('span'); label.className = 'st-note';
+    var date = new Date(entry.server_modified);
+    label.textContent = (isNaN(date.getTime()) ? entry.name : date.toLocaleString()) + ' · ' + Math.max(1, Math.ceil(entry.size / 1024)) + ' KB';
+    row.appendChild(label);
+    [['apply', 'Apply'], ['delete', stBackupDelete === entry.id ? 'Confirm delete' : 'Delete']].concat(stBackupDelete === entry.id ? [['cancel', 'Cancel']] : []).forEach(function (pair) {
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'st-b'; button.textContent = pair[1];
+      button.dataset.backupAction = pair[0]; button.dataset.backupIndex = String(i);
+      button.disabled = stSyncBusy || !connected;
+      row.appendChild(button);
+    });
+    list.appendChild(row);
+  });
 }
 function stSyncError(e) {
   var status = e && (e.status || e.response && e.response.status);
@@ -259,19 +359,28 @@ function stSyncMarkup() {
     + '<div class="st-row"><label for="st-sync-conflict">Conflicting changes</label><select id="st-sync-conflict"><option value="remote">Use Dropbox’s value</option><option value="local">Use this device’s value</option></select></div>'
     + '<div class="st-row"><button class="st-b" type="button" id="st-sync-now" data-tip="Merge this device with Dropbox">Sync</button><button class="st-b" type="button" id="st-sync-push" data-tip="Replace Dropbox’s portable data with this device’s">Push</button><button class="st-b" type="button" id="st-sync-pull" data-tip="Replace this device’s portable data with Dropbox’s\nKeeps device settings; applies on the next page load">Pull</button><button class="st-b" type="button" id="st-sync-reload" hidden>Reload</button><span id="st-sync-status" role="status"></span></div>'
     + '<h3 class="st-h">Backup</h3><div class="st-row"><button class="st-b" type="button" id="st-sync-export">Export</button><button class="st-b" type="button" id="st-sync-import">Import</button><input id="st-sync-file" type="file" accept=".json,application/json" hidden><button class="st-b" type="button" id="st-sync-recovery" hidden>Export recovery copy</button></div>'
+    + '<div class="st-row"><button class="st-b" type="button" id="st-sync-remote-backup">Remote backup</button><button class="st-b" type="button" id="st-sync-remote-import">Remote import</button><span id="st-sync-backup-status" role="status"></span></div>'
+    + '<div id="st-sync-remote" hidden><div class="st-row"><span class="st-lbl">Dropbox backups</span><button class="st-b" type="button" id="st-sync-backup-refresh">Refresh</button><button class="st-b" type="button" id="st-sync-backup-close">Hide</button></div><div id="st-sync-backups" aria-label="Dropbox backups" hidden></div><p class="st-cap">Apply merges a backup into your settings on reload. Delete removes only that saved backup.</p></div>'
     + '<p class="st-cap">Backups include credentials. Downloaded changes apply on the next page load. Automatic sync runs while MusicBrainz is open.</p>';
 }
 function stSyncPaint() {
   var panel = document.getElementById('st-p-s'); if (!panel) return;
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
   var auth = GM_getValue('string_theory.sync.auth', {}) || {}, state = stSyncState(), settings = stSyncSettings(), connected = !!auth.refreshToken;
+  if (stBackupAccount !== state.account || !connected) {
+    stBackupAccount = state.account; stBackupEntries = null; stBackupDelete = null; stBackupNotice = '';
+    q('remote').hidden = true;
+  }
   q('connect').textContent = connected ? 'Reconnect Dropbox' : 'Connect Dropbox';
   q('disconnect').hidden = !connected;
   q('auto').checked = settings.automatic; q('minutes').value = String(settings.minutes); q('conflict').value = settings.conflict;
   q('now').disabled = stSyncBusy || !connected; q('connect').disabled = stSyncBusy; q('disconnect').disabled = stSyncBusy;
   q('push').disabled = stSyncBusy || !connected; q('pull').disabled = stSyncBusy || !connected;
+  ['remote-backup', 'remote-import', 'backup-refresh'].forEach(function (id) { q(id).disabled = stSyncBusy || !connected; });
+  q('import').disabled = stSyncBusy;
+  stBackupPaint(panel, connected);
   q('reload').hidden = !stSyncStorage.pending(); q('recovery').hidden = !GM_getValue('string_theory.sync.recovery');
-  q('status').textContent = stSyncBusy ? 'Syncing…' : state.error || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (state.at ? 'Last sync: ' + new Date(state.at).toLocaleString() : connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected'));
+  q('status').textContent = stSyncBusy ? 'Working…' : state.error || (stSyncAuthPending ? 'Waiting for Dropbox authorization…' : state.notice || (state.at ? 'Last sync: ' + new Date(state.at).toLocaleString() : connected ? 'Connected' + (state.name ? ': ' + state.name : '') : 'Not connected'));
 }
 function stSyncBind(panel) {
   var q = function (id) { return panel.querySelector('#st-sync-' + id); };
@@ -284,6 +393,18 @@ function stSyncBind(panel) {
   q('now').onclick = action(function () { return stSyncRun(true); });
   q('push').onclick = action(function () { return stSyncRun(true, 'push'); });
   q('pull').onclick = action(function () { return stSyncRun(true, 'pull'); });
+  q('remote-backup').onclick = action(function () { return stBackupRun('save'); });
+  q('remote-import').onclick = action(function () { q('remote').hidden = false; return stBackupRun('list'); });
+  q('backup-refresh').onclick = action(function () { return stBackupRun('list'); });
+  q('backup-close').onclick = function () { q('remote').hidden = true; stBackupDelete = null; };
+  q('backups').onclick = function (event) {
+    var button = event.target.closest('button[data-backup-action]'); if (!button || stSyncBusy) return;
+    var entry = stBackupEntries && stBackupEntries[Number(button.dataset.backupIndex)]; if (!entry) return;
+    var mode = button.dataset.backupAction;
+    if (mode === 'cancel') { stBackupDelete = null; stSyncPaint(); return; }
+    if (mode === 'delete' && stBackupDelete !== entry.id) { stBackupDelete = entry.id; stSyncPaint(); return; }
+    action(function () { return stBackupRun(mode, entry); })();
+  };
   q('reload').onclick = function () { location.reload(); };
   q('export').onclick = action(function () { stSyncDownload(stSyncStorage.document(stSyncStorage.effective()), 'string-theory-backup.json'); });
   q('recovery').onclick = action(function () { stSyncDownload(GM_getValue('string_theory.sync.recovery'), 'string-theory-recovery.json'); });
@@ -292,9 +413,7 @@ function stSyncBind(panel) {
     var file = q('file').files[0]; if (!file) return;
     if (file.size > 10 * 1024 * 1024) throw new Error('Backup exceeds 10 MB');
     var incoming = stSyncStorage.read(await file.text());
-    // An import is a merge with remote winning shared fields, so importing a partial backup
-    // never deletes another script's data merely because it wasn't in that file.
-    stSyncStorage.stage(stSyncStorage.merge(undefined, stSyncStorage.effective(), incoming, 'remote'));
+    stSyncImport(incoming);
     q('file').value = ''; stUI().mbuToast('Imported. Reload to apply the changes.');
   });
   stSyncPaint();
