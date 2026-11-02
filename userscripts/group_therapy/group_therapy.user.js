@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Group Therapy
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.120000
+// @version      2026.11.02.131000
 // @description  MusicBrainz relationship helpers: batch-delete rel groups from a right-click menu, page-wide hover highlight with a count tooltip, and copy/move credits between recordings & clone release credits. Chrome-light — context menus + hover, no toolbar.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4Ij48ZyBmaWxsPSJub25lIiBzdHJva2U9IiM1YjZiN2EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9Ijk0IiB5Mj0iNDIiLz48bGluZSB4MT0iMzQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48bGluZSB4MT0iOTQiIHkxPSI0MiIgeDI9IjY0IiB5Mj0iOTQiLz48L2c+PGcgZmlsbD0iIzJlOWU1YiIgc3Ryb2tlPSIjMjU2ZjQzIiBzdHJva2Utd2lkdGg9IjQiPjxjaXJjbGUgY3g9IjM0IiBjeT0iNDIiIHI9IjE2Ii8+PGNpcmNsZSBjeD0iOTQiIGN5PSI0MiIgcj0iMTYiLz48Y2lyY2xlIGN4PSI2NCIgY3k9Ijk0IiByPSIxNiIvPjwvZz48L3N2Zz4=
@@ -6837,10 +6837,10 @@
       + '.gt-tp-dd-pat{font:12.5px monospace;color:var(--mbu-text)}.gt-tp-dd-ex{font-size:11px;color:var(--mbu-text-weak)}'
       + '.gt-tp-freeze{flex:0 0 auto;height:28px;cursor:pointer;border:1px solid var(--mbu-accent);background:var(--mbu-bg-raised);border-radius:5px;padding:0 7px;font-size:12px;line-height:1}.gt-tp-freeze:hover{background:var(--mbu-bg-hover)}'
       + '.gt-tp-pastewrap{position:relative;flex:1;min-width:0;height:28px}'
-      + '.gt-tp-gut{display:none}'
+      + '.gt-tp-gut{display:none}.gt-tp-gutmeasure{position:absolute;top:0;left:0;visibility:hidden;pointer-events:none;box-sizing:border-box;padding:0 8px 0 44px;line-height:1.4;white-space:pre-wrap;overflow-wrap:break-word}'
       + '.gt-tp-paste-open .gt-tp-gut{display:block;position:absolute;top:1px;left:1px;width:36px;z-index:8;overflow:hidden;box-sizing:border-box;padding:5px 6px 0 0;font:12px/1.4 monospace;text-align:right;white-space:pre;color:var(--mbu-text-weak);background:var(--mbu-bg-raised);border-right:1px solid var(--mbu-border);border-radius:4px 0 0 4px;pointer-events:none}'   /* the open box floats: nothing below moves when it closes, so a click there lands */
       + '.gt-tp-ta{display:block;width:100%;height:28px;box-sizing:border-box;padding:0 80px 0 8px;border:1px solid var(--mbu-border);border-radius:5px;font:12px/26px monospace;outline:none;resize:none;overflow:hidden;white-space:pre;background:var(--mbu-bg)}'
-      + '.gt-tp-ta.gt-tp-ta-open{position:absolute;top:0;left:0;right:0;z-index:7;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:5px 8px 5px 44px;line-height:1.4;overflow:auto;white-space:pre;border-color:var(--mbu-info)}'
+      + '.gt-tp-ta.gt-tp-ta-open{position:absolute;top:0;left:0;right:0;z-index:7;box-shadow:0 6px 18px rgba(0,0,0,.15);padding:5px 8px 5px 44px;line-height:1.4;overflow:hidden auto;white-space:pre-wrap;border-color:var(--mbu-info)}'
       + '.gt-tp-lines{position:absolute;right:6px;top:5px;border:none;background:var(--mbu-bg);padding:0 2px;font-size:11px;color:var(--mbu-text-weak);cursor:pointer}.gt-tp-paste-open .gt-tp-lines{display:none}'
       + '.gt-tp-opts{flex:none;display:flex;align-items:center;gap:10px;height:28px}'
       + '.gt-tp-cut{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}'
@@ -7684,18 +7684,31 @@
     linesLbl.onclick = () => ta.focus();
     // #798: line numbers beside the open text, the numbers the rows show
     const gut = el('div', 'gt-tp-gut');
+    const gutMeasure = el('div', 'gt-tp-gutmeasure');
     const fitGut = () => {
-      const n = ta.value.split('\n').length;
-      if (gut.childElementCount !== n) gut.textContent = Array.from({ length: n }, (_, i) => i + 1).join('\n');
+      // the open text wraps, so a number sits at the height its whole line takes
+      if (ta.classList.contains('gt-tp-ta-open')) {
+        const cs = getComputedStyle(ta);
+        gutMeasure.style.font = cs.font; gutMeasure.style.letterSpacing = cs.letterSpacing;
+        gutMeasure.style.width = ta.clientWidth + 'px';
+        gutMeasure.replaceChildren(...ta.value.split('\n').map(l => el('div', '', l || '\u200b')));
+        gut.replaceChildren(...[...gutMeasure.children].map((d, i) => { const g = el('div', '', String(i + 1)); g.style.height = d.getBoundingClientRect().height + 'px'; return g; }));
+        gutMeasure.replaceChildren();
+      }
       gut.style.height = Math.max(0, ta.clientHeight) + 'px';
       gut.scrollTop = ta.scrollTop;
     };
     ta.addEventListener('scroll', () => { gut.scrollTop = ta.scrollTop; });
     const fitTa = () => { ta.style.height = ''; if (ta.classList.contains('gt-tp-ta-open')) ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(window.innerHeight * 0.5)) + 'px'; fitGut(); };
-    ta.addEventListener('focus', () => { ta.classList.add('gt-tp-ta-open'); pasteWrap.classList.add('gt-tp-paste-open'); fitTa(); });
-    ta.addEventListener('blur', () => { ta.classList.remove('gt-tp-ta-open'); pasteWrap.classList.remove('gt-tp-paste-open'); fitTa(); ta.scrollTop = 0; });
+    // open, the text unrolls over the row's remaining width
+    const unroll = () => {
+      const row = pasteWrap.parentElement;
+      ta.style.right = -Math.max(0, row.getBoundingClientRect().right - parseFloat(getComputedStyle(row).paddingRight) - pasteWrap.getBoundingClientRect().right) + 'px';
+    };
+    ta.addEventListener('focus', () => { ta.classList.add('gt-tp-ta-open'); pasteWrap.classList.add('gt-tp-paste-open'); unroll(); fitTa(); });
+    ta.addEventListener('blur', () => { ta.classList.remove('gt-tp-ta-open'); pasteWrap.classList.remove('gt-tp-paste-open'); ta.style.right = ''; fitTa(); ta.scrollTop = 0; });
     ta.addEventListener('input', fitTa);
-    pasteWrap.append(ta, gut, linesLbl);
+    pasteWrap.append(ta, gut, gutMeasure, linesLbl);
 
 
     // #798: the entities, as in Credit Hoarder's review table — one row per name,
