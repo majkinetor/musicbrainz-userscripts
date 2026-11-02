@@ -3,12 +3,11 @@
 // The discussions API ignores sort and category and answers oldest first, so read the last two pages.
 var ST_NEWS_KEY = 'stNews', ST_NEWS_MAX = 20, ST_NEWS_DAY = 864e5, ST_NEWS_FIRST = 14 * ST_NEWS_DAY;
 var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions/categories/announcements';
+var ST_NEWS_LOG = 'https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/CHANGELOG.md';
 var stNewsOv = null;
 var ST_NEWS_CSS = ''
   + '#st-news{width:min(880px,94vw);height:min(78vh,640px);display:flex;flex-direction:column;font:13px/1.45 var(--mbu-font);color:var(--mbu-text);outline:none}'
-  + '#st-news-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--mbu-border)}'
-  + '#st-news-head h2{flex:1 1 auto;margin:0;padding:0;border:0;background:none;color:var(--mbu-text);font:600 15px/1.3 var(--mbu-font)}'
-  + '#st-news-head button{min-height:30px;box-sizing:border-box}'
+  + '#st-news-all{min-height:30px;padding:0 10px;border:0;border-radius:var(--mbu-radius);background:none;color:var(--mbu-accent-text);font:inherit;cursor:pointer}#st-news-all:hover{background:var(--mbu-bg-hover)}'
   + '#st-news-body{flex:1 1 auto;min-height:0;display:flex}'
   + '#st-news-list{flex:0 0 300px;overflow:auto;margin:0;padding:0;list-style:none;border-right:1px solid var(--mbu-border)}'
   + '#st-news-list li{display:flex;gap:8px;margin:0;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--mbu-border)}'
@@ -19,6 +18,7 @@ var ST_NEWS_CSS = ''
   + '#st-news-list .s{display:block;color:var(--mbu-text-weak);font-size:12px}'
   + '#st-news-view{flex:1 1 auto;min-width:0;overflow:auto;padding:12px 16px}'
   + '#st-news-view h3{display:flex;align-items:center;gap:8px;margin:0 0 2px;padding:0;border:0;background:none;color:var(--mbu-text);font:600 16px/1.3 var(--mbu-font)}'
+  + '#st-news-view h3 .n{flex:1 1 auto;min-width:0}#st-news-view h3 a{flex:0 0 auto;font:400 13px/1.3 var(--mbu-font)}'
   + '#st-news-view .m{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--mbu-text-weak);font-size:12px}'
   + '#st-news-view .c{padding:0 6px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius)}'
   + '#st-news-view .b img{max-width:100%;height:auto}#st-news-view .b{overflow-wrap:anywhere}'
@@ -148,7 +148,7 @@ function stNewsOpen() {
   var U = stUI(), T = stTokens();
   if (!document.getElementById('st-news-css')) {
     var css = document.createElement('style'); css.id = 'st-news-css';
-    css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_CSS + ST_NEWS_CSS;
+    css.textContent = T.MBU_TOKENS + U.MBU_UI_CSS + ST_NEWS_CSS;
     (document.head || document.documentElement).appendChild(css);
   }
   var v = stNewsRead(), items = v.items, at = 0, focusBack = document.activeElement;
@@ -156,10 +156,10 @@ function stNewsOpen() {
   var ov = document.createElement('div');
   ov.className = 'mbu-ov'; ov.id = 'st-news-ov';
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-news" role="dialog" aria-label="What\'s new" tabindex="-1">'
-    + '<div id="st-news-head"><h2>What\'s new</h2><button type="button" class="st-b" id="st-news-all">Mark all read</button><button type="button" class="st-b" id="st-news-x">Close</button></div>'
+    + '<div class="mbu-ov-h"><span class="mbu-ov-title">What\'s new</span><button type="button" id="st-news-all">Mark all read</button><button type="button" class="mbu-ov-x" id="st-news-x" aria-label="Close">\u2715</button></div>'
     + '<div id="st-news-body"><ul id="st-news-list" role="listbox"></ul><div id="st-news-view"></div></div>'
     + '<div id="st-news-foot"><span>Latest ' + ST_NEWS_MAX + ' · checked ' + (checked < 1 ? 'today' : checked + ' d ago') + '</span>'
-    + '<a href="' + ST_NEWS_ALL + '" target="_blank" rel="noopener">All announcements</a></div></div>';
+    + '<span><a href="' + ST_NEWS_ALL + '" target="_blank" rel="noopener">All announcements</a> · <a href="' + ST_NEWS_LOG + '" target="_blank" rel="noopener">Changelog</a></span></div></div>';
   (document.body || document.documentElement).appendChild(ov);
   stNewsOv = ov;
   var list = ov.querySelector('#st-news-list'), view = ov.querySelector('#st-news-view');
@@ -176,8 +176,10 @@ function stNewsOpen() {
     if (!i) { view.textContent = 'Nothing yet.'; return; }
     if (v.seen.indexOf(i.id) < 0) { v.seen.push(i.id); persist(); }
     draw();
-    view.innerHTML = '<h3>' + stNewsIcon(i) + stEsc(i.title) + '</h3><div class="m"><span>' + stEsc(i.script) + '</span><span>' + stEsc(stNewsDate(i.at)) + '</span>'
-      + (i.channel ? '<span class="c">' + i.channel + '</span>' : '') + '<a href="' + stEsc(i.url) + '" target="_blank" rel="noopener">On GitHub</a></div><div class="b">' + stNewsClean(i.html) + '</div>';
+    view.innerHTML = '<h3>' + stNewsIcon(i) + '<span class="n">' + stEsc(i.title) + '</span>'
+      + (i.issue ? '<a href="https://github.com/' + ST_REPO + '/issues/' + i.issue + '" target="_blank" rel="noopener">Issue #' + i.issue + '</a>' : '')
+      + '<a href="' + stEsc(i.url) + '" target="_blank" rel="noopener">Discuss</a></h3><div class="m"><span>' + stEsc(i.script) + '</span><span>' + stEsc(stNewsDate(i.at)) + '</span>'
+      + (i.channel ? '<span class="c">' + i.channel + '</span>' : '') + '</div><div class="b">' + stNewsClean(i.html) + '</div>';
     view.scrollTop = 0;
     var li = list.children[n]; if (li) li.scrollIntoView({ block: 'nearest' });
   };

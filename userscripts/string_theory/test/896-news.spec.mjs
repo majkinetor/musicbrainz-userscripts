@@ -15,7 +15,7 @@ test.describe('what\'s new', () => {
     check(stroke === 'rgb(224, 168, 0)', `golden (${stroke})`);
     await page.click('#mbu-dock');
     await page.waitForSelector('#st-news', { timeout: 5000 });
-    check((await page.textContent('#st-news-view h3')) === 'Two', 'opens on the newest unread');
+    check((await page.textContent('#st-news-view h3 .n')) === 'Two', 'opens on the newest unread');
     check((await page.textContent('#st-news-view .c')) === 'latest', 'channel badge');
     check(!(await page.textContent('#st-news-view .b')).includes('Issue:'), 'the issue line is dropped');
     await page.keyboard.press('ArrowDown');
