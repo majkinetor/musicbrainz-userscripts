@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.233000
+// @version      2026.11.03.003000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -5924,7 +5924,7 @@ function aliasCredits(doc) {
 function aliasesHtml(d) {
     const [ty, eid] = d.ent.split(':'), t = d.t || {}, xs = d.credits || [];
     const title = t.en || t.name || 'Aliases';
-    return `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, acts: entActs(ty, eid, 'aliases') })}</section>
+    return `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, by: t.by, acts: entActs(ty, eid, 'aliases') })}</section>
 <section class="sec" id="s-ali"><div class="secthead"><h2>Aliases <span class="count">${d.n == null ? '' : d.n}</span></h2></div><div id="al-body">${d.err ? `<p class="msg">Could not open the alias editor: ${esc(d.err)}</p>` : '<p class="msg">Loading…</p>'}</div></section>
 ${xs.length ? `<section class="sec" id="s-acr"><div class="secthead"><h2>Artist credits <span class="count">${xs.length}</span></h2></div><ul class="eh-ac">${xs.map(x => `<li><bdi>${x.html}</bdi>${x.uses ? `<a class="eh-ac-u" href="${MB}${esc(x.uses)}">See uses</a>` : ''}${x.edit ? `<a class="eh-ac-e" href="${MB}${esc(x.edit)}">Edit</a>` : ''}</li>`).join('')}</ul></section>` : ''}`;
 }
@@ -6752,6 +6752,7 @@ function tagsParse(html, ent) {
     const h1 = d.querySelector('#content h1') || d.querySelector('#page h1') || d.querySelector('h1');
     const tabs = [...d.querySelectorAll('ul.tabs a[href]')].map(a => [tx(a), a.getAttribute('href'), !!a.closest('li.sel')]);
     const avi = h1 && h1.querySelector('img.avatar:not(.no-avatar)');
+    const by = [...d.querySelectorAll('#content .subheader a[href*="/artist/"]')].map(a => `<a href="${esc(a.getAttribute('href'))}">${esc(tx(a))}</a>`).join(', ');
     let tags = null, gen = [];
     const links = [...d.querySelectorAll('ul.external_links a[href^="http"]')].map(a => a.href);
     if (ent) for (const s of d.querySelectorAll('script[type="application/json"]')) {
@@ -6766,7 +6767,7 @@ function tagsParse(html, ent) {
     }
     if (!tags) tags = [...d.querySelectorAll('ul.genre-list > li, ul.tag-list > li')].map(li => ({ n: tx(li.querySelector('a')), c: +tx(li.querySelector('.tag-count')) || 0, g: !!li.closest('.genre-list'), v: 0 })).filter(t => t.n);
     const hn = h1 && (h1.querySelector('a bdi') || h1.querySelector('a')), hc = h1 && h1.querySelector('.comment');
-    return { av: avi ? avi.getAttribute('src') || '' : '', links, gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', tabs, tags };
+    return { av: avi ? avi.getAttribute('src') || '' : '', links, gen, name: h1 ? tx(h1) : '', en: hn ? tx(hn) : '', ed: hc ? tx(hc).replace(/^\(|\)$/g, '') : '', by, tabs, tags };
 }
 async function tagsLoad(n, key, down) {
     const d = data, [kind, id] = [key.split('/')[0], key.slice(key.indexOf('/') + 1)];
@@ -6981,15 +6982,15 @@ async function recsMore(d) {
 function relsHtml(d) {
     const t = d.t, [ty, eid] = d.ent.split(':');
     const acts = actionRow(ty === 'release-group' ? RG_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, d.mode || 'relationships');
-    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, acts })}</section>`;
+    const head = `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · ' + (HM_KIND[ty] || [ty])[0], title: t && t.name, disamb: t && t.dis, by: t && t.by, acts })}</section>`;
     if (!t) return head + `<p class="hm-none">${d.err ? `<span class="u-err">${esc(d.err)}</span>` : `Loading the ${d.mode || 'relationships'}…`}</p>`;
     if (!relsN(t)) return head + `<p class="hm-none">No ${d.mode || 'relationships'}.</p>`;
     return head + (d.mode ? relsApps(t, d) : t.cards.map(relsCard).join('') + relsApps(t));
 }
-function entHead({ type, id, img, kick, title, disamb, acts }) {
+function entHead({ type, id, img, kick, title, disamb, acts, by }) {
     const mk = (HM_KIND[type] || ['', CI_TAG])[1];
     return `${img ? `<img class="rhcv" alt="" ${/^https:\/\/coverartarchive.org\//.test(img) ? 'data-cover' : 'src'}="${esc(img)}">` : ''}<span class="rhic"${img ? ' hidden' : ''}>${bigMk(mk)}</span><div class="rhtx"><div class="kicker label">${mkSvg(mk)}<span>${esc(kick)}</span><span class="acts"><a class="ab ov" href="${MB}/${type}/${id}" data-tip="Overview" aria-label="Overview">${SVG('<path d="M19 12H5M12 19l-7-7 7-7"/>')}</a>${acts || ''}${SRCH()}</span></div>`
-        + (title ? heroH1(title, disamb, `${MB}/${type}/${id}`) : '<h1>&nbsp;</h1>') + '</div>';
+        + (title ? heroH1(title, disamb, `${MB}/${type}/${id}`) : '<h1>&nbsp;</h1>') + (by ? `<div class="by">by ${by}</div>` : '') + '</div>';
 }
 const entHeadWire = el => cvWire(el);
 const entActs = (ty, eid, active) => actionRow(ty === 'release' ? ACTS : ty === 'release-group' ? RG_ACTS : ty === 'label' ? LB_ACTS : ty === 'event' ? [AR_ACTS[0], ['event-art', 'Art', 'Event art', ACTS.find(x => x[0] === 'cover-art')[3]], ...AR_ACTS.slice(1)] : AR_ACTS, ty, eid, active);
@@ -7003,7 +7004,7 @@ function tagsHtml(d) {
         : `<section class="u-hero"><span class="hm-av u-av">${mkSvg(CI_TAG).replace('width="15" height="15"', 'width="44" height="44"')}</span><div class="u-id"><div class="kicker label"><span>Tags</span><span class="acts">${SRCH()}</span></div><h1>${esc(title)}</h1>`
         + `<p class="u-sub">${sub}</p>${back ? `<nav class="u-tabs">${back}</nav>` : ''}</div></section>`;
     const [ty, eid] = d.ent ? d.ent.split(':') : [];
-    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
+    const head = d.ent ? `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Tags · ' + (HM_KIND[ty] || [ty])[0], title: t && (t.en || t.name), disamb: t && t.ed, by: t && t.by, acts: entActs(ty, eid, 'tags') })}</section>` : hero;
     return head + `<section class="sec" id="s-tg"><div class="secthead"><h2>Tags${t ? ` <span class="count">${fmtN(all.length)}</span>` : ''}</h2>${d.ent && ME ? `<span class="tg-new">${tgNew(d)}</span>` : ''}<div class="tools tg-tools">${tgTools(d)}</div></div><div id="tg-body">${tgBody(d)}</div></section>`;
 }
 const TG_PLUS = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
@@ -9151,7 +9152,7 @@ const REL_CSS = () => (CSS.match(/:root\{\s*--bg:[\s\S]*?\}\n:root\[data-eh-them
 :root[data-eh-rel] #relationship-editor-form.eh-fold legend{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form.eh-fold{padding:10px 16px!important}:root[data-eh-rel] #relationship-editor-form.eh-fold fieldset{margin:0!important;padding:0!important}:root[data-eh-rel] #relationship-editor-form legend{font-size:17px!important;font-weight:700}` + relHdCss();
 // EH's own header rules, scoped to the header, so it is the same as on the other pages
 // and to the bar pinned over the releases and details pages, which carries its title and action row
-const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\{|\.disamb|\.by\{|\.arthd|\.rg-l|#eh-pin)/.test(l) || l.startsWith('.eh-collections')).join('\n')
+const relHdCss = () => CSS.split('\n').filter(l => /^(\.kicker|\.label\{|h1\b|\.eh-t[sx]\{|\.disamb|\.by\{|\.arthd|\.rg-l|#eh-pin)/.test(l) || l.startsWith('.eh-collections')).join('\n')
     .replace(/(^|\})([^{}]+)\{/gm, (m, b, sel) => b + sel.split(',').map(x => /^#eh-pin\b/.test(x.trim()) ? x.trim() : ':is(#eh-relhd,#eh-pin) ' + x.trim()).join(',') + '{');
 // the header: the same as the cover-art page's; title and artist read off MusicBrainz's own header at once, then the full kicker from the release
 function relHeader(id, tab = 'edit-relationships', name = 'Relationships') {
