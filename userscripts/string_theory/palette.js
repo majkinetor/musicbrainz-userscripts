@@ -179,7 +179,12 @@ function stPalCommands() {
     stCopy(stVersionsText(), function (ok) { toast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); });
   } });
   add({ id: 'st:docs', cat: 'String Theory', label: 'Documentation', run: function () { window.open('https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/DOCS.md', '_blank', 'noopener'); } });
-  add({ id: 'st:issue', cat: 'String Theory', label: 'Report an issue', run: function () { window.open('https://github.com/' + ST_REPO + '/issues', '_blank', 'noopener'); } });
+  // the versions go on the clipboard, to paste into the new issue; the tab opens first, while the key press still allows it
+  add({ id: 'st:newissue', cat: 'String Theory', label: 'New issue', hint: 'copies the versions', run: function () {
+    window.open('https://github.com/' + ST_REPO + '/issues/new', '_blank', 'noopener');
+    stCopy(stVersionsText(), function (ok) { toast(ok ? '✓ Versions copied: paste them into the issue' : '⚠ Couldn’t copy the versions'); });
+  } });
+  add({ id: 'st:issue', cat: 'String Theory', label: 'Issues', run: function () { window.open('https://github.com/' + ST_REPO + '/issues', '_blank', 'noopener'); } });
   add({ id: 'st:reload', cat: 'String Theory', label: 'Reload the page', run: function () { location.reload(); } });
   return out;
 }
