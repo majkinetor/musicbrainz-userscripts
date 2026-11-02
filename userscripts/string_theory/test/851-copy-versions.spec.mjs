@@ -1,4 +1,4 @@
-// #851: Copy as Markdown includes versions and the environment, ready to paste into an issue.
+// #851: Copy as Markdown includes versions and the environment in a details section, ready to paste into an issue.
 import { test, check, until, SANDBOX } from '../../../dev/test/harness.mjs';
 
 test('copy versions and the environment as Markdown', { tag: ['@sandbox'] }, async ({ page, inject }) => {
@@ -17,5 +17,5 @@ test('copy versions and the environment as Markdown', { tag: ['@sandbox'] }, asy
   await page.locator('#st-tab-a').click();
   await page.locator('#st-copy-md').click();
   const [md] = await until(() => page.evaluate(() => window.__copied), c => c.length === 1, { timeout: 5000 });
-  check(/^\*\*String Theory\*\* `v\S+`/.test(md) && /\n- \[[x ]\] Fusion `v\S+`/.test(md) && /\n\*\*Site:\*\* test\.musicbrainz\.org/.test(md), 'Markdown has a bold title, a list and the site');
+  check(/^<details>\n<summary><b>String Theory<\/b> <code>v\S+<\/code>.*<\/summary>\n\n/.test(md) && /\n- \[[x ]\] Fusion `v\S+`/.test(md) && /\n\*\*Site:\*\* test\.musicbrainz\.org/.test(md) && /\n\n<\/details>$/.test(md), 'Markdown is a details section with the title, a list and the site');
 });

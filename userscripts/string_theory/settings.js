@@ -150,11 +150,13 @@ function stChannel() {
 }
 function stVersionsText() {
   var off = __stReadOff(), ch = stChannel();
-  var lines = ['**String Theory** `v' + ST_VERSION + '`' + (ch ? ' (' + ch + ')' : '') + '\n'];
+  // A details section keeps a long list from taking over the issue; Markdown doesn't render inside <summary>
+  var lines = ['<details>', '<summary><b>String Theory</b> <code>v' + ST_VERSION + '</code>' + (ch ? ' (' + ch + ')' : '') + '</summary>\n'];
   stMembers.forEach(function (m) { lines.push('- [' + (off.indexOf(m[0]) < 0 ? 'x' : ' ') + '] ' + m[1] + ' `v' + m[2] + '`'); });
   lines.push('');
   stEnvLines().forEach(function (e) { lines.push('**' + e[0] + ':** ' + e[1] + '  '); });
   lines[lines.length - 1] = lines[lines.length - 1].replace(/ {2}$/, '');
+  lines.push('', '</details>');
   return lines.join('\n');
 }
 var ST_CSS = ''
