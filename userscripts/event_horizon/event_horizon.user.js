@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.2.122212
+// @version      2026.11.2.125011
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2357,6 +2357,7 @@ const CSS = `
 .hm-chips{display:flex;flex-wrap:wrap;gap:8px}
 .hm-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;background:var(--chip);color:var(--chip-text)!important;text-decoration:none!important;font-weight:600}
 .hm-chip:hover{background:var(--accent);color:#fff!important}
+.rec-pop{min-width:230px}.rec-pop .hm-seg{display:flex;margin:2px 8px 6px}.rec-pop .hm-seg label{flex:1;text-align:center}.rec-k{display:flex;align-items:center;gap:7px;height:26px;padding:0 8px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}.rec-k:hover{background:var(--hover)}.rec-k input{margin:0;accent-color:var(--accent,currentColor)}.rec-k svg{width:15px;height:15px;color:var(--muted)}
 .hm-rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
 .hm-r{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
 .hm-r:hover{background:var(--hover)}
@@ -3070,11 +3071,15 @@ const S = {
     hgrp: 'burst', // the history page's grouping
     tagView: 'bars', etagView: 'chips', tagSort: 'count', tagScope: 'a', tgxView: 'row', // the tags pages' view (an editor's, an entity's), order and kind
 };
-VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort');
+VIEW.push('menuTitles', 'annoHover', 'pending', 'colPick', 'colW', 'named', 'stars', 'starGroup', 'starView', 'starSort', 'recView', 'recSort', 'recMax', 'recOff');
 S.stars = []; // starred entities travel with the manager's settings
 S.starGroup = 'type';
 S.starView = '';
 S.starSort = '';
+S.recView = 'row'; // the home page's Recently opened: its view, table order, how many it keeps and the entity types it leaves out
+S.recSort = '';
+S.recMax = 12;
+S.recOff = [];
 S.annoHover = true;
 S.named = {}; // filters and column choices saved by name, by 'flt-dg', 'cols-ed' and so on: [{ name, v }]
 S.colW = {}; // the widths dragged in a table, by section; the title takes what they leave, and none means the table fits itself
@@ -7649,7 +7654,7 @@ function render(keepPop) {
     if (data.kind === 'art') { artPage(app, data); pinBar(app); return; }
     if (data.kind === 'discs' || data.kind === 'toc') { document.title = (data.kind === 'toc' ? 'Disc ID ' + data.id : (data.rel ? data.rel.title + ' · ' : '') + 'Disc IDs') + ' · Event Horizon'; discPage(app, data); pinBar(app); return; }
     if (data.kind === 'hist') { histPage(app, data); entHeadWire(app.querySelector('.arthd') || app); pinBar(app); return; }
-    if (data.kind === 'home') { app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); return; }
+    if (data.kind === 'home') { app.innerHTML = homeHtml(); hmWire(app); secRail(app); save(); const p = keepPop && document.getElementById('pop-' + keepPop), t = keepPop && $(`[data-pop="${keepPop}"]`); if (p) { p.hidden = false; if (t) t.setAttribute('aria-expanded', 'true'); } return; }
     const r = data.rel || data.g || { id: data.id };
     // another page starts unfiltered
     if (FLT.of !== r.id) { FLT.of = r.id; LM_ERR.clear(); for (const k in TSORT) delete TSORT[k]; for (const k in TQ) delete TQ[k]; FLT.dg = { q: '', f: {} }; FLT.ed = { q: '', f: {} }; }
@@ -7874,8 +7879,8 @@ const visitSet = (key, img) => {
 function visited(key, d) {
     const r = d.rel || d.g; if (!r) return;
     const old = visits().find(x => x.key === key);
-    const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '', img: old && old.img }, ...visits().filter(x => x.key !== key)].slice(0, 12);
-    try { GM_setValue('visits', v); } catch (e) {}
+    const v = [{ key, title: r.title || r.name || '', by: r.ac && r.ac.length ? acText(r.ac) : '', img: old && old.img, at: Date.now() }, ...visits().filter(x => x.key !== key)].slice(0, S.recMax);
+    if (!S.recOff.includes(key.split('/')[0])) try { GM_setValue('visits', v); } catch (e) {}
     if (VISIT_PIC.includes(d.kind)) visitPic(d.kind, d).then(img => visitSet(key, img), () => {});
 }
 // the visits kept before they carried a picture get theirs once, with the fewest requests, and it is shown in place
@@ -7890,8 +7895,7 @@ async function visitFill(app) {
             const ri = img && app.querySelector(`.hm-r[href$="/${k}/${id}"] .hm-ri`);
             if (ri && !ri.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; ri.prepend(im); hmImg(im); }
             app.querySelectorAll(`[data-star-pic="${k}/${id}"]`).forEach(pic => { if (img && !pic.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; pic.prepend(im); hmImg(im); } });
-            const tile = img && app.querySelector(`.hm-star-grid a[href$="/${k}/${id}"] .dn`);
-            if (tile && !tile.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; im.onerror = () => im.remove(); tile.append(im); }
+            if (img) app.querySelectorAll(`.hm-star-grid a[href$="/${k}/${id}"] .dn`).forEach(tile => { if (!tile.querySelector('img')) { const im = document.createElement('img'); im.src = img; im.alt = ''; im.onerror = () => im.remove(); tile.append(im); } });
         } catch (e) { LOG.debug('Visit picture for ' + v.key + ' failed: ' + e.message); }
     }
 }
@@ -8006,6 +8010,10 @@ function hmWire(app) {
     app.querySelectorAll('[data-star-view]').forEach(b => b.addEventListener('click', () => { S.starView = b.dataset.starView; save(); render(); }));
     app.querySelectorAll('[data-star-sort]').forEach(b => b.addEventListener('click', () => { const key = b.dataset.starSort; S.starSort = S.starSort === key ? '-' + key : key; save(); render(); }));
     app.querySelectorAll('[data-star-remove]').forEach(b => b.addEventListener('click', () => { S.stars = S.stars.filter(x => x.key !== b.dataset.starRemove); save(); render(); }));
+    app.querySelectorAll('[data-rec-view]').forEach(b => b.addEventListener('click', () => { S.recView = b.dataset.recView; save(); render(); }));
+    app.querySelectorAll('[data-rec-sort]').forEach(b => b.addEventListener('click', () => { const key = b.dataset.recSort; S.recSort = S.recSort === key ? '-' + key : key; save(); render(); }));
+    app.querySelectorAll('[data-rec-max]').forEach(b => b.addEventListener('change', () => { S.recMax = +b.value; save(); render('rec-set'); }));
+    app.querySelectorAll('[data-rec-kind]').forEach(b => b.addEventListener('change', () => { S.recOff = toggle(S.recOff, b.dataset.recKind); save(); render('rec-set'); }));
     app.querySelector('[data-star-export]')?.addEventListener('click', () => {
         const url = URL.createObjectURL(new Blob([JSON.stringify({ version: 1, stars: S.stars }, null, 2)], { type: 'application/json' }));
         const a = document.createElement('a'); a.href = url; a.download = 'event-horizon-stars.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -8050,29 +8058,33 @@ function homeHtml() {
         : sect('hme', 'You', '', `<p class="hm-none"><a href="${MB}/login?returnto=%2F">Log in</a> for your edits, votes and collections.</p>`, '');
     const vs = visits();
     S.stars = S.stars.map(v => { const recent = vs.find(x => x.key === v.key); return !v.img && recent && recent.img ? { ...v, img: recent.img } : v; });
-    const groups = Object.entries(HM_KIND).map(([k, v]) => [v[0], S.stars.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length);
     const kind = v => HM_KIND[v.key.split('/')[0]] || ['', MK_REC];
-    const sortKey = S.starSort.replace(/^-/, ''), sortedStars = [...S.stars];
-    if (sortKey) sortedStars.sort((a, b) => {
-        const dir = S.starSort.startsWith('-') ? -1 : 1;
-        if (sortKey === 'added') { const av = starDateValid(a.added), bv = starDateValid(b.added); return av && bv ? (a.added - b.added) * dir : av ? -1 : bv ? 1 : 0; }
-        return (sortKey === 'type' ? kind(a)[0] : sortKey === 'artist' ? a.by || '' : a.title).localeCompare(sortKey === 'type' ? kind(b)[0] : sortKey === 'artist' ? b.by || '' : b.title, undefined, { sensitivity: 'base', numeric: true }) * dir;
-    });
-    const starHeading = (key, label) => `<th aria-sort="${sortKey === key ? S.starSort.startsWith('-') ? 'descending' : 'ascending' : 'none'}"><button type="button" class="tg-th" data-star-sort="${key}" data-tip="Sort by ${label.toLowerCase()}">${label}${sortKey === key ? S.starSort.startsWith('-') ? ' ↓' : ' ↑' : ''}</button></th>`;
     const starPic = v => { const k = v.key.split('/')[0], im = visitImg(v); return `<span class="hm-ri${k === 'artist' ? ' ar' : k === 'instrument' ? ' fit' : ''}" data-star-pic="${esc(v.key)}">${im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : ''}${SVG(kind(v)[1])}</span>`; };
     const removeStar = v => `<span class="ed-views"><button type="button" class="hm-star-remove" data-star-remove="${esc(v.key)}" aria-label="Remove ${esc(v.title)} from starred entities" data-tip="Remove star">${SVG(STAR)}</button></span>`;
-    const row = v => `<div class="hm-star-line"><a class="hm-r" href="${MB}/${esc(v.key)}">${starPic(v)}<span class="hm-rk">${SVG(kind(v)[1])}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>${removeStar(v)}</div>`;
-    const groupButton = `<span class="ed-views" role="group" aria-label="Views"><button type="button" data-star-view="group" aria-pressed="${S.starView === 'group'}" aria-label="Grouped by entity type" data-tip="Grouped by entity type">${SVG('<path d="M4 5h7M4 9h16M4 15h7M4 19h16"/>')}</button></span>`;
+    // Starred and Recently opened show their entities the same way; attr names the card's data attributes, act a row's button
+    const entBody = (xs, view, sort, { attr, list, date, act }) => {
+        const sortKey = sort.replace(/^-/, ''), sorted = [...xs], desc = sort.startsWith('-');
+        if (sortKey) sorted.sort((a, b) => {
+            const dir = desc ? -1 : 1;
+            if (sortKey === 'added') { const av = starDateValid(a.added), bv = starDateValid(b.added); return av && bv ? (a.added - b.added) * dir : av ? -1 : bv ? 1 : 0; }
+            return (sortKey === 'type' ? kind(a)[0] : sortKey === 'artist' ? a.by || '' : a.title).localeCompare(sortKey === 'type' ? kind(b)[0] : sortKey === 'artist' ? b.by || '' : b.title, undefined, { sensitivity: 'base', numeric: true }) * dir;
+        });
+        const heading = (key, label) => `<th aria-sort="${sortKey === key ? desc ? 'descending' : 'ascending' : 'none'}"><button type="button" class="tg-th" data-${attr}-sort="${key}" data-tip="Sort by ${label.toLowerCase()}">${label}${sortKey === key ? desc ? ' ↓' : ' ↑' : ''}</button></th>`;
+        const button = v => act ? act(v) : '';
+        const row = v => `<div class="hm-star-line"><a class="hm-r" href="${MB}/${esc(v.key)}">${starPic(v)}<span class="hm-rk" data-tip="${kind(v)[0]}" aria-label="${kind(v)[0]}">${SVG(kind(v)[1])}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>${button(v)}</div>`;
+        if (view === 'group') return Object.entries(HM_KIND).map(([k, n]) => [n[0], xs.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length).map(([name, items]) => `<div class="hm-star-group"><h3>${esc(name)}</h3><div class="${list}">${items.map(row).join('')}</div></div>`).join('');
+        if (view === 'grid') return `<div class="disco hm-star-grid">${xs.map(v => { const recent = vs.find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<div class="hm-star-tile"><a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>${button(v)}</div>`; }).join('')}</div>`;
+        if (view === 'table') return `<div class="ed-tw"><table class="ed-t"><thead><tr><th class="tc"></th>${heading('title', 'Entity')}${heading('type', 'Type')}${heading('artist', 'Artist')}${heading('added', date)}${act ? '<th class="hm-star-actions"></th>' : ''}</tr></thead><tbody>${sorted.map(v => `<tr><td class="tc"><a class="tt" href="${MB}/${esc(v.key)}">${starPic(v)}</a></td><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td><td data-star-added>${starDateValid(v.added) ? `<time datetime="${new Date(v.added).toISOString()}">${esc(new Date(v.added).toLocaleDateString())}</time>` : '—'}</td>${act ? `<td class="hm-star-actions">${act(v)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
+        return `<div class="${list}">${xs.map(row).join('')}</div>`;
+    };
+    const entViews = (cur, attr) => `<span class="ed-views" role="group" aria-label="Views"><button type="button" data-${attr}="group" aria-pressed="${cur === 'group'}" aria-label="Grouped by entity type" data-tip="Grouped by entity type">${SVG('<path d="M4 5h7M4 9h16M4 15h7M4 19h16"/>')}</button></span>` + viewBs(['grid', 'row', 'table'], cur, attr, 'Views').replaceAll('"Row"', '"List"');
     const transfer = `<span class="popwrap"><span class="ed-views"><button type="button" data-pop="star-transfer" aria-label="Export or import stars" aria-expanded="false" data-tip="Export or import stars">${SVG('<path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/>')}</button></span><div class="pop r" id="pop-star-transfer" hidden><button class="opt" type="button" data-star-export>Export stars</button><button class="opt" type="button" data-star-import>Import stars</button><input type="file" accept="application/json,.json" data-star-file hidden></div></span>`;
-    const views = transfer + '<span class="ed-div"></span>' + groupButton + viewBs(['grid', 'row', 'table'], S.starView, 'star-view', 'Views').replaceAll('"Row"', '"List"');
-    const body = !S.stars.length ? '<p class="hm-none">Star an entity to keep it here.</p>'
-        : S.starView === 'group' ? groups.map(([name, items]) => `<div class="hm-star-group"><h3>${esc(name)}</h3><div class="hm-star-list">${items.map(row).join('')}</div></div>`).join('')
-        : S.starView === 'grid' ? `<div class="disco hm-star-grid">${S.stars.map(v => { const recent = visits().find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<div class="hm-star-tile"><a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>${removeStar(v)}</div>`; }).join('')}</div>`
-        : S.starView === 'table' ? `<div class="ed-tw"><table class="ed-t"><thead><tr><th class="tc"></th>${starHeading('title', 'Entity')}${starHeading('type', 'Type')}${starHeading('artist', 'Artist')}${starHeading('added', 'Date added')}<th class="hm-star-actions"></th></tr></thead><tbody>${sortedStars.map(v => `<tr><td class="tc"><a class="tt" href="${MB}/${esc(v.key)}">${starPic(v)}</a></td><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td><td data-star-added>${starDateValid(v.added) ? `<time datetime="${new Date(v.added).toISOString()}">${esc(new Date(v.added).toLocaleDateString())}</time>` : '—'}</td><td class="hm-star-actions">${removeStar(v)}</td></tr>`).join('')}</tbody></table></div>`
-        : `<div class="hm-star-list">${S.stars.map(row).join('')}</div>`;
+    const views = transfer + '<span class="ed-div"></span>' + entViews(S.starView, 'star-view');
+    const body = S.stars.length ? entBody(S.stars, S.starView, S.starSort, { attr: 'star', list: 'hm-star-list', date: 'Date added', act: removeStar }) : '<p class="hm-none">Star an entity to keep it here.</p>';
     const starred = sect('hstar', `Starred entities <span class="count">${S.stars.length}</span>`, views, body, '');
-    const rec = sect('hrec', 'Recently opened', '', vs.length ? `<div class="hm-rec">${vs.map(v => { const [k, id] = v.key.split('/'), [kn, ic] = HM_KIND[k] || ['', MK_REC];
-        return `<a class="hm-r" href="${MB}/${k}/${id}"><span class="hm-ri${k === 'artist' ? ' ar' : k === 'instrument' ? ' fit' : ''}">${(im => im ? `<img src="${esc(im)}" loading="lazy" alt="" data-hmimg>` : '')(visitImg(v))}${SVG(ic)}</span><span class="hm-rk" data-tip="${kn}" aria-label="${kn}">${SVG(ic)}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>`; }).join('')}</div>`
+    const recent = vs.filter(v => !S.recOff.includes(v.key.split('/')[0])).slice(0, S.recMax).map(v => ({ ...v, added: v.at }));
+    const recSet = `<span class="popwrap"><span class="ed-views"><button type="button" data-pop="rec-set" aria-label="Choose what to keep" aria-expanded="false" data-tip="Choose what to keep">${SVG('<path d="M4 6h10M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>')}</button></span><div class="pop r rec-pop" id="pop-rec-set" hidden><div class="h label">Keep the last</div><span class="hm-seg" role="radiogroup" aria-label="How many to keep">${[6, 12, 24, 48, 96].map(n => `<label><input type="radio" name="rec-max" value="${n}" data-rec-max${n === S.recMax ? ' checked' : ''}><span>${n}</span></label>`).join('')}</span><div class="h label">Of these</div>${Object.entries(HM_KIND).map(([k, [n, ic]]) => `<label class="rec-k"><input type="checkbox" data-rec-kind="${k}"${S.recOff.includes(k) ? '' : ' checked'}>${SVG(ic)}<span>${n}</span></label>`).join('')}</div></span>`;
+    const rec = sect('hrec', 'Recently opened', recSet + '<span class="ed-div"></span>' + entViews(S.recView, 'rec-view'), recent.length ? entBody(recent, S.recView, S.recSort, { attr: 'rec', list: 'hm-rec', date: 'Last opened' })
         : '<p class="hm-none">The releases, groups, artists and labels you open show up here.</p>', '');
     const news = fr.blog.length ? sect('hnews', 'News', '', `<div class="hm-news">${fr.blog.map(x => `<a href="${esc(x.href)}" target="_blank">${esc(x.t)}</a>`).join('')}<a class="hm-more" href="https://blog.metabrainz.org" target="_blank">MetaBrainz blog ›</a></div>`, '') : '';
     return hero + starred + me + nrel + rec + news + nev;

@@ -11,6 +11,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[The viewer](#the-viewer)** takes over a page, moves between pages without reloading, and keeps the page's identity and actions in reach while scrolling.
 - **[Sections](#sections)**: all data, an entity's facts and external links included, in cards that can be reordered, hidden and configured.
 - **[Starred entities](#starred-entities)** keeps favorite entities on the homepage.
+- **[Recently opened](#recently-opened)** lists the pages you opened last on the homepage, with your choice of view, number and entity types.
 - **[Tracklist](#tracklist)**: each track's credits and its streaming links, with platforms deduplicated.
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Pending changes](#pending-changes)** marks what has edits open.
@@ -37,6 +38,10 @@ Click a card header, group or row to open or fold it. Right-click it, or its con
 ## Starred entities
 
 Select the star in an entity's header to keep it on the homepage; select it again to remove it. On the homepage, point at an entry and select its star to remove it. Show stars grouped by entity type, as a list, a grid or a table; click a table heading to sort it. The table shows when each star was added, when known. Stars and the chosen view travel with your userscript manager's settings. Use the header's export/import button to save stars to a file or add stars from one.
+
+## Recently opened
+
+The homepage lists the pages you opened last, as a list by default. The buttons in the section's header offer the same views as starred entities, and its table shows when you last opened each entry. The settings button beside them chooses how many entries to keep and which entity types to keep; a type you turn off stops being recorded and its entries leave the section. Your choices travel with your userscript manager's settings.
 
 ## Tracklist
 
