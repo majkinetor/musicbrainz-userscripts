@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.02.190000
+// @version      2026.11.02.200000
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2673,6 +2673,7 @@ button.tx:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .pop .h.also{border-top:1px solid var(--border);margin-top:4px;padding-top:8px}
 .rl-one .ki{display:flex;gap:4px}
 .rl-one>.popwrap{align-self:flex-end;padding-bottom:4px}
+.eh-ac{list-style:none;margin:0;padding:0}.eh-ac li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)}.eh-ac bdi{flex:0 1 auto;min-width:0}.eh-ac-u{font-size:13px;color:var(--muted)}.eh-ac-e{margin-left:auto;font-size:13px}
 .eh-edit{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-left:2px;padding:0;border:0;border-radius:6px;background:none;color:var(--muted, currentColor);cursor:pointer;vertical-align:middle}.eh-edit:hover{color:var(--link);background:color-mix(in srgb, var(--link) 14%, transparent)}.eh-edit svg{width:16px;height:16px}#eh-aliases{font:14px Manrope,system-ui,sans-serif}.als-end{opacity:.55;text-decoration:line-through}#eh-aliases .eh-al{width:min(820px,94vw)}#eh-aliases .eh-al-n{font-weight:400;opacity:.6}#eh-aliases .eh-al-tab{margin-left:auto;margin-right:12px;font-size:13px;color:var(--mbu-accent-text, var(--mbu-accent));text-decoration:none}#eh-aliases .eh-al-tab:hover{text-decoration:underline}#eh-aliases #tc-alias{margin:0}
 .lnk{font-size:13px;font-weight:700;background:none;border:0;color:var(--link);cursor:pointer;padding:0 4px}
 
@@ -3458,8 +3459,9 @@ function actionRow(actions, type, id, active = '') {
     if (LABELS_TYPES.includes(type) && !actions.some(a => a[0] === 'labels')) actions = [...actions, ['labels', 'Labels', 'Labels', CI_TAG]];
     if (RECS_TYPES.includes(type) && !actions.some(a => a[0] === 'recordings')) actions = [...actions, ['recordings', 'Recordings', 'Recordings', '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>']];
     if (RELS_TYPES.includes(type) && !actions.some(a => a[0] === 'relationships')) actions = [...actions, ['relationships', 'Relationships', 'Relationships', '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><path d="M9 6h6M8.1 8.1l7.8 7.8"/>']];
-    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'tags', 'recordings', 'works', 'events', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
-    const less = actions.filter(a => ['details', 'tags', 'recordings', 'works', 'events', 'discids'].includes(a[0]));
+    if (ALIASES_TYPES.includes(type) && !actions.some(a => a[0] === 'aliases')) actions = [...actions, ['aliases', 'Aliases', 'Aliases', '<path d="M4 7h16M4 12h11M4 17h7"/>']];
+    const link = ([p, n, tip, ic]) => { const inMore = ['details', 'aliases', 'tags', 'recordings', 'works', 'events', 'discids', 'edit_annotation'].includes(p); return `<a class="ab${p === active ? ' on' : ''}" href="${MB}${p[0] === '/' ? p + id : `/${type}/${id}/${p}`}"${p === active ? ' aria-current="page"' : ''}${inMore ? '' : ` data-tip="${esc(tip.replace('artist', type.replace('-', ' ')))}"`}>${SVG(ic)}<span class="${inMore ? '' : 'abt'}">${n}</span></a>`; };
+    const less = actions.filter(a => ['details', 'aliases', 'tags', 'recordings', 'works', 'events', 'discids'].includes(a[0]));
     if (less.length) less.push(['edit_annotation', 'Annotation', 'Edit annotation', '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>']);
     const main = actions.filter(a => !less.includes(a));
     // the Releases tab sits in the row itself, before History
@@ -5857,6 +5859,9 @@ const mbuAliasEditor = (() => {
     return { open, style, load: aliasLoad };
 })();
 // </ST-ALIASES>
+const ALIASES_TYPES = ['release', 'release-group', 'artist', 'label', 'recording', 'work', 'area', 'instrument', 'place', 'series', 'event'];
+const alGuess = ent => n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent });
+const alFetch = (u, i) => { if (i && /post/i.test(i.method || '')) kpWrote(); return mbnFetch(u, i); };
 // the alias editor (Apollo Editor's, shared) in a popup over the page; an entered edit reloads the view when it closes
 function openAliases() {
     const m = location.pathname.match(/^\/([a-z-]+)\/([0-9a-f-]{36})/i); if (!m || document.getElementById('eh-aliases')) return;
@@ -5878,13 +5883,46 @@ function openAliases() {
     ov.addEventListener('mousedown', e => { if (e.target === ov) close(); });
     panel.querySelector('.mbu-ov-x').onclick = close;
     panel.querySelector('.eh-al-tab').href = MB + '/' + ent + '/' + gid + '/aliases';
-    const guess = n => ent === 'artist' ? mbuGuessCase.sortName(n, { entity: 'artist', isPerson: true }) : mbuGuessCase.sortName(n, { entity: ent === 'release-group' ? 'release_group' : ent });
     mbuAliasEditor.open({
-        ent, gid, origin: MB, fetch: (u, i) => { if (i && /post/i.test(i.method || '')) kpWrote(); return mbnFetch(u, i); }, guess, log: LOG, toast: msg => toast(msg),
+        ent, gid, origin: MB, fetch: alFetch, guess: alGuess(ent), log: LOG, toast: msg => toast(msg),
         onSubmit: (ok, bad) => { entered += ok; if (ok && !bad) close(true); },
         onCount: n => { panel.querySelector('.eh-al-n').textContent = '(' + n + ')'; },
         mount: box => { body.textContent = ''; body.append(box); box.querySelector('.tc-al-n')?.focus(); },
     }).catch(e => { LOG.warn('alias editor failed', e.message); body.innerHTML = '<p class="msg">Could not open the alias editor: ' + esc(e.message) + '</p>'; });
+}
+// an entity's Aliases page → "ealiases/<type>:<mbid>": the shared alias editor in its own section, and an artist's credits.
+// The editor's box outlives a redraw, so what is being typed stays
+let alBox = null;
+function aliasCredits(doc) {
+    return [...doc.querySelectorAll('table.artist-credits tbody tr')].map(tr => {
+        const bdi = tr.querySelector('td bdi'), uses = tr.querySelector('a[href^="/artist-credit/"]'), edit = tr.querySelector('td.actions a[href*="/credit/"]');
+        if (!bdi) return null;
+        bdi.querySelectorAll('[title]').forEach(a => a.removeAttribute('title'));
+        return { html: bdi.innerHTML, uses: uses ? uses.getAttribute('href') : '', edit: edit ? edit.getAttribute('href') : '' };
+    }).filter(Boolean);
+}
+function aliasesHtml(d) {
+    const [ty, eid] = d.ent.split(':'), t = d.t || {}, xs = d.credits || [];
+    const title = t.en || t.name || 'Aliases';
+    return `<section class="arthd">${entHead({ type: ty, id: eid, img: d.img || visitImg({ key: ty + '/' + eid }), kick: 'Aliases · ' + (HM_KIND[ty] || [ty])[0], title, disamb: t.ed, acts: entActs(ty, eid, 'aliases') })}</section>
+<section class="sec" id="s-ali"><div class="secthead"><h2>Aliases <span class="count">${d.n == null ? '' : d.n}</span></h2></div><div id="al-body">${d.err ? `<p class="msg">Could not open the alias editor: ${esc(d.err)}</p>` : '<p class="msg">Loading…</p>'}</div></section>
+${xs.length ? `<section class="sec" id="s-acr"><div class="secthead"><h2>Artist credits <span class="count">${xs.length}</span></h2></div><ul class="eh-ac">${xs.map(x => `<li><bdi>${x.html}</bdi>${x.uses ? `<a class="eh-ac-u" href="${MB}${esc(x.uses)}">See uses</a>` : ''}${x.edit ? `<a class="eh-ac-e" href="${MB}${esc(x.edit)}">Edit</a>` : ''}</li>`).join('')}</ul></section>` : ''}`;
+}
+function aliasesLoad(n, d) {
+    const [ty, eid] = d.ent.split(':'), live = () => n === showing && data === d, page = MB + '/' + ty + '/' + eid + '/aliases';
+    alBox = null;
+    mbuAliasEditor.open({
+        ent: ty, gid: eid, origin: MB, guess: alGuess(ty), log: LOG, toast: msg => toast(msg),
+        // the editor reads the entity's Aliases page: the name and the credits come from that same answer
+        fetch: async (u, i) => {
+            const r = await alFetch(u, i);
+            if (u === page && r.ok && live()) { const html = await r.clone().text(); d.t = tagsParse(html, true); d.credits = aliasCredits(new DOMParser().parseFromString(html, 'text/html')); render(); }
+            return r;
+        },
+        onSubmit: (ok, bad) => { if (ok && !bad && live()) show(d.key); },
+        onCount: c => { d.n = c; const x = document.querySelector('#s-ali .count'); if (x && live()) x.textContent = c; },
+        mount: box => { if (!live()) return; alBox = { key: d.key, el: box }; render(); },
+    }).catch(e => { LOG.warn('alias editor failed', e.message); if (live()) { d.err = e.message; render(); } });
 }
 // Tidal's and Apple Music's pages send no CORS headers, nor does Deezer's API: the manager fetches them
 const gmFetch = (u, t0 = performance.now()) => new Promise((ok, no) => GM_xmlhttpRequest({ method: 'GET', url: u, onerror: () => { fetchLog(u, t0, null, 'network'); no(new Error('network')); }, ontimeout: () => { fetchLog(u, t0, null, 'timeout'); no(new Error('timeout')); }, timeout: 15000,
@@ -7665,6 +7703,13 @@ function render(keepPop) {
         const back = typing && document.getElementById(typing); if (back) { back.focus({ preventScroll: true }); back.setSelectionRange(at, at); }
         return;
     }
+    if (data.kind === 'aliases') {
+        const a = document.activeElement, keep = alBox && alBox.el.contains(a) ? a : null;
+        app.innerHTML = aliasesHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah);
+        if (alBox && alBox.key === data.key) $('#al-body').replaceChildren(alBox.el);
+        secRail(app); pinBar(app); save(); if (keep) keep.focus({ preventScroll: true });
+        return;
+    }
     if (data.kind === 'rels') { app.innerHTML = relsHtml(data); const ah = app.querySelector('.arthd'); if (ah) entHeadWire(ah); dgWire(app); secRail(app); pinBar(app); lmWatch(app); shWatch(app); save(); return; }
     if (data.kind === 'tagx') { app.innerHTML = tagxHtml(data); tagxWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
     if (data.kind === 'rates') { app.innerHTML = ratesHtml(data); ratesWire(); tagxArt(app); secRail(app); lmWatch(app); save(); return; }
@@ -8608,6 +8653,9 @@ function navTo(href) {
     if (ux) return 'utag/' + ux[1] + '/' + ux[2] + (ux[3] ? '/' + ux[3] : '') + (/show_downvoted=1/.test(u.search) ? '/-' : '');
     const et = u.origin === location.origin && u.pathname.match(new RegExp('^/(release|release-group|artist|label|recording|work|area|instrument|place|series|event)/(' + MBID.source + ')/tags/?$', 'i'));
     if (et) return 'etags/' + et[1].toLowerCase() + ':' + et[2].toLowerCase();
+    // an entity's aliases → "ealiases/<type>:<mbid>"
+    const eal = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + ALIASES_TYPES.join('|') + ')/(' + MBID.source + ')/aliases/?$', 'i'));
+    if (eal) return 'ealiases/' + eal[1].toLowerCase() + ':' + eal[2].toLowerCase();
     // an entity's relationships → "erels/<type>:<mbid>"
     const er = u.origin === location.origin && u.pathname.match(new RegExp('^/(' + RELS_TYPES.join('|') + ')/(' + MBID.source + ')/relationships/?$', 'i'));
     if (er) return 'erels/' + er[1].toLowerCase() + ':' + er[2].toLowerCase();
@@ -8633,7 +8681,7 @@ function navTo(href) {
     const m = u.origin === location.origin && u.pathname.match(PAGE);
     return m ? m[1].toLowerCase() + '/' + m[2].toLowerCase() : null;
 }
-const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
+const titleOf = d => d && d.kind === 'hist' && !d.rel ? histName(d.id) + ' · Event Horizon' : d && d.kind === 'search' ? d.q + ' · Search · Event Horizon' : d && d.kind === 'user' ? d.name + ' · Event Horizon' : d && d.kind === 'colls' ? d.name + ' · Collections · Event Horizon' : d && d.kind === 'rates' ? d.name + ' · Ratings · Event Horizon' : d && d.kind === 'tagx' ? d.tag + (d.name ? ' · ' + d.name : '') + ' · Tags · Event Horizon' : d && d.kind === 'tags' ? (d.t && d.t.name || d.name) + ' · Tags · Event Horizon' : d && d.kind === 'aliases' ? (d.t && d.t.en || 'Aliases') + ' · Aliases · Event Horizon' : d && d.kind === 'rels' ? (d.t && d.t.name || 'Relationships') + ' · ' + (d.mode ? d.mode[0].toUpperCase() + d.mode.slice(1) : 'Relationships') + ' · Event Horizon' : d && d.kind !== 'home' && (d.rel || d.g) ? (d.rel || d.g).title + ' · Event Horizon' : 'MusicBrainz · Event Horizon';
 // a release's cover-art page, or its add-cover-art page → "art/<mbid>"; an event's event-art or add-event-art page → "eart/<mbid>": its title and artist, then Art Station's gallery (#as-slot). Only as the
 // page the tab loaded, as Art Station runs on that page alone: a link to it loads it
 const artKey = href => {
@@ -9971,6 +10019,7 @@ async function show(key, o = {}) {
         data = { kind: 'tags', key, ent, name: ent ? ent.split(':')[0] : decodeURIComponent(id), view: S[ent ? 'etagView' : 'tagView'] || (ent ? 'chips' : 'bars'), so: S.tagSort || 'count', sc: S.tagScope || 'a', q: '', dn: !ent && key === PAGE_ID && /[?&]show_downvoted=1/.test(location.search), ao: !!ent && location.hash === '#add' };
         scrollTo(0, 0); render(); tagsLoad(n, key); if (data.dn) tagsLoad(n, key, true); return;
     }
+    if (kind === 'ealiases') { data = { kind: 'aliases', key, ent: id }; scrollTo(0, 0); render(); aliasesLoad(n, data); return; }
     if (kind === 'erels') { data = { kind: 'rels', key, ent: id }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
     if (['erecs', 'ewrks', 'eevts', 'earts', 'elabs'].includes(kind)) { data = { kind: 'rels', mode: { erecs: 'recordings', ewrks: 'works', eevts: 'events', earts: 'artists', elabs: 'labels' }[kind], key, ent: id, page: 1 }; scrollTo(0, 0); render(); relsLoad(n, key); return; }
     if (kind === 'urates') { const p = key.split('/'); data = { kind: 'rates', key, name: decodeURIComponent(p[1]), type: p[2] || '', st: 0 }; scrollTo(0, 0); render(); ratesLoad(n, data); return; }

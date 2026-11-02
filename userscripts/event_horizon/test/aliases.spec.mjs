@@ -53,3 +53,22 @@ test('a release shows its aliases with the pencil', { tag: ['@sandbox', '@login'
   check(await until(() => page.locator('#eh-aliases #tc-alias').count(), n => n === 1) === 1, 'the popup holds the alias editor');
   check(/\/release\/[0-9a-f-]{36}\/aliases$/.test(await page.locator('#eh-aliases .eh-al-tab').getAttribute('href')), 'for the release');
 });
+
+// the Aliases page: from More, the editor inline, and an artist's credits, both listed as sections
+test('the Aliases page shows the editor and the artist credits', { tag: ['@sandbox', '@login'] }, async ({ page, inject }, testInfo) => {
+  const AR = 'b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d';
+  await page.goto(`https://test.musicbrainz.org/artist/${AR}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await requireLogin(page);
+  await settled(page);
+  await inject('event_horizon');
+  const link = page.locator(`#app a.ab[href$="/artist/${AR}/aliases"]`).first();
+  await until(() => link.count(), n => n > 0);
+  await link.evaluate(a => a.click());
+  check(await until(() => page.locator('#s-ali #tc-alias .tc-al-list input').count(), n => n > 0) > 0, 'the editor stands in its section');
+  check(await until(() => page.locator('#s-acr .eh-ac li').count(), n => n > 0) > 0, 'the artist credits are listed');
+  check(await until(() => page.locator('#s-acr .eh-ac-u').first().getAttribute('href'), h => /\/artist-credit\/\d+$/.test(h || '')), 'each links its uses');
+  check(/\d/.test(await page.locator('#s-ali .count').innerText()), 'the section counts the aliases');
+  check(!(await page.locator('#s-ali .tc-al-bar').isVisible()), 'without the bar of the editor');
+  check(/aliases$/.test(page.url()), 'the address is the Aliases tab');
+  await attachShot(testInfo, page, 'aliases-page');
+});

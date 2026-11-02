@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-02 14:57 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-02 15:02 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -786,7 +786,7 @@ MusicBrainz web pages redesigned to produce clean modern interface with theming 
 - **[Releases and discography](#releases-and-discography)** as a grid or a table whose columns you choose, order and resize, grouped by type, with a filter, and with filters and columns saved by name.
 - **[Pending changes](#pending-changes)** marks what has edits open.
 
-Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, infinite scroll, advanced filtering and grouped edit history.
+Also on board: artist, label, release, release group and area images, a configurable homepage, inline tag and alias editing, an Aliases page with an artist's credits, infinite scroll, advanced filtering and grouped edit history.
 
 ### The viewer
 
