@@ -17,5 +17,5 @@ test('copy versions and the environment as Markdown', { tag: ['@sandbox'] }, asy
   await page.locator('#st-tab-a').click();
   await page.locator('#st-copy-md').click();
   const [md] = await until(() => page.evaluate(() => window.__copied), c => c.length === 1, { timeout: 5000 });
-  check(/^\*\*String Theory\*\* `v\S+`/.test(md) && /\n- Fusion `v\S+`/.test(md) && /\n\*\*Site:\*\* test\.musicbrainz\.org/.test(md), 'Markdown has a bold title, a list and the site');
+  check(/^\*\*String Theory\*\* `v\S+`/.test(md) && /\n- \[[x ]\] Fusion `v\S+`/.test(md) && /\n\*\*Site:\*\* test\.musicbrainz\.org/.test(md), 'Markdown has a bold title, a list and the site');
 });

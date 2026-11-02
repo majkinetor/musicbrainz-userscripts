@@ -131,10 +131,27 @@ function stEnvLines() {
   return out;
 }
 // The versions to paste into an issue as Markdown.
+// The channel String Theory was installed from: the install address when the manager tells it, else the
+// channel whose version About last read is this one, else the branch a test build was made on.
+var stRemote = {};
+function stChannel() {
+  var g = null; try { g = (typeof GM_info !== 'undefined' && GM_info) || null; } catch (e) { /* no GM_info */ }
+  var sc = (g && g.script) || {}, urls = [g && g.scriptUpdateURL, sc.updateURL, sc.downloadURL, g && g.scriptURL, sc.fileURL];
+  for (var i = 0; i < urls.length; i++) {
+    var u = typeof urls[i] === 'string' ? urls[i] : '', m;
+    if ((m = /\/refs\/heads\/([^/]+)\//.exec(u)) || (m = /\/raw\/(?!refs\/)([^/]+)\/userscripts\//.exec(u))) {
+      return m[1] === 'main' ? 'Latest' : m[1] === 'stable' ? 'Stable' : /^[0-9a-f]{7,40}$/.test(m[1]) ? 'pinned ' + m[1].slice(0, 8) : 'branch ' + m[1];
+    }
+  }
+  if (ST_BRANCH) return 'branch ' + ST_BRANCH;
+  if (stRemote.stable === ST_VERSION) return 'Stable';
+  if (stRemote.main === ST_VERSION) return 'Latest';
+  return '';
+}
 function stVersionsText() {
-  var off = __stReadOff();
-  var lines = ['**String Theory** `v' + ST_VERSION + '`\n'];
-  stMembers.forEach(function (m) { lines.push('- ' + m[1] + ' `v' + m[2] + '`' + (off.indexOf(m[0]) < 0 ? '' : ' (off)')); });
+  var off = __stReadOff(), ch = stChannel();
+  var lines = ['**String Theory** `v' + ST_VERSION + '`' + (ch ? ' (' + ch + ')' : '') + '\n'];
+  stMembers.forEach(function (m) { lines.push('- [' + (off.indexOf(m[0]) < 0 ? 'x' : ' ') + '] ' + m[1] + ' `v' + m[2] + '`'); });
   lines.push('');
   stEnvLines().forEach(function (e) { lines.push('**' + e[0] + ':** ' + e[1] + '  '); });
   lines[lines.length - 1] = lines[lines.length - 1].replace(/ {2}$/, '');
@@ -176,7 +193,7 @@ var ST_CSS = ''
   + '#st-cfg .st-di.st-drag{outline:2px solid var(--mbu-accent);outline-offset:2px;cursor:grabbing}'
   + '#st-cfg .st-cap{color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-links{display:flex;gap:14px;margin-left:auto;white-space:nowrap}'
-  + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
+  + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
   + '#st-cfg .st-si{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}#st-cfg .st-si>img,#st-cfg .st-si>svg{width:100%;height:100%;display:block}'
   + '#st-cfg h3.st-h{margin:10px 0 4px;padding:0 0 3px;border-bottom:1px solid var(--mbu-border);font:700 14px/1.3 var(--mbu-font);text-transform:none;letter-spacing:0;color:var(--mbu-text)!important}#st-cfg h3.st-h:first-child{margin-top:2px}'
   + '#st-cfg .st-key{min-width:96px;font-variant-numeric:tabular-nums}#st-cfg .st-key[data-rec]{border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
@@ -486,6 +503,7 @@ function stSettings(tab) {
     refs.forEach(function (ref) {
       stRemoteVersion(ref, function (v) {
         got[ref] = v;
+        if (v) stRemote[ref] = v;
         if (--left || check !== updateCheck) return;
         draw(false);
       });
