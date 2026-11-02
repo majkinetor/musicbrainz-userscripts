@@ -249,7 +249,6 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   try { if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('⚙ Settings', open, { id: 'st-settings', autoClose: true, title: 'Launchers, the scripts on and off, versions and updates' }); } catch (e) {}
   document.addEventListener('mbu-st-settings', open);
   var palette = function () { try { stPalette(); } catch (e) { try { console.error('[String Theory] command palette failed:', e); } catch (x) {} } };
-  try { if (typeof GM_registerMenuCommand === 'function') GM_registerMenuCommand('⌨ Commands', palette, { id: 'st-palette', autoClose: true, title: 'The command palette: settings, themes, pages, launchers' }); } catch (e) {}
   document.addEventListener('mbu-st-palette', palette);
   // String Theory's icon shows even on a page none of its scripts puts a launcher on
   if (ST_ON_MB) {

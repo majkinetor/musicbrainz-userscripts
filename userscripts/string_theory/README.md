@@ -53,7 +53,7 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 ## Command palette
 
-Press **Ctrl+K** on any page String Theory runs on, or pick *⌨ Commands* in the userscript manager's menu, and type to filter the commands:
+Press **Ctrl+K** on any page String Theory runs on and type to filter the commands:
 
 | Category                  | Commands                                                                                  |
 | ------------------------- | ----------------------------------------------------------------------------------------- |
