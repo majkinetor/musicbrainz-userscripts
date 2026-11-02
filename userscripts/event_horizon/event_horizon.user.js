@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Event Horizon
 // @namespace    https://github.com/majkinetor/musicbrainz-userscripts
-// @version      2026.11.2.125011
+// @version      2026.11.2.131038
 // @description  An alternative MusicBrainz viewer.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5FdmVudCBIb3Jpem9uPC90aXRsZT4KPHBhdGggZD0iTTQgNjQgQTYwIDE2IDAgMCAxIDEyNCA2NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZWI3NDNiIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDY0IDY0KSIvPgo8cG9seWdvbiBwb2ludHM9IjYyLjMsMTYuNCAyMS41LDQwLjIgMjEuNSw4Ny44IDYyLjMsMTExLjYiIGZpbGw9IiNiYTQ3OGYiLz48cG9seWdvbiBwb2ludHM9IjY1LjcsMTYuNCAxMDYuNSw0MC4yIDEwNi41LDg3LjggNjUuNywxMTEuNiIgZmlsbD0iI2ViNzQzYiIvPgo8cGF0aCBkPSJNNCA2NCBBNjAgMTYgMCAwIDAgMTI0IDY0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmM5NGEiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNjQgNjQpIi8+Cjwvc3ZnPgo=
@@ -2357,7 +2357,7 @@ const CSS = `
 .hm-chips{display:flex;flex-wrap:wrap;gap:8px}
 .hm-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:11px;background:var(--chip);color:var(--chip-text)!important;text-decoration:none!important;font-weight:600}
 .hm-chip:hover{background:var(--accent);color:#fff!important}
-.rec-pop{min-width:230px}.rec-pop .hm-seg{display:flex;margin:2px 8px 6px}.rec-pop .hm-seg label{flex:1;text-align:center}.rec-k{display:flex;align-items:center;gap:7px;height:26px;padding:0 8px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}.rec-k:hover{background:var(--hover)}.rec-k input{margin:0;accent-color:var(--accent,currentColor)}.rec-k svg{width:15px;height:15px;color:var(--muted)}
+.hm-tk svg{width:14px;height:14px;margin-right:4px;vertical-align:-2px}.rec-pop{min-width:230px}.rec-pop .hm-seg{display:flex;margin:2px 8px 6px}.rec-pop .hm-seg label{flex:1;text-align:center}.rec-k{display:flex;align-items:center;gap:7px;height:26px;padding:0 8px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}.rec-k:hover{background:var(--hover)}.rec-k input{margin:0;accent-color:var(--accent,currentColor)}.rec-k svg{width:15px;height:15px;color:var(--muted)}
 .hm-rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 16px}
 .hm-r{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;color:var(--text)!important;text-decoration:none!important}
 .hm-r:hover{background:var(--hover)}
@@ -8073,7 +8073,7 @@ function homeHtml() {
         const button = v => act ? act(v) : '';
         const row = v => `<div class="hm-star-line"><a class="hm-r" href="${MB}/${esc(v.key)}">${starPic(v)}<span class="hm-rk" data-tip="${kind(v)[0]}" aria-label="${kind(v)[0]}">${SVG(kind(v)[1])}</span><span class="hm-rt">${esc(v.title)}${v.by ? `<span class="hm-by">${esc(v.by)}</span>` : ''}</span></a>${button(v)}</div>`;
         if (view === 'group') return Object.entries(HM_KIND).map(([k, n]) => [n[0], xs.filter(x => x.key.split('/')[0] === k)]).filter(x => x[1].length).map(([name, items]) => `<div class="hm-star-group"><h3>${esc(name)}</h3><div class="${list}">${items.map(row).join('')}</div></div>`).join('');
-        if (view === 'grid') return `<div class="disco hm-star-grid">${xs.map(v => { const recent = vs.find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<div class="hm-star-tile"><a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy">${esc(v.by || kind(v)[0])}</span></a>${button(v)}</div>`; }).join('')}</div>`;
+        if (view === 'grid') return `<div class="disco hm-star-grid">${xs.map(v => { const recent = vs.find(x => x.key === v.key), im = visitImg({ ...v, img: v.img || (recent && recent.img) }); return `<div class="hm-star-tile"><a href="${MB}/${esc(v.key)}"><span class="dn">${SVG(kind(v)[1])}${im ? `<img src="${esc(im)}" loading="lazy" alt="" onerror="this.remove()">` : ''}</span><span class="dt">${esc(v.title)}</span><span class="dy"><span class="hm-tk" data-tip="${kind(v)[0]}" aria-label="${kind(v)[0]}">${SVG(kind(v)[1])}</span>${esc(v.by || kind(v)[0])}</span></a>${button(v)}</div>`; }).join('')}</div>`;
         if (view === 'table') return `<div class="ed-tw"><table class="ed-t"><thead><tr><th class="tc"></th>${heading('title', 'Entity')}${heading('type', 'Type')}${heading('artist', 'Artist')}${heading('added', date)}${act ? '<th class="hm-star-actions"></th>' : ''}</tr></thead><tbody>${sorted.map(v => `<tr><td class="tc"><a class="tt" href="${MB}/${esc(v.key)}">${starPic(v)}</a></td><td><a href="${MB}/${esc(v.key)}">${esc(v.title)}</a></td><td>${esc(kind(v)[0])}</td><td>${esc(v.by || '')}</td><td data-star-added>${starDateValid(v.added) ? `<time datetime="${new Date(v.added).toISOString()}">${esc(new Date(v.added).toLocaleDateString())}</time>` : '—'}</td>${act ? `<td class="hm-star-actions">${act(v)}</td>` : ''}</tr>`).join('')}</tbody></table></div>`;
         return `<div class="${list}">${xs.map(row).join('')}</div>`;
     };
