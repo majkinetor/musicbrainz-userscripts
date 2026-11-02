@@ -94,13 +94,13 @@ function stNewsChannels(items, old, cb) {
   });
   finish();
 }
-function stNewsCheck(force) {
+function stNewsCheck(force, cb) {
   var v = stNewsRead();
   if (!force && Date.now() - v.at < ST_NEWS_DAY) return;
   var base = 'https://api.github.com/repos/' + ST_REPO + '/discussions?per_page=100', full = 'application/vnd.github.full+json';
   v.at = Date.now(); stNewsSave(v);   // another tab need not check too; a failure waits for tomorrow
   stNewsGet(base + '&page=1', full, function (first, head) {
-    if (!first) return;
+    if (!first) { if (cb) cb(false); return; }
     var last = /[?&]page=(\d+)>;\s*rel="last"/.exec(head), n = last ? +last[1] : 1;
     var done = function (pages) {
       var items = stNewsPick(pages);
@@ -109,6 +109,7 @@ function stNewsCheck(force) {
         now.items = items;
         if (!now.since) now.since = Date.now() - ST_NEWS_FIRST;   // a first run doesn't flag the whole history
         stNewsSave(now); stNewsSignal();
+        if (cb) cb(true);
       });
     };
     if (n < 2) return done([first]);
@@ -181,7 +182,7 @@ function stNewsOpen() {
   ov.innerHTML = '<div class="mbu-ov-panel mbu-ui" id="st-news" role="dialog" aria-label="What\'s new" tabindex="-1">'
     + '<div class="mbu-ov-h"><span class="mbu-ov-title">What\'s new</span><button type="button" id="st-news-all">Mark all read</button><button type="button" class="mbu-ov-x" id="st-news-full" data-tip="Full screen" aria-label="Full screen">⛶</button><button type="button" class="mbu-ov-x" id="st-news-x" aria-label="Close">\u2715</button></div>'
     + '<div id="st-news-body"><ul id="st-news-list" role="listbox"></ul><div id="st-news-view"></div></div>'
-    + '<div id="st-news-foot"><span>Latest ' + ST_NEWS_MAX + ' · checked ' + (checked < 1 ? 'today' : checked + ' d ago') + '</span>'
+    + '<div id="st-news-foot"><span>Latest ' + ST_NEWS_MAX + ' · <span id="st-news-state">checked ' + (checked < 1 ? 'today' : checked + ' d ago') + '</span> · <a href="#" id="st-news-refresh">Refresh</a></span>'
     + '<span><a href="' + ST_NEWS_ALL + '" target="_blank" rel="noopener">All announcements</a> · <a href="' + ST_NEWS_LOG + '" target="_blank" rel="noopener">Changelog</a></span></div></div>';
   (document.body || document.documentElement).appendChild(ov);
   stNewsOv = ov;
@@ -233,6 +234,21 @@ function stNewsOpen() {
     try { localStorage.setItem('st:news:full', fullOn ? '1' : '0'); } catch (e) {}
   };
   ov.querySelector('#st-news-all').onclick = function () { items.forEach(function (i) { if (v.seen.indexOf(i.id) < 0) v.seen.push(i.id); }); persist(); draw(); };
+  var state = ov.querySelector('#st-news-state'), checking = false;
+  ov.querySelector('#st-news-refresh').onclick = function (e) {
+    e.preventDefault();
+    if (checking) return;
+    checking = true; state.textContent = 'checking…';
+    stNewsCheck(true, function (ok) {
+      checking = false;
+      state.textContent = ok ? 'checked today' : 'check failed';
+      if (!ok || !ov.isConnected) return;
+      var id = items[at] && items[at].id;
+      v = stNewsRead(); items = v.items;
+      var n = items.findIndex(function (i) { return i.id === id; });
+      if (n < 0) show(0); else { at = n; draw(); }
+    });
+  };
   ov.addEventListener('mousedown', function (e) { if (e.target === ov) close(); });
   // open on the newest unread post
   var first = stNewsUnread(v)[0], idx = first ? items.indexOf(first) : 0;

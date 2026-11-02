@@ -36,5 +36,7 @@ test.describe('what\'s new', () => {
     await page.click('#st-cfg-news');
     await page.waitForSelector('#st-news', { timeout: 5000 });
     check(!(await page.$('#st-cfg')), 'the settings link swaps settings for the viewer');
+    await page.click('#st-news-refresh');
+    await until(() => page.textContent('#st-news-state'), t => /checked today|check failed/.test(t), { timeout: 20000 });
   });
 });
