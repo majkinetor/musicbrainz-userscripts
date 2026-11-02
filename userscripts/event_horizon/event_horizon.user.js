@@ -5851,7 +5851,7 @@ const mbuAliasEditor = (() => {
       #tc-alias .tc-al-opt,#tc-alias .tc-al-none{padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
       #tc-alias .tc-al-none{color:var(--mbu-text-weak);cursor:default}
       #tc-alias .tc-al-opt:hover{background:var(--mbu-border)}
-      #tc-alias .tc-al-opt.on{background:var(--mbu-accent-soft);color:var(--mbu-accent-text)}
+      #tc-alias .tc-al-opt.on{background:var(--mbu-accent);color:#fff}
       #tc-alias .tc-al-p,#tc-alias .tc-al-g,#tc-alias .tc-al-x,#tc-alias .tc-al-c{background:none!important;border:0;color:var(--mbu-text-weak);cursor:pointer;border-radius:4px;filter:none!important;padding:0}
       #tc-alias .tc-al-x{width:26px;height:24px;font-size:14px}
       #tc-alias :is(.tc-al-g,.tc-al-x,.tc-al-p,.tc-al-c):hover{background:var(--mbu-border)!important;color:var(--mbu-text)}
