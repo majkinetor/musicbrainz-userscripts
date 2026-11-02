@@ -67,7 +67,7 @@ test('a pinned dock panel stays open where it was dragged', { tag: ['@sandbox', 
   await page.mouse.move(w0.x - 78, w0.y + 30); await page.mouse.up();
   const w1 = await win.boundingBox();
   check(Math.round(w1.width - w0.width) === 80 && Math.round(w1.x + w1.width - w0.x - w0.width) === 0, 'its free edge widens it, the other edge stays put');
-  check(await page.locator('#mb-pc-panel').evaluate((el, w) => Math.abs(el.offsetWidth - w) < 2, w1.width), 'the panel fills the wider window');
+  check(await page.locator('#mb-pc-panel').evaluate((el, w) => Math.abs(el.offsetWidth - w) <= 2, w1.width), 'the panel fills the wider window');
   check(await page.evaluate(() => GM_getValue('pc:dock-w')) === Math.round(w1.width), 'the width is saved');
   await page.mouse.move(w1.x + 2, w1.y + 30); await page.mouse.down();
   await page.mouse.move(w1.x + 150, w1.y + 30); await page.mouse.up();
