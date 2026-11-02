@@ -172,6 +172,7 @@ var ST_CSS = ''
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
   + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:26px}#st-cfg .st-time{box-sizing:border-box;width:60px;height:26px;padding:0 6px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
+  + '#st-cfg-news{margin-right:10px;white-space:nowrap}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
   + '#st-cfg .st-b{flex:0 0 auto;font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);cursor:pointer}'
@@ -245,6 +246,7 @@ function stSettings(tab) {
     (document.head || html).appendChild(css);
   }
   var h = U.mbuCfgHeader({ icon: '<img src="' + ST_ICON + '" alt="">', name: 'String Theory', version: ST_VERSION, script: 'string_theory' });
+  if (ST_ON_MB) h = h.replace('<span class="mbu-cfg-sp"></span>', '<span class="mbu-cfg-sp"></span><a href="#" id="st-cfg-news">What\'s new</a>');
   var links = '<span class="st-links">'
     + '<a href="https://milic.info/musicbrainz-userscripts" target="_blank" rel="noopener">Website</a>'
     + '<a href="https://github.com/' + ST_REPO + '/issues" target="_blank" rel="noopener">Issues</a></span>';
@@ -298,6 +300,8 @@ function stSettings(tab) {
   stCfgOv = ov;
   var panel = ov.querySelector('#st-cfg'), q = function (s) { return panel.querySelector(s); };
   var close = function () { ov.remove(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('mousedown', onOut, true); };
+  var newsLink = ov.querySelector('#st-cfg-news');
+  if (newsLink) newsLink.addEventListener('click', function (e) { e.preventDefault(); close(); stNewsOpen(); });
   // #851: a script's settings opened from here sit above this window, which stays open; the one used last
   // is in front and takes Escape. A floating (position: fixed) element is taken for such a window.
   var front = true, toFront = function (on) { front = on; ov.style.zIndex = on ? '' : '9000'; };   // #851: behind every script's window, the lowest of which is 9990

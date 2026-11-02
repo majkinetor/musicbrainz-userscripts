@@ -25,5 +25,10 @@ test.describe('what\'s new', () => {
     check(!(await page.$('#st-news')), 'Escape closes it');
     await page.click('#mbu-dock');
     check(!(await page.$('#st-news')), 'with nothing unread the icon does its usual');
+    await page.keyboard.press('Escape');
+    await page.click('#mbu-dock', { button: 'right' });
+    await page.click('#st-cfg-news');
+    await page.waitForSelector('#st-news', { timeout: 5000 });
+    check(!(await page.$('#st-cfg')), 'the settings link swaps settings for the viewer');
   });
 });

@@ -54,7 +54,7 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 ## What's new
 
-String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden and clicking it opens **What's new** instead of the dock. The command palette has the same entry at any time.
+String Theory checks the project's [announcements](https://github.com/majkinetor/musicbrainz-userscripts/discussions/categories/announcements) once a day. While some are unread, its icon is golden and clicking it opens **What's new** instead of the dock. The command palette and the link at the top of String Theory's settings open it at any time.
 
 The window lists the latest 20 posts, each with its script's name and icon. A post shows **stable** when its change is released and **latest** when it isn't yet. Opening a post marks it read; **Mark all read** does them all. The first check flags only the last 14 days.
 
