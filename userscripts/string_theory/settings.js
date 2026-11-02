@@ -151,7 +151,7 @@ var ST_CSS = ''
   + '#st-cfg h3{margin:0 0 4px;padding:0;border:0;background:none;font:600 11px/1.4 var(--mbu-font);text-transform:uppercase;letter-spacing:.06em;color:var(--mbu-text-weak)}'
   + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:30px;margin:0;font-weight:400}'
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
-  + '#st-cfg #st-p-t .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-t .st-lbl{white-space:nowrap}#st-cfg #st-p-t select{flex:0 1 150px;width:150px;min-width:0;height:30px}#st-cfg .st-time{box-sizing:border-box;width:72px;height:30px;padding:0 8px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
+  + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:30px}#st-cfg .st-time{box-sizing:border-box;width:72px;height:30px;padding:0 8px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
   + '#st-cfg .st-ver{margin-left:auto;color:var(--mbu-text-weak);font-size:11px;white-space:nowrap}'
   + '#st-cfg .st-note{flex:1 1 auto;color:var(--mbu-text-dim);font-size:12px}'
@@ -178,10 +178,39 @@ var ST_CSS = ''
   + '#st-cfg .st-links{display:flex;gap:14px;margin-left:auto;white-space:nowrap}'
   + '#st-cfg .st-scripts{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}#st-cfg .st-scripts .st-row{min-height:24px;gap:6px;white-space:nowrap}'
   + '#st-cfg .st-si{flex:0 0 18px;width:18px;height:18px;display:grid;place-items:center}#st-cfg .st-si>img,#st-cfg .st-si>svg{width:100%;height:100%;display:block}'
+  + '#st-cfg h3.st-h{margin:14px 0 2px}#st-cfg h3.st-h:first-child{margin-top:0}'
+  + '#st-cfg .st-key{min-width:96px;font-variant-numeric:tabular-nums}#st-cfg .st-key[data-rec]{border-color:var(--mbu-accent);color:var(--mbu-accent-text)}'
   + '#st-cfg [hidden]{display:none!important}'
   + '#st-cfg-ov{background:none;pointer-events:none}#st-cfg-ov>#st-cfg{pointer-events:auto}';
-function stSettings() {
-  if (stCfgOv && stCfgOv.isConnected) { stCfgOv.querySelector('#st-cfg').focus(); return; }
+// a launcher opens its script's settings on right-click: pass the click on to the live one
+function stLive(name) {
+  var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
+    return el.id !== 'mbu-dock' && el.dataset.mbCornerLabel === name;
+  });
+  return els.filter(function (el) { return el.dataset.mbuDocked !== 'off'; })[0] || els[0] || null;
+}
+// On any page: the script opens them itself when it runs here (mbu-open-settings), else its launcher's
+// right-click does, else String Theory starts it only to open its settings, off or not on this page.
+// toFront(false) puts String Theory's window behind them; false back means the script has none.
+function stOpenFor(name, toFront) {
+  toFront = toFront || function () {};
+  var m = stMembers.filter(function (x) { return x[1] === name; })[0], folder = m ? m[0] : name, el = stLive(name);
+  toFront(false);
+  if (!document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: folder, cancelable: true }))) return true;
+  if (el) { el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 })); return true; }
+  var st = __stStarters[folder];
+  if (st && st.so && !st.soStarted()) { st.go(); return true; }
+  toFront(true);
+  try { stUI().mbuToast('⚠ ' + name + ' has no settings'); } catch (err) { /* no toast */ }
+  return false;
+}
+// tab: 'g' General, 'l' Dock, 'a' About (MusicBrainz only; elsewhere there is only About)
+function stSettings(tab) {
+  if (stCfgOv && stCfgOv.isConnected) {
+    if (tab && stCfgOv.querySelector('#st-tab-' + tab)) stCfgOv.querySelector('#st-tab-' + tab).click();
+    stCfgOv.querySelector('#st-cfg').focus();
+    return;
+  }
   var U = stUI(), T = stTokens(), html = document.documentElement;
   if (!document.getElementById('st-cfg-css')) {
     var css = document.createElement('style');
@@ -198,25 +227,30 @@ function stSettings() {
       return '<span class="st-lbl" id="' + id + '-l">' + label + '</span><span class="st-seg" role="radiogroup" id="' + id + '" aria-labelledby="' + id + '-l">'
         + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
     };
-    h += '<div class="st-nav"><div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="true">Dock</button>'
-      + '<button type="button" role="tab" id="st-tab-t" aria-controls="st-p-t" aria-selected="false">Theme</button>'
+    h += '<div class="st-nav"><div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-g" aria-controls="st-p-g" aria-selected="true">General</button>'
+      + '<button type="button" role="tab" id="st-tab-l" aria-controls="st-p-l" aria-selected="false">Dock</button>'
       + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>' + links + '</div>'
-      + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l">'
-      + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
-      + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
-      + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
-      + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + '</div>'
-      + '<div class="st-strip" id="st-order"></div>'
-      + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
-      + '</section>'
-      + '<section class="st-sec" id="st-p-t" role="tabpanel" aria-labelledby="st-tab-t" hidden>'
-      + '<div class="st-row">' + seg('st-th-mode', 'Theme', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']]) + '</div>'
+      + '<section class="st-sec" id="st-p-g" role="tabpanel" aria-labelledby="st-tab-g">'
+      + '<h3 class="st-h">Theme</h3>'
+      + '<div class="st-row">' + seg('st-th-mode', 'Mode', [['light', 'Light'], ['dark', 'Dark'], ['auto', 'System'], ['sun', 'Sun'], ['time', 'Time']]) + '</div>'
       + '<div class="st-row">' + ['light', 'dark'].map(function (v) {
         return '<label class="st-lbl" for="st-th-' + v + '">' + (v === 'dark' ? 'Dark theme' : 'Light theme') + '</label><select id="st-th-' + v + '">'
           + __stTheme.names(v).map(function (n) { return '<option>' + stEsc(n) + '</option>'; }).join('') + '</select>';
       }).join('') + '</div>'
       + '<div class="st-row" id="st-th-time"><label class="st-lbl" for="st-th-from">Dark from</label><input type="text" id="st-th-from" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"><label for="st-th-to">to</label><input type="text" id="st-th-to" class="st-time" inputmode="numeric" maxlength="5" placeholder="HH:MM" aria-label="24-hour time"></div>'
       + '<div class="st-cap" id="st-th-sun">Sun follows sunrise and sunset where you are: the browser asks for your location once, and your system setting is used if you refuse.</div>'
+      + '<h3 class="st-h">Command palette</h3>'
+      + '<div class="st-row">' + seg('st-pal-on', 'Palette', [['on', 'On'], ['off', 'Off']])
+      + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l"></button></div>'
+      + '<div class="st-cap">The hotkey opens a list of commands: settings, themes, pages, launchers. Click the hotkey, then press the new one.</div>'
+      + '</section>'
+      + '<section class="st-sec" id="st-p-l" role="tabpanel" aria-labelledby="st-tab-l" hidden>'
+      + '<div class="st-row">' + seg('st-side', 'Side', [['left', 'Left'], ['right', 'Right']]) + seg('st-flow', 'Orientation', [['column', 'Column'], ['row', 'Row']])
+      + '<span class="st-lbl">Size</span><span class="st-step"><button type="button" id="st-size-dn" aria-label="Smaller">−</button>'
+      + '<output id="st-size"></output><button type="button" id="st-size-up" aria-label="Bigger">+</button></span></div>'
+      + '<div class="st-row">' + seg('st-hover', 'Hover', [['none', 'None'], ['shelf', 'Shelf']]) + '</div>'
+      + '<div class="st-strip" id="st-order"></div>'
+      + '<div class="st-cap">Drag an icon to reorder; the first sits nearest the corner. Right-click one for its settings.</div>'
       + '</section>';
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
@@ -270,25 +304,7 @@ function stSettings() {
     });
     if (enteringAbout) checkUpdates();
   };
-  // a launcher opens its script's settings on right-click: pass the click on to the live one
-  var live = function (name) {
-    var els = Array.prototype.filter.call(document.querySelectorAll('[data-mb-corner="br"][data-mb-corner-label]'), function (el) {
-      return el.id !== 'mbu-dock' && el.dataset.mbCornerLabel === name;
-    });
-    return els.filter(function (el) { return el.dataset.mbuDocked !== 'off'; })[0] || els[0] || null;
-  };
-  // On any page: the script opens them itself when it runs here (mbu-open-settings), else its launcher's
-  // right-click does, else String Theory starts it only to open its settings, off or not on this page
-  var openFor = function (name) {
-    var m = stMembers.filter(function (x) { return x[1] === name; })[0], folder = m ? m[0] : name, el = live(name);
-    toFront(false);
-    if (!document.dispatchEvent(new CustomEvent('mbu-open-settings', { detail: folder, cancelable: true }))) return;
-    if (el) { el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2 })); return; }
-    var st = __stStarters[folder];
-    if (st && st.so && !st.soStarted()) { st.go(); return; }
-    toFront(true);
-    try { U.mbuToast('⚠ ' + name + ' has no settings'); } catch (err) { /* no toast */ }
-  };
+  var live = stLive, openFor = function (name) { stOpenFor(name, toFront); };
   q('.st-scripts').addEventListener('contextmenu', function (e) {
     var r = e.target.closest('[data-name]');
     if (!r) return;
@@ -344,6 +360,39 @@ function stSettings() {
       q('#st-th-' + k).onchange = showTheme;   // tidies what was typed, or restores it
     });
     showTheme();
+    var showPal = function () {
+      var p = stPalRead();
+      Array.prototype.forEach.call(q('#st-pal-on').children, function (b) { b.setAttribute('aria-checked', String(b.dataset.v === (p.on ? 'on' : 'off'))); });
+      var k = q('#st-pal-key');
+      k.removeAttribute('data-rec');
+      k.textContent = stKeyLabel(p.key);
+    };
+    q('#st-pal-on').onclick = function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      stPalSet({ on: b.dataset.v === 'on' });
+      showPal();
+    };
+    // the next key pressed with it, modifiers held, is the hotkey; Escape keeps the old one
+    q('#st-pal-key').onclick = function () {
+      var k = q('#st-pal-key');
+      k.setAttribute('data-rec', '');
+      k.textContent = 'Press keys…';
+      var rec = function (e) {
+        if (/^(Control|Alt|Shift|Meta|OS|AltGraph)$/.test(e.key)) return;
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        window.removeEventListener('keydown', rec, true);
+        stPalRecording = false;
+        if (e.key !== 'Escape') {
+          var h = stKeyOf(e);
+          if (!h.ctrl && !h.alt && !h.meta) { try { U.mbuToast('⚠ A hotkey needs Ctrl, Alt or Meta'); } catch (err) { /* no toast */ } } else stPalSet({ key: h });
+        }
+        showPal();
+      };
+      stPalRecording = true;
+      window.addEventListener('keydown', rec, true);
+    };
+    showPal();
     q('#st-side').onclick = segSet('cornerSide', 'left');
     q('#st-flow').onclick = segSet('cornerFlow', 'row');
     q('#st-hover').onclick = segSet('dockHover', 'shelf');
@@ -436,6 +485,7 @@ function stSettings() {
     });
   }
   if (!ST_ON_MB) checkUpdates();
+  else if (tab && tab !== 'g' && q('#st-tab-' + tab)) q('#st-tab-' + tab).click();
   Array.prototype.forEach.call(panel.querySelectorAll('[data-st-m]'), function (box) {
     box.onchange = function () {
       stFlip(box.getAttribute('data-st-m'));

@@ -13,10 +13,10 @@ const picked = page => page.locator('#st-th-mode [aria-checked=true]').getAttrib
 
 test.describe('settings', () => {
   test.use({ gm: { name: 'String Theory', values: {} } });
-  test('light by default, and the Theme tab sets the mode with the page following at once', { tag: ['@sandbox'] }, async ({ page, inject }) => {
+  test('light by default, and the General tab sets the mode with the page following at once', { tag: ['@sandbox'] }, async ({ page, inject }) => {
     await open(page, inject);
     await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
-    await page.locator('#st-tab-t').click();
+    await page.locator('#st-tab-g').click();
     check(await picked(page) === 'light', 'starts on light');
     check(await variant(page) === 'light', 'the light variant');
     await pick(page, 'dark');
@@ -46,7 +46,7 @@ test.describe('Event Horizon', () => {
     const eh = () => page.evaluate(() => document.documentElement.getAttribute('data-eh-theme'));
     await until(eh, v => v === 'light', { timeout: 15000 });
     await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
-    await page.locator('#st-tab-t').click();
+    await page.locator('#st-tab-g').click();
     await pick(page, 'dark');
     await until(eh, v => v === 'dark', { timeout: 5000 });
     await pick(page, 'light');
@@ -60,7 +60,7 @@ test.describe('Time', () => {
     await page.goto(SANDBOX + '/', { waitUntil: 'load', timeout: 60000 });
     await inject('string_theory');
     await page.evaluate(() => document.dispatchEvent(new Event('mbu-st-settings')));
-    await page.locator('#st-tab-t').click();
+    await page.locator('#st-tab-g').click();
     await pick(page, 'time');
     await page.locator('#st-th-from').fill('0:00');
     await page.locator('#st-th-to').fill('23:59');

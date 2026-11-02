@@ -5,7 +5,7 @@ var __stTheme = (function () {
   var KEY = 'string_theory.theme';
   var MODES = ['light', 'dark', 'auto', 'sun', 'time'];
   var onMb = /(^|\.)musicbrainz\.org$/.test(location.hostname);
-  var style = null, wasDark = false;
+  var style = null, wasDark = false, over = null;   // over: a theme shown but not saved (the command palette's preview)
   var sys = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
 
   function read() {
@@ -49,7 +49,7 @@ var __stTheme = (function () {
   }
   function apply() {
     if (!onMb) return;
-    var s = read(), v = variant(s);
+    var s = over || read(), v = variant(s);
     var css = THEMES[v][s[v]] || THEMES[v].Default;
     // Say which variant this is: a page's own background can't, Event Horizon paints over ours.
     // Not before dark was ever used here, so a dark userstyle over the light start keeps being measured.
@@ -70,9 +70,15 @@ var __stTheme = (function () {
     setInterval(function () { var m = read().mode; if (m === 'sun' || m === 'time') apply(); }, 60000);
   }
 
-  function set(patch) { var s = read(); Object.keys(patch).forEach(function (k) { s[k] = patch[k]; }); save(s); apply(); }
+  function set(patch) { var s = read(); Object.keys(patch).forEach(function (k) { s[k] = patch[k]; }); over = null; save(s); apply(); }
+  // shows the settings with patch on top, saving nothing; no patch goes back to what is saved
+  function preview(patch) {
+    over = null;
+    if (patch) { over = read(); Object.keys(patch).forEach(function (k) { over[k] = patch[k]; }); }
+    apply();
+  }
   return {
-    read: read, set: set, isDay: isDay, isDarkAt: isDarkAt,
+    read: read, set: set, preview: preview, variant: function () { return variant(read()); }, isDay: isDay, isDarkAt: isDarkAt,
     names: function (v) { return Object.keys(THEMES[v]); },
     // the location mode asks the browser where we are, once, and keeps it coarse
     setMode: function (mode, done) {

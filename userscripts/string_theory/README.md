@@ -34,6 +34,7 @@ In edit notes, a script running inside the bundle (not standalone) is marked wit
 String Theory adds dock and setting management for all included scripts:
 
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
+- **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
@@ -41,7 +42,7 @@ String Theory adds dock and setting management for all included scripts:
 
 String Theory themes MusicBrainz and every bundled script, light or dark, with no other userscript or browser extension.
 
-In String Theory's settings, **Theme** picks one of:
+In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 - **Light** (default) or **Dark**
 - **System**: follows your system's setting
@@ -50,10 +51,31 @@ In String Theory's settings, **Theme** picks one of:
 
 **Light theme** and **Dark theme** pick which theme each one uses. To add or tweak a theme, see [themes](themes/README.md).
 
+## Command palette
+
+Press **Ctrl+K** on any page String Theory runs on, or pick *⌨ Commands* in the userscript manager's menu, and type to filter the commands:
+
+| Category                  | Commands                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------- |
+| Settings                  | String Theory's tabs and every script's settings                                          |
+| Theme                     | the mode, and each light and dark theme                                                   |
+| Open                      | the window of each launcher on the page                                                   |
+| This release, This artist | the open entity's pages: edit, relationships, cover art, aliases, edit history and others |
+| Go to                     | the entities the page links to, your own pages, the edit queues and the *Add* pages       |
+| Dock                      | fold, side, orientation                                                                   |
+| Scripts                   | turn a script on or off                                                                   |
+| Search                    | what you typed, searched on MusicBrainz as an artist, a release and the rest              |
+
+- **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
+- **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
+- The words you type can be in any order and abbreviated: `rel cov` finds *This release: Cover art*.
+
 ## Settings
 
 | Setting          | Default           | What it does                                                                         |
 | ---------------- | ----------------- | ------------------------------------------------------------------------------------ |
+| Palette          | On                | The command palette's hotkey works                                                   |
+| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one             |
 | Side             | Right             | The launchers' side of the page                                                      |
 | Orientation      | Column            | A column, or a row along the bottom edge                                             |
 | Size             | 100 %             | The launchers' size, 60 to 160 %                                                     |
