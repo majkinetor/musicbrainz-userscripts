@@ -61,7 +61,9 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 | Theme                     | the mode, and each light and dark theme                                                   |
 | Open                      | the window of each launcher on the page                                                   |
 | This release, This artist | the open entity's pages: edit, relationships, cover art, aliases, edit history and others |
-| Go to                     | the entities the page links to, your own pages, the edit queues and the *Add* pages       |
+| Go to                     | the entities the page links to, your own pages and the edit queues                        |
+| Add                       | a new release, artist, label, work and the rest                                           |
+| Starred, Visited          | Event Horizon's starred entities and the pages you visited last                           |
 | Dock                      | fold, side, orientation                                                                   |
 | Scripts                   | turn a script on or off                                                                   |
 | Search                    | what you typed, searched on MusicBrainz as an artist, a release and the rest              |

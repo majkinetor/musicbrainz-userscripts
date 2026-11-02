@@ -124,9 +124,23 @@ function stPalCommands() {
         add({ id: 'go:' + href, cat: 'Go to', label: ST_ENTITY_NAMES[lm[1]] + ' · ' + text, recentless: true, run: stGo(href) });
       });
     }
-    [['/', 'Home'], ['/search/edits', 'Search edits'], ['/edit/open', 'Open edits'], ['/edit/subscribed', 'Subscribed edits'],
-      ['/release/add', 'Add release'], ['/artist/create', 'Add artist'], ['/label/create', 'Add label'], ['/work/create', 'Add work'],
-      ['/recording/create', 'Add standalone recording']].forEach(function (g) { add({ id: 'go:' + g[0], cat: 'Go to', label: g[1], run: stGo(g[0]) }); });
+    [['/', 'Home'], ['/search/edits', 'Search edits'], ['/edit/open', 'Open edits'], ['/edit/subscribed', 'Subscribed edits']]
+      .forEach(function (g) { add({ id: 'go:' + g[0], cat: 'Go to', label: g[1], run: stGo(g[0]) }); });
+    // Event Horizon's homepage: its starred entities and the pages visited last, from the store the bundle's members share
+    var gm = function (k, d) { try { return GM_getValue(k, d); } catch (e) { return d; } };
+    var view = gm('view', null), stars = view && Array.isArray(view.stars) ? view.stars : [], visits = gm('visits', []), starred = {};
+    var homeItem = function (cat, v) {
+      var kind = String(v.key || '').split('/')[0], name = ST_ENTITY_NAMES[kind] || (kind === 'collection' ? 'Collection' : '');
+      if (!name || !/^[a-z-]+\/[0-9a-f-]{36}$/.test(v.key) || !v.title) return;
+      add({ id: cat.toLowerCase() + ':' + v.key, cat: cat, label: name + ' · ' + v.title + (v.by ? ' – ' + v.by : ''), recentless: true, run: stGo('/' + v.key) });
+    };
+    stars.forEach(function (v) { if (v && v.key) { starred[v.key] = 1; homeItem('Starred', v); } });
+    (Array.isArray(visits) ? visits : []).forEach(function (v) { if (v && v.key && !starred[v.key]) homeItem('Visited', v); });
+    // MusicBrainz's forms for a new entity (the ids stay go:, so pins made before keep working)
+    [['/release/add', 'Release'], ['/artist/create', 'Artist'], ['/label/create', 'Label'], ['/work/create', 'Work'],
+      ['/recording/create', 'Standalone recording'], ['/release-group/create', 'Release group'], ['/place/create', 'Place'],
+      ['/series/create', 'Series'], ['/event/create', 'Event']]
+      .forEach(function (g) { add({ id: 'go:' + g[0], cat: 'Add', label: g[1], run: stGo(g[0]) }); });
     // the signed-in editor's pages, from the header's link to their profile
     var me = null;
     Array.prototype.some.call(document.querySelectorAll('a[href^="/user/"]'), function (a) {
