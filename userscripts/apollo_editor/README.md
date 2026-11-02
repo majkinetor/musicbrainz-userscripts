@@ -424,6 +424,7 @@ Right-click Apollo's corner icon.
 | Length parser | Ctrl+V                                 | read the lengths from the link on the clipboard |
 | Length parser | Ctrl+Enter                             | apply                                           |
 | Annotation    | Ctrl+B, Ctrl+I                         | bold, italic                                    |
+| Annotation    | Ctrl+Enter                             | enter the edit, on its own Edit annotation page |
 | Annotation    | Tab, Shift+Tab                         | make or change a list, remove it                |
 | Guess case    | right-click a track's **Aa**           | every track                                     |
 | Guess case    | right-click the release title's **Aa** | the options                                     |

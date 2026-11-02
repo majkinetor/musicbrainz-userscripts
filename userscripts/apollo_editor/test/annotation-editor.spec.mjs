@@ -129,6 +129,13 @@ test.describe('on edit_annotation', () => {
       document.getElementById('tc-anno-submit').click();
       return hit;
     }), "which presses the page's own (stopped here)");
+    await page.evaluate(() => {
+      window.__ctrlEnter = false;
+      document.querySelector('#content form button.submit.positive').addEventListener('click', e => { window.__ctrlEnter = true; e.preventDefault(); e.stopImmediatePropagation(); }, { capture: true, once: true });
+    });
+    await page.focus('#tc-anno-mdinput');
+    await page.keyboard.press('Control+Enter');
+    check(await page.evaluate(() => window.__ctrlEnter), 'Ctrl+Enter in the editor enters the edit (stopped here)');
     check(await page.$('#tc-launch') && await page.$('#tc-anno-fouc') === null, 'the Apollo switch is there; the load guard is gone');
     check(await page.evaluate(() => { const r = document.getElementById('tc-anno-wrap').getBoundingClientRect(); return r.bottom >= window.innerHeight - 40 && r.height > 300; }), 'the editor fills the window height');
     const pop = () => page.evaluate(() => document.getElementById('tc-anno-help-pop').classList.contains('on'));
