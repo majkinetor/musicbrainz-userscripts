@@ -25,6 +25,8 @@ test('Find links: a position match agrees with a typo in the title', { tag: ['@u
   const { _sameTitle } = await loadFunctions('isrc_scout', ['sameWriting', 'wordTypo', 'unfeat', '_nrm', '_sameTitle']);
   check(_sameTitle('Les Ecrocs', 'Les Escrocs'), 'Apple\'s Les Ecrocs is track 16, Les Escrocs');
   check(_sameTitle('Les Escrocs (Remastered)', 'Les Escrocs'), 'a version tag still fits');
+  check(_sameTitle('Choc’n’Soul', 'Choc ’n’ Soul'), 'the same letters spaced otherwise');
+  check(_sameTitle('Rock & Roll', 'Rock’n’Roll') === false, 'but other letters are another title');
   check(!_sameTitle('Live Forever', 'Love Forever'), 'a short word one letter off is another title');
   check(!_sameTitle('Les Escrocs', 'Ko Kan Ko Sata Doumbia on River'), 'another track is not');
 });
