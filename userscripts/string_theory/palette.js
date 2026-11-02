@@ -135,7 +135,7 @@ function stPalCommands() {
       add({ id: cat.toLowerCase() + ':' + v.key, cat: cat, label: name + ' · ' + v.title + (v.by ? ' – ' + v.by : ''), recentless: true, run: stGo('/' + v.key) });
     };
     stars.forEach(function (v) { if (v && v.key) { starred[v.key] = 1; homeItem('Starred', v); } });
-    (Array.isArray(visits) ? visits : []).forEach(function (v) { if (v && v.key && !starred[v.key]) homeItem('Visited', v); });
+    (Array.isArray(visits) ? visits : []).forEach(function (v) { if (v && v.key && !starred[v.key]) homeItem('Recent', v); });
     // MusicBrainz's forms for a new entity (the ids stay go:, so pins made before keep working)
     [['/release/add', 'Release'], ['/artist/create', 'Artist'], ['/label/create', 'Label'], ['/work/create', 'Work'],
       ['/recording/create', 'Standalone recording'], ['/release-group/create', 'Release group'], ['/place/create', 'Place'],
@@ -178,17 +178,32 @@ function stPalCommands() {
   add({ id: 'st:copy', cat: 'String Theory', label: 'Copy versions as Markdown', run: function () {
     stCopy(stVersionsText(), function (ok) { toast(ok ? '✓ Versions copied as Markdown' : '⚠ Couldn’t copy the versions'); });
   } });
+  add({ id: 'st:site', cat: 'Go to', label: 'String Theory website', run: function () { window.open('https://milic.info/musicbrainz-userscripts', '_blank', 'noopener'); } });
   add({ id: 'st:docs', cat: 'String Theory', label: 'Documentation', run: function () { window.open('https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/DOCS.md', '_blank', 'noopener'); } });
   // New issue: GitHub fills the title and body from the address. The title starts with the script's name, which the
   // repo's issue-label workflow turns into its area label (and takes off the title); the versions go under room for the report.
-  var newIssue = function (id, name) {
-    add({ id: id, cat: 'New issue', label: name, run: function () {
-      window.open('https://github.com/' + ST_REPO + '/issues/new?title=' + encodeURIComponent(name + ': ')
-        + '&body=' + encodeURIComponent('\n\n---\n\n' + stVersionsText()), '_blank', 'noopener');
+  // With log: the script's log of this page, or its last kept session (window.__mbuLogs, filled by every mbuLog).
+  // A log too long for the address goes on the clipboard instead, with a line in the body saying so.
+  var issueUrl = function (name, body) {
+    return 'https://github.com/' + ST_REPO + '/issues/new?title=' + encodeURIComponent(name + ': ') + '&body=' + encodeURIComponent(body);
+  };
+  var newIssue = function (id, name, log) {
+    add({ id: id, cat: log ? 'New issue with log' : 'New issue', label: name, recentless: !!log, run: function () {
+      var head = '\n\n---\n\n' + stVersionsText(), md = log ? log() : '', url = issueUrl(name, head + (md ? '\n\n' + md : ''));
+      if (md && url.length > 7000) {
+        url = issueUrl(name, head + '\n\n<!-- the log is on the clipboard: paste it here -->');
+        stCopy(md, function (ok) { toast(ok ? '✓ The log is on the clipboard: paste it into the issue' : '⚠ Couldn’t copy the log'); });
+      }
+      window.open(url, '_blank', 'noopener');
     } });
   };
   newIssue('st:newissue', 'String Theory');
   stMembers.forEach(function (sm) { newIssue('newissue:' + sm[0], sm[1]); });
+  var logs = {}; try { logs = window.__mbuLogs || {}; } catch (e) { /* none */ }
+  stMembers.forEach(function (sm) {
+    var l = logs[sm[1] + '*'] || logs[sm[1]];   // a bundled script's name ends in *
+    if (l && typeof l.markdown === 'function' && l.markdown()) newIssue('newissuelog:' + sm[0], sm[1], function () { return l.markdown(); });
+  });
   add({ id: 'st:reload', cat: 'String Theory', label: 'Reload the page', run: function () { location.reload(); } });
   return out;
 }

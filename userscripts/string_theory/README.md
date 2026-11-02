@@ -55,20 +55,20 @@ In String Theory's settings, on the **General** tab, **Mode** picks one of:
 
 Press **Ctrl+K** on any page String Theory runs on and type to filter the commands:
 
-| Category                  | Commands                                                                                                                          |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Settings                  | String Theory's tabs and every script's settings                                                                                  |
-| Theme                     | the mode, and each light and dark theme                                                                                           |
-| Open                      | the window of each launcher on the page                                                                                           |
-| This release, This artist | the open entity's pages: edit, relationships, cover art, aliases, edit history and others                                         |
-| Go to                     | the entities the page links to, your own pages and the edit queues                                                                |
-| Add                       | a new release, artist, label, work and the rest                                                                                   |
-| Starred, Visited          | Event Horizon's starred entities and the pages you visited last                                                                   |
-| Dock                      | fold, side, orientation                                                                                                           |
-| Scripts                   | turn a script on or off                                                                                                           |
-| Search                    | MusicBrainz searched for what you typed: `search work blue` or `work blue` is *Search Work: blue*; `search` alone lists the types |
-| New issue                 | a new issue about String Theory or one script, its name in the title and the versions in the report                               |
-| String Theory             | copy versions, docs, reload                                                                                                       |
+| Category                      | Commands                                                                                                                                                                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Settings                      | String Theory's tabs and every script's settings                                                                                                                          |
+| Theme                         | the mode, and each light and dark theme                                                                                                                                   |
+| Open                          | the window of each launcher on the page                                                                                                                                   |
+| This release, This artist     | the open entity's pages: edit, relationships, cover art, aliases, edit history and others                                                                                 |
+| Go to                         | the entities the page links to, your own pages, the edit queues and String Theory's website                                                                               |
+| Add                           | a new release, artist, label, work and the rest                                                                                                                           |
+| Starred, Recent               | Event Horizon's starred entities and the pages you visited last                                                                                                           |
+| Dock                          | fold, side, orientation                                                                                                                                                   |
+| Scripts                       | turn a script on or off                                                                                                                                                   |
+| Search                        | MusicBrainz searched for what you typed: `search work blue` or `work blue` is *Search Work: blue*; `search` alone lists the types                                         |
+| New issue, New issue with log | a new issue about String Theory or one script, its name in the title and the versions in the report; *with log* adds that script's log of this page, or its last kept one |
+| String Theory                 | copy versions, docs, reload                                                                                                                                               |
 
 - **Theme commands show as you move over them** with the arrows; **Enter** keeps one, **Esc** goes back to yours.
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.

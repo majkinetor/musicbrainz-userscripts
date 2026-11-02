@@ -1962,6 +1962,20 @@
           try { window.addEventListener('pagehide', flush); } catch (e) { /* no window */ }
       }
       mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
+      // Every log on the page by its script's name, for String Theory's New issue with log (#890): this page's
+      // session as Markdown, or the last kept one when this page logged nothing. Scripts in one userscript
+      // (the bundle) share window; a standalone copy fills its own.
+      try {
+          var me = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || o.header || 'script';
+          var reg = window.__mbuLogs = window.__mbuLogs || {};
+          reg[me] = {
+              markdown: function () {
+                  if (buf.length) return markdown();
+                  var id = H ? store.get(hp + 'current') : null, past = id ? loadSession(id) : null;
+                  return past && past.length ? markdown({ id: id, entries: past }) : '';
+              }
+          };
+      } catch (e) { /* no window */ }
       return api;
   }
 
