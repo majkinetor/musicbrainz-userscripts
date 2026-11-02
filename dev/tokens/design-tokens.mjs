@@ -62,6 +62,8 @@ export const TOKENS = {
     'accent-hover': '#4e329f',
     'accent-deep': '#3b2c70',     // pressed / on-accent-surface text
     'accent-soft': ['#ece4ff', 'color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent))'],
+    // a marked row's tint: a theme sets --row-mark, because its accent can be the wrong hue for a large area
+    'row-mark': ['#ece4ff', 'var(--row-mark, color-mix(in srgb, var(--mbu-bg) 86%, var(--mbu-accent)))'],
     'accent-fg': '#fff',          // text on top of --mbu-accent
     // The accent used AS TEXT. Mixing toward --mbu-text lightens it on a dark
     // ground and deepens it slightly on a light one, so it stays legible either

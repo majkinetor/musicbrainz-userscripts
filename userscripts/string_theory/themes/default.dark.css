@@ -10,6 +10,7 @@
 */
 :root {
 	--background: #333;
+	--row-mark: #4d4760;
 	--background-accent: #444;
 	--background-emphasis: #555;
 	--background-dimmed: #222;
