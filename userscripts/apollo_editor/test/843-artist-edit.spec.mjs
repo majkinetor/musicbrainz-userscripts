@@ -29,6 +29,11 @@ const autofillOpens = async page => {
   check(await page.evaluate(() => document.activeElement === document.querySelector('#tc-af-box input')), 'the paste box has the focus');
   await page.keyboard.press('Escape');
   check(!await page.locator('#tc-af-box input').isVisible(), 'Escape folds it again');
+  await page.locator('#tc-af-btn').click();
+  await page.locator('#tc-af-box input').fill('not a link');
+  await page.keyboard.press('Enter');
+  check(!await page.locator('#tc-af-box input').isVisible(), 'submitting a link closes the box');
+  check(await until(() => page.locator('#tc-af-box .tc-af-st').textContent(), v => /\S/.test(v || '') && !/Reading/.test(v)), 'the result shows in the heading');
 };
 
 // #895: near a tie the card's margins flipped the answer on each move, and each move asked again

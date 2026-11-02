@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apollo Editor
 // @namespace    https://musicbrainz.org/
-// @version      2026.11.02.150000
+// @version      2026.11.02.160000
 // @description  Speed up per-track artist-credit resolution in the MusicBrainz release editor — bulk-match each track's artist text to an MB artist (sibling releases in the release group first, then search), one-click apply, multi-artist aware, create-on-the-fly. Same table whether floating or replacing the integrated tracklist.
 // @author       majkinetor
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjggMTI4IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCI+Cjx0aXRsZT5BcG9sbG8gRWRpdG9yPC90aXRsZT4KPG1hc2sgaWQ9ImFwLW0iIG1hc2tVbml0cz0idXNlclNwYWNlT25Vc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4Ij48Zz48ZyBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDIgNjQgQzI4IDcyIDIyIDkwIDI0IDExMCBMNDIgOTggWiIvPjxwYXRoIGQ9Ik04NiA2NCBDMTAwIDcyIDEwNiA5MCAxMDQgMTEwIEw4NiA5OCBaIi8+PC9nPjxnIGZpbGw9IiNmZmYiPjxwYXRoIGQ9Ik02NCA4IEM4NCAyNCA5MCA1MiA4OCA5MCBMNDAgOTAgQzM4IDUyIDQ0IDI0IDY0IDggWiIvPjxwYXRoIGQ9Ik00OCA5MCBMODAgOTAgTDc2IDEwMCBMNTIgMTAwIFoiLz48L2c+PGcgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMuNSI+PHBhdGggZD0iTTM2IDkwLjUgTDkyIDkwLjUiLz48L2c+PGNpcmNsZSBjeD0iNjQiIGN5PSI1MCIgcj0iOCIgZmlsbD0iIzAwMCIvPjwvZz48L21hc2s+PGc+PHBhdGggZD0iTTUyIDEwMCBDNTQgMTEyIDYwIDExOCA2NCAxMjYgQzY4IDExOCA3NCAxMTIgNzYgMTAwIFoiIGZpbGw9IiNlYjc0M2IiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAgMykiLz48L2c+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNiYTQ3OGYiIG1hc2s9InVybCgjYXAtbSkiLz4KPC9zdmc+Cg==
@@ -15298,20 +15298,20 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
   // A button in the details heading that unfolds to the paste box. Nothing else is shown, so it needs no card (#895)
   function afBox() {
     let b = document.getElementById('tc-af-box'); if (b) return b;
-    b = document.createElement('div'); b.id = 'tc-af-box'; b.className = 'mbu-ui'; b.hidden = true;
-    b.innerHTML = '<input type="text" class="tc-af-in" placeholder="Paste a Wikidata, Wikipedia, VIAF or ISNI link"><div class="tc-af-st"></div>';
+    b = document.createElement('div'); b.id = 'tc-af-box'; b.className = 'mbu-ui';
+    b.innerHTML = '<input type="text" class="tc-af-in" hidden placeholder="Paste a Wikidata, Wikipedia, VIAF or ISNI link"><div class="tc-af-st"></div>';
     const inp = b.querySelector('input'), st = b.querySelector('.tc-af-st');
     let last = '';
-    const go = () => { const v = inp.value.trim(); if (!v || v === last) return; last = v; autofill(v, st); };
+    const go = () => { const v = inp.value.trim(); if (!v || v === last) return; last = ''; inp.value = ''; inp.hidden = true; autofill(v, st); };   // closes at once: the result shows in its place
     inp.addEventListener('paste', () => setTimeout(go, 0));
-    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); last = ''; go(); } else if (e.key === 'Escape') b.hidden = true; });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); last = ''; go(); } else if (e.key === 'Escape') inp.hidden = true; });
     inp.addEventListener('change', go);
     return b;
   }
   function afBtn() {
     let b = document.getElementById('tc-af-btn'); if (b) return b;
     b = document.createElement('button'); b.id = 'tc-af-btn'; b.type = 'button'; b.className = 'mbu-ui'; b.textContent = 'Autofill';
-    b.addEventListener('click', () => { const box = afBox(); box.hidden = !box.hidden; if (!box.hidden) box.querySelector('input').focus(); });
+    b.addEventListener('click', () => { const box = afBox(), inp = box.querySelector('input'), st = box.querySelector('.tc-af-st'); inp.hidden = !inp.hidden; if (!inp.hidden) { st.textContent = ''; inp.focus(); } });
     return b;
   }
   function afPlace() {
@@ -15320,7 +15320,7 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     const btn = afBtn(), box = afBox();
     lg.classList.add('tc-af-lg');
     if (btn.parentElement !== lg) lg.appendChild(btn);
-    if (box.previousElementSibling !== lg) lg.after(box);
+    if (box.nextElementSibling !== btn) lg.insertBefore(box, btn);
   }
   // A place's map is a card at the end of whichever column is shorter, so neither is left with a long empty stretch
   function entCards(on) {
@@ -15554,11 +15554,11 @@ const colW = (k, d) => (k !== 'act' && SETTINGS.colWidths && SETTINGS.colWidths[
     body.tc-ri-on #largemap.tc-ent-card{padding:0!important;height:300px!important;overflow:hidden}
     body.tc-ri-on form.tc-ent-plain #loujine-menu{display:none!important}   /* Autofill does what its Add external link did */
     body:not(.tc-ri-on) #tc-af-btn,body:not(.tc-ri-on) #tc-af-box{display:none}
-    body.tc-ri-on #information > div.half-width legend.tc-af-lg{display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
-    #tc-af-btn{height:30px;padding:0 12px;margin:-16px 0 3px;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);font:12px var(--mbu-font);letter-spacing:0;text-transform:none;cursor:pointer;box-shadow:none}
-    #tc-af-box{margin:0 0 8px;contain:inline-size}   /* takes the column's width, never widens it */
-    #tc-af-box .tc-af-in{width:100%;box-sizing:border-box}
-    #tc-af-box .tc-af-st{margin:6px 0 0;font:12px var(--mbu-font);color:var(--mbu-text-dim)}
+    body.tc-ri-on #information > div.half-width legend.tc-af-lg{display:flex;align-items:center;gap:8px}
+    #tc-af-btn{height:18px;line-height:16px;padding:0 8px;margin:-3px 0;flex:none;border:1px solid var(--mbu-border);border-radius:var(--mbu-radius);background:var(--mbu-bg);color:var(--mbu-text);font:12px var(--mbu-font);letter-spacing:0;text-transform:none;cursor:pointer;box-shadow:none}
+    #tc-af-box{flex:1;min-width:0;display:flex;justify-content:flex-end;contain:inline-size;letter-spacing:0;text-transform:none}   /* takes what the heading leaves, never widens the column */
+    #tc-af-box .tc-af-in{width:100%;height:18px;margin:-3px 0;padding:0 6px;font:12px var(--mbu-font);box-sizing:border-box}
+    #tc-af-box .tc-af-st{font:12px var(--mbu-font);color:var(--mbu-text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #tc-af-box .tc-af-st.bad{color:var(--mbu-err)}
     #tc-af-box .tc-af-st:empty{display:none}
     .tc-ent-hl{margin:2px 0 0 170px;font:13px var(--mbu-font);color:var(--mbu-text);white-space:pre-wrap;word-break:break-word}

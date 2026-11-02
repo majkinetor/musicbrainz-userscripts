@@ -1,6 +1,6 @@
 # String Theory — Unified Documentation
 
-*Built 2026-11-02 15:47 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
+*Built 2026-11-02 16:18 · [String Theory README ↗](https://github.com/majkinetor/musicbrainz-userscripts/blob/main/userscripts/string_theory/README.md)*
 
 ## Table of contents
 
@@ -80,7 +80,7 @@ The edit pages of artists, labels, places, works, recordings and events (and the
 
 - **External links** sit in a right column with the dead-link checker.
 - **Name** and **Sort name** show their look-alike and invisible characters, double spaces and leading or trailing spaces on a line under the field.
-- **Autofill**: the button in the details heading unfolds a box; paste a Wikidata, Wikipedia, VIAF or ISNI link and the empty fields fill from Wikidata: name, sort name, type, gender, dates, areas, IPI, ISNI, a place's coordinates, and the links Wikidata knows. A field you already filled stays as it is. It replaces [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, which is hidden while Apollo is on.
+- **Autofill**: the button in the details heading unfolds a box there and it closes once you paste; paste a Wikidata, Wikipedia, VIAF or ISNI link and the empty fields fill from Wikidata: name, sort name, type, gender, dates, areas, IPI, ISNI, a place's coordinates, and the links Wikidata knows. A field you already filled stays as it is. It replaces [loujine's](https://github.com/loujine/musicbrainz-scripts/wiki) *Add external link* box, which is hidden while Apollo is on.
 - A place's map is a card at the end of whichever column is shorter.
 - The help bubbles are gone, and Apollo's bar has ✓ Enter edit and ✕ Cancel.
 
