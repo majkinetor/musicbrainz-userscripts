@@ -2,7 +2,7 @@
 // String Theory icon is golden and clicking it opens this viewer instead of the dock.
 // The discussions API ignores sort and category and answers oldest first, so read the last two pages.
 var ST_NEWS_KEY = 'stNews', ST_NEWS_MAX = 20, ST_NEWS_DAY = 864e5, ST_NEWS_FIRST = 14 * ST_NEWS_DAY;
-var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions/categories/announcements';
+var ST_NEWS_ALL = 'https://github.com/' + ST_REPO + '/discussions?discussions_q=category%3AAnnouncements';
 var ST_NEWS_LOG = 'https://github.com/' + ST_REPO + '/blob/main/userscripts/string_theory/CHANGELOG.md';
 var stNewsOv = null;
 var ST_NEWS_CSS = ''
