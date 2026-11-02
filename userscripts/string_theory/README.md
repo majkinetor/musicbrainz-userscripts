@@ -36,6 +36,7 @@ String Theory adds dock and setting management for all included scripts:
 - **One icon for all the launchers**: on MusicBrainz, String Theory's icon sits in the corner, and the round buttons of Mission Control, Fusion, Falcon and the rest fold behind it. Click it to unfold them; they stay unfolded until you click it again. Folded, the dock shows only actionable items (the script needs background fetch on for this).
 - **[Command palette](#command-palette)**: Ctrl+K lists every command, filtered as you type.
 - **[What's new](#whats-new)**: String Theory's icon turns golden when there is news.
+- **[Sync and backup](#sync-and-backup)**: carry settings and saved data between devices with Dropbox, or export a backup.
 - **Settings**: open them by right-clicking String Theory's icon. Right-click any dock icon for its own settings. Every icon is shown in About. Website and Issues links sit beside the tabs.
 - **Update**: in the About tab, toggle individual scripts, see their versions and check for updates.
 
@@ -82,21 +83,36 @@ Press **Ctrl+K** on any page String Theory runs on and type to filter the comman
 - **Pin** a command with **Alt+P** or its ☆: pinned commands come first, then the ones you used last.
 - The words you type can be in any order and abbreviated: `rel cov` finds *This release: Cover art*.
 
+## Sync and backup
+
+Open String Theory's settings → **Sync** → **Connect Dropbox**. Authorize the app in Dropbox, copy the code it displays, then paste it into **Authorization code** and press **Connect**. Connect each device to the same Dropbox account.
+
+**Sync now** merges your settings and saved data with Dropbox. **Automatic sync** repeats this while MusicBrainz is open. Independent changes are combined; when both devices change the same value, **Conflicting changes** chooses which one wins. Star additions and removals are merged separately.
+
+Credentials, stars, saved notes, remembered field values, named filters and normal preferences are included. Caches, logs, recent activity, temporary work, local paths and device layout stay local, including page width, columns, window state and location coordinates.
+
+Downloaded changes apply on the next page load; **Reload** applies them immediately. **Export** downloads a backup; **Import** merges one into your settings. **Export recovery copy** downloads the state kept before the last import or downloaded changes. Backups and the Dropbox file contain credentials.
+
+**Disconnect** stops automatic sync and removes this device's Dropbox connection; the Dropbox file remains.
+
 ## Settings
 
-The **General** tab holds the theme, the dock and the command palette; **About** holds the scripts and updates.
+The **General** tab holds the theme, the dock and the command palette; **Sync** holds Dropbox and backups; **About** holds the scripts and updates.
 
-| Setting          | Default           | What it does                                                                                                                    |
-| ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Side             | Right             | The launchers' side of the page                                                                                                 |
-| Orientation      | Column            | A column, or a row along the bottom edge                                                                                        |
-| Size             | 100 %             | The launchers' size, 60 to 160 %                                                                                                |
-| Hover            | None              | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                            |
-| Launcher order   | Each script's own | Drag the icons to reorder the launchers; the first sits nearest the corner                                                      |
-| Palette          | On                | The command palette's hotkey works                                                                                              |
-| Hotkey           | Ctrl+K            | The key that opens the command palette: click it, then press the new one                                                        |
-| Scripts          | All on            | Turns each bundled script on or off, from the next page load                                                                    |
-| Copy as Markdown |                   | Copies the channel, versions, which scripts are on and environment details as a collapsed section, ready to paste into an issue |
+| Setting             | Default             | What it does                                                                                                                    |
+| ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Side                | Right               | The launchers' side of the page                                                                                                 |
+| Orientation         | Column              | A column, or a row along the bottom edge                                                                                        |
+| Size                | 100 %               | The launchers' size, 60 to 160 %                                                                                                |
+| Hover               | None                | While the pointer is over the dock, None, or Shelf: a frosted shelf behind its icons                                            |
+| Launcher order      | Each script's own   | Drag the icons to reorder the launchers; the first sits nearest the corner                                                      |
+| Palette             | On                  | The command palette's hotkey works                                                                                              |
+| Hotkey              | Ctrl+K              | The key that opens the command palette: click it, then press the new one                                                        |
+| Automatic sync      | Off                 | Syncs with Dropbox while MusicBrainz is open                                                                                    |
+| Every               | 30 minutes          | Time between automatic syncs, from 5 minutes to 1 day                                                                           |
+| Conflicting changes | Use Dropbox’s value | Which value wins when both devices change the same setting                                                                      |
+| Scripts             | All on              | Turns each bundled script on or off, from the next page load                                                                    |
+| Copy as Markdown    |                     | Copies the channel, versions, which scripts are on and environment details as a collapsed section, ready to paste into an issue |
 
 - **Right-click a script's icon** in the settings, in the launcher order or in About, to open that script's settings, on any page and even when the script is off. String Theory's settings stay open behind them.
 - **A script that is off** doesn't run, so its standalone copy can run instead.
@@ -116,3 +132,4 @@ The **General** tab holds the theme, the dock and the command palette; **About**
 - **Each MusicBrainz server keeps its own launcher settings**: musicbrainz.org, beta and test are set apart.
 - **Launchers without String Theory**: in the browser console (F12) on a MusicBrainz page, run `localStorage.setItem('mbu.cornerFlow', '"row"')` for a row or `localStorage.removeItem('mbu.cornerFlow')` for the column, `localStorage.setItem('mbu.cornerSide', '"left"')` for the left side or `localStorage.removeItem('mbu.cornerSide')` for the right, then reload.
 - How the bundle is built is in [DEVELOP.md](DEVELOP.md).
+- Provider setup and storage rules are in [DEVELOP → External storage](DEVELOP.md#external-storage).

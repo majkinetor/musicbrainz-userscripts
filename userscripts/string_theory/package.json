@@ -4,10 +4,16 @@
   "type": "module",
   "description": "Build tooling for the String Theory bundle + unified docs (DOCS.md / String_Theory.pdf).",
   "scripts": {
+    "providers": "node build-providers.mjs",
     "docs": "node build.mjs",
     "docs:pdf": "node build.mjs && node build-pdf.mjs"
   },
   "devDependencies": {
+    "esbuild": "0.25.12",
     "marked": "^14.1.4"
+  },
+  "dependencies": {
+    "@usync/drive": "0.3.2",
+    "@usync/oauth2": "0.1.8"
   }
 }

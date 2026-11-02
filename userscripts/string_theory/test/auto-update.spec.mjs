@@ -16,13 +16,15 @@ test('About checks on each entry and keeps the newest response', { tag: '@sandbo
   await expect.poll(() => page.evaluate(() => [...window.__menu.keys()].some(k => /Settings/.test(k)))).toBe(true);
   await page.evaluate(() => [...window.__menu.entries()].find(([k]) => /Settings/.test(k))[1]());
   await page.locator('#st-tab-a').click();
-  await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(2);
+  const channels = await page.locator('#st-upd > div').count(); // branch builds also check their own channel
+  expect(channels).toBeGreaterThanOrEqual(2);
+  await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(channels);
   await expect(page.locator('#st-check')).toHaveCount(0);
   await page.locator('#st-tab-g').click();
   await page.locator('#st-tab-a').click();
-  await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(4);
-  await page.evaluate(() => window.__updates.slice(2).forEach(o => o.onload({ status: 200, responseText: '// @version 9999.1' })));
+  await expect.poll(() => page.evaluate(() => window.__updates.length)).toBe(channels * 2);
+  await page.evaluate(n => window.__updates.slice(n).forEach(o => o.onload({ status: 200, responseText: '// @version 9999.1' })), channels);
   await expect(page.locator('#st-upd')).toContainText('v9999.1');
-  await page.evaluate(() => window.__updates.slice(0, 2).forEach(o => o.onload({ status: 200, responseText: '// @version 1.1' })));
+  await page.evaluate(n => window.__updates.slice(0, n).forEach(o => o.onload({ status: 200, responseText: '// @version 1.1' })), channels);
   await expect(page.locator('#st-upd')).toContainText('v9999.1');
 });

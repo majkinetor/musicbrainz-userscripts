@@ -170,6 +170,7 @@ var ST_CSS = ''
   + '#st-cfg h3{margin:0 0 4px;padding:0;border:0;background:none;font:600 11px/1.4 var(--mbu-font);text-transform:uppercase;letter-spacing:.06em;color:var(--mbu-text-weak)}'
   + '#st-cfg .st-row{display:flex;align-items:center;gap:8px;min-height:28px;margin:0;font-weight:400}'
   + '#st-cfg .st-row>label:first-child{flex:0 0 64px}'
+  + '#st-cfg #st-p-s .st-row{flex-wrap:wrap;margin:7px 0}#st-cfg #st-p-s .st-row>label{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto}#st-cfg #st-sync-code{box-sizing:border-box;width:210px;max-width:100%;padding:4px 7px;border:1px solid var(--mbu-border);background:var(--mbu-bg);color:var(--mbu-text);font:inherit}#st-cfg #st-sync-status{color:var(--mbu-text-weak);overflow-wrap:anywhere}'
   + '#st-cfg #st-p-g .st-row>.st-lbl:first-child{flex:0 0 96px;white-space:nowrap}#st-cfg #st-p-g .st-lbl{white-space:nowrap}#st-cfg #st-p-g select{flex:0 1 150px;width:150px;min-width:0;height:26px}#st-cfg .st-time{box-sizing:border-box;width:60px;height:26px;padding:0 6px;text-align:center;font:inherit;color:inherit;background:var(--mbu-bg);border:1px solid var(--mbu-border);border-radius:15px}'
   + '#st-cfg label.st-row{cursor:pointer}#st-cfg label.st-row input{margin:0}'
   + '#st-cfg-news{margin-right:10px;white-space:nowrap}'
@@ -256,6 +257,7 @@ function stSettings(tab) {
         + opts.map(function (o) { return '<button type="button" role="radio" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</span>';
     };
     h += '<div class="st-nav"><div class="st-tabs" role="tablist"><button type="button" role="tab" id="st-tab-g" aria-controls="st-p-g" aria-selected="true">General</button>'
+      + '<button type="button" role="tab" id="st-tab-s" aria-controls="st-p-s" aria-selected="false">Sync</button>'
       + '<button type="button" role="tab" id="st-tab-a" aria-controls="st-p-a" aria-selected="false">About</button></div>' + links + '</div><div class="st-panes">'
       + '<section class="st-sec" id="st-p-g" role="tabpanel" aria-labelledby="st-tab-g">'
       + '<h3 class="st-h">Theme</h3>'
@@ -278,6 +280,7 @@ function stSettings(tab) {
       + '<span class="st-lbl" id="st-pal-key-l">Hotkey</span><button type="button" class="st-b st-key" id="st-pal-key" aria-labelledby="st-pal-key-l"></button></div>'
       + '<div class="st-cap">Click the hotkey, then press the new one.</div>'
       + '</section>';
+    h += '<section class="st-sec" id="st-p-s" role="tabpanel" aria-labelledby="st-tab-s" hidden>' + stSyncMarkup() + '</section>';
   }
   var off = __stReadOff(), known = mbuShared('dockKnown') || {};
   h += '<section class="st-sec" id="st-p-a"' + (ST_ON_MB ? ' role="tabpanel" aria-labelledby="st-tab-a" hidden' : '') + '>'
@@ -341,6 +344,7 @@ function stSettings(tab) {
   });
 
   if (ST_ON_MB) {
+    stSyncBind(q('#st-p-s'));
     var restack = function () { ['br', 'bl', 'tr', 'tl'].forEach(function (c) { try { mbRestackCorner(c); } catch (e) { /* a corner's script broke */ } }); };
     var size = function () { return Math.round((Number(mbuShared('cornerSize')) || 1) * 10) * 10; };
     var show = function () {

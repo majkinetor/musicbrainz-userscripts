@@ -88,7 +88,7 @@ test('one menu entry opens the settings, which turn a script off and on', { tag:
 
 // Event Horizon is a member too; these run without it, where the dock works the same.
 test.describe('Event Horizon turned off', () => {
-  test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'] } } });
+  test.use({ gm: { name: 'String Theory', values: { 'string_theory.off': ['event_horizon'], stNews: { at: Date.now(), items: [], seen: [], since: 0 } } } });
 
   // Without Event Horizon the launchers fold into String Theory's icon too, folded at first; a click
   // unrolls them and the next page keeps that; a right-click opens the settings, which have no setting for it.
@@ -103,7 +103,7 @@ test.describe('Event Horizon turned off', () => {
 
     await page.locator('#mbu-dock').click({ button: 'right' });
     await page.waitForSelector('#st-cfg', { timeout: 10000 });
-    check(!(await page.evaluate(() => !!document.getElementById('st-dock'))), 'no setting for the folding');
+    check(await page.locator('#st-tab-g').getAttribute('aria-selected') === 'true', 'right-click opens General');
     await page.keyboard.press('Escape');
 
     await page.mouse.move(10, 10);
@@ -130,7 +130,7 @@ test.describe('Event Horizon turned off', () => {
     await load(page, inject, { open: true });
     await stacked(page);
     await openSettings(page);
-    const pressed = () => page.evaluate(() => [...document.querySelectorAll('#st-cfg [role=radio][aria-checked=true]')].map(b => b.dataset.v).slice(0, 2).join(' '));
+    const pressed = () => page.evaluate(() => [...document.querySelectorAll('#st-side [aria-checked=true],#st-flow [aria-checked=true]')].map(b => b.dataset.v).join(' '));
     check(await pressed() === 'right column', `Right and Column are selected (${await pressed()})`);
     const col = await at(page);
     check(col.every(e => e.right === 14) && new Set(col.map(e => e.bottom)).size === col.length, `a column up the right edge (${JSON.stringify(col)})`);

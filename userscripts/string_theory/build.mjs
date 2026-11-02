@@ -112,8 +112,11 @@ for (const p of parts) for (const [k, v] of p.meta) {
   out.push([k, v]);
 }
 // the bundle's own grants: the on/off list and the settings window below (#693, #851)
-for (const g of ['GM_getValue', 'GM_setValue', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
+for (const g of ['GM_getValue', 'GM_setValue', 'GM_deleteValue', 'GM_listValues', 'GM_xmlhttpRequest', 'GM_registerMenuCommand', 'GM_unregisterMenuCommand', 'GM_setClipboard']) {
   if (!seen.has(`grant\t${g}`)) { seen.add(`grant\t${g}`); out.push(['grant', g]); }
+}
+for (const host of ['api.dropbox.com', 'api.dropboxapi.com', 'content.dropboxapi.com']) {
+  if (!seen.has(`connect\t${host}`)) { seen.add(`connect\t${host}`); out.push(['connect', host]); }
 }
 const metaBlock = ['// ==UserScript==', ...out.map(([k, v]) => `// @${k.padEnd(12)} ${v}`.trimEnd()), '// ==/UserScript=='].join('\n');
 
@@ -151,6 +154,7 @@ const bodies = parts.map(p => {
     // #851: every member, off ones too, can be started only to open its settings (MBU_SETTINGS_ONLY), see __stStarters
     + `(function(__stGM){ var __stSO = 0; var __stGo = function(so){\n`
     + `  var MBU_SETTINGS_ONLY = !!so; if (so) __stSO = 1;\n`
+    + `  var __stStorage = __stSyncGuard(); var GM_getValue = __stStorage.get, GM_setValue = __stStorage.set;\n`
     + `  var GM_info = __stGM ? Object.assign({}, __stGM, { script: Object.assign({}, __stGM.script || {}, ${shadow}) }) : { script: ${shadow} };\n`
     // A member that throws while starting must not stop the members after it: ISRC Scout's
     // "Cannot access 'btnStatus' before initialization" kept Platform Check's panel away until
@@ -217,7 +221,11 @@ const UI_FACTORY = factoryWith('mbuCfgHeader'), TOKENS_FACTORY = factoryWith('MB
 const SETTINGS = readFileSync(resolve(HERE, 'settings.js'), 'utf8').replace(/\r\n/g, '\n');
 const PALETTE = readFileSync(resolve(HERE, 'palette.js'), 'utf8').replace(/\r\n/g, '\n');   // #890
 const NEWS = readFileSync(resolve(HERE, 'news.js'), 'utf8').replace(/\r\n/g, '\n');   // #896
-const toggles = `${themeRuntime}
+const SYNC_DATA = ['sync-data.js', 'sync-policy.js', 'sync-storage.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
+const SYNC = ['providers.js', 'sync.js'].map(f => readFileSync(resolve(HERE, f), 'utf8').replace(/\r\n/g, '\n')).join('\n');
+const toggles = `${SYNC_DATA}
+stSyncStorageInit();
+${themeRuntime}
 var __stDefOff = ${JSON.stringify(DEFAULT_OFF)};
 function __stList(k) { try { var v = GM_getValue(k, []); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function __stReadOff() { var on = __stList(${JSON.stringify(ON_KEY)}); return __stList(${JSON.stringify(OFF_KEY)}).concat(__stDefOff.filter(function (n) { return on.indexOf(n) < 0; })); }
@@ -243,6 +251,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   var stUIBlock = null, stTokensBlock = null;
   function stUI() { return stUIBlock || (stUIBlock = ${UI_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
   function stTokens() { return stTokensBlock || (stTokensBlock = ${TOKENS_FACTORY}(typeof GM_info !== 'undefined' ? GM_info : undefined)); }
+  ${SYNC.replace(/\n/g, '\n  ').replace(/^[ \t]+$/gm, '').trimEnd()}
   ${SETTINGS.replace(/\n/g, '\n  ').trimEnd()}
   ${PALETTE.replace(/\n/g, '\n  ').trimEnd()}
   ${NEWS.replace(/\n/g, '\n  ').trimEnd()}
@@ -254,6 +263,7 @@ var __stStarters = {};   // #851: per member folder, how String Theory's setting
   document.addEventListener('mbu-st-palette', palette);
   // String Theory's icon shows even on a page none of its scripts puts a launcher on
   if (ST_ON_MB) {
+    try { stSyncSchedule(); } catch (e) {}
     try { stNewsStart(); } catch (e) {}
     var first = function () { try { mbRestackCorner('br'); } catch (e) {} };
     if (document.readyState !== 'loading') first(); else document.addEventListener('DOMContentLoaded', first, { once: true });
