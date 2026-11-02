@@ -187,8 +187,8 @@ function stPalCommands() {
   var issueUrl = function (name, body) {
     return 'https://github.com/' + ST_REPO + '/issues/new?title=' + encodeURIComponent(name + ': ') + '&body=' + encodeURIComponent(body);
   };
-  var newIssue = function (id, name, log) {
-    add({ id: id, cat: log ? 'New issue with log' : 'New issue', label: name, recentless: !!log, run: function () {
+  var newIssue = function (id, name, log, which) {
+    add({ id: id, cat: log ? 'New issue with log' : 'New issue', label: name + (which ? ' · ' + which : ''), recentless: !!log, pinless: !!log, run: function () {
       var head = '\n\n---\n\n' + stVersionsText(), md = log ? log() : '', url = issueUrl(name, head + (md ? '\n\n' + md : ''));
       if (md && url.length > 7000) {
         url = issueUrl(name, head + '\n\n<!-- the log is on the clipboard: paste it here -->');
@@ -199,11 +199,14 @@ function stPalCommands() {
   };
   newIssue('st:newissue', 'String Theory');
   stMembers.forEach(function (sm) { newIssue('newissue:' + sm[0], sm[1]); });
+  // this page's log of each script that logged something here, then every kept session of the scripts with a history
   var logs = {}; try { logs = window.__mbuLogs || {}; } catch (e) { /* none */ }
   stMembers.forEach(function (sm) {
     var l = logs[sm[1] + '*'] || logs[sm[1]];   // a bundled script's name ends in *
-    if (l && typeof l.markdown === 'function' && l.markdown()) newIssue('newissuelog:' + sm[0], sm[1], function () { return l.markdown(); });
+    if (l && typeof l.markdown === 'function' && l.markdown()) newIssue('newissuelog:' + sm[0], sm[1], function () { return l.markdown(); }, 'this page');
   });
+  var kept = []; try { kept = U.mbuLogHistory ? U.mbuLogHistory() : []; } catch (e) { /* none */ }
+  kept.forEach(function (k) { newIssue('newissuelog:' + k.name + ':' + k.id, k.name, k.markdown, k.label); });
   add({ id: 'st:reload', cat: 'String Theory', label: 'Reload the page', run: function () { location.reload(); } });
   return out;
 }

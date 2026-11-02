@@ -6384,6 +6384,8 @@ function mbuLog(o) {
         reopen: function () { if (state().open) open(); },
         isOpen: function () { return !!win; },
         markdown: function () { return markdown(); },
+        // a stored session as Markdown, as its Copy gives it ('' when there is none)
+        markdownOf: function (id) { var e = loadSession(id); return e && e.length ? markdown({ id: id, entries: e }) : ''; },
         copy: function (btn) { copy(btn); },
         clear: clear,
         lines: function () { return buf.map(line); },
@@ -6406,28 +6408,47 @@ function mbuLog(o) {
         refresh: function () { views.forEach(function (v) { v.sessions(); }); },
         flush: flush,
     };
-    if (H) {
+    if (H && !o.reader) {
         sid = newId();
         // #811: a script reloads the page right after its operation; write the kept session
         // now rather than trusting the 100 ms timer to beat the unload
         try { window.addEventListener('pagehide', flush); } catch (e) { /* no window */ }
     }
+    // o.reader: only reads a history's stored sessions (mbuLogHistory), so it leaves no trace
+    if (o.reader) return api;
     mbuLog.active = api;   // the script's own log, for helpers that note things in it (mbuClaim)
-    // Every log on the page by its script's name, for String Theory's New issue with log (#890): this page's
-    // session as Markdown, or the last kept one when this page logged nothing. Scripts in one userscript
-    // (the bundle) share window; a standalone copy fills its own.
+    // For String Theory's New issue with log (#890). Every log on the page, by its script's name, gives this
+    // page's session as Markdown; scripts in one userscript (the bundle) share window, a standalone copy
+    // fills its own. A log with a history also names its store in the shared 'logHistory' ({ name: prefix }),
+    // so its kept sessions can be read on any page, whether or not the script runs there.
     try {
-        var me = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || o.header || 'script';
+        var me = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.name) || o.name || o.header || 'script';
         var reg = window.__mbuLogs = window.__mbuLogs || {};
-        reg[me] = {
-            markdown: function () {
-                if (buf.length) return markdown();
-                var id = H ? store.get(hp + 'current') : null, past = id ? loadSession(id) : null;
-                return past && past.length ? markdown({ id: id, entries: past }) : '';
-            }
-        };
+        reg[me] = { markdown: function () { return buf.length ? markdown() : ''; } };
     } catch (e) { /* no window */ }
+    if (H && !H.store && o.name) {
+        try {
+            var known = mbuShared('logHistory') || {};
+            if (known[o.name] !== hp) { known[o.name] = hp; mbuShared('logHistory', known); }
+        } catch (e) { /* storage blocked */ }
+    }
     return api;
+}
+
+// The kept sessions of every log with a history (#890), from the shared 'logHistory', on any page:
+//   mbuLogHistory() → [{ name, id, date, label, markdown() }], newest first
+function mbuLogHistory() {
+    var known = {}, out = [];
+    try { known = mbuShared('logHistory') || {}; } catch (e) { /* storage blocked */ }
+    Object.keys(known).forEach(function (name) {
+        var L = mbuLog({ name: name, reader: true, history: { prefix: known[name] } });
+        L.sessions().forEach(function (s) {
+            var d = s.date, two = function (n) { return String(n).padStart(2, '0'); };
+            var when = d ? d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes()) : s.id;
+            out.push({ name: name, id: s.id, date: d, label: when + (s.name ? ' — ' + s.name : ''), markdown: function () { return L.markdownOf(s.id); } });
+        });
+    });
+    return out.sort(function (a, b) { return (b.date || 0) - (a.date || 0); });
 }
 
 // Dismiss-on-outside-click, with the trailing click SWALLOWED.
